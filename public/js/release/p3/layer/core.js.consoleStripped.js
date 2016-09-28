@@ -58348,7 +58348,7 @@ function(kernel, arrayUtil, on, aspect, has, put){
 			if(event.type == "click" || event.keyCode == 32 || (!has("opera") && event.keyCode == 13) || event.keyCode === 0){
 				var row = grid.row(event);
 				grid._selectionTriggerEvent = event;
-				 0 && console.log("onSelect()", row, event);
+				//  0 && console.log("onSelect()", row, event);
 				
 				if(row){
 					if(grid.allowSelect(row)){
@@ -58380,7 +58380,7 @@ function(kernel, arrayUtil, on, aspect, has, put){
 					put(this, (grid.allSelected ? "!" : ".") + "dgrid-select-all");
 
 					if (grid.selection && Object.keys(grid.selection).length>0){
-						 0 && console.log("ClearSelection()")
+						//  0 && console.log("ClearSelection()")
 						grid.clearSelection();
 					}else{
 						 0 && console.log("selectAll()");
@@ -59065,12 +59065,8 @@ define([
 			//  0 && console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
-			// if(!this._started){
-			// 	return;
-			// }
 
 			var _self = this;
-			//  0 && console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + 1 + ")");
 
@@ -59095,13 +59091,13 @@ define([
 						var genome_ids = genomes.map(function(o){
 							return o.genome_id;
 						});
-						_self._set("genome_ids", genome_ids)
+						_self._set("genome_ids", genome_ids);
 					}
 				}else{
 					 0 && console.warn("Invalid Response for: ", url);
 				}
 			}, function(err){
-				 0 && console.error("Error Retreiving Genomes: ", err)
+				 0 && console.error("Error Retreiving Genomes: ", err);
 			});
 
 		},
@@ -59111,9 +59107,6 @@ define([
 			var query = this.get('query');
 
 			var _self = this;
-			//  0 && console.log('genomeList setQuery - this.query: ', this.query);
-
-			// var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(" + this.maxGenomesPerList + ")");
 
 			xhr.post(PathJoin(this.apiServiceUrl, "genome"), {
 				headers: {
@@ -59131,10 +59124,10 @@ define([
 					var genomes = res.response.docs;
 					_self._set("referenceGenomes", genomes);
 				}else{
-					 0 && console.warn("Invalid Response for: ", url);
+					 0 && console.warn("Invalid Response for: ");
 				}
 			}, function(err){
-				 0 && console.error("Error Retreiving Reference/Representative Genomes: ", err)
+				 0 && console.error("Error Retreiving Reference/Representative Genomes: ", err);
 			});
 
 		},
@@ -59161,20 +59154,14 @@ define([
 				this.set("query", state.search);
 			}
 
-			// this.inherited(arguments);
-
-			// // 0 && console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : this.defaultTab;
-
 			this.setActivePanelState();
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			//  0 && console.log("English Content: ", content);
-			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
-			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
+
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content + "</div>");
 			this.queryNode.innerHTML = '<span class="queryModel">Genomes</span>  ' + content;
 		},
 
@@ -59201,22 +59188,22 @@ define([
 					}
 					var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
 
-					 0 && console.log("ActiveTab.maxGenomeCount: ", activeTab.maxGenomeCount);
-					 0 && console.log("ACTIVE MAX: ", activeMax);
+					//  0 && console.log("ActiveTab.maxGenomeCount: ", activeTab.maxGenomeCount);
+					//  0 && console.log("ACTIVE MAX: ", activeMax);
 					var autoFilterMessage;
 					if(this.state && this.state.genome_ids){
-						 0 && console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
+						//  0 && console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
 						if(this.state.genome_ids.length <= activeMax){
-							 0 && console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
+							//  0 && console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
 							activeQueryState = lang.mixin({}, this.state, {
 								search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",
 								hashParams: lang.mixin({}, this.state.hashParams)
 							});
 						}else if(this.state.referenceGenomes && this.state.referenceGenomes.length <= activeMax){
 							var ids = this.state.referenceGenomes.map(function(x){
-								return x.genome_id
-							})
-							 0 && console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
+								return x.genome_id;
+							});
+							//  0 && console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
 							autoFilterMessage = "This tab has been filtered to view data limited to Reference and Representative Genomes in your view.";
 							activeQueryState = lang.mixin({}, this.state, {
 								genome_ids: ids,
@@ -59226,11 +59213,11 @@ define([
 							});
 						}else if(this.state.referenceGenomes){
 							var referenceOnly = this.state.referenceGenomes.filter(function(x){
-								return x.reference_genome == "Reference"
+								return x.reference_genome == "Reference";
 							}).map(function(x){
-								return x.genome_id
-							})
-							 0 && console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
+								return x.genome_id;
+							});
+							//  0 && console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
 							if(!referenceOnly || referenceOnly.length < 1 || referenceOnly.length > activeMax){
 								autoFilterMessage = "There are too many genomes in your view.  This tab will not show any data";
 								activeQueryState = lang.mixin({}, this.state, {
@@ -59258,7 +59245,7 @@ define([
 					}
 
 					if(activeQueryState){
-						 0 && console.log("Active Query State: ", activeQueryState);
+						//  0 && console.log("Active Query State: ", activeQueryState);
 
 						activeTab.set("state", activeQueryState);
 					}else{
@@ -59369,7 +59356,7 @@ define([
 					var dlg = new Dialog({
 						title: "PATRIC Quickstart",
 						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
-					})
+					});
 					dlg.show();
 					localStorage.setItem(this.showQuickstartKey, true);
 				}
@@ -59395,7 +59382,7 @@ define([
 				var c = this.warningContent.replace("{{maxGenomesPerList}}", this.maxGenomesPerList);
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;margin:4px;margin-bottom: 0px;background: #f9ff85;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;",
-					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner" style="background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close' style='color:#333;font-weight:200;'></td></tr></table>",
+					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close' style='color:#333;font-weight:200;'></td></tr></table>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -59403,7 +59390,7 @@ define([
 				var _self = this;
 				on(this.warningPanel, ".close:click", function(){
 					_self.removeChild(_self.warningPanel);
-				})
+				});
 
 			}
 			this.addChild(this.warningPanel);
@@ -59412,25 +59399,25 @@ define([
 			//  0 && console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
-			var f = evt.filter;
+
 			var parts = [];
 			var q;
 			if(this.query){
 				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
-					parts.push(q)
+					parts.push(q);
 				}
 			}
 			if(evt.filter && evt.filter != "false"){
-				parts.push(evt.filter)
+				parts.push(evt.filter);
 			}
 
 			//  0 && console.log("parts: ", parts);
 
 			if(parts.length > 1){
-				q = "?and(" + parts.join(",") + ")"
+				q = "?and(" + parts.join(",") + ")";
 			}else if(parts.length == 1){
-				q = "?" + parts[0]
+				q = "?" + parts[0];
 			}else{
 				q = "";
 			}
@@ -59439,16 +59426,16 @@ define([
 			var hp;
 
 			if(this.state.hashParams && this.state.hashParams.view_tab){
-				hp = {view_tab: this.state.hashParams.view_tab}
+				hp = {view_tab: this.state.hashParams.view_tab};
 			}else{
-				hp = {}
+				hp = {};
 			}
 
 			hp.filter = "false";
 
 			//  0 && console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
-					return key + "=" + hp[key]
+					return key + "=" + hp[key];
 				}, this).join("&");
 			//  0 && console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
@@ -75569,8 +75556,7 @@ define([
 	}
 
 	return declare([ContainerActionBar], {
-		/* style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;", */
-		style: "height: 52px; margin:0px;padding:0px; overflow: hidden;",
+		style: "height: 52px; margin:0px; padding:0px; overflow: hidden;",
 		minimized: true,
 		minSize: 52,
 		absoluteMinSize: 52,
@@ -75598,34 +75584,35 @@ define([
 		},
 		onSetState: function(attr, oldState, state){
 			//  0 && console.log("FilterContainerActionBar onSetState: ", JSON.stringify(state,null,4))
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			//  0 && console.log("FilterContainerActionBar onSetState() ", state);
 
-
-			if (oldState){
+			if(oldState){
 				//  0 && console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
 			}else{
 				//  0 && console.log("    OLD: No State");
 			}
 			//  0 && console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
 
-			var ov,nv;
-			if (oldState){
+			var ov, nv;
+			if(oldState){
 				ov = oldState.search;
-				if (oldState.hashParams && oldState.hashParams.filter){
+				if(oldState.hashParams && oldState.hashParams.filter){
 					ov = ov + oldState.hashParams.filter;
 				}
 			}
 
-			if (state){
+			if(state){
 				nv = state.search;
-				if (state.hashParams && state.hashParams.filter){
+				if(state.hashParams && state.hashParams.filter){
 					nv = nv + state.hashParams.filter;
 				}
 			}
 
-			if (ov!=nv){
+			if(ov != nv){
 				this._refresh();
 			}
 		},
@@ -75648,7 +75635,7 @@ define([
 				//  0 && console.log("_refresh() state.hashParams.filter: ", state.hashParams.filter);
 				if(state.hashParams.filter != "false"){
 					parsedFilter = parseQuery(state.hashParams.filter)
-					this._filter={};
+					this._filter = {};
 				}
 
 				//  0 && console.log("parsedFilter: ", parsedFilter);
@@ -75672,22 +75659,22 @@ define([
 			//  0 && console.log("_refresh() parsedFilter.selected: ", parsedFilter.selected);
 
 			// for each of the facet widgets, get updated facet counts and update the content.
-			var toClear=[]
+			var toClear = []
 			Object.keys(this._ffWidgets).forEach(function(category){
-				 //  0 && console.log("Category: ", category)
-				 	this._ffWidgets[category].clearSelection();
-					this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
+				//  0 && console.log("Category: ", category)
+				this._ffWidgets[category].clearSelection();
+				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
 			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
 				parsedFilter.selected.forEach(function(sel){
 					//  0 && console.log("_setSelected FilterContaienrActionBar: ", sel)
-					if (sel.field && !this._filter[sel.field]){
-						this._filter[sel.field]=[];
+					if(sel.field && !this._filter[sel.field]){
+						this._filter[sel.field] = [];
 					}
 					var qval = "eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")";
-					if (this._filter[sel.field].indexOf(qval)<0){
+					if(this._filter[sel.field].indexOf(qval) < 0){
 						this._filter[sel.field].push("eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")");
 					}
 
@@ -75726,12 +75713,12 @@ define([
 				}, this)
 
 				Object.keys(this._ffValueButtons).forEach(function(cat){
-					if (!parsedFilter || !parsedFilter.byCategory[cat]){
+					if(!parsedFilter || !parsedFilter.byCategory[cat]){
 						var b = this._ffValueButtons[cat];
 						b.destroy();
 						delete this._ffValueButtons[cat];
 					}
-				},this)
+				}, this)
 
 			}else{
 				//  0 && console.log("DELETE __ffValueButtons")
@@ -75752,8 +75739,7 @@ define([
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			// domConstruct.destroy(this.pathContainer);
-			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);
+
 			domConstruct.destroy(this.pathContainer);
 			this.smallContentNode = domConstruct.create("div", {
 				"class": "minFilterView",
@@ -75796,21 +75782,13 @@ define([
 					"white-space": "nowrap"
 				}
 			}, tr);
-			// var str = domConstruct.create("tr",{},table);
-			// var std = domConstruct.create("td",{"colspan": 3,style: {padding: "0px",margin:"0px"}},str);
-			// var tfb1 = domConstruct.create("div",{style: {"text-align":"center"}},std);
-			// var tfb = domConstruct.create("div", {style: {display: "inline-block","border":"1px solid #aaa", width: "100px", "font-size":".75em","margin": "auto"},innerHTML: "SHOW FILTERS"}, tfb1)
 
-			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);
-			// domConstruct.place(this.containerNode, this.smallContentNode, "first");
 			var _self = this;
 			var setAnchor = function(){
 				var q = _self.query;
 				//  0 && console.log("Anchor: ", this.state)
 				if(_self.state && _self.state.hashParams && _self.state.hashParams.filter){
 
-					// q = "and(" + q + "," + this.filter + ")";
-					//  0 && console.log("New Anchor Query:",q)
 					on.emit(this.domNode, "SetAnchor", {
 						bubbles: true,
 						cancelable: true,
@@ -75864,7 +75842,6 @@ define([
 					"overflow-x": "auto"
 				}
 			}, this.domNode)
-			//this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
 
 			// this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
 			on(this.fullViewNode, "mousewheel", function(event){
@@ -75905,19 +75882,16 @@ define([
 				"class": "dijitHidden fa icon-x fa-1x",
 				style: {"vertical-align": "bottom", "font-size": "14px", "margin-left": "4px"},
 				innerHTML: ""
-			}, kbot)
+			}, kbot);
 
 			on(clear, "click", lang.hitch(this, function(){
 				this.keywordSearch.set('value', '');
-			}))
-			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
+			}));
+
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
 			this.keywordSearch.on("change", lang.hitch(this, function(val){
-				//  0 && console.log("Keyword Search Change", arguments)
-				//  0 && console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
-				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
-				//  0 && console.log("WOULD EMIT: keywords : ", val);
+
 				if(val){
 					domClass.remove(clear, "dijitHidden");
 				}else{
@@ -75933,16 +75907,7 @@ define([
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");
 			this.watch("state", lang.hitch(this, "onSetState"));
 
-			// this.watch("filter", lang.hitch(this,function(attr,oldVal,filter){
-				//  0 && console.log("Filter Updated: ", filter);
-				//  0 && console.log("this._filter: ", this._filter);
-			// }))
-			// this.keywordSearch.startup();
-
 			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
-
-				//  0 && console.log("UpdateFilterCategory EVT: ", evt);
-				//  0 && console.log("this._Filters: ",this._filter, "FilterContainerActionBar: ", this);
 
 				if(evt.category == "keywords"){
 					if(evt.value && (evt.value.charAt(0) == '"')){
@@ -75984,7 +75949,7 @@ define([
 				// 		}
 				// },this)
 				//  0 && console.log("this._filterKeywords: ", this._filterKeywords, typeof this._filterKeywords);
-				var fkws = []
+				var fkws = [];
 				if(this._filterKeywords){
 					this._filterKeywords.forEach(function(fk){
 						if(fk){
@@ -76018,10 +75983,10 @@ define([
 						filter = this._filter[cats[0]];
 					}
 				}else{
-				    //  0 && console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
+					//  0 && console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
 					var inner = cats.map(function(c){
 						return this._filter[c]
-					}, this).join(",")
+					}, this).join(",");
 					if(this._filterKeywords){
 						filter = "and(" + inner + "," + fkws + ")"
 					}else{
@@ -76059,7 +76024,7 @@ define([
 				if(c != category){
 					return true;
 				}
-			})
+			});
 
 			//  0 && console.log("scats: ", scats)
 			var ffilter = [];
@@ -76081,7 +76046,7 @@ define([
 					}
 				}
 			}, this);
-			//  0 && console.log("ffilter: ", ffilter)
+
 			if(ffilter.length < 1){
 				ffilter = "";
 			}else if(ffilter.length == 1){
@@ -76089,9 +76054,8 @@ define([
 			}else{
 				ffilter = "and(" + ffilter.join(",") + ")";
 			}
-			//  0 && console.log("ffilter final: ", ffilter)
-			var q = []
-			//  0 && console.log("this.query: ", this.query);
+
+			var q = [];
 
 			if(this.query){
 				q.push((this.query && (this.query.charAt(0) == "?")) ? this.query.substr(1) : this.query);
@@ -76109,10 +76073,11 @@ define([
 			//  0 && console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				//  0 && console.log("Facet Results: ",r);
-				if (!r) { return; 
+				if(!r){
+					return;
 				}
 				w.set("data", r[category]);
-			}))
+			}));
 			//  0 && console.log(" Facet Query: ", ffilter)
 		},
 
@@ -76210,8 +76175,12 @@ define([
 
 		_setQueryAttr: function(query){
 			//  0 && console.log("_setQueryAttr: ", query)
-			if (!query) {  return; }
-			if (query == this.query){return; }
+			if(!query){
+				return;
+			}
+			if(query == this.query){
+				return;
+			}
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				//  0 && console.log("_setQuery got facets: ", facets)
@@ -76240,7 +76209,7 @@ define([
 
 		getFacets: function(query, facetFields){
 			//  0 && console.log("getFacets: ", query);
-			if (!query || query=="?"){
+			if(!query || query == "?"){
 				var def = new Deferred();
 				def.resolve(false);
 				return def.promise;
@@ -76291,7 +76260,7 @@ define([
 				return;
 
 			}, function(err){
-				 0 && console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: "+ url);
+				 0 && console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: " + url);
 				return err;
 			}))
 		},
@@ -76304,7 +76273,7 @@ define([
 			this.set("facetFields", this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
-			if (this.state){
+			if(this.state){
 				this.onSetState('state', "", this.state);
 			}
 
@@ -85103,15 +85072,17 @@ define([
 },
 'p3/widget/CircularViewerContainer':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/topic",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
-	"./TrackController", "circulus/Viewer", "circulus/LineTrack",
+	"./TrackController", "circulus/Viewer", "circulus/LineTrack", "circulus/HistogramTrack", "circulus/HeatmapTrack",
 	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
-], function(declare, BorderContainer, on,
+], function(declare, BorderContainer, on, Topic,
 			ActionBar, ContainerActionBar, TabContainer,
-			TrackController, CirculusViewer, LineTrack,
+			TrackController, CirculusViewer, LineTrack, HistogramTrack, HeatmapTrack,
 			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin){
 
+	var	custom_colors = ["blue", "green", "orange", "pink", "red", "purple"];
+	
 	return declare([BorderContainer], {
 		gutters: true,
 		query: null,
@@ -85152,7 +85123,7 @@ define([
 			}));
 		},
 
-		addFeatureTrack: function(title, gid, filter, strand, fill, stroke, background){
+		addFeatureTrack: function(title, title_tooltip, gid, filter, strand, fill, stroke, background){
 			var fields = ["feature_id", "feature_type", "sequence_id", "segments", "gi", "na_length", "pos_group", "strand", "public", "aa_length", "patric_id", "owner",
 				"location", "protein_id", "refseq_locus_tag", "taxon_id", "accession", "end", "genome_name", "product", "genome_id", "annotation", "start"]
 
@@ -85163,9 +85134,10 @@ define([
 				type: SectionTrack,
 				options: {
 					title: title,
+					title_tooltip: title_tooltip,
 					loadingText: "LOADING " + title.toUpperCase(),
 					loading: true,
-					trackWidth: 0.08,
+					trackWidth: 0.05,
 					fill: fill,
 					stroke: stroke,
 					gap: 0,
@@ -85226,6 +85198,7 @@ define([
 				type: SectionTrackWithLabel,
 				options: {
 					title: "Position Label (Mbp)",
+					//title_tooltip: "Position Label (Mbp)",
 					trackWidth: 0.1,
 					//fill: "#eeeeee",
 					stroke: null,
@@ -85239,6 +85212,7 @@ define([
 				type: SectionTrack,
 				options: {
 					title: "Contigs/Chromosomes",
+					//title_tooltip: "Contigs/Chromosomes",
 					trackWidth: 0.03,
 					fill: "#000F7D",
 					stroke: null,
@@ -85254,8 +85228,9 @@ define([
 				data: refseqs
 			}, "outer", true);
 
-			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
-			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
+			//this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS))", null, "blue", null);
+			this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
+			this.addFeatureTrack("CDS - REV", "CDS reverse strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
 
 			var fillFn = function(item){
 				switch(item.feature_type){
@@ -85269,21 +85244,47 @@ define([
 						return "#21DFD7";
 				}
 			};
-			this.addFeatureTrack("Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", null, fillFn, null, {
+			this.addFeatureTrack("Non-CDS Features", "Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", null, fillFn, null, {
 				fill: null,
 				stroke: null
 			});
-			// this.addFeatureTrack("Pseudogenes",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
-			// this.addFeatureTrack("tRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
-			// this.addFeatureTrack("rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
+			// this.addFeatureTrack("Pseudogenes", "Pseudogenes", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
+			// this.addFeatureTrack("tRNA", "tRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
+			// this.addFeatureTrack("rRNA", "rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
 
-			var gcContentTrack = this.viewer.addTrack({
-				type: LineTrack,
+			// test heatmap plot
+			var heatmapFill = function(){
+				return "red";
+			};
+
+/*
+			var gcContentTrack3 = this.viewer.addTrack({
+				type: HeatmapTrack,
 
 				options: {
-					title: "GC Content",
+					title: "GC Content Heatmap",
+					title_tooltip: "GC Content Heatmap",
 					loadingText: "LOADING GC CONTENT",
-					visible: false,
+					visible: true,
+					max: 1,
+					min: 0,
+					fill: heatmapFill,
+					trackWidth: 0.1,
+					stroke: {width: .5, color: "black"},
+					gap: 1,
+					background: {fill: "#EBD4F4", stroke: null}
+				}
+			}, "outer");
+
+
+			var gcContentTrack2 = this.viewer.addTrack({
+				type: HistogramTrack,
+
+				options: {
+					title: "GC Content Histogram",
+					title_tooltip: "GC Content Histogram",
+					loadingText: "LOADING GC CONTENT",
+					visible: true,
 					max: 1,
 					min: 0,
 					trackWidth: 0.18,
@@ -85292,11 +85293,49 @@ define([
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
+*/
+
+			var gcContentTrack = this.viewer.addTrack({
+				type: LineTrack,
+
+				options: {
+					title: "GC Content",
+					title_tooltip: "GC Content (window size = 2000 nt)",
+					loadingText: "LOADING GC CONTENT",
+					visible: false,
+					max: 1,
+					min: 0,
+					trackWidth: 0.15,
+					stroke: {width: .5, color: "black"},
+					gap: 1,
+					background: {fill: "#EBD4F4", stroke: null}
+				}
+			}, "outer");
+
+/*
+			var gcSkewTrack2 = this.viewer.addTrack({
+				type: HeatmapTrack,
+				options: {
+					title: "GC Skew",
+					title_tooltip: "GC Skew",
+					loadingText: "LOADING GC SKEW",
+					visible: true,
+					max: 1,
+					min: -1,
+					scoreProperty: "skew",
+					trackWidth: 0.1,
+					stroke: {width: .5, color: "black"},
+					gap: 1,
+					background: {fill: "#F3CDA0", stroke: null}
+				}
+			}, "outer");
+*/
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
 				options: {
 					title: "GC Skew",
+					title_tooltip: "GC Skew (window size = 2000 nt)",
 					loadingText: "LOADING GC SKEW",
 					visible: false,
 					max: 1,
@@ -85311,14 +85350,18 @@ define([
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				//  0 && console.log("GC CONTENT: ", gcContentData);
-				gcContentTrack.set('data', gcContentData)
-				gcSkewTrack.set('data', gcContentData)
+				 0 && console.log("GC CONTENT: ", gcContentData);
+				//gcContentTrack3.set('data', gcContentData);
+				//gcContentTrack2.set('data', gcContentData);
+				//gcSkewTrack2.set('data', gcContentData);
+				gcContentTrack.set('data', gcContentData);
+				gcSkewTrack.set('data', gcContentData);
 			}))
 		},
 
 		getGCContent: function(data, windowSize){
-			windowSize = windowSize || 400;
+		// Circos GC content  default_window_size = 2000
+			windowSize = windowSize || 2000;
 
 			var gcData = [];
 
@@ -85375,6 +85418,36 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("genome_id", lang.hitch(this, "onSetGenomeId"));
 			this.watch("referenceSequences", lang.hitch(this, "onSetReferenceSequences"));
+
+			Topic.subscribe("CircularView", lang.hitch(this, function(){
+				var key = arguments[0];
+				var value = arguments[1];
+				// 0 && console.log("CircularViewerContainer addCustomTrack", value);	
+				var track_name = "Custom track " + value.index;
+				var filter = "&keyword(" + encodeURIComponent(value.keyword);
+				var specific_strand = null;
+				var strand_query = "";
+				if (value.strand === "+") {
+					specific_strand = true;
+					strand_query = ",eq(strand,%22\+%22)";
+				} else if (value.strand === "-") {
+					specific_strand = false;
+					strand_query = ",eq(strand,%22\-%22)";
+				}
+
+				var type_query = ",eq(feature_type,CDS)";
+				if (value.type === "RNA") {
+					type_query = ",eq(feature_type,*RNA)";
+				} else if (value.type === "Miscellaneous") {
+					type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
+				}
+				
+				filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+				if(key === "addCustomTrack") {
+					 0 && console.log("CircularViewerContainer addCustomTrack", value);
+					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
+				}
+			}));			
 		},
 
 		visible: false,
@@ -85394,7 +85467,7 @@ define([
 				return;
 			}
 			if(!this.controlPanel){
-				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:250px;"});
+				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px;"});
 			}
 
 			if(!this.viewer){
@@ -85416,12 +85489,13 @@ define([
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/topic",
 	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/text!./templates/TrackController.html",
-	"./ColorPicker", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when", "FileSaver"
+	"./ColorPicker", "dijit/popup","dijit/TooltipDialog", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when", "FileSaver",  "dijit/form/Select"
 ], function(declare, WidgetBase, Templated, WidgetsInTemplate, Topic,
 			domConstruct, lang, domGeometry, domStyle, Template,
-			ColorPicker, on, domClass, Dialog, dom, when, saveAs){
+			ColorPicker, popup,TooltipDialog, on, domClass, Dialog, dom, when, saveAs, Select){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
+		customTrackIndex: 0,
 		postCreate: function(){
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
@@ -85441,6 +85515,37 @@ define([
 				//domConstruct.place(e,this.exportContainer,"first");
 			}
 		},
+
+        validateCustomSelection: function(){
+			var type = this.track_type_select.get('value');
+			var strand = this.track_strand_select.get('value');
+			var keyword = this.keyword_box.get('value');
+			if (type && strand && keyword) {
+			    this.customTrackButton.set("disabled", false);
+			}
+			
+             0 && console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+		},
+		
+		onAddCustomTrack: function(){
+			var type = this.track_type_select.get('value');
+			var strand = this.track_strand_select.get('value');
+			var keyword = this.keyword_box.get('value');			
+		    this.customTrackButton.set("disabled", true);
+		    
+		    this.customTrackIndex ++;
+		    var customTrackSelection = {
+						index: this.customTrackIndex,
+						type: type,
+						strand: strand,
+						keyword: keyword
+			};
+			Topic.publish("/Notification", {message: "Adding a custom track", type: "message"});
+            Topic.publish("CircularView", "addCustomTrack", customTrackSelection);
+            
+             0 && console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+		},
+
 		onAddTrack: function(event){
 			if(!this.viewer){
 				this.viewer = event.track.viewer;
@@ -85488,7 +85593,51 @@ define([
 				event.track.set("foregroundColor", color)
 			});
 
-			domConstruct.create("td", {innerHTML: event.track.title}, tr)
+			var tdinfo = domConstruct.create("td", {innerHTML: event.track.title}, tr);
+			if (event.track.title_tooltip) {
+                var titleTT = new TooltipDialog({
+                    content: event.track.title_tooltip, 
+                    onMouseLeave: function(){
+                        popup.close(titleTT);
+                    }
+                });
+
+                on(tdinfo, 'mouseover', function(){
+                    popup.open({
+                        popup: titleTT,
+                        around: tdinfo,
+                        orient: ["below-centered"]                    
+                    });
+                });	
+            }  
+  
+ // this part is for adding plot type selection for GC Content and GC Skew. Temporarily comment out. Waiting for the new implementation of removing and adding track           
+/*            if (event.track.title === "GC Content" || event.track.title === "GC Skew") {
+                var name;
+                var id;
+                if (event.track.title === "GC Content") {
+                    name = "selectGCContentPlot";
+                    id = "selectGCContentPlot";
+                } else {
+                    name = "selectGCSkewPlot";
+                    id = "selectGCSkewPlot";                
+                }
+                             
+                var select_plot = new Select({
+                    name: name,
+                    id: id,
+                    options: [{value: "line", label: "Line Plot"}, {value: "histogram", label: "Histogram"}, {value: "heatmap", label: "Heatmap"}],
+                    style: "width: 50px; margin-left: 5px;"
+                });
+			    domConstruct.place(select_plot.domNode, tdinfo, "last");
+
+                select_plot.on("change", function(){
+                    Topic.publish("CircularView", "name", select_plot.get("value"));
+                     0 && console.log("select_plot my value: ", select_plot.get("value"));
+                })
+            } 
+*/
+    		
 			var td = domConstruct.create('td', {
 				style: {
 					"word-wrap": "nowrap",
@@ -85496,7 +85645,7 @@ define([
 					"font-size": ".85em"
 				}
 			}, tr);
-			
+
 			 0 && console.log("Track check event.track", event.track);
 			 0 && console.log("Track check event.track.hideable", event.track.hideable);
 
@@ -87443,7 +87592,7 @@ define([
 		},
 
 		resize: function(changeSize, resultSize){
-			 0 && console.log("VIEWER RESIZE", changeSize)
+			// 0 && console.log("VIEWER RESIZE", changeSize)
 			if (!this._started){ return }
             var node = this.domNode;
 
@@ -88339,6 +88488,765 @@ define([
 
 			 0 && console.log("renderLoading complete");
 			return path;
+		}
+	});
+});
+
+
+},
+'circulus/HistogramTrack':function(){
+define([
+        "dojo/_base/declare","dojox/gfx","dojox/gfx/matrix",
+        "dojo/_base/lang","./Track", "dojo/on","dijit/Dialog",
+        "dijit/TooltipDialog","dijit/popup"
+],function(
+        declare,gfx,matrix,
+        lang,Track, on,Dialog,
+        TooltipDialog,Popup
+){
+	var TTDialog = new TooltipDialog({
+		onMouseLeave: function(){
+		    Popup.close(TTDialog);
+		}
+	})
+	Popup.moveOffScreen(TTDialog);
+
+	return declare([Track], {
+		max:1,
+		min: 0,
+		data:null,
+		fill: "blue",
+		stroke: {color: "black", width: 1},
+		scoreProperty: "score",
+		sectionIdProperty: "accession",
+		gridLines: true,
+
+		constructor: function(){
+			this.surface.connect("onclick", lang.hitch(this,function(evt){
+				 0 && console.log("ON CLICK: ", evt)
+				if (evt.gfxTarget.data){
+					if (!this.dialog){
+						this.dialog = new Dialog({});
+					}
+
+					this.dialog.set('content',this.formatDialogContent(evt.gfxTarget.data));
+					this.dialog.show();
+				}
+			}));
+			var inside=false;
+			var timer;
+			// on(this.surface.getEventSource(),"mouseover", function(evt){
+			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
+				inside=true;
+				 0 && console.log("Mouse Over EVT: ", evt)
+				if (!evt.gfxTarget.data){
+					return;
+				}
+				var cur = evt.gfxTarget.getFill();
+				//  0 && console.log("Current: ", cur)
+				evt.gfxTarget.currentFill = cur;
+				evt.gfxTarget.setFill('#ff0000');
+
+				TTDialog.set('content', this.formatPopupContent(evt.gfxTarget.data))
+
+				Popup.open({
+					// parent: this,
+					x: evt.x-10,
+					y: evt.y+15,
+					popup: TTDialog
+					//around: evt.gfxTarget.rawNode
+				})
+			}))
+
+			// on(this.surface.getEventSource(),"mouseout", function(evt){
+			this.surface.connect("onmouseout", function(evt){
+				inside=false;
+				//  0 && console.log("Mouse Out EVT: ", evt, evt.gfxTarget.currentFill);
+				if (evt.gfxTarget.currentFill){
+					evt.gfxTarget.setFill(evt.gfxTarget.currentFill)
+				}
+				if (timer){
+					clearTimeout(timer);
+				}
+				timer = setTimeout(function(){
+					if (!inside){
+						Popup.close(TTDialog);
+					}
+				},1500)
+				
+			})
+		},
+
+
+		applyForegroundColor: function(color){
+			var stroke = this.stroke;
+			if (!this.stroke || (typeof this.stroke=='string')) { 
+				this.stroke = {color: color} 
+			}else{
+				this.stroke.color = color;
+			}
+			this.fill =  color;
+
+			this._foregroundColorPaths.forEach(function(p){
+				p.setStroke(this.stroke);
+				p.setFill(color);				
+			},this)
+		},
+
+		applyBackgroundColor: function(color){
+			if (!this.background || (typeof this.background=='string')) { 
+				this.background = {fill: color} 
+			}else{
+				this.background.fill = color;
+			}
+
+			this._backgroundPaths.forEach(function(p){
+				if (p){
+					p.setFill(color);
+				}
+			},this)
+		},
+
+		render: function(){
+			 0 && console.log("Line Track Visible in render(): ", this.visible)
+			if (this.visible){
+				this.renderBackground();
+				if (this.data && this.data.length>0){
+					//  0 && console.log("RENDER DATA: ", this.data)
+					this.set("loading", false);
+					this.renderData(this.data);		
+				}else{
+					this.set("loading", true);
+				}
+			}
+		},
+
+		renderAlignedData: function(data){
+			var dataSections = {}
+
+			data.forEach(function(d){
+				if (d[this.sectionIdProperty]){
+					if (!dataSections[d[this.sectionIdProperty]]){
+						dataSections[d[this.sectionIdProperty]]=[d]
+					}else{
+						dataSections[d[this.sectionIdProperty]].push(d);
+					}
+				}
+			},this)
+
+			var refSections = this.referenceTrack.get('sections');
+
+			Object.keys(dataSections).forEach(function(secName){
+					var ds = dataSections[secName];
+					// if (ds.length>20){ return; };
+					//  0 && console.log("Adding ",ds.length, " Data Items to Section", secName);
+					//  0 && console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					this.renderAlignedSection(ds,refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
+			},this)
+		},
+
+		renderAlignedSection: function(data,startAngle,endAngle, sectionLength){
+			var pathPoints = [];
+			var numSections = data.length;
+
+			//  0 && console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
+			var deg = (endAngle-startAngle)/sectionLength;
+
+			//  0 && console.log("degPerBP ", deg);
+
+			var path = this.surface.createPath("");
+			var trackWidth = this.get("trackWidth");
+			data.forEach(function(d,index){
+
+				//  0 && console.log("D: ", d)
+				//  0 && console.log("SectionTrack this.surface: ", this.surface, " GroupIdx: ", this.surface.groupIdx);
+				var path = this.surface.createPath("");
+				//path.rawNode.data = JSON.stringify(d);
+				var score = d[this.scoreProperty];
+				//  0 && console.log("PATH: ", path);
+				//  0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+
+				var point;
+				var midpoint;
+				var trackCenter;
+				if (  (this.min < 0) && ((this.max+this.min)===0) ){
+					trackCenter = this.internalRadius + (trackWidth/2);
+					point = {x: 0, y:trackCenter + ((score/this.max) * (trackWidth/2)) }
+					midpoint = {x: 0, y:trackCenter }
+				}else if (this.min===0){
+					point = {x: 0, y:this.internalRadius + ( (score/this.max) * trackWidth) }
+					midpoint = {x: 0, y:this.internalRadius }
+				}else{
+					//  0 && console.log("FIX ME (LineTrack.js line 56)");
+				}
+
+				var m = d.start; // + ((d.end-d.start)/2)
+				var rads = ((deg*m) + startAngle) *Math.PI/180;
+				var rads2 = ((deg*(d.end)) + startAngle) *Math.PI/180;
+				var nextPoint = {
+					x: point.y * Math.cos(rads) + this.centerPoint.x,
+					y: point.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var nextPoint2 = {
+					x: point.y * Math.cos(rads2) + this.centerPoint.x,
+					y: point.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				var startPoint = {
+					x: midpoint.y * Math.cos(rads) + this.centerPoint.x,
+					y: midpoint.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var endPoint = {
+					x: midpoint.y * Math.cos(rads2) + this.centerPoint.x,
+					y: midpoint.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				//var line = this.surface.createLine({ x1: startPoint.x, y1: startPoint.y, x2:nextPoint.x, y2:nextPoint.y }).setStroke("red");
+				//this._foregroundColorPaths.push(line);
+
+				//var poly = this.surface.createPolyline([{x: startPoint.x, y: startPoint.y}, {x: endPoint.x, y: endPoint.y}, {x: nextPoint2.x, y: nextPoint2.y}, {x: nextPoint.x, y: nextPoint.y}, {x: startPoint.x, y: startPoint.y}]).setStroke({color: "red"});
+				var large=false;
+				if ((deg*(d.end-d.start))>180){
+					large=true;
+				}
+				
+				path.moveTo(startPoint)
+					.arcTo(midpoint.y,midpoint.y, deg*(d.end-d.start),large,true,endPoint.x,endPoint.y)
+					.lineTo(nextPoint2)
+					.arcTo(point.y,point.y, deg*(d.end-d.start),large,false,nextPoint.x,nextPoint.y)
+					.closePath();
+				if (this.fill) {	
+					path.setFill(this.fill);
+				} else {
+					path.setFill("blue");			
+				}
+				this._foregroundColorPaths.push(path);					
+				
+			},this);
+
+		},
+
+		renderData: function(data) {
+			// 0 && console.log("in renderData this.referenceTrack=", this.referenceTrack);
+			
+			if (this.referenceTrack){
+				return this.renderAlignedData(data);
+			}
+			
+			// The following block is used when the track does not correspond to the referenceTrack 
+			var numPoints = data.length;
+			var deg = 360/numPoints
+
+			if (this.path){ return; }
+
+			//  0 && console.log("lineTrack this.surface: ", this.surface);
+			this.path = this.surface.createPath("");
+		
+			var pathPoints = [];	
+
+			var diff = this.max - this.min;
+			var trackWidth = this.get("trackWidth");
+
+			this.data.forEach(function(item,index){
+				var score = item[this.scoreProperty];
+
+				//  0 && console.log("Internal Radius: ", this.internalRadius, " Track Width: ", this.trackWidth, score, (this.trackWidth * (score/this.max)));
+
+				// var trackCenter = this.internalRadius + (this.trackWidth/2);
+
+				var point;
+				var midpoint;
+
+				if (  (this.min < 0) && ((this.max+this.min)===0) ){
+					var trackCenter = this.internalRadius + (trackWidth/2);
+					point = {x: 0, y:trackCenter + ((score/this.max) * (trackWidth/2)) }
+					midpoint = {x: 0, y:trackCenter }
+				}else if (this.min===0){
+					point = {x: 0, y:this.internalRadius + ( (score/this.max) * trackWidth) }
+					midpoint = {x: 0, y:this.internalRadius }
+				}else{
+					//  0 && console.log("FIX ME (LineTrack.js line 56)");
+				}
+
+				var rads = (deg*index)*Math.PI/180;
+				var rads2 = (deg*(index+1)) *Math.PI/180;
+				var nextPoint = {
+					x: point.y * Math.cos(rads) + this.centerPoint.x,
+					y: point.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var nextPoint2 = {
+					x: point.y * Math.cos(rads2) + this.centerPoint.x,
+					y: point.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				var startPoint = {
+					x: midpoint.y * Math.cos(rads) + this.centerPoint.x,
+					y: midpoint.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var endPoint = {
+					x: midpoint.y * Math.cos(rads2) + this.centerPoint.x,
+					y: midpoint.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				
+				//var line = this.surface.createLine({ x1: startPoint.x, y1: startPoint.y, x2:nextPoint.x, y2:nextPoint.y }).setStroke("red");
+				//this._foregroundColorPaths.push(line);
+
+				//var poly = this.surface.createPolyline([{x: startPoint.x, y: startPoint.y}, {x: endPoint.x, y: endPoint.y}, {x: nextPoint2.x, y: nextPoint2.y}, {x: nextPoint.x, y: nextPoint.y}, {x: startPoint.x, y: startPoint.y}]).setStroke({color: "blue"});
+				var large=false;
+				if ((deg*index)>180){
+					large=true
+				}
+				
+				this.path.moveTo(startPoint)
+					.arcTo(midpoint.y,midpoint.y, deg*(data.length),large,true,endPoint.x,endPoint.y)
+					.lineTo(nextPoint2)
+					.arcTo(point.y,point.y, deg*(data.length),large,false,nextPoint.x,nextPoint.y)
+					.closePath();
+					
+				if (this.fill) {	
+					this.path.setFill(this.fill);
+				} else {
+					this.path.setFill("blue");			
+				}
+				this._foregroundColorPaths.push(this.path);
+
+			},this);
+
+		},
+		renderBackground: function(refresh){
+			// if (!refresh && this._backgroundRendered){ return; }
+
+			this.inherited(arguments);
+			var trackWidth = this.get("trackWidth");
+			if (this.gridLines){
+				this.centerPath = this.surface.createPath("");
+				var r = this.internalRadius+(trackWidth/2)
+				var start = {x: this.centerPoint.x, y: this.centerPoint.y - r};
+				var end   = {x: this.centerPoint.x, y: this.centerPoint.y + r};
+				this.centerPath.moveTo(start).arcTo(r, r, 0, true, true, end).arcTo(r, r, 0, true, true, start).closePath();
+				this.centerPath.setStroke({color: "#666666",style: "dot"});
+
+				this.topQuarterPath = this.surface.createPath("");
+				var r1 = this.internalRadius+((trackWidth/4)*3)
+				var start1 = {x: this.centerPoint.x, y: this.centerPoint.y - r1};
+				var end1   = {x: this.centerPoint.x, y: this.centerPoint.y + r1};
+				this.topQuarterPath.moveTo(start1).arcTo(r1, r1, 0, true, true, end1).arcTo(r1, r1, 0, true, true, start1).closePath();
+				this.topQuarterPath.setStroke({color: "#aaaaaa",style: "dot"});
+
+				this.bottomQuarterPath = this.surface.createPath("");
+				var r2 = this.internalRadius+(trackWidth/4)
+				var start2 = {x: this.centerPoint.x, y: this.centerPoint.y - r2};
+				var end2   = {x: this.centerPoint.x, y: this.centerPoint.y + r2};
+				this.bottomQuarterPath.moveTo(start2).arcTo(r2, r2, 0, true, true, end2).arcTo(r2, r2, 0, true, true, start2).closePath();
+				this.bottomQuarterPath.setStroke({color: "#aaaaaa",style: "dot"});
+			}
+			this._backgroundRendered=true;
+			this._backgroundPaths.push(this.bgPath);
+			return this.bgPath;
+		}
+	});
+});
+
+
+},
+'circulus/HeatmapTrack':function(){
+define([
+        "dojo/_base/declare","dojox/gfx","dojox/gfx/matrix",
+        "dojo/_base/lang","./Track", "dojo/on","dijit/Dialog",
+        "dijit/TooltipDialog","dijit/popup"
+],function(
+        declare,gfx,matrix,
+        lang,Track, on,Dialog,
+        TooltipDialog,Popup
+){
+	var TTDialog = new TooltipDialog({
+		onMouseLeave: function(){
+		    Popup.close(TTDialog);
+		}
+	})
+	Popup.moveOffScreen(TTDialog);
+	
+	return declare([Track], {
+		max:1,
+		min: 0,
+		data:null,
+		fill: "red",
+		stroke: {color: "black", width: 1},
+		scoreProperty: "score",
+		sectionIdProperty: "accession",
+		gridLines: false,
+
+		constructor: function(){
+			this.surface.connect("onclick", lang.hitch(this,function(evt){
+				 0 && console.log("ON CLICK: ", evt)
+				if (evt.gfxTarget.data){
+					if (!this.dialog){
+						this.dialog = new Dialog({});
+					}
+
+					this.dialog.set('content',this.formatDialogContent(evt.gfxTarget.data));
+					this.dialog.show();
+				}
+			}));
+			var inside=false;
+			var timer;
+			// on(this.surface.getEventSource(),"mouseover", function(evt){
+			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
+				inside=true;
+				 0 && console.log("Mouse Over EVT: ", evt)
+				if (!evt.gfxTarget.data){
+					return;
+				}
+				var cur = evt.gfxTarget.getFill();
+				//  0 && console.log("Current: ", cur)
+				evt.gfxTarget.currentFill = cur;
+				evt.gfxTarget.setFill('#ff0000');
+
+				TTDialog.set('content', this.formatPopupContent(evt.gfxTarget.data))
+
+				Popup.open({
+					// parent: this,
+					x: evt.x-10,
+					y: evt.y+15,
+					popup: TTDialog
+					//around: evt.gfxTarget.rawNode
+				})
+			}))
+
+			// on(this.surface.getEventSource(),"mouseout", function(evt){
+			this.surface.connect("onmouseout", function(evt){
+				inside=false;
+				//  0 && console.log("Mouse Out EVT: ", evt, evt.gfxTarget.currentFill);
+				if (evt.gfxTarget.currentFill){
+					evt.gfxTarget.setFill(evt.gfxTarget.currentFill)
+				}
+				if (timer){
+					clearTimeout(timer);
+				}
+				timer = setTimeout(function(){
+					if (!inside){
+						Popup.close(TTDialog);
+					}
+				},1500)
+				
+			})
+		},
+
+
+		applyForegroundColor: function(color){
+/*			var stroke = this.stroke;
+			if (!this.stroke || (typeof this.stroke=='string')) { 
+				//this.stroke = {color: color} 
+			}else{
+				//this.stroke.color = color;
+			}
+			//this.fill =  color;
+
+			this._foregroundColorPaths.forEach(function(p){
+				//p.setStroke(this.stroke);
+				//p.setFill(color);				
+			},this)
+*/
+		},
+
+		applyBackgroundColor: function(color){
+			if (!this.background || (typeof this.background=='string')) { 
+				this.background = {fill: color} 
+			}else{
+				this.background.fill = color;
+			}
+
+			this._backgroundPaths.forEach(function(p){
+				if (p){
+					p.setFill(color);
+				}
+			},this)
+		},
+
+		render: function(){
+			 0 && console.log("Line Track Visible in render(): ", this.visible)
+			if (this.visible){
+				this.renderBackground();
+				if (this.data && this.data.length>0){
+					//  0 && console.log("RENDER DATA: ", this.data)
+					this.set("loading", false);
+					this.renderData(this.data);		
+				}else{
+					this.set("loading", true);
+				}
+			}
+		},
+
+		renderAlignedData: function(data){
+			var dataSections = {}
+
+			data.forEach(function(d){
+				if (d[this.sectionIdProperty]){
+					if (!dataSections[d[this.sectionIdProperty]]){
+						dataSections[d[this.sectionIdProperty]]=[d]
+					}else{
+						dataSections[d[this.sectionIdProperty]].push(d);
+					}
+				}
+			},this)
+
+			var refSections = this.referenceTrack.get('sections');
+
+			Object.keys(dataSections).forEach(function(secName){
+					var ds = dataSections[secName];
+					// if (ds.length>20){ return; };
+					//  0 && console.log("Adding ",ds.length, " Data Items to Section", secName);
+					//  0 && console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					this.renderAlignedSection(ds,refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
+			},this)
+		},
+
+		renderAlignedSection: function(data,startAngle,endAngle, sectionLength){
+			var pathPoints = [];
+			var numSections = data.length;
+
+			//  0 && console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
+			var deg = (endAngle-startAngle)/sectionLength;
+
+			//  0 && console.log("degPerBP ", deg);
+
+			var path = this.surface.createPath("");
+			var trackWidth = this.get("trackWidth");
+			data.forEach(function(d,index){
+
+				//  0 && console.log("D: ", d)
+				//  0 && console.log("SectionTrack this.surface: ", this.surface, " GroupIdx: ", this.surface.groupIdx);
+				var path = this.surface.createPath("");
+				//path.rawNode.data = JSON.stringify(d);
+				var score = d[this.scoreProperty];
+				//  0 && console.log("PATH: ", path);
+				//  0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+
+
+				var inpoint = {x: 0, y: this.internalRadius} ;
+				var outpoint = {x: 0, y: this.internalRadius + trackWidth} ;
+				
+				var m = d.start; // + ((d.end-d.start)/2)
+				var rads = ((deg*m) + startAngle) *Math.PI/180;
+				var rads2 = ((deg*(d.end)) + startAngle) *Math.PI/180;
+
+				var nextPoint = {
+					x: outpoint.y * Math.cos(rads) + this.centerPoint.x,
+					y: outpoint.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var nextPoint2 = {
+					x: outpoint.y * Math.cos(rads2) + this.centerPoint.x,
+					y: outpoint.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				var startPoint = {
+					x: inpoint.y * Math.cos(rads) + this.centerPoint.x,
+					y: inpoint.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var endPoint = {
+					x: inpoint.y * Math.cos(rads2) + this.centerPoint.x,
+					y: inpoint.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				
+				var scorePct = score/this.max;
+				// 0 && console.log("scorePct=", scorePct);
+				var large=false;
+				if ((deg*d,length)>180){
+					large=true;
+				}
+				
+				path.moveTo(startPoint)
+					.arcTo(inpoint.y,inpoint.y,deg*(d.end-d.start),large,true,endPoint.x,endPoint.y)
+					.lineTo(nextPoint2)
+					.arcTo(outpoint.y,outpoint.y,deg*(d.end-d.start),large,false,nextPoint.x,nextPoint.y)
+					.closePath();
+					
+/*					
+				if (this.fill) {	
+					path.setFill([this.fill, opacity]);
+				} else {
+					path.setFill(["blue", opacity]);			
+				}
+*/
+				var currColor = this.getHeatmapColor(scorePct);
+				// 0 && console.log("currColor=", currColor);
+				path.setFill(currColor);
+				this._foregroundColorPaths.push(path);	
+							
+			},this);
+
+		},
+
+		getHeatmapColor: function(scorePct) {
+			// http://htmlcolorcodes.com/color-chart
+			var red_colors = ["#FFEBEE", "#FFCDD2", "#EF9A9A", "#E57373", "#EF5350", "#F44336", "#E53935", "#D32F2F", "#C62828", "#B71C1C"];
+			var blue_colors = ["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0", "#3F51B5", "#3949AB", "#303F9F", "#283593", "#1A237E"];
+			var green_colors = ["#E8F5E9", "#C8E6C9", "#A5D6A7", "#81C784", "#66BB6A", "#4CAF50", "#43A047", "#388E3C", "#2E7D32", "#1B5E20"];
+			var currColor = "red";
+			// 0 && console.log("scorePct=", scorePct);
+			switch(true){
+				case scorePct >0 && scorePct <=0.1:
+					currColor = red_colors[0];
+					break;
+				case scorePct >0.1 && scorePct <=0.2:
+					currColor = red_colors[1];
+					break;
+				case scorePct >0.2 && scorePct <=0.3:
+					currColor = red_colors[2];
+					break;
+				case scorePct >0.3 && scorePct <=0.4:
+					currColor = red_colors[3];
+					break;
+				case scorePct >0.4 && scorePct <=0.5:
+					currColor = red_colors[4];
+					break;
+				case scorePct >0.5 && scorePct <=0.6:
+					currColor = red_colors[5];
+					break;
+				case scorePct >0.6 && scorePct <=0.7:
+					currColor = red_colors[6];
+					break;
+				case scorePct >0.7 && scorePct <=0.8:
+					currColor = red_colors[7];
+					break;
+				case scorePct >0.8 && scorePct <=0.9:
+					currColor = red_colors[8];
+					break;
+				case scorePct >0.9:
+					currColor = red_colors[9];
+					break;
+				case scorePct >=-0.1 && scorePct <0:
+					currColor = blue_colors[0];
+					break;
+				case scorePct >=-0.2 && scorePct <-0.1:
+					currColor = blue_colors[1];
+					break;
+				case scorePct >=-0.3 && scorePct <-0.2:
+					currColor = blue_colors[2];
+					break;
+				case scorePct >=-0.4 && scorePct <-0.3:
+					currColor = blue_colors[3];
+					break;
+				case scorePct >=-0.5 && scorePct <-0.4:
+					currColor = blue_colors[4];
+					break;
+				case scorePct >=-0.6 && scorePct <-0.5:
+					currColor = blue_colors[5];
+					break;
+				case scorePct >=-0.7 && scorePct <-0.6:
+					currColor = blue_colors[6];
+					break;
+				case scorePct >=-0.8 && scorePct <-0.7:
+					currColor = blue_colors[7];
+					break;
+				case scorePct >=-0.9 && scorePct <-0.8:
+					currColor = blue_colors[8];
+					break;
+				case scorePct <-0.9:
+					currColor = blue_colors[9];
+					break;
+				default:
+					break;			
+			}
+			// 0 && console.log("currColor=", currColor);
+			return currColor;
+		},
+
+		renderData: function(data) {
+			// 0 && console.log("in renderData this.referenceTrack=", this.referenceTrack);
+			
+			if (this.referenceTrack){
+				return this.renderAlignedData(data);
+			}
+			
+			// The following block is used when the track does not correspond to the referenceTrack 
+			var numPoints = data.length;
+			var deg = 360/numPoints
+
+			if (this.path){ return; }
+
+			//  0 && console.log("lineTrack this.surface: ", this.surface);
+			this.path = this.surface.createPath("");
+		
+			var pathPoints = [];	
+
+			var diff = this.max - this.min;
+			var trackWidth = this.get("trackWidth");
+
+			this.data.forEach(function(item,index){
+				var path = this.surface.createPath("");
+				//path.rawNode.data = JSON.stringify(d);
+				var score = item[this.scoreProperty];
+				var inpoint = {x: 0, y: this.internalRadius} ;
+				var outpoint = {x: 0, y: this.internalRadius + trackWidth} ;
+				
+				var rads = (deg*index)*Math.PI/180;
+				var rads2 = (deg*(index+1)) *Math.PI/180;
+
+				var nextPoint = {
+					x: outpoint.y * Math.cos(rads) + this.centerPoint.x,
+					y: outpoint.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var nextPoint2 = {
+					x: outpoint.y * Math.cos(rads2) + this.centerPoint.x,
+					y: outpoint.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				var startPoint = {
+					x: inpoint.y * Math.cos(rads) + this.centerPoint.x,
+					y: inpoint.y * Math.sin(rads) + this.centerPoint.y
+				}
+				var endPoint = {
+					x: inpoint.y * Math.cos(rads2) + this.centerPoint.x,
+					y: inpoint.y * Math.sin(rads2) + this.centerPoint.y
+				}
+				
+				var scorePct = score/this.max;
+				// 0 && console.log("scorePct=", scorePct);
+				var large=false;
+				if ((deg*d,length)>180){
+					large=true;
+				}
+				
+				path.moveTo(startPoint)
+					.arcTo(inpoint.y,inpoint.y,deg*data.length,large,true,endPoint.x,endPoint.y)
+					.lineTo(nextPoint2)
+					.arcTo(outpoint.y,outpoint.y,deg*data.length,large,false,nextPoint.x,nextPoint.y)
+					.closePath();
+					
+				var currColor = this.getHeatmapColor(scorePct);
+				// 0 && console.log("currColor=", currColor);
+				path.setFill(currColor);
+				this._foregroundColorPaths.push(path);	
+
+			},this);
+
+		},
+		renderBackground: function(refresh){
+			// if (!refresh && this._backgroundRendered){ return; }
+
+			this.inherited(arguments);
+			var trackWidth = this.get("trackWidth");
+			if (this.gridLines){
+				this.centerPath = this.surface.createPath("");
+				var r = this.internalRadius+(trackWidth/2)
+				var start = {x: this.centerPoint.x, y: this.centerPoint.y - r};
+				var end   = {x: this.centerPoint.x, y: this.centerPoint.y + r};
+				this.centerPath.moveTo(start).arcTo(r, r, 0, true, true, end).arcTo(r, r, 0, true, true, start).closePath();
+				this.centerPath.setStroke({color: "#666666",style: "dot"});
+
+				this.topQuarterPath = this.surface.createPath("");
+				var r1 = this.internalRadius+((trackWidth/4)*3)
+				var start1 = {x: this.centerPoint.x, y: this.centerPoint.y - r1};
+				var end1   = {x: this.centerPoint.x, y: this.centerPoint.y + r1};
+				this.topQuarterPath.moveTo(start1).arcTo(r1, r1, 0, true, true, end1).arcTo(r1, r1, 0, true, true, start1).closePath();
+				this.topQuarterPath.setStroke({color: "#aaaaaa",style: "dot"});
+
+				this.bottomQuarterPath = this.surface.createPath("");
+				var r2 = this.internalRadius+(trackWidth/4)
+				var start2 = {x: this.centerPoint.x, y: this.centerPoint.y - r2};
+				var end2   = {x: this.centerPoint.x, y: this.centerPoint.y + r2};
+				this.bottomQuarterPath.moveTo(start2).arcTo(r2, r2, 0, true, true, end2).arcTo(r2, r2, 0, true, true, start2).closePath();
+				this.bottomQuarterPath.setStroke({color: "#aaaaaa",style: "dot"});
+			}
+			this._backgroundRendered=true;
+			this._backgroundPaths.push(this.bgPath);
+			return this.bgPath;
 		}
 	});
 });
@@ -114728,7 +115636,7 @@ define([
 					 0 && console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
-				 0 && console.log("Error Retreiving Genomes: ", err)
+				 0 && console.error("Error Retreiving Genomes: ", err);
 			});
 
 		},
@@ -114736,27 +115644,11 @@ define([
 		onSetState: function(attr, oldVal, state){
 			//  0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
-			// if (!state.feature_ids){
-			// 	 0 && console.log("	NO Genome_IDS")
-			// 	if (state.search == oldVal.search){
-			// 		 0 && console.log("		Same Search")
-			// 		 0 && console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
-			// 		this.set("state", lang.mixin({},state,{feature_ids: oldVal.genome_ids}))	
-			// 		return;
-			// 	}else{
-			// 		this.set("query", state.search);
-			// 	}
-			// }else if (state.search!=oldVal.search){
-			// 	 0 && console.log("SET QUERY: ", state.search);
-			// 	this.set("query", state.search);
-			// }
-
 			this.set("query", state.search);
 
-			// // 0 && console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			if(active == "features"){
-				this.setActivePanelState()
+				this.setActivePanelState();
 			}
 
 			this.inherited(arguments);
@@ -114764,7 +115656,7 @@ define([
 
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
-			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
+
 			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
@@ -114850,8 +115742,8 @@ define([
 		showWarning: function(msg){
 			if(!this.warningPanel){
 				this.warningPanel = new ContentPane({
-					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					style: "margin:0px; padding: 0px; margin-top: -10px;",
+					content: '<div class="WarningBanner">' + this.warningContent + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -114859,28 +115751,28 @@ define([
 			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
-			//  0 && console.log("onSetAnchor: ", evt, evt.filter);
+
 			evt.stopPropagation();
 			evt.preventDefault();
-			var f = evt.filter;
+
 			var parts = [];
 			var q;
 			if(this.query){
 				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
-					parts.push(q)
+					parts.push(q);
 				}
 			}
-			if(evt.filter & evt.filter != "false"){
-				parts.push(evt.filter)
+			if(evt.filter && evt.filter != "false"){
+				parts.push(evt.filter);
 			}
 
 			//  0 && console.log("parts: ", parts);
 
 			if(parts.length > 1){
-				q = "?and(" + parts.join(",") + ")"
+				q = "?and(" + parts.join(",") + ")";
 			}else if(parts.length == 1){
-				q = "?" + parts[0]
+				q = "?" + parts[0];
 			}else{
 				q = "";
 			}
@@ -114888,12 +115780,12 @@ define([
 			//  0 && console.log("SetAnchor to: ", q);
 			var hp;
 			if(this.hashParams && this.hashParams.view_tab){
-				hp = {view_tab: this.hashParams.view_tab}
+				hp = {view_tab: this.hashParams.view_tab};
 			}else{
-				hp = {}
+				hp = {};
 			}
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
-					return key + "=" + hp[key]
+					return key + "=" + hp[key];
 				}, this).join("&");
 			//  0 && console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
@@ -121000,7 +121892,7 @@ define([
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div data-dojo-attach-point=\"customTrackSection\">\n\t\t<div style=\"margin-top:2px;padding:2px;\">\n\t\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t\t</select>\n\t\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t\t<option value=\"both\">both</option>\n\t\t\t\t<option value=\"+\">forward</option>\n\t\t\t\t<option value=\"-\">reverse</option>\n\t\t\t</select>\n\t\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n<!--\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div data-dojo-attach-point=\"customTrackSection\">\n\t\t<div style=\"margin-top:2px;padding:2px;\">\n\t\t\t<select required name=\"plot_type\" style=\"width:30%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"plot_type_select\">\n\t\t\t\t<option value=\"Tiles\" default selected hidden>Tiles</option>\n\t\t\t\t<option value=\"Line Plot\">Line Plot</option>\n\t\t\t\t<option value=\"Histogram\">Histogram</option>\n\t\t\t\t<option value=\"Heatmap\">Heatmap</option>\n\t\t\t</select>\n\t\t\t<input required type=\"file\" style=\"width:60%; margin-left:2px;\" name=\"data_file\" data-dojo-attach-point=\"data_file\"/>\n\t\t\t<i data-dojo-attach-event=\"click:saveSVG\" class=\"fa icon-plus-circle fa-lg\"></i>\n\t</div>\n\n-->\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
