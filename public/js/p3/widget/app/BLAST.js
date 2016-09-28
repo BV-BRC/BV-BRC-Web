@@ -1,14 +1,14 @@
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dijit/_WidgetBase", "dojo/on",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form", "../../util/PathJoin",
 	"dojo/request", "dojo/dom", "dojo/query",
-	"dojo/store/Memory", "../GridContainer", "../Grid", "../GridSelector"
-], function(declare, lang, WidgetBase, on,
+	"dojo/store/Memory", "../GridContainer", "../Grid", "../GridSelector", "../../WorkspaceManager"
+], function(declare, lang, Deferred, WidgetBase, on,
 			domClass, domConstruct, Templated, WidgetsInTemplate,
 			Template, FormMixin, PathJoin,
 			xhr, dom, query,
-			Memory, GridContainer, Grid, selector){
+			Memory, GridContainer, Grid, selector, WorkspaceManager){
 
 	const NA = "nucleotide", AA = "protein";
 
@@ -133,42 +133,55 @@ define([
 			var evalue = this.evalue.get('value');
 			var max_hits = parseInt(this.max_hits.get('value'));
 			var method, params;
-			// var def =
+			var def = new Deferred();
 
 			if(useDatabase){
+				def.resolve();
 				method = "HomologyService.blast_fasta_to_database";
 				params = [encodeURIComponent(sequence), program, database, evalue, max_hits, 0];
 			}else{
 				// blast against genomes/groups/taxon
 				var genomeIds = [];
-
-				// if selGenomes
-				query(".genomedata").forEach(function(item){
-					genomeIds.push(item.genomeRecord.genome_id);
-				});
-				// if selGroup, resolve promise
-				// if selTaxon, resolve promise
-
-				if(genomeIds.length == 0){
-					switch(database){
-						case "selGenome":
+				switch(database){
+					case "selGenome":
+						query(".genomedata").forEach(function(item){
+							genomeIds.push(item.genomeRecord.genome_id);
+						});
+						if(genomeIds.length == 0){
 							this.genome_id_message.innerHTML = 'No genome has selected. Please use arrow button to collect genomes to search.';
-							break;
-						case "selGroup":
-							break;
-						case "selTaxon":
-							break;
-						default:
-							break;
-					}
-					return;
-				}else{
-					this.genome_id_message.innerHTML = '';
+							return;
+						}else{
+							this.genome_id_message.innerHTML = '';
+						}
+						def.resolve(genomeIds);
+						break;
+					case "selGroup":
+						var path = this.genome_group.get('value');
+
+						WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function(objs){
+
+							var genomeIdHash = {};
+							objs.forEach(function(obj){
+								var data = JSON.parse(obj.data);
+								data.id_list.genome_id.forEach(function(d){
+									if(!genomeIdHash.hasOwnProperty(d)){
+										genomeIdHash[d] = true;
+									}
+								})
+							});
+							var genomeIds = Object.keys(genomeIdHash);
+							def.resolve(genomeIds);
+						}));
+						break;
+					case "selTaxon":
+						break;
+					default:
+						break;
 				}
 
 				var search_for = this.search_for.get('value');
 				method = "HomologyService.blast_fasta_to_genomes";
-				params = [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0];
+				params = [encodeURIComponent(sequence), program, [], search_for, evalue, max_hits, 0];
 			}
 
 			var q = {
@@ -178,28 +191,36 @@ define([
 				id: String(Math.random()).slice(2)
 			};
 
-			console.log(q);
-
 			// query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
 			// var data = this.formatJSONResult(this.test_result());
 			// this.updateResult(data);
 
-			xhr.post("https://p3.theseed.org/services/homology_service", {
-				headers: {
-					"Accept": "application/json"
-				},
-				handleAs: "json",
-				data: JSON.stringify(q)
-			}).then(function(res){
+			def.promise.then(function(genomeIds){
 
-				// console.log(res);
-				query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
-				var data = _self.formatJSONResult(res);
-				// console.log(data);
-				_self.updateResult(data);
+				if(!useDatabase){
+					// console.log("updated genomeIds: ", genomeIds);
+					q.params[2] = genomeIds;
+				}
 
-			}, function(err){
-				_self.buildErrorMessage(err);
+				console.log(q);
+
+				xhr.post("https://p3.theseed.org/services/homology_service", {
+					headers: {
+						"Accept": "application/json"
+					},
+					handleAs: "json",
+					data: JSON.stringify(q)
+				}).then(function(res){
+
+					// console.log(res);
+					query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
+					var data = _self.formatJSONResult(res);
+					// console.log(data);
+					_self.updateResult(data);
+
+				}, function(err){
+					_self.buildErrorMessage(err);
+				})
 			});
 
 		},
@@ -322,6 +343,7 @@ define([
 
 			// console.log(this.result_grid);
 		},
+
 		updateResult(data){
 			this.result_store.setData(data);
 			this.result_grid.grid.refresh();
@@ -548,6 +570,11 @@ define([
 						this.taxonomy.set('disabled', true);
 						break;
 					case "selGroup":
+						if(!window.App.user){
+							this.database_message.innerHTML = "Please login first to use genome group selection";
+							return;
+						}
+
 						this.genome_id.set('disabled', true);
 						this.genome_group.set('disabled', false);
 						this.taxonomy.set('disabled', true);

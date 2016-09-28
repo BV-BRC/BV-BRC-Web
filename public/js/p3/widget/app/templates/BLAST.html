@@ -78,11 +78,10 @@
 
                 <div class="appbox appshadow">
                     <label class="paramlabel">Select genome group: </label><br/>
-                    <select name="genome_group" style="width: 650px"
-                            data-dojo-type="dijit/form/Select"
-                            data-dojo-props="disabled:true"
-                            data-dojo-attach-point="genome_group">
-                    </select>
+                    <div name="genome_group" style="width: 650px"
+                         data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                         data-dojo-attach-point="genome_group"
+                         data-dojo-props="type:['genome_group'],multi:true,disabled:true"></div>
                 </div>
 
                 <div class="appbox appshadow">
