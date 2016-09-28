@@ -1,8 +1,8 @@
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../SpecialtyGeneGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
-], function(declare, TabViewerBase, on,
+], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, SpecialtyGeneGridContainer, 
 			PathJoin, xhr, lang){
@@ -18,7 +18,7 @@ define([
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){
-			console.log(this.id, " _setQueryAttr: ", query, this);
+			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
 			//console.log("GenomeList SetQuery: ", query, this);
 
@@ -28,11 +28,11 @@ define([
 			}
 
 			var _self = this;
-			console.log('spGeneList setQuery - this.query: ', this.query);
+			// console.log('spGeneList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "sp_gene", "?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
 
-			console.log("url: ", url);
+			// console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -47,47 +47,23 @@ define([
 						_self._set("total_features", res.response.numFound);
 					}
 				}else{
-					console.log("Invalid Response for: ", url);
+					console.warn("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.log("Error Retreiving Specialty Genes: ", err)
+				console.error("Error Retreiving Specialty Genes: ", err);
 			});
 
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-
-			// if (!state.feature_ids){
-			// 	console.log("	NO Genome_IDS")
-			// 	if (state.search == oldVal.search){
-			// 		console.log("		Same Search")
-			// 		console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
-			// 		this.set("state", lang.mixin({},state,{feature_ids: oldVal.genome_ids}))	
-			// 		return;
-			// 	}else{
-			// 		this.set("query", state.search);
-			// 	}
-			// }else if (state.search!=oldVal.search){
-			// 	console.log("SET QUERY: ", state.search);
-			// 	this.set("query", state.search);
-			// }
+			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			this.inherited(arguments);
 			this.set("query", state.search);
 			this.setActivePanelState();
-			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-
-			// 	this.setActivePanelState()
-			// };
-			// ;
-
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			// this.overview.set("content", '<div style="margin:4px;">Specialty Gene List Query: ' + decodeURIComponent(newVal) + "</div>");
-			// this.viewHeader.set("content", '<div style="margin:4px;">Specialty Gene Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
@@ -108,11 +84,11 @@ define([
 					activeTab.set("state", this.state);
 					break;
 			}
-			console.log("Set Active State COMPLETE");
+			// console.log("Set Active State COMPLETE");
 		},
 
 		onSetSpecialtyGeneIds: function(attr, oldVal, genome_ids){
-			console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+			// console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
 			this.state.feature_ids = feature_ids;
 			this.setActivePanelState();
 		},
@@ -142,10 +118,8 @@ define([
 
 		},
 		onSetTotalSpecialtyGenes: function(attr, oldVal, newVal){
-			console.log("ON SET TOTAL GENOMES: ", newVal);
+			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + "  Specialty Genes ) ";
-			var hasDisabled = false;
-
 		},
 		hideWarning: function(){
 			if(this.warningPanel){
@@ -157,7 +131,7 @@ define([
 			if(!this.warningPanel){
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					content: '<div class="WarningBanner">' + this.warningContent + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -165,42 +139,42 @@ define([
 			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
-			console.log("onSetAnchor: ", evt, evt.filter);
+			// console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
-			var f = evt.filter;
+
 			var parts = [];
 			if(this.query){
 				var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
-					parts.push(q)
+					parts.push(q);
 				}
 			}
 			if(evt.filter){
-				parts.push(evt.filter)
+				parts.push(evt.filter);
 			}
 
-			console.log("parts: ", parts);
+			// console.log("parts: ", parts);
 
 			if(parts.length > 1){
-				q = "?and(" + parts.join(",") + ")"
+				q = "?and(" + parts.join(",") + ")";
 			}else if(parts.length == 1){
-				q = "?" + parts[0]
+				q = "?" + parts[0];
 			}else{
 				q = "";
 			}
 
-			console.log("SetAnchor to: ", q);
+			// console.log("SetAnchor to: ", q);
 			var hp;
 			if(this.hashParams && this.hashParams.view_tab){
-				hp = {view_tab: this.hashParams.view_tab}
+				hp = {view_tab: this.hashParams.view_tab};
 			}else{
-				hp = {}
+				hp = {};
 			}
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
-					return key + "=" + hp[key]
+					return key + "=" + hp[key];
 				}, this).join("&");
-			console.log("NavigateTo: ", l);
+			// console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});

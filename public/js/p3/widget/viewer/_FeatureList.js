@@ -46,7 +46,7 @@ define([
 					console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.log("Error Retreiving Genomes: ", err)
+				console.error("Error Retreiving Genomes: ", err);
 			});
 
 		},
@@ -54,27 +54,11 @@ define([
 		onSetState: function(attr, oldVal, state){
 			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
-			// if (!state.feature_ids){
-			// 	console.log("	NO Genome_IDS")
-			// 	if (state.search == oldVal.search){
-			// 		console.log("		Same Search")
-			// 		console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
-			// 		this.set("state", lang.mixin({},state,{feature_ids: oldVal.genome_ids}))	
-			// 		return;
-			// 	}else{
-			// 		this.set("query", state.search);
-			// 	}
-			// }else if (state.search!=oldVal.search){
-			// 	console.log("SET QUERY: ", state.search);
-			// 	this.set("query", state.search);
-			// }
-
 			this.set("query", state.search);
 
-			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			if(active == "features"){
-				this.setActivePanelState()
+				this.setActivePanelState();
 			}
 
 			this.inherited(arguments);
@@ -82,7 +66,7 @@ define([
 
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
-			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
+
 			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
@@ -168,8 +152,8 @@ define([
 		showWarning: function(msg){
 			if(!this.warningPanel){
 				this.warningPanel = new ContentPane({
-					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					style: "margin:0px; padding: 0px; margin-top: -10px;",
+					content: '<div class="WarningBanner">' + this.warningContent + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -177,28 +161,28 @@ define([
 			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
-			// console.log("onSetAnchor: ", evt, evt.filter);
+
 			evt.stopPropagation();
 			evt.preventDefault();
-			var f = evt.filter;
+
 			var parts = [];
 			var q;
 			if(this.query){
 				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
-					parts.push(q)
+					parts.push(q);
 				}
 			}
-			if(evt.filter & evt.filter != "false"){
-				parts.push(evt.filter)
+			if(evt.filter && evt.filter != "false"){
+				parts.push(evt.filter);
 			}
 
 			// console.log("parts: ", parts);
 
 			if(parts.length > 1){
-				q = "?and(" + parts.join(",") + ")"
+				q = "?and(" + parts.join(",") + ")";
 			}else if(parts.length == 1){
-				q = "?" + parts[0]
+				q = "?" + parts[0];
 			}else{
 				q = "";
 			}
@@ -206,12 +190,12 @@ define([
 			// console.log("SetAnchor to: ", q);
 			var hp;
 			if(this.hashParams && this.hashParams.view_tab){
-				hp = {view_tab: this.hashParams.view_tab}
+				hp = {view_tab: this.hashParams.view_tab};
 			}else{
-				hp = {}
+				hp = {};
 			}
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
-					return key + "=" + hp[key]
+					return key + "=" + hp[key];
 				}, this).join("&");
 			// console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
