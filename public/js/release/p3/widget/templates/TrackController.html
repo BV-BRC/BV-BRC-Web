@@ -1,13 +1,50 @@
 <div style="text-align: center;">
 	<!-- <div data-dojo-type="dijit/form/Textbox" style="width:98%;margin:auto;margin-top:2px;"></div> -->
-	<div style="font-size:1em;text-align:center;margin-bottom: 5px;">AVAILABLE TRACKS</div>
-
+	<div style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef">Available tracks</div>
 	<table>
 		<tbody data-dojo-attach-point="trackTable">
 
 		</tbody>
 	</table>
+	<div style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef">
+	Custom tracks
+	</div>
+	<div data-dojo-attach-point="customTrackSection">
+		<div style="margin-top:2px;padding:2px;">
+			<select required name="type" style="width:25%;" data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-attach-point="track_type_select" data-dojo-props="intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'">
+				<option value="" default selected hidden>Type</option>
+				<option value="CDS">CDS</option>
+				<option value="RNA">RNA</option>
+				<option value="Miscellaneous">Misc</option>
+			</select>
+			<select required name="strand" style="width:25%; margin-left:2px;" data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-attach-point="track_strand_select" data-dojo-props="intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'">
+				<option value="" default selected hidden>Strand</option>
+				<option value="both">both</option>
+				<option value="+">forward</option>
+				<option value="-">reverse</option>
+			</select>
+			<input required type="text" style="width:30%; margin-left:2px;" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-props="intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'" data-dojo-type="dijit/form/ValidationTextBox" id="keyword" name="keyword" data-dojo-attach-point="keyword_box"/>
+			<button style="margin-left:2px" data-dojo-type="dijit/form/Button"  data-dojo-attach-event="onClick:onAddCustomTrack" data-dojo-attach-point="customTrackButton" data-dojo-props="disabled:true">+</button>
+	</div>
+<!--
+	<div style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef">
+	Upload your own data
+	</div>
+	<div data-dojo-attach-point="customTrackSection">
+		<div style="margin-top:2px;padding:2px;">
+			<select required name="plot_type" style="width:30%;" data-dojo-type="dijit/form/Select" data-dojo-attach-point="plot_type_select">
+				<option value="Tiles" default selected hidden>Tiles</option>
+				<option value="Line Plot">Line Plot</option>
+				<option value="Histogram">Histogram</option>
+				<option value="Heatmap">Heatmap</option>
+			</select>
+			<input required type="file" style="width:60%; margin-left:2px;" name="data_file" data-dojo-attach-point="data_file"/>
+			<i data-dojo-attach-event="click:saveSVG" class="fa icon-plus-circle fa-lg"></i>
+	</div>
 
-	<button data-dojo-attach-event="click:saveSVG">Export SVG Image</button>
-	<div data-dojo-attach-point="exportContainer"></div>
+-->
+
+	<button style="margin-top:25px;" data-dojo-attach-event="click:saveSVG">Export SVG Image</button>
+	<div data-dojo-attach-point="exportContainer"></div>	
+
 </div>

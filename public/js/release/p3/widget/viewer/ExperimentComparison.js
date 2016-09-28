@@ -1,8 +1,8 @@
 define("p3/widget/viewer/ExperimentComparison", [
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../TranscriptomicsComparisonGridContainer", 
-	 "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../DataItemFormatter"
+	"../PageGrid", "../formatter", "../TranscriptomicsComparisonGridContainer",
+	"../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../DataItemFormatter"
 ], function(declare, TabViewerBase, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, TranscriptomicsComparisonGridContainer,
@@ -16,9 +16,7 @@ define("p3/widget/viewer/ExperimentComparison", [
 		"eid": null,
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Experiment View",
-		//perspectiveIconClass: "icon-experiments",
 		perspectiveIconClass: "icon-selection-Experiment",
-		//paramsMap: "query",
 		defaultTab: "Overview",
 
 		_setStateAttr: function(state){
@@ -31,11 +29,10 @@ define("p3/widget/viewer/ExperimentComparison", [
 				this.set("experiment", state.experiment);
 			}
 			this._set("state", state);
-						
 		},
 
 		"_setExperimentAttr": function(id){
-			console.log('id: ', id);
+			// console.log('id: ', id);
 			if(!id){
 				return;
 			}
@@ -43,12 +40,10 @@ define("p3/widget/viewer/ExperimentComparison", [
 			if(this.eid == id){
 				return;
 			}
-
-
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			var parts = state.pathname.split("/");
 			this.set("eid", parts[parts.length - 1]);
@@ -56,13 +51,13 @@ define("p3/widget/viewer/ExperimentComparison", [
 			if(!state){
 				return;
 			}
-			
+
 			if(state && state.eid && !state.experiment){
 				state.experiment = this.experiment;
 			}
 
 			if(state.hashParams && state.hashParams.view_tab){
-				console.log("state.hashParams.view_tab=", state.hashParams.view_tab);
+				// console.log("state.hashParams.view_tab=", state.hashParams.view_tab);
 
 				if(this[state.hashParams.view_tab]){
 					var vt = this[state.hashParams.view_tab];
@@ -90,8 +85,8 @@ define("p3/widget/viewer/ExperimentComparison", [
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 
 			var activeTab = this[active];
-			console.log("Active: ", active, "state: ", this.state, " this=", this, " activeTab", this['overview']);
-			
+			// console.log("Active: ", active, "state: ", this.state, " this=", this, " activeTab", this['overview']);
+
 			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
@@ -102,22 +97,20 @@ define("p3/widget/viewer/ExperimentComparison", [
 					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
 					}
-					console.log("SET ACTIVE STATE for default tab: ", this.state);
+					// console.log("SET ACTIVE STATE for default tab: ", this.state);
 					break;
 			}
-			console.log("Set Active State COMPLETE");
+			// console.log("Set Active State COMPLETE");
 		},
-
 
 		createOverviewPanel: function(state){
 			return new ContentPane({
-				//content: "Overview",
 				title: "Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
 		},
-		
+
 		postCreate: function(){
 			if(!this.state){
 				this.state = {};
@@ -125,10 +118,7 @@ define("p3/widget/viewer/ExperimentComparison", [
 
 			this.inherited(arguments);
 
-			//this.watch("query", lang.hitch(this, "onSetQuery"));
-			var _self = this;
 			this.totalCountNode.innerHTML = " (1 Experiment) ";
-			var hasDisabled = false;
 
 			xhr.get(PathJoin(this.apiServiceUrl, "transcriptomics_experiment", this.eid), {
 				headers: {
@@ -138,7 +128,7 @@ define("p3/widget/viewer/ExperimentComparison", [
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(experiment){
-				console.log("experiment result ", experiment);
+				// console.log("experiment result ", experiment);
 				this.overview = this.createOverviewPanel(this.state);
 				this.comparisons = new TranscriptomicsComparisonGridContainer({
 					title: "Comparisons",
@@ -151,10 +141,10 @@ define("p3/widget/viewer/ExperimentComparison", [
 				this.viewer.addChild(this.comparisons);
 
 				this.set("experiment", experiment);
-				console.log('Experiment : ', experiment);
-				this.state.experiment=experiment; 
+				// console.log('Experiment : ', experiment);
+				this.state.experiment = experiment;
 				this.setActivePanelState();
-				
+
 				var node = domConstruct.create("div", {style: "width: 90%"}, this.overview.containerNode);
 				domConstruct.place(DataItemFormatter(experiment, "transcriptomics_experiment_data", {}), node, "first");
 			}));

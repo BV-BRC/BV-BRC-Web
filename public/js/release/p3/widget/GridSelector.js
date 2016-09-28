@@ -68,7 +68,7 @@ function(kernel, arrayUtil, on, aspect, has, put){
 			if(event.type == "click" || event.keyCode == 32 || (!has("opera") && event.keyCode == 13) || event.keyCode === 0){
 				var row = grid.row(event);
 				grid._selectionTriggerEvent = event;
-				console.log("onSelect()", row, event);
+				// console.log("onSelect()", row, event);
 				
 				if(row){
 					if(grid.allowSelect(row)){
@@ -100,7 +100,7 @@ function(kernel, arrayUtil, on, aspect, has, put){
 					put(this, (grid.allSelected ? "!" : ".") + "dgrid-select-all");
 
 					if (grid.selection && Object.keys(grid.selection).length>0){
-						console.log("ClearSelection()")
+						// console.log("ClearSelection()")
 						grid.clearSelection();
 					}else{
 						console.log("selectAll()");

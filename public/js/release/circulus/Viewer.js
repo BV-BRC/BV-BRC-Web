@@ -132,7 +132,7 @@ define("circulus/Viewer", [
 		},
 
 		resize: function(changeSize, resultSize){
-			console.log("VIEWER RESIZE", changeSize)
+			//console.log("VIEWER RESIZE", changeSize)
 			if (!this._started){ return }
             var node = this.domNode;
 

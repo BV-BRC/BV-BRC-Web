@@ -72,7 +72,7 @@ TH.dgrid-cell.field-feature_type {
     min-height: 250px;
 }
 .patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
-    width: 40px;
+    width: 10%;
 }
 .patric .rgSummaryWidget.SummaryWidget .field-genome_name {
     white-space: normal;
