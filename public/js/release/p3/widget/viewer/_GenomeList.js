@@ -38,12 +38,8 @@ define("p3/widget/viewer/_GenomeList", [
 			// console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
-			// if(!this._started){
-			// 	return;
-			// }
 
 			var _self = this;
-			// console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + 1 + ")");
 
@@ -68,13 +64,13 @@ define("p3/widget/viewer/_GenomeList", [
 						var genome_ids = genomes.map(function(o){
 							return o.genome_id;
 						});
-						_self._set("genome_ids", genome_ids)
+						_self._set("genome_ids", genome_ids);
 					}
 				}else{
 					console.warn("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.error("Error Retreiving Genomes: ", err)
+				console.error("Error Retreiving Genomes: ", err);
 			});
 
 		},
@@ -84,9 +80,6 @@ define("p3/widget/viewer/_GenomeList", [
 			var query = this.get('query');
 
 			var _self = this;
-			// console.log('genomeList setQuery - this.query: ', this.query);
-
-			// var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(" + this.maxGenomesPerList + ")");
 
 			xhr.post(PathJoin(this.apiServiceUrl, "genome"), {
 				headers: {
@@ -104,10 +97,10 @@ define("p3/widget/viewer/_GenomeList", [
 					var genomes = res.response.docs;
 					_self._set("referenceGenomes", genomes);
 				}else{
-					console.warn("Invalid Response for: ", url);
+					console.warn("Invalid Response for: ");
 				}
 			}, function(err){
-				console.error("Error Retreiving Reference/Representative Genomes: ", err)
+				console.error("Error Retreiving Reference/Representative Genomes: ", err);
 			});
 
 		},
@@ -134,20 +127,14 @@ define("p3/widget/viewer/_GenomeList", [
 				this.set("query", state.search);
 			}
 
-			// this.inherited(arguments);
-
-			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : this.defaultTab;
-
 			this.setActivePanelState();
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			// console.log("English Content: ", content);
-			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
-			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
+
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content + "</div>");
 			this.queryNode.innerHTML = '<span class="queryModel">Genomes</span>  ' + content;
 		},
 
@@ -174,22 +161,22 @@ define("p3/widget/viewer/_GenomeList", [
 					}
 					var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
 
-					console.log("ActiveTab.maxGenomeCount: ", activeTab.maxGenomeCount);
-					console.log("ACTIVE MAX: ", activeMax);
+					// console.log("ActiveTab.maxGenomeCount: ", activeTab.maxGenomeCount);
+					// console.log("ACTIVE MAX: ", activeMax);
 					var autoFilterMessage;
 					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
+						// console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
 						if(this.state.genome_ids.length <= activeMax){
-							console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
+							// console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
 							activeQueryState = lang.mixin({}, this.state, {
 								search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",
 								hashParams: lang.mixin({}, this.state.hashParams)
 							});
 						}else if(this.state.referenceGenomes && this.state.referenceGenomes.length <= activeMax){
 							var ids = this.state.referenceGenomes.map(function(x){
-								return x.genome_id
-							})
-							console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
+								return x.genome_id;
+							});
+							// console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
 							autoFilterMessage = "This tab has been filtered to view data limited to Reference and Representative Genomes in your view.";
 							activeQueryState = lang.mixin({}, this.state, {
 								genome_ids: ids,
@@ -199,11 +186,11 @@ define("p3/widget/viewer/_GenomeList", [
 							});
 						}else if(this.state.referenceGenomes){
 							var referenceOnly = this.state.referenceGenomes.filter(function(x){
-								return x.reference_genome == "Reference"
+								return x.reference_genome == "Reference";
 							}).map(function(x){
-								return x.genome_id
-							})
-							console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
+								return x.genome_id;
+							});
+							// console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
 							if(!referenceOnly || referenceOnly.length < 1 || referenceOnly.length > activeMax){
 								autoFilterMessage = "There are too many genomes in your view.  This tab will not show any data";
 								activeQueryState = lang.mixin({}, this.state, {
@@ -231,7 +218,7 @@ define("p3/widget/viewer/_GenomeList", [
 					}
 
 					if(activeQueryState){
-						console.log("Active Query State: ", activeQueryState);
+						// console.log("Active Query State: ", activeQueryState);
 
 						activeTab.set("state", activeQueryState);
 					}else{
@@ -342,7 +329,7 @@ define("p3/widget/viewer/_GenomeList", [
 					var dlg = new Dialog({
 						title: "PATRIC Quickstart",
 						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
-					})
+					});
 					dlg.show();
 					localStorage.setItem(this.showQuickstartKey, true);
 				}
@@ -368,7 +355,7 @@ define("p3/widget/viewer/_GenomeList", [
 				var c = this.warningContent.replace("{{maxGenomesPerList}}", this.maxGenomesPerList);
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;margin:4px;margin-bottom: 0px;background: #f9ff85;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;",
-					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner" style="background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close' style='color:#333;font-weight:200;'></td></tr></table>",
+					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close' style='color:#333;font-weight:200;'></td></tr></table>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -376,7 +363,7 @@ define("p3/widget/viewer/_GenomeList", [
 				var _self = this;
 				on(this.warningPanel, ".close:click", function(){
 					_self.removeChild(_self.warningPanel);
-				})
+				});
 
 			}
 			this.addChild(this.warningPanel);
@@ -385,25 +372,25 @@ define("p3/widget/viewer/_GenomeList", [
 			// console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
-			var f = evt.filter;
+
 			var parts = [];
 			var q;
 			if(this.query){
 				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
-					parts.push(q)
+					parts.push(q);
 				}
 			}
 			if(evt.filter && evt.filter != "false"){
-				parts.push(evt.filter)
+				parts.push(evt.filter);
 			}
 
 			// console.log("parts: ", parts);
 
 			if(parts.length > 1){
-				q = "?and(" + parts.join(",") + ")"
+				q = "?and(" + parts.join(",") + ")";
 			}else if(parts.length == 1){
-				q = "?" + parts[0]
+				q = "?" + parts[0];
 			}else{
 				q = "";
 			}
@@ -412,16 +399,16 @@ define("p3/widget/viewer/_GenomeList", [
 			var hp;
 
 			if(this.state.hashParams && this.state.hashParams.view_tab){
-				hp = {view_tab: this.state.hashParams.view_tab}
+				hp = {view_tab: this.state.hashParams.view_tab};
 			}else{
-				hp = {}
+				hp = {};
 			}
 
 			hp.filter = "false";
 
 			// console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
-					return key + "=" + hp[key]
+					return key + "=" + hp[key];
 				}, this).join("&");
 			// console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
