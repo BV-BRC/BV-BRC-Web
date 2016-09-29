@@ -56,15 +56,14 @@ define([
 		{value: "plasmid.ffn", label: "plasmid contigs features (ffn)"},
 		{value: "plasmid.faa", label: "plasmid contigs proteins (faa)"},
 		{value: "spgenes.faa", label: "Specialty gene reference proteins (faa)"},
-		{value: "selGenome", label: "Search within select genomes"},
-		{value: "selGroup", label: "Search within select genome group"},
-		{value: "selTaxon", label: "Search within select taxon"}
+		{value: "selGenome", label: "Search within selected genomes"},
+		{value: "selGroup", label: "Search within selected genome group"},
+		{value: "selTaxon", label: "Search within selected taxon"}
 	];
 
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "BLAST",
 		templateString: Template,
-		path: "",
 		addedGenomes: 0,
 		maxGenomes: 20,
 		startingRows: 5,
@@ -212,11 +211,35 @@ define([
 					data: JSON.stringify(q)
 				}).then(function(res){
 
-					// console.log(res);
-					query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
-					var data = _self.formatJSONResult(res);
-					// console.log(data);
-					_self.updateResult(data);
+					var patricIds = Object.keys(res['result'][1]);
+
+					xhr.post(window.App.dataAPI + 'genome_feature/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: {
+							q: "patric_id:(" + patricIds.join(' OR ') + ")"
+						}
+					}).then(function(features){
+
+						var featureMap = {};
+						features.forEach(function(f){
+							featureMap[f.patric_id] = f;
+						});
+						// console.log(featureMap);
+
+						res['result'][3] = featureMap;
+
+						// console.log(res);
+						query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
+						var data = _self.formatJSONResult(res);
+						// console.log(data);
+						_self.updateResult(data);
+					});
 
 				}, function(err){
 					_self.buildErrorMessage(err);
@@ -233,6 +256,8 @@ define([
 
 			var self = this;
 
+			// TODO: need to change container type and primary id based on the database (and search_for)
+
 			// build store
 			this.result_store = new (declare([Memory]))({
 				data: [],
@@ -247,7 +272,6 @@ define([
 				region: "center",
 				selectionModel: "extended",
 				dataModel: "genome_feature",
-				primaryKey: "feature_id",
 				store: this.result_store,
 				columns: {
 					"Selection Checkboxes": selector({label: '', sortable: false, unhidable: true}),
@@ -370,12 +394,13 @@ define([
 			var query_length = search.query_len;
 			var metadata = json['result'][1];
 			var identical = json['result'][2] || {};
+			var features = json['result'][3] || {};
 
 			var entries = [];
 			hits.forEach(function(hit){
 				var target_id = hit.description[0].id;
-				entries.push({
-					"feature_id": target_id,
+				var entry = {
+					"feature_id": features[target_id].feature_id || target_id,
 					"qseqid": query_id,
 					"sseqid": target_id,
 					"pident": Math.round(hit.hsps[0].identity / hit.hsps[0].align_len * 100),
@@ -394,7 +419,11 @@ define([
 						"query_len": query_length,
 						"subject_len": hit.len
 					}
-				});
+				};
+				if(features[target_id]){
+					entry = lang.mixin(entry, features[target_id]);
+				}
+				entries.push(entry);
 			}, this);
 			return entries;
 		},
