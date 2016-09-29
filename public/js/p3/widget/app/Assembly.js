@@ -24,9 +24,10 @@ define([
 			this.addedPairs = 0;
 			this.pairToAttachPt1 = ["read1", "read2"];
 			this.pairToAttachPt2 = ["read1"];
-			this.advPairToAttachPt = ["interleaved", "insert_size_mean", "insert_size_stdev", "read_orientation_outward"];
+			this.advPairToAttachPt = ["interleaved", "insert_size_mean", "insert_size_stdev", "read_orientation_outward","paired_platform"];
 			this.paramToAttachPt = ["recipe", "output_path", "output_file", "reference_assembly"];
 			this.singleToAttachPt = ["single_end_libs"];
+            this.advSingleToAttachPt = ["single_platform"];
 		},
 
 		startup: function(){
@@ -74,6 +75,20 @@ define([
 					this.advicon2.className = "fa icon-caret-down fa-1";
 				}
 			}));
+			this.advrow3.turnedOn = (this.advrow3.style.display != 'none');
+			on(this.advanced3, 'click', lang.hitch(this, function(){
+				this.advrow3.turnedOn = (this.advrow3.style.display != 'none');
+				if(!this.advrow3.turnedOn){
+					this.advrow3.turnedOn = true;
+					this.advrow3.style.display = 'block';
+					this.advicon3.className = "fa icon-caret-left fa-1";
+				}
+				else{
+					this.advrow3.turnedOn = false;
+					this.advrow3.style.display = 'none';
+					this.advicon3.className = "fa icon-caret-down fa-1";
+				}
+			}));
 			this.pairToAttachPt1.concat(this.singleToAttachPt).forEach(lang.hitch(this, function(attachname){
 				this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function(/*anything*/ value, /*__Constraints*/ constraints){
 						return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")" + (this.required ? "" : "?") + "$")).test(value) &&
@@ -113,6 +128,12 @@ define([
 			var values = this.inherited(arguments);
 			if(values.hasOwnProperty("pipeline") && values["pipeline"]){
 				assembly_values["pipeline"] = values["pipeline"];
+			}
+			if(values.hasOwnProperty("min_contig_len") && values["min_contig_len"]){
+				assembly_values["min_contig_len"] = values["min_contig_len"];
+			}
+			if(values.hasOwnProperty("min_contig_cov") && values["min_contig_cov"]){
+				assembly_values["min_contig_cov"] = values["min_contig_cov"];
 			}
 			var pairedList = query(".pairdata");
 			var singleList = query(".singledata");
@@ -162,7 +183,11 @@ define([
 					cur_value = this[attachname].value;
 				}
 
-				if(typeof(cur_value) == "string"){
+                //Assign cur_value to target
+				if(attachname == "paired_platform" || attachname == "single_platform"){
+                    target["platform"]=cur_value;
+                }
+                else if(typeof(cur_value) == "string"){
 					target[attachname] = cur_value.trim();
 				}
 				else{
@@ -231,6 +256,7 @@ define([
 			console.log("Create New Row", domConstruct);
 			var lrec = {};
 			var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
+			this.ingestAttachPoints(this.advSingleToAttachPt, lrec, false)
 			if(chkPassed){
 				var tr = this.libsTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol singledata", innerHTML: ""}, tr);
