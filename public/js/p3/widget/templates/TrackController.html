@@ -6,7 +6,7 @@
 
 		</tbody>
 	</table>
-	<div style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef">
+	<div data-dojo-attach-point="customTrackInfo" style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef">
 	Custom tracks
 	</div>
 	<div data-dojo-attach-point="customTrackSection">
@@ -30,7 +30,7 @@
 	<div style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef">
 	Upload your own data
 	</div>
-	<div data-dojo-attach-point="customTrackSection">
+	<div data-dojo-attach-point="userTrackSection">
 		<div style="margin-top:2px;padding:2px;">
 			<select required name="plot_type" style="width:30%;" data-dojo-type="dijit/form/Select" data-dojo-attach-point="plot_type_select">
 				<option value="Tiles" default selected hidden>Tiles</option>
@@ -39,9 +39,8 @@
 				<option value="Heatmap">Heatmap</option>
 			</select>
 			<input required type="file" style="width:60%; margin-left:2px;" name="data_file" data-dojo-attach-point="data_file"/>
-			<i data-dojo-attach-event="click:saveSVG" class="fa icon-plus-circle fa-lg"></i>
+			<button style="margin-left:2px" data-dojo-type="dijit/form/Button"  data-dojo-attach-event="onClick:onAddUserFileTrack" data-dojo-attach-point="userFileButton" data-dojo-props="disabled:true">+</button>
 	</div>
-
 -->
 
 	<button style="margin-top:25px;" data-dojo-attach-event="click:saveSVG">Export SVG Image</button>
