@@ -36490,6 +36490,7 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
+		console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
@@ -36681,8 +36682,10 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
+		console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
+		console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
@@ -57617,6 +57620,7 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
+				console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +
@@ -89618,7 +89622,7 @@ define([
 		},
 */
 		render: function(){
-			console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			//console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
 			if (this.visible){
 				// console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
 				this.renderBackground();
@@ -89640,13 +89644,13 @@ define([
 			var sections={}
 			data.forEach(function(d){
 				totalLength += d.length;
-				console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+				//console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
 			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
-			console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+			//console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
 
 			var gap = (this.gap);
 			data.forEach(lang.hitch(this,function(d,index){
@@ -89659,7 +89663,7 @@ define([
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;
 				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
-				console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+				//console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
 
 				var innerStart= {
 					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
@@ -89793,7 +89797,7 @@ define([
 				}	
 			}));
 
-			console.log("Set Sections: ", sections);
+			//console.log("Set Sections: ", sections);
 			this.set("sections", sections);
 
 		}
@@ -95226,7 +95230,7 @@ define([
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
 				show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined')) ? state.hashParams.show_overview : true,
-				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined')) ? state.hashParams.show_menu : false,
+				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined')) ? state.hashParams.show_menu : true,
 				stores: {url: {type: "JBrowse/Store/SeqFeature/FromConfig", features: []}},
 				updateBrowserURL: false,
 				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
