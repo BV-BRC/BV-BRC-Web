@@ -298,21 +298,44 @@ define([
 				td.libRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makePairName() + "</div>";
 				var advPairInfo = [];
-				if(lrec["insert_size_mean"]){
-					advPairInfo.push("Mean Insert Size:" + lrec["insert_size_mean"]);
-				}
-				if(lrec["insert_size_stdev"]){
-					advPairInfo.push("Std. Insert Size:" + lrec["insert_size_stdev"]);
-				}
-				if(lrec["read_orientation_outward"]){
-					advPairInfo.push("Mate Paired");
-				}
+                advPairInfo.push("Paired");
+                infoLabels = {
+                    "platform":{"label":"Platform","value":1},
+                    "read1":{"label":"Read1","value":1},
+                    "read2":{"label":"Read2","value":1},
+                    "interleaved":{"label":"Interleaved","value":0},
+                    "insert_size_mean":{"label":"Mean Insert Size","value":1},
+                    "insert_size_stdev":{"label":"Std. Insert Size","value":1},
+                    "read_orientation_outward":{"label":"Mate Paired","value":0}
+                };
+                //fill out the html of the info mouse over
+                Object.keys(infoLabels).forEach(lang.hitch(this,function(key){
+                    if (lrec[key]){
+                        if(infoLabels[key].value){
+                            advPairInfo.push(infoLabels[key].label+":"+lrec[key]);
+                        }
+                        else{
+                            advPairInfo.push(infoLabels[key].label);
+                        }
+                    }
+                }));
 				if(advPairInfo.length){
 					var tdinfo = domConstruct.create("td", {innerHTML: "<i class='fa icon-info fa-1' />"}, tr);
-					var ihandle = new Tooltip({
-						connectId: [tdinfo],
-						label: advPairInfo.join("</br>")
-					});
+					var ihandle = new TooltipDialog({
+						content: advPairInfo.join("</br>"),
+                        onMouseLeave: function(){
+                            popup.close(ihandle);
+                        }
+                    });
+                    on(tdinfo, 'mouseover', function(){
+                        popup.open({
+                            popup: ihandle,
+                            around: tdinfo
+                        });
+                    });
+                    on(tdinfo, 'mouseout', function(){
+                        popup.close(ihandle);
+                    });
 				}
 				else{
 					var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
