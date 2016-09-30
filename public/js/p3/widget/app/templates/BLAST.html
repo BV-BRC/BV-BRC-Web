@@ -1,12 +1,12 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div style="width: 700px; margin:auto;">
+    <div class="blast_form_wrapper">
         <div class="apptitle">
             <h3>BLAST</h3>
             <p>[place holder for description of this service]</p>
         </div>
 
-        <div style="width: 700px; margin:auto;">
+        <div class="blast_form">
             <div class="appbox appshadow">
                 <div class="headerrow" style="margin-bottom: 7px">
                     <label class="appboxlabel">Sequence</label>
@@ -139,9 +139,12 @@
                 Search
             </div>
         </div>
+        <div class="reSubmitBtn" style="visibility: hidden"
+             data-dojo-type="dijit/form/Button"
+             data-dojo-attach-event="onClick:resubmit">Edit form and resubmit
+        </div>
     </div>
 
-    <br/>
-    <div class="blast_result_wrapper"></div>
+    <div class="blast_result"></div>
 </form>
 
