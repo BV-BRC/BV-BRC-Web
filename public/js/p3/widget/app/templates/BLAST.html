@@ -82,6 +82,7 @@
                          data-dojo-type="p3/widget/WorkspaceObjectSelector"
                          data-dojo-attach-point="genome_group"
                          data-dojo-props="type:['genome_group'],multi:true,disabled:true"></div>
+                    <div class="form_msg_warning" data-dojo-attach-point="genome_group_message"></div>
                 </div>
 
                 <div class="appbox appshadow">
@@ -91,6 +92,7 @@
                             data-dojo-props="disabled:true"
                             data-dojo-attach-point="taxonomy">
                     </select>
+                    <div class="form_msg_warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
 
                 <div class="appbox appshadow">
@@ -135,7 +137,7 @@
             <div data-dojo-type="dijit/form/Button"
                  data-dojo-attach-point="mapButton"
                  data-dojo-attach-event="onClick:submit"
-                 data-dojo-props="disabled:false">
+                 data-dojo-props="disabled:true">
                 Search
             </div>
         </div>
@@ -145,6 +147,10 @@
         </div>
     </div>
 
+    <div class="blast_error hidden">
+        <h3></h3>
+        <div class="blast_message"></div>
+    </div>
     <div class="blast_result"></div>
 </form>
 

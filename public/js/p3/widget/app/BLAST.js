@@ -140,6 +140,10 @@ define([
 			var def = new Deferred();
 
 			if(useDatabase){
+				if(!sequence){
+					this.sequence_message.innerHTML = "Sequence is empty";
+					return;
+				}
 				def.resolve();
 				method = "HomologyService.blast_fasta_to_database";
 				params = [encodeURIComponent(sequence), program, database, evalue, max_hits, 0];
@@ -161,6 +165,11 @@ define([
 						break;
 					case "selGroup":
 						var path = this.genome_group.get('value');
+						// console.log("selGroup", path);
+						if(path === ''){
+							this.genome_group_message.innerHTML = "No genome group has selected";
+							return;
+						}
 
 						WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function(objs){
 
@@ -178,6 +187,11 @@ define([
 						}));
 						break;
 					case "selTaxon":
+						var taxon = this.taxonomy.get('value');
+						if(taxon === ''){
+							this.taxonomy_message.innerHTML = 'No taxon has selected';
+							return;
+						}
 						break;
 					default:
 						break;
@@ -198,6 +212,7 @@ define([
 			_self.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
 			domClass.add(query(".blast_form")[0], "hidden");
+			domClass.add(query(".blast_error")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "visible");
 
 			// var data = this.formatJSONResult(this.test_result_features(), "genome_feature");
@@ -221,6 +236,11 @@ define([
 					handleAs: "json",
 					data: JSON.stringify(q)
 				}).then(function(res){
+
+					if((res['result'][0][0].report.results.search.hits).length == 0){
+						_self.buildNoResultMessage();
+						return;
+					}
 
 					// console.log(res);
 					var resultIds = Object.keys(res['result'][1]);
@@ -277,7 +297,23 @@ define([
 		},
 
 		buildErrorMessage: function(err){
-			query(".blast_result")[0].innerHTML = err.response.data;
+			console.log(err);
+			this.loadingMask.hide();
+			domClass.remove(query(".blast_error")[0], "hidden");
+			domClass.remove(query(".blast_message")[0], "hidden");
+			query(".blast_error h3")[0].innerHTML = "BLAST has error. Please report regarding this.";
+			query(".blast_message")[0].innerHTML = err.response.data.error.message;
+
+			query(".blast_result .GridContainer").style("visibility", "hidden");
+		},
+
+		buildNoResultMessage: function(){
+			this.loadingMask.hide();
+			domClass.remove(query(".blast_error")[0], "hidden");
+			query(".blast_error h3")[0].innerHTML = "BLAST has no match. Please revise query and submit again.";
+			domClass.add(query(".blast_message")[0], "hidden");
+
+			query(".blast_result .GridContainer").style("visibility", "hidden");
 		},
 
 		buildResultContainer: function(){
