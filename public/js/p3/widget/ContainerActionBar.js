@@ -16,12 +16,7 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-			this.pathContainer = domConstruct.create("div", {
-				style: {
-					display: "inline-block",
-					"padding-top": "8px"
-				}
-			}, this.domNode);
+			this.pathContainer = domConstruct.create("div", {"class": "wsBreadCrumbContainer"}, this.domNode);
 			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);
 		},
 
