@@ -1,16 +1,20 @@
 require({cache:{
-'url:p3/widget/app/templates/BLAST.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n      dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n    <div style=\"width: 700px; margin:auto;\">\n        <div class=\"apptitle\">\n            <h3>BLAST</h3>\n            <p>[place holder for description of this service]</p>\n        </div>\n\n        <div style=\"width: 700px; margin:auto;\">\n            <div class=\"appbox appshadow\">\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Sequence</label>\n                </div>\n                <textarea name=\"sequence\"\n                          style=\"width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px\"\n                          data-dojo-attach-point=\"sequence\"\n                          data-dojo-type=\"dijit/form/Textarea\"\n                          data-dojo-props=\"rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true\"\n                          data-dojo-attach-event=\"onChange:onChangeSequence\"></textarea>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"sequence_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Program</label>\n                </div>\n                <select name=\"program\" style=\"margin-left:10px; width:96%\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeProgram\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"program\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"program_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin: 16px 0 7px 0\">\n                    <label class=\"appboxlabel\">Database</label>\n                </div>\n                <select name=\"database\" style=\"width:96%; margin-left:10px\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeDatabase\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"database\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"database_message\"></div>\n            </div>\n\n            <div class=\"approw\" style=\"text-align:center\">\n                <div class=\"approwsegment\" data-dojo-attach-point=\"advanced\">\n                    <label class=\"largelabel\">Advanced options</label>\n                    <div class=\"iconbox\" style=\"margin-left:0\">\n                        <i data-dojo-attach-point=\"advancedOptionIcon\" class=\"fa icon-caret-down fa-1\"></i>\n                    </div>\n                </div>\n            </div>\n\n            <div data-dojo-attach-point=\"advancedOptions\" style=\"display: none\">\n                <div class=\"appbox appshadow\">\n                    <div class=\"left half\" style=\"vertical-align: top\">\n                        <label class=\"paramlabel\">Add Genomes to Search: </label>\n                        <div data-dojo-attach-event=\"onChange:onSuggestNameChange\"\n                             data-dojo-type=\"p3/widget/GenomeNameSelector\"\n                             data-dojo-attach-point=\"genome_id\"\n                             data-dojo-props=\"placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true\"\n                             style=\"width:310px;\">\n                        </div>\n                        <div style=\"width:17px; display:inline-block;\">\n                            <i data-dojo-attach-event=\"click:onAddGenome\"\n                               class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                        </div>\n                    </div>\n                    <div class=\"left half\">\n                        <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"genomeTable\"\n                               style='width:330px;'>\n                            <tbody data-dojo-attach-point=\"genomeTableBody\"></tbody>\n                        </table>\n                    </div>\n                    <div class=\"clear\"></div>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"genome_id_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select genome group: </label><br/>\n                    <div name=\"genome_group\" style=\"width: 650px\"\n                         data-dojo-type=\"p3/widget/WorkspaceObjectSelector\"\n                         data-dojo-attach-point=\"genome_group\"\n                         data-dojo-props=\"type:['genome_group'],multi:true,disabled:true\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select Taxon: </label><br/>\n                    <select name=\"taxon\" style=\"width: 650px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"taxonomy\">\n                    </select>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Search for: </label><br/>\n                    <select name=\"search_for\" style=\"width:250px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"search_for\">\n                        <option value=\"contigs\">Genomic sequences (contigs)</option>\n                        <option value=\"features\" selected=\"selected\">Genomic features (genes or proteins)</option>\n                    </select>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"search_for_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <div class=\"headerrow\">\n                        <label class=\"appboxlabel\">BLAST Parameters</label>\n                    </div>\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">Max hits: </label><br/>\n                        <select name=\"max_target\" style=\"width: 100px\"\n                                data-dojo-type=\"dijit/form/Select\"\n                                data-dojo-attach-point=\"max_hits\">\n                            <option value=\"1\">1</option>\n                            <option value=\"10\">10</option>\n                            <option value=\"50\" selected=\"selected\">50</option>\n                            <option value=\"100\">100</option>\n                            <option value=\"1000\">1000</option>\n                        </select>\n                    </div>\n\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">E value threshold: </label><br/>\n                        <input name=\"threshold\" type=\"text\" value=\"10\" style=\"width:50px\"\n                               data-dojo-type=\"dijit/form/TextBox\"\n                               data-dojo-attach-point=\"evalue\">\n                    </div>\n                    <div class=\"clear\"></div>\n                </div>\n            </div>\n\n            <div data-dojo-type=\"dijit/form/Button\"\n                 data-dojo-attach-point=\"mapButton\"\n                 data-dojo-attach-event=\"onClick:submit\"\n                 data-dojo-props=\"disabled:true\">\n                Search\n            </div>\n        </div>\n    </div>\n\n    <br/>\n    <div class=\"blast_result_wrapper\"></div>\n</form>\n\n"}});
+'url:p3/widget/app/templates/BLAST.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n      dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n    <div class=\"blast_form_wrapper\">\n        <div class=\"apptitle\">\n            <h3>BLAST</h3>\n            <p>[place holder for description of this service]</p>\n        </div>\n\n        <div class=\"blast_form\">\n            <div class=\"appbox appshadow\">\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Sequence</label>\n                </div>\n                <textarea name=\"sequence\"\n                          style=\"width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px\"\n                          data-dojo-attach-point=\"sequence\"\n                          data-dojo-type=\"dijit/form/Textarea\"\n                          data-dojo-props=\"rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true\"\n                          data-dojo-attach-event=\"onChange:onChangeSequence\"></textarea>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"sequence_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Program</label>\n                </div>\n                <select name=\"program\" style=\"margin-left:10px; width:96%\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeProgram\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"program\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"program_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin: 16px 0 7px 0\">\n                    <label class=\"appboxlabel\">Database</label>\n                </div>\n                <select name=\"database\" style=\"width:96%; margin-left:10px\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeDatabase\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"database\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"database_message\"></div>\n            </div>\n\n            <div class=\"approw\" style=\"text-align:center\">\n                <div class=\"approwsegment\" data-dojo-attach-point=\"advanced\">\n                    <label class=\"largelabel\">Advanced options</label>\n                    <div class=\"iconbox\" style=\"margin-left:0\">\n                        <i data-dojo-attach-point=\"advancedOptionIcon\" class=\"fa icon-caret-down fa-1\"></i>\n                    </div>\n                </div>\n            </div>\n\n            <div data-dojo-attach-point=\"advancedOptions\" style=\"display: none\">\n                <div class=\"appbox appshadow\">\n                    <div class=\"left half\" style=\"vertical-align: top\">\n                        <label class=\"paramlabel\">Add Genomes to Search: </label>\n                        <div data-dojo-attach-event=\"onChange:onSuggestNameChange\"\n                             data-dojo-type=\"p3/widget/GenomeNameSelector\"\n                             data-dojo-attach-point=\"genome_id\"\n                             data-dojo-props=\"placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true\"\n                             style=\"width:310px;\">\n                        </div>\n                        <div style=\"width:17px; display:inline-block;\">\n                            <i data-dojo-attach-event=\"click:onAddGenome\"\n                               class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                        </div>\n                    </div>\n                    <div class=\"left half\">\n                        <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"genomeTable\"\n                               style='width:330px;'>\n                            <tbody data-dojo-attach-point=\"genomeTableBody\"></tbody>\n                        </table>\n                    </div>\n                    <div class=\"clear\"></div>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"genome_id_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select genome group: </label><br/>\n                    <div name=\"genome_group\" style=\"width: 650px\"\n                         data-dojo-type=\"p3/widget/WorkspaceObjectSelector\"\n                         data-dojo-attach-point=\"genome_group\"\n                         data-dojo-props=\"type:['genome_group'],multi:true,disabled:true\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select Taxon: </label><br/>\n                    <select name=\"taxon\" style=\"width: 650px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"taxonomy\">\n                    </select>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Search for: </label><br/>\n                    <select name=\"search_for\" style=\"width:250px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"search_for\">\n                        <option value=\"contigs\">Genomic sequences (contigs)</option>\n                        <option value=\"features\" selected=\"selected\">Genomic features (genes or proteins)</option>\n                    </select>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"search_for_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <div class=\"headerrow\">\n                        <label class=\"appboxlabel\">BLAST Parameters</label>\n                    </div>\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">Max hits: </label><br/>\n                        <select name=\"max_target\" style=\"width: 100px\"\n                                data-dojo-type=\"dijit/form/Select\"\n                                data-dojo-attach-point=\"max_hits\">\n                            <option value=\"1\">1</option>\n                            <option value=\"10\">10</option>\n                            <option value=\"50\" selected=\"selected\">50</option>\n                            <option value=\"100\">100</option>\n                            <option value=\"1000\">1000</option>\n                        </select>\n                    </div>\n\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">E value threshold: </label><br/>\n                        <input name=\"threshold\" type=\"text\" value=\"10\" style=\"width:50px\"\n                               data-dojo-type=\"dijit/form/TextBox\"\n                               data-dojo-attach-point=\"evalue\">\n                    </div>\n                    <div class=\"clear\"></div>\n                </div>\n            </div>\n\n            <div data-dojo-type=\"dijit/form/Button\"\n                 data-dojo-attach-point=\"mapButton\"\n                 data-dojo-attach-event=\"onClick:submit\"\n                 data-dojo-props=\"disabled:false\">\n                Search\n            </div>\n        </div>\n        <div class=\"reSubmitBtn\" style=\"visibility: hidden\"\n             data-dojo-type=\"dijit/form/Button\"\n             data-dojo-attach-event=\"onClick:resubmit\">Edit form and resubmit\n        </div>\n    </div>\n\n    <div class=\"blast_result\"></div>\n</form>\n\n"}});
 define("p3/widget/app/BLAST", [
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dojo/dom-construct", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/BLAST.html", "dijit/form/Form", "../../util/PathJoin",
-	"dojo/request", "dojo/dom", "dojo/query",
-	"dojo/store/Memory", "../GridContainer", "../Grid", "../GridSelector", "../../WorkspaceManager"
-], function(declare, lang, Deferred, WidgetBase, on,
-			domClass, domConstruct, Templated, WidgetsInTemplate,
-			Template, FormMixin, PathJoin,
-			xhr, dom, query,
-			Memory, GridContainer, Grid, selector, WorkspaceManager){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/on", "dojo/store/Memory",
+	"dojo/query", "dojo/dom-class", "dojo/dom-construct",
+	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
+	"dojox/widget/Standby",
+	"../GridContainer", "../Grid", "../GridSelector", "../../util/PathJoin", "../../WorkspaceManager"
+], function(declare, lang, Deferred,
+			xhr, on, Memory,
+			query, domClass, domConstruct,
+			WidgetBase, Templated, WidgetsInTemplate,
+			Template, FormMixin,
+			Standby,
+			GridContainer, Grid, selector, PathJoin, WorkspaceManager){
 
 	const NA = "nucleotide", AA = "protein";
 
@@ -58,18 +62,18 @@ define("p3/widget/app/BLAST", [
 		{value: "plasmid.ffn", label: "plasmid contigs features (ffn)"},
 		{value: "plasmid.faa", label: "plasmid contigs proteins (faa)"},
 		{value: "spgenes.faa", label: "Specialty gene reference proteins (faa)"},
-		{value: "selGenome", label: "Search within select genomes"},
-		{value: "selGroup", label: "Search within select genome group"},
-		{value: "selTaxon", label: "Search within select taxon"}
+		{value: "selGenome", label: "Search within selected genomes"},
+		{value: "selGroup", label: "Search within selected genome group"},
+		{value: "selTaxon", label: "Search within selected taxon"}
 	];
 
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "BLAST",
 		templateString: Template,
-		path: "",
 		addedGenomes: 0,
 		maxGenomes: 20,
 		startingRows: 5,
+		loadingMask: null,
 		result_store: null,
 		result_grid: null,
 		constructor: function(){
@@ -193,9 +197,15 @@ define("p3/widget/app/BLAST", [
 				id: String(Math.random()).slice(2)
 			};
 
-			// query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
-			// var data = this.formatJSONResult(this.test_result());
-			// this.updateResult(data);
+			_self.loadingMask.show();
+			query(".blast_result .GridContainer").style("visibility", "visible");
+			domClass.add(query(".blast_form")[0], "hidden");
+			query(".reSubmitBtn").style("visibility", "visible");
+
+			// var data = this.formatJSONResult(this.test_result_features(), "genome_feature");
+			// var data = this.formatJSONResult(this.test_result_contigs(), "genome_sequence");
+			// this.updateResult(data, "genome_sequence");
+			// return;
 
 			def.promise.then(function(genomeIds){
 
@@ -204,7 +214,7 @@ define("p3/widget/app/BLAST", [
 					q.params[2] = genomeIds;
 				}
 
-				console.log(q);
+				// console.log(q);
 
 				xhr.post("https://p3.theseed.org/services/homology_service", {
 					headers: {
@@ -215,10 +225,46 @@ define("p3/widget/app/BLAST", [
 				}).then(function(res){
 
 					// console.log(res);
-					query(".blast_result_wrapper .GridContainer").style("visibility", "visible");
-					var data = _self.formatJSONResult(res);
-					// console.log(data);
-					_self.updateResult(data);
+					var resultIds = Object.keys(res['result'][1]);
+					var resultIdType = resultIds[0].split('|')[0] === "fig" ? "genome_feature" : "genome_sequence";
+
+					var resultIdField = resultIdType === "genome_feature" ? "patric_id" : "sequence_id";
+					var fl;
+					if(resultIdType == "genome_sequence"){
+						resultIds = resultIds.map(function(d){
+							return d.replace('accn|', '');
+						});
+						fl = "genome_id,genome_name,taxon_id,sequence_id,accession"
+					}else{
+						fl = "feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,gi,taxon_id,accession,start,end,strand,location,na_length,na_sequence,aa_length,aa_sequence"
+					}
+
+					xhr.post(window.App.dataAPI + resultIdType + '/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: {
+							q: resultIdField + ":(" + resultIds.join(' OR ') + ")",
+							fl: fl
+						}
+					}).then(function(keys){
+
+						var keyMap = {};
+						keys.forEach(function(f){
+							keyMap[f[resultIdField]] = f;
+						});
+
+						res['result'][3] = keyMap;
+
+						// console.log(JSON.stringify(res));
+						var data = _self.formatJSONResult(res, resultIdType);
+						// console.log(data);
+						_self.updateResult(data, resultIdType);
+					});
 
 				}, function(err){
 					_self.buildErrorMessage(err);
@@ -227,13 +273,20 @@ define("p3/widget/app/BLAST", [
 
 		},
 
+		resubmit: function(){
+			domClass.remove(query(".blast_form")[0], "hidden");
+			query(".reSubmitBtn").style("visibility", "hidden");
+		},
+
 		buildErrorMessage: function(err){
-			query(".blast_result_wrapper")[0].innerHTML = err.response.data;
+			query(".blast_result")[0].innerHTML = err.response.data;
 		},
 
 		buildResultContainer: function(){
 
 			var self = this;
+
+			// TODO: need to change container type and primary id based on the database (and search_for)
 
 			// build store
 			this.result_store = new (declare([Memory]))({
@@ -249,7 +302,6 @@ define("p3/widget/app/BLAST", [
 				region: "center",
 				selectionModel: "extended",
 				dataModel: "genome_feature",
-				primaryKey: "feature_id",
 				store: this.result_store,
 				columns: {
 					"Selection Checkboxes": selector({label: '', sortable: false, unhidable: true}),
@@ -335,20 +387,40 @@ define("p3/widget/app/BLAST", [
 				buildQuery: function(){
 					// console.log("buildQuery");
 					return {};
+				},
+				updateContainerType: function(type){
+					this.containerType = type;
+					this.selectionActionBar.set('currentContainerWidget', this);
 				}
 			});
 
 			this.result_grid = new BLASTGridContainer({
 				style: "min-height: 500px; visibility:hidden;"
-			}).placeAt(query(".blast_result_wrapper")[0]);
+			}).placeAt(query(".blast_result")[0]);
 			this.result_grid.startup();
+
+			this.loadingMask = new Standby({
+				target: this.id,
+				image: "/public/js/p3/resources/images/ring-alt.svg",
+				color: "#efefef"
+			});
+			this.result_grid.addChild(this.loadingMask);
+			this.loadingMask.startup();
 
 			// console.log(this.result_grid);
 		},
 
-		updateResult(data){
+		updateResult(data, type){
+			if(type === 'genome_feature'){
+				this.result_store.idProperty = 'feature_id';
+				this.result_grid.updateContainerType("feature_data");
+			}else{
+				this.result_store.idProperty = 'sequence_id';
+				this.result_grid.updateContainerType("sequence_data");
+			}
 			this.result_store.setData(data);
 			this.result_grid.grid.refresh();
+			this.loadingMask.hide();
 		},
 
 		formatEvalue: function(evalue){
@@ -362,7 +434,7 @@ define("p3/widget/app/BLAST", [
 			}
 		},
 
-		formatJSONResult: function(json){
+		formatJSONResult: function(json, type){
 			// console.log(json);
 
 			var report = json['result'][0][0].report;
@@ -372,12 +444,12 @@ define("p3/widget/app/BLAST", [
 			var query_length = search.query_len;
 			var metadata = json['result'][1];
 			var identical = json['result'][2] || {};
+			var features = json['result'][3] || {};
 
 			var entries = [];
 			hits.forEach(function(hit){
 				var target_id = hit.description[0].id;
-				entries.push({
-					"feature_id": target_id,
+				var entry = {
 					"qseqid": query_id,
 					"sseqid": target_id,
 					"pident": Math.round(hit.hsps[0].identity / hit.hsps[0].align_len * 100),
@@ -396,7 +468,16 @@ define("p3/widget/app/BLAST", [
 						"query_len": query_length,
 						"subject_len": hit.len
 					}
-				});
+				};
+				if(type === "genome_feature"){
+					entry["feature_id"] = features[target_id].feature_id;
+					entry = lang.mixin(entry, features[target_id]);
+				}else{
+					target_id = target_id.replace("accn|", "");
+					entry["genome_id"] = features[target_id].genome_id;
+					entry = lang.mixin(entry, features[target_id]);
+				}
+				entries.push(entry);
 			}, this);
 			return entries;
 		},
@@ -663,9 +744,14 @@ define("p3/widget/app/BLAST", [
 			return domConstruct.toDom('<div class="align">' + outputDiv.join('<br/>') + '</div>');
 		},
 
-		test_result: function(){
-			var r = '{"version":"1.1","id":1,"result":[[{"report":{"results":{"search":{"query_masking":[{"to":33,"from":18}],"query_id":"Query_1","hits":[{"len":1119,"num":1,"description":[{"id":"fig|83332.12.peg.1009","accession":"9726","title":"fig|83332.12.peg.1009|Rv0906|VBIMycTub87468_1009|   Outer membrane protein romA   [Mycobacterium tuberculosis H37Rv | 83332.12]"}],"hsps":[{"gaps":2,"hit_from":1,"evalue":6.06362e-89,"score":175,"hit_strand":"Plus","hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG","query_strand":"Plus","align_len":182,"bit_score":324.284,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","query_to":238,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG","identity":180,"num":1,"hit_to":180,"query_from":57}]},{"hsps":[{"identity":180,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG","query_to":238,"num":1,"hit_to":180,"query_from":57,"hit_from":1,"gaps":2,"evalue":6.06362e-89,"score":175,"hit_strand":"Plus","hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG","align_len":182,"bit_score":324.284,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","query_strand":"Plus"}],"num":2,"len":1119,"description":[{"title":"fig|83332.111.peg.1002|RVBD_0906|VBIMycTub226894_1002|   Outer membrane protein romA   [Mycobacterium tuberculosis H37Rv (Broad) | 83332.111]","id":"fig|83332.111.peg.1002","accession":"5353"}]},{"hsps":[{"query_to":238,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG","identity":180,"hit_to":180,"num":1,"query_from":57,"evalue":6.06362e-89,"hit_from":1,"gaps":2,"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG","score":175,"hit_strand":"Plus","query_strand":"Plus","align_len":182,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","bit_score":324.284}],"len":1119,"description":[{"id":"fig|757417.4.peg.1000","accession":"999","title":"fig|757417.4.peg.1000|VBIMycTub169848_1000|   Outer membrane protein romA   [Mycobacterium tuberculosis H37RvAE | 757417.4]"}],"num":3}],"stat":{"db_len":11969031,"db_num":13087,"hsp_len":22,"eff_space":2523121272,"lambda":1.28,"entropy":0.85,"kappa":0.46},"query_len":238}},"search_target":{"db":"/tmp/sSQkflROXI"},"version":"BLASTN 2.3.0+","program":"blastn","reference":"Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb Miller (2000), A greedy algorithm for aligning DNA sequences, J Comput Biol 2000; 7(1-2):203-14.","params":{"gap_open":0,"gap_extend":0,"sc_match":1,"sc_mismatch":-2,"expect":10,"filter":"L;m;"}}}],{"fig|83332.111.peg.1002":{"genome_name":"Mycobacterium tuberculosis H37Rv (Broad)","alt_locus_tag":"VBIMycTub226894_1002","genome_id":"83332.111","locus_tag":"RVBD_0906","function":"Outer membrane protein romA"},"fig|83332.12.peg.1009":{"alt_locus_tag":"VBIMycTub87468_1009","genome_id":"83332.12","locus_tag":"Rv0906","genome_name":"Mycobacterium tuberculosis H37Rv","function":"Outer membrane protein romA"},"fig|757417.4.peg.1000":{"function":"Outer membrane protein romA","genome_name":"Mycobacterium tuberculosis H37RvAE","genome_id":"757417.4","alt_locus_tag":"VBIMycTub169848_1000"}}]}';
+		test_result_features: function(){
+			var r = '{"result":[[{"report":{"params":{"filter":"L;m;","gap_extend":0,"gap_open":0,"sc_match":1,"sc_mismatch":-2,"expect":10},"program":"blastn","reference":"Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb Miller (2000), A greedy algorithm for aligning DNA sequences, J Comput Biol 2000; 7(1-2):203-14.","version":"BLASTN 2.3.0+","search_target":{"db":"/tmp/jQOG0oo9Tp"},"results":{"search":{"stat":{"kappa":0.46,"entropy":0.85,"lambda":1.28,"eff_space":76986597324,"hsp_len":26,"db_num":328432,"db_len":290541420},"query_len":299,"hits":[{"len":1119,"description":[{"title":"fig|83332.12.peg.1009|Rv0906|VBIMycTub87468_1009|   Outer membrane protein romA   [Mycobacterium tuberculosis H37Rv | 83332.12]","accession":"312432","id":"fig|83332.12.peg.1009"}],"num":1,"hsps":[{"hit_to":240,"num":1,"query_from":57,"identity":240,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","query_to":299,"align_len":243,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","bit_score":429.543,"query_strand":"Plus","evalue":3.81139e-119,"hit_from":1,"gaps":3,"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","hit_strand":"Plus","score":232}]},{"hsps":[{"align_len":243,"bit_score":429.543,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","query_strand":"Plus","hit_from":1,"gaps":3,"evalue":3.81139e-119,"hit_strand":"Plus","score":232,"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","num":1,"hit_to":240,"query_from":57,"identity":240,"query_to":299,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA"}],"len":1119,"description":[{"title":"fig|233413.5.peg.1011|Mb0930|VBIMycBov88188_1011|   Outer membrane protein romA   [Mycobacterium bovis AF2122/97 | 233413.5]","id":"fig|233413.5.peg.1011","accession":"132773"}],"num":2}],"query_masking":[{"from":18,"to":33}],"query_id":"Query_1"}}}}],{"fig|83332.12.peg.1009":{"function":"Outer membrane protein romA","alt_locus_tag":"VBIMycTub87468_1009","genome_id":"83332.12","locus_tag":"Rv0906","genome_name":"Mycobacterium tuberculosis H37Rv"},"fig|233413.5.peg.1011":{"function":"Outer membrane protein romA","genome_id":"233413.5","alt_locus_tag":"VBIMycBov88188_1011","locus_tag":"Mb0930","genome_name":"Mycobacterium bovis AF2122/97"}},null,{"fig|83332.12.peg.1009":{"location":"1008944..1010062","gene_id":885150,"accession":"NC_000962","start":1008944,"feature_id":"PATRIC.83332.12.NC_000962.CDS.1008944.1010062.fwd","sequence_id":"NC_000962","annotation":"PATRIC","product":"Outer membrane protein romA","genome_id":"83332.12","figfam_id":"FIG01371060","uniprotkb_accession":["I6XWJ0","P64759"],"gi":15608046,"p2_feature_id":18150533,"pos_group":"NC_000962:1010062:+","alt_locus_tag":"VBIMycTub87468_1009","na_length":1119,"strand":"+","refseq_locus_tag":"Rv0906","segments":["1008944..1010062"],"feature_type":"CDS","taxon_id":83332,"protein_id":"NP_215421.1","aa_length":372,"patric_id":"fig|83332.12.peg.1009","end":1010062,"genome_name":"Mycobacterium tuberculosis H37Rv","public":true,"owner":"PATRIC","date_inserted":"2014-10-20T23:55:03.806Z","date_modified":"2014-10-27T07:44:09.673Z","na_sequence":"atggtgcgccgagcgctacgactggcggccggcaccgcctcgctggccgccggcacgtggctgttgcgtgcgctgcacggcacgccggccgcgctcggtgccgacgcggcgtcgatcagggctgtgtcggagcaatcgccgaactatcgtgacggcgccttcgtcaacctggatcccgcgtcgatgttcaccctggatcgcgaggagcttcggctcatcgtgtgggagttagtggccagacacagtgcgagccggccggcggcgccgatcccgttggcctcgccgaatatctaccggggtgacgccagccggctcgccgtcagctggttcggtcactcgacggcgctgctggaaatcgacggctaccgggtgcttaccgatccggtgtggagcgatcggtgctcaccgtccgacgtcgtcggcccccagcgcctgcatccgccgccggtgcaactggcagctctcccggccgtcgacgccgtggtcatcagccacgaccactacgaccatctcgatatcgacaccgtggttgcgctggtcggcatgcaacgggccccgttccttgtgccgctcggggtcggcgcccaccttcggtcgtggggtgttccgcaggatcgcattgttgagctcgactggaaccagagcgctcaggtcgatgagctcaccgtggtctgcgtgccggcacggcacttctcgggacggttcctgagccgcaacaccacactgtgggcctcgtgggcgtttgttgggccgaaccatcgcgcctacttcggcggtgataccggatacaccaagagcttcacccagatcggcgcggaccacggaccgttcgacctgaccctgctgcccatcggggcctacaacacggcgtggccggacatccacatgaaccccgaggaggcggtccgggcgcacctggacgtcaccgattcgggctcgggaatgctggtgccggtgcactggggcaccttccggctggccccccatccgtggggcgagccggtcgagcggctgctcgcggcggctgaacccgagcacgtcacggtagccgtgccgctacccggtcagcgggtcgacccgaccgggcccatgagattgcacccatggtggcggctgtaa","aa_sequence_md5":"78bc6158e03f08557fc918cd8634140d","aa_sequence":"MVRRALRLAAGTASLAAGTWLLRALHGTPAALGADAASIRAVSEQSPNYRDGAFVNLDPASMFTLDREELRLIVWELVARHSASRPAAPIPLASPNIYRGDASRLAVSWFGHSTALLEIDGYRVLTDPVWSDRCSPSDVVGPQRLHPPPVQLAALPAVDAVVISHDHYDHLDIDTVVALVGMQRAPFLVPLGVGAHLRSWGVPQDRIVELDWNQSAQVDELTVVCVPARHFSGRFLSRNTTLWASWAFVGPNHRAYFGGDTGYTKSFTQIGADHGPFDLTLLPIGAYNTAWPDIHMNPEEAVRAHLDVTDSGSGMLVPVHWGTFRLAPHPWGEPVERLLAAAEPEHVTVAVPLPGQRVDPTGPMRLHPWWRL","pgfam_id":"PGF_00028347","plfam_id":"PLF_1763_00000156"},"fig|233413.5.peg.1011":{"location":"1009409..1010527","gene_id":1092857,"accession":"NC_002945","start":1009409,"feature_id":"PATRIC.233413.5.NC_002945.CDS.1009409.1010527.fwd","sequence_id":"NC_002945","annotation":"PATRIC","product":"Outer membrane protein romA","genome_id":"233413.5","figfam_id":"FIG01371060","uniprotkb_accession":["P64760"],"gi":31792094,"p2_feature_id":18003706,"pos_group":"NC_002945:1010527:+","alt_locus_tag":"VBIMycBov88188_1011","na_length":1119,"strand":"+","refseq_locus_tag":"Mb0930","segments":["1009409..1010527"],"feature_type":"CDS","taxon_id":233413,"protein_id":"NP_854587.1","aa_length":372,"patric_id":"fig|233413.5.peg.1011","end":1010527,"genome_name":"Mycobacterium bovis AF2122/97","public":true,"owner":"PATRIC","date_inserted":"2014-10-20T20:19:41.13Z","date_modified":"2014-10-27T06:55:37.908Z","na_sequence":"atggtgcgccgagcgctacgactggcggccggcaccgcctcgctggccgccggcacgtggctgttgcgtgcgctgcacggcacgccggccgcgctcggtgccgacgcggcgtcgatcagggctgtgtcggagcaatcgccgaactatcgtgacggcgccttcgtcaacctggatcccgcgtcgatgttcaccctggatcgcgaggagcttcggctcatcgtgtgggagttagtggccagacacagtgcgagccggccggcggcgccgatcccgttggcctcgccgaatatctaccggggtgacgccagccggctcgccgtcagctggttcggtcactcgacggcgctgctggaaatcgacggctaccgggtgcttaccgatccggtgtggagcgatcggtgctcaccgtccgacgtcgtcggcccccagcgcctgcatccgccgccggtgcaactggcagctctcccggccgtcgacgccgtggtcatcagccacgaccactacgaccatctcgatatcgacaccgtggttgcgctggtcggcatgcaacgggccccgttccttgtgccgctcggggtcggcgcccaccttcggtcgtggggtgttccgcaggatcgcattgttgagctcgactggaaccagagcgctcaggtcgatgagctcaccgtggtctgcgtgccggcacggcacttctcgggacggttcctgagccgcaacaccacactgtgggcctcgtgggcgtttgttgggccgaaccatcgcgcctacttcggtggtgataccggatacaccaagagcttcacccagatcggcgcggaccacggaccgttcgacctgaccctgctgcccatcggggcctacaacacggcgtggccggacatccacatgaaccccgaggaggcggtccgggcgcacctggacgtcaccgattcgggctcgggaatgctggtgccggtgcactggggcaccttccggctggccccccatccgtggggcgagccggtcgagcggctactcgcggcggctgaacccgagcacgtcacggtagccgtgccgctacccggtcagcgggtcgacccgaccgggcccatgagattgcacccatggtggcggctgtaa","aa_sequence_md5":"78bc6158e03f08557fc918cd8634140d","aa_sequence":"MVRRALRLAAGTASLAAGTWLLRALHGTPAALGADAASIRAVSEQSPNYRDGAFVNLDPASMFTLDREELRLIVWELVARHSASRPAAPIPLASPNIYRGDASRLAVSWFGHSTALLEIDGYRVLTDPVWSDRCSPSDVVGPQRLHPPPVQLAALPAVDAVVISHDHYDHLDIDTVVALVGMQRAPFLVPLGVGAHLRSWGVPQDRIVELDWNQSAQVDELTVVCVPARHFSGRFLSRNTTLWASWAFVGPNHRAYFGGDTGYTKSFTQIGADHGPFDLTLLPIGAYNTAWPDIHMNPEEAVRAHLDVTDSGSGMLVPVHWGTFRLAPHPWGEPVERLLAAAEPEHVTVAVPLPGQRVDPTGPMRLHPWWRL","pgfam_id":"PGF_00028347","plfam_id":"PLF_1763_00000156"}}],"version":"1.1","id":"9067495661058316"}';
 
+			return JSON.parse(r);
+		},
+
+		test_result_contigs: function(){
+			var r = '{"result":[[{"report":{"results":{"search":{"query_masking":[{"from":18,"to":33}],"query_id":"Query_1","stat":{"db_len":336225811,"db_num":184,"hsp_len":26,"eff_space":91788340371,"lambda":1.28,"entropy":0.85,"kappa":0.46},"query_len":299,"hits":[{"hsps":[{"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","score":232,"hit_strand":"Plus","evalue":4.54418e-119,"gaps":3,"hit_from":1008944,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","bit_score":429.543,"align_len":243,"query_strand":"Plus","identity":240,"query_to":299,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","query_from":57,"hit_to":1009183,"num":1}],"len":4411532,"description":[{"title":"accn|NC_000962   Mycobacterium tuberculosis H37Rv, complete genome.   [Mycobacterium tuberculosis H37Rv | 83332.12]","accession":"177","id":"accn|NC_000962"}],"num":1},{"len":4345492,"description":[{"title":"accn|NC_002945   Mycobacterium bovis AF2122/97, complete genome.   [Mycobacterium bovis AF2122/97 | 233413.5]","id":"accn|NC_002945","accession":"91"}],"num":2,"hsps":[{"num":1,"hit_to":1009648,"query_from":57,"query_to":299,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","identity":240,"query_strand":"Plus","align_len":243,"bit_score":429.543,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","gaps":3,"hit_from":1009409,"evalue":4.54418e-119,"score":232,"hit_strand":"Plus","hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA"}]}]}},"search_target":{"db":"/tmp/6jvELydBA_"},"version":"BLASTN 2.3.0+","reference":"Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb Miller (2000), A greedy algorithm for aligning DNA sequences, J Comput Biol 2000; 7(1-2):203-14.","program":"blastn","params":{"filter":"L;m;","gap_extend":0,"sc_match":1,"gap_open":0,"sc_mismatch":-2,"expect":10}}}],{"accn|NC_002945":{"function":"Mycobacterium bovis AF2122/97, complete genome.","genome_id":"233413.5","genome_name":"Mycobacterium bovis AF2122/97"},"accn|NC_000962":{"function":"Mycobacterium tuberculosis H37Rv, complete genome.","genome_id":"83332.12","genome_name":"Mycobacterium tuberculosis H37Rv"}},null,{"NC_002945":{"accession":"NC_002945","sequence_id":"NC_002945","taxon_id":233413,"genome_id":"233413.5","genome_name":"Mycobacterium bovis AF2122/97"},"NC_000962":{"accession":"NC_000962","sequence_id":"NC_000962","taxon_id":83332,"genome_id":"83332.12","genome_name":"Mycobacterium tuberculosis H37Rv"}}],"id":"20166393994618526","version":"1.1"}';
 			return JSON.parse(r);
 		}
 	});
