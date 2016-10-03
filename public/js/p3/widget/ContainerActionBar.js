@@ -17,7 +17,9 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 			this.pathContainer = domConstruct.create("div", {"class": "wsBreadCrumbContainer"}, this.domNode);
-			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);
+			this.containerNode = domConstruct.create("span", {
+				"class": "ActionButtonContainer wsActionContainer"
+			}, this.domNode);
 		},
 
 		generatePathLinks: function(path){
