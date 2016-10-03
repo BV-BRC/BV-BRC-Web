@@ -8,27 +8,33 @@ function(Deferred, Topic, xhr,
 	var ready = new Deferred();
 	var firstRun = true;
 
-	var _DataStore = new Observable(new MemoryStore({data: []}));
-
+	// var _DataStore = new Observable(new MemoryStore({idProperty: "id", data: []}));
+	var _DataStore = new MemoryStore({idProperty: "id", data: []});
 	function PollJobs(){
 		if(window.App && window.App.api && window.App.api.service){
+			console.log("AppService.enumerate_tasks")
 			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 1000]), function(tasks){
-//				//console.log("tasks: ", tasks);
+				console.log("Enumerate Task Results: ", tasks);
 				tasks[0].forEach(function(task){
-					when(_DataStore.get(task.id), function(oldTask){
-						if(!oldTask){
-							_DataStore.put(task);
-						}else if(oldTask.status != task.status){
-							_DataStore.put(task);
-						}
-					}, function(err){
-						console.log("ERROR RETRIEVING TASK ", err)
-					});
+					// console.log("Get and Update Task: ", task);
+					console.log("Checking for task: ", task.id)
+					// when(_DataStore.get(task.id), function(oldTask){
+					// 	if(!oldTask){
+					// 		 console.log("No Old Task, store as new");
+					// 		_DataStore.put(task);
+					// 	}else if(oldTask.status != task.status){
+					// 		console.log("Updating Status of task", task.status)
+					// 		_DataStore.put(task);
+					// 	}
+					// }, function(err){
+					// 	console.log("ERROR RETRIEVING TASK ", err)
+					// });
 
 					_DataStore.put(task);
 				});
 
 				Deferred.when(getJobSummary(), function(msg){
+					console.log("Publish Job Summary: ", msg);
 					Topic.publish("/Jobs", msg);
 				});
 
@@ -127,7 +133,8 @@ function(Deferred, Topic, xhr,
 		},
 
 		getStore: function(){
-			return _DataStore;
+			return new Observable(_DataStore);
+			// return _DataStore;
 		}
 	}
 });
