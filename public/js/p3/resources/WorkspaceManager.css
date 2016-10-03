@@ -30,6 +30,11 @@ a.HelpLink:active {
   color: #09456f;
 }
 
+.wsBreadCrumbContainer {
+	display: inline-block;
+	margin: 12px 0 0 8px;
+}
+
 .wsBreadCrumb {
 	font-size:1.2em;
 	margin: 2px 2px 2px 4px;
@@ -263,7 +268,7 @@ th.dgrid-cell.wsItemType {
 }
 
 .ActionButtonContainer {
-	float: left;
+	float: right;
 	font-size:.85em;
 	padding-top: 0;
 	margin-top: 4px;
