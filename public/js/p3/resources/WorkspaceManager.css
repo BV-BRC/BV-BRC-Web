@@ -433,6 +433,9 @@ th.dgrid-cell.wsItemType {
 }
 
 .tipHeader > span {
+	cursor: default; 	
+    position: relative;
+    bottom: 4px;	
 	font-size: 1em;
 	font-weight: 600;
 	margin: 4px;
