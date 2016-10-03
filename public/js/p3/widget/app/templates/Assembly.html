@@ -64,9 +64,18 @@
                         <option value="true">True</option>
                         </select>
                     </div>
+				    <div class="approwsegment" style="margin:10 0 0 0">
+                        <label class="paramlabel">Platform</label><br>
+                        <select data-dojo-type="dijit/form/Select" name="paired_platform" data-dojo-attach-point="paired_platform" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:''">
+                        <option value="infer">Infer Platform</option>
+                        <option value="illumina">Illumina</option>
+                        <option value="pacbio">PacBio</option>
+                        <option value="nanopore">Nanopore</option>
+                        </select>
+                    </div>
                 </div>
 			</div>
-                </div>
+        </div>
 
 		<div class="appbox appshadow">
 			<div class="headerrow">
@@ -79,7 +88,26 @@
 				<label class="paramlabel" for="singleread">Read File</label><br>
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
 			</div>
-                </div>
+			<div class="approw">
+				<div class="approwsegment" data-dojo-attach-point="advanced3">
+					<label class="largelabel">Advanced</label>
+					<div class="iconbox" style="margin-left:0px">
+						<i data-dojo-attach-point="advicon3" class="fa icon-caret-down fa-1"></i>
+					</div>
+				</div>
+			</div>
+			<div class="approw"  data-dojo-attach-point="advrow3" style="display: none">
+				    <div class="approwsegment" style="margin:0 0 0 0">
+                        <label class="paramlabel">Platform</label><br>
+                        <select data-dojo-type="dijit/form/Select" name="single_platform" data-dojo-attach-point="single_platform" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:''">
+                        <option value="infer">Infer Platform</option>
+                        <option value="illumina">Illumina</option>
+                        <option value="pacbio">PacBio</option>
+                        <option value="nanopore">Nanopore</option>
+                        </select>
+                    </div>
+			</div>
+        </div>
 
 		<div class="appbox appshadow">
 			<div class="headerrow">
@@ -130,8 +158,18 @@
                     </div>
                     <div data-dojo-type="dijit/form/ValidationTextBox" name="pipeline" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Advanced assembly pipeline arguments that overrides recipe.',missingMessage:'',trim:true,placeHolder:'Arguments override recipe'"></div>
                 </div>
+                <div class="approw" style="margin:0 0 0 0">
+                    <div class="approwsegment" style="margin:0 0 0 0">
+                        <label class="paramlabel" for="min_contig_len">Min. contig length</label><br>
+                        <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}" ></div>
+                    </div>
+                    <div class="approwsegment" style="margin:10 0 0 0">
+                        <label class="paramlabel" for="min_contig_cov">Min. contig coverage</label><br>		
+                        <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:1}" ></div>		
+                    </div>
+                </div>
             </div>
-        	</div>
+        </div>
 		</td>
 		<td>
 		<div class="appbox appshadow" style="height:251px; width:330px">

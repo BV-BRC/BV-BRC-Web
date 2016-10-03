@@ -82,7 +82,7 @@ define("circulus/SectionTrackWithLabel", [
 		},
 */
 		render: function(){
-			console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			//console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
 			if (this.visible){
 				// console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
 				this.renderBackground();
@@ -104,13 +104,13 @@ define("circulus/SectionTrackWithLabel", [
 			var sections={}
 			data.forEach(function(d){
 				totalLength += d.length;
-				console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+				//console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
 			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
-			console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+			//console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
 
 			var gap = (this.gap);
 			data.forEach(lang.hitch(this,function(d,index){
@@ -123,7 +123,7 @@ define("circulus/SectionTrackWithLabel", [
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;
 				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
-				console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+				//console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
 
 				var innerStart= {
 					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
@@ -257,7 +257,7 @@ define("circulus/SectionTrackWithLabel", [
 				}	
 			}));
 
-			console.log("Set Sections: ", sections);
+			//console.log("Set Sections: ", sections);
 			this.set("sections", sections);
 
 		}
