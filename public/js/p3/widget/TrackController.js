@@ -12,6 +12,22 @@ define([
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
 			Topic.subscribe("/addTrack", lang.hitch(this, "onAddTrack"));
+
+            var customTrackHelp = "Add custom tracks by selecting feature type, strand and keywords to show genes of interest."; 
+            var customTT = new TooltipDialog({
+                content: customTrackHelp, 
+                onMouseLeave: function(){
+                    popup.close(customTT);
+                }
+            });
+            on(this.customTrackInfo, 'mouseover', function(){
+                //console.log("customTrackInfo", customTT.content);
+                popup.open({
+                    popup: customTT,
+                    around: this,
+                    orient: ["below-centered"]                    
+                });
+            });	
 		},
 
 		visibleIconClass: "icon-eye",
