@@ -160,3 +160,7 @@
 .patric .fcSummaryWidget.SummaryWidget .field-evidence_code {
     width: 10%;
 }
+
+.patric .sgViewerWidget {
+    height: 76px;
+}
