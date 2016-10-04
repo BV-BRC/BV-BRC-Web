@@ -266,6 +266,7 @@ define([
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 		_setFeatureViewerAttr: function(data){
+			domConstruct.empty(this.sgViewerNode);
 			var gene_viewer = new D3SingleGeneViewer();
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);

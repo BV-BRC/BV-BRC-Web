@@ -5,14 +5,14 @@ define([
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid","./PerspectiveToolTip"
+	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip"
 
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			WorkspaceExplorerView, Topic, ItemDetailPanel,
 			ActionBar, Deferred, WorkspaceManager, lang,
 			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid,PerspectiveToolTipDialog){
+			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
 		"disabled": false,
@@ -25,19 +25,21 @@ define([
 			if(this._started){
 				return;
 			}
-			console.log("this.design: ", this.design);
+
 			this.actionPanel = new ActionBar({
 				splitter: false,
 				region: "right",
 				layoutPriority: 2,
 				style: "width:48px;text-align:center;"
 			});
+
 			this.browserHeader = new ContainerActionBar({
 				region: "top",
 				className: "BrowserHeader",
 				path: this.path,
 				layoutPriority: 3
 			});
+
 			var self = this;
 
 			this.actionPanel.addAction("ToggleItemDetail", "fa icon-info-circle fa-2x", {
@@ -46,10 +48,6 @@ define([
 				validTypes: ["*"],
 				tooltip: "Toggle Selection Detail"
 			}, function(selection){
-				console.log("Edit Item Action", selection);
-				//	this.itemDetailPanel.set("selection", selection);
-
-				//	self.itemDetailPanel.set("item",selection[0]);
 				if(self.getChildren().some(function(child){
 						return child === self.itemDetailPanel
 					})){
@@ -57,7 +55,6 @@ define([
 				}else{
 					self.addChild(self.itemDetailPanel);
 				}
-
 			}, true);
 
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
@@ -65,24 +62,26 @@ define([
 				validTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "Switch to the Genome Group View.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"GenomeGroup", perspectiveUrl: "/view/GenomeGroup/" + selection[0].path}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "GenomeGroup",
+							perspectiveUrl: "/view/GenomeGroup/" + selection[0].path
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/GenomeGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+					Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
 				}
 			});
 
@@ -92,29 +91,30 @@ define([
 				multiple: true,
 				min: 2,
 				tooltip: "Switch to the Genome List View.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					var q = selection.map(function(sel){
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"GenomeList", perspectiveUrl: "/view/GenomeList/" + q}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "GenomeList",
+							perspectiveUrl: "/view/GenomeList/" + q
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/GenomeGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					//console.log("Genome Groups q=", q);
-					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+					Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
 				}
 			});
 
@@ -124,9 +124,8 @@ define([
 				validContainerTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "View Genome. Press and Hold for more options.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
 						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
 						around: button,
@@ -134,9 +133,9 @@ define([
 					});
 				}
 			}, function(selection){
-				// console.log("selection: ", selection);
+
 				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id
+				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 			}, true);
 
 			this.actionPanel.addAction("ViewFeatureGroup", "MultiButton fa icon-selection-FeatureList fa-2x", {
@@ -144,24 +143,27 @@ define([
 				validTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "Switch to the Feature Group View.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"FeatureGroup", perspectiveUrl: "/view/FeatureGroup/" + selection[0].path}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "FeatureGroup",
+							perspectiveUrl: "/view/FeatureGroup/" + selection[0].path
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/FeatureGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/FeatureGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					Topic.publish("/navigate", {href:"/view/FeatureList/?" + q});
+
+					Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
 				}
 			});
 
@@ -171,29 +173,31 @@ define([
 				multiple: true,
 				min: 2,
 				tooltip: "Switch to the Feature List View.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					var q = selection.map(function(sel){
 						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"FeatureList", perspectiveUrl: "/view/FeatureList/" + q}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "FeatureList",
+							perspectiveUrl: "/view/FeatureList/" + q
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/FeatureGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/FeatureGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					//console.log("Feature Groups q=", q);
-					Topic.publish("/navigate", {href:"/view/FeatureList/?" + q});
+
+					Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
 				}
 			});
 
@@ -203,19 +207,21 @@ define([
 				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Feature. Press and Hold for more options.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "Feature",
+							perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+						}),
 						around: button,
 						orient: ["below"]
 					});
-				}	
+				}
 			}, function(selection){
-				console.log("selection: ", selection);
+
 				var sel = selection[0];
-				window.location = "/view/Feature/" + sel.feature_id
+				Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
 			}, true);
 
 			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-selection-Genome fa-2x", {
@@ -224,9 +230,9 @@ define([
 				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Genome. Press and Hold for more options.",
-				pressAndHold: function(selection,button,opts,evt){
-					console.log("PressAndHold");
-					console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+					// console.log("PressAndHold");
+					// console.log("Selection: ", selection, selection[0])
 					popup.open({
 						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
 						around: button,
@@ -234,36 +240,10 @@ define([
 					});
 				}
 			}, function(selection){
-				console.log("selection: ", selection);
-				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id
-			}, true);
 
-/*
-			this.actionPanel.addAction("ViewCDSFeatures", "MultiButton fa icon-genome-features-cds fa-2x", {
-				validTypes: ["*"],
-				label: "CDS",
-				validContainerTypes: ["genome_group"],
-				multiple: false,
-				tooltip: "View CDS Features"
-			}, function(selection){
-				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"
+				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 			}, true);
-
-			this.actionPanel.addAction("ViewGenomeBrowser", "MultiButton fa icon-genome-browser fa-2x", {
-				validTypes: ["*"],
-				label: "BROWSER",
-				validContainerTypes: ["genome_group"],
-				multiple: false,
-				tooltip: "Open Genome Browser"
-			}, function(selection){
-				console.log("selection: ", selection);
-				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=browser";
-			}, true);
-*/
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
@@ -271,26 +251,26 @@ define([
 				validTypes: WorkspaceManager.downloadTypes,
 				tooltip: "Download"
 			}, function(selection){
-				console.log("Download Item Action", selection);
+				// console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
 					popup.close(downloadTT);
 				}
-			})
+			});
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				console.log("REL: ", rel);
+				// console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-				console.log("selection: ", selection);
-				console.log("DownloadQuery: ", dataType, currentQuery);
-				console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+				// console.log("selection: ", selection);
+				// console.log("DownloadQuery: ", dataType, currentQuery);
+				// console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
@@ -302,7 +282,7 @@ define([
 				tooltip: "Download Table",
 				tooltipDialog: downloadTT
 			}, function(selection){
-				console.log("Download Table", selection);
+				// console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
 					around: this._actions.DownloadTable.button,
@@ -315,19 +295,20 @@ define([
 				content: dfc, onMouseLeave: function(){
 					popup.close(downloadTTSelect);
 				}
-			})
+			});
 
 			on(downloadTTSelect.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				console.log("REL: ", rel);
+				// console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
 				var dataType = (selection[0].type == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.getQuery(selection[0]);
-				console.log("selection: ", selection);
-				console.log("DownloadQuery: ", dataType, currentQuery);
+				// console.log("selection: ", selection);
+				// console.log("DownloadQuery: ", dataType, currentQuery);
 				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
+
 			this.actionPanel.addAction("SelectDownloadTable", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
 				multiple: false,
@@ -335,7 +316,7 @@ define([
 				tooltip: "Download Selection",
 				tooltipDialog: downloadTTSelect
 			}, function(selection){
-				console.log("Download Table", selection);
+				// console.log("Download Table", selection);
 				if(selection.length == 1){
 					popup.open({
 						popup: this._actions.SelectDownloadTable.options.tooltipDialog,
@@ -346,12 +327,12 @@ define([
 
 			}, true);
 
-			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>'
+			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
 			var downloadTTSelectFile = new TooltipDialog({
 				content: dtsfc, onMouseLeave: function(){
 					popup.close(downloadTTSelect);
 				}
-			})
+			});
 
 			this.browserHeader.addAction("SelectDownloadSeqComparison", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
@@ -360,8 +341,8 @@ define([
 				tooltip: "Download Results",
 				tooltipDialog: downloadTTSelectFile
 			}, lang.hitch(this.browserHeader, function(selection){
-				console.log("Download Table", selection);
-				console.log("this._actions: ", this._actions);
+				// console.log("Download Table", selection);
+				// console.log("this._actions: ", this._actions);
 				this._actions.SelectDownloadSeqComparison.selection = selection[0];
 				if(selection.length == 1){
 					popup.open({
@@ -370,7 +351,6 @@ define([
 						orient: ["below"]
 					});
 				}
-
 			}), true);
 
 			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader, function(evt){
@@ -381,7 +361,7 @@ define([
 				outputFiles.some(function(t){
 					var fname = t[0];
 					if(fname.indexOf(rel) >= 0){
-						console.log("DOWNLOAD: ", fname);
+						// console.log("DOWNLOAD: ", fname);
 						WorkspaceManager.downloadFile(fname);
 						return true;
 					}
@@ -396,10 +376,9 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
-				console.log("View Genome Annotation: ", selection[0]);
+				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				var url = "/view/Genome/" + gid;
-				window.location = url;
+				Topic.publish("/navigate", {href: "/view/Genome/" + gid});
 
 			}, true);
 
@@ -409,7 +388,7 @@ define([
 				validTypes: ["model"],
 				tooltip: "View Model @ Modelseed"
 			}, function(selection){
-				console.log("View Model: ", selection[0]);
+				// console.log("View Model: ", selection[0]);
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				//window.location=url;
@@ -422,10 +401,9 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
-				console.log("View Genome Annotation: ", selection[0]);
+				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))";
-
+				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"});
 			}, true);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
@@ -434,9 +412,9 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
-				console.log("View Genome Annotation: ", selection[0]);
+				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/view/Genome/" + gid + "#view_tab=browser";
+				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=browser"});
 
 			}, true);
 
@@ -446,7 +424,7 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Upload to Folder"
 			}, function(selection){
-				console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
+				// console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
 			}, true);
 
@@ -456,26 +434,25 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Create Folder"
 			}, function(selection){
-				console.log("CREATE FOLDER", selection[0].path);
+				// console.log("CREATE FOLDER", selection[0].path);
 				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
 			}, true);
 
-
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
 					popup.close(viewFASTATT);
 				}
-			})
+			});
 
 			on(viewFASTATT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				console.log("selection: ", selection);
+				// console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection');
+				// console.log("selection: ", selection);
 				popup.close(viewFASTATT);
 				var idType = "feature_id";
-				
+
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -483,40 +460,6 @@ define([
 				Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
 			});
 
-/*
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
-			var viewFASTATT = new TooltipDialog({
-				content: vfc, onMouseLeave: function(){
-					popup.close(viewFASTATT);
-				}
-			})
-
-			on(viewFASTATT.domNode, "div:click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				console.log("selection: ", selection);
-				popup.close(viewFASTATT);
-
-				var ids = selection.map(function(d){
-					return d['feature_id'];
-				});
-				var frm = domConstruct.create("form", {
-					style: {display: "none"},
-					method: "POST",
-					action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta",
-					target: "fastaDisplay"
-				}, this.domNode);
-				domConstruct.create("input", {name: "fastaaction", value: "display"}, frm);
-				domConstruct.create("input", {name: "fastascope", value: "Selected"}, frm);
-				domConstruct.create("input", {name: "fastatype", value: rel}, frm);
-				domConstruct.create("input", {name: "fids", value: ids}, frm);
-
-				window.open("", "fastaDisplay", "width=920,height=400,scrollbars,resizable")
-
-				frm.submit();
-			});
-*/
 			this.actionPanel.addAction("ViewFASTA", "fa icon-fasta fa-2x", {
 				label: "FASTA",
 				ignoreDataType: true,
@@ -531,7 +474,7 @@ define([
 					around: this._actions.ViewFASTA.button,
 					orient: ["below"]
 				});
-				console.log("popup viewFASTA", selection);
+				// console.log("popup viewFASTA", selection);
 
 			}, true);
 
@@ -544,7 +487,7 @@ define([
 				validContainerTypes: ["feature_group"],
 				tooltip: "Multiple Sequence Alignment"
 			}, function(selection){
-				var selection = self.actionPanel.get('selection')
+				var selection = self.actionPanel.get('selection');
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -555,7 +498,7 @@ define([
 						callType: 'toAligner'
 					}
 				}).then(function(results){
-					document.location = "/portal/portal/patric/MSA?cType=&cId=&pk=" + results;
+					Topic.publish("/navigate", {href: "/portal/portal/patric/MSA?cType=&cId=&pk=" + results});
 				});
 
 			}, true);
@@ -564,13 +507,13 @@ define([
 				content: IDMappingTemplate, onMouseLeave: function(){
 					popup.close(idMappingTTDialog);
 				}
-			})
+			});
 
 			on(idMappingTTDialog.domNode, "TD:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				console.log("selection: ", selection);
+				// console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection');
+				// console.log("selection: ", selection);
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -585,7 +528,7 @@ define([
 						sraction: 'save_params'
 					}
 				}).then(function(results){
-					document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
+					Topic.publish("/navigate", {href: "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results});
 				});
 				popup.close(idMappingTTDialog);
 			});
@@ -600,14 +543,14 @@ define([
 				tooltipDialog: idMappingTTDialog
 			}, function(selection){
 
-				console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
-				console.log("this: ", this);
+				// console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
+				// console.log("this: ", this);
 				popup.open({
 					popup: this._actions.idmapping.options.tooltipDialog,
 					around: this._actions.idmapping.button,
 					orient: ["below"]
 				});
-				console.log("popup idmapping", selection);
+				// console.log("popup idmapping", selection);
 			}, true);
 
 			this.actionPanel.addAction("Pathway Summary", "fa icon-git-pull-request fa-2x", {
@@ -619,7 +562,7 @@ define([
 				tooltip: "Pathway Summary"
 			}, function(selection){
 
-				var selection = self.actionPanel.get('selection')
+				var selection = self.actionPanel.get('selection');
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -630,7 +573,7 @@ define([
 						callType: 'saveParams'
 					}
 				}).then(function(results){
-					document.location = "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results;
+					Topic.publish("/navigate", {href: "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results});
 				});
 
 			}, true);
@@ -639,10 +582,11 @@ define([
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
 			}, function(selection){
-				console.log("View Gene List", selection);
-				window.location = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
+				// console.log("View Gene List", selection);
+				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
 						return s.path;
-					})
+					});
+				Topic.publish("/navigate", {href: url});
 			}, true);
 
 			this.actionPanel.addAction("ExperimentGeneList3", "fa icon-list-unordered fa-2x", {
@@ -652,12 +596,13 @@ define([
 				validContainerTypes: ["experiment"],
 				tooltip: "View Experiment Gene List"
 			}, function(selection){
-				console.log("this.currentContainerType: ", this.currentContainerType, this);
-				console.log("View Gene List", selection);
+				// console.log("this.currentContainerType: ", this.currentContainerType, this);
+				// console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
-				window.location = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
+				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
 						return s.pid;
-					})
+					});
+				Topic.publish("/navigate", {href: url});
 			}, true);
 
 			this.actionPanel.addAction("ExperimentGeneList2", "fa icon-list-unordered fa-2x", {
@@ -666,9 +611,9 @@ define([
 				validTypes: ["*"],
 				tooltip: "View Experiment Group Gene List"
 			}, function(selection){
-				console.log("View Gene List2", selection);
-				var eids = []
-				var wsExps = []
+				// console.log("View Gene List2", selection);
+				var eids = [];
+				var wsExps = [];
 				selection.forEach(function(s){
 					if(s.path){
 						wsExps.push(s.path);
@@ -685,15 +630,8 @@ define([
 					url = url + "&wsExpId=" + wsExps.join(",");
 				}
 
-				window.location = url;
+				Topic.publish("/navigate", {href: url});
 			}, true);
-
-			/*
-			this.actionPanel.addAction("UploadItem","fa icon-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
-				console.log("Replace Item Action", selection);
-				Topic.publish("/openDialog",{type:"UploadReplace",params:{path: selection[0].path}});
-			}, true);
-			*/
 
 			this.actionPanel.addAction("RemoveItem", "fa icon-x fa-2x", {
 				label: "REMOVE",
@@ -703,25 +641,24 @@ define([
 				validContainerTypes: ["genome_group", "feature_group"],
 				tooltip: "Remove Selection from Group"
 			}, function(selection){
-				console.log("Remove Items from Group", selection);
-				console.log("currentContainerWidget: ", this.currentContainerWidget);
+				// console.log("Remove Items from Group", selection);
+				// console.log("currentContainerWidget: ", this.currentContainerWidget);
 
-				var type = selection[0].document_type;
 				var idType = (this.currentContainerWidget.containerType == "genome_group") ? "genome_id" : "feature_id";
 				var type = (idType == "genome_id") ? "genome" : "genome feature";
 				var objs = selection.map(function(s){
-					console.log('s: ', s, s.data);
+					// console.log('s: ', s, s.data);
 					return s[idType];
 				});
 
 				var conf = "Are you sure you want to remove " + objs.length + " " + type +
 					((objs.length > 1) ? "s" : "") +
-					" from this group?"
+					" from this group?";
 				var _self = this;
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path'));
+						// console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path'));
 						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'), idType, objs), function(){
 							if(_self.currentContainerWidget && _self.currentContainerWidget.refresh){
 								_self.currentContainerWidget.refresh();
@@ -730,13 +667,12 @@ define([
 							}
 						});
 					}
-				})
-				dlg.startup()
+				});
+				dlg.startup();
 				dlg.show();
 
 			}, true);
 
-			var _self = this;
 			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {
 				label: "SPLIT",
 				ignoreDataType: true,
@@ -745,7 +681,7 @@ define([
 				validContainerTypes: ["genome_group", "feature_group", "experiment_group"],
 				tooltip: "Copy selection to a new or existing group"
 			}, function(selection, containerWidget){
-				console.log("Add Items to Group", selection);
+				// console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title: "Copy Selection to Group"});
 				var stg = new SelectionToGroup({
 					selection: selection,
@@ -774,13 +710,7 @@ define([
 					validTypes: ["genome_group", "feature_group", "experiment_group"],
 					tooltip: "Select two or three groups to compare"
 				}, function(selection, containerWidget){
-					console.log("Compare groups", selection);
-					//console.log("containerWidget==", containerWidget);
-					//console.log("containerWidget. is?: ", containerWidget.domNode);
-					//var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: containerWidget.domNode});
 
-//                var dlg = new Dialog({title:"Group Comparison", minSize: 1000, style: "width: 1200px !important; height: 700px !important;",
-//                                     onHide: function() {dlg.destroy()}});
 					var dlg = new Dialog({
 						title: "Group Comparison",
 						style: "width: 1250px !important; height: 750px !important;",
@@ -797,43 +727,10 @@ define([
 						containerNode: dlg.containerNode
 					});
 					bc.addChild(stg);
-//				stg.startup();
 					dlg.startup();
 					dlg.show();
 				},
 				false);
-
-			this.actionPanel.addAction("ProteinFamily", "fa icon-group fa-2x", {
-				label: "ProteinFam",
-				multiple: true,
-				validTypes: ["genome_group"],
-				tooltip: "View protein families"
-			}, function(selection){
-
-				if(selection.length === 1){
-					var path = selection[0].path;
-					Topic.publish("/navigate", {href:"/view/GenomeGroup" + path + "#view_tab=proteinFamilies"})
-				}else{
-					// read genome ids
-					var paths = selection.map(function(d){ return d.path});
-					WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function(objs){
-						var genomeIdHash = {};
-						objs.forEach(function(obj){
-							var data = JSON.parse(obj.data);
-							data.id_list.genome_id.forEach(function(d){
-								if(!genomeIdHash.hasOwnProperty(d)){
-									genomeIdHash[d] = true;
-								}
-							})
-						});
-
-						Topic.publish("/navigate", {href:"/view/GenomeList/?in(genome_id,(" + Object.keys(genomeIdHash) + "))#view_tab=proteinFamilies"});
-					}));
-				}
-			}, false);
-//			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
-//				console.log("Remove Items from Group", selection);
-//			},true);
 
 			this.actionPanel.addAction("DeleteItem", "fa icon-trash fa-2x", {
 				label: "DELETE",
@@ -843,7 +740,7 @@ define([
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
-					console.log('s: ', s, s.data);
+					// console.log('s: ', s, s.data);
 					return s.path || s.data.path;
 				});
 				var conf = "Are you sure you want to delete" +
@@ -855,8 +752,8 @@ define([
 					onConfirm: function(evt){
 						WorkspaceManager.deleteObject(objs, true, false);
 					}
-				})
-				dlg.startup()
+				});
+				dlg.startup();
 				dlg.show();
 			}, true);
 
@@ -897,12 +794,12 @@ define([
 			this.addChild(this.itemDetailPanel);
 			this.addChild(this.browserHeader);
 
-			var self = this;
 			this.inherited(arguments);
 
 		},
+
 		_setPathAttr: function(val){
-			console.log("WorkspaceBrowser setPath()", val)
+			// console.log("WorkspaceBrowser setPath()", val)
 			this.path = decodeURIComponent(val);
 			var parts = this.path.split("/").filter(function(x){
 				return x != "";
@@ -911,7 +808,7 @@ define([
 			});
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
-			console.log("Workspace: ", workspace, parts[1], val)
+			// console.log("Workspace: ", workspace, parts[1], val)
 			// if (!window.App.user || !window.App.user.id){
 			// 	Topic.publish("/login");
 			// 	return;
@@ -924,13 +821,13 @@ define([
 			Deferred.when(obj, lang.hitch(this, function(obj){
 
 				if(this.browserHeader){
-					console.log("Set BrowserHeader selection: ", [obj]);
+					// console.log("Set BrowserHeader selection: ", [obj]);
 					this.browserHeader.set("selection", [obj]);
 
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
-				console.log("Browse to Type: ", obj.type, obj);
+				// console.log("Browse to Type: ", obj.type, obj);
 				switch(obj.type){
 					case "folder":
 						panelCtor = WorkspaceExplorerView;
@@ -948,27 +845,26 @@ define([
 						params.data = obj;
 						break;
 					case "job_result":
-						var d = "p3/widget/viewer/JobResult"
-						console.log("job_result object: ", obj);
+						var d = "p3/widget/viewer/JobResult";
+						// console.log("job_result object: ", obj);
 						if(obj && obj.autoMeta && obj.autoMeta.app){
-							var id = obj.autoMeta.app.id || obj.autoMeta.app
+							var id = obj.autoMeta.app.id || obj.autoMeta.app;
 							switch(id){
 								case "DifferentialExpression":
-									console.log("Using Experiement Viewer");
-									d = "p3/widget/viewer/Experiment"
+									// console.log("Using Experiement Viewer");
+									d = "p3/widget/viewer/Experiment";
 									break;
 								case "GenomeComparison":
-									console.log("SeqComparison Viewer");
-									d = "p3/widget/viewer/SeqComparison"
+									// console.log("SeqComparison Viewer");
+									d = "p3/widget/viewer/SeqComparison";
 									break;
 								case "GenomeAnnotation":
-									console.log("GenomeAnnotation Viewer");
-									d = "p3/widget/viewer/GenomeAnnotation"
+									// console.log("GenomeAnnotation Viewer");
+									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
-
 							}
 						}
-						console.log("LOAD VIEWER: ", d, params);
+						// console.log("LOAD VIEWER: ", d, params);
 						panelCtor = window.App.getConstructor(d);
 						params.data = obj;
 						//params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
@@ -980,17 +876,17 @@ define([
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
-						console.log("FileViewer Ctor params: ", params);
+					// console.log("FileViewer Ctor params: ", params);
 				}
 
-				console.log("params.query: ", params.query);
+				// console.log("params.query: ", params.query);
 				Deferred.when(panelCtor, lang.hitch(this, function(Panel){
-					console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
+					// console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
 					if(!this.activePanel || !(this.activePanel instanceof Panel)){
 						if(this.activePanel){
 							this.removeChild(this.activePanel);
 						}
-						console.log("Creeate New Active Panel");
+						// console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
 						this.actionPanel.set("currentContainerWidget", newPanel);
@@ -998,14 +894,14 @@ define([
 
 						if(newPanel.on){
 							newPanel.on("select", lang.hitch(this, function(evt){
-								console.log("Selected: ", evt);
+								// console.log("Selected: ", evt);
 								var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-									console.log("rownum: ", rownum);
-									console.log("Row: ", evt.grid.row(rownum).data);
+									// console.log("rownum: ", rownum);
+									// console.log("Row: ", evt.grid.row(rownum).data);
 									return evt.grid.row(rownum).data;
 								}));
-								console.log("selection: ", sel);
-								console.log("this.activePanel: ", newPanel);
+								// console.log("selection: ", sel);
+								// console.log("this.activePanel: ", newPanel);
 								if(hideTimer){
 									clearTimeout(hideTimer);
 								}
@@ -1014,20 +910,6 @@ define([
 								}
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
-
-								/*
-								if (sel.length==1) {
-									if (this.getChildren().some(function(child){
-										return (child===this.actionPanel)
-									},this)) {
-										this.itemDetailPanel.set("item",sel[0]);
-									}
-								}else if (sel.length>1) {
-
-								}else {
-									this.removeChild(this.actionPanel);
-								}
-								*/
 							}));
 
 							newPanel.on("deselect", lang.hitch(this, function(evt){
@@ -1037,37 +919,24 @@ define([
 									this.itemDetailPanel.set("selection", []);
 								}else{
 									var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-										console.log("rownum: ", rownum);
-										console.log("Row: ", evt.grid.row(rownum).data);
+										// console.log("rownum: ", rownum);
+										// console.log("Row: ", evt.grid.row(rownum).data);
 										return evt.grid.row(rownum).data;
 									}));
 								}
-								console.log("selection: ", sel);
+								// console.log("selection: ", sel);
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
-								/*	if (!sel || sel.length<1){
-										hideTimer = setTimeout(lang.hitch(this,function(){
-											this.removeChild(this.actionPanel);
-											this.removeChild(this.itemDetailPanel);
-										}),500);
-									}
-								*/
 							}));
 
 							newPanel.on("ItemDblClick", lang.hitch(this, function(evt){
-								console.log("ItemDblClick: ", evt);
+								// console.log("ItemDblClick: ", evt);
 								if(evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)){
 									Topic.publish("/navigate", {href: "/workspace" + evt.item_path})
 									this.actionPanel.set("selection", []);
 									this.itemDetailPanel.set("selection", []);
-									console.log("SHOW LOADING STATUS SOMEHOW");
+									// console.log("SHOW LOADING STATUS SOMEHOW");
 									newPanel.clearSelection();
-									/*
-									hideTimer = setTimeout(lang.hitch(this,function(){
-										this.removeChild(this.actionPanel);
-										this.removeChild(this.itemDetailPanel);
-									}),500);
-									*/
 								}else{
 									console.log("non-navigable type, todo: show info panel when dblclick");
 								}
@@ -1082,8 +951,6 @@ define([
 						if(this.activePanel.clearSelection){
 							this.activePanel.clearSelection();
 						}
-						//	this.removeChild(this.actionPanel);
-						//	this.removeChild(this.itemDetailPanel);
 					}
 
 					var parts = this.path.split("/").filter(function(x){
@@ -1092,38 +959,12 @@ define([
 						return decodeURIComponent(c)
 					});
 					var workspace = parts[0] + "/" + parts[1];
-					console.log("Publish to ActiveWorkspace:", workspace, val)
+					// console.log("Publish to ActiveWorkspace:", workspace, val)
 					WorkspaceManager.set("currentPath", val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
-					console.log("Set Browser Header Path: ", this.path);
+					// console.log("Set Browser Header Path: ", this.path);
 					this.browserHeader.set("path", this.path)
-					/*
-					if (this._started){
-						var len = parts.length;
-						var out = [];
-
-						var out = ["<span class='wsBreadCrumb'>"];
-						var bp = ["workspace"];
-						parts.forEach(function(p,idx){
-							if (idx == (parts.length-1)){
-								out.push(p + "&nbsp;");
-								return;
-							}
-							out.push("<a class='navigationLink' href='");
-							bp.push(p);
-							out.push("/" + bp.join("/") + ((idx==0)?"/":"") );
-							out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p)  + "</a>&nbsp;/&nbsp;");
-						})
-						//out.push("<span>" + parts.join("/") + "</span>");
-						out.push("<span style='float:right;'>");
-						out.push("<a href class='DialogButton fa icon-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/")+ "' style='margin:4px;' title='Upload to Folder'></a>");
-						out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
-						out.push("</span>");
-
-						this.browserHeader.set("content", out.join(""));
-					}
-					*/
 				}));
 
 			}), lang.hitch(this, function(err){
@@ -1152,15 +993,8 @@ define([
 				this.explorer.refreshWorkspace()
 			}
 		},
+
 		getMenuButtons: function(){
-			// console.log("Get Menu Buttons");
-			//       if (this.buttons) { return this.buttons; }
-			//       this.buttons = [];
-			//       var b = domConstruct.create("div", {innerHTML:"Add Folder", 'class':'facetMenuIcon plusIcon',title:"Add Document Comment"});
-			//       on(b, "click", function(){
-			//               Topic.publish("/dialog/show","AddComment");
-			//       });
-			//       this.buttons.push(b);
 			this.buttons = [];
 			return this.buttons;
 

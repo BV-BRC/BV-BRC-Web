@@ -6,7 +6,7 @@ define([
 	return declare([ActionBar], {
 		path: null,
 		"class": "WSContainerActionBar",
-		tooltipPosition: ["above","below"],
+		tooltipPosition: ["above", "below"],
 		_setPathAttr: function(p){
 			this.path = p;
 			if(this._started){
@@ -33,7 +33,7 @@ define([
 			var len = parts.length;
 			var out = ["<span class='wsBreadCrumb'>"];
 			var bp = ["workspace"];
-			console.log("parts: ", parts);
+			// console.log("parts: ", parts);
 			parts.forEach(function(p, idx){
 				if(idx == (parts.length - 1)){
 					out.push(p + "&nbsp;");
