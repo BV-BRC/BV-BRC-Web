@@ -50,16 +50,16 @@ define([
 			var titleEl = document.getElementsByTagName("title")[0];
 			var docEl = document.documentElement;
 
-			if (docEl && docEl.addEventListener) {
-				docEl.addEventListener("DOMSubtreeModified", function(evt) {
+			if(docEl && docEl.addEventListener){
+				docEl.addEventListener("DOMSubtreeModified", function(evt){
 					var t = evt.target;
-					if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
+					if(t === titleEl || (t.parentNode && t.parentNode === titleEl)){
 						onDocumentTitleChanged();
 					}
 				}, false);
-			} else {
-				document.onpropertychange = function() {
-					if (window.event.propertyName == "title") {
+			}else{
+				document.onpropertychange = function(){
+					if(window.event.propertyName == "title"){
 						onDocumentTitleChanged();
 					}
 				};
@@ -72,7 +72,7 @@ define([
 					meta.content = "PATRIC," + (document.title).replace("::", ",");
 				}
 				if(window.ga){
-					console.log("document title changed to", document.title);
+					// console.log("document title changed to", document.title);
 					ga('set', 'title', document.title);
 					ga('send', 'pageview');
 				}
@@ -95,7 +95,7 @@ define([
 
 			Router.register("/remote", function(params, oldPath, newPath, state){
 				console.log("REMOTE WINDOW, WAIT FOR /navigate message");
-				window.postMessage("RemoteReady","*");
+				window.postMessage("RemoteReady", "*");
 			});
 
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
@@ -149,7 +149,7 @@ define([
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
-				newState.value=_self.dataAPI + "/content/" +  path;
+				newState.value = _self.dataAPI + "/content/" + path;
 				newState.set = "href";
 				newState.requireAuth = false;
 				newState.pageTitle = 'PATRIC';
@@ -186,7 +186,7 @@ define([
 				newState.href = path;
 				newState.prev = params.oldPath;
 				// console.log("parser getState: ", parser);
-				if (newState.search){
+				if(newState.search){
 
 				}else if(parser.search){
 					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
@@ -252,12 +252,12 @@ define([
 				newState.widgetClass = "p3/widget/app/" + type;
 				newState.value = viewerParams;
 				newState.set = "params";
-				newState.requireAuth=true;
+				newState.requireAuth = true;
 
-				if (_self.publicApps.indexOf(type)>=0) {
+				if(_self.publicApps.indexOf(type) >= 0){
 					newState.requireAuth = false;
 				}
-		
+
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -308,8 +308,8 @@ define([
 			if(this.user && this.user.id){
 				domAttr.set("YourWorkspaceLink", 'href', '/workspace/' + this.user.id)
 				var n = dom.byId("signedInAs");
-				if (n){
-					n.innerHTML = this.user.id.replace("@patricbrc.org","");
+				if(n){
+					n.innerHTML = this.user.id.replace("@patricbrc.org", "");
 				}
 			}
 			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
@@ -318,7 +318,7 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			 // console.log("updateUserWorkspaceList: ", data);
+			// console.log("updateUserWorkspaceList: ", data);
 			var wsNode = dom.byId("YourWorkspaces");
 			domConstruct.empty("YourWorkspaces");
 			// console.log("Your Workspaces Node: ", wsNode);
@@ -326,8 +326,11 @@ define([
 				// console.log("Create Link for Workspace: ", ws.path);
 
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
-				if (ws.name=="home"){
-					domConstruct.create("i", {"class": "fa icon-caret-down fa-1x noHoverIcon", style: {"margin-right":"4px"}},d);
+				if(ws.name == "home"){
+					domConstruct.create("i", {
+						"class": "fa icon-caret-down fa-1x noHoverIcon",
+						style: {"margin-right": "4px"}
+					}, d);
 				}
 				domConstruct.create("a", {
 					'class': 'navigationLink',
@@ -335,33 +338,33 @@ define([
 					innerHTML: ws.name
 				}, d);
 
-				if (ws.name=="home"){
-					domConstruct.create("br",{},d);
+				if(ws.name == "home"){
+					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {
 						'class': 'navigationLink',
 						"style": {"padding-left": "16px"},
 						href: "/workspace" + ws.path + "/Genome%20Groups",
 						innerHTML: "Genome Groups"
-					},d)
+					}, d)
 
-					domConstruct.create("br",{},d);
+					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {
 						'class': 'navigationLink',
 						"style": {"padding-left": "16px"},
 						href: "/workspace" + ws.path + "/Feature%20Groups",
 						innerHTML: "Feature Groups"
-					},d)
+					}, d)
 
-					domConstruct.create("br",{},d);
+					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {
 						'class': 'navigationLink',
 						"style": {"padding-left": "16px"},
 						href: "/workspace" + ws.path + "/Experiment%20Groups",
 						innerHTML: "Experiment Groups"
-					},d)
+					}, d)
 
 				}
 			})
