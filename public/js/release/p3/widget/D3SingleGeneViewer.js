@@ -35,10 +35,10 @@ define("p3/widget/D3SingleGeneViewer", [
 
 			// allocate groups
 			var groups = [];
-			groups.push({m:[], max:0});
+			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
-				for (var gIdx = 0; gIdx < groups.length; gIdx++){
+				for(var gIdx = 0; gIdx < groups.length; gIdx++){
 					var g = groups[gIdx];
 					if(g.max === 0){
 						// insert. init
@@ -47,13 +47,13 @@ define("p3/widget/D3SingleGeneViewer", [
 						break;
 					}
 
-					if (d.start <= g.max){
+					if(d.start <= g.max){
 						// seek another group or create another group
-						if(groups.length === gIdx+1){
+						if(groups.length === gIdx + 1){
 							groups.push({m: [], max: 0});
 						}
 					}
-					else {
+					else{
 						// insert data in current group
 						g.m.push(d);
 						g.max = d.end;
@@ -93,14 +93,22 @@ define("p3/widget/D3SingleGeneViewer", [
 						}
 
 						var pos = [];
-						pos.push(start); pos.push(-6);
-						pos.push(start); pos.push(6);
-						pos.push(middle); pos.push(6);
-						pos.push(middle); pos.push(11);
-						pos.push(end); pos.push(0);
-						pos.push(middle); pos.push(-11);
-						pos.push(middle); pos.push(-6);
-						pos.push(start); pos.push(-6);
+						pos.push(start);
+						pos.push(-6);
+						pos.push(start);
+						pos.push(6);
+						pos.push(middle);
+						pos.push(6);
+						pos.push(middle);
+						pos.push(11);
+						pos.push(end);
+						pos.push(0);
+						pos.push(middle);
+						pos.push(-11);
+						pos.push(middle);
+						pos.push(-6);
+						pos.push(start);
+						pos.push(-6);
 
 						return pos.join(" ");
 					})
@@ -114,6 +122,7 @@ define("p3/widget/D3SingleGeneViewer", [
 
 						var content = [];
 						content.push('PATRIC ID: ' + d.patric_id);
+						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						content.push("Feature type: " + d.feature_type);
 						content.push("Strand: " + d.strand);
