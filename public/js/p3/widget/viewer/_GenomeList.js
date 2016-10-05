@@ -134,8 +134,8 @@ define([
 
 			var content = QueryToEnglish(newVal);
 
-			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content + "</div>");
-			this.queryNode.innerHTML = '<span class="queryModel">Genomes</span>  ' + content;
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + "</div>");
+			this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
 		},
 
 		setActivePanelState: function(){
