@@ -33131,7 +33131,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 				case "job_result_RNASeq":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
 				default:
-					return '<i class="fa icon-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
+					return '<i class="fa icon-file-text-o fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
 		appLabel: function(appName){
@@ -36395,7 +36395,6 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
-		 0 && console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
@@ -36587,10 +36586,8 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
-		 0 && console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
-		 0 && console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
@@ -45318,13 +45315,10 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-			this.pathContainer = domConstruct.create("div", {
-				style: {
-					display: "inline-block",
-					"padding-top": "8px"
-				}
+			this.pathContainer = domConstruct.create("div", {"class": "wsBreadCrumbContainer"}, this.domNode);
+			this.containerNode = domConstruct.create("span", {
+				"class": "ActionButtonContainer wsActionContainer"
 			}, this.domNode);
-			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);
 		},
 
 		generatePathLinks: function(path){
@@ -57525,7 +57519,6 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
-				 0 && console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					 0 && console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +

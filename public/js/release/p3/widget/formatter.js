@@ -213,7 +213,7 @@ define("p3/widget/formatter", ["dojo/date/locale", "dojo/dom-construct", "dojo/d
 				case "job_result_RNASeq":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
 				default:
-					return '<i class="fa icon-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
+					return '<i class="fa icon-file-text-o fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
 		appLabel: function(appName){
