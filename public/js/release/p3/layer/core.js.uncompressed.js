@@ -111715,7 +111715,7 @@ define([
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
 			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
@@ -111777,10 +111777,10 @@ define([
 'p3/widget/D3SingleGeneViewer':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domStyle,
+			dom, domClass, domConstruct, domStyle, Topic,
 			d3){
 
 	return declare([], {
@@ -111891,6 +111891,10 @@ define([
 					})
 					.attr("fill", function(d){
 						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+					})
+					.on("click", function(d){
+						var url = "/view/Feature/" + d.feature_id + "#view_tab=overview";
+						Topic.publish("/navigate", {href: url});
 					})
 					.on("mouseover", function(d){
 						self.tooltipLayer.transition()

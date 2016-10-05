@@ -10271,6 +10271,9 @@ font-size: 12px;
 .patric .sgViewerWidget {
     height: 76px;
 }
+.patric .sgViewerWidget .chart g polyline {
+    cursor: pointer;
+}
 .patric .dgrid-header .dgrid-cell {
 	font-weight: 600;
 }

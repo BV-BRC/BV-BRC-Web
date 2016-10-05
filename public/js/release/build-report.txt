@@ -1,4 +1,4 @@
-Build started: Wed Oct 05 2016 14:38:48 GMT-0500 (CDT)
+Build started: Wed Oct 05 2016 16:18:45 GMT-0500 (CDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -704,11 +704,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/PhyloTree
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js (compile time:1.006s)
-	/Users/nc/patric/p3_web/public/js/release/p3/layer/p3user.js (compile time:4.265s)
-	/Users/nc/patric/p3_web/public/js/release/dojo/dojo.js (compile time:5.039s)
-	/Users/nc/patric/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:5.098s)
-	/Users/nc/patric/p3_web/public/js/release/p3/layer/core.js (compile time:12.217s)
+	/Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js (compile time:0.964s)
+	/Users/nc/patric/p3_web/public/js/release/p3/layer/p3user.js (compile time:4.259s)
+	/Users/nc/patric/p3_web/public/js/release/dojo/dojo.js (compile time:4.912s)
+	/Users/nc/patric/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:5.201s)
+	/Users/nc/patric/p3_web/public/js/release/p3/layer/core.js (compile time:11.864s)
 info(106) Optimizing CSS.
 	file: /Users/nc/patric/p3_web/public/js/dojo/_firebug/firebug.css
 	file: /Users/nc/patric/p3_web/public/js/dojo/resources/dnd.css
@@ -2035,8 +2035,6 @@ warn(226) A package without a profile could throw errors or warnings.
 	package: swfobject-amd
 warn(228) While optimizing a CSS file, an import directive was not expanded because the source for the import was not available to the builder.
 	CSS file: /Users/nc/patric/p3_web/public/js/p3/resources/p3.css; import directive: @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
-error(311) Missing dependency.
-	module: JBrowse/main; dependency: xstyle/load-css
 Layer Contents:
 dojo/dojo:
 	dojo/dojo
@@ -2751,9 +2749,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.006s)
+Done (compile time:0.964s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.006s)
+Done (compile time:0.964s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2768,9 +2766,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.265s)
+Done (compile time:4.259s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.006s)
+Done (compile time:0.964s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2785,7 +2783,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.265s)
+Done (compile time:4.259s)
 /Users/nc/patric/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2908,9 +2906,9 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.039s)
+Done (compile time:4.912s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.006s)
+Done (compile time:0.964s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2925,7 +2923,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.265s)
+Done (compile time:4.259s)
 /Users/nc/patric/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3048,7 +3046,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.039s)
+Done (compile time:4.912s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3175,9 +3173,9 @@ globalWSObject.js.uncompressed.js:17151: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:5.098s)
+Done (compile time:5.201s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.006s)
+Done (compile time:0.964s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -3192,7 +3190,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.265s)
+Done (compile time:4.259s)
 /Users/nc/patric/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3315,7 +3313,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.039s)
+Done (compile time:4.912s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3442,7 +3440,7 @@ globalWSObject.js.uncompressed.js:17151: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:5.098s)
+Done (compile time:5.201s)
 /Users/nc/patric/p3_web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:674: WARNING - unreachable code
 	}else if( 0 ){
@@ -3700,28 +3698,28 @@ core.js.uncompressed.js:106247: WARNING - Suspicious code. This code lacks side-
 					if(typeof(xhr.statusText)){} // accessing this error throws an error. Awesomeness.
 					^
 
-core.js.uncompressed.js:111902: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:111906: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						                                                                                 ^
 
-core.js.uncompressed.js:111903: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:111907: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						                                             ^
 
-core.js.uncompressed.js:112279: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:112283: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr) : {};
 					                                                           ^
 
-core.js.uncompressed.js:112280: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:112284: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
 					                                                               ^
 
-core.js.uncompressed.js:113276: WARNING - Suspicious code. The result of the 'eq' operator is not being used.
+core.js.uncompressed.js:113280: WARNING - Suspicious code. The result of the 'eq' operator is not being used.
 				for (i==0; i<myData.length; i++) {
 				     ^
 
 0 error(s), 69 warning(s)
-Done (compile time:12.217s)
+Done (compile time:11.864s)
 
 
 Has Features Detected
@@ -4650,6 +4648,6 @@ Has Features Detected
 
 
 Process finished normally
-	errors: 1
+	errors: 0
 	warnings: 88
-	build time: 78.502 seconds
+	build time: 77.798 seconds
