@@ -5,16 +5,6 @@ define("p3/util/QueryToEnglish", [
 			RQLParser){
 
 	var parseQuery = function(filter){
-		// console.log("PARSE: ", filter);
-
-		var parsed = {
-			parsed: _parsed,
-			selected: [],
-			byCategory: {},
-			keywords: [],
-			contains:{}
-		};
-
 		try{
 			var _parsed = RQLParser.parse(filter)
 		}catch(err){
@@ -22,112 +12,63 @@ define("p3/util/QueryToEnglish", [
 			return;
 		}
 
-		var _self = this;
-
 		function walk(term){
-			// console.log("Walk: ", term.name, " Args: ", term.args);
+			console.log("Walk: ", term.name, " Args: ", term.args);
 			switch(term.name){
 				case "and":
 				case "or":
-					term.args.forEach(function(t){
-						walk(t);
-					});
+					var out = term.args.map(function(t){
+						return walk(t);
+					}).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
+
+					console.log("out: ", out);
 					break;
 				case "in":
+					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");;
+					var v = term.args[1];
+					var vals = v.map(function(val){
+						return '<span class="searchValue">' + decodeURIComponent(val) + "</span>";
+					});
+					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span>(';
+
+					if (vals.length<3) {
+						out = out + vals.join('<span class="searchOperator"> OR </span>') + ")";
+					}else{
+						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...)';
+					}
+					// parsed.selected.push({field: f, value: v});
+					break;
+				case "ne":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					// console.log("IN F: ", f, "V: ",v, term)
-					// parsed.selected.push({field: f, value: v});
-					if(!parsed.contains[f]){
-						parsed.contains[f] = [v];
-					}else{
-						parsed.contains[f].push(v);
-					}
+					out =  f + '<span class="searchOperator"> is not </span>' + v;
 					break;
 				case "eq":
-					var f = decodeURIComponent(term.args[0]);
+					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");
 					var v = decodeURIComponent(term.args[1]);
-					// console.log("F: ", f, "V: ",f, term)
-					parsed.selected.push({field: f, value: v});
-					if(!parsed.byCategory[f]){
-						parsed.byCategory[f] = [v];
-					}else{
-						parsed.byCategory[f].push(v);
-					}
+					out =  '<span class="searchField">'+ f  + ' </span><span class="searchOperator"> is </span>' + '<span class="searchValue">' + v + "</span>";
 					break;
 				case "keyword":
-					parsed.keywords.push(term.args[0]);
+					out = '<span class="searchValue"> '  +decodeURIComponent(term.args[0]) + '</span>';
+					break;
+				case "not":
+					out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
 					break;
 				default:
-				// console.log("Skipping Unused term: ", term.name, term.args);
+					console.log("Skipping Unused term: ", term.name, term.args);
 			}
+
+			return out;
 		}
 
-		walk(_parsed);
-
-
-		return parsed;
-
+		return walk(_parsed);
 	};
 
-	function valueWrap(val,alt){
-		val = decodeURIComponent(val);
-		return '<span class="queryValue" title="' + (alt||"") + '">' + val + "</span>";
-	}
 
 	return function(query){
-		var parsed = parseQuery(query);
-		var out = [];
-
-		// console.log("PARSED: ", parsed);
-		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
-			var cout = ['<span class="queryField">' + cat + '</span> is'];
-			var C = parsed.byCategory[cat];
-			if(C.length == 1){
-				cout.push(valueWrap(C[0]));
-			}else if(C.length == 2){
-				var vals = C.map(valueWrap).join('  <span class="queryOperator"> OR </span> ');
-				cout.push(vals)
-			}else{
-				var vals = C.map(valueWrap).slice(0, C.length - 1).join(', ') + ', <span class="queryOperator"> OR </span>' + valueWrap(C[C.length - 1]);
-				cout.push(vals);
-			}
-			return cout.join(' ');
-		}).join(' <span class="queryOperator"> AND </span> ');
-
-		if(catsEnglish){
-			out.push(" where " + catsEnglish)
-		}
-
-		if (parsed.contains){
-			var ins = Object.keys(parsed.contains).forEach(function(prop){
-
-				out.push(" where <span class='queryField'>" + prop + "</span> is in ");
-				out.push(parsed.contains[prop].map(function(val){
-					if (val.length > 25){
-						return valueWrap(val.slice(0,25) + "...", val);
-					}else{
-						return valueWrap(val,val);
-					}
-				}).join(" OR "));
-			})
-		}
-
-		var keywords = parsed.keywords.map(valueWrap);
-		if(keywords.length < 1){
-
-		}else if(keywords.length == 1){
-			out.push("that match the keyword " + keywords[0])
-		}else if(keywords.length == 2){
-			out.push("that match both keywords  " + keywords.join(' <span class="queryOperator"> AND </span> '))
-		}else{
-			out.push("that match all of the keywords " + keywords.slice(0, keywords.length - 1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length - 1])
-		}
-
-		// console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
-
-		return out.join(" ");
-		//console.log("parsed query: ", parsed);
+		var q = parseQuery(query);
+		// q = q.substr(1, q.length-2);
+		return q;
 	}
 
 });

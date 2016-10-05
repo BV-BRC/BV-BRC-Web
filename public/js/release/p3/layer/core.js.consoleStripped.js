@@ -24247,11 +24247,14 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/GlobalSearch.html", "./Button", "dijit/registry", "dojo/_base/lang",
-	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus"
+	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
+	"../util/searchToQuery"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass, Templated, WidgetsInTemplate,
 			template, Button, Registry, lang,
-			dom, Topic, TextBox, keys, FocusMixin, focusUtil){
+			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
+			searchToQuery
+){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
 		constructor: function(){
@@ -24264,93 +24267,6 @@ define([
 			this.searchInput.set("value", q);
 		},
 
-		parseQuery: function(query){
-			var finalTerms=[]
-			var currentTerm="";
-			var propertyMatch;
-			var quoted;
-			if (query){
-				for (var i=0;i<query.length;i++){
-					var t = query[i];
-
-					switch(t){
-						case ":":
-							propertyMatch = currentTerm;
-							currentTerm="";
-							 0 && console.log("propertyMatch: ", propertyMatch)
-							break;
-						case '"':
-							if (quoted){
-								if (propertyMatch){
-									finalTerms.push({property: propertyMatch, term: currentTerm + t});
-									propertyMatch=false;
-								}else{
-									finalTerms.push(currentTerm + t);
-								}
-								quoted=false;
-								currentTerm = ""
-							}else{
-								currentTerm = currentTerm + t;
-								quoted=true;
-							}
-							break;
-						case " ":
-							if (quoted){
-								currentTerm = currentTerm + t;
-							}else{
-								if (propertyMatch){
-									finalTerms.push({property: propertyMatch, term: currentTerm});
-									propertyMatch=false;
-								}else{
-									if (currentTerm.match(/[^a-zA-Z\d]/)){
-										currentTerm = '"' + currentTerm + '"'
-									}
-
-									finalTerms.push(currentTerm);
-								}
-								currentTerm="";
-							}
-							break;
-						default: 
-							currentTerm = currentTerm + t;
-
-					}
-				}
-
-				if (currentTerm){
-					if (propertyMatch){
-						finalTerms.push({property: propertyMatch, term: currentTerm});
-					}else{
-						if (currentTerm.match(/[^a-zA-Z\d]/)){
-							currentTerm = '"' + currentTerm + '"'
-						}
-						finalTerms.push(currentTerm);
-					}
-
-				}
-
-				var finalt=[]
-
-				finalTerms.forEach(function(term){
-					if (!term) { return; }
-
-					if (typeof term == 'string'){
-						finalt.push("keyword(" + encodeURIComponent(term) + ")");
-					}else{
-						finalt.push("eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")");
-					}
-				})
-
-				if (finalt.length>1){
-					return "and(" + finalt.join(",") + ")";
-				}else{
-					return finalt[0];
-				}
-			} 
-
-			throw Error("No Query Supplied to Query Parser");
-		},
-
 		onKeypress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchInput.get('value');
@@ -24360,7 +24276,7 @@ define([
 				}
 
 				 0 && console.log("Search Filter: ", searchFilter);
-				var q = this.parseQuery(query);
+				var q = searchToQuery(query);
 				
 				var clear = false;
 				switch(searchFilter){
@@ -24413,7 +24329,12 @@ define([
 			}
 		},
 		onClickAdvanced: function(evt){
-			Topic.publish("/navigate", {href: "/search/"});
+			var query = this.searchInput.get('value');
+			var searchFilter = this.searchFilter.get('value');
+			var q = this.parseQuery(query);
+
+			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
+			this.searchInput.set("value", '');
 		},
 		onInputChange: function(val){
 			/*
@@ -24524,6 +24445,185 @@ define([
 		}
 	});
 });
+
+},
+'p3/util/searchToQuery':function(){
+define([], function(){
+	return function parseExpression(expression,field){
+		//  0 && console.log("Parse Expression: ", expression, field);
+
+		var exprs = [];
+		var exp="";
+		var expField="";
+		var openParans=0;
+		var subExp="";
+		var preOp=false;
+		var prev=false;
+		var ors = false;
+		var quoted = false;
+
+		for (var i=0; i<expression.length;i++){
+			var curChar=expression[i];
+			//  0 && console.log("curChar: ", curChar, i);
+			switch(curChar){
+				case '"':
+					if (!quoted){
+						quoted=true;
+						exp = '"';
+					}else{
+						exp = exp + '"'
+						quoted = false;
+					}
+					break;
+				case "(":
+					openParans++;	
+					break;
+				case ")":
+					openParans--;
+
+					if (openParans<1){
+						var sub = parseExpression(subExp,expField);
+						exprs.push(sub);
+						subExp = "";
+						expField="";
+					}else{
+						throw Error("Unexpected ')' at character " + i);
+
+					}
+
+					//end current expression
+					break;
+				case " ":
+					if (openParans>0){
+						subExp = subExp + curChar;
+					}else if (quoted){
+						exp = exp + curChar;
+					}else if (exp){
+						//  0 && console.log("EXP: ", exp, "ORs: ", ors);
+						if (exp.toLowerCase()=="not"){
+							preOp="not";
+							exp="";
+							break;
+						}else if (exp.toLowerCase() == "or"){	
+							if (!ors){
+								var pe = exprs.pop();
+								ors = [field?prev:pe];
+							}
+							exp="";
+							//  0 && console.log("new ORs", ors);
+							break;
+						}else if (exp.toLowerCase()=="and"){
+							exp="";
+							break;
+						}
+
+
+						if (expField) {
+							if (preOp=="not"){
+								exprs.push("ne(" + encodeURIComponent(expField) + ","  + encodeURIComponent(exp) + ")");
+								preOp=false;
+							}else{	
+								if (ors && ors.length>1){
+									exprs.push("in(" + encodeURIComponent(expField) + ",(" + ors.map(encodeURIComponent).join(",") + "))");
+									ors=false;
+								}else{
+									exprs.push("eq(" + encodeURIComponent(expField) + ","  + encodeURIComponent(exp) + ")");
+								}
+							}
+							expField="";
+						}else {
+							var e = "keyword(" + encodeURIComponent(exp) + ")";
+
+							if (preOp=="not"){
+								exprs.push("not(" + e + ")");
+								preOp = false;
+							}else if (ors) {
+								if (field){
+									ors.push(exp);
+								}else{
+									ors.push(e);
+								}
+							}else{
+								exprs.push(e);
+							}
+						}
+						prev = exp;
+						exp = "";	
+						
+					}
+					break;
+
+				case ":":
+					if (openParans>0){
+						subExp = subExp + curChar;
+						break;
+					}
+
+					if (exp){
+						expField = exp;
+						exp="";				
+					}else{
+						throw Error("Unexpected ':' at character " + i);
+					}
+					break;
+				default:
+					//  0 && console.log("Default Char Handler");
+					if (openParans>0){
+						subExp = subExp + curChar;
+						break;
+					}
+					exp = exp + curChar; 
+					break;
+			}
+
+		}
+
+		//  0 && console.log("Finalize Expressions.  Expr:  ", exp, "ors: ", ors);
+		var e;
+		if (exp){
+			if (preOp=="not"){
+				if (expField){
+					exprs.push("ne(" + encodeURIComponent(expField) + "," + encodeURIComponent(exp) + ")");
+				}else{
+					exprs.push("not(keyword(" + encodeURIComponent(exp) + "))");
+				}
+				preOp = false;
+			}else{
+				if (expField) {
+					e = "eq(" + encodeURIComponent(expField) + ","  + encodeURIComponent(exp) + ")";
+					expField="";
+				}else {
+					e = "keyword(" + encodeURIComponent(exp) + ")";
+				}
+
+				if (ors) {
+					if (field){
+						ors.push(exp);
+						exprs.push("in(" + encodeURIComponent(field) + ",(" + ors.map(encodeURIComponent).join(",") + "))");
+					}else{
+						ors.push(e);
+						exprs.push("or(" + ors.join(",") + ")");
+					}
+					ors=false;
+				}else{
+					exprs.push(e);
+				}
+				
+			}
+
+		}
+
+
+		if (exprs.length==1){
+			return exprs[0]
+		}else{
+			return "and(" + exprs.join(",") + ")";
+		}
+	}
+
+});
+
+
 
 },
 'p3/widget/WorkspaceManager':function(){
@@ -36020,27 +36120,33 @@ function(Deferred, Topic, xhr,
 	var ready = new Deferred();
 	var firstRun = true;
 
-	var _DataStore = new Observable(new MemoryStore({data: []}));
-
+	// var _DataStore = new Observable(new MemoryStore({idProperty: "id", data: []}));
+	var _DataStore = new MemoryStore({idProperty: "id", data: []});
 	function PollJobs(){
 		if(window.App && window.App.api && window.App.api.service){
+			 0 && console.log("AppService.enumerate_tasks")
 			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 1000]), function(tasks){
-//				// 0 && console.log("tasks: ", tasks);
+				 0 && console.log("Enumerate Task Results: ", tasks);
 				tasks[0].forEach(function(task){
-					when(_DataStore.get(task.id), function(oldTask){
-						if(!oldTask){
-							_DataStore.put(task);
-						}else if(oldTask.status != task.status){
-							_DataStore.put(task);
-						}
-					}, function(err){
-						 0 && console.log("ERROR RETRIEVING TASK ", err)
-					});
+					//  0 && console.log("Get and Update Task: ", task);
+					 0 && console.log("Checking for task: ", task.id)
+					// when(_DataStore.get(task.id), function(oldTask){
+					// 	if(!oldTask){
+					// 		  0 && console.log("No Old Task, store as new");
+					// 		_DataStore.put(task);
+					// 	}else if(oldTask.status != task.status){
+					// 		 0 && console.log("Updating Status of task", task.status)
+					// 		_DataStore.put(task);
+					// 	}
+					// }, function(err){
+					// 	 0 && console.log("ERROR RETRIEVING TASK ", err)
+					// });
 
 					_DataStore.put(task);
 				});
 
 				Deferred.when(getJobSummary(), function(msg){
+					 0 && console.log("Publish Job Summary: ", msg);
 					Topic.publish("/Jobs", msg);
 				});
 
@@ -36139,7 +36245,8 @@ function(Deferred, Topic, xhr,
 		},
 
 		getStore: function(){
-			return _DataStore;
+			return new Observable(_DataStore);
+			// return _DataStore;
 		}
 	}
 });
@@ -36288,6 +36395,7 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
+		 0 && console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
@@ -36479,8 +36587,10 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
+		 0 && console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
+		 0 && console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
@@ -57415,6 +57525,7 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
+				 0 && console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					 0 && console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +
@@ -58959,8 +59070,8 @@ define([
 
 			var content = QueryToEnglish(newVal);
 
-			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content + "</div>");
-			this.queryNode.innerHTML = '<span class="queryModel">Genomes</span>  ' + content;
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + "</div>");
+			this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -90609,16 +90720,6 @@ define([
 			RQLParser){
 
 	var parseQuery = function(filter){
-		//  0 && console.log("PARSE: ", filter);
-
-		var parsed = {
-			parsed: _parsed,
-			selected: [],
-			byCategory: {},
-			keywords: [],
-			contains:{}
-		};
-
 		try{
 			var _parsed = RQLParser.parse(filter)
 		}catch(err){
@@ -90626,112 +90727,63 @@ define([
 			return;
 		}
 
-		var _self = this;
-
 		function walk(term){
-			//  0 && console.log("Walk: ", term.name, " Args: ", term.args);
+			 0 && console.log("Walk: ", term.name, " Args: ", term.args);
 			switch(term.name){
 				case "and":
 				case "or":
-					term.args.forEach(function(t){
-						walk(t);
-					});
+					var out = term.args.map(function(t){
+						return walk(t);
+					}).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
+
+					 0 && console.log("out: ", out);
 					break;
 				case "in":
+					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");;
+					var v = term.args[1];
+					var vals = v.map(function(val){
+						return '<span class="searchValue">' + decodeURIComponent(val) + "</span>";
+					});
+					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span>(';
+
+					if (vals.length<3) {
+						out = out + vals.join('<span class="searchOperator"> OR </span>') + ")";
+					}else{
+						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...)';
+					}
+					// parsed.selected.push({field: f, value: v});
+					break;
+				case "ne":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					//  0 && console.log("IN F: ", f, "V: ",v, term)
-					// parsed.selected.push({field: f, value: v});
-					if(!parsed.contains[f]){
-						parsed.contains[f] = [v];
-					}else{
-						parsed.contains[f].push(v);
-					}
+					out =  f + '<span class="searchOperator"> is not </span>' + v;
 					break;
 				case "eq":
-					var f = decodeURIComponent(term.args[0]);
+					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");
 					var v = decodeURIComponent(term.args[1]);
-					//  0 && console.log("F: ", f, "V: ",f, term)
-					parsed.selected.push({field: f, value: v});
-					if(!parsed.byCategory[f]){
-						parsed.byCategory[f] = [v];
-					}else{
-						parsed.byCategory[f].push(v);
-					}
+					out =  '<span class="searchField">'+ f  + ' </span><span class="searchOperator"> is </span>' + '<span class="searchValue">' + v + "</span>";
 					break;
 				case "keyword":
-					parsed.keywords.push(term.args[0]);
+					out = '<span class="searchValue"> '  +decodeURIComponent(term.args[0]) + '</span>';
+					break;
+				case "not":
+					out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
 					break;
 				default:
-				//  0 && console.log("Skipping Unused term: ", term.name, term.args);
+					 0 && console.log("Skipping Unused term: ", term.name, term.args);
 			}
+
+			return out;
 		}
 
-		walk(_parsed);
-
-
-		return parsed;
-
+		return walk(_parsed);
 	};
 
-	function valueWrap(val,alt){
-		val = decodeURIComponent(val);
-		return '<span class="queryValue" title="' + (alt||"") + '">' + val + "</span>";
-	}
 
 	return function(query){
-		var parsed = parseQuery(query);
-		var out = [];
-
-		//  0 && console.log("PARSED: ", parsed);
-		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
-			var cout = ['<span class="queryField">' + cat + '</span> is'];
-			var C = parsed.byCategory[cat];
-			if(C.length == 1){
-				cout.push(valueWrap(C[0]));
-			}else if(C.length == 2){
-				var vals = C.map(valueWrap).join('  <span class="queryOperator"> OR </span> ');
-				cout.push(vals)
-			}else{
-				var vals = C.map(valueWrap).slice(0, C.length - 1).join(', ') + ', <span class="queryOperator"> OR </span>' + valueWrap(C[C.length - 1]);
-				cout.push(vals);
-			}
-			return cout.join(' ');
-		}).join(' <span class="queryOperator"> AND </span> ');
-
-		if(catsEnglish){
-			out.push(" where " + catsEnglish)
-		}
-
-		if (parsed.contains){
-			var ins = Object.keys(parsed.contains).forEach(function(prop){
-
-				out.push(" where <span class='queryField'>" + prop + "</span> is in ");
-				out.push(parsed.contains[prop].map(function(val){
-					if (val.length > 25){
-						return valueWrap(val.slice(0,25) + "...", val);
-					}else{
-						return valueWrap(val,val);
-					}
-				}).join(" OR "));
-			})
-		}
-
-		var keywords = parsed.keywords.map(valueWrap);
-		if(keywords.length < 1){
-
-		}else if(keywords.length == 1){
-			out.push("that match the keyword " + keywords[0])
-		}else if(keywords.length == 2){
-			out.push("that match both keywords  " + keywords.join(' <span class="queryOperator"> AND </span> '))
-		}else{
-			out.push("that match all of the keywords " + keywords.slice(0, keywords.length - 1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length - 1])
-		}
-
-		//  0 && console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
-
-		return out.join(" ");
-		// 0 && console.log("parsed query: ", parsed);
+		var q = parseQuery(query);
+		// q = q.substr(1, q.length-2);
+		return q;
 	}
 
 });
@@ -121648,7 +121700,7 @@ define([
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<!-- <td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td> -->\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
