@@ -1,12 +1,12 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div style="width: 700px; margin:auto;">
+    <div class="blast_form_wrapper">
         <div class="apptitle">
             <h3>BLAST</h3>
             <p>[place holder for description of this service]</p>
         </div>
 
-        <div style="width: 700px; margin:auto;">
+        <div class="blast_form">
             <div class="appbox appshadow">
                 <div class="headerrow" style="margin-bottom: 7px">
                     <label class="appboxlabel">Sequence</label>
@@ -82,6 +82,7 @@
                          data-dojo-type="p3/widget/WorkspaceObjectSelector"
                          data-dojo-attach-point="genome_group"
                          data-dojo-props="type:['genome_group'],multi:true,disabled:true"></div>
+                    <div class="form_msg_warning" data-dojo-attach-point="genome_group_message"></div>
                 </div>
 
                 <div class="appbox appshadow">
@@ -91,6 +92,7 @@
                             data-dojo-props="disabled:true"
                             data-dojo-attach-point="taxonomy">
                     </select>
+                    <div class="form_msg_warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
 
                 <div class="appbox appshadow">
@@ -139,9 +141,16 @@
                 Search
             </div>
         </div>
+        <div class="reSubmitBtn" style="visibility: hidden"
+             data-dojo-type="dijit/form/Button"
+             data-dojo-attach-event="onClick:resubmit">Edit form and resubmit
+        </div>
     </div>
 
-    <br/>
-    <div class="blast_result_wrapper"></div>
+    <div class="blast_error hidden">
+        <h3></h3>
+        <div class="blast_message"></div>
+    </div>
+    <div class="blast_result"></div>
 </form>
 

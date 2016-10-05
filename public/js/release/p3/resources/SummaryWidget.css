@@ -54,8 +54,12 @@
     border-radius: 2px;
     vertical-align: middle;
 }
-TH.dgrid-cell.field-feature_type {
-    border-left: 0;
+.patric .SummaryWidget .dgrid-cell {
+    border-left-style: none;
+}
+.patric .SummaryWidget .dgrid-cell:last-child {
+    border-right-style: none;
+    padding-right: 10px;
 }
 .patric .SummaryWidget .field-PATRIC,
 .patric .SummaryWidget .field-RefSeq {
@@ -120,4 +124,7 @@ TH.dgrid-cell.field-feature_type {
 .patric .fcSummaryWidget.SummaryWidget .field-property,
 .patric .fcSummaryWidget.SummaryWidget .field-evidence_code {
     width: 10%;
+}
+.patric .sgViewerWidget {
+    height: 76px;
 }

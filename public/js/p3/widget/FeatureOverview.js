@@ -118,12 +118,12 @@ define([
 						{label: "Source", field: "source"},
 						{label: "Source ID", field: "source_id"},
 						{label: "Organism", field: "organism"},
-						{
-							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
-							if(val){
-								node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
+						{label: "PubMed", field: "pmid",
+							renderCell: function(obj, val, node){
+								if(val){
+									node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
+								}
 							}
-						}
 						},
 						{label: "Subject coverage", field: "subject_coverage"},
 						{label: "Query coverage", field: "query_coverage"},
@@ -266,6 +266,7 @@ define([
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 		_setFeatureViewerAttr: function(data){
+			domConstruct.empty(this.sgViewerNode);
 			var gene_viewer = new D3SingleGeneViewer();
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
@@ -280,19 +281,19 @@ define([
 						{label: "Property", field: "property"},
 						{label: "Value", field: "value"},
 						{label: "Evidence Code", field: "evidence_code"},
-						{
-							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
-							if(val){
-								node.innerHTML = "<a href='//view.ncbi.nlm.nih.gov/pubmed/" + val + "' target='_blank'>" + val + "</a>";
+						{label: "PubMed", field: "pmid",
+							renderCell: function(obj, val, node){
+								if(val){
+									node.innerHTML = "<a href='//view.ncbi.nlm.nih.gov/pubmed/" + val + "' target='_blank'>" + val + "</a>";
+								}
 							}
-						}
 						},
-						{
-							label: "Comment", field: "comment", renderCell: function(obj, val, node){
-							if(val){
-								node.innerHTML = val;
+						{label: "Comment", field: "comment",
+							renderCell: function(obj, val, node){
+								if(val){
+									node.innerHTML = val;
+								}
 							}
-						}
 						}
 					]
 				};
@@ -351,7 +352,7 @@ define([
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
 			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;

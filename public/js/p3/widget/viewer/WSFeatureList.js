@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter"
+	"../PageGrid"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter){
+			Grid){
 	return declare([BorderContainer], {
 		"baseClass": "FeatureList",
 		"disabled": false,
@@ -50,7 +50,7 @@ define([
 			var _self = this;
 			this.viewer.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.viewer.row(evt);
-				console.log("dblclick row:", row);
+				// console.log("dblclick row:", row);
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
@@ -60,7 +60,7 @@ define([
 			});
 
 			this.viewer.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
+				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -73,7 +73,7 @@ define([
 				}, 0);
 			});
 			this.viewer.on("dgrid-deselect", function(evt){
-				console.log("dgrid-deselect");
+				// console.log("dgrid-deselect");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,

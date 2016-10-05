@@ -18,6 +18,9 @@ This refers to the mean insert size between paired reads. If you have this infor
 This refers to the standard deviation of the insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
 <p><b>Mate Paired</b></br>
 Defines the orientation of read pairs. Setting Mate Paired to true indicates that the sequencing direction of the two reads in each pair is outward facing.</p>
+<p><b>Platform</b></br>
+The sequencing platform used for each library.</br>
+“infer”: Infer sequencing platform from read files; “illumina”: Illumina short reads; “pacbio”: PacBio long reads; “nanopore”: MinION long reads
     </div>
     <div id="parameterinfo">
        <h3>Parameters</h3>
@@ -78,7 +81,11 @@ Defines the orientation of read pairs. Setting Mate Paired to true indicates tha
         </ol>
     </div>
     <div class="apphelp" id="pipelineinfo">
-      <h3>Assembly Pipeline</h3>
+      <h4>Minimal output contig length</h4>
+      Filter out short contigs in final assembly
+      <h4>Minimal output contig coverage</h4>
+      Filter out contigs with low read depth in final assembly
+      <h4>Assembly Pipeline</h4>
 
       The pipeline parameter is an advanced way to customize the
       assembly workflow by mixing and matching a variety of

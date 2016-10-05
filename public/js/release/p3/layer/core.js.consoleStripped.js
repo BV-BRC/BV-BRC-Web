@@ -52,16 +52,16 @@ define([
 			var titleEl = document.getElementsByTagName("title")[0];
 			var docEl = document.documentElement;
 
-			if (docEl && docEl.addEventListener) {
-				docEl.addEventListener("DOMSubtreeModified", function(evt) {
+			if(docEl && docEl.addEventListener){
+				docEl.addEventListener("DOMSubtreeModified", function(evt){
 					var t = evt.target;
-					if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
+					if(t === titleEl || (t.parentNode && t.parentNode === titleEl)){
 						onDocumentTitleChanged();
 					}
 				}, false);
-			} else {
-				document.onpropertychange = function() {
-					if (window.event.propertyName == "title") {
+			}else{
+				document.onpropertychange = function(){
+					if(window.event.propertyName == "title"){
 						onDocumentTitleChanged();
 					}
 				};
@@ -74,7 +74,7 @@ define([
 					meta.content = "PATRIC," + (document.title).replace("::", ",");
 				}
 				if(window.ga){
-					 0 && console.log("document title changed to", document.title);
+					//  0 && console.log("document title changed to", document.title);
 					ga('set', 'title', document.title);
 					ga('send', 'pageview');
 				}
@@ -97,7 +97,7 @@ define([
 
 			Router.register("/remote", function(params, oldPath, newPath, state){
 				 0 && console.log("REMOTE WINDOW, WAIT FOR /navigate message");
-				window.postMessage("RemoteReady","*");
+				window.postMessage("RemoteReady", "*");
 			});
 
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
@@ -151,7 +151,7 @@ define([
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
-				newState.value=_self.dataAPI + "/content/" +  path;
+				newState.value = _self.dataAPI + "/content/" + path;
 				newState.set = "href";
 				newState.requireAuth = false;
 				newState.pageTitle = 'PATRIC';
@@ -188,7 +188,7 @@ define([
 				newState.href = path;
 				newState.prev = params.oldPath;
 				//  0 && console.log("parser getState: ", parser);
-				if (newState.search){
+				if(newState.search){
 
 				}else if(parser.search){
 					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
@@ -254,12 +254,12 @@ define([
 				newState.widgetClass = "p3/widget/app/" + type;
 				newState.value = viewerParams;
 				newState.set = "params";
-				newState.requireAuth=true;
+				newState.requireAuth = true;
 
-				if (_self.publicApps.indexOf(type)>=0) {
+				if(_self.publicApps.indexOf(type) >= 0){
 					newState.requireAuth = false;
 				}
-		
+
 				//  0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -310,8 +310,8 @@ define([
 			if(this.user && this.user.id){
 				domAttr.set("YourWorkspaceLink", 'href', '/workspace/' + this.user.id)
 				var n = dom.byId("signedInAs");
-				if (n){
-					n.innerHTML = this.user.id.replace("@patricbrc.org","");
+				if(n){
+					n.innerHTML = this.user.id.replace("@patricbrc.org", "");
 				}
 			}
 			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
@@ -320,7 +320,7 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			 //  0 && console.log("updateUserWorkspaceList: ", data);
+			//  0 && console.log("updateUserWorkspaceList: ", data);
 			var wsNode = dom.byId("YourWorkspaces");
 			domConstruct.empty("YourWorkspaces");
 			//  0 && console.log("Your Workspaces Node: ", wsNode);
@@ -328,8 +328,11 @@ define([
 				//  0 && console.log("Create Link for Workspace: ", ws.path);
 
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
-				if (ws.name=="home"){
-					domConstruct.create("i", {"class": "fa icon-caret-down fa-1x noHoverIcon", style: {"margin-right":"4px"}},d);
+				if(ws.name == "home"){
+					domConstruct.create("i", {
+						"class": "fa icon-caret-down fa-1x noHoverIcon",
+						style: {"margin-right": "4px"}
+					}, d);
 				}
 				domConstruct.create("a", {
 					'class': 'navigationLink',
@@ -337,33 +340,33 @@ define([
 					innerHTML: ws.name
 				}, d);
 
-				if (ws.name=="home"){
-					domConstruct.create("br",{},d);
+				if(ws.name == "home"){
+					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {
 						'class': 'navigationLink',
 						"style": {"padding-left": "16px"},
 						href: "/workspace" + ws.path + "/Genome%20Groups",
 						innerHTML: "Genome Groups"
-					},d)
+					}, d)
 
-					domConstruct.create("br",{},d);
+					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {
 						'class': 'navigationLink',
 						"style": {"padding-left": "16px"},
 						href: "/workspace" + ws.path + "/Feature%20Groups",
 						innerHTML: "Feature Groups"
-					},d)
+					}, d)
 
-					domConstruct.create("br",{},d);
+					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {
 						'class': 'navigationLink',
 						"style": {"padding-left": "16px"},
 						href: "/workspace" + ws.path + "/Experiment%20Groups",
 						innerHTML: "Experiment Groups"
-					},d)
+					}, d)
 
 				}
 			})
@@ -28098,14 +28101,14 @@ define([
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid","./PerspectiveToolTip"
+	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip"
 
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			WorkspaceExplorerView, Topic, ItemDetailPanel,
 			ActionBar, Deferred, WorkspaceManager, lang,
 			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid,PerspectiveToolTipDialog){
+			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
 		"disabled": false,
@@ -28118,19 +28121,21 @@ define([
 			if(this._started){
 				return;
 			}
-			 0 && console.log("this.design: ", this.design);
+
 			this.actionPanel = new ActionBar({
 				splitter: false,
 				region: "right",
 				layoutPriority: 2,
 				style: "width:48px;text-align:center;"
 			});
+
 			this.browserHeader = new ContainerActionBar({
 				region: "top",
 				className: "BrowserHeader",
 				path: this.path,
 				layoutPriority: 3
 			});
+
 			var self = this;
 
 			this.actionPanel.addAction("ToggleItemDetail", "fa icon-info-circle fa-2x", {
@@ -28139,10 +28144,6 @@ define([
 				validTypes: ["*"],
 				tooltip: "Toggle Selection Detail"
 			}, function(selection){
-				 0 && console.log("Edit Item Action", selection);
-				//	this.itemDetailPanel.set("selection", selection);
-
-				//	self.itemDetailPanel.set("item",selection[0]);
 				if(self.getChildren().some(function(child){
 						return child === self.itemDetailPanel
 					})){
@@ -28150,7 +28151,6 @@ define([
 				}else{
 					self.addChild(self.itemDetailPanel);
 				}
-
 			}, true);
 
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
@@ -28158,24 +28158,26 @@ define([
 				validTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "Switch to the Genome Group View.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"GenomeGroup", perspectiveUrl: "/view/GenomeGroup/" + selection[0].path}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "GenomeGroup",
+							perspectiveUrl: "/view/GenomeGroup/" + selection[0].path
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/GenomeGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+					Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
 				}
 			});
 
@@ -28185,29 +28187,30 @@ define([
 				multiple: true,
 				min: 2,
 				tooltip: "Switch to the Genome List View.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					var q = selection.map(function(sel){
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"GenomeList", perspectiveUrl: "/view/GenomeList/" + q}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "GenomeList",
+							perspectiveUrl: "/view/GenomeList/" + q
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/GenomeGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					// 0 && console.log("Genome Groups q=", q);
-					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+					Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
 				}
 			});
 
@@ -28217,9 +28220,8 @@ define([
 				validContainerTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "View Genome. Press and Hold for more options.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
 						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
 						around: button,
@@ -28227,9 +28229,9 @@ define([
 					});
 				}
 			}, function(selection){
-				//  0 && console.log("selection: ", selection);
+
 				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id
+				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 			}, true);
 
 			this.actionPanel.addAction("ViewFeatureGroup", "MultiButton fa icon-selection-FeatureList fa-2x", {
@@ -28237,24 +28239,27 @@ define([
 				validTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "Switch to the Feature Group View.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"FeatureGroup", perspectiveUrl: "/view/FeatureGroup/" + selection[0].path}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "FeatureGroup",
+							perspectiveUrl: "/view/FeatureGroup/" + selection[0].path
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/FeatureGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/FeatureGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					Topic.publish("/navigate", {href:"/view/FeatureList/?" + q});
+
+					Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
 				}
 			});
 
@@ -28264,29 +28269,31 @@ define([
 				multiple: true,
 				min: 2,
 				tooltip: "Switch to the Feature List View.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					var q = selection.map(function(sel){
 						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective:"FeatureList", perspectiveUrl: "/view/FeatureList/" + q}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "FeatureList",
+							perspectiveUrl: "/view/FeatureList/" + q
+						}),
 						around: button,
 						orient: ["below"]
 					});
 				}
 			}, function(selection){
-				if (selection.length==1){
-					Topic.publish("/navigate", {href:"/view/FeatureGroup" + selection[0].path});
+				if(selection.length == 1){
+					Topic.publish("/navigate", {href: "/view/FeatureGroup" + selection[0].path});
 				}else{
 					var q = selection.map(function(sel){
 						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
-					})
+					});
 					q = "or(" + q.join(",") + ")";
-					// 0 && console.log("Feature Groups q=", q);
-					Topic.publish("/navigate", {href:"/view/FeatureList/?" + q});
+
+					Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
 				}
 			});
 
@@ -28296,19 +28303,21 @@ define([
 				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Feature. Press and Hold for more options.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+
 					popup.open({
-						popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+						popup: new PerspectiveToolTipDialog({
+							perspective: "Feature",
+							perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+						}),
 						around: button,
 						orient: ["below"]
 					});
-				}	
+				}
 			}, function(selection){
-				 0 && console.log("selection: ", selection);
+
 				var sel = selection[0];
-				window.location = "/view/Feature/" + sel.feature_id
+				Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
 			}, true);
 
 			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-selection-Genome fa-2x", {
@@ -28317,9 +28326,9 @@ define([
 				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Genome. Press and Hold for more options.",
-				pressAndHold: function(selection,button,opts,evt){
-					 0 && console.log("PressAndHold");
-					 0 && console.log("Selection: ", selection, selection[0])
+				pressAndHold: function(selection, button, opts, evt){
+					//  0 && console.log("PressAndHold");
+					//  0 && console.log("Selection: ", selection, selection[0])
 					popup.open({
 						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
 						around: button,
@@ -28327,36 +28336,10 @@ define([
 					});
 				}
 			}, function(selection){
-				 0 && console.log("selection: ", selection);
-				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id
-			}, true);
 
-/*
-			this.actionPanel.addAction("ViewCDSFeatures", "MultiButton fa icon-genome-features-cds fa-2x", {
-				validTypes: ["*"],
-				label: "CDS",
-				validContainerTypes: ["genome_group"],
-				multiple: false,
-				tooltip: "View CDS Features"
-			}, function(selection){
-				 0 && console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"
+				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 			}, true);
-
-			this.actionPanel.addAction("ViewGenomeBrowser", "MultiButton fa icon-genome-browser fa-2x", {
-				validTypes: ["*"],
-				label: "BROWSER",
-				validContainerTypes: ["genome_group"],
-				multiple: false,
-				tooltip: "Open Genome Browser"
-			}, function(selection){
-				 0 && console.log("selection: ", selection);
-				var sel = selection[0];
-				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=browser";
-			}, true);
-*/
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
@@ -28364,26 +28347,26 @@ define([
 				validTypes: WorkspaceManager.downloadTypes,
 				tooltip: "Download"
 			}, function(selection){
-				 0 && console.log("Download Item Action", selection);
+				//  0 && console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
 					popup.close(downloadTT);
 				}
-			})
+			});
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				 0 && console.log("REL: ", rel);
+				//  0 && console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-				 0 && console.log("selection: ", selection);
-				 0 && console.log("DownloadQuery: ", dataType, currentQuery);
-				 0 && console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+				//  0 && console.log("selection: ", selection);
+				//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
+				//  0 && console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
@@ -28395,7 +28378,7 @@ define([
 				tooltip: "Download Table",
 				tooltipDialog: downloadTT
 			}, function(selection){
-				 0 && console.log("Download Table", selection);
+				//  0 && console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
 					around: this._actions.DownloadTable.button,
@@ -28408,19 +28391,20 @@ define([
 				content: dfc, onMouseLeave: function(){
 					popup.close(downloadTTSelect);
 				}
-			})
+			});
 
 			on(downloadTTSelect.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				 0 && console.log("REL: ", rel);
+				//  0 && console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
 				var dataType = (selection[0].type == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.getQuery(selection[0]);
-				 0 && console.log("selection: ", selection);
-				 0 && console.log("DownloadQuery: ", dataType, currentQuery);
+				//  0 && console.log("selection: ", selection);
+				//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
 				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
+
 			this.actionPanel.addAction("SelectDownloadTable", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
 				multiple: false,
@@ -28428,7 +28412,7 @@ define([
 				tooltip: "Download Selection",
 				tooltipDialog: downloadTTSelect
 			}, function(selection){
-				 0 && console.log("Download Table", selection);
+				//  0 && console.log("Download Table", selection);
 				if(selection.length == 1){
 					popup.open({
 						popup: this._actions.SelectDownloadTable.options.tooltipDialog,
@@ -28439,12 +28423,12 @@ define([
 
 			}, true);
 
-			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>'
+			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
 			var downloadTTSelectFile = new TooltipDialog({
 				content: dtsfc, onMouseLeave: function(){
 					popup.close(downloadTTSelect);
 				}
-			})
+			});
 
 			this.browserHeader.addAction("SelectDownloadSeqComparison", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
@@ -28453,8 +28437,8 @@ define([
 				tooltip: "Download Results",
 				tooltipDialog: downloadTTSelectFile
 			}, lang.hitch(this.browserHeader, function(selection){
-				 0 && console.log("Download Table", selection);
-				 0 && console.log("this._actions: ", this._actions);
+				//  0 && console.log("Download Table", selection);
+				//  0 && console.log("this._actions: ", this._actions);
 				this._actions.SelectDownloadSeqComparison.selection = selection[0];
 				if(selection.length == 1){
 					popup.open({
@@ -28463,7 +28447,6 @@ define([
 						orient: ["below"]
 					});
 				}
-
 			}), true);
 
 			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader, function(evt){
@@ -28474,7 +28457,7 @@ define([
 				outputFiles.some(function(t){
 					var fname = t[0];
 					if(fname.indexOf(rel) >= 0){
-						 0 && console.log("DOWNLOAD: ", fname);
+						//  0 && console.log("DOWNLOAD: ", fname);
 						WorkspaceManager.downloadFile(fname);
 						return true;
 					}
@@ -28489,10 +28472,9 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
-				 0 && console.log("View Genome Annotation: ", selection[0]);
+				//  0 && console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				var url = "/view/Genome/" + gid;
-				window.location = url;
+				Topic.publish("/navigate", {href: "/view/Genome/" + gid});
 
 			}, true);
 
@@ -28502,7 +28484,7 @@ define([
 				validTypes: ["model"],
 				tooltip: "View Model @ Modelseed"
 			}, function(selection){
-				 0 && console.log("View Model: ", selection[0]);
+				//  0 && console.log("View Model: ", selection[0]);
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				//window.location=url;
@@ -28515,10 +28497,9 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
-				 0 && console.log("View Genome Annotation: ", selection[0]);
+				//  0 && console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))";
-
+				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"});
 			}, true);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
@@ -28527,9 +28508,9 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
-				 0 && console.log("View Genome Annotation: ", selection[0]);
+				//  0 && console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/view/Genome/" + gid + "#view_tab=browser";
+				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=browser"});
 
 			}, true);
 
@@ -28539,7 +28520,7 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Upload to Folder"
 			}, function(selection){
-				 0 && console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
+				//  0 && console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
 			}, true);
 
@@ -28549,26 +28530,25 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Create Folder"
 			}, function(selection){
-				 0 && console.log("CREATE FOLDER", selection[0].path);
+				//  0 && console.log("CREATE FOLDER", selection[0].path);
 				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
 			}, true);
 
-
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
 					popup.close(viewFASTATT);
 				}
-			})
+			});
 
 			on(viewFASTATT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				 0 && console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				 0 && console.log("selection: ", selection);
+				//  0 && console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection');
+				//  0 && console.log("selection: ", selection);
 				popup.close(viewFASTATT);
 				var idType = "feature_id";
-				
+
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -28576,40 +28556,6 @@ define([
 				Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
 			});
 
-/*
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
-			var viewFASTATT = new TooltipDialog({
-				content: vfc, onMouseLeave: function(){
-					popup.close(viewFASTATT);
-				}
-			})
-
-			on(viewFASTATT.domNode, "div:click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				 0 && console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				 0 && console.log("selection: ", selection);
-				popup.close(viewFASTATT);
-
-				var ids = selection.map(function(d){
-					return d['feature_id'];
-				});
-				var frm = domConstruct.create("form", {
-					style: {display: "none"},
-					method: "POST",
-					action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta",
-					target: "fastaDisplay"
-				}, this.domNode);
-				domConstruct.create("input", {name: "fastaaction", value: "display"}, frm);
-				domConstruct.create("input", {name: "fastascope", value: "Selected"}, frm);
-				domConstruct.create("input", {name: "fastatype", value: rel}, frm);
-				domConstruct.create("input", {name: "fids", value: ids}, frm);
-
-				window.open("", "fastaDisplay", "width=920,height=400,scrollbars,resizable")
-
-				frm.submit();
-			});
-*/
 			this.actionPanel.addAction("ViewFASTA", "fa icon-fasta fa-2x", {
 				label: "FASTA",
 				ignoreDataType: true,
@@ -28624,7 +28570,7 @@ define([
 					around: this._actions.ViewFASTA.button,
 					orient: ["below"]
 				});
-				 0 && console.log("popup viewFASTA", selection);
+				//  0 && console.log("popup viewFASTA", selection);
 
 			}, true);
 
@@ -28637,7 +28583,7 @@ define([
 				validContainerTypes: ["feature_group"],
 				tooltip: "Multiple Sequence Alignment"
 			}, function(selection){
-				var selection = self.actionPanel.get('selection')
+				var selection = self.actionPanel.get('selection');
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -28648,7 +28594,7 @@ define([
 						callType: 'toAligner'
 					}
 				}).then(function(results){
-					document.location = "/portal/portal/patric/MSA?cType=&cId=&pk=" + results;
+					Topic.publish("/navigate", {href: "/portal/portal/patric/MSA?cType=&cId=&pk=" + results});
 				});
 
 			}, true);
@@ -28657,13 +28603,13 @@ define([
 				content: IDMappingTemplate, onMouseLeave: function(){
 					popup.close(idMappingTTDialog);
 				}
-			})
+			});
 
 			on(idMappingTTDialog.domNode, "TD:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				 0 && console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				 0 && console.log("selection: ", selection);
+				//  0 && console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection');
+				//  0 && console.log("selection: ", selection);
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -28678,7 +28624,7 @@ define([
 						sraction: 'save_params'
 					}
 				}).then(function(results){
-					document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
+					Topic.publish("/navigate", {href: "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results});
 				});
 				popup.close(idMappingTTDialog);
 			});
@@ -28693,14 +28639,14 @@ define([
 				tooltipDialog: idMappingTTDialog
 			}, function(selection){
 
-				 0 && console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
-				 0 && console.log("this: ", this);
+				//  0 && console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
+				//  0 && console.log("this: ", this);
 				popup.open({
 					popup: this._actions.idmapping.options.tooltipDialog,
 					around: this._actions.idmapping.button,
 					orient: ["below"]
 				});
-				 0 && console.log("popup idmapping", selection);
+				//  0 && console.log("popup idmapping", selection);
 			}, true);
 
 			this.actionPanel.addAction("Pathway Summary", "fa icon-git-pull-request fa-2x", {
@@ -28712,7 +28658,7 @@ define([
 				tooltip: "Pathway Summary"
 			}, function(selection){
 
-				var selection = self.actionPanel.get('selection')
+				var selection = self.actionPanel.get('selection');
 				var ids = selection.map(function(d){
 					return d['feature_id'];
 				});
@@ -28723,7 +28669,7 @@ define([
 						callType: 'saveParams'
 					}
 				}).then(function(results){
-					document.location = "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results;
+					Topic.publish("/navigate", {href: "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results});
 				});
 
 			}, true);
@@ -28732,10 +28678,11 @@ define([
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
 			}, function(selection){
-				 0 && console.log("View Gene List", selection);
-				window.location = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
+				//  0 && console.log("View Gene List", selection);
+				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
 						return s.path;
-					})
+					});
+				Topic.publish("/navigate", {href: url});
 			}, true);
 
 			this.actionPanel.addAction("ExperimentGeneList3", "fa icon-list-unordered fa-2x", {
@@ -28745,12 +28692,13 @@ define([
 				validContainerTypes: ["experiment"],
 				tooltip: "View Experiment Gene List"
 			}, function(selection){
-				 0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
-				 0 && console.log("View Gene List", selection);
+				//  0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
+				//  0 && console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
-				window.location = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
+				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
 						return s.pid;
-					})
+					});
+				Topic.publish("/navigate", {href: url});
 			}, true);
 
 			this.actionPanel.addAction("ExperimentGeneList2", "fa icon-list-unordered fa-2x", {
@@ -28759,9 +28707,9 @@ define([
 				validTypes: ["*"],
 				tooltip: "View Experiment Group Gene List"
 			}, function(selection){
-				 0 && console.log("View Gene List2", selection);
-				var eids = []
-				var wsExps = []
+				//  0 && console.log("View Gene List2", selection);
+				var eids = [];
+				var wsExps = [];
 				selection.forEach(function(s){
 					if(s.path){
 						wsExps.push(s.path);
@@ -28778,15 +28726,8 @@ define([
 					url = url + "&wsExpId=" + wsExps.join(",");
 				}
 
-				window.location = url;
+				Topic.publish("/navigate", {href: url});
 			}, true);
-
-			/*
-			this.actionPanel.addAction("UploadItem","fa icon-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
-				 0 && console.log("Replace Item Action", selection);
-				Topic.publish("/openDialog",{type:"UploadReplace",params:{path: selection[0].path}});
-			}, true);
-			*/
 
 			this.actionPanel.addAction("RemoveItem", "fa icon-x fa-2x", {
 				label: "REMOVE",
@@ -28796,25 +28737,24 @@ define([
 				validContainerTypes: ["genome_group", "feature_group"],
 				tooltip: "Remove Selection from Group"
 			}, function(selection){
-				 0 && console.log("Remove Items from Group", selection);
-				 0 && console.log("currentContainerWidget: ", this.currentContainerWidget);
+				//  0 && console.log("Remove Items from Group", selection);
+				//  0 && console.log("currentContainerWidget: ", this.currentContainerWidget);
 
-				var type = selection[0].document_type;
 				var idType = (this.currentContainerWidget.containerType == "genome_group") ? "genome_id" : "feature_id";
 				var type = (idType == "genome_id") ? "genome" : "genome feature";
 				var objs = selection.map(function(s){
-					 0 && console.log('s: ', s, s.data);
+					//  0 && console.log('s: ', s, s.data);
 					return s[idType];
 				});
 
 				var conf = "Are you sure you want to remove " + objs.length + " " + type +
 					((objs.length > 1) ? "s" : "") +
-					" from this group?"
+					" from this group?";
 				var _self = this;
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						 0 && console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path'));
+						//  0 && console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path'));
 						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'), idType, objs), function(){
 							if(_self.currentContainerWidget && _self.currentContainerWidget.refresh){
 								_self.currentContainerWidget.refresh();
@@ -28823,13 +28763,12 @@ define([
 							}
 						});
 					}
-				})
-				dlg.startup()
+				});
+				dlg.startup();
 				dlg.show();
 
 			}, true);
 
-			var _self = this;
 			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {
 				label: "SPLIT",
 				ignoreDataType: true,
@@ -28838,7 +28777,7 @@ define([
 				validContainerTypes: ["genome_group", "feature_group", "experiment_group"],
 				tooltip: "Copy selection to a new or existing group"
 			}, function(selection, containerWidget){
-				 0 && console.log("Add Items to Group", selection);
+				//  0 && console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title: "Copy Selection to Group"});
 				var stg = new SelectionToGroup({
 					selection: selection,
@@ -28867,13 +28806,7 @@ define([
 					validTypes: ["genome_group", "feature_group", "experiment_group"],
 					tooltip: "Select two or three groups to compare"
 				}, function(selection, containerWidget){
-					 0 && console.log("Compare groups", selection);
-					// 0 && console.log("containerWidget==", containerWidget);
-					// 0 && console.log("containerWidget. is?: ", containerWidget.domNode);
-					//var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: containerWidget.domNode});
 
-//                var dlg = new Dialog({title:"Group Comparison", minSize: 1000, style: "width: 1200px !important; height: 700px !important;",
-//                                     onHide: function() {dlg.destroy()}});
 					var dlg = new Dialog({
 						title: "Group Comparison",
 						style: "width: 1250px !important; height: 750px !important;",
@@ -28890,43 +28823,10 @@ define([
 						containerNode: dlg.containerNode
 					});
 					bc.addChild(stg);
-//				stg.startup();
 					dlg.startup();
 					dlg.show();
 				},
 				false);
-
-			this.actionPanel.addAction("ProteinFamily", "fa icon-group fa-2x", {
-				label: "ProteinFam",
-				multiple: true,
-				validTypes: ["genome_group"],
-				tooltip: "View protein families"
-			}, function(selection){
-
-				if(selection.length === 1){
-					var path = selection[0].path;
-					Topic.publish("/navigate", {href:"/view/GenomeGroup" + path + "#view_tab=proteinFamilies"})
-				}else{
-					// read genome ids
-					var paths = selection.map(function(d){ return d.path});
-					WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function(objs){
-						var genomeIdHash = {};
-						objs.forEach(function(obj){
-							var data = JSON.parse(obj.data);
-							data.id_list.genome_id.forEach(function(d){
-								if(!genomeIdHash.hasOwnProperty(d)){
-									genomeIdHash[d] = true;
-								}
-							})
-						});
-
-						Topic.publish("/navigate", {href:"/view/GenomeList/?in(genome_id,(" + Object.keys(genomeIdHash) + "))#view_tab=proteinFamilies"});
-					}));
-				}
-			}, false);
-//			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
-//				 0 && console.log("Remove Items from Group", selection);
-//			},true);
 
 			this.actionPanel.addAction("DeleteItem", "fa icon-trash fa-2x", {
 				label: "DELETE",
@@ -28936,7 +28836,7 @@ define([
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
-					 0 && console.log('s: ', s, s.data);
+					//  0 && console.log('s: ', s, s.data);
 					return s.path || s.data.path;
 				});
 				var conf = "Are you sure you want to delete" +
@@ -28948,8 +28848,8 @@ define([
 					onConfirm: function(evt){
 						WorkspaceManager.deleteObject(objs, true, false);
 					}
-				})
-				dlg.startup()
+				});
+				dlg.startup();
 				dlg.show();
 			}, true);
 
@@ -28990,12 +28890,12 @@ define([
 			this.addChild(this.itemDetailPanel);
 			this.addChild(this.browserHeader);
 
-			var self = this;
 			this.inherited(arguments);
 
 		},
+
 		_setPathAttr: function(val){
-			 0 && console.log("WorkspaceBrowser setPath()", val)
+			//  0 && console.log("WorkspaceBrowser setPath()", val)
 			this.path = decodeURIComponent(val);
 			var parts = this.path.split("/").filter(function(x){
 				return x != "";
@@ -29004,7 +28904,7 @@ define([
 			});
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
-			 0 && console.log("Workspace: ", workspace, parts[1], val)
+			//  0 && console.log("Workspace: ", workspace, parts[1], val)
 			// if (!window.App.user || !window.App.user.id){
 			// 	Topic.publish("/login");
 			// 	return;
@@ -29017,13 +28917,13 @@ define([
 			Deferred.when(obj, lang.hitch(this, function(obj){
 
 				if(this.browserHeader){
-					 0 && console.log("Set BrowserHeader selection: ", [obj]);
+					//  0 && console.log("Set BrowserHeader selection: ", [obj]);
 					this.browserHeader.set("selection", [obj]);
 
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
-				 0 && console.log("Browse to Type: ", obj.type, obj);
+				//  0 && console.log("Browse to Type: ", obj.type, obj);
 				switch(obj.type){
 					case "folder":
 						panelCtor = WorkspaceExplorerView;
@@ -29041,27 +28941,26 @@ define([
 						params.data = obj;
 						break;
 					case "job_result":
-						var d = "p3/widget/viewer/JobResult"
-						 0 && console.log("job_result object: ", obj);
+						var d = "p3/widget/viewer/JobResult";
+						//  0 && console.log("job_result object: ", obj);
 						if(obj && obj.autoMeta && obj.autoMeta.app){
-							var id = obj.autoMeta.app.id || obj.autoMeta.app
+							var id = obj.autoMeta.app.id || obj.autoMeta.app;
 							switch(id){
 								case "DifferentialExpression":
-									 0 && console.log("Using Experiement Viewer");
-									d = "p3/widget/viewer/Experiment"
+									//  0 && console.log("Using Experiement Viewer");
+									d = "p3/widget/viewer/Experiment";
 									break;
 								case "GenomeComparison":
-									 0 && console.log("SeqComparison Viewer");
-									d = "p3/widget/viewer/SeqComparison"
+									//  0 && console.log("SeqComparison Viewer");
+									d = "p3/widget/viewer/SeqComparison";
 									break;
 								case "GenomeAnnotation":
-									 0 && console.log("GenomeAnnotation Viewer");
-									d = "p3/widget/viewer/GenomeAnnotation"
+									//  0 && console.log("GenomeAnnotation Viewer");
+									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
-
 							}
 						}
-						 0 && console.log("LOAD VIEWER: ", d, params);
+						//  0 && console.log("LOAD VIEWER: ", d, params);
 						panelCtor = window.App.getConstructor(d);
 						params.data = obj;
 						//params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
@@ -29073,17 +28972,17 @@ define([
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
-						 0 && console.log("FileViewer Ctor params: ", params);
+					//  0 && console.log("FileViewer Ctor params: ", params);
 				}
 
-				 0 && console.log("params.query: ", params.query);
+				//  0 && console.log("params.query: ", params.query);
 				Deferred.when(panelCtor, lang.hitch(this, function(Panel){
-					 0 && console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
+					//  0 && console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
 					if(!this.activePanel || !(this.activePanel instanceof Panel)){
 						if(this.activePanel){
 							this.removeChild(this.activePanel);
 						}
-						 0 && console.log("Creeate New Active Panel");
+						//  0 && console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
 						this.actionPanel.set("currentContainerWidget", newPanel);
@@ -29091,14 +28990,14 @@ define([
 
 						if(newPanel.on){
 							newPanel.on("select", lang.hitch(this, function(evt){
-								 0 && console.log("Selected: ", evt);
+								//  0 && console.log("Selected: ", evt);
 								var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-									 0 && console.log("rownum: ", rownum);
-									 0 && console.log("Row: ", evt.grid.row(rownum).data);
+									//  0 && console.log("rownum: ", rownum);
+									//  0 && console.log("Row: ", evt.grid.row(rownum).data);
 									return evt.grid.row(rownum).data;
 								}));
-								 0 && console.log("selection: ", sel);
-								 0 && console.log("this.activePanel: ", newPanel);
+								//  0 && console.log("selection: ", sel);
+								//  0 && console.log("this.activePanel: ", newPanel);
 								if(hideTimer){
 									clearTimeout(hideTimer);
 								}
@@ -29107,20 +29006,6 @@ define([
 								}
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
-
-								/*
-								if (sel.length==1) {
-									if (this.getChildren().some(function(child){
-										return (child===this.actionPanel)
-									},this)) {
-										this.itemDetailPanel.set("item",sel[0]);
-									}
-								}else if (sel.length>1) {
-
-								}else {
-									this.removeChild(this.actionPanel);
-								}
-								*/
 							}));
 
 							newPanel.on("deselect", lang.hitch(this, function(evt){
@@ -29130,37 +29015,24 @@ define([
 									this.itemDetailPanel.set("selection", []);
 								}else{
 									var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-										 0 && console.log("rownum: ", rownum);
-										 0 && console.log("Row: ", evt.grid.row(rownum).data);
+										//  0 && console.log("rownum: ", rownum);
+										//  0 && console.log("Row: ", evt.grid.row(rownum).data);
 										return evt.grid.row(rownum).data;
 									}));
 								}
-								 0 && console.log("selection: ", sel);
+								//  0 && console.log("selection: ", sel);
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
-								/*	if (!sel || sel.length<1){
-										hideTimer = setTimeout(lang.hitch(this,function(){
-											this.removeChild(this.actionPanel);
-											this.removeChild(this.itemDetailPanel);
-										}),500);
-									}
-								*/
 							}));
 
 							newPanel.on("ItemDblClick", lang.hitch(this, function(evt){
-								 0 && console.log("ItemDblClick: ", evt);
+								//  0 && console.log("ItemDblClick: ", evt);
 								if(evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)){
 									Topic.publish("/navigate", {href: "/workspace" + evt.item_path})
 									this.actionPanel.set("selection", []);
 									this.itemDetailPanel.set("selection", []);
-									 0 && console.log("SHOW LOADING STATUS SOMEHOW");
+									//  0 && console.log("SHOW LOADING STATUS SOMEHOW");
 									newPanel.clearSelection();
-									/*
-									hideTimer = setTimeout(lang.hitch(this,function(){
-										this.removeChild(this.actionPanel);
-										this.removeChild(this.itemDetailPanel);
-									}),500);
-									*/
 								}else{
 									 0 && console.log("non-navigable type, todo: show info panel when dblclick");
 								}
@@ -29175,8 +29047,6 @@ define([
 						if(this.activePanel.clearSelection){
 							this.activePanel.clearSelection();
 						}
-						//	this.removeChild(this.actionPanel);
-						//	this.removeChild(this.itemDetailPanel);
 					}
 
 					var parts = this.path.split("/").filter(function(x){
@@ -29185,38 +29055,12 @@ define([
 						return decodeURIComponent(c)
 					});
 					var workspace = parts[0] + "/" + parts[1];
-					 0 && console.log("Publish to ActiveWorkspace:", workspace, val)
+					//  0 && console.log("Publish to ActiveWorkspace:", workspace, val)
 					WorkspaceManager.set("currentPath", val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
-					 0 && console.log("Set Browser Header Path: ", this.path);
+					//  0 && console.log("Set Browser Header Path: ", this.path);
 					this.browserHeader.set("path", this.path)
-					/*
-					if (this._started){
-						var len = parts.length;
-						var out = [];
-
-						var out = ["<span class='wsBreadCrumb'>"];
-						var bp = ["workspace"];
-						parts.forEach(function(p,idx){
-							if (idx == (parts.length-1)){
-								out.push(p + "&nbsp;");
-								return;
-							}
-							out.push("<a class='navigationLink' href='");
-							bp.push(p);
-							out.push("/" + bp.join("/") + ((idx==0)?"/":"") );
-							out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p)  + "</a>&nbsp;/&nbsp;");
-						})
-						//out.push("<span>" + parts.join("/") + "</span>");
-						out.push("<span style='float:right;'>");
-						out.push("<a href class='DialogButton fa icon-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/")+ "' style='margin:4px;' title='Upload to Folder'></a>");
-						out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
-						out.push("</span>");
-
-						this.browserHeader.set("content", out.join(""));
-					}
-					*/
 				}));
 
 			}), lang.hitch(this, function(err){
@@ -29245,15 +29089,8 @@ define([
 				this.explorer.refreshWorkspace()
 			}
 		},
+
 		getMenuButtons: function(){
-			//  0 && console.log("Get Menu Buttons");
-			//       if (this.buttons) { return this.buttons; }
-			//       this.buttons = [];
-			//       var b = domConstruct.create("div", {innerHTML:"Add Folder", 'class':'facetMenuIcon plusIcon',title:"Add Document Comment"});
-			//       on(b, "click", function(){
-			//               Topic.publish("/dialog/show","AddComment");
-			//       });
-			//       this.buttons.push(b);
 			this.buttons = [];
 			return this.buttons;
 
@@ -29304,13 +29141,13 @@ define([
 					})
 
 				}
-				 0 && console.log("self.sort: ", _self.sort, _self.queryOptions);
+				//  0 && console.log("self.sort: ", _self.sort, _self.queryOptions);
 				var sort = _self.get('sort');
 				if(!sort || sort.length == 0){
 					sort = _self.queryOptions.sort;
 				}
 
-				 0 && console.log('sort: ', sort);
+				//  0 && console.log('sort: ', sort);
 
 				res.sort(function(a, b){
 					var s = sort[0];
@@ -29375,15 +29212,15 @@ define([
 		refreshWorkspace: function(){
 			var _self = this;
 			this.listWorkspaceContents(this.path).then(function(contents){
-				 0 && console.log("listWSContents: ", contents);
+				//  0 && console.log("listWSContents: ", contents);
 				var parts = _self.path.split("/").filter(function(x){
 					return !!x
 				});
-				 0 && console.log("Path Parts: ", parts);
+				//  0 && console.log("Path Parts: ", parts);
 				if(parts.length > 1){
 					parts.pop();
 					var parentPath = "/" + parts.join("/");
-					 0 && console.log("parentPath: ", parentPath);
+					//  0 && console.log("parentPath: ", parentPath);
 
 					var p = {
 						name: "Parent Folder",
@@ -29392,11 +29229,11 @@ define([
 						id: parentPath,
 						owner_id: "@"
 					};
-					 0 && console.log("p: ", p);
+					//  0 && console.log("p: ", p);
 					contents.unshift(p);
 				}
 
-				 0 && console.log("Revised Contents:", contents);
+				//  0 && console.log("Revised Contents:", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -29431,7 +29268,7 @@ define([
 		_setPath: function(val){
 			this.path = val;
 			var _self = this;
-			 0 && console.log("WorkspaceExplorerView setPath", val)
+			//  0 && console.log("WorkspaceExplorerView setPath", val)
 			if(this._started){
 				this.refreshWorkspace();
 			}
@@ -29450,12 +29287,10 @@ define([
 	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
 	"dojo/topic", "dgrid/editor", "dijit/Menu", "dijit/MenuItem", "../WorkspaceManager", "dojo/on", "dijit/form/TextBox"
-
-],
-function(declare, Grid, Store, DijitRegistry,
-		 Keyboard, Selection, formatter, ColumnResizer,
-		 ColumnHider, DnD, DnDSource,
-		 Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox){
+], function(declare, Grid, Store, DijitRegistry,
+			Keyboard, Selection, formatter, ColumnResizer,
+			ColumnHider, DnD, DnDSource,
+			Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox){
 	return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
 		columns: {
 			"type": {
@@ -29520,7 +29355,7 @@ function(declare, Grid, Store, DijitRegistry,
 		},
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
-				 0 && console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
+				//  0 && console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
 				var avatar = dojo.create("div", {
 					innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
 				});
@@ -29567,15 +29402,15 @@ function(declare, Grid, Store, DijitRegistry,
 
 		_setTotalRows: function(rows){
 			this.totalRows = rows;
-			 0 && console.log("Total Rows: ", rows);
+			//  0 && console.log("Total Rows: ", rows);
 			if(this.controlButton){
-				 0 && console.log("this.controlButton: ", this.controlButton);
+				//  0 && console.log("this.controlButton: ", this.controlButton);
 				if(!this._originalTitle){
 					this._originalTitle = this.controlButton.get('label');
 				}
 				this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
 
-				 0 && console.log(this.controlButton);
+				//  0 && console.log(this.controlButton);
 			}
 		},
 
@@ -29592,14 +29427,14 @@ function(declare, Grid, Store, DijitRegistry,
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				 0 && console.log("ItemDblClick (row): ", row.data.path);
+				//  0 && console.log("ItemDblClick (row): ", row.data.path);
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				 0 && console.log('after emit');
+				//  0 && console.log('after emit');
 				//if (row.data.type == "folder"){
 				//	Topic.publish("/select", []);
 
@@ -29612,7 +29447,7 @@ function(declare, Grid, Store, DijitRegistry,
 				var row = _self.row(evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				 0 && console.log("ItemDblClick (icon): ", row.data.path);
+				//  0 && console.log("ItemDblClick (icon): ", row.data.path);
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
@@ -29625,7 +29460,7 @@ function(declare, Grid, Store, DijitRegistry,
 			//Topic.publish("/select", []);
 
 			this.on("dgrid-select", function(evt){
-				 0 && console.log('dgrid-select: ', evt);
+
 				setTimeout(function(){
 					var newEvt = {
 						rows: evt.rows,
@@ -29633,78 +29468,41 @@ function(declare, Grid, Store, DijitRegistry,
 						grid: _self,
 						bubbles: true,
 						cancelable: true
-					}
+					};
 					on.emit(_self.domNode, "select", newEvt);
 				}, 250);
-				// 0 && console.log("dgrid-select");
-				//var rows = event.rows;
-				//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-				//Topic.publish("/select", sel);
 			});
+
 			this.on("dgrid-deselect", function(evt){
-				 0 && console.log("dgrid-select");
+
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "deselect", newEvt);
 				return;
-//					var rows = evt.rows;
-//					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
-//					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-//					Topic.publish("/select", sel);
 			});
-			/*
-			var activeItem;
-			this.on(".dgrid-content:contextmenu", function(evt){
-				var row=_self.row(evt);
-				activeItem = row;
-				 0 && console.log("activeItem: ", row.data);
-			});
-
-			var menu = new Menu({
-				  // Hook menu at domNode level since it stops propagation, and would
-				  // block any contextmenu events delegated from the domNode otherwise
-				  targetNodeIds: [this.domNode]
-			});
-
-			menu.addChild(new MenuItem({
-				label: "Delete Object",
-				onClick: function() {
-					if (activeItem) {
-						 0 && console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
-						if (activeItem.data.type=="folder"){
-							WorkspaceManager.deleteFolder([activeItem.data.path]);
-						}else{
-							WorkspaceManager.deleteObject([activeItem.data.path],true);
-						}
-
-					}
-				}
-			}));
-			*/
 
 			this.inherited(arguments);
 			this._started = true;
 
 		},
 		_setActiveFilter: function(filter){
-			 0 && console.log("Set Active Filter: ", filter, "started:", this._started);
+			//  0 && console.log("Set Active Filter: ", filter, "started:", this._started);
 			this.activeFilter = filter;
 			this.set("query", this.buildQuery());
 		},
 
 		buildQuery: function(table, extra){
 			var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
-			 0 && console.log("Feature Grid Query:", q);
+			//  0 && console.log("Feature Grid Query:", q);
 			return q;
 		},
 		createStore: function(dataModel){
-			 0 && console.log("Create Store for ", dataModel, " at ", this.apiServer);
+			//  0 && console.log("Create Store for ", dataModel, " at ", this.apiServer);
 			var store = new Store({
 				target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
 				idProperty: "rownum",
@@ -29715,12 +29513,12 @@ function(declare, Grid, Store, DijitRegistry,
 					"Authorization": (window.App.authorizationToken || "")
 				}
 			});
-			 0 && console.log("store: ", store);
+			//  0 && console.log("store: ", store);
 			return store;
 		},
 
 		getFilterPanel: function(){
-			 0 && console.log("getFilterPanel()");
+			//  0 && console.log("getFilterPanel()");
 			return FilterPanel;
 		}
 
@@ -33116,7 +32914,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 			if(obj.type == "folder"){
 				return ""
 			}
-			 0 && console.log("Has UserMeta: ", obj.userMeta);
+			//  0 && console.log("Has UserMeta: ", obj.userMeta);
 
 			if(obj.autoMeta && obj.autoMeta["item_count"]){
 				out = obj.autoMeta.item_count;
@@ -36490,7 +36288,6 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
-		 0 && console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
@@ -36682,10 +36479,8 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
-		 0 && console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
-		 0 && console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
@@ -45403,7 +45198,7 @@ define([
 	return declare([ActionBar], {
 		path: null,
 		"class": "WSContainerActionBar",
-		tooltipPosition: ["above","below"],
+		tooltipPosition: ["above", "below"],
 		_setPathAttr: function(p){
 			this.path = p;
 			if(this._started){
@@ -45430,7 +45225,7 @@ define([
 			var len = parts.length;
 			var out = ["<span class='wsBreadCrumb'>"];
 			var bp = ["workspace"];
-			 0 && console.log("parts: ", parts);
+			//  0 && console.log("parts: ", parts);
 			parts.forEach(function(p, idx){
 				if(idx == (parts.length - 1)){
 					out.push(p + "&nbsp;");
@@ -57620,7 +57415,6 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
-				 0 && console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					 0 && console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +
@@ -74158,17 +73952,17 @@ define([
 'p3/widget/GridContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
-	"dojo/request", "dojo/when","dojo/dom-class",
+	"dojo/request", "dojo/when", "dojo/dom-class",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog","./PerspectiveToolTip"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog", "./PerspectiveToolTip"
 ], function(declare, BorderContainer, on, domConstruct,
-			request, when,domClass,
+			request, when, domClass,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog, DownloadTooltipDialog,PerspectiveToolTipDialog){
+			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
@@ -74204,7 +73998,7 @@ define([
 
 	var idMappingTTDialog = new TooltipDialog({
 		style: "overflow: visible;",
-		content: IDMappingTemplate, 
+		content: IDMappingTemplate,
 		onMouseLeave: function(){
 			popup.close(idMappingTTDialog);
 		}
@@ -74257,18 +74051,12 @@ define([
 
 		constructor: function(){
 			this._firstView = false;
-			//  0 && console.log("GRIDCONTAINER CTOR() ", arguments)
 		},
 
 		postCreate: function(){
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
-
-		// startup: function(){
-		// 	this.inherited(arguments);
-		// 	// this.onSetState("state","", this.state);
-		// },
 
 		onSetState: function(attr, oldState, state){
 			// 0 && console.log("GridContainer onSetState: ", state, " oldState:", oldState);
@@ -74283,7 +74071,7 @@ define([
 			}
 
 			// reset filters to default state if search is different
-			if (oldState && (state.search != oldState.search)){
+			if(oldState && (state.search != oldState.search)){
 				oldState = {};
 			}
 
@@ -74296,17 +74084,17 @@ define([
 				}else if(!oldState && this.defaultFilter){
 					//  0 && console.log("Using Default Filter as Hash Params Filter", this.defaultFilter)
 					state.hashParams.filter = this.defaultFilter;
-					this.set('state', lang.mixin({},state));
+					this.set('state', lang.mixin({}, state));
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					//  0 && console.log("Using oldState HashParams Filter", oldState.hashParams.filter)
 					state.hashParams.filter = oldState.hashParams.filter;
-					this.set('state', lang.mixin({},state));
+					this.set('state', lang.mixin({}, state));
 					return;
 				}else if(this.defaultFilter){
 					//  0 && console.log("Fallthrough to default Filter: ", this.defaultFilter);
 					state.hashParams.filter = this.defaultFilter;
-					this.set('state', lang.mixin({},state));
+					this.set('state', lang.mixin({}, state));
 					return;
 				}else{
 					//  0 && console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
@@ -74321,28 +74109,28 @@ define([
 					//  0 && console.log("Fall through to oldState hashparams filter");
 					state.hashParams.filter = oldState.hashParams.filter
 				}
-				this.set('state', lang.mixin({},state));
+				this.set('state', lang.mixin({}, state));
 				return;
 			}
 
 			if(this.enableFilterPanel && this.filterPanel){
 				//  0 && console.log("GridContainer call filterPanel set state: ", state.hashParams.filter, state)
-				this.filterPanel.set("state", lang.mixin({},state,{hashParams: lang.mixin({},state.hashParams)}));
+				this.filterPanel.set("state", lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 			}
 
-			if (this.showAutoFilterMessage && state.autoFilterMessage){
+			if(this.showAutoFilterMessage && state.autoFilterMessage){
 				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-1x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
 				// var msg = state.autoFilterMessage;
-				if (!this.messagePanel){
+				if(!this.messagePanel){
 					this.messagePanel = new ContentPane({
 						"class": "WarningPanel",
-						region: "top", 
+						region: "top",
 						content: msg
 					});
 
-					var _self=this;
+					var _self = this;
 					on(this.messagePanel.domNode, ".closeWarningBanner:click", function(evt){
-						if (_self.messagePanel){
+						if(_self.messagePanel){
 							_self.removeChild(_self.messagePanel);
 						}
 					});
@@ -74351,15 +74139,16 @@ define([
 				}
 				this.addChild(this.messagePanel);
 			}else{
-				if (this.messagePanel) { this.removeChild(this.messagePanel) }
+				if(this.messagePanel){
+					this.removeChild(this.messagePanel)
+				}
 			}
-
 
 			this.set("query", q.join("&"));
 
 		},
 		_setQueryAttr: function(query){
-			
+
 			if(query == this.query){
 				//  0 && console.log("  Skipping Query Update (unchanged)");
 				return;
@@ -74407,7 +74196,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "Toggle Details Pane"
 				},
-				function(selection,container,button){
+				function(selection, container, button){
 					//  0 && console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
 					var children = this.getChildren();
@@ -74419,33 +74208,33 @@ define([
 						this.removeChild(this.itemDetailPanel);
 						 0 && console.log("Button Node: ", button)
 
-						query(".ActionButtonText",button).forEach(function(node){
-							node.innerHTML="SHOW";
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "SHOW";
 						})
 
-						query(".ActionButton",button).forEach(function(node){
-							 0 && console.log("ActionButtonNode: ",node)
+						query(".ActionButton", button).forEach(function(node){
+							 0 && console.log("ActionButtonNode: ", node)
 							domClass.remove(node, "icon-chevron-circle-right");
 							domClass.add(node, "icon-chevron-circle-left");
-						})	
+						})
 					}
 					else{
 						//  0 && console.log("Re-add child: ", this.itemDetailPanel);
 						this.addChild(this.itemDetailPanel);
 
-						query(".ActionButtonText",button).forEach(function(node){
-							node.innerHTML="HIDE";
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "HIDE";
 						})
 
-						query(".ActionButton",button).forEach(function(node){
-							 0 && console.log("ActionButtonNode: ",node)
+						query(".ActionButton", button).forEach(function(node){
+							 0 && console.log("ActionButtonNode: ", node)
 							domClass.remove(node, "icon-chevron-circle-left");
 							domClass.add(node, "icon-chevron-circle-right");
 						})
 					}
 				},
 				true
-			],[
+			], [
 				"DownloadSelection",
 				"fa icon-download fa-2x",
 				{
@@ -74454,19 +74243,18 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max:5000,
+					max: 5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
-				function(selection,container){
+				function(selection, container){
 					 0 && console.log("this.currentContainerType: ", this.containerType);
 					 0 && console.log("GridContainer selection: ", selection);
 					 0 && console.log("   ARGS: ", arguments);
 
-
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
-					if (container && container.grid){
+					if(container && container.grid){
 						this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("grid", container.grid);
 					}
 
@@ -74491,11 +74279,14 @@ define([
 					multiple: false,
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data"],
-					pressAndHold: function(selection,button,opts,evt){
+					pressAndHold: function(selection, button, opts, evt){
 						 0 && console.log("PressAndHold");
 						 0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
 							around: button,
 							orient: ["below"]
 						});
@@ -74514,15 +74305,20 @@ define([
 					label: "FEATURES",
 					validTypes: ["*"],
 					multiple: true,
-					min:2,
+					min: 2,
 					max: 5000,
 					tooltip: "Switch to Feature List View. Press and Hold for more options.",
-					validContainerTypes: ["feature_data", "transcriptomics_gene_data","spgene_data"],
-					pressAndHold: function(selection,button,opts,evt){
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data", "spgene_data"],
+					pressAndHold: function(selection, button, opts, evt){
 						 0 && console.log("PressAndHold");
 						 0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "FeatureList", perspectiveUrl: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){ return x.feature_id; }).join(",") + "))"}),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "FeatureList",
+								perspectiveUrl: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+									return x.feature_id;
+								}).join(",") + "))"
+							}),
 							around: button,
 							orient: ["below"]
 						});
@@ -74531,13 +74327,16 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){ return x.feature_id; }).join(",") + "))"});
+					Topic.publish("/navigate", {
+						href: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+							return x.feature_id;
+						}).join(",") + "))"
+					});
 				},
 				false
 			],
 
-
-			 [
+			[
 				"ViewSpgeneItem",
 				"MultiButton fa icon-selection-Feature fa-2x",
 				{
@@ -74546,11 +74345,14 @@ define([
 					multiple: false,
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["spgene_data"],
-					pressAndHold: function(selection,button,opts,evt){
+					pressAndHold: function(selection, button, opts, evt){
 						 0 && console.log("PressAndHold");
 						 0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
 							around: button,
 							orient: ["below"]
 						});
@@ -74572,7 +74374,7 @@ define([
 					multiple: false,
 					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					validContainerTypes: ["genome_data"],
-					pressAndHold: function(selection,button,opts,evt){
+					pressAndHold: function(selection, button, opts, evt){
 						 0 && console.log("PressAndHold");
 						 0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
@@ -74590,7 +74392,7 @@ define([
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 				},
 				false
-			], 
+			],
 
 			[
 				"ViewGenomeItem",
@@ -74602,7 +74404,7 @@ define([
 					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					ignoreDataType: true,
 					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
-					pressAndHold: function(selection,button,opts,evt){
+					pressAndHold: function(selection, button, opts, evt){
 						 0 && console.log("PressAndHold");
 						 0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
@@ -74614,13 +74416,13 @@ define([
 					}
 				},
 				function(selection){
-						var sel = selection[0];
-						//  0 && console.log("sel: ", sel)
-						//  0 && console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-						Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					var sel = selection[0];
+					//  0 && console.log("sel: ", sel)
+					//  0 && console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 				},
 				false
-			], 
+			],
 
 			[
 				"ViewGenomeItems",
@@ -74633,15 +74435,20 @@ define([
 					max: 1000,
 					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					ignoreDataType: true,
-					validContainerTypes: ["genome_data","sequence_data", "feature_data", "spgene_data", "sequence_data"],
-					pressAndHold: function(selection,button,opts,evt){
-						var map={};
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "sequence_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						var map = {};
 						selection.forEach(function(sel){
-							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
+							if(!map[sel.genome_id]){
+								map[sel.genome_id] = true
+							}
 						})
 						var genome_ids = Object.keys(map);
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "GenomeList", perspectiveUrl: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"}),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "GenomeList",
+								perspectiveUrl: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"
+							}),
 							around: button,
 							orient: ["below"]
 						});
@@ -74649,33 +74456,17 @@ define([
 					}
 				},
 				function(selection){
-					var map={};
+					var map = {};
 					selection.forEach(function(sel){
-						if (!map[sel.genome_id]){ map[sel.genome_id]=true }
+						if(!map[sel.genome_id]){
+							map[sel.genome_id] = true
+						}
 					})
 					var genome_ids = Object.keys(map);
 					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
 				},
 				false
-			], 
-
-			// [
-			// 	"ViewCDSFeatures",
-			// 	"MultiButton fa icon-genome-features-cds fa-2x",
-			// 	{
-			// 		label: "CDS",
-			// 		validTypes: ["*"],
-			// 		multiple: false,
-			// 		tooltip: "View CDS Features",
-			// 		validContainerTypes: ["genome_data"]
-			// 	},
-			// 	function(selection){
-			// 		//  0 && console.log("selection: ", selection);
-			// 		var sel = selection[0];
-			// 		Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
-			// 	},
-			// 	false
-			// ], 
+			],
 			[
 				"ViewCDSFeaturesSeq",
 				"MultiButton fa icon-selection-FeatureList fa-2x",
@@ -74685,11 +74476,14 @@ define([
 					multiple: false,
 					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["sequence_data"],
-					pressAndHold: function(selection,button,opts,evt){
-						 0 && console.log("PressAndHold");
-						 0 && console.log("Selection: ", selection, selection[0])
+					pressAndHold: function(selection, button, opts, evt){
+						//  0 && console.log("PressAndHold");
+						//  0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "FeatureList", perspectiveUrl: "/view/FeatureList/?and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(accession," + selection[0].accession + "))" }),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "FeatureList",
+								perspectiveUrl: "/view/FeatureList/?and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(sequence_id," + selection[0].sequence_id + "))"
+							}),
 							around: button,
 							orient: ["below"]
 						});
@@ -74698,44 +74492,10 @@ define([
 				function(selection){
 					//  0 && console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/FeatureList/?and(eq(annotation,PATRIC),eq(accession," + sel.accession + "),eq(feature_type,CDS))"});
+					Topic.publish("/navigate", {href: "/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id," + sel.sequence_id + "),eq(feature_type,CDS))"});
 				},
 				false
 			],
-			 // [
-				// "ViewGenomeBrowser",
-				// "MultiButton fa icon-genome-browser fa-2x",
-				// {
-				// 	label: "BRWSR",
-				// 	validTypes: ["*"],
-				// 	multiple: false,
-				// 	tooltip: "Open Genome Browser",
-				// 	validContainerTypes: ["genome_data"]
-				// },
-				// function(selection){
-				// 	//  0 && console.log("selection: ", selection);
-				// 	var sel = selection[0];
-				// 	Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
-				// },
-				// false
-			// ], 
-			// [
-			// 	"ViewGenomeBrowserSeq",
-			// 	"MultiButton fa icon-genome-browser fa-2x",
-			// 	{
-			// 		label: "BRWSR",
-			// 		validTypes: ["*"],
-			// 		multiple: false,
-			// 		tooltip: "Open Genome Browser",
-			// 		validContainerTypes: ["sequence_data"]
-			// 	},
-			// 	function(selection){
-			// 		//  0 && console.log("selection: ", selection);
-			// 		var sel = selection[0];
-			// 		Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
-			// 	},
-			// 	false
-			// ], 
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -74768,7 +74528,7 @@ define([
 					ignoreDataType: true,
 					min: 2,
 					multiple: true,
-					max:200,
+					max: 200,
 					validTypes: ["*"],
 					tooltip: "Multiple Sequence Alignment",
 					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
@@ -74933,7 +74693,10 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					Topic.publish("/navigate",{href: "/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview", target: "blank"});
+					Topic.publish("/navigate", {
+						href: "/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview",
+						target: "blank"
+					});
 				},
 				false
 			], [
@@ -74955,7 +74718,10 @@ define([
 						return exp.eid;
 					});
 
-					Topic.publish("/navigate",{href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments", target: "blank"});
+					Topic.publish("/navigate", {
+						href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments",
+						target: "blank"
+					});
 				},
 				false
 			], [
@@ -74976,9 +74742,15 @@ define([
 						return exp.eid;
 					});
 					if(experimentIdList.length == 1){
-						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))", target: "blank"});
+						Topic.publish("/navigate", {
+							href: "/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))",
+							target: "blank"
+						});
 					}else{
-						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))", target: "blank"});
+						Topic.publish("/navigate", {
+							href: "/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))",
+							target: "blank"
+						});
 					}
 				},
 				false
@@ -74986,7 +74758,12 @@ define([
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
 				{
-					label: "PTHWY", ignoreDataType: true, multiple: true, max:200, validTypes: ["*"], tooltip: "Pathway Summary",
+					label: "PTHWY",
+					ignoreDataType: true,
+					multiple: true,
+					max: 200,
+					validTypes: ["*"],
+					tooltip: "Pathway Summary",
 					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
@@ -75014,7 +74791,10 @@ define([
 								ids = response.map(function(d){
 									return d['feature_id']
 								});
-								Topic.publish("/navigate", {href: "/view/PathwaySummary/?pathways=" + ids.join(','), target: "blank"});
+								Topic.publish("/navigate", {
+									href: "/view/PathwaySummary/?pathways=" + ids.join(','),
+									target: "blank"
+								});
 							});
 
 							return;
@@ -75045,7 +74825,10 @@ define([
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
+										Topic.publish("/navigate", {
+											href: "/view/PathwaySummary/?features=" + ids.join(','),
+											target: "blank"
+										});
 									});
 									return;
 									break;
@@ -75067,7 +74850,10 @@ define([
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
+										Topic.publish("/navigate", {
+											href: "/view/PathwaySummary/?features=" + ids.join(','),
+											target: "blank"
+										});
 									});
 
 									return;
@@ -75090,7 +74876,10 @@ define([
 							break;
 					}
 
-					Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
+					Topic.publish("/navigate", {
+						href: "/view/PathwaySummary/?features=" + ids.join(','),
+						target: "blank"
+					});
 				},
 				false
 
@@ -75154,12 +74943,15 @@ define([
 					multiple: false,
 					validTypes: ["*"],
 					tooltip: "Switch to Taxonomy View. Press and Hold for more options.",
-					validContainerTypes: ["taxonomy_data","taxon_data"],
-					pressAndHold: function(selection,button,opts,evt){
-						 0 && console.log("PressAndHold");
-						 0 && console.log("Selection: ", selection, selection[0])
+					validContainerTypes: ["taxonomy_data", "taxon_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						//  0 && console.log("PressAndHold");
+						//  0 && console.log("Selection: ", selection, selection[0])
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "Taxonomy", perspectiveUrl: "/view/Taxonomy/" + selection[0].taxon_id}),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Taxonomy",
+								perspectiveUrl: "/view/Taxonomy/" + selection[0].taxon_id
+							}),
 							around: button,
 							orient: ["below"]
 						});
@@ -75177,65 +74969,41 @@ define([
 				{
 					label: "GENOMES",
 					multiple: true,
-					min:2,
+					min: 2,
 					validTypes: ["*"],
 					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["taxonomy_data","taxon_data"],
-					pressAndHold: function(selection,button,opts,evt){
-						var map={};
+					validContainerTypes: ["taxonomy_data", "taxon_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						var map = {};
 						selection.forEach(function(sel){
-							if (!map[sel.taxon_id]){ map[sel.taxon_id]=true }
+							if(!map[sel.taxon_id]){
+								map[sel.taxon_id] = true
+							}
 						})
 						var taxonIds = Object.keys(map);
 						popup.open({
-							popup: new PerspectiveToolTipDialog({perspective: "GenomeList", perspectiveUrl: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))"}),
+							popup: new PerspectiveToolTipDialog({
+								perspective: "GenomeList",
+								perspectiveUrl: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))"
+							}),
 							around: button,
 							orient: ["below"]
 						});
 					}
 				},
 				function(selection){
-					var map={};
+					var map = {};
 					selection.forEach(function(sel){
-						if (!map[sel.taxon_id]){ map[sel.taxon_id]=true }
+						if(!map[sel.taxon_id]){
+							map[sel.taxon_id] = true
+						}
 					})
 					var taxonIds = Object.keys(map);
 					Topic.publish("/navigate", {href: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))#view_tab=overview"})
 				},
 				false
 			]
-			// ,[
-			// 	"ViewTaxonGenomes",
-			// 	"fa icon-genome fa-2x",
-			// 	{
-			// 		label: "VIEW",
-			// 		multiple: false,
-			// 		validTypes: ["*"],
-			// 		tooltip: "View Genome List",
-			// 		validContainerTypes: ["taxonomy_data"]
-			// 	},
-			// 	function(selection){
-			// 		var sel = selection[0];
-			// 		Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
-			// 	},
-			// 	false
-			// ], [
-			// 	"ViewTaxonGenomeFeatures",
-			// 	"fa icon-genome-features-cds fa-2x",
-			// 	{
-			// 		label: "CDS",
-			// 		multiple: false,
-			// 		validTypes: ["*"],
-			// 		tooltip: "View Genome List",
-			// 		validContainerTypes: ["taxonomy_data"]
-			// 	},
-			// 	function(selection){
-			// 		var sel = selection[0];
-			// 		Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
-			// 	},
-			// 	false
-			// ]
 		],
 
 		buildQuery: function(){
@@ -75273,7 +75041,7 @@ define([
 				"className": "BrowserHeader",
 				dataModel: this.dataModel,
 				facetFields: this.facetFields,
-				state: lang.mixin({},this.state),
+				state: lang.mixin({}, this.state),
 				enableAnchorButton: this.enableAnchorButton,
 				currentContainerWidget: this
 			});
@@ -75305,8 +75073,8 @@ define([
 				return;
 			}
 			var state;
-			if (this.state){
-				state = lang.mixin({}, this.state,{hashParams: lang.mixin({},this.state.hashParams)});
+			if(this.state){
+				state = lang.mixin({}, this.state, {hashParams: lang.mixin({}, this.state.hashParams)});
 			}
 
 			var o = {
@@ -75324,7 +75092,6 @@ define([
 			if(this.queryOptions){
 				o.queryOptions = this.queryOptions;
 			}
-
 
 			if(this.store){
 				o.store = this.store
@@ -75357,7 +75124,7 @@ define([
 
 			if(this.containerActionBar){
 				this.addChild(this.containerActionBar);
-				this.containerActionBar.set("currentContainer",this);
+				this.containerActionBar.set("currentContainer", this);
 			}
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
@@ -75380,28 +75147,28 @@ define([
 				// 	 0 && console.log("All Items Selected");
 				// 	this.getAllSelection(evt.grid.query);
 				// }else{
-					var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						//  0 && console.log("rownum: ", rownum);
-						//  0 && console.log("Row: ", evt.grid.row(rownum).data);
-						var row = evt.grid.row(rownum);
-						//  0 && console.log("Row: ", rownum)
-						if (row.data){
-								return row.data;
-						}else{
-							//  0 && console.log("No Row: ", rownum)
-							return this.grid._unloadedData[rownum];
-							// var data = {};
-							// //  0 && console.log("_self.grid.primaryKey", this.grid.primaryKey);
-							// data[this.grid.primaryKey]=rownum;
-							// //  0 && console.log("    DATA: ", data)
-							// return data;
-						}
-					}), this);
+				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+					//  0 && console.log("rownum: ", rownum);
+					//  0 && console.log("Row: ", evt.grid.row(rownum).data);
+					var row = evt.grid.row(rownum);
+					//  0 && console.log("Row: ", rownum)
+					if(row.data){
+						return row.data;
+					}else{
+						//  0 && console.log("No Row: ", rownum)
+						return this.grid._unloadedData[rownum];
+						// var data = {};
+						// //  0 && console.log("_self.grid.primaryKey", this.grid.primaryKey);
+						// data[this.grid.primaryKey]=rownum;
+						// //  0 && console.log("    DATA: ", data)
+						// return data;
+					}
+				}), this);
 
-					//  0 && console.log("GridContainer SEL: ", sel)
-					//  0 && console.log("selection: ", sel);
-					this.selectionActionBar.set("selection", sel);
-					this.itemDetailPanel.set('selection', sel);
+				//  0 && console.log("GridContainer SEL: ", sel)
+				//  0 && console.log("selection: ", sel);
+				this.selectionActionBar.set("selection", sel);
+				this.itemDetailPanel.set('selection', sel);
 				// }
 			}));
 
@@ -75471,7 +75238,7 @@ define([
 				this.onFirstView()
 			}
 			if(this.state){
-				this.set('state', lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
+				this.set('state', lang.mixin({}, this.state, {hashParams: lang.mixin({}, this.state.hashParams)}));
 			}
 			this.inherited(arguments)
 		}
@@ -85504,6 +85271,22 @@ define([
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
 			Topic.subscribe("/addTrack", lang.hitch(this, "onAddTrack"));
+
+            var customTrackHelp = "Add custom tracks by selecting feature type, strand and keywords to show genes of interest."; 
+            var customTT = new TooltipDialog({
+                content: customTrackHelp, 
+                onMouseLeave: function(){
+                    popup.close(customTT);
+                }
+            });
+            on(this.customTrackInfo, 'mouseover', function(){
+                // 0 && console.log("customTrackInfo", customTT.content);
+                popup.open({
+                    popup: customTT,
+                    around: this,
+                    orient: ["below-centered"]                    
+                });
+            });	
 		},
 
 		visibleIconClass: "icon-eye",
@@ -91783,40 +91566,38 @@ define([
 	"dojo/dom-geometry", "dojo/dom-style", "d3/d3", "../util/PathJoin",
 	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/form/Button",
 	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "./SelectionToGroup",
-    "dijit/Dialog", "./ItemDetailPanel", "dojo/query", "FileSaver",
-    "./ActionBar", "./ContainerActionBar", "dijit/layout/BorderContainer",
-    "dijit/layout/ContentPane", "dojo/dom-class", "dojo/on"
+	"dijit/Dialog", "./ItemDetailPanel", "dojo/query", "FileSaver",
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane", "dojo/dom-class", "dojo/on"
 ], function(declare, PhyloTree, TreeNavSVG,
 			WidgetBase, request, domConstruct,
 			lang, domGeometry, domStyle, d3, PathJoin,
-			DropDownButton, DropDownMenu, 
-            Button,	MenuItem, TooltipDialog, popup,
-            SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
-            ActionBar, ContainerActionBar, BorderContainer,
-            ContentPane, domClass, on){
+			DropDownButton, DropDownMenu,
+			Button, MenuItem, TooltipDialog, popup,
+			SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
+			ActionBar, ContainerActionBar, BorderContainer,
+			ContentPane, domClass, on){
 
-        var infoMenu = new TooltipDialog({
-            content: "<div> Create groups and download sequences by making a selection in the tree on the left.</div>",
-            onMouseLeave:function(){
-                popup.close(infoMenu);
-            }
-        });
-		
+	var infoMenu = new TooltipDialog({
+		content: "<div> Create groups and download sequences by making a selection in the tree on the left.</div>",
+		onMouseLeave: function(){
+			popup.close(infoMenu);
+		}
+	});
 
-        var idMenu = new TooltipDialog({
-            content: "",
-            onMouseLeave:function(){
-                popup.close(idMenu);
-            }
-        });
+	var idMenu = new TooltipDialog({
+		content: "",
+		onMouseLeave: function(){
+			popup.close(idMenu);
+		}
+	});
 
-
-        var snapMenu = new TooltipDialog({
-            content: "",
-            onMouseLeave:function(){
-                popup.close(snapMenu);
-            }
-        });
+	var snapMenu = new TooltipDialog({
+		content: "",
+		onMouseLeave: function(){
+			popup.close(snapMenu);
+		}
+	});
 
 	return declare([BorderContainer], {
 		"baseClass": "Phylogeny",
@@ -91824,20 +91605,20 @@ define([
 		state: null,
 		taxon_id: null,
 		newick: null,
-        labels: null,
+		labels: null,
 		jsonTree: null,
 		tree: null,
 		apiServer: window.App.dataAPI,
 		phylogram: true,
-		selection: null,		
+		selection: null,
 		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
-			this.containerPane = new ContentPane({region:"center"});//domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
+			this.containerPane = new ContentPane({region: "center"});//domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
 			this.containerActionBar = new ContainerActionBar({
 				region: "top",
 				splitter: false,
-                content: "",
-		        style: "height: 42px; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;",
+				content: "",
+				style: "height: 42px; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;",
 				"className": "TextTabButtons"
 			});
 			this.selectionActionBar = new ActionBar({
@@ -91857,10 +91638,10 @@ define([
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.containerPane);
 			//this.addChild(this.itemDetailPanel);
-            //this.itemDetailPanel.startup();
+			//this.itemDetailPanel.startup();
 
-			var menuDiv = domConstruct.create("div", {style:"display: inline-block"}, this.containerActionBar.pathContainer);
-			this.treeHeader = domConstruct.create("div", {style:"margin-left: 20px; display: inline-block"}, this.containerActionBar.pathContainer);
+			var menuDiv = domConstruct.create("div", {style: "display: inline-block"}, this.containerActionBar.pathContainer);
+			this.treeHeader = domConstruct.create("div", {style: "margin-left: 20px; display: inline-block"}, this.containerActionBar.pathContainer);
 			var typeMenuDom = domConstruct.create("div", {}, menuDiv);
 			var typeMenu = new DropDownMenu({style: "display: none;"});
 			typeMenu.addChild(new MenuItem({
@@ -91880,29 +91661,28 @@ define([
 				dropDown: typeMenu
 			}, typeMenuDom);
 			this.typeButton.startup();
-            this.setupActions();
-            on(idMenu.domNode, "click", lang.hitch(this, function(evt){
-                var rel = evt.target.attributes.rel.value;
-                var sel = idMenu.selection;
-                delete idMenu.selection;
+			this.setupActions();
+			on(idMenu.domNode, "click", lang.hitch(this, function(evt){
+				var rel = evt.target.attributes.rel.value;
+				var sel = idMenu.selection;
+				delete idMenu.selection;
 
-			    this.tree.selectLabels(rel);
-                popup.close(idMenu);
-            }));
+				this.tree.selectLabels(rel);
+				popup.close(idMenu);
+			}));
 
-
-            on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
-                var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value: null;
-                var sel = snapMenu.selection;
-                delete snapMenu.selection;
-                if (rel == "tree-svg"){
-                    saveAs(new Blob([query("svg")[0].outerHTML]), "patric_tree.svg");
-                }
-                else if (rel == "tree-newick"){
-                    saveAs(new Blob([this.newick]), "patric_tree.nwk");
-                }
-                popup.close(snapMenu);
-            }));
+			on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
+				var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
+				var sel = snapMenu.selection;
+				delete snapMenu.selection;
+				if(rel == "tree-svg"){
+					saveAs(new Blob([query("svg")[0].outerHTML]), "patric_tree.svg");
+				}
+				else if(rel == "tree-newick"){
+					saveAs(new Blob([this.newick]), "patric_tree.nwk");
+				}
+				popup.close(snapMenu);
+			}));
 			//this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
 			//this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
 			//this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
@@ -91915,21 +91695,21 @@ define([
 
 		},
 
-        noData: function(){
-                domClass.add(this.typeButton.domNode, "dijitHidden");
-                this.treeDiv.innerHTML= "There is no tree currently available";
-        },
+		noData: function(){
+			domClass.add(this.typeButton.domNode, "dijitHidden");
+			this.treeDiv.innerHTML = "There is no tree currently available";
+		},
 
-        onSelection: function(){
+		onSelection: function(){
 
-            var cur = this.selection.map(lang.hitch(this, function(selected){
-                return {"genome_id":selected.id}
-            }));
-            this.selectionActionBar._setSelectionAttr(cur);
+			var cur = this.selection.map(lang.hitch(this, function(selected){
+				return {"genome_id": selected.id}
+			}));
+			this.selectionActionBar._setSelectionAttr(cur);
 		},
 
 		onSetState: function(attr, oldVal, state){
-            //this.treeDiv.innerHTML= "Loading...";
+			//this.treeDiv.innerHTML= "Loading...";
 			 0 && console.log("Phylogeny onSetState: ", state);
 			if(!state){
 				return;
@@ -91947,33 +91727,33 @@ define([
 		onSetTaxonId: function(attr, oldVal, taxonId){
 			request.get(PathJoin(this.apiServer, "taxonomy", taxonId), {
 				headers: {accept: "application/newick+json"},
-                handleAs: "json"
+				handleAs: "json"
 			}).then(lang.hitch(this, function(treeDat){
-				 0 && console.log("Set Newick");
+				//  0 && console.log("Set Newick");
 				if(!treeDat.tree){
 					 0 && console.log("No newick+json in Request Response");
 					return;
 				}
-                if(treeDat.labels){
-                    this.set('labels', treeDat.labels);
-                }
-                if(treeDat.info){
-                    headerParts=[];
-                    if(treeDat.info.taxon_name){
-                        headerParts.push(treeDat.info.taxon_name);
-                    }
-                    if(treeDat.info.taxon_rank){
-                        headerParts.push(treeDat.info.taxon_rank+" level tree");
-                    }
-                    if(treeDat.info.count){
-                        headerParts.push("("+String(treeDat.info.count)+" genomes)");
-                    }
-                    this.treeHeader.innerHTML=headerParts.join(" ");
-                }
+				if(treeDat.labels){
+					this.set('labels', treeDat.labels);
+				}
+				if(treeDat.info){
+					headerParts = [];
+					if(treeDat.info.taxon_name){
+						headerParts.push(treeDat.info.taxon_name);
+					}
+					if(treeDat.info.taxon_rank){
+						headerParts.push(treeDat.info.taxon_rank + " level tree");
+					}
+					if(treeDat.info.count){
+						headerParts.push("(" + String(treeDat.info.count) + " genomes)");
+					}
+					this.treeHeader.innerHTML = headerParts.join(" ");
+				}
 
 				this.set('newick', treeDat.tree);
 			}), lang.hitch(this, function(err){
-                this.noData();
+				this.noData();
 				 0 && console.log("Error Retreiving newick for Taxon: ", err)
 			}));
 		},
@@ -91983,12 +91763,12 @@ define([
 				 0 && console.log("No Newick File To Render")
 				return;
 			}
-            domClass.remove(this.typeButton.domNode, "dijitHidden");
+			domClass.remove(this.typeButton.domNode, "dijitHidden");
 			if(!this.tree){
 
 				this.tree = new TreeNavSVG({
-                    selectionTarget: this
-                });
+					selectionTarget: this
+				});
 				this.tree.d3Tree("#" + this.id + "tree-container", {
 					colorGenus: true,
 					phylogram: this.phylogram,
@@ -91996,18 +91776,18 @@ define([
 				});
 			}
 
-            var idMenuDivs=[];
-            if( this.labels){
-			    this.tree.setTree(this.newick, this.labels, "Organism Names");
-                idMenuDivs.push('<div class="wsActionTooltip" rel="'+"Organism Names"+'">'+"Organism Names"+'</div>');
-                idMenuDivs.push('<div class="wsActionTooltip" rel="'+"Default ID"+'">'+"Genome ID"+'</div>');
-            }
-            else{
-			    this.tree.setTree(this.newick);
-                idMenuDivs.push('<div class="wsActionTooltip" rel="'+"Default ID"+'">'+"Genome ID"+'</div>');
-            }
-            idMenu.set("content",idMenuDivs.join(""));
-            this.tree.startup();
+			var idMenuDivs = [];
+			if(this.labels){
+				this.tree.setTree(this.newick, this.labels, "Organism Names");
+				idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Organism Names" + '">' + "Organism Names" + '</div>');
+				idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Default ID" + '">' + "Genome ID" + '</div>');
+			}
+			else{
+				this.tree.setTree(this.newick);
+				idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Default ID" + '">' + "Genome ID" + '</div>');
+			}
+			idMenu.set("content", idMenuDivs.join(""));
+			this.tree.startup();
 		},
 
 		setTreeType: function(treeType){
@@ -92045,59 +91825,55 @@ define([
 			this.updateTree();
 		},
 
-
-
-
-
 		selectionActions: [
-            [
-                "ToggleItemDetail",
-                "fa icon-chevron-circle-left fa-2x",
-                {
-                        label: "DETAILS",
-                        persistent: true,
-                        validTypes: ["*"],
-                        tooltip: "Toggle Details Pane"
-                },
-                function(selection,container,button){
-                        //  0 && console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+			[
+				"ToggleItemDetail",
+				"fa icon-chevron-circle-left fa-2x",
+				{
+					label: "DETAILS",
+					persistent: true,
+					validTypes: ["*"],
+					tooltip: "Toggle Details Pane"
+				},
+				function(selection, container, button){
+					//  0 && console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
-                        var children = this.getChildren();
-                        //  0 && console.log("Children: ", children);
-                        if(children.some(function(child){
-                                        return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
-                                }, this)){
-                                //  0 && console.log("Remove Item Detail Panel");
-                                this.removeChild(this.itemDetailPanel);
-                                 0 && console.log("Button Node: ", button)
+					var children = this.getChildren();
+					//  0 && console.log("Children: ", children);
+					if(children.some(function(child){
+							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
+						}, this)){
+						//  0 && console.log("Remove Item Detail Panel");
+						this.removeChild(this.itemDetailPanel);
+						 0 && console.log("Button Node: ", button)
 
-                                query(".ActionButtonText",button).forEach(function(node){
-                                        node.innerHTML="DETAILS";
-                                })
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "DETAILS";
+						})
 
-                                query(".ActionButton",button).forEach(function(node){
-                                         0 && console.log("ActionButtonNode: ",node)
-                                        domClass.remove(node, "icon-chevron-circle-right");
-                                        domClass.add(node, "icon-chevron-circle-left");
-                                })
-                        }
-                        else{
-                                //  0 && console.log("Re-add child: ", this.itemDetailPanel);
-                                this.addChild(this.itemDetailPanel);
+						query(".ActionButton", button).forEach(function(node){
+							 0 && console.log("ActionButtonNode: ", node)
+							domClass.remove(node, "icon-chevron-circle-right");
+							domClass.add(node, "icon-chevron-circle-left");
+						})
+					}
+					else{
+						//  0 && console.log("Re-add child: ", this.itemDetailPanel);
+						this.addChild(this.itemDetailPanel);
 
-                                query(".ActionButtonText",button).forEach(function(node){
-                                        node.innerHTML="HIDE";
-                                })
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "HIDE";
+						})
 
-                                query(".ActionButton",button).forEach(function(node){
-                                         0 && console.log("ActionButtonNode: ",node)
-                                        domClass.remove(node, "icon-chevron-circle-left");
-                                        domClass.add(node, "icon-chevron-circle-right");
-                                })
-                        }
-                },
-                true
-            ],
+						query(".ActionButton", button).forEach(function(node){
+							 0 && console.log("ActionButtonNode: ", node)
+							domClass.remove(node, "icon-chevron-circle-left");
+							domClass.add(node, "icon-chevron-circle-right");
+						})
+					}
+				},
+				true
+			],
 			[
 				"IDSelection",
 				"fa icon-pencil-square fa-2x",
@@ -92105,10 +91881,10 @@ define([
 					label: "ID TYPE",
 					persistent: true,
 					validTypes: ["*"],
-                    validContainerTypes:["*"],
+					validContainerTypes: ["*"],
 					tooltip: "Set ID Type",
-                    tooltipDialog: idMenu,
-                    ignoreDataType: true
+					tooltipDialog: idMenu,
+					ignoreDataType: true
 				},
 				function(selection){
 					//  0 && console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
@@ -92123,7 +91899,7 @@ define([
 				},
 				true
 			],
-            [
+			[
 				"AddGroup",
 				"fa icon-object-group fa-2x",
 				{
@@ -92132,7 +91908,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-                    validContainerTypes:["*"]
+					validContainerTypes: ["*"]
 				},
 				function(selection, containerWidget){
 					//  0 && console.log("Add Items to Group", selection);
@@ -92146,7 +91922,7 @@ define([
 					var stg = new SelectionToGroup({
 						selection: selection,
 						type: type,
-                        idType: "genome_id", 
+						idType: "genome_id",
 						path: null //set by type
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -92168,20 +91944,19 @@ define([
 					label: "DWNLD",
 					persistent: true,
 					validTypes: ["*"],
-                    validContainerTypes:["*"],
+					validContainerTypes: ["*"],
 					tooltip: "Save an image",
-                    tooltipDialog: snapMenu,
-                    ignoreDataType: true
+					tooltipDialog: snapMenu,
+					ignoreDataType: true
 				},
 				function(selection){
 					//  0 && console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
-                    var snapMenuDivs=[];
-                    snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">'+"Tree svg"+'</div>');
-                    snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">'+"Tree newick"+'</div>');
+					var snapMenuDivs = [];
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + "Tree svg" + '</div>');
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + "Tree newick" + '</div>');
 
-
-                    snapMenu.set("content",snapMenuDivs.join(""));
+					snapMenu.set("content", snapMenuDivs.join(""));
 					snapMenu.selection = selection;
 					//  0 && console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
@@ -92192,7 +91967,7 @@ define([
 				},
 				true
 			]
-        ],
+		],
 
 		setupActions: function(){
 			if(this.containerActionBar && this.containerActions){
@@ -111661,12 +111436,12 @@ define([
 						{label: "Source", field: "source"},
 						{label: "Source ID", field: "source_id"},
 						{label: "Organism", field: "organism"},
-						{
-							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
-							if(val){
-								node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
+						{label: "PubMed", field: "pmid",
+							renderCell: function(obj, val, node){
+								if(val){
+									node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
+								}
 							}
-						}
 						},
 						{label: "Subject coverage", field: "subject_coverage"},
 						{label: "Query coverage", field: "query_coverage"},
@@ -111809,6 +111584,7 @@ define([
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 		_setFeatureViewerAttr: function(data){
+			domConstruct.empty(this.sgViewerNode);
 			var gene_viewer = new D3SingleGeneViewer();
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
@@ -111823,19 +111599,19 @@ define([
 						{label: "Property", field: "property"},
 						{label: "Value", field: "value"},
 						{label: "Evidence Code", field: "evidence_code"},
-						{
-							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
-							if(val){
-								node.innerHTML = "<a href='//view.ncbi.nlm.nih.gov/pubmed/" + val + "' target='_blank'>" + val + "</a>";
+						{label: "PubMed", field: "pmid",
+							renderCell: function(obj, val, node){
+								if(val){
+									node.innerHTML = "<a href='//view.ncbi.nlm.nih.gov/pubmed/" + val + "' target='_blank'>" + val + "</a>";
+								}
 							}
-						}
 						},
-						{
-							label: "Comment", field: "comment", renderCell: function(obj, val, node){
-							if(val){
-								node.innerHTML = val;
+						{label: "Comment", field: "comment",
+							renderCell: function(obj, val, node){
+								if(val){
+									node.innerHTML = val;
+								}
 							}
-						}
 						}
 					]
 				};
@@ -111894,7 +111670,7 @@ define([
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
 			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
@@ -111991,10 +111767,10 @@ define([
 
 			// allocate groups
 			var groups = [];
-			groups.push({m:[], max:0});
+			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
-				for (var gIdx = 0; gIdx < groups.length; gIdx++){
+				for(var gIdx = 0; gIdx < groups.length; gIdx++){
 					var g = groups[gIdx];
 					if(g.max === 0){
 						// insert. init
@@ -112003,13 +111779,13 @@ define([
 						break;
 					}
 
-					if (d.start <= g.max){
+					if(d.start <= g.max){
 						// seek another group or create another group
-						if(groups.length === gIdx+1){
+						if(groups.length === gIdx + 1){
 							groups.push({m: [], max: 0});
 						}
 					}
-					else {
+					else{
 						// insert data in current group
 						g.m.push(d);
 						g.max = d.end;
@@ -112049,14 +111825,22 @@ define([
 						}
 
 						var pos = [];
-						pos.push(start); pos.push(-6);
-						pos.push(start); pos.push(6);
-						pos.push(middle); pos.push(6);
-						pos.push(middle); pos.push(11);
-						pos.push(end); pos.push(0);
-						pos.push(middle); pos.push(-11);
-						pos.push(middle); pos.push(-6);
-						pos.push(start); pos.push(-6);
+						pos.push(start);
+						pos.push(-6);
+						pos.push(start);
+						pos.push(6);
+						pos.push(middle);
+						pos.push(6);
+						pos.push(middle);
+						pos.push(11);
+						pos.push(end);
+						pos.push(0);
+						pos.push(middle);
+						pos.push(-11);
+						pos.push(middle);
+						pos.push(-6);
+						pos.push(start);
+						pos.push(-6);
 
 						return pos.join(" ");
 					})
@@ -112070,6 +111854,7 @@ define([
 
 						var content = [];
 						content.push('PATRIC ID: ' + d.patric_id);
+						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						content.push("Feature type: " + d.feature_type);
 						content.push("Strand: " + d.strand);
@@ -121896,7 +121681,7 @@ define([
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div data-dojo-attach-point=\"customTrackSection\">\n\t\t<div style=\"margin-top:2px;padding:2px;\">\n\t\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t\t</select>\n\t\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t\t<option value=\"both\">both</option>\n\t\t\t\t<option value=\"+\">forward</option>\n\t\t\t\t<option value=\"-\">reverse</option>\n\t\t\t</select>\n\t\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n<!--\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div data-dojo-attach-point=\"customTrackSection\">\n\t\t<div style=\"margin-top:2px;padding:2px;\">\n\t\t\t<select required name=\"plot_type\" style=\"width:30%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"plot_type_select\">\n\t\t\t\t<option value=\"Tiles\" default selected hidden>Tiles</option>\n\t\t\t\t<option value=\"Line Plot\">Line Plot</option>\n\t\t\t\t<option value=\"Histogram\">Histogram</option>\n\t\t\t\t<option value=\"Heatmap\">Heatmap</option>\n\t\t\t</select>\n\t\t\t<input required type=\"file\" style=\"width:60%; margin-left:2px;\" name=\"data_file\" data-dojo-attach-point=\"data_file\"/>\n\t\t\t<i data-dojo-attach-event=\"click:saveSVG\" class=\"fa icon-plus-circle fa-lg\"></i>\n\t</div>\n\n-->\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n<!--\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:2px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:35%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"plot_type_select\">\n\t\t\t<option value=\"Tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"Line Plot\">Line Plot</option>\n\t\t\t<option value=\"Histogram\">Histogram</option>\n\t\t\t<option value=\"Heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:50%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n-->\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
@@ -121906,7 +121691,7 @@ define([
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Database Identifiers</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div class=\"sgViewerWidget\" data-dojo-attach-point=\"sgViewerNode\">\n                <span>Loading ...</span>\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Database Identifiers</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/FeatureListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Feature Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Function Profile</span></h3>\n            <div class=\"fpSummaryWidget\" data-dojo-attach-point=\"fpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/FunctionalProfile\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Taxonomy Profile</span></h3>\n            <div class=\"tpSummaryWidget\" data-dojo-attach-point=\"tpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/TaxonomyProfile\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}

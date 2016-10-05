@@ -96,7 +96,7 @@ define("p3/widget/formatter", ["dojo/date/locale", "dojo/dom-construct", "dojo/d
 			if(obj.type == "folder"){
 				return ""
 			}
-			console.log("Has UserMeta: ", obj.userMeta);
+			// console.log("Has UserMeta: ", obj.userMeta);
 
 			if(obj.autoMeta && obj.autoMeta["item_count"]){
 				out = obj.autoMeta.item_count;
