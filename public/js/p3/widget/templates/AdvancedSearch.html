@@ -1,3 +1,33 @@
 <div class="AdvancedSearch">
-	Advanced Search
+	<div data-dojo-attach-point="searchBox" data-dojo-type="dijit/form/TextBox" style="width:98%;margin:4px;font-size:1.4em;padding:4px;color:#ddd;border-radius:4px;" data-dojo-attach-event="onKeyPress:onKeyPress"></div>
+
+	<!-- <div data-dojo-attach-point="advancedSearchOptions" style="padding-left: 10px;">
+		<div>Advanced <i class="fa fa-1x icon-chevron-down"></i></div>
+		<div>
+			<table>
+				<tbody>
+					<tr>
+						<td style="width:100px;">
+						 	Data Type: 
+						</td>
+						<td style="text-align: left;">
+							<span data-dojo-attach-point="searchFilter" data-dojo-type="dijit/form/Select" style="display:inline-block;width:150px">
+										<option selected="true" value="everything">All Data Types</option>
+										<option value="genomes">Genomes</option>
+										<option value="genome_features">Genomic Features</option>
+										<option value="sp_genes">Specialty Genes</option>
+										<option value="taxonomy">Taxa</option>
+										<option value="transcriptomics_experiments">Transcriptomics Experiments</option>
+							</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div> 
+	-->
+
+
+	<div data-dojo-attach-point="viewer" class="searchResultsContainer">
+	</div>
 </div>
