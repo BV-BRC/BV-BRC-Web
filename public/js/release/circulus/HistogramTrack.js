@@ -26,7 +26,7 @@ define("circulus/HistogramTrack", [
 
 		constructor: function(){
 			this.surface.connect("onclick", lang.hitch(this,function(evt){
-				console.log("ON CLICK: ", evt)
+				//console.log("ON CLICK: ", evt)
 				if (evt.gfxTarget.data){
 					if (!this.dialog){
 						this.dialog = new Dialog({});
@@ -41,7 +41,7 @@ define("circulus/HistogramTrack", [
 			// on(this.surface.getEventSource(),"mouseover", function(evt){
 			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
 				inside=true;
-				console.log("Mouse Over EVT: ", evt)
+				//console.log("Mouse Over EVT: ", evt, " evt.gfxTarget: ", evt.gfxTarget);
 				if (!evt.gfxTarget.data){
 					return;
 				}
@@ -164,10 +164,12 @@ define("circulus/HistogramTrack", [
 				// console.log("D: ", d)
 				// console.log("SectionTrack this.surface: ", this.surface, " GroupIdx: ", this.surface.groupIdx);
 				var path = this.surface.createPath("");
+				path.data = d;
 				//path.rawNode.data = JSON.stringify(d);
 				var score = d[this.scoreProperty];
 				// console.log("PATH: ", path);
 				// console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+				//console.log("----HistogramTrack Track Width trackWidth: ", trackWidth, " this.trackWidth: ", this.trackWidth, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)));
 
 				var point;
 				var midpoint;
@@ -182,6 +184,7 @@ define("circulus/HistogramTrack", [
 				}else{
 					// console.log("FIX ME (LineTrack.js line 56)");
 				}
+				//console.log("----HistogramTrack  d.start: ", d.start, " d.end: ", d.end, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)), " point.y:", point.y);
 
 				var m = d.start; // + ((d.end-d.start)/2)
 				var rads = ((deg*m) + startAngle) *Math.PI/180;

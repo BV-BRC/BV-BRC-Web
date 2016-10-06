@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n<!--\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:2px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:35%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"plot_type_select\">\n\t\t\t<option value=\"Tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"Line Plot\">Line Plot</option>\n\t\t\t<option value=\"Histogram\">Histogram</option>\n\t\t\t<option value=\"Heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:50%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n-->\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>"}});
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:2px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:35%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateUserFileType\" data-dojo-attach-point=\"plot_type_select\" >\n\t\t\t<option value=\"tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"line\">Line Plot</option>\n\t\t\t<option value=\"histogram\">Histogram</option>\n\t\t\t<option value=\"heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:50%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>"}});
 define("p3/widget/TrackController", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/topic",
 	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/text!./templates/TrackController.html",
@@ -10,6 +10,12 @@ define("p3/widget/TrackController", [
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
 		customTrackIndex: 0,
+		userTrackIndex: 0,
+		userData: {},
+		maxScore: 0,
+		minScore: 0,
+		fileName: "",
+		
 		postCreate: function(){
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
@@ -30,6 +36,29 @@ define("p3/widget/TrackController", [
                     orient: ["below-centered"]                    
                 });
             });	
+
+            var userTrackHelp = 'To display your data as "Tiles" plot, upload data file containing accession, start, and end position delimited by tabs.<br>' + 
+              'For example, <br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;34&nbsp;&nbsp;&nbsp;&nbsp;1524<br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;2052&nbsp;&nbsp;&nbsp;&nbsp;3260<br><br>' +
+              'To display your data as "Line, Histogram, or Heatmap" plot, upload data file containing accession, start, end, and quantitative value delimited by tabs.<br>' +
+              'For example, <br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;3596001&nbsp;&nbsp;&nbsp;&nbsp;3598000&nbsp;&nbsp;&nbsp;&nbsp;0.639500<br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;1498001&nbsp;&nbsp;&nbsp;&nbsp;1500000&nbsp;&nbsp;&nbsp;&nbsp;0.673000';
+                  
+            var userTT = new TooltipDialog({
+                content: userTrackHelp, 
+                style: "overflow: auto",
+                onMouseLeave: function(){
+                    popup.close(userTT);
+                }
+            });
+            on(this.userTrackInfo, 'mouseover', function(){
+                //console.log("customTrackInfo", userTT.content);
+                popup.open({
+                    popup: userTT,
+                    around: this,
+                    orient: ["below-centered"]                    
+                });
+            });	
+
+
 		},
 
 		visibleIconClass: "icon-eye",
@@ -75,6 +104,144 @@ define("p3/widget/TrackController", [
             
             console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
+
+        validateUserFileType: function(){
+            console.log("-----validateUserFileType this.userData", this.userData);
+            if (this.userData && this.userData.length >0) {            
+                this.userFileButton.set("disabled", false);
+            }  else {
+                this.userFileButton.set("disabled", true);          
+            }             
+		},	
+
+        validateUserFileSelection: function(event){
+			var type = this.plot_type_select.get('value');
+            var files = event.target.files;
+            var user_data=[];
+            var self = this;
+            console.log("validateUserFileSelection: type =, files =", type, files);            			    
+			var file = null;
+            self.maxScore= 0;
+            self.minScore= 0;
+			
+			// get the last file that was chosen
+			if (files.length>0)
+			{
+			    file = files[files.length-1];
+			}
+
+			if (type && file && file.type==="text/plain") {
+                var reader = new FileReader();
+                reader.onload = function() {
+                   //console.log(this.result);            
+                    var lines = this.result.split('\n');
+                    if (lines) {
+                        lines.map(function(item){
+                          tabs = item.split('\t');
+                          //console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
+                          if (tabs.length>3 && tabs[0]) {
+                              user_data.push({accession: tabs[0].toUpperCase(), start: parseInt(tabs[1]),end:parseInt(tabs[2]), length: parseInt(tabs[2])-parseInt(tabs[1])+1, score:parseFloat(tabs[3])});
+                              if (parseFloat(tabs[3])>self.maxScore) {
+                                self.maxScore = parseFloat(tabs[3]);
+                              }
+                              if (parseFloat(tabs[3])<self.minScore) {
+                                self.minScore = parseFloat(tabs[3]);
+                              }
+                              
+                          } else if (tabs.length==3 && tabs[0] && (type === "tiles")) {
+                              user_data.push({accession: tabs[0].toUpperCase(), start: parseInt(tabs[1]),end:parseInt(tabs[2]), length: parseInt(tabs[2])-parseInt(tabs[1])+1, score:null});
+                          } else {
+                            //console.log("line=", lines, "tabs=", tabs);
+                          }
+                        });
+                    }
+
+                    console.log("before assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+                    
+                    // For GC content, GC skew, reset maxScore, minScore
+                    if (self.maxScore <=1 && self.maxScore >0 && self.minScore <=1 && self.minScore >=0) {
+                        self.maxScore = 1;
+                        self.minScore = 0;
+                    } else if (self.maxScore <=1 && self.maxScore >0 && self.minScore <0 && self.minScore >=-1) {
+                        self.maxScore = 1;
+                        self.minScore = -1;
+                    } else if (self.maxScore > 1 && self.minScore >= 0) {
+                        self.maxScore = self.maxScore;
+                        self.minScore = 0;                    
+                    } else {
+                        self.maxScore = Math.max(Math.abs(self.maxScore), Math.abs(self.minScore));
+                        self.minScore = (-1)*self.maxScore;
+                    }
+                    console.log("after assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+                    
+                    user_data.sort(function(a, b){
+                        var a1= a.start, b1= b.start;
+                        // Sort first on day
+                        if(a1 > b1) {
+                            return 1;
+                        } else if (a1 < b1) {
+                            return -1;
+                        } else {
+                            var a2 = a.end;
+                            var b2 = b.end;
+
+                            if(a2 > b2) {
+                                return 1;
+                            } else if (a2 < b2) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        }
+                    });
+
+                    self.userData = user_data;
+                    self.fileName = file.name;
+                    /*
+                    self.userData = {};
+                    user_data.forEach(function(val,index) {
+                        self.userData[index] = val;
+                    });					
+                    */
+                    //console.log(user_data);
+                    console.log("-----reading file self.userData=", self.userData, "self.maxScore=", self.maxScore, "self.minScore=", self.minScore, "fileName=", self.fileName);
+                    if (user_data.length==0) {
+                        Topic.publish("/Notification", {message: "User file format error.", type: "error"});                                          
+                    } else {
+                        self.userFileButton.set("disabled", false);                
+                    }
+                }
+                reader.readAsText(file);    
+                
+			} else if (file.type !== "text/plain") {
+				Topic.publish("/Notification", {message: "Only text/plain files are allowed", type: "error"});
+            } else {
+                self.userFileButton.set("disabled", true);                           
+            }
+		},
+
+		onAddUserFileTrack: function(){
+			var type = this.plot_type_select.get('value');
+			//var files = this.data_file.event.target.files;
+		    this.userFileButton.set("disabled", true);
+		    if (this.userData && this.userData.length>0) {
+                Topic.publish("/Notification", {message: "Adding a user track.", type: "message"});
+                this.userTrackIndex ++;
+                var userTrackSelection = {
+                            index: this.userTrackIndex,
+                            type: type,
+                            fileName: this.fileName,
+                            maxScore: this.maxScore,
+                            minScore: this.minScore,
+                            userData: this.userData
+                };
+                console.log("onAddUserFileTrack: userTrackSelection =", userTrackSelection);
+                Topic.publish("CircularView", "addUserTrack", userTrackSelection);
+            } else {
+                Topic.publish("/Notification", {message: "User file format error.", type: "error"});                                                      
+            }
+		},
+
 
 		onAddTrack: function(event){
 			if(!this.viewer){

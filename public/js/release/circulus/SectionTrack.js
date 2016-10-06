@@ -42,7 +42,7 @@ define("circulus/SectionTrack", [
 			// on(this.surface.getEventSource(),"mouseover", function(evt){
 			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
 				inside=true;
-				console.log("Mouse Over EVT: ", evt)
+				//console.log("Mouse Over EVT: ", evt, " evt.gfxTarget:", evt.gfxTarget);
 				if (!evt.gfxTarget.data){
 					return;
 				}
@@ -83,11 +83,11 @@ define("circulus/SectionTrack", [
 
 		render: function(){
 			if (this.visible){
-				// console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
+				console.log("In section track render() this.surface.groupIdx: ", this.surface.groupIdx, "this.data: ", this.data)
 				this.renderBackground();
 
 				if (this.data && this.data.length>0){
-					// console.log("RENDER DATA: ", this.data)
+					console.log("RENDER DATA: ", this.data)
 					this.set("loading", false)
 					this.renderData(this.data);		
 				}else{
@@ -98,7 +98,7 @@ define("circulus/SectionTrack", [
 		gap: .25,
 
 		renderAlignedData: function(data){
-			// console.log("Render Aligned to Reference Track", data);
+			console.log("Render Aligned to Reference Track", data);
 			var dataSections = {}
 
 			data.forEach(function(d){
@@ -109,17 +109,19 @@ define("circulus/SectionTrack", [
 						dataSections[d[this.sectionIdProperty]].push(d);
 					}
 				}
-			},this)
+			},this);
+			
+			//console.log("Render Aligned to Reference Track: dataSections: ", dataSections);
 
 			var refSections = this.referenceTrack.get('sections');
 
 			Object.keys(dataSections).forEach(function(secName){
 					var ds = dataSections[secName];
 					// if (ds.length>20){ return; };
-					// console.log("Adding ",ds.length, " Data Items to Section", secName);
-					// console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					//console.log("Adding ",ds.length, " Data Items to Section", secName);
+					//console.log("refSections: ", refSections,  " Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
 					this.renderAlignedSection(ds,refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
-			},this)
+			},this);
 		},
 
 		renderAlignedSection: function(data,startAngle,endAngle, sectionLength){
@@ -131,11 +133,11 @@ define("circulus/SectionTrack", [
 
 			var numPoints = data.length;
 
-			// console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
+			//console.log("renderAlignedSection data: ", data, "Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
 			var deg = (endAngle-startAngle - (this.gap*numSections))/sectionLength;
 
 			// console.log("Gap Deg: ",(this.gap*numSections) )
-			// console.log("degPerBP ", deg);
+		    // console.log("degPerBP ", deg);
 			var trackWidth = this.get("trackWidth");
 			var gap = (this.gap);
 			data.forEach(function(d,index){
@@ -144,10 +146,10 @@ define("circulus/SectionTrack", [
 				//path.rawNode.data = JSON.stringify(d);
 				path.data = d;
 				// console.log("PATH: ", path);
-				// console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+				//console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " d.end: ", d.end, " d.length: ", d.length, " degPerBp*start: ", deg*d.start);
 				d.startAngle = (deg*d.start) + startAngle;
 				d.endAngle = (deg*(d.start+d.length)) + startAngle;
-				// console.log("Start: ", d.startAngle, " End: ", d.endAngle);
+				//console.log("Start: ", d.startAngle, " End: ", d.endAngle);
 				path.setStroke(this.stroke);
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;

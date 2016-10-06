@@ -876,6 +876,9 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Isolation Comments',
 				text: 'isolation_comments'
 			}, {
+				name: 'Collection Year',
+				text: 'collection_year'
+			}, {
 				name: 'Collection Date',
 				text: 'collection_date'
 			}, {

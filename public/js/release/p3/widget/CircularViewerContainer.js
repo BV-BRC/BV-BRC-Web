@@ -2,13 +2,14 @@ define("p3/widget/CircularViewerContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/topic",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"./TrackController", "circulus/Viewer", "circulus/LineTrack", "circulus/HistogramTrack", "circulus/HeatmapTrack",
-	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
+	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin", "../util/searchToQuery"
 ], function(declare, BorderContainer, on, Topic,
 			ActionBar, ContainerActionBar, TabContainer,
 			TrackController, CirculusViewer, LineTrack, HistogramTrack, HeatmapTrack,
-			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin){
+			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin, searchToQuery){
 
 	var	custom_colors = ["blue", "green", "orange", "pink", "red", "purple"];
+	var	user_colors = ["#1E90FF", "#32CD32", "#FF6347", "#FF69B4", "#DC143C", "#8A2BE2"];
 	
 	return declare([BorderContainer], {
 		gutters: true,
@@ -111,7 +112,7 @@ define("p3/widget/CircularViewerContainer", [
 					return a.name > b.name;
 				})
 
-				//console.log("******before set data track title:", title, " refseqs:", refseqs);
+				console.log("******before set data track title:", title, " refseqs:", refseqs, "type of refseqs", typeof refseqs);
 				track.set("data", refseqs);
 
 				return refseqs;
@@ -224,21 +225,20 @@ define("p3/widget/CircularViewerContainer", [
 
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
-
 				options: {
 					title: "GC Content",
-					title_tooltip: "GC Content (window size = 2000 nt)",
+					title_tooltip: "GC Content - window size: 2000 nt, plot range: 0 - 1",
 					loadingText: "LOADING GC CONTENT",
 					visible: false,
 					max: 1,
 					min: 0,
-					trackWidth: 0.15,
+					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
 					gap: 1,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
-
+			
 /*
 			var gcSkewTrack2 = this.viewer.addTrack({
 				type: HeatmapTrack,
@@ -262,7 +262,7 @@ define("p3/widget/CircularViewerContainer", [
 				type: LineTrack,
 				options: {
 					title: "GC Skew",
-					title_tooltip: "GC Skew (window size = 2000 nt)",
+					title_tooltip: "GC Skew - window size: 2000 nt, plot range: -1 - 1",
 					loadingText: "LOADING GC SKEW",
 					visible: false,
 					max: 1,
@@ -277,7 +277,7 @@ define("p3/widget/CircularViewerContainer", [
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				console.log("GC CONTENT: ", gcContentData);
+				//console.log("GC CONTENT: ", gcContentData);
 				//gcContentTrack3.set('data', gcContentData);
 				//gcContentTrack2.set('data', gcContentData);
 				//gcSkewTrack2.set('data', gcContentData);
@@ -350,30 +350,143 @@ define("p3/widget/CircularViewerContainer", [
 				var key = arguments[0];
 				var value = arguments[1];
 				//console.log("CircularViewerContainer addCustomTrack", value);	
-				var track_name = "Custom track " + value.index;
-				var filter = "&keyword(" + encodeURIComponent(value.keyword);
-				var specific_strand = null;
-				var strand_query = "";
-				if (value.strand === "+") {
-					specific_strand = true;
-					strand_query = ",eq(strand,%22\+%22)";
-				} else if (value.strand === "-") {
-					specific_strand = false;
-					strand_query = ",eq(strand,%22\-%22)";
-				}
+				if(key === "addCustomTrack") {
+					var track_name = "Custom track " + value.index;
+					var filter = "&keyword(" + encodeURIComponent(value.keyword);
+					// use searchToQuery for advanced keyword search
+					//var filter = "&" + searchToQuery(value.keyword);
+					
+					var specific_strand = null;
+					var strand_query = "";
+					if (value.strand === "+") {
+						specific_strand = true;
+						strand_query = ",eq(strand,%22\+%22)";
+					} else if (value.strand === "-") {
+						specific_strand = false;
+						strand_query = ",eq(strand,%22\-%22)";
+					}
 
-				var type_query = ",eq(feature_type,CDS)";
-				if (value.type === "RNA") {
-					type_query = ",eq(feature_type,*RNA)";
-				} else if (value.type === "Miscellaneous") {
-					type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
+					var type_query = ",eq(feature_type,CDS)";
+					if (value.type === "RNA") {
+						type_query = ",eq(feature_type,*RNA)";
+					} else if (value.type === "Miscellaneous") {
+						type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
+					}
+				
+					filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+					// console.log("CircularViewerContainer addCustomTrack", value);
+					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
+				} 
+				else if (key === "addUserTrack") {
+					//console.log("CircularViewerContainer addUserTrack", value);
+					var fill_color = "red";
+					
+					if (value.type === "tiles") {
+						fill_color = user_colors[(value.index-1)%user_colors.length];
+						//console.log("CircularViewerContainer SectionTrack, fill_color = ", fill_color);
+						var userTrack = this.viewer.addTrack({
+							type: SectionTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName,
+								trackWidth: 0.08,
+								loading: true,
+								fill: fill_color,
+								stroke: null,
+								gap: 0,
+								background: {fill: null, stroke: null},
+								formatPopupContent: function(item){
+									if (item.score) {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+									} else {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end;									
+									}
+								},
+								formatDialogContent: function(item){
+									if (item.score) {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+									} else {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end;									
+									}
+								}
+							},
+							data: value.userData
+						}, "outer");
+					}					
+					else if (value.type === "line") {
+						var userTrack = this.viewer.addTrack({
+							type: LineTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName + ", plot range: " + Math.round(value.minScore*100)/100 + " - " + Math.round(value.maxScore*100)/100,
+								loading: true,
+								visible: true,
+								max: value.maxScore,
+								min: value.minScore,
+								trackWidth: 0.1,
+								stroke: {width: .5, color: "black"},
+								gap: 0,
+								background: {fill: "#FFEFD5", stroke: null}
+							},
+							data: value.userData							
+						}, "outer");
+					}
+					else if (value.type === "histogram") {
+						var userTrack = this.viewer.addTrack({
+							type: HistogramTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName + ", plot range: " + Math.round(value.minScore*100)/100 + " - " + Math.round(value.maxScore*100)/100,
+								loading: true,
+								visible: true,
+								max: value.maxScore,
+								min: value.minScore,
+								trackWidth: 0.1,
+								stroke: {width: .5, color: "black"},
+								gap: 0,
+								background: {fill: "#FFFFE0", stroke: null},
+								formatPopupContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								},
+								formatDialogContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								}
+							},
+							data: value.userData							
+						}, "outer");
+					}
+					else if (value.type === "heatmap") {
+						var heatmapFill = function(){
+							return "red";
+						};
+						var userTrack = this.viewer.addTrack({
+							type: HeatmapTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName + ", plot range: " + Math.round(value.minScore*100)/100 + " - " + Math.round(value.maxScore*100)/100,
+								loadingText: "LOADING USER TRACK" + + value.index,
+								loading: true,
+								visible: true,
+								fill: heatmapFill,
+								max: value.maxScore,
+								min: value.minScore,
+								trackWidth: 0.08,
+								stroke: {width: .5, color: "black"},
+								gap: 0,
+								background: {fill: null, stroke: null},
+								formatPopupContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								},
+								formatDialogContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								}
+							},
+							data: value.userData							
+						}, "outer");
+					} 
+					
 				}
 				
-				filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
-				if(key === "addCustomTrack") {
-					console.log("CircularViewerContainer addCustomTrack", value);
-					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
-				}
 			}));			
 		},
 
@@ -394,7 +507,7 @@ define("p3/widget/CircularViewerContainer", [
 				return;
 			}
 			if(!this.controlPanel){
-				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px;"});
+				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px; overflow-y:auto"});
 			}
 
 			if(!this.viewer){

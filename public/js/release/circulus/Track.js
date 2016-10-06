@@ -69,7 +69,7 @@ define("circulus/Track", [
 			this.watch('data', lang.hitch(this, function(attr,oldVal,data){
 				//no idea why this is needed to avoid losing reference to the this.surface group from the viewer
 
-				// console.log("Track set('data'): ",_self.surface.groupIdx, " opts groupIdx: ", options.surface.groupIdx)
+				console.log("Track set('data'): ",_self.surface.groupIdx, " opts groupIdx: ", options.surface.groupIdx, "data: ", data);
 				_self.surface = options.surface;
 				if (this.visible){
 					_self.render();
@@ -143,7 +143,7 @@ define("circulus/Track", [
 			Object.keys(refSections).forEach(function(secName){
 					// if (ds.length>20){ return; };
 					// console.log("Adding ",ds.length, " Data Items to Section", secName);
-					// console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
 					this.renderAlignedBackgroundSection(refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
 			},this)
 		},
@@ -151,14 +151,14 @@ define("circulus/Track", [
 		renderAlignedBackgroundSection: function(startAngle,endAngle,sectionLength){
 			var totalLength = 0;
 			var trackWidth = this.get("trackWidth");
-			// console.log("Render Aligned Background Section: ", startAngle, endAngle);
+			console.log("Render Aligned Background Section: ", startAngle, endAngle);
 			var path = this.surface.createPath("");
 			if (this.background){
 				path.setStroke(this.background.stroke);
 			}
 			var startRads = startAngle *Math.PI/180;
 			var rads = endAngle *Math.PI/180;
-			// console.log(d.name, " : ", "Start: ", d.startAngle, "end: ", d.endAngle)
+			//console.log(d.name, " : ", "Start: ", d.startAngle, "end: ", d.endAngle)
 			var innerStart= {
 				x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
 				y: this.centerPoint.y + this.internalRadius * Math.sin(startRads)
