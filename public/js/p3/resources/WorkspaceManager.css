@@ -30,6 +30,11 @@ a.HelpLink:active {
   color: #09456f;
 }
 
+.wsBreadCrumbContainer {
+	display: inline-block;
+	margin: 12px 0 0 8px;
+}
+
 .wsBreadCrumb {
 	font-size:1.2em;
 	margin: 2px 2px 2px 4px;
@@ -37,6 +42,7 @@ a.HelpLink:active {
 	padding:2px;
 	color: #134d75;
 }
+
 .wsActionTooltip {
 	padding: 2px;
 }
@@ -271,11 +277,15 @@ th.dgrid-cell.wsItemType {
 	bottom: 2px;
 }
 
+.wsActionContainer { 
+	float: right;
+}
+
 .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
 	margin: 2px 5px;
-
 }
+
 
 .GeneExpFilterPanel .ActionButtonWrapper:hover,
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
@@ -423,6 +433,9 @@ th.dgrid-cell.wsItemType {
 }
 
 .tipHeader > span {
+	cursor: default; 	
+    position: relative;
+    bottom: 4px;	
 	font-size: 1em;
 	font-weight: 600;
 	margin: 4px;
