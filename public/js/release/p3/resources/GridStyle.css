@@ -12,6 +12,7 @@
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
+.dgrid-cell.field-protein_id,
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
 .dgrid-cell.field-figfam_id {
@@ -26,8 +27,15 @@
 .dgrid-cell.field-family_id {
     width: 12%;
 }
+.dgrid-cell.field-annotation,
+.dgrid-cell.field-strand,
+.dgrid-cell.field-start,
+.dgrid-cell.field-end,
+.dgrid-cell.field-na_length,
+.dgrid-cell.field-feature_type,
 .dgrid-cell.field-feature_count,
 .dgrid-cell.field-genome_count,
+.dgrid-cell.field-aa_length,
 .dgrid-cell.field-aa_length_min,
 .dgrid-cell.field-aa_length_max,
 .dgrid-cell.field-aa_length_mean,
@@ -53,6 +61,7 @@
     width: 8%;
     text-align: center;
 }
+.dgrid-cell.field-feature_id,
 .dgrid-cell.field-patric_id,
 .dgrid-cell.field-refseq_locus_tag,
 .dgrid-cell.field-alt_locus_tag {
