@@ -19,6 +19,11 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
+			public: {
+				label: 'Public',
+				field: 'public',
+				hidden: true
+			},
 			genome_name: {
 				label: 'Genome Name',
 				field: 'genome_name'
