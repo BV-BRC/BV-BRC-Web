@@ -62,7 +62,7 @@ Before creating a build, make sure you fork is up to date with master of `PATRIC
 ```
 // if needed, create an 'upstream' remote with 'git remote add upstream https://github.com/PATRIC3/p3_web/'
 git fetch upstream
-git submodule update
+git submodule update --init
 git merge upstream/master 
 ```
 
@@ -71,6 +71,8 @@ The following will create a build in `./public/js/release`.
 ```
 ./buildCLient.sh
 ```
+
+**Note**: jBrowse is currently causing some havoc in builds.  You can 'fix' this by commiting out `xstyle/load-css` in `./public/js/JBrowse/main.js`.
 
 #### Committing builds
 
@@ -83,5 +85,5 @@ git commit -m 'release js'
 git push
 ```
 
-Note: the `version` key will be where the build is deployed.
+Note: `version` is where the build is deployed and what is displayed in the UI.
 
