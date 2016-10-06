@@ -52,7 +52,7 @@ define([
 						clear = true;
 						break;
 					case "genome_features":
-						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features"});
 						clear = true;
 						break;
 					case "genomes":
@@ -71,9 +71,12 @@ define([
 						console.log("Do Search: ", searchFilter, query);
 				}
 
-				if(clear){
-					this.searchInput.set("value", '');
-				}
+
+				//disabled for now per #978
+
+				// if(clear){
+					// this.searchInput.set("value", '');
+				// }
 
 				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
 
