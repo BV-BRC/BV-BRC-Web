@@ -19,7 +19,7 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
-			public: {
+			"public": {
 				label: 'Public',
 				field: 'public',
 				hidden: true
