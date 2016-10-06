@@ -21,7 +21,7 @@ define([
 	return declare([GridContainer], {
 		gridCtor: GenomeGrid,
 		containerType: "genome_data",
-		facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_date"],
+		facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_year"],
 		getFilterPanel: function(opts){
 			return;
 		},

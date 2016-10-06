@@ -87,6 +87,11 @@ define([
 				field: 'disease',
 				sortable: false
 			},
+			collection_year: {
+				label: 'Collection Year',
+				field: 'collection_year',
+				hidden: true
+			},
 			collection_date: {
 				label: 'Collection Date',
 				field: 'collection_date'
