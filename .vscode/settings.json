@@ -1,0 +1,8 @@
+// vscode (https://code.visualstudio.com) config file for p3_web
+{
+    "editor.scrollBeyondLastLine": false,
+	"files.trimTrailingWhitespace": true,
+    "files.exclude": {
+        "public/js/release/p3/*": true
+    }
+}

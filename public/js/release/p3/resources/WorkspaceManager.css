@@ -26,6 +26,10 @@ a.HelpLink:hover {
 a.HelpLink:active {
   color: #09456f;
 }
+.wsBreadCrumbContainer {
+	display: inline-block;
+	margin: 12px 0 0 8px;
+}
 .wsBreadCrumb {
 	font-size:1.2em;
 	margin: 2px 2px 2px 4px;
@@ -233,6 +237,9 @@ th.dgrid-cell.wsItemType {
 	vertical-align: bottom;
 	bottom: 2px;
 }
+.wsActionContainer { 
+	float: right;
+}
 .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
 	margin: 2px 5px;
@@ -359,6 +366,9 @@ th.dgrid-cell.wsItemType {
 	margin:4px;
 }
 .tipHeader > span {
+	cursor: default; 	
+    position: relative;
+    bottom: 4px;	
 	font-size: 1em;
 	font-weight: 600;
 	margin: 4px;

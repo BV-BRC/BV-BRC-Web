@@ -1,9 +1,9 @@
 define("p3/widget/D3SingleGeneViewer", [
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domStyle,
+			dom, domClass, domConstruct, domStyle, Topic,
 			d3){
 
 	return declare([], {
@@ -114,6 +114,10 @@ define("p3/widget/D3SingleGeneViewer", [
 					})
 					.attr("fill", function(d){
 						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+					})
+					.on("click", function(d){
+						var url = "/view/Feature/" + d.feature_id + "#view_tab=overview";
+						Topic.publish("/navigate", {href: url});
 					})
 					.on("mouseover", function(d){
 						self.tooltipLayer.transition()
