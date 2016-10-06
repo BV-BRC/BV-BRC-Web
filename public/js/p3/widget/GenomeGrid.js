@@ -350,7 +350,7 @@ define([
 		},
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: this.defaultSortProperty, descending: false}]
+				sort: [{attribute: this.defaultSortProperty, descending: true}]
 			};
 		},
 		startup: function(){
