@@ -357,7 +357,7 @@ define([
 						break;
 				}
 
-				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+score)" }
+				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
 			})
 
 			console.log("SEARCH: ", q);
