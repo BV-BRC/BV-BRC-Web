@@ -144,6 +144,10 @@
     min-height: 250px;
 }
 
+.patric .fnProfile g.bars rect {
+    cursor: pointer;
+}
+
 /* ID Mapping at feature overview */
 .patric .idmSummeryWidget.SummaryWidget {
     height: 250px;

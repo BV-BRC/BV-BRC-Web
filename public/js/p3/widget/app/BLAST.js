@@ -5,14 +5,14 @@ define([
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
 	"dojox/widget/Standby",
-	"../GridContainer", "../Grid", "../GridSelector", "../../util/PathJoin", "../../WorkspaceManager"
+	"../GridContainer", "../Grid", "../GridSelector", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
 			xhr, on, Memory,
 			query, domClass, domConstruct,
 			WidgetBase, Templated, WidgetsInTemplate,
 			Template, FormMixin,
 			Standby,
-			GridContainer, Grid, selector, PathJoin, WorkspaceManager){
+			GridContainer, Grid, selector, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
 	const NA = "nucleotide", AA = "protein";
 
@@ -79,6 +79,17 @@ define([
 		},
 
 		startup: function(){
+
+			if(window.App.user){
+				this.genome_group = new WorkspaceObjectSelector();
+				this.genome_group.set('type', ['genome_group']);
+				this.genome_group.set('disabled', true);
+
+				var ggDom = query('div[name="genome_group"]')[0];
+
+				this.genome_group.placeAt(ggDom, "only");
+			}
+
 			this.emptyTable(this.genomeTable, this.startingRows);
 
 			on(this.advanced, 'click', lang.hitch(this, function(){
