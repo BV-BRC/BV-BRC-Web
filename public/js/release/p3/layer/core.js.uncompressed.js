@@ -24257,8 +24257,6 @@ define([
 ){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
-		constructor: function(){
-		},
 		"baseClass": "GlobalSearch",
 		"disabled": false,
 		"value": "",
@@ -24297,7 +24295,7 @@ define([
 						clear = true;
 						break;
 					case "genome_features":
-						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features"});
 						clear = true;
 						break;
 					case "genomes":
@@ -24316,9 +24314,10 @@ define([
 						console.log("Do Search: ", searchFilter, query);
 				}
 
-				if(clear){
-					this.searchInput.set("value", '');
-				}
+				//disabled for now per #978
+				// if(clear){
+					// this.searchInput.set("value", '');
+				// }
 
 				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
 
@@ -24331,18 +24330,13 @@ define([
 		onClickAdvanced: function(evt){
 			var query = this.searchInput.get('value');
 			var searchFilter = this.searchFilter.get('value');
-			var q = this.parseQuery(query);
+			var q = searchToQuery(query);
 
 			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
 			this.searchInput.set("value", '');
 		},
 		onInputChange: function(val){
-			/*
-			val = val.replace(/\ /g, "&");
-			var dest = window.location.pathname + "?" + val;
-			console.log("New Search Value",val,dest );
-			Topic.publish("/navigate", {href: dest, set: "query", value: "?"+val});
-			*/
+
 		}
 	});
 });
@@ -116076,8 +116070,10 @@ define([
 		baseQuery: "&limit(1)&facet((field,product),(mincount,1),(sort,count),(limit,10))&json(nl,map)",
 		columns: [
 			{label: "Function", field: "label"},
-			{
-				label: "Genes", field: "count"
+			{label: "Genes", field: "count",
+				renderCell: function(obj, val, node){
+					return node.innerHTML = lang.replace('<a href="#view_tab=features&filter=eq(product,{1})">{0}</a>', [val, encodeURIComponent('"' + obj.label + '"')]);
+				}
 			}
 		],
 		processData: function(res){
@@ -116089,8 +116085,13 @@ define([
 
 			var self = this;
 			var d = res.facet_counts.facet_fields.product; // now key-value pair
+			var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
 			var data = Object.keys(d).map(function(key){
-				return {label:key, count: d[key]}
+				return {
+					label: key,
+					count: d[key],
+					link: linkBase + '#view_tab=features&filter=eq(product,' + encodeURIComponent('"' + key + '"') + ')'
+				}
 			});
 
 			self.set('data', data);
@@ -116133,10 +116134,10 @@ define([
 'p3/widget/D3HorizontalBarChart':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domStyle,
+			dom, domClass, domConstruct, domStyle, Topic,
 			d3){
 
 	return declare([], {
@@ -116256,10 +116257,22 @@ define([
 					return (self.y_scale(d.label) + halfGap) + self.margin.top - 1;
 				})
 				.attr("width", function(d){
-					return self.x_scale(d.count)
+					return self.x_scale(d.count) < 0 ? 0 : self.x_scale(d.count)
 				})
 				.attr("height", Math.min(self.y_scale.rangeBand(), self.maxBarWidth))
 				.attr("fill", '#1976D2')
+				.on("click", function(d, i){
+					if(d.link){
+						var url;
+						if(typeof d.link == 'function'){
+							url = d.link.apply(this, arguments);
+						}else{
+							url = d.link;
+						}
+						// console.log(url);
+						Topic.publish("/navigate", {href: url})
+					}
+				})
 				.on("mouseover", function(d, i){
 					self.tooltipLayer.transition()
 						.duration(200)
@@ -122004,7 +122017,7 @@ define([
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",

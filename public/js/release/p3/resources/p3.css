@@ -10257,6 +10257,9 @@ font-size: 12px;
 .patric .fpSummaryWidget.SummaryWidget .tableNode {
     min-height: 250px;
 }
+.patric .fnProfile g.bars rect {
+    cursor: pointer;
+}
 .patric .idmSummeryWidget.SummaryWidget {
     height: 250px;
 }
