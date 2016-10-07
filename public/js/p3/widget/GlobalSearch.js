@@ -12,8 +12,6 @@ define([
 ){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
-		constructor: function(){
-		},
 		"baseClass": "GlobalSearch",
 		"disabled": false,
 		"value": "",
@@ -52,7 +50,7 @@ define([
 						clear = true;
 						break;
 					case "genome_features":
-						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features"});
 						clear = true;
 						break;
 					case "genomes":
@@ -71,9 +69,10 @@ define([
 						console.log("Do Search: ", searchFilter, query);
 				}
 
-				if(clear){
-					this.searchInput.set("value", '');
-				}
+				//disabled for now per #978
+				// if(clear){
+					// this.searchInput.set("value", '');
+				// }
 
 				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
 
@@ -86,18 +85,13 @@ define([
 		onClickAdvanced: function(evt){
 			var query = this.searchInput.get('value');
 			var searchFilter = this.searchFilter.get('value');
-			var q = this.parseQuery(query);
+			var q = searchToQuery(query);
 
 			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
 			this.searchInput.set("value", '');
 		},
 		onInputChange: function(val){
-			/*
-			val = val.replace(/\ /g, "&");
-			var dest = window.location.pathname + "?" + val;
-			console.log("New Search Value",val,dest );
-			Topic.publish("/navigate", {href: dest, set: "query", value: "?"+val});
-			*/
+
 		}
 	});
 });

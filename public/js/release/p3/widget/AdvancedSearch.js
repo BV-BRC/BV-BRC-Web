@@ -69,7 +69,7 @@ define("p3/widget/AdvancedSearch", [
 				if (total==1){
 					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
 				}else{
-					return ['/view/FeatureList/?',this.state.search,"#view_tab=overview"].join("");
+					return ['/view/FeatureList/?',this.state.search,"#view_tab=features"].join("");
 				}
 			},
 			"taxonomy": function(docs,total){
@@ -367,7 +367,8 @@ define("p3/widget/AdvancedSearch", [
 			Request.post(window.App.dataAPI + "query/", {
 				headers: {
 					accept: "application/json",
-					"content-type": "application/json"
+					"content-type": "application/json",
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json",
 				data: JSON.stringify(q)

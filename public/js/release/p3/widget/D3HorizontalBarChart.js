@@ -1,9 +1,9 @@
 define("p3/widget/D3HorizontalBarChart", [
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domStyle,
+			dom, domClass, domConstruct, domStyle, Topic,
 			d3){
 
 	return declare([], {
@@ -123,10 +123,22 @@ define("p3/widget/D3HorizontalBarChart", [
 					return (self.y_scale(d.label) + halfGap) + self.margin.top - 1;
 				})
 				.attr("width", function(d){
-					return self.x_scale(d.count)
+					return self.x_scale(d.count) < 0 ? 0 : self.x_scale(d.count)
 				})
 				.attr("height", Math.min(self.y_scale.rangeBand(), self.maxBarWidth))
 				.attr("fill", '#1976D2')
+				.on("click", function(d, i){
+					if(d.link){
+						var url;
+						if(typeof d.link == 'function'){
+							url = d.link.apply(this, arguments);
+						}else{
+							url = d.link;
+						}
+						// console.log(url);
+						Topic.publish("/navigate", {href: url})
+					}
+				})
 				.on("mouseover", function(d, i){
 					self.tooltipLayer.transition()
 						.duration(200)
