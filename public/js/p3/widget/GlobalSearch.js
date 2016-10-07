@@ -12,8 +12,6 @@ define([
 ){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
-		constructor: function(){
-		},
 		"baseClass": "GlobalSearch",
 		"disabled": false,
 		"value": "",
@@ -70,7 +68,6 @@ define([
 					default:
 						console.log("Do Search: ", searchFilter, query);
 				}
-
 
 				//disabled for now per #978
 				// if(clear){

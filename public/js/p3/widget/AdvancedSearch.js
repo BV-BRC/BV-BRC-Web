@@ -365,7 +365,8 @@ define([
 			Request.post(window.App.dataAPI + "query/", {
 				headers: {
 					accept: "application/json",
-					"content-type": "application/json"
+					"content-type": "application/json",
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json",
 				data: JSON.stringify(q)
