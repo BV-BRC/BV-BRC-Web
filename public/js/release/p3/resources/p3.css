@@ -10321,6 +10321,13 @@ font-size: 12px;
     width: 8%;
     text-align: center;
 }
+.patric .pfFilterGrid TH.dgrid-cell {
+    font-size: .95em;
+}
+.patric .pfFilterGrid TD.dgrid-cell {
+    font-size: .85em;
+    white-space: nowrap;
+}
 .patric .dgrid-cell.field-accession {
     width: 10%;
 }

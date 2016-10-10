@@ -49,14 +49,18 @@ define([
 		},
 		postCreate: function(){
 			// create a loading mask
-			this.loadingMask = new Standby({target: this.id, image: "/public/js/p3/resources/images/ring-alt.svg",color: "#efefef"});
+			this.loadingMask = new Standby({
+				target: this.id,
+				image: "/public/js/p3/resources/images/ring-alt.svg",
+				color: "#efefef"
+			});
 			this.addChild(this.loadingMask);
 			this.loadingMask.startup();
 		},
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
-			if (state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
+			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
 			}
@@ -65,19 +69,19 @@ define([
 				this.mainGridContainer.set('state', state);
 			}
 
-			if (state.autoFilterMessage){
+			if(state.autoFilterMessage){
 				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
 				// var msg = state.autoFilterMessage;
-				if (!this.messagePanel){
+				if(!this.messagePanel){
 					this.messagePanel = new ContentPane({
 						"class": "WarningPanel",
-						region: "top", 
+						region: "top",
 						content: msg
 					});
 
-					var _self=this;
+					var _self = this;
 					on(this.messagePanel.domNode, ".closeWarningBanner:click", function(evt){
-						if (_self.messagePanel){
+						if(_self.messagePanel){
 							_self.removeChild(_self.messagePanel);
 						}
 					});
@@ -86,9 +90,10 @@ define([
 				}
 				this.addChild(this.messagePanel);
 			}else{
-				if (this.messagePanel) { this.removeChild(this.messagePanel) }
+				if(this.messagePanel){
+					this.removeChild(this.messagePanel)
+				}
 			}
-
 
 			this._set('state', state);
 		},
@@ -200,6 +205,7 @@ define([
 
 			// genome list grid
 			var filterGrid = new FilterGrid({
+				"class": "pfFilterGrid",
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
@@ -210,14 +216,14 @@ define([
 			});
 
 			var ta_keyword = new TextArea({
-				style: "width:215px; min-height:75px"
+				style: "width:360px; min-height:75px; margin-bottom: 10px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
 
 			//
-			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
+			domConstruct.place("<br/>", otherFilterPanel.containerNode, "last");
 
 			var rb_perfect_match = new RadioButton({
 				name: "familyMatch",

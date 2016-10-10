@@ -77,13 +77,20 @@ define("p3/widget/DownloadTooltipDialog", [
 				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
 				console.log("Download Query: ", query);
 
+				baseUrl = baseUrl + "?&http_download=true&http_accept=" + accept
+
+				if (window.App.authorizationToken){
+					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+				}
+				
+
 				var form = domConstruct.create("form", {
 					style: "display: none;",
 					id: "downloadForm",
 					enctype: 'application/x-www-form-urlencoded',
 					name: "downloadForm",
 					method: "post",
-					action: baseUrl + "?&http_download=true&http_accept=" + accept
+					action: baseUrl 
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
