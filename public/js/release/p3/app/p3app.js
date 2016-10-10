@@ -22,7 +22,7 @@ define("p3/app/p3app", [
 		panels: Panels,
 		activeWorkspace: null,
 		activeWorkspacePath: "/",
-		publicApps: ["BLAST"],
+		publicApps: ["BLAST", "ProteinFamily", "ComparativePathway"],
 		startup: function(){
 			var _self = this;
 

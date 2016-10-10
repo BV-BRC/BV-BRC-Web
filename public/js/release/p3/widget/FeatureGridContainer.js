@@ -67,9 +67,9 @@ define("p3/widget/FeatureGridContainer", [
 							console.log("DownloadQuery: ", currentQuery);
 							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
-								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
+							// if (window.App.authorizationToken){
+							// 	query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							// }
 				
 			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
 	                        if(baseUrl.charAt(-1) !== "/"){

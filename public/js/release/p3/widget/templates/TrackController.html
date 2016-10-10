@@ -10,7 +10,7 @@
 	Custom tracks
 	</div>
 	<div style="text-align:left; margin-top:2px;padding:2px;" data-dojo-attach-point="customTrackSection">
-		<select required name="type" style="width:25%;" data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-attach-point="track_type_select" data-dojo-props="intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'">
+		<select required name="type" style="width:20%; margin-left:3px;" data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-attach-point="track_type_select" data-dojo-props="intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'">
 			<option value="" default selected hidden>Type</option>
 			<option value="CDS">CDS</option>
 			<option value="RNA">RNA</option>
@@ -22,21 +22,21 @@
 			<option value="+">forward</option>
 			<option value="-">reverse</option>
 		</select>
-		<input required type="text" style="width:30%; margin-left:2px;" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-props="intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'" data-dojo-type="dijit/form/ValidationTextBox" id="keyword" name="keyword" data-dojo-attach-point="keyword_box"/>
+		<input required type="text" style="width:37%; margin-left:2px;" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-props="intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'" data-dojo-type="dijit/form/ValidationTextBox" id="keyword" name="keyword" data-dojo-attach-point="keyword_box"/>
 		<button style="margin-left:2px" data-dojo-type="dijit/form/Button"  data-dojo-attach-event="onClick:onAddCustomTrack" data-dojo-attach-point="customTrackButton" data-dojo-props="disabled:true">+</button>
 	</div>
 
 	<div data-dojo-attach-point="userTrackInfo" style="font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef">
 	Upload your own data
 	</div>
-	<div style="text-align:left;margin-top:2px;padding:2px;" data-dojo-attach-point="userTrackSection">
-		<select required name="plot_type" style="width:35%;" data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:validateUserFileType" data-dojo-attach-point="plot_type_select" >
+	<div style="text-align:left;margin-top:2px;padding:3px;" data-dojo-attach-point="userTrackSection">
+		<select required name="plot_type" style="width:30%; margin-left:2px;" data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:validateUserFileType" data-dojo-attach-point="plot_type_select" >
 			<option value="tiles" default selected hidden>Tiles</option>
 			<option value="line">Line Plot</option>
 			<option value="histogram">Histogram</option>
 			<option value="heatmap">Heatmap</option>
 		</select>
-		<input type="file" style="width:50%; margin-left:2px;" name="data_file" id="data_file" accept="text/plain" data-dojo-attach-event="onChange:validateUserFileSelection" data-dojo-attach-point="data_file_select"/>
+		<input type="file" style="width:55%; margin-left:2px;" name="data_file" id="data_file" accept="text/plain" data-dojo-attach-event="onChange:validateUserFileSelection" data-dojo-attach-point="data_file_select"/>
 		<button style="margin-left:2px" data-dojo-type="dijit/form/Button"  data-dojo-attach-event="onClick:onAddUserFileTrack" data-dojo-attach-point="userFileButton" data-dojo-props="disabled:true">+</button>
 	</div>	
 

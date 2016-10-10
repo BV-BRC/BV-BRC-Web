@@ -147,7 +147,6 @@ define([
 			var program = this.program.get('value');
 			var evalue = this.evalue.get('value');
 			var max_hits = parseInt(this.max_hits.get('value'));
-			var method, params;
 			var def = new Deferred();
 
 			if(useDatabase){
@@ -155,12 +154,17 @@ define([
 					this.sequence_message.innerHTML = "Sequence is empty";
 					return;
 				}
-				def.resolve();
-				method = "HomologyService.blast_fasta_to_database";
-				params = [encodeURIComponent(sequence), program, database, evalue, max_hits, 0];
+
+				var q = {
+					method: "HomologyService.blast_fasta_to_database",
+					params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
+				};
+				def.resolve(q)
 			}else{
 				// blast against genomes/groups/taxon
 				var genomeIds = [];
+				var search_for = this.search_for.get('value');
+
 				switch(database){
 					case "selGenome":
 						query(".genomedata").forEach(function(item){
@@ -172,7 +176,11 @@ define([
 						}else{
 							this.genome_id_message.innerHTML = '';
 						}
-						def.resolve(genomeIds);
+						var q = {
+							method: "HomologyService.blast_fasta_to_genomes",
+							params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+						};
+						def.resolve(q);
 						break;
 					case "selGroup":
 						var path = this.genome_group.get('value');
@@ -194,7 +202,11 @@ define([
 								})
 							});
 							var genomeIds = Object.keys(genomeIdHash);
-							def.resolve(genomeIds);
+							var q = {
+								method: "HomologyService.blast_fasta_to_genomes",
+								params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+							};
+							def.resolve(q);
 						}));
 						break;
 					case "selTaxon":
@@ -203,23 +215,19 @@ define([
 							this.taxonomy_message.innerHTML = 'No taxon has selected';
 							return;
 						}
+
+						var q = {
+							method: "HomologyService.blast_fasta_to_taxon",
+							params: [encodeURIComponent(sequence), program, taxon, search_for, evalue, max_hits, 0]
+						};
+						def.resolve(q);
 						break;
 					default:
 						break;
 				}
-
-				var search_for = this.search_for.get('value');
-				method = "HomologyService.blast_fasta_to_genomes";
-				params = [encodeURIComponent(sequence), program, [], search_for, evalue, max_hits, 0];
 			}
 
-			var q = {
-				params: params,
-				method: method,
-				version: "1.1",
-				id: String(Math.random()).slice(2)
-			};
-
+			//
 			_self.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
 			domClass.add(query(".blast_form")[0], "hidden");
@@ -231,12 +239,12 @@ define([
 			// this.updateResult(data, "genome_sequence");
 			// return;
 
-			def.promise.then(function(genomeIds){
+			def.promise.then(function(q){
 
-				if(!useDatabase){
-					// console.log("updated genomeIds: ", genomeIds);
-					q.params[2] = genomeIds;
-				}
+				var q = lang.mixin(q, {
+					version: "1.1",
+					id: String(Math.random()).slice(2)
+				});
 
 				// console.log(q);
 
@@ -278,6 +286,7 @@ define([
 						},
 						data: {
 							q: resultIdField + ":(" + resultIds.join(' OR ') + ")",
+							rows: 25000,
 							fl: fl
 						}
 					}).then(function(keys){
@@ -519,8 +528,12 @@ define([
 					entry = lang.mixin(entry, features[target_id]);
 				}else{
 					target_id = target_id.replace("accn|", "");
-					entry["genome_id"] = features[target_id].genome_id;
-					entry = lang.mixin(entry, features[target_id]);
+					if(features.hasOwnProperty(target_id)){
+						entry["genome_id"] = features[target_id].genome_id;
+						entry = lang.mixin(entry, features[target_id]);
+					}else{
+						console.log("missing id: ", target_id);
+					}
 				}
 				entries.push(entry);
 			}, this);
@@ -694,7 +707,7 @@ define([
 				switch(val){
 					case "selGenome":
 						this.genome_id.set('disabled', false);
-						this.genome_group.set('disabled', true);
+						this.genome_group ? this.genome_group.set('disabled', true) : {};
 						this.taxonomy.set('disabled', true);
 						break;
 					case "selGroup":
@@ -704,12 +717,12 @@ define([
 						}
 
 						this.genome_id.set('disabled', true);
-						this.genome_group.set('disabled', false);
+						this.genome_group ? this.genome_group.set('disabled', false) : {};
 						this.taxonomy.set('disabled', true);
 						break;
 					case "selTaxon":
 						this.genome_id.set('disabled', true);
-						this.genome_group.set('disabled', true);
+						this.genome_group ? this.genome_group.set('disabled', true) : {};
 						this.taxonomy.set('disabled', false);
 						break;
 					default:

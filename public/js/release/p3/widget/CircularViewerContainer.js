@@ -92,6 +92,8 @@ define("p3/widget/CircularViewerContainer", [
 				
 				if (refseqs.length == 0) {
 					track.set('loading', false);
+	                Topic.publish("/Notification", {message: "No data found.", type: "error"});                                          
+					
 					return refseqs;
 				} 
 								
@@ -352,10 +354,10 @@ define("p3/widget/CircularViewerContainer", [
 				//console.log("CircularViewerContainer addCustomTrack", value);	
 				if(key === "addCustomTrack") {
 					var track_name = "Custom track " + value.index;
-					var filter = "&keyword(" + encodeURIComponent(value.keyword);
+					//var filter = "&keyword(" + encodeURIComponent(value.keyword);
 					// use searchToQuery for advanced keyword search
-					//var filter = "&" + searchToQuery(value.keyword);
-					
+					var filter = searchToQuery(value.keyword);
+					//console.log("filter = ", filter);
 					var specific_strand = null;
 					var strand_query = "";
 					if (value.strand === "+") {
@@ -373,7 +375,8 @@ define("p3/widget/CircularViewerContainer", [
 						type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
 					}
 				
-					filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+					filter = filter +  "and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+					console.log("filter = ", filter);
 					// console.log("CircularViewerContainer addCustomTrack", value);
 					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
 				} 
@@ -507,7 +510,7 @@ define("p3/widget/CircularViewerContainer", [
 				return;
 			}
 			if(!this.controlPanel){
-				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px; overflow-y:auto"});
+				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:320px; overflow-y:auto"});
 			}
 
 			if(!this.viewer){
