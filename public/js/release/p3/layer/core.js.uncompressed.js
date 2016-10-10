@@ -24,7 +24,7 @@ define([
 		panels: Panels,
 		activeWorkspace: null,
 		activeWorkspacePath: "/",
-		publicApps: ["BLAST"],
+		publicApps: ["BLAST", "ProteinFamily", "ComparativePathway"],
 		startup: function(){
 			var _self = this;
 
@@ -36389,7 +36389,6 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
-		console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
@@ -36581,10 +36580,8 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
-		console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
-		console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
@@ -57529,7 +57526,6 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
-				console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +
@@ -74026,9 +74022,9 @@ define([
 							console.log("DownloadQuery: ", currentQuery);
 							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
-								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
+							// if (window.App.authorizationToken){
+							// 	query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							// }
 				
 			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
 	                        if(baseUrl.charAt(-1) !== "/"){
@@ -76698,13 +76694,20 @@ define([
 				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
 				console.log("Download Query: ", query);
 
+				baseUrl = baseUrl + "?&http_download=true&http_accept=" + accept
+
+				if (window.App.authorizationToken){
+					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+				}
+				
+
 				var form = domConstruct.create("form", {
 					style: "display: none;",
 					id: "downloadForm",
 					enctype: 'application/x-www-form-urlencoded',
 					name: "downloadForm",
 					method: "post",
-					action: baseUrl + "?&http_download=true&http_accept=" + accept
+					action: baseUrl 
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
@@ -79335,14 +79338,18 @@ define([
 		},
 		postCreate: function(){
 			// create a loading mask
-			this.loadingMask = new Standby({target: this.id, image: "/public/js/p3/resources/images/ring-alt.svg",color: "#efefef"});
+			this.loadingMask = new Standby({
+				target: this.id,
+				image: "/public/js/p3/resources/images/ring-alt.svg",
+				color: "#efefef"
+			});
 			this.addChild(this.loadingMask);
 			this.loadingMask.startup();
 		},
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
-			if (state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
+			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
 			}
@@ -79351,19 +79358,19 @@ define([
 				this.mainGridContainer.set('state', state);
 			}
 
-			if (state.autoFilterMessage){
+			if(state.autoFilterMessage){
 				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
 				// var msg = state.autoFilterMessage;
-				if (!this.messagePanel){
+				if(!this.messagePanel){
 					this.messagePanel = new ContentPane({
 						"class": "WarningPanel",
-						region: "top", 
+						region: "top",
 						content: msg
 					});
 
-					var _self=this;
+					var _self = this;
 					on(this.messagePanel.domNode, ".closeWarningBanner:click", function(evt){
-						if (_self.messagePanel){
+						if(_self.messagePanel){
 							_self.removeChild(_self.messagePanel);
 						}
 					});
@@ -79372,9 +79379,10 @@ define([
 				}
 				this.addChild(this.messagePanel);
 			}else{
-				if (this.messagePanel) { this.removeChild(this.messagePanel) }
+				if(this.messagePanel){
+					this.removeChild(this.messagePanel)
+				}
 			}
-
 
 			this._set('state', state);
 		},
@@ -79486,6 +79494,7 @@ define([
 
 			// genome list grid
 			var filterGrid = new FilterGrid({
+				"class": "pfFilterGrid",
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
@@ -79496,14 +79505,14 @@ define([
 			});
 
 			var ta_keyword = new TextArea({
-				style: "width:215px; min-height:75px"
+				style: "width:360px; min-height:75px; margin-bottom: 10px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
 
 			//
-			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
+			domConstruct.place("<br/>", otherFilterPanel.containerNode, "last");
 
 			var rb_perfect_match = new RadioButton({
 				name: "familyMatch",
@@ -85051,6 +85060,8 @@ define([
 				
 				if (refseqs.length == 0) {
 					track.set('loading', false);
+	                Topic.publish("/Notification", {message: "No data found.", type: "error"});                                          
+					
 					return refseqs;
 				} 
 								
@@ -85311,10 +85322,10 @@ define([
 				//console.log("CircularViewerContainer addCustomTrack", value);	
 				if(key === "addCustomTrack") {
 					var track_name = "Custom track " + value.index;
-					var filter = "&keyword(" + encodeURIComponent(value.keyword);
+					//var filter = "&keyword(" + encodeURIComponent(value.keyword);
 					// use searchToQuery for advanced keyword search
-					//var filter = "&" + searchToQuery(value.keyword);
-					
+					var filter = searchToQuery(value.keyword);
+					//console.log("filter = ", filter);
 					var specific_strand = null;
 					var strand_query = "";
 					if (value.strand === "+") {
@@ -85332,7 +85343,8 @@ define([
 						type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
 					}
 				
-					filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+					filter = filter +  "and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+					console.log("filter = ", filter);
 					// console.log("CircularViewerContainer addCustomTrack", value);
 					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
 				} 
@@ -85466,7 +85478,7 @@ define([
 				return;
 			}
 			if(!this.controlPanel){
-				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px; overflow-y:auto"});
+				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:320px; overflow-y:auto"});
 			}
 
 			if(!this.viewer){
@@ -85568,7 +85580,7 @@ define([
 			    this.customTrackButton.set("disabled", false);
 			}
 			
-            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+            //console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
 		
 		onAddCustomTrack: function(){
@@ -85587,11 +85599,11 @@ define([
 			Topic.publish("/Notification", {message: "Adding a custom track", type: "message"});
             Topic.publish("CircularView", "addCustomTrack", customTrackSelection);
             
-            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+            //console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
 
         validateUserFileType: function(){
-            console.log("-----validateUserFileType this.userData", this.userData);
+            //console.log("-----validateUserFileType this.userData", this.userData);
             if (this.userData && this.userData.length >0) {            
                 this.userFileButton.set("disabled", false);
             }  else {
@@ -85734,7 +85746,7 @@ define([
 			}
 			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
-			var color = domConstruct.create("td", {}, tr);
+			var color = domConstruct.create("td", {style: "width: 35px;"}, tr);
 			var fg, bg;
 			var foregroundIsStroke = false;
 
@@ -122050,7 +122062,7 @@ define([
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:2px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:35%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateUserFileType\" data-dojo-attach-point=\"plot_type_select\" >\n\t\t\t<option value=\"tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"line\">Line Plot</option>\n\t\t\t<option value=\"histogram\">Histogram</option>\n\t\t\t<option value=\"heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:50%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:20%; margin-left:3px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:37%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:3px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:30%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateUserFileType\" data-dojo-attach-point=\"plot_type_select\" >\n\t\t\t<option value=\"tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"line\">Line Plot</option>\n\t\t\t<option value=\"histogram\">Histogram</option>\n\t\t\t<option value=\"heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:55%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
