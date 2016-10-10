@@ -22,6 +22,7 @@ define([
 		initConditions: 5,
 		maxConditions: 10,
 		conditionStore: null,
+        hostGenomes: {"9606.33":"","6239.6":"","7955.5":"","7227.4":"","9031.4":"","9544.2":"","10090.24":"","9669.1":"","10116.5":"","9823.5":""},
 
 		listValues: function(obj){
 			var results = [];
@@ -448,6 +449,25 @@ define([
 		},
 
 		onSuggestNameChange: function(){
+            var curRecipe = this.recipe.value;
+            if(this.genome_nameWidget.value in this.hostGenomes){
+                var newOptions = [
+                {label:"Rockhopper",value:"Rockhopper", selected:false, disabled:true},
+                {label:"Tuxedo",value:"RNA-Rocket", selected:false, disabled:true},
+                {label:"Host HISAT2",value:"Host", selected:true, disabled:false}];
+                this.recipe.set("options",newOptions).reset();
+                this.recipe.set("value","Host");
+            }
+            else {
+                var newOptions = [
+                {label:"Rockhopper",value:"Rockhopper", selected:true, disabled:false},
+                {label:"Tuxedo",value:"RNA-Rocket", selected:false, disabled:false},
+                {label:"Host HISAT2",value:"Host", selected:false, disabled:true}];
+                this.recipe.set("options",newOptions).reset();
+                if (curRecipe == "RNA-Rocket"){
+                    this.recipe.set("value","RNA-Rocket");
+                }
+            }
 		},
 
 		onAddPair: function(){
