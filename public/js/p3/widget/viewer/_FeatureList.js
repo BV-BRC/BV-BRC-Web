@@ -2,11 +2,13 @@ define([
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
-	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview"
+	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview",
+	"../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
-			GenomeGridContainer, PathJoin, xhr, lang, Overview){
+			GenomeGridContainer, PathJoin, xhr, lang, Overview,
+			QueryToEnglish){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureList",
 		"disabled": false,
@@ -65,9 +67,10 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
+			var qe = QueryToEnglish(newVal);
+			// this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + qe + "</div>");
 
-			this.queryNode.innerHTML = decodeURIComponent(newVal);
+			this.queryNode.innerHTML = qe;
 		},
 
 		setActivePanelState: function(){

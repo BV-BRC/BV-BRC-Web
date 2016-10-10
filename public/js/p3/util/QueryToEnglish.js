@@ -41,7 +41,7 @@ define([
 					}else if (vals.length<3) {
 						out = out + vals.join('<span class="searchOperator"> OR </span>');
 					}else{
-						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...)';
+						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...';
 					}
 					// parsed.selected.push({field: f, value: v});
 					break;
@@ -72,6 +72,9 @@ define([
 					out = 'Feature Group <span class="searchValue">' + groupName + "</span>"
 					break;
 				default:
+					if (typeof term == "string"){
+						return '<span class="searchValue"> '  +decodeURIComponent(term) + '</span>';
+					}
 					console.log("Skipping Unused term: ", term.name, term.args);
 			}
 
