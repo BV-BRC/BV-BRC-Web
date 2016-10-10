@@ -81,7 +81,7 @@ define([
 			    this.customTrackButton.set("disabled", false);
 			}
 			
-            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+            //console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
 		
 		onAddCustomTrack: function(){
@@ -100,11 +100,11 @@ define([
 			Topic.publish("/Notification", {message: "Adding a custom track", type: "message"});
             Topic.publish("CircularView", "addCustomTrack", customTrackSelection);
             
-            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+            //console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
 
         validateUserFileType: function(){
-            console.log("-----validateUserFileType this.userData", this.userData);
+            //console.log("-----validateUserFileType this.userData", this.userData);
             if (this.userData && this.userData.length >0) {            
                 this.userFileButton.set("disabled", false);
             }  else {
@@ -247,7 +247,7 @@ define([
 			}
 			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
-			var color = domConstruct.create("td", {}, tr);
+			var color = domConstruct.create("td", {style: "width: 35px;"}, tr);
 			var fg, bg;
 			var foregroundIsStroke = false;
 
