@@ -80,13 +80,13 @@ define([
 
 		startup: function(){
 
+			// activate genome group selector when user is logged in
 			if(window.App.user){
+				var ggDom = query('div[name="genome_group"]')[0];
+
 				this.genome_group = new WorkspaceObjectSelector();
 				this.genome_group.set('type', ['genome_group']);
 				this.genome_group.set('disabled', true);
-
-				var ggDom = query('div[name="genome_group"]')[0];
-
 				this.genome_group.placeAt(ggDom, "only");
 			}
 

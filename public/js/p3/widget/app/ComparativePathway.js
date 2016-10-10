@@ -3,12 +3,14 @@ define([
 	"dojo/dom-class",
 	"dojo/text!./templates/ComparativePathway.html", "./AppBase", "dojo/dom-construct",
 	"dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "dojo/domReady!", "dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog", "dojo/NodeList-traverse", "../../WorkspaceManager"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog", "dojo/NodeList-traverse", "../../WorkspaceManager",
+	"../WorkspaceObjectSelector"
 ], function(declare, WidgetBase, on, Topic,
 			domClass,
 			Template, AppBase, domConstruct,
 			Deferred, aspect, lang, domReady, NumberTextBox,
-			query, dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager){
+			query, dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager,
+			WorkspaceObjectSelector){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
 		templateString: Template,
@@ -39,6 +41,15 @@ define([
 			}
 			this.numlibs.startup();
 			this._started = true;
+
+			// activate genome group selector when user is logged in
+			if(window.App.user){
+				var ggDom = query('div[name="genome_group"]')[0];
+
+				this.genome_group = new WorkspaceObjectSelector();
+				this.genome_group.set('type', ['genome_group']);
+				this.genome_group.placeAt(ggDom, "only");
+			}
 		},
 		increaseLib: function(rec){
 			this.addedList.push(rec);

@@ -22,7 +22,7 @@ define([
 		panels: Panels,
 		activeWorkspace: null,
 		activeWorkspacePath: "/",
-		publicApps: ["BLAST"],
+		publicApps: ["BLAST", "ProteinFamily", "ComparativePathway"],
 		startup: function(){
 			var _self = this;
 
