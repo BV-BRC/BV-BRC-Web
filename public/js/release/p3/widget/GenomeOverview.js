@@ -5,13 +5,13 @@ define("p3/widget/GenomeOverview", [
 	"dojo/dom-class", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
 	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
-	"./ExternalItemFormatter"
+	"./ExternalItemFormatter", "./AdvancedDownload"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, Template, domConstruct,
 			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
-			ExternalItemFormatter){
+			ExternalItemFormatter, AdvancedDownload){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
@@ -79,7 +79,12 @@ define("p3/widget/GenomeOverview", [
 		},
 
 		onDownload: function(){
-			window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
+			// window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
+
+			var dialog = new Dialog({title: "Download"});
+			var advDn = new AdvancedDownload({selection: [this.genome.genome_id], containerType: "genome_data"});
+			domConstruct.place(advDn.domNode, dialog.containerNode);
+			dialog.show();
 		},
 
 		startup: function(){
