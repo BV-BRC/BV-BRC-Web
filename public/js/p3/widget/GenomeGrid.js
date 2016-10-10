@@ -19,6 +19,11 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
+			"public": {
+				label: 'Public',
+				field: 'public',
+				hidden: true
+			},
 			genome_name: {
 				label: 'Genome Name',
 				field: 'genome_name'
@@ -86,6 +91,11 @@ define([
 				label: 'Disease',
 				field: 'disease',
 				sortable: false
+			},
+			collection_year: {
+				label: 'Collection Year',
+				field: 'collection_year',
+				hidden: true
 			},
 			collection_date: {
 				label: 'Collection Date',
@@ -350,7 +360,7 @@ define([
 		},
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: this.defaultSortProperty, descending: false}]
+				sort: [{attribute: this.defaultSortProperty, descending: true}]
 			};
 		},
 		startup: function(){

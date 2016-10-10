@@ -349,6 +349,8 @@ define([
 				"<tr>",
 				"<th class='italic' scope='row'>Completion Date: </th>",
 				"<td>&nbsp;{metadata.completion_date}</td>",
+				"<th class='italic' scope='row'>Collection Year: </th>",
+				"<td>&nbsp;{metadata.collection_year}</td>",
 				"<th class='italic' scope='row'>Collection Date: </th>",
 				"<td>&nbsp;{metadata.collection_date}</td>",
 				"</tr>",

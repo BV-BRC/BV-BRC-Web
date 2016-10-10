@@ -13,8 +13,10 @@ define("p3/widget/FunctionalProfile", [
 		baseQuery: "&limit(1)&facet((field,product),(mincount,1),(sort,count),(limit,10))&json(nl,map)",
 		columns: [
 			{label: "Function", field: "label"},
-			{
-				label: "Genes", field: "count"
+			{label: "Genes", field: "count",
+				renderCell: function(obj, val, node){
+					return node.innerHTML = lang.replace('<a href="#view_tab=features&filter=eq(product,{1})">{0}</a>', [val, encodeURIComponent('"' + obj.label + '"')]);
+				}
 			}
 		],
 		processData: function(res){
@@ -26,8 +28,13 @@ define("p3/widget/FunctionalProfile", [
 
 			var self = this;
 			var d = res.facet_counts.facet_fields.product; // now key-value pair
+			var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
 			var data = Object.keys(d).map(function(key){
-				return {label:key, count: d[key]}
+				return {
+					label: key,
+					count: d[key],
+					link: linkBase + '#view_tab=features&filter=eq(product,' + encodeURIComponent('"' + key + '"') + ')'
+				}
 			});
 
 			self.set('data', data);

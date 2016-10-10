@@ -76,7 +76,7 @@ define("circulus/LineTrack", [
 					var ds = dataSections[secName];
 					// if (ds.length>20){ return; };
 					// console.log("Adding ",ds.length, " Data Items to Section", secName);
-					// console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					//console.log("   Starting Angle: ", refSections[secName].startAngle, "refSections[secName].endAngle: ", refSections[secName].endAngle, "refSections[secName].length= ", refSections[secName].length);
 					this.renderAlignedSection(ds,refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
 			},this)
 		},
@@ -85,7 +85,7 @@ define("circulus/LineTrack", [
 			var pathPoints = [];
 			var numSections = data.length;
 
-			// console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
+			//console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), " data: ", data)
 			var deg = (endAngle-startAngle)/sectionLength;
 
 			// console.log("degPerBP ", deg);
@@ -100,18 +100,20 @@ define("circulus/LineTrack", [
 				//path.rawNode.data = JSON.stringify(d);
 				var score = d[this.scoreProperty];
 				// console.log("PATH: ", path);
-				// console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+			    //console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start, "score", score);
+				//console.log("----LineTrack Track Width trackWidth: ", trackWidth, " this.trackWidth: ", this.trackWidth, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)));
 
 				var point;
 
 				if (  (this.min < 0) && ((this.max+this.min)===0) ){
 					var trackCenter = this.internalRadius + (trackWidth/2);
-					point = {x: 0, y:trackCenter + ((score/this.max) * (trackWidth/2)) }
+					point = {x: 0, y:trackCenter + ((score/this.max) * (trackWidth/2)) };
 				}else if (this.min===0){
-					point = {x: 0, y:this.internalRadius + ( (score/this.max) * trackWidth) }
+					point = {x: 0, y:this.internalRadius + ( (score/this.max) * trackWidth) };
 				}else{
 					// console.log("FIX ME (LineTrack.js line 56)");
 				}
+				//console.log("----LineTrack  d.start: ", d.start, " d.end: ", d.end, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)), " point.y:", point.y);
 				var m = d.start; // + ((d.end-d.start)/2)
 				var rads = ((deg*m) + startAngle) *Math.PI/180;
 				var nextPoint = {
@@ -123,7 +125,9 @@ define("circulus/LineTrack", [
 			},this);
 
 			var first = pathPoints.shift();
-			path.moveTo(first).smoothCurveTo(pathPoints).setStroke(this.stroke);
+			// smoothCurveTo sometimes draws wrong curve - made some lines outside the track.
+			//path.moveTo(first).smoothCurveTo(pathPoints).setStroke(this.stroke);
+			path.moveTo(first).curveTo(pathPoints).setStroke(this.stroke);
 			this._foregroundColorPaths.push(path);
 		},
 
@@ -147,7 +151,7 @@ define("circulus/LineTrack", [
 			this.data.forEach(function(item,index){
 				var score = item[this.scoreProperty];
 
-				// console.log("Internal Radius: ", this.internalRadius, " Track Width: ", this.trackWidth, score, (this.trackWidth * (score/this.max)));
+				//console.log("----LineTrack Internal Radius: ", this.internalRadius, " Track Width trackWidth: ", trackWidth, " this.trackWidth: ", this.trackWidth, " score: ", score, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)));
 
 				// var trackCenter = this.internalRadius + (this.trackWidth/2);
 

@@ -8,6 +8,12 @@ define([
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
 		customTrackIndex: 0,
+		userTrackIndex: 0,
+		userData: {},
+		maxScore: 0,
+		minScore: 0,
+		fileName: "",
+		
 		postCreate: function(){
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
@@ -28,6 +34,29 @@ define([
                     orient: ["below-centered"]                    
                 });
             });	
+
+            var userTrackHelp = 'To display your data as "Tiles" plot, upload data file containing accession, start, and end position delimited by tabs.<br>' + 
+              'For example, <br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;34&nbsp;&nbsp;&nbsp;&nbsp;1524<br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;2052&nbsp;&nbsp;&nbsp;&nbsp;3260<br><br>' +
+              'To display your data as "Line, Histogram, or Heatmap" plot, upload data file containing accession, start, end, and quantitative value delimited by tabs.<br>' +
+              'For example, <br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;3596001&nbsp;&nbsp;&nbsp;&nbsp;3598000&nbsp;&nbsp;&nbsp;&nbsp;0.639500<br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;1498001&nbsp;&nbsp;&nbsp;&nbsp;1500000&nbsp;&nbsp;&nbsp;&nbsp;0.673000';
+                  
+            var userTT = new TooltipDialog({
+                content: userTrackHelp, 
+                style: "overflow: auto",
+                onMouseLeave: function(){
+                    popup.close(userTT);
+                }
+            });
+            on(this.userTrackInfo, 'mouseover', function(){
+                //console.log("customTrackInfo", userTT.content);
+                popup.open({
+                    popup: userTT,
+                    around: this,
+                    orient: ["below-centered"]                    
+                });
+            });	
+
+
 		},
 
 		visibleIconClass: "icon-eye",
@@ -52,7 +81,7 @@ define([
 			    this.customTrackButton.set("disabled", false);
 			}
 			
-            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+            //console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
 		
 		onAddCustomTrack: function(){
@@ -71,8 +100,146 @@ define([
 			Topic.publish("/Notification", {message: "Adding a custom track", type: "message"});
             Topic.publish("CircularView", "addCustomTrack", customTrackSelection);
             
-            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+            //console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
+
+        validateUserFileType: function(){
+            //console.log("-----validateUserFileType this.userData", this.userData);
+            if (this.userData && this.userData.length >0) {            
+                this.userFileButton.set("disabled", false);
+            }  else {
+                this.userFileButton.set("disabled", true);          
+            }             
+		},	
+
+        validateUserFileSelection: function(event){
+			var type = this.plot_type_select.get('value');
+            var files = event.target.files;
+            var user_data=[];
+            var self = this;
+            console.log("validateUserFileSelection: type =, files =", type, files);            			    
+			var file = null;
+            self.maxScore= 0;
+            self.minScore= 0;
+			
+			// get the last file that was chosen
+			if (files.length>0)
+			{
+			    file = files[files.length-1];
+			}
+
+			if (type && file && file.type==="text/plain") {
+                var reader = new FileReader();
+                reader.onload = function() {
+                   //console.log(this.result);            
+                    var lines = this.result.split('\n');
+                    if (lines) {
+                        lines.map(function(item){
+                          tabs = item.split('\t');
+                          //console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
+                          if (tabs.length>3 && tabs[0]) {
+                              user_data.push({accession: tabs[0].toUpperCase(), start: parseInt(tabs[1]),end:parseInt(tabs[2]), length: parseInt(tabs[2])-parseInt(tabs[1])+1, score:parseFloat(tabs[3])});
+                              if (parseFloat(tabs[3])>self.maxScore) {
+                                self.maxScore = parseFloat(tabs[3]);
+                              }
+                              if (parseFloat(tabs[3])<self.minScore) {
+                                self.minScore = parseFloat(tabs[3]);
+                              }
+                              
+                          } else if (tabs.length==3 && tabs[0] && (type === "tiles")) {
+                              user_data.push({accession: tabs[0].toUpperCase(), start: parseInt(tabs[1]),end:parseInt(tabs[2]), length: parseInt(tabs[2])-parseInt(tabs[1])+1, score:null});
+                          } else {
+                            //console.log("line=", lines, "tabs=", tabs);
+                          }
+                        });
+                    }
+
+                    console.log("before assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+                    
+                    // For GC content, GC skew, reset maxScore, minScore
+                    if (self.maxScore <=1 && self.maxScore >0 && self.minScore <=1 && self.minScore >=0) {
+                        self.maxScore = 1;
+                        self.minScore = 0;
+                    } else if (self.maxScore <=1 && self.maxScore >0 && self.minScore <0 && self.minScore >=-1) {
+                        self.maxScore = 1;
+                        self.minScore = -1;
+                    } else if (self.maxScore > 1 && self.minScore >= 0) {
+                        self.maxScore = self.maxScore;
+                        self.minScore = 0;                    
+                    } else {
+                        self.maxScore = Math.max(Math.abs(self.maxScore), Math.abs(self.minScore));
+                        self.minScore = (-1)*self.maxScore;
+                    }
+                    console.log("after assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+                    
+                    user_data.sort(function(a, b){
+                        var a1= a.start, b1= b.start;
+                        // Sort first on day
+                        if(a1 > b1) {
+                            return 1;
+                        } else if (a1 < b1) {
+                            return -1;
+                        } else {
+                            var a2 = a.end;
+                            var b2 = b.end;
+
+                            if(a2 > b2) {
+                                return 1;
+                            } else if (a2 < b2) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        }
+                    });
+
+                    self.userData = user_data;
+                    self.fileName = file.name;
+                    /*
+                    self.userData = {};
+                    user_data.forEach(function(val,index) {
+                        self.userData[index] = val;
+                    });					
+                    */
+                    //console.log(user_data);
+                    console.log("-----reading file self.userData=", self.userData, "self.maxScore=", self.maxScore, "self.minScore=", self.minScore, "fileName=", self.fileName);
+                    if (user_data.length==0) {
+                        Topic.publish("/Notification", {message: "User file format error.", type: "error"});                                          
+                    } else {
+                        self.userFileButton.set("disabled", false);                
+                    }
+                }
+                reader.readAsText(file);    
+                
+			} else if (file.type !== "text/plain") {
+				Topic.publish("/Notification", {message: "Only text/plain files are allowed", type: "error"});
+            } else {
+                self.userFileButton.set("disabled", true);                           
+            }
+		},
+
+		onAddUserFileTrack: function(){
+			var type = this.plot_type_select.get('value');
+			//var files = this.data_file.event.target.files;
+		    this.userFileButton.set("disabled", true);
+		    if (this.userData && this.userData.length>0) {
+                Topic.publish("/Notification", {message: "Adding a user track.", type: "message"});
+                this.userTrackIndex ++;
+                var userTrackSelection = {
+                            index: this.userTrackIndex,
+                            type: type,
+                            fileName: this.fileName,
+                            maxScore: this.maxScore,
+                            minScore: this.minScore,
+                            userData: this.userData
+                };
+                console.log("onAddUserFileTrack: userTrackSelection =", userTrackSelection);
+                Topic.publish("CircularView", "addUserTrack", userTrackSelection);
+            } else {
+                Topic.publish("/Notification", {message: "User file format error.", type: "error"});                                                      
+            }
+		},
+
 
 		onAddTrack: function(event){
 			if(!this.viewer){
@@ -80,7 +247,7 @@ define([
 			}
 			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
-			var color = domConstruct.create("td", {}, tr);
+			var color = domConstruct.create("td", {style: "width: 35px;"}, tr);
 			var fg, bg;
 			var foregroundIsStroke = false;
 

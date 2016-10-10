@@ -2,15 +2,21 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
 	"dojo/dom-class", "./viewer/Base", "./Button", "dijit/registry", "dojo/_base/lang",
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
-	"dijit/layout/ContentPane","dojo/request","../util/QueryToSearchInput","./GlobalSearch"
+	"dijit/layout/ContentPane","dojo/request","../util/QueryToSearchInput","./GlobalSearch",
+	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin","dojo/text!./templates/AdvancedSearch.html",
+	"../util/searchToQuery"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass,base, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
-			ContentPane,Request,queryToSearchInput,GlobalSearch
+			ContentPane,Request,queryToSearchInput,GlobalSearch,
+			TemplatedMixin, WidgetsInTemplate,Template,
+			searchToQuery
 ){
-	return declare([base], {
+	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate], {
 		"baseClass": "AdvancedSearch",
 		"disabled": false,
+		state: null,
+		templateString: Template,
 		searchTypes: ["genome","genome_feature", "taxonomy","sp_gene","transcriptomics_experiment"],
 		labelsByType: {
 			"genome": "Genomes",
@@ -18,6 +24,34 @@ define([
 			"taxonomy": "Taxonomy",
 			"sp_gene": "Specialty Genes",
 			"transcriptomics_experiment": "Transcriptomics Experiments"
+		},
+
+		advancedSearchDef: {
+			"genomes": {
+				fields: [
+					{field: "genome_id", label: "Genome ID", type: "orText"},
+					{field: "genome_name", label: "Genome Name", type: "orText"},
+					{field: "genome_status", label: "Genome Status", type: "orText"},
+					{field: "isolation_country", label: "Isolation Country", type: "orText"},
+					{field: "host_name", label: "Host Name", type: "orText"},
+					{field: "collection_date", label: "Collection Date", type: "orText"},
+					{field: "completion_date", label: "Completion Date", type: "orText"},		
+				]
+			},
+
+			"features": {
+				fields: [
+					{field: "feature_type", label: "Feature Type", type: "select", values: []},
+					{field: "annotation", label: "Annotation", type: "select", values: ["all", "PATRIC","RefSeq"]}
+				]
+			},
+
+			"sp_genes": {
+				fields: [
+					{field: "property", label: "Property", type: "checkboxes", values: ["Antibiotic Resistance", "Drug Target", "Human Homolog", "Virulence Factor"]},
+					{field: "evidence", label: "Evidence", type: "checkboxes", values: ["Literature","BLASTP"]}
+				]
+			}
 		},
 
 		_generateLink: {
@@ -33,7 +67,7 @@ define([
 				if (total==1){
 					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
 				}else{
-					return ['/view/FeatureList/?',this.state.search,"#view_tab=overview"].join("");
+					return ['/view/FeatureList/?',this.state.search,"#view_tab=features"].join("");
 				}
 			},
 			"taxonomy": function(docs,total){
@@ -65,14 +99,16 @@ define([
 			return this._generateLink[type].apply(this,[docs,total]);
 		},
 
+		_setStateAttr: function(state){
+			console.log("AdvancedSearch _setStateAttr: ", state);
+			this._set("state", state);
+		},
+
 		onSetState: function(attr,oldval,state){
 			console.log("onSetState: ", state.search);
 
 			if (state.search){
-				if (this.viewHeader){
-					this.searchBox.set("value", queryToSearchInput(state.search));
-				}
-
+				this.searchBox.set("value", queryToSearchInput(state.search));
 				this.search(state.search);
 
 			}else{
@@ -82,9 +118,6 @@ define([
 			}
 		},
 		searchResults: null,
-		parseQuery: GlobalSearch.prototype.parseQuery,
-
-
 
 		formatgenome: function(docs,total){
 			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
@@ -136,7 +169,7 @@ define([
 		},
 
 		formatgenome_feature: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=overview",'">Genome Features&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features",'">Genome Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
@@ -259,8 +292,8 @@ define([
 			var content=[]
 			Object.keys(val).forEach(function(type){
 				var tRes = val[type];
-				var total = (tRes&&tRes.result&&tRes.result.response)?tRes.result.response.numFound:0
-				var docs = tRes.result.response.docs;
+				var total = (tRes&&tRes.result&&tRes.result.response&&tRes.result.response.docs)?tRes.result.response.numFound:0;
+				var docs = (tRes&&tRes.result&&tRes.result.response&&tRes.result.response.docs)?tRes.result.response.docs:[];
 				resultCounts[type]={total: total, docs: docs};
 
 				if (total>0){ // && total<4){
@@ -302,7 +335,7 @@ define([
 
 			if (this.viewer){
 				//if (foundContent){
-					this.viewer.set('content', out.join(""));
+					this.viewer.innerHTML=out.join("");
 				//}else{
 				//	this.viewer.set("content", "No Results Found.")
 				//}
@@ -324,15 +357,16 @@ define([
 						break;
 				}
 
-				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+score)" }
+				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
 			})
 
 			console.log("SEARCH: ", q);
-			this.viewer.set("content", "Searching...");
+			this.viewer.innerHTML="Searching...."
 			Request.post(window.App.dataAPI + "query/", {
 				headers: {
 					accept: "application/json",
-					"content-type": "application/json"
+					"content-type": "application/json",
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json",
 				data: JSON.stringify(q)
@@ -344,25 +378,38 @@ define([
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			// this.viewHeader = new ContentPane({
-			// 	region: "top"
-			// });
+			//start watching for changes of state, and signal for the first time.
+			this.watch("state", lang.hitch(this, "onSetState"));
+		},
+		// postCreate: function(){
+		// 	this.inherited(arguments);
+		// 	// this.viewHeader = new ContentPane({
+		// 	// 	region: "top"
+		// 	// });
 
-			this.viewHeader = this.searchBox = new TextBox({region:"top",style: "margin:4px;font-size:1.4em;padding:4px;color:#ddd;border-radius:4px;"});
-			// domConstruct.place(this.searchBox.domNode, this.viewHeader.containerNode,"first");
-			// this.searchBox.startup();
+		// 	this.viewHeader = this.searchBox = new TextBox({region:"top",style: "margin:4px;font-size:1.4em;padding:4px;color:#ddd;border-radius:4px;"});
+		// 	// domConstruct.place(this.searchBox.domNode, this.viewHeader.containerNode,"first");
+		// 	// this.searchBox.startup();
 
-			this.searchBox.on("keypress", lang.hitch(this,"onKeyPress"));
+
+		// 	this.advancedSearchOptions = new ContentPane({
+		// 		region: "top",
+		// 		content: "Advanced Search Options"
+		// 	})
+
+
+		// 	this.searchBox.on("keypress", lang.hitch(this,"onKeyPress"));
 
 		
-			this.viewer = new ContentPane({
-				region: "center",
-				content: "Searching...."
-			});
+		// 	this.viewer = new ContentPane({
+		// 		region: "center",
+		// 		content: "Searching...."
+		// 	});
 
-			this.addChild(this.viewHeader);
-			this.addChild(this.viewer);
-		},
+		// 	this.addChild(this.viewHeader);
+		// 	this.addChild(this.advancedSearchOptions);
+		// 	this.addChild(this.viewer);
+		// },
 		onKeyPress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchBox.get('value');
@@ -371,8 +418,15 @@ define([
 					this.viewer.set("content","");
 				}
 
-				Topic.publish("/navigate", {href: "/search/?" + this.parseQuery(query)});
+				Topic.publish("/navigate", {href: "/search/?" + searchToQuery(query)});
 			}
+		},
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+			this.onSetState("state", "", this.state);
 		}
 	});
 });

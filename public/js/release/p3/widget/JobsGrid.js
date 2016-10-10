@@ -1,5 +1,5 @@
 define("p3/widget/JobsGrid", [
-	"dojo/_base/declare", "./Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
+	"dojo/_base/declare", "./PageGrid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
 	"dojo/topic", "dgrid/editor", "dijit/Menu", "dijit/MenuItem", "../WorkspaceManager", "dijit/Dialog",
@@ -64,6 +64,16 @@ function(declare, Grid, Store, DijitRegistry,
 			}
 		},
 		constructor: function(){
+
+			this.queryOptions = {
+				sort: [{attribute: "submit_time", descending: true}]
+
+//				sort: [{attribute: "genome_name", descending: false},
+//					{attribute: "accession", descending: false},
+//					{attribute: "start", descending: false}]
+			};
+
+
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
 				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
 				var avatar = dojo.create("div", {
@@ -102,9 +112,13 @@ function(declare, Grid, Store, DijitRegistry,
 		},
 		queryOptions: {
 			sort: [
-				{attribute: "completed_time"}
+				{attribute: "submit_time", descending: true}
 			]
 		},
+
+		sort: [
+			{attribute: "submit_time", descending: true}
+		],
 
 		/*
 			_setApiServer: function(server){
@@ -203,6 +217,9 @@ function(declare, Grid, Store, DijitRegistry,
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
+
+			console.log("STARTUP REFRESH");
+			this.refresh();
 
 		},
 		_setActiveFilter: function(filter){

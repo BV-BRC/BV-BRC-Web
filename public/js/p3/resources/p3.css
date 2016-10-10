@@ -137,7 +137,7 @@ iframe  {
 
 TD.HomeServiceLink {
 	border-spacing: 0 0;
-	border-collapse: separate; 
+	border-collapse: separate;
 }
 .HomeServiceLink {
     height: 75px;
@@ -169,7 +169,7 @@ TD.HomeServiceLink {
     padding: 0 0 0 15px;
     border: 0;
   font-size: 14px;
-  font-family: "Didact Gothic",Arial, Helvetica, sans-serif; 
+  font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
   font-weight: 100;
   text-align: left;
   line-height: 16px;

@@ -5097,11 +5097,11 @@ table {  font-size:100%; }
 }
 @font-face {
   font-family: 'icomoon';
-  src:  url("icomoon/fonts/icomoon.eot?43o65i");
-  src:  url("icomoon/fonts/icomoon.eot?43o65i#iefix") format('embedded-opentype'),
-    url("icomoon/fonts/icomoon.ttf?43o65i") format('truetype'),
-    url("icomoon/fonts/icomoon.woff?43o65i") format('woff'),
-    url("icomoon/fonts/icomoon.svg?43o65i#icomoon") format('svg');
+  src:  url("icomoon/fonts/icomoon.eot?rbz8pf");
+  src:  url("icomoon/fonts/icomoon.eot?rbz8pf#iefix") format('embedded-opentype'),
+    url("icomoon/fonts/icomoon.ttf?rbz8pf") format('truetype'),
+    url("icomoon/fonts/icomoon.woff?rbz8pf") format('woff'),
+    url("icomoon/fonts/icomoon.svg?rbz8pf#icomoon") format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -5124,556 +5124,681 @@ table {  font-size:100%; }
 .icon-anchor:before {
   content: "\e901";
 }
-.icon-apply-perspective-filter .path1:before {
+.icon-apply-perspective-filter-orig:before {
   content: "\e902";
+}
+.icon-apply-perspective-filter .path1:before {
+  content: "\e903";
   color: rgb(35, 31, 32);
 }
 .icon-apply-perspective-filter .path2:before {
-  content: "\e903";
-  margin-left: -1.0439453125em;
-  color: rgb(35, 31, 32);
-}
-.icon-apply-perspective-filter .path3:before {
   content: "\e904";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
-.icon-apply-perspective-filter .path4:before {
+.icon-apply-perspective-filter .path3:before {
   content: "\e905";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
-.icon-apply-perspective-filter .path5:before {
+.icon-apply-perspective-filter .path4:before {
   content: "\e906";
+  margin-left: -1.0439453125em;
+  color: rgb(35, 31, 32);
+}
+.icon-apply-perspective-filter .path5:before {
+  content: "\e907";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-arrow-circle-o-down:before {
-  content: "\e907";
-}
-.icon-arrow-circle-o-left:before {
   content: "\e908";
 }
-.icon-arrow-circle-o-right:before {
+.icon-arrow-circle-o-left:before {
   content: "\e909";
 }
-.icon-arrow-circle-o-up:before {
+.icon-arrow-circle-o-right:before {
   content: "\e90a";
 }
-.icon-arrow-down:before {
+.icon-arrow-circle-o-up:before {
   content: "\e90b";
 }
-.icon-arrow-left:before {
+.icon-arrow-down:before {
   content: "\e90c";
 }
-.icon-arrow-right:before {
+.icon-arrow-left:before {
   content: "\e90d";
 }
-.icon-arrow-up:before {
+.icon-arrow-right:before {
   content: "\e90e";
 }
-.icon-bar-chart:before {
+.icon-arrow-up:before {
   content: "\e90f";
 }
-.icon-bars:before {
+.icon-bar-chart:before {
   content: "\e910";
 }
-.icon-camera:before {
+.icon-bars:before {
   content: "\e911";
 }
-.icon-cancel-circle:before {
+.icon-camera:before {
   content: "\e912";
 }
-.icon-caret-down:before {
+.icon-cancel-circle:before {
   content: "\e913";
 }
-.icon-caret-left:before {
+.icon-caret-down:before {
   content: "\e914";
 }
-.icon-caret-right:before {
+.icon-caret-left:before {
   content: "\e915";
 }
-.icon-caret-up:before {
+.icon-caret-right:before {
   content: "\e916";
 }
-.icon-check-square-o:before {
+.icon-caret-up:before {
   content: "\e917";
 }
-.icon-check:before {
+.icon-check-square-o:before {
   content: "\e918";
 }
-.icon-chevron-circle-down:before {
+.icon-check:before {
   content: "\e919";
 }
-.icon-chevron-circle-left:before {
+.icon-chevron-circle-down:before {
   content: "\e91a";
 }
-.icon-chevron-circle-right:before {
+.icon-chevron-circle-left:before {
   content: "\e91b";
 }
-.icon-chevron-circle-up:before {
+.icon-chevron-circle-right:before {
   content: "\e91c";
 }
-.icon-chevron-down:before {
+.icon-chevron-circle-up:before {
   content: "\e91d";
 }
-.icon-chevron-left:before {
+.icon-chevron-down:before {
   content: "\e91e";
 }
-.icon-chevron-right:before {
+.icon-chevron-left:before {
   content: "\e91f";
 }
-.icon-chevron-up:before {
+.icon-chevron-right:before {
   content: "\e920";
 }
-.icon-circle:before {
+.icon-chevron-up:before {
   content: "\e921";
 }
-.icon-cluster:before {
+.icon-circle:before {
   content: "\e922";
 }
-.icon-cog:before {
+.icon-cluster:before {
   content: "\e923";
 }
-.icon-contigs:before {
+.icon-cog:before {
   content: "\e924";
 }
-.icon-delicious:before {
+.icon-contigs:before {
   content: "\e925";
 }
-.icon-download:before {
+.icon-copy:before {
   content: "\e926";
 }
-.icon-exchange:before {
+.icon-delicious:before {
   content: "\e927";
 }
-.icon-experiments:before {
+.icon-download:before {
   content: "\e928";
 }
-.icon-eye-slash:before {
+.icon-exchange:before {
   content: "\e929";
 }
-.icon-eye:before {
+.icon-experiments:before {
   content: "\e92a";
 }
-.icon-fasta:before {
+.icon-eye-slash:before {
   content: "\e92b";
 }
-.icon-filter:before {
+.icon-eye:before {
   content: "\e92c";
 }
-.icon-flag-checkered:before {
+.icon-fasta:before {
   content: "\e92d";
 }
-.icon-folder-open:before {
+.icon-file-archive-o:before {
   content: "\e92e";
 }
-.icon-folder-plus:before {
+.icon-file-audio-o:before {
   content: "\e92f";
 }
-.icon-folder:before {
+.icon-file-code-o:before {
   content: "\e930";
 }
-.icon-genome-browser:before {
+.icon-file-excel-o:before {
   content: "\e931";
 }
-.icon-genome-features-cds:before {
+.icon-file-image-o:before {
   content: "\e932";
 }
-.icon-genome-features:before {
+.icon-file-movie-o:before {
   content: "\e933";
 }
-.icon-genome-group .path1:before {
+.icon-file-o:before {
   content: "\e934";
+}
+.icon-file-pdf-o:before {
+  content: "\e935";
+}
+.icon-file-powerpoint-o:before {
+  content: "\e936";
+}
+.icon-file-text-o:before {
+  content: "\e937";
+}
+.icon-file-text:before {
+  content: "\e938";
+}
+.icon-file-word-o:before {
+  content: "\e939";
+}
+.icon-filter:before {
+  content: "\e93a";
+}
+.icon-flag-checkered:before {
+  content: "\e93b";
+}
+.icon-folder-o:before {
+  content: "\e93c";
+}
+.icon-folder-open:before {
+  content: "\e93d";
+}
+.icon-folder-plus:before {
+  content: "\e93e";
+}
+.icon-folder:before {
+  content: "\e93f";
+}
+.icon-genome-browser:before {
+  content: "\e940";
+}
+.icon-genome-features-cds:before {
+  content: "\e941";
+}
+.icon-genome-features:before {
+  content: "\e942";
+}
+.icon-genome-group .path1:before {
+  content: "\e943";
   color: rgb(1, 1, 1);
 }
 .icon-genome-group .path2:before {
-  content: "\e935";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path3:before {
-  content: "\e936";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path4:before {
-  content: "\e937";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path5:before {
-  content: "\e938";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path6:before {
-  content: "\e939";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path7:before {
-  content: "\e93a";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path8:before {
-  content: "\e93b";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path9:before {
-  content: "\e93c";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path10:before {
-  content: "\e93d";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path11:before {
-  content: "\e93e";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path12:before {
-  content: "\e93f";
-  margin-left: -1em;
-  color: rgb(1, 1, 1);
-}
-.icon-genome-group .path13:before {
-  content: "\e940";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path14:before {
-  content: "\e941";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path15:before {
-  content: "\e942";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path16:before {
-  content: "\e943";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path17:before {
   content: "\e944";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path18:before {
+.icon-genome-group .path3:before {
   content: "\e945";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path19:before {
+.icon-genome-group .path4:before {
   content: "\e946";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path20:before {
+.icon-genome-group .path5:before {
   content: "\e947";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path21:before {
+.icon-genome-group .path6:before {
   content: "\e948";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path22:before {
+.icon-genome-group .path7:before {
   content: "\e949";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path23:before {
+.icon-genome-group .path8:before {
   content: "\e94a";
   margin-left: -1em;
-  color: rgb(1, 1, 1);
+  color: rgb(255, 255, 255);
 }
-.icon-genome-group .path24:before {
+.icon-genome-group .path9:before {
   content: "\e94b";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path25:before {
+.icon-genome-group .path10:before {
   content: "\e94c";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path26:before {
+.icon-genome-group .path11:before {
   content: "\e94d";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path27:before {
+.icon-genome-group .path12:before {
   content: "\e94e";
   margin-left: -1em;
-  color: rgb(255, 255, 255);
+  color: rgb(1, 1, 1);
 }
-.icon-genome-group .path28:before {
+.icon-genome-group .path13:before {
   content: "\e94f";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path29:before {
+.icon-genome-group .path14:before {
   content: "\e950";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path30:before {
+.icon-genome-group .path15:before {
   content: "\e951";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path31:before {
+.icon-genome-group .path16:before {
   content: "\e952";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path32:before {
+.icon-genome-group .path17:before {
   content: "\e953";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path33:before {
+.icon-genome-group .path18:before {
   content: "\e954";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome:before {
+.icon-genome-group .path19:before {
   content: "\e955";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-git-pull-request:before {
+.icon-genome-group .path20:before {
   content: "\e956";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-group:before {
+.icon-genome-group .path21:before {
   content: "\e957";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-info-circle:before {
+.icon-genome-group .path22:before {
   content: "\e958";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-info:before {
+.icon-genome-group .path23:before {
   content: "\e959";
+  margin-left: -1em;
+  color: rgb(1, 1, 1);
 }
-.icon-level-down:before {
+.icon-genome-group .path24:before {
   content: "\e95a";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-level-up:before {
+.icon-genome-group .path25:before {
   content: "\e95b";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-lightbulb-o:before {
+.icon-genome-group .path26:before {
   content: "\e95c";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-list-unordered:before {
+.icon-genome-group .path27:before {
   content: "\e95d";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-lock:before {
+.icon-genome-group .path28:before {
   content: "\e95e";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-long-arrow-left:before {
+.icon-genome-group .path29:before {
   content: "\e95f";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-long-arrow-right:before {
+.icon-genome-group .path30:before {
   content: "\e960";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-map-o:before {
+.icon-genome-group .path31:before {
   content: "\e961";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-map:before {
+.icon-genome-group .path32:before {
   content: "\e962";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-object-group:before {
+.icon-genome-group .path33:before {
   content: "\e963";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-object-ungroup:before {
+.icon-genome:before {
   content: "\e964";
 }
-.icon-paint-brush:before {
+.icon-git-pull-request:before {
   content: "\e965";
 }
-.icon-pencil-square:before {
+.icon-group:before {
   content: "\e966";
 }
-.icon-pie-chart:before {
+.icon-group2:before {
   content: "\e967";
 }
-.icon-plus-circle:before {
+.icon-info-circle:before {
   content: "\e968";
 }
-.icon-print:before {
+.icon-info:before {
   content: "\e969";
 }
-.icon-question-circle-o:before {
+.icon-level-down:before {
   content: "\e96a";
 }
-.icon-random:before {
+.icon-level-up:before {
   content: "\e96b";
 }
-.icon-repeat:before {
+.icon-lightbulb-o:before {
   content: "\e96c";
 }
-.icon-rotate-left:before {
+.icon-list-unordered:before {
   content: "\e96d";
 }
-.icon-search-minus:before {
+.icon-lock:before {
   content: "\e96e";
 }
-.icon-search-plus:before {
+.icon-long-arrow-left:before {
   content: "\e96f";
 }
-.icon-selection-Experiment:before {
+.icon-long-arrow-right:before {
   content: "\e970";
 }
-.icon-selection-ExperimentList:before {
+.icon-map-o:before {
   content: "\e971";
 }
-.icon-selection-Feature:before {
+.icon-map:before {
   content: "\e972";
 }
-.icon-selection-FeatureGroup:before {
+.icon-object-group:before {
   content: "\e973";
 }
-.icon-selection-FeatureList:before {
+.icon-object-ungroup:before {
   content: "\e974";
 }
-.icon-selection-Filter:before {
+.icon-paint-brush:before {
   content: "\e975";
 }
-.icon-selection-Genome-Alt-2:before {
+.icon-pencil-square:before {
   content: "\e976";
 }
-.icon-selection-Genome-Alt .path1:before {
+.icon-perspective-Feature:before {
   content: "\e977";
+}
+.icon-perspective-FeatureList:before {
+  content: "\e978";
+}
+.icon-perspective-Genome:before {
+  content: "\e979";
+}
+.icon-perspective-GenomeGroup:before {
+  content: "\e97a";
+}
+.icon-perspective-GenomeList:before {
+  content: "\e97b";
+}
+.icon-perspective-TaxonList:before {
+  content: "\e97c";
+}
+.icon-perspective-Taxonomy:before {
+  content: "\e97d";
+}
+.icon-pie-chart:before {
+  content: "\e97e";
+}
+.icon-plus-circle:before {
+  content: "\e97f";
+}
+.icon-print:before {
+  content: "\e980";
+}
+.icon-question-circle-o:before {
+  content: "\e981";
+}
+.icon-random:before {
+  content: "\e982";
+}
+.icon-repeat:before {
+  content: "\e983";
+}
+.icon-rotate-left:before {
+  content: "\e984";
+}
+.icon-search-minus:before {
+  content: "\e985";
+}
+.icon-search-plus:before {
+  content: "\e986";
+}
+.icon-selection-Experiment:before {
+  content: "\e987";
+}
+.icon-selection-ExperimentList:before {
+  content: "\e988";
+}
+.icon-selection-Feature:before {
+  content: "\e989";
+}
+.icon-selection-FeatureGroup:before {
+  content: "\e98a";
+}
+.icon-selection-FeatureList:before {
+  content: "\e98b";
+}
+.icon-selection-Filter:before {
+  content: "\e98c";
+}
+.icon-selection-Genome-Alt-2:before {
+  content: "\e98d";
+}
+.icon-selection-Genome-Alt .path1:before {
+  content: "\e98e";
   color: rgb(35, 31, 32);
 }
 .icon-selection-Genome-Alt .path2:before {
-  content: "\e978";
+  content: "\e98f";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
 .icon-selection-Genome-Alt .path3:before {
-  content: "\e979";
+  content: "\e990";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
 .icon-selection-Genome-Alt .path4:before {
-  content: "\e97a";
+  content: "\e991";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
 .icon-selection-Genome-Alt .path5:before {
-  content: "\e97b";
+  content: "\e992";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path6:before {
-  content: "\e97c";
+  content: "\e993";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path7:before {
-  content: "\e97d";
+  content: "\e994";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path8:before {
-  content: "\e97e";
+  content: "\e995";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path9:before {
-  content: "\e97f";
+  content: "\e996";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path10:before {
-  content: "\e980";
+  content: "\e997";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path11:before {
-  content: "\e981";
+  content: "\e998";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path12:before {
-  content: "\e982";
+  content: "\e999";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path13:before {
-  content: "\e983";
+  content: "\e99a";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome-Alt .path14:before {
-  content: "\e984";
+  content: "\e99b";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
 .icon-selection-Genome:before {
-  content: "\e985";
+  content: "\e99c";
 }
 .icon-selection-GenomeGroup:before {
-  content: "\e986";
+  content: "\e99d";
 }
 .icon-selection-GenomeList:before {
-  content: "\e987";
+  content: "\e99e";
 }
 .icon-selection-TaxonList:before {
-  content: "\e988";
+  content: "\e99f";
 }
 .icon-selection-Taxonomy:before {
-  content: "\e989";
+  content: "\e9a0";
 }
 .icon-split:before {
-  content: "\e98a";
+  content: "\e9a1";
 }
 .icon-square-o:before {
-  content: "\e98b";
+  content: "\e9a2";
 }
 .icon-square:before {
-  content: "\e98c";
+  content: "\e9a3";
 }
 .icon-table:before {
-  content: "\e98d";
+  content: "\e9a4";
+}
+.icon-target-ApplyFilter .path1:before {
+  content: "\e9a5";
+  color: rgb(35, 31, 32);
+}
+.icon-target-ApplyFilter .path2:before {
+  content: "\e9a6";
+  margin-left: -0.986328125em;
+  color: rgb(35, 31, 32);
+}
+.icon-target-ApplyFilter .path3:before {
+  content: "\e9a7";
+  margin-left: -0.986328125em;
+  color: rgb(35, 31, 32);
+}
+.icon-target-ApplyFilter .path4:before {
+  content: "\e9a8";
+  margin-left: -0.986328125em;
+  color: rgb(35, 31, 32);
+}
+.icon-target-ApplyFilter .path5:before {
+  content: "\e9a9";
+  margin-left: -0.986328125em;
+  color: rgb(35, 31, 32);
+}
+.icon-target-ApplyFilter .path6:before {
+  content: "\e9aa";
+  margin-left: -0.986328125em;
+  color: rgb(1, 1, 1);
+}
+.icon-target-Feature:before {
+  content: "\e9ab";
+}
+.icon-target-FeatureGroup:before {
+  content: "\e9ac";
+}
+.icon-target-FeatureList:before {
+  content: "\e9ad";
+}
+.icon-target-Genome:before {
+  content: "\e9ae";
+}
+.icon-target-GenomeGroup:before {
+  content: "\e9af";
+}
+.icon-target-GenomeList:before {
+  content: "\e9b0";
+}
+.icon-target-TaxonList:before {
+  content: "\e9b1";
+}
+.icon-target-Taxonomy:before {
+  content: "\e9b2";
 }
 .icon-tasks:before {
-  content: "\e98e";
+  content: "\e9b3";
 }
 .icon-taxonomy:before {
-  content: "\e98f";
+  content: "\e9b4";
 }
 .icon-th-list:before {
-  content: "\e990";
+  content: "\e9b5";
 }
 .icon-trash:before {
-  content: "\e991";
+  content: "\e9b6";
 }
 .icon-unlock-alt:before {
-  content: "\e992";
+  content: "\e9b7";
 }
 .icon-unlock:before {
-  content: "\e993";
+  content: "\e9b8";
 }
 .icon-upload:before {
-  content: "\e994";
+  content: "\e9b9";
+}
+.icon-user-plus:before {
+  content: "\e9ba";
 }
 .icon-user:before {
-  content: "\e995";
+  content: "\e9bb";
 }
 .icon-venn_circles:before {
-  content: "\e996";
+  content: "\e9bc";
 }
 .icon-x:before {
-  content: "\e997";
+  content: "\e9bd";
 }
 .fa-lg {
   font-size: 1.33333333em;
@@ -9191,6 +9316,10 @@ a.HelpLink:hover {
 a.HelpLink:active {
   color: #09456f;
 }
+.wsBreadCrumbContainer {
+	display: inline-block;
+	margin: 12px 0 0 8px;
+}
 .wsBreadCrumb {
 	font-size:1.2em;
 	margin: 2px 2px 2px 4px;
@@ -9398,6 +9527,9 @@ th.dgrid-cell.wsItemType {
 	vertical-align: bottom;
 	bottom: 2px;
 }
+.wsActionContainer { 
+	float: right;
+}
 .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
 	margin: 2px 5px;
@@ -9524,6 +9656,9 @@ th.dgrid-cell.wsItemType {
 	margin:4px;
 }
 .tipHeader > span {
+	cursor: default; 	
+    position: relative;
+    bottom: 4px;	
 	font-size: 1em;
 	font-weight: 600;
 	margin: 4px;
@@ -10122,6 +10257,9 @@ font-size: 12px;
 .patric .fpSummaryWidget.SummaryWidget .tableNode {
     min-height: 250px;
 }
+.patric .fnProfile g.bars rect {
+    cursor: pointer;
+}
 .patric .idmSummeryWidget.SummaryWidget {
     height: 250px;
 }
@@ -10136,6 +10274,9 @@ font-size: 12px;
 .patric .sgViewerWidget {
     height: 76px;
 }
+.patric .sgViewerWidget .chart g polyline {
+    cursor: pointer;
+}
 .patric .dgrid-header .dgrid-cell {
 	font-weight: 600;
 }
@@ -10149,6 +10290,7 @@ font-size: 12px;
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
+.dgrid-cell.field-protein_id,
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
 .dgrid-cell.field-figfam_id {
@@ -10163,8 +10305,15 @@ font-size: 12px;
 .dgrid-cell.field-family_id {
     width: 12%;
 }
+.dgrid-cell.field-annotation,
+.dgrid-cell.field-strand,
+.dgrid-cell.field-start,
+.dgrid-cell.field-end,
+.dgrid-cell.field-na_length,
+.dgrid-cell.field-feature_type,
 .dgrid-cell.field-feature_count,
 .dgrid-cell.field-genome_count,
+.dgrid-cell.field-aa_length,
 .dgrid-cell.field-aa_length_min,
 .dgrid-cell.field-aa_length_max,
 .dgrid-cell.field-aa_length_mean,
@@ -10190,6 +10339,7 @@ font-size: 12px;
     width: 8%;
     text-align: center;
 }
+.dgrid-cell.field-feature_id,
 .dgrid-cell.field-patric_id,
 .dgrid-cell.field-refseq_locus_tag,
 .dgrid-cell.field-alt_locus_tag {
@@ -10287,6 +10437,9 @@ font-size: 12px;
     background: #f5f5f5;
     padding: 15px;
 }
+.AdvancedSearch {
+	overflow: auto;
+}
 .resultTypeHeader {
 	font-size:1.5em;
 	border-bottom:1px solid #ddd;
@@ -10311,6 +10464,27 @@ font-size: 12px;
 .searchResult {
 	padding-left: 15px;
 	margin-bottom: 10px;
+}
+.searchResultsContainer{
+	padding: 5px;
+}
+.searchOperator {
+	color: #000;
+	background: #fff;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+.searchValue {
+	background: orange;
+	color: #333;
+	border-radius: 3px;
+	border: 0px;
+	padding: 2px;
+}
+.searchField {
+	color: #2a6d9e;
+	text-transform: uppercase;
+	font-weight: 600;
 }
 .DataItemHeader {
     color: #76a72d;
@@ -11355,7 +11529,7 @@ iframe  {
 }
 TD.HomeServiceLink {
 	border-spacing: 0 0;
-	border-collapse: separate; 
+	border-collapse: separate;
 }
 .HomeServiceLink {
     height: 75px;
@@ -11384,7 +11558,7 @@ TD.HomeServiceLink {
     padding: 0 0 0 15px;
     border: 0;
   font-size: 14px;
-  font-family: "Didact Gothic",Arial, Helvetica, sans-serif; 
+  font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
   font-weight: 100;
   text-align: left;
   line-height: 16px;

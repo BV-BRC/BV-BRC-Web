@@ -24247,108 +24247,22 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/GlobalSearch.html", "./Button", "dijit/registry", "dojo/_base/lang",
-	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus"
+	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
+	"../util/searchToQuery"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass, Templated, WidgetsInTemplate,
 			template, Button, Registry, lang,
-			dom, Topic, TextBox, keys, FocusMixin, focusUtil){
+			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
+			searchToQuery
+){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
-		constructor: function(){
-		},
 		"baseClass": "GlobalSearch",
 		"disabled": false,
 		"value": "",
 		_setValueAttr: function(q){
 			this.query = q;
 			this.searchInput.set("value", q);
-		},
-
-		parseQuery: function(query){
-			var finalTerms=[]
-			var currentTerm="";
-			var propertyMatch;
-			var quoted;
-			if (query){
-				for (var i=0;i<query.length;i++){
-					var t = query[i];
-
-					switch(t){
-						case ":":
-							propertyMatch = currentTerm;
-							currentTerm="";
-							 0 && console.log("propertyMatch: ", propertyMatch)
-							break;
-						case '"':
-							if (quoted){
-								if (propertyMatch){
-									finalTerms.push({property: propertyMatch, term: currentTerm + t});
-									propertyMatch=false;
-								}else{
-									finalTerms.push(currentTerm + t);
-								}
-								quoted=false;
-								currentTerm = ""
-							}else{
-								currentTerm = currentTerm + t;
-								quoted=true;
-							}
-							break;
-						case " ":
-							if (quoted){
-								currentTerm = currentTerm + t;
-							}else{
-								if (propertyMatch){
-									finalTerms.push({property: propertyMatch, term: currentTerm});
-									propertyMatch=false;
-								}else{
-									if (currentTerm.match(/[^a-zA-Z\d]/)){
-										currentTerm = '"' + currentTerm + '"'
-									}
-
-									finalTerms.push(currentTerm);
-								}
-								currentTerm="";
-							}
-							break;
-						default: 
-							currentTerm = currentTerm + t;
-
-					}
-				}
-
-				if (currentTerm){
-					if (propertyMatch){
-						finalTerms.push({property: propertyMatch, term: currentTerm});
-					}else{
-						if (currentTerm.match(/[^a-zA-Z\d]/)){
-							currentTerm = '"' + currentTerm + '"'
-						}
-						finalTerms.push(currentTerm);
-					}
-
-				}
-
-				var finalt=[]
-
-				finalTerms.forEach(function(term){
-					if (!term) { return; }
-
-					if (typeof term == 'string'){
-						finalt.push("keyword(" + encodeURIComponent(term) + ")");
-					}else{
-						finalt.push("eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")");
-					}
-				})
-
-				if (finalt.length>1){
-					return "and(" + finalt.join(",") + ")";
-				}else{
-					return finalt[0];
-				}
-			} 
-
-			throw Error("No Query Supplied to Query Parser");
 		},
 
 		onKeypress: function(evt){
@@ -24360,7 +24274,7 @@ define([
 				}
 
 				 0 && console.log("Search Filter: ", searchFilter);
-				var q = this.parseQuery(query);
+				var q = searchToQuery(query);
 				
 				var clear = false;
 				switch(searchFilter){
@@ -24381,7 +24295,7 @@ define([
 						clear = true;
 						break;
 					case "genome_features":
-						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features"});
 						clear = true;
 						break;
 					case "genomes":
@@ -24400,9 +24314,10 @@ define([
 						 0 && console.log("Do Search: ", searchFilter, query);
 				}
 
-				if(clear){
-					this.searchInput.set("value", '');
-				}
+				//disabled for now per #978
+				// if(clear){
+					// this.searchInput.set("value", '');
+				// }
 
 				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
 
@@ -24413,15 +24328,15 @@ define([
 			}
 		},
 		onClickAdvanced: function(evt){
-			Topic.publish("/navigate", {href: "/search/"});
+			var query = this.searchInput.get('value');
+			var searchFilter = this.searchFilter.get('value');
+			var q = searchToQuery(query);
+
+			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
+			this.searchInput.set("value", '');
 		},
 		onInputChange: function(val){
-			/*
-			val = val.replace(/\ /g, "&");
-			var dest = window.location.pathname + "?" + val;
-			 0 && console.log("New Search Value",val,dest );
-			Topic.publish("/navigate", {href: dest, set: "query", value: "?"+val});
-			*/
+
 		}
 	});
 });
@@ -24524,6 +24439,185 @@ define([
 		}
 	});
 });
+
+},
+'p3/util/searchToQuery':function(){
+define([], function(){
+	return function parseExpression(expression,field){
+		//  0 && console.log("Parse Expression: ", expression, field);
+
+		var exprs = [];
+		var exp="";
+		var expField="";
+		var openParans=0;
+		var subExp="";
+		var preOp=false;
+		var prev=false;
+		var ors = false;
+		var quoted = false;
+
+		for (var i=0; i<expression.length;i++){
+			var curChar=expression[i];
+			//  0 && console.log("curChar: ", curChar, i);
+			switch(curChar){
+				case '"':
+					if (!quoted){
+						quoted=true;
+						exp = '"';
+					}else{
+						exp = exp + '"'
+						quoted = false;
+					}
+					break;
+				case "(":
+					openParans++;	
+					break;
+				case ")":
+					openParans--;
+
+					if (openParans<1){
+						var sub = parseExpression(subExp,expField);
+						exprs.push(sub);
+						subExp = "";
+						expField="";
+					}else{
+						throw Error("Unexpected ')' at character " + i);
+
+					}
+
+					//end current expression
+					break;
+				case " ":
+					if (openParans>0){
+						subExp = subExp + curChar;
+					}else if (quoted){
+						exp = exp + curChar;
+					}else if (exp){
+						//  0 && console.log("EXP: ", exp, "ORs: ", ors);
+						if (exp.toLowerCase()=="not"){
+							preOp="not";
+							exp="";
+							break;
+						}else if (exp.toLowerCase() == "or"){	
+							if (!ors){
+								var pe = exprs.pop();
+								ors = [field?prev:pe];
+							}
+							exp="";
+							//  0 && console.log("new ORs", ors);
+							break;
+						}else if (exp.toLowerCase()=="and"){
+							exp="";
+							break;
+						}
+
+
+						if (expField) {
+							if (preOp=="not"){
+								exprs.push("ne(" + encodeURIComponent(expField) + ","  + encodeURIComponent(exp) + ")");
+								preOp=false;
+							}else{	
+								if (ors && ors.length>1){
+									exprs.push("in(" + encodeURIComponent(expField) + ",(" + ors.map(encodeURIComponent).join(",") + "))");
+									ors=false;
+								}else{
+									exprs.push("eq(" + encodeURIComponent(expField) + ","  + encodeURIComponent(exp) + ")");
+								}
+							}
+							expField="";
+						}else {
+							var e = "keyword(" + encodeURIComponent(exp) + ")";
+
+							if (preOp=="not"){
+								exprs.push("not(" + e + ")");
+								preOp = false;
+							}else if (ors) {
+								if (field){
+									ors.push(exp);
+								}else{
+									ors.push(e);
+								}
+							}else{
+								exprs.push(e);
+							}
+						}
+						prev = exp;
+						exp = "";	
+						
+					}
+					break;
+
+				case ":":
+					if (openParans>0){
+						subExp = subExp + curChar;
+						break;
+					}
+
+					if (exp){
+						expField = exp;
+						exp="";				
+					}else{
+						throw Error("Unexpected ':' at character " + i);
+					}
+					break;
+				default:
+					//  0 && console.log("Default Char Handler");
+					if (openParans>0){
+						subExp = subExp + curChar;
+						break;
+					}
+					exp = exp + curChar; 
+					break;
+			}
+
+		}
+
+		//  0 && console.log("Finalize Expressions.  Expr:  ", exp, "ors: ", ors);
+		var e;
+		if (exp){
+			if (preOp=="not"){
+				if (expField){
+					exprs.push("ne(" + encodeURIComponent(expField) + "," + encodeURIComponent(exp) + ")");
+				}else{
+					exprs.push("not(keyword(" + encodeURIComponent(exp) + "))");
+				}
+				preOp = false;
+			}else{
+				if (expField) {
+					e = "eq(" + encodeURIComponent(expField) + ","  + encodeURIComponent(exp) + ")";
+					expField="";
+				}else {
+					e = "keyword(" + encodeURIComponent(exp) + ")";
+				}
+
+				if (ors) {
+					if (field){
+						ors.push(exp);
+						exprs.push("in(" + encodeURIComponent(field) + ",(" + ors.map(encodeURIComponent).join(",") + "))");
+					}else{
+						ors.push(e);
+						exprs.push("or(" + ors.join(",") + ")");
+					}
+					ors=false;
+				}else{
+					exprs.push(e);
+				}
+				
+			}
+
+		}
+
+
+		if (exprs.length==1){
+			return exprs[0]
+		}else{
+			return "and(" + exprs.join(",") + ")";
+		}
+	}
+
+});
+
+
 
 },
 'p3/widget/WorkspaceManager':function(){
@@ -33031,7 +33125,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 				case "job_result_RNASeq":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
 				default:
-					return '<i class="fa icon-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
+					return '<i class="fa icon-file-text-o fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
 		appLabel: function(appName){
@@ -36020,27 +36114,33 @@ function(Deferred, Topic, xhr,
 	var ready = new Deferred();
 	var firstRun = true;
 
-	var _DataStore = new Observable(new MemoryStore({data: []}));
-
+	// var _DataStore = new Observable(new MemoryStore({idProperty: "id", data: []}));
+	var _DataStore = new MemoryStore({idProperty: "id", data: []});
 	function PollJobs(){
 		if(window.App && window.App.api && window.App.api.service){
+			 0 && console.log("AppService.enumerate_tasks")
 			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 1000]), function(tasks){
-//				// 0 && console.log("tasks: ", tasks);
+				 0 && console.log("Enumerate Task Results: ", tasks);
 				tasks[0].forEach(function(task){
-					when(_DataStore.get(task.id), function(oldTask){
-						if(!oldTask){
-							_DataStore.put(task);
-						}else if(oldTask.status != task.status){
-							_DataStore.put(task);
-						}
-					}, function(err){
-						 0 && console.log("ERROR RETRIEVING TASK ", err)
-					});
+					//  0 && console.log("Get and Update Task: ", task);
+					 0 && console.log("Checking for task: ", task.id)
+					// when(_DataStore.get(task.id), function(oldTask){
+					// 	if(!oldTask){
+					// 		  0 && console.log("No Old Task, store as new");
+					// 		_DataStore.put(task);
+					// 	}else if(oldTask.status != task.status){
+					// 		 0 && console.log("Updating Status of task", task.status)
+					// 		_DataStore.put(task);
+					// 	}
+					// }, function(err){
+					// 	 0 && console.log("ERROR RETRIEVING TASK ", err)
+					// });
 
 					_DataStore.put(task);
 				});
 
 				Deferred.when(getJobSummary(), function(msg){
+					 0 && console.log("Publish Job Summary: ", msg);
 					Topic.publish("/Jobs", msg);
 				});
 
@@ -36139,7 +36239,8 @@ function(Deferred, Topic, xhr,
 		},
 
 		getStore: function(){
-			return _DataStore;
+			return new Observable(_DataStore);
+			// return _DataStore;
 		}
 	}
 });
@@ -36288,6 +36389,7 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
+		 0 && console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
@@ -36479,8 +36581,10 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
+		 0 && console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
+		 0 && console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
@@ -37727,6 +37831,9 @@ define([
 			}, {
 				name: 'Isolation Comments',
 				text: 'isolation_comments'
+			}, {
+				name: 'Collection Year',
+				text: 'collection_year'
 			}, {
 				name: 'Collection Date',
 				text: 'collection_date'
@@ -45208,13 +45315,10 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-			this.pathContainer = domConstruct.create("div", {
-				style: {
-					display: "inline-block",
-					"padding-top": "8px"
-				}
+			this.pathContainer = domConstruct.create("div", {"class": "wsBreadCrumbContainer"}, this.domNode);
+			this.containerNode = domConstruct.create("span", {
+				"class": "ActionButtonContainer wsActionContainer"
 			}, this.domNode);
-			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);
 		},
 
 		generatePathLinks: function(path){
@@ -56115,6 +56219,11 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
+			"public": {
+				label: 'Public',
+				field: 'public',
+				hidden: true
+			},
 			genome_name: {
 				label: 'Genome Name',
 				field: 'genome_name'
@@ -56182,6 +56291,11 @@ define([
 				label: 'Disease',
 				field: 'disease',
 				sortable: false
+			},
+			collection_year: {
+				label: 'Collection Year',
+				field: 'collection_year',
+				hidden: true
 			},
 			collection_date: {
 				label: 'Collection Date',
@@ -56446,7 +56560,7 @@ define([
 		},
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: this.defaultSortProperty, descending: false}]
+				sort: [{attribute: this.defaultSortProperty, descending: true}]
 			};
 		},
 		startup: function(){
@@ -57415,6 +57529,7 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
+				 0 && console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					 0 && console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +
@@ -58959,8 +59074,8 @@ define([
 
 			var content = QueryToEnglish(newVal);
 
-			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content + "</div>");
-			this.queryNode.innerHTML = '<span class="queryModel">Genomes</span>  ' + content;
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + "</div>");
+			this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -84846,13 +84961,14 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/topic",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"./TrackController", "circulus/Viewer", "circulus/LineTrack", "circulus/HistogramTrack", "circulus/HeatmapTrack",
-	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
+	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin", "../util/searchToQuery"
 ], function(declare, BorderContainer, on, Topic,
 			ActionBar, ContainerActionBar, TabContainer,
 			TrackController, CirculusViewer, LineTrack, HistogramTrack, HeatmapTrack,
-			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin){
+			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin, searchToQuery){
 
 	var	custom_colors = ["blue", "green", "orange", "pink", "red", "purple"];
+	var	user_colors = ["#1E90FF", "#32CD32", "#FF6347", "#FF69B4", "#DC143C", "#8A2BE2"];
 	
 	return declare([BorderContainer], {
 		gutters: true,
@@ -84955,7 +85071,7 @@ define([
 					return a.name > b.name;
 				})
 
-				// 0 && console.log("******before set data track title:", title, " refseqs:", refseqs);
+				 0 && console.log("******before set data track title:", title, " refseqs:", refseqs, "type of refseqs", typeof refseqs);
 				track.set("data", refseqs);
 
 				return refseqs;
@@ -85068,21 +85184,20 @@ define([
 
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
-
 				options: {
 					title: "GC Content",
-					title_tooltip: "GC Content (window size = 2000 nt)",
+					title_tooltip: "GC Content - window size: 2000 nt, plot range: 0 - 1",
 					loadingText: "LOADING GC CONTENT",
 					visible: false,
 					max: 1,
 					min: 0,
-					trackWidth: 0.15,
+					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
 					gap: 1,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
-
+			
 /*
 			var gcSkewTrack2 = this.viewer.addTrack({
 				type: HeatmapTrack,
@@ -85106,7 +85221,7 @@ define([
 				type: LineTrack,
 				options: {
 					title: "GC Skew",
-					title_tooltip: "GC Skew (window size = 2000 nt)",
+					title_tooltip: "GC Skew - window size: 2000 nt, plot range: -1 - 1",
 					loadingText: "LOADING GC SKEW",
 					visible: false,
 					max: 1,
@@ -85121,7 +85236,7 @@ define([
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				 0 && console.log("GC CONTENT: ", gcContentData);
+				// 0 && console.log("GC CONTENT: ", gcContentData);
 				//gcContentTrack3.set('data', gcContentData);
 				//gcContentTrack2.set('data', gcContentData);
 				//gcSkewTrack2.set('data', gcContentData);
@@ -85194,30 +85309,143 @@ define([
 				var key = arguments[0];
 				var value = arguments[1];
 				// 0 && console.log("CircularViewerContainer addCustomTrack", value);	
-				var track_name = "Custom track " + value.index;
-				var filter = "&keyword(" + encodeURIComponent(value.keyword);
-				var specific_strand = null;
-				var strand_query = "";
-				if (value.strand === "+") {
-					specific_strand = true;
-					strand_query = ",eq(strand,%22\+%22)";
-				} else if (value.strand === "-") {
-					specific_strand = false;
-					strand_query = ",eq(strand,%22\-%22)";
-				}
+				if(key === "addCustomTrack") {
+					var track_name = "Custom track " + value.index;
+					var filter = "&keyword(" + encodeURIComponent(value.keyword);
+					// use searchToQuery for advanced keyword search
+					//var filter = "&" + searchToQuery(value.keyword);
+					
+					var specific_strand = null;
+					var strand_query = "";
+					if (value.strand === "+") {
+						specific_strand = true;
+						strand_query = ",eq(strand,%22\+%22)";
+					} else if (value.strand === "-") {
+						specific_strand = false;
+						strand_query = ",eq(strand,%22\-%22)";
+					}
 
-				var type_query = ",eq(feature_type,CDS)";
-				if (value.type === "RNA") {
-					type_query = ",eq(feature_type,*RNA)";
-				} else if (value.type === "Miscellaneous") {
-					type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
+					var type_query = ",eq(feature_type,CDS)";
+					if (value.type === "RNA") {
+						type_query = ",eq(feature_type,*RNA)";
+					} else if (value.type === "Miscellaneous") {
+						type_query = ",not(in(feature_type,(CDS,*RNA,source)))";
+					}
+				
+					filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
+					//  0 && console.log("CircularViewerContainer addCustomTrack", value);
+					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
+				} 
+				else if (key === "addUserTrack") {
+					// 0 && console.log("CircularViewerContainer addUserTrack", value);
+					var fill_color = "red";
+					
+					if (value.type === "tiles") {
+						fill_color = user_colors[(value.index-1)%user_colors.length];
+						// 0 && console.log("CircularViewerContainer SectionTrack, fill_color = ", fill_color);
+						var userTrack = this.viewer.addTrack({
+							type: SectionTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName,
+								trackWidth: 0.08,
+								loading: true,
+								fill: fill_color,
+								stroke: null,
+								gap: 0,
+								background: {fill: null, stroke: null},
+								formatPopupContent: function(item){
+									if (item.score) {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+									} else {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end;									
+									}
+								},
+								formatDialogContent: function(item){
+									if (item.score) {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+									} else {
+										return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end;									
+									}
+								}
+							},
+							data: value.userData
+						}, "outer");
+					}					
+					else if (value.type === "line") {
+						var userTrack = this.viewer.addTrack({
+							type: LineTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName + ", plot range: " + Math.round(value.minScore*100)/100 + " - " + Math.round(value.maxScore*100)/100,
+								loading: true,
+								visible: true,
+								max: value.maxScore,
+								min: value.minScore,
+								trackWidth: 0.1,
+								stroke: {width: .5, color: "black"},
+								gap: 0,
+								background: {fill: "#FFEFD5", stroke: null}
+							},
+							data: value.userData							
+						}, "outer");
+					}
+					else if (value.type === "histogram") {
+						var userTrack = this.viewer.addTrack({
+							type: HistogramTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName + ", plot range: " + Math.round(value.minScore*100)/100 + " - " + Math.round(value.maxScore*100)/100,
+								loading: true,
+								visible: true,
+								max: value.maxScore,
+								min: value.minScore,
+								trackWidth: 0.1,
+								stroke: {width: .5, color: "black"},
+								gap: 0,
+								background: {fill: "#FFFFE0", stroke: null},
+								formatPopupContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								},
+								formatDialogContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								}
+							},
+							data: value.userData							
+						}, "outer");
+					}
+					else if (value.type === "heatmap") {
+						var heatmapFill = function(){
+							return "red";
+						};
+						var userTrack = this.viewer.addTrack({
+							type: HeatmapTrack,
+							options: {
+								title: "User Track " + value.index,
+								title_tooltip: "User Track " + value.index + " - plot type: " +  value.type + ", file name: " +  value.fileName + ", plot range: " + Math.round(value.minScore*100)/100 + " - " + Math.round(value.maxScore*100)/100,
+								loadingText: "LOADING USER TRACK" + + value.index,
+								loading: true,
+								visible: true,
+								fill: heatmapFill,
+								max: value.maxScore,
+								min: value.minScore,
+								trackWidth: 0.08,
+								stroke: {width: .5, color: "black"},
+								gap: 0,
+								background: {fill: null, stroke: null},
+								formatPopupContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								},
+								formatDialogContent: function(item){
+									return "accession: " + item.accession + "<br>start: " + item.start + "<br>end: " + item.end + "<br>score: " + item.score;
+								}
+							},
+							data: value.userData							
+						}, "outer");
+					} 
+					
 				}
 				
-				filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
-				if(key === "addCustomTrack") {
-					 0 && console.log("CircularViewerContainer addCustomTrack", value);
-					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
-				}
 			}));			
 		},
 
@@ -85238,7 +85466,7 @@ define([
 				return;
 			}
 			if(!this.controlPanel){
-				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px;"});
+				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:270px; overflow-y:auto"});
 			}
 
 			if(!this.viewer){
@@ -85267,6 +85495,12 @@ define([
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
 		customTrackIndex: 0,
+		userTrackIndex: 0,
+		userData: {},
+		maxScore: 0,
+		minScore: 0,
+		fileName: "",
+		
 		postCreate: function(){
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
@@ -85287,6 +85521,29 @@ define([
                     orient: ["below-centered"]                    
                 });
             });	
+
+            var userTrackHelp = 'To display your data as "Tiles" plot, upload data file containing accession, start, and end position delimited by tabs.<br>' + 
+              'For example, <br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;34&nbsp;&nbsp;&nbsp;&nbsp;1524<br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;2052&nbsp;&nbsp;&nbsp;&nbsp;3260<br><br>' +
+              'To display your data as "Line, Histogram, or Heatmap" plot, upload data file containing accession, start, end, and quantitative value delimited by tabs.<br>' +
+              'For example, <br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;3596001&nbsp;&nbsp;&nbsp;&nbsp;3598000&nbsp;&nbsp;&nbsp;&nbsp;0.639500<br>NC_000962&nbsp;&nbsp;&nbsp;&nbsp;1498001&nbsp;&nbsp;&nbsp;&nbsp;1500000&nbsp;&nbsp;&nbsp;&nbsp;0.673000';
+                  
+            var userTT = new TooltipDialog({
+                content: userTrackHelp, 
+                style: "overflow: auto",
+                onMouseLeave: function(){
+                    popup.close(userTT);
+                }
+            });
+            on(this.userTrackInfo, 'mouseover', function(){
+                // 0 && console.log("customTrackInfo", userTT.content);
+                popup.open({
+                    popup: userTT,
+                    around: this,
+                    orient: ["below-centered"]                    
+                });
+            });	
+
+
 		},
 
 		visibleIconClass: "icon-eye",
@@ -85332,6 +85589,144 @@ define([
             
              0 && console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
 		},
+
+        validateUserFileType: function(){
+             0 && console.log("-----validateUserFileType this.userData", this.userData);
+            if (this.userData && this.userData.length >0) {            
+                this.userFileButton.set("disabled", false);
+            }  else {
+                this.userFileButton.set("disabled", true);          
+            }             
+		},	
+
+        validateUserFileSelection: function(event){
+			var type = this.plot_type_select.get('value');
+            var files = event.target.files;
+            var user_data=[];
+            var self = this;
+             0 && console.log("validateUserFileSelection: type =, files =", type, files);            			    
+			var file = null;
+            self.maxScore= 0;
+            self.minScore= 0;
+			
+			// get the last file that was chosen
+			if (files.length>0)
+			{
+			    file = files[files.length-1];
+			}
+
+			if (type && file && file.type==="text/plain") {
+                var reader = new FileReader();
+                reader.onload = function() {
+                   // 0 && console.log(this.result);            
+                    var lines = this.result.split('\n');
+                    if (lines) {
+                        lines.map(function(item){
+                          tabs = item.split('\t');
+                          // 0 && console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
+                          if (tabs.length>3 && tabs[0]) {
+                              user_data.push({accession: tabs[0].toUpperCase(), start: parseInt(tabs[1]),end:parseInt(tabs[2]), length: parseInt(tabs[2])-parseInt(tabs[1])+1, score:parseFloat(tabs[3])});
+                              if (parseFloat(tabs[3])>self.maxScore) {
+                                self.maxScore = parseFloat(tabs[3]);
+                              }
+                              if (parseFloat(tabs[3])<self.minScore) {
+                                self.minScore = parseFloat(tabs[3]);
+                              }
+                              
+                          } else if (tabs.length==3 && tabs[0] && (type === "tiles")) {
+                              user_data.push({accession: tabs[0].toUpperCase(), start: parseInt(tabs[1]),end:parseInt(tabs[2]), length: parseInt(tabs[2])-parseInt(tabs[1])+1, score:null});
+                          } else {
+                            // 0 && console.log("line=", lines, "tabs=", tabs);
+                          }
+                        });
+                    }
+
+                     0 && console.log("before assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+                    
+                    // For GC content, GC skew, reset maxScore, minScore
+                    if (self.maxScore <=1 && self.maxScore >0 && self.minScore <=1 && self.minScore >=0) {
+                        self.maxScore = 1;
+                        self.minScore = 0;
+                    } else if (self.maxScore <=1 && self.maxScore >0 && self.minScore <0 && self.minScore >=-1) {
+                        self.maxScore = 1;
+                        self.minScore = -1;
+                    } else if (self.maxScore > 1 && self.minScore >= 0) {
+                        self.maxScore = self.maxScore;
+                        self.minScore = 0;                    
+                    } else {
+                        self.maxScore = Math.max(Math.abs(self.maxScore), Math.abs(self.minScore));
+                        self.minScore = (-1)*self.maxScore;
+                    }
+                     0 && console.log("after assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+                    
+                    user_data.sort(function(a, b){
+                        var a1= a.start, b1= b.start;
+                        // Sort first on day
+                        if(a1 > b1) {
+                            return 1;
+                        } else if (a1 < b1) {
+                            return -1;
+                        } else {
+                            var a2 = a.end;
+                            var b2 = b.end;
+
+                            if(a2 > b2) {
+                                return 1;
+                            } else if (a2 < b2) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        }
+                    });
+
+                    self.userData = user_data;
+                    self.fileName = file.name;
+                    /*
+                    self.userData = {};
+                    user_data.forEach(function(val,index) {
+                        self.userData[index] = val;
+                    });					
+                    */
+                    // 0 && console.log(user_data);
+                     0 && console.log("-----reading file self.userData=", self.userData, "self.maxScore=", self.maxScore, "self.minScore=", self.minScore, "fileName=", self.fileName);
+                    if (user_data.length==0) {
+                        Topic.publish("/Notification", {message: "User file format error.", type: "error"});                                          
+                    } else {
+                        self.userFileButton.set("disabled", false);                
+                    }
+                }
+                reader.readAsText(file);    
+                
+			} else if (file.type !== "text/plain") {
+				Topic.publish("/Notification", {message: "Only text/plain files are allowed", type: "error"});
+            } else {
+                self.userFileButton.set("disabled", true);                           
+            }
+		},
+
+		onAddUserFileTrack: function(){
+			var type = this.plot_type_select.get('value');
+			//var files = this.data_file.event.target.files;
+		    this.userFileButton.set("disabled", true);
+		    if (this.userData && this.userData.length>0) {
+                Topic.publish("/Notification", {message: "Adding a user track.", type: "message"});
+                this.userTrackIndex ++;
+                var userTrackSelection = {
+                            index: this.userTrackIndex,
+                            type: type,
+                            fileName: this.fileName,
+                            maxScore: this.maxScore,
+                            minScore: this.minScore,
+                            userData: this.userData
+                };
+                 0 && console.log("onAddUserFileTrack: userTrackSelection =", userTrackSelection);
+                Topic.publish("CircularView", "addUserTrack", userTrackSelection);
+            } else {
+                Topic.publish("/Notification", {message: "User file format error.", type: "error"});                                                      
+            }
+		},
+
 
 		onAddTrack: function(event){
 			if(!this.viewer){
@@ -87852,7 +88247,7 @@ define([
 					var ds = dataSections[secName];
 					// if (ds.length>20){ return; };
 					//  0 && console.log("Adding ",ds.length, " Data Items to Section", secName);
-					//  0 && console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					// 0 && console.log("   Starting Angle: ", refSections[secName].startAngle, "refSections[secName].endAngle: ", refSections[secName].endAngle, "refSections[secName].length= ", refSections[secName].length);
 					this.renderAlignedSection(ds,refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
 			},this)
 		},
@@ -87861,7 +88256,7 @@ define([
 			var pathPoints = [];
 			var numSections = data.length;
 
-			//  0 && console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
+			// 0 && console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), " data: ", data)
 			var deg = (endAngle-startAngle)/sectionLength;
 
 			//  0 && console.log("degPerBP ", deg);
@@ -87876,18 +88271,20 @@ define([
 				//path.rawNode.data = JSON.stringify(d);
 				var score = d[this.scoreProperty];
 				//  0 && console.log("PATH: ", path);
-				//  0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+			    // 0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start, "score", score);
+				// 0 && console.log("----LineTrack Track Width trackWidth: ", trackWidth, " this.trackWidth: ", this.trackWidth, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)));
 
 				var point;
 
 				if (  (this.min < 0) && ((this.max+this.min)===0) ){
 					var trackCenter = this.internalRadius + (trackWidth/2);
-					point = {x: 0, y:trackCenter + ((score/this.max) * (trackWidth/2)) }
+					point = {x: 0, y:trackCenter + ((score/this.max) * (trackWidth/2)) };
 				}else if (this.min===0){
-					point = {x: 0, y:this.internalRadius + ( (score/this.max) * trackWidth) }
+					point = {x: 0, y:this.internalRadius + ( (score/this.max) * trackWidth) };
 				}else{
 					//  0 && console.log("FIX ME (LineTrack.js line 56)");
 				}
+				// 0 && console.log("----LineTrack  d.start: ", d.start, " d.end: ", d.end, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)), " point.y:", point.y);
 				var m = d.start; // + ((d.end-d.start)/2)
 				var rads = ((deg*m) + startAngle) *Math.PI/180;
 				var nextPoint = {
@@ -87899,7 +88296,9 @@ define([
 			},this);
 
 			var first = pathPoints.shift();
-			path.moveTo(first).smoothCurveTo(pathPoints).setStroke(this.stroke);
+			// smoothCurveTo sometimes draws wrong curve - made some lines outside the track.
+			//path.moveTo(first).smoothCurveTo(pathPoints).setStroke(this.stroke);
+			path.moveTo(first).curveTo(pathPoints).setStroke(this.stroke);
 			this._foregroundColorPaths.push(path);
 		},
 
@@ -87923,7 +88322,7 @@ define([
 			this.data.forEach(function(item,index){
 				var score = item[this.scoreProperty];
 
-				//  0 && console.log("Internal Radius: ", this.internalRadius, " Track Width: ", this.trackWidth, score, (this.trackWidth * (score/this.max)));
+				// 0 && console.log("----LineTrack Internal Radius: ", this.internalRadius, " Track Width trackWidth: ", trackWidth, " this.trackWidth: ", this.trackWidth, " score: ", score, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)));
 
 				// var trackCenter = this.internalRadius + (this.trackWidth/2);
 
@@ -88059,7 +88458,7 @@ define([
 			this.watch('data', lang.hitch(this, function(attr,oldVal,data){
 				//no idea why this is needed to avoid losing reference to the this.surface group from the viewer
 
-				//  0 && console.log("Track set('data'): ",_self.surface.groupIdx, " opts groupIdx: ", options.surface.groupIdx)
+				 0 && console.log("Track set('data'): ",_self.surface.groupIdx, " opts groupIdx: ", options.surface.groupIdx, "data: ", data);
 				_self.surface = options.surface;
 				if (this.visible){
 					_self.render();
@@ -88133,7 +88532,7 @@ define([
 			Object.keys(refSections).forEach(function(secName){
 					// if (ds.length>20){ return; };
 					//  0 && console.log("Adding ",ds.length, " Data Items to Section", secName);
-					//  0 && console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					 0 && console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
 					this.renderAlignedBackgroundSection(refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
 			},this)
 		},
@@ -88141,14 +88540,14 @@ define([
 		renderAlignedBackgroundSection: function(startAngle,endAngle,sectionLength){
 			var totalLength = 0;
 			var trackWidth = this.get("trackWidth");
-			//  0 && console.log("Render Aligned Background Section: ", startAngle, endAngle);
+			 0 && console.log("Render Aligned Background Section: ", startAngle, endAngle);
 			var path = this.surface.createPath("");
 			if (this.background){
 				path.setStroke(this.background.stroke);
 			}
 			var startRads = startAngle *Math.PI/180;
 			var rads = endAngle *Math.PI/180;
-			//  0 && console.log(d.name, " : ", "Start: ", d.startAngle, "end: ", d.endAngle)
+			// 0 && console.log(d.name, " : ", "Start: ", d.startAngle, "end: ", d.endAngle)
 			var innerStart= {
 				x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
 				y: this.centerPoint.y + this.internalRadius * Math.sin(startRads)
@@ -88310,7 +88709,7 @@ define([
 
 		constructor: function(){
 			this.surface.connect("onclick", lang.hitch(this,function(evt){
-				 0 && console.log("ON CLICK: ", evt)
+				// 0 && console.log("ON CLICK: ", evt)
 				if (evt.gfxTarget.data){
 					if (!this.dialog){
 						this.dialog = new Dialog({});
@@ -88325,7 +88724,7 @@ define([
 			// on(this.surface.getEventSource(),"mouseover", function(evt){
 			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
 				inside=true;
-				 0 && console.log("Mouse Over EVT: ", evt)
+				// 0 && console.log("Mouse Over EVT: ", evt, " evt.gfxTarget: ", evt.gfxTarget);
 				if (!evt.gfxTarget.data){
 					return;
 				}
@@ -88448,10 +88847,12 @@ define([
 				//  0 && console.log("D: ", d)
 				//  0 && console.log("SectionTrack this.surface: ", this.surface, " GroupIdx: ", this.surface.groupIdx);
 				var path = this.surface.createPath("");
+				path.data = d;
 				//path.rawNode.data = JSON.stringify(d);
 				var score = d[this.scoreProperty];
 				//  0 && console.log("PATH: ", path);
 				//  0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+				// 0 && console.log("----HistogramTrack Track Width trackWidth: ", trackWidth, " this.trackWidth: ", this.trackWidth, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)));
 
 				var point;
 				var midpoint;
@@ -88466,6 +88867,7 @@ define([
 				}else{
 					//  0 && console.log("FIX ME (LineTrack.js line 56)");
 				}
+				// 0 && console.log("----HistogramTrack  d.start: ", d.start, " d.end: ", d.end, " score: ", score, " this.max", this.max, " (trackWidth * (score/this.max)): ", (trackWidth * (score/this.max)), " point.y:", point.y);
 
 				var m = d.start; // + ((d.end-d.start)/2)
 				var rads = ((deg*m) + startAngle) *Math.PI/180;
@@ -88662,7 +89064,7 @@ define([
 
 		constructor: function(){
 			this.surface.connect("onclick", lang.hitch(this,function(evt){
-				 0 && console.log("ON CLICK: ", evt)
+				// 0 && console.log("ON CLICK: ", evt)
 				if (evt.gfxTarget.data){
 					if (!this.dialog){
 						this.dialog = new Dialog({});
@@ -88677,7 +89079,7 @@ define([
 			// on(this.surface.getEventSource(),"mouseover", function(evt){
 			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
 				inside=true;
-				 0 && console.log("Mouse Over EVT: ", evt)
+				// 0 && console.log("Mouse Over EVT: ", evt)
 				if (!evt.gfxTarget.data){
 					return;
 				}
@@ -88801,6 +89203,7 @@ define([
 				//  0 && console.log("D: ", d)
 				//  0 && console.log("SectionTrack this.surface: ", this.surface, " GroupIdx: ", this.surface.groupIdx);
 				var path = this.surface.createPath("");
+				path.data = d;
 				//path.rawNode.data = JSON.stringify(d);
 				var score = d[this.scoreProperty];
 				//  0 && console.log("PATH: ", path);
@@ -89085,7 +89488,7 @@ define([
 			// on(this.surface.getEventSource(),"mouseover", function(evt){
 			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
 				inside=true;
-				 0 && console.log("Mouse Over EVT: ", evt)
+				// 0 && console.log("Mouse Over EVT: ", evt, " evt.gfxTarget:", evt.gfxTarget);
 				if (!evt.gfxTarget.data){
 					return;
 				}
@@ -89126,11 +89529,11 @@ define([
 
 		render: function(){
 			if (this.visible){
-				//  0 && console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
+				 0 && console.log("In section track render() this.surface.groupIdx: ", this.surface.groupIdx, "this.data: ", this.data)
 				this.renderBackground();
 
 				if (this.data && this.data.length>0){
-					//  0 && console.log("RENDER DATA: ", this.data)
+					 0 && console.log("RENDER DATA: ", this.data)
 					this.set("loading", false)
 					this.renderData(this.data);		
 				}else{
@@ -89141,7 +89544,7 @@ define([
 		gap: .25,
 
 		renderAlignedData: function(data){
-			//  0 && console.log("Render Aligned to Reference Track", data);
+			 0 && console.log("Render Aligned to Reference Track", data);
 			var dataSections = {}
 
 			data.forEach(function(d){
@@ -89152,17 +89555,19 @@ define([
 						dataSections[d[this.sectionIdProperty]].push(d);
 					}
 				}
-			},this)
+			},this);
+			
+			// 0 && console.log("Render Aligned to Reference Track: dataSections: ", dataSections);
 
 			var refSections = this.referenceTrack.get('sections');
 
 			Object.keys(dataSections).forEach(function(secName){
 					var ds = dataSections[secName];
 					// if (ds.length>20){ return; };
-					//  0 && console.log("Adding ",ds.length, " Data Items to Section", secName);
-					//  0 && console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					// 0 && console.log("Adding ",ds.length, " Data Items to Section", secName);
+					// 0 && console.log("refSections: ", refSections,  " Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
 					this.renderAlignedSection(ds,refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
-			},this)
+			},this);
 		},
 
 		renderAlignedSection: function(data,startAngle,endAngle, sectionLength){
@@ -89174,11 +89579,11 @@ define([
 
 			var numPoints = data.length;
 
-			//  0 && console.log("Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
+			// 0 && console.log("renderAlignedSection data: ", data, "Degrees for Section: ",(endAngle-startAngle - (this.gap*numSections)), "TotalLenght: ", totalLength)
 			var deg = (endAngle-startAngle - (this.gap*numSections))/sectionLength;
 
 			//  0 && console.log("Gap Deg: ",(this.gap*numSections) )
-			//  0 && console.log("degPerBP ", deg);
+		    //  0 && console.log("degPerBP ", deg);
 			var trackWidth = this.get("trackWidth");
 			var gap = (this.gap);
 			data.forEach(function(d,index){
@@ -89187,10 +89592,10 @@ define([
 				//path.rawNode.data = JSON.stringify(d);
 				path.data = d;
 				//  0 && console.log("PATH: ", path);
-				//  0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " degPerBp*start: ", deg*d.start);
+				// 0 && console.log("Section StartAngle: ", startAngle, " d.start: ", d.start, " d.end: ", d.end, " d.length: ", d.length, " degPerBp*start: ", deg*d.start);
 				d.startAngle = (deg*d.start) + startAngle;
 				d.endAngle = (deg*(d.start+d.length)) + startAngle;
-				//  0 && console.log("Start: ", d.startAngle, " End: ", d.endAngle);
+				// 0 && console.log("Start: ", d.startAngle, " End: ", d.endAngle);
 				path.setStroke(this.stroke);
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;
@@ -90332,7 +90737,7 @@ define([
 	return declare([GridContainer], {
 		gridCtor: GenomeGrid,
 		containerType: "genome_data",
-		facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_date"],
+		facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_year"],
 		getFilterPanel: function(opts){
 			return;
 		},
@@ -90609,16 +91014,6 @@ define([
 			RQLParser){
 
 	var parseQuery = function(filter){
-		//  0 && console.log("PARSE: ", filter);
-
-		var parsed = {
-			parsed: _parsed,
-			selected: [],
-			byCategory: {},
-			keywords: [],
-			contains:{}
-		};
-
 		try{
 			var _parsed = RQLParser.parse(filter)
 		}catch(err){
@@ -90626,112 +91021,63 @@ define([
 			return;
 		}
 
-		var _self = this;
-
 		function walk(term){
-			//  0 && console.log("Walk: ", term.name, " Args: ", term.args);
+			 0 && console.log("Walk: ", term.name, " Args: ", term.args);
 			switch(term.name){
 				case "and":
 				case "or":
-					term.args.forEach(function(t){
-						walk(t);
-					});
+					var out = term.args.map(function(t){
+						return walk(t);
+					}).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
+
+					 0 && console.log("out: ", out);
 					break;
 				case "in":
+					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");;
+					var v = term.args[1];
+					var vals = v.map(function(val){
+						return '<span class="searchValue">' + decodeURIComponent(val) + "</span>";
+					});
+					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span>(';
+
+					if (vals.length<3) {
+						out = out + vals.join('<span class="searchOperator"> OR </span>') + ")";
+					}else{
+						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...)';
+					}
+					// parsed.selected.push({field: f, value: v});
+					break;
+				case "ne":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					//  0 && console.log("IN F: ", f, "V: ",v, term)
-					// parsed.selected.push({field: f, value: v});
-					if(!parsed.contains[f]){
-						parsed.contains[f] = [v];
-					}else{
-						parsed.contains[f].push(v);
-					}
+					out =  f + '<span class="searchOperator"> is not </span>' + v;
 					break;
 				case "eq":
-					var f = decodeURIComponent(term.args[0]);
+					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");
 					var v = decodeURIComponent(term.args[1]);
-					//  0 && console.log("F: ", f, "V: ",f, term)
-					parsed.selected.push({field: f, value: v});
-					if(!parsed.byCategory[f]){
-						parsed.byCategory[f] = [v];
-					}else{
-						parsed.byCategory[f].push(v);
-					}
+					out =  '<span class="searchField">'+ f  + ' </span><span class="searchOperator"> is </span>' + '<span class="searchValue">' + v + "</span>";
 					break;
 				case "keyword":
-					parsed.keywords.push(term.args[0]);
+					out = '<span class="searchValue"> '  +decodeURIComponent(term.args[0]) + '</span>';
+					break;
+				case "not":
+					out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
 					break;
 				default:
-				//  0 && console.log("Skipping Unused term: ", term.name, term.args);
+					 0 && console.log("Skipping Unused term: ", term.name, term.args);
 			}
+
+			return out;
 		}
 
-		walk(_parsed);
-
-
-		return parsed;
-
+		return walk(_parsed);
 	};
 
-	function valueWrap(val,alt){
-		val = decodeURIComponent(val);
-		return '<span class="queryValue" title="' + (alt||"") + '">' + val + "</span>";
-	}
 
 	return function(query){
-		var parsed = parseQuery(query);
-		var out = [];
-
-		//  0 && console.log("PARSED: ", parsed);
-		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
-			var cout = ['<span class="queryField">' + cat + '</span> is'];
-			var C = parsed.byCategory[cat];
-			if(C.length == 1){
-				cout.push(valueWrap(C[0]));
-			}else if(C.length == 2){
-				var vals = C.map(valueWrap).join('  <span class="queryOperator"> OR </span> ');
-				cout.push(vals)
-			}else{
-				var vals = C.map(valueWrap).slice(0, C.length - 1).join(', ') + ', <span class="queryOperator"> OR </span>' + valueWrap(C[C.length - 1]);
-				cout.push(vals);
-			}
-			return cout.join(' ');
-		}).join(' <span class="queryOperator"> AND </span> ');
-
-		if(catsEnglish){
-			out.push(" where " + catsEnglish)
-		}
-
-		if (parsed.contains){
-			var ins = Object.keys(parsed.contains).forEach(function(prop){
-
-				out.push(" where <span class='queryField'>" + prop + "</span> is in ");
-				out.push(parsed.contains[prop].map(function(val){
-					if (val.length > 25){
-						return valueWrap(val.slice(0,25) + "...", val);
-					}else{
-						return valueWrap(val,val);
-					}
-				}).join(" OR "));
-			})
-		}
-
-		var keywords = parsed.keywords.map(valueWrap);
-		if(keywords.length < 1){
-
-		}else if(keywords.length == 1){
-			out.push("that match the keyword " + keywords[0])
-		}else if(keywords.length == 2){
-			out.push("that match both keywords  " + keywords.join(' <span class="queryOperator"> AND </span> '))
-		}else{
-			out.push("that match all of the keywords " + keywords.slice(0, keywords.length - 1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length - 1])
-		}
-
-		//  0 && console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
-
-		return out.join(" ");
-		// 0 && console.log("parsed query: ", parsed);
+		var q = parseQuery(query);
+		// q = q.substr(1, q.length-2);
+		return q;
 	}
 
 });
@@ -111670,7 +112016,7 @@ define([
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
 			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
@@ -111732,10 +112078,10 @@ define([
 'p3/widget/D3SingleGeneViewer':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domStyle,
+			dom, domClass, domConstruct, domStyle, Topic,
 			d3){
 
 	return declare([], {
@@ -111846,6 +112192,10 @@ define([
 					})
 					.attr("fill", function(d){
 						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+					})
+					.on("click", function(d){
+						var url = "/view/Feature/" + d.feature_id + "#view_tab=overview";
+						Topic.publish("/navigate", {href: url});
 					})
 					.on("mouseover", function(d){
 						self.tooltipLayer.transition()
@@ -115720,8 +116070,10 @@ define([
 		baseQuery: "&limit(1)&facet((field,product),(mincount,1),(sort,count),(limit,10))&json(nl,map)",
 		columns: [
 			{label: "Function", field: "label"},
-			{
-				label: "Genes", field: "count"
+			{label: "Genes", field: "count",
+				renderCell: function(obj, val, node){
+					return node.innerHTML = lang.replace('<a href="#view_tab=features&filter=eq(product,{1})">{0}</a>', [val, encodeURIComponent('"' + obj.label + '"')]);
+				}
 			}
 		],
 		processData: function(res){
@@ -115733,8 +116085,13 @@ define([
 
 			var self = this;
 			var d = res.facet_counts.facet_fields.product; // now key-value pair
+			var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
 			var data = Object.keys(d).map(function(key){
-				return {label:key, count: d[key]}
+				return {
+					label: key,
+					count: d[key],
+					link: linkBase + '#view_tab=features&filter=eq(product,' + encodeURIComponent('"' + key + '"') + ')'
+				}
 			});
 
 			self.set('data', data);
@@ -115777,10 +116134,10 @@ define([
 'p3/widget/D3HorizontalBarChart':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domStyle,
+			dom, domClass, domConstruct, domStyle, Topic,
 			d3){
 
 	return declare([], {
@@ -115900,10 +116257,22 @@ define([
 					return (self.y_scale(d.label) + halfGap) + self.margin.top - 1;
 				})
 				.attr("width", function(d){
-					return self.x_scale(d.count)
+					return self.x_scale(d.count) < 0 ? 0 : self.x_scale(d.count)
 				})
 				.attr("height", Math.min(self.y_scale.rangeBand(), self.maxBarWidth))
 				.attr("fill", '#1976D2')
+				.on("click", function(d, i){
+					if(d.link){
+						var url;
+						if(typeof d.link == 'function'){
+							url = d.link.apply(this, arguments);
+						}else{
+							url = d.link;
+						}
+						//  0 && console.log(url);
+						Topic.publish("/navigate", {href: url})
+					}
+				})
 				.on("mouseover", function(d, i){
 					self.tooltipLayer.transition()
 						.duration(200)
@@ -121648,7 +122017,7 @@ define([
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<!-- <td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td> -->\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
@@ -121681,7 +122050,7 @@ define([
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n<!--\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:2px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:35%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"plot_type_select\">\n\t\t\t<option value=\"Tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"Line Plot\">Line Plot</option>\n\t\t\t<option value=\"Histogram\">Histogram</option>\n\t\t\t<option value=\"Heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:50%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n-->\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:25%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:30%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:2px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:35%;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateUserFileType\" data-dojo-attach-point=\"plot_type_select\" >\n\t\t\t<option value=\"tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"line\">Line Plot</option>\n\t\t\t<option value=\"histogram\">Histogram</option>\n\t\t\t<option value=\"heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:50%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",

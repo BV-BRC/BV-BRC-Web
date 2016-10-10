@@ -1,3 +1,6 @@
+.AdvancedSearch {
+	overflow: auto;
+}
 .resultTypeHeader {
 	font-size:1.5em;
 	border-bottom:1px solid #ddd;
@@ -28,4 +31,30 @@
 	padding-left: 15px;
 	margin-bottom: 10px;
 
+}
+
+.searchResultsContainer{
+	padding: 5px;
+
+}
+
+.searchOperator {
+	color: #000;
+	background: #fff;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.searchValue {
+	background: orange;
+	color: #333;
+	border-radius: 3px;
+	border: 0px;
+	padding: 2px;
+}
+
+.searchField {
+	color: #2a6d9e;
+	text-transform: uppercase;
+	font-weight: 600;
 }

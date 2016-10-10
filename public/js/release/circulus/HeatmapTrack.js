@@ -26,7 +26,7 @@ define("circulus/HeatmapTrack", [
 
 		constructor: function(){
 			this.surface.connect("onclick", lang.hitch(this,function(evt){
-				console.log("ON CLICK: ", evt)
+				//console.log("ON CLICK: ", evt)
 				if (evt.gfxTarget.data){
 					if (!this.dialog){
 						this.dialog = new Dialog({});
@@ -41,7 +41,7 @@ define("circulus/HeatmapTrack", [
 			// on(this.surface.getEventSource(),"mouseover", function(evt){
 			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
 				inside=true;
-				console.log("Mouse Over EVT: ", evt)
+				//console.log("Mouse Over EVT: ", evt)
 				if (!evt.gfxTarget.data){
 					return;
 				}
@@ -165,6 +165,7 @@ define("circulus/HeatmapTrack", [
 				// console.log("D: ", d)
 				// console.log("SectionTrack this.surface: ", this.surface, " GroupIdx: ", this.surface.groupIdx);
 				var path = this.surface.createPath("");
+				path.data = d;
 				//path.rawNode.data = JSON.stringify(d);
 				var score = d[this.scoreProperty];
 				// console.log("PATH: ", path);

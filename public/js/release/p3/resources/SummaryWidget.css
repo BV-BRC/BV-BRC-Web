@@ -114,6 +114,9 @@
 .patric .fpSummaryWidget.SummaryWidget .tableNode {
     min-height: 250px;
 }
+.patric .fnProfile g.bars rect {
+    cursor: pointer;
+}
 .patric .idmSummeryWidget.SummaryWidget {
     height: 250px;
 }
@@ -127,4 +130,7 @@
 }
 .patric .sgViewerWidget {
     height: 76px;
+}
+.patric .sgViewerWidget .chart g polyline {
+    cursor: pointer;
 }
