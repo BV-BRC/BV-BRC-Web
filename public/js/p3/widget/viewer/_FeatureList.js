@@ -28,15 +28,15 @@ define([
 
 			var _self = this;
 
-			var url = PathJoin(this.apiServiceUrl, "genome_feature", "?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
-
-			xhr.get(url, {
+			xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 				headers: {
 					accept: "application/solr+json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				},
-				handleAs: "json"
+				handleAs: "json",
+				date: query + "&limit(1)"
 			}).then(function(res){
 
 				if(res && res.response && res.response.docs){
@@ -48,7 +48,7 @@ define([
 					console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.error("Error Retreiving Genomes: ", err);
+				console.error("Error Retreiving Features: ", err);
 			});
 
 		},
@@ -85,7 +85,7 @@ define([
 
 			switch(active){
 				case "features":
-					activeTab.set("state", this.state);
+					activeTab.set("state", lang.mixin({},this.state));
 					break;
 				default:
 					var activeQueryState;
