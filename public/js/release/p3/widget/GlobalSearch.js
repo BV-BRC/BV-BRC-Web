@@ -52,7 +52,7 @@ define("p3/widget/GlobalSearch", [
 						clear = true;
 						break;
 					case "genome_features":
-						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features"});
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features&defaultSort=-score"});
 						clear = true;
 						break;
 					case "genomes":

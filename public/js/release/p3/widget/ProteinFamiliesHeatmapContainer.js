@@ -3,13 +3,13 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, PathJoin){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
 
 	var legend = [
 		'<div>',
@@ -556,12 +556,6 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
-				// var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
-				// 		return feature.feature_id;
-				// 	}).join(',') + ")))";
-				//
-				// Topic.publish("ProteinFamilies", "showMembersGrid", query);
-
 				var query = "?in(feature_id,(" + features.map(function(d){ return d.feature_id; }) + "))";
 				Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
 
@@ -572,6 +566,29 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				label: 'Add Proteins to Group',
 				disabled: (features.length === 0)
 			});
+			on(btnAddToWorkspace.domNode, "click", function(){
+				if(!window.App.user || !window.App.user.id){
+					Topic.publish("/login");
+					return;
+				}
+
+				var dlg = new Dialog({title: "Add This Feature To Group"});
+				var stg = new SelectionToGroup({
+					selection: features,
+					type: 'feature_group'
+				});
+				on(dlg.domNode, "dialogAction", function(evt){
+					dlg.hide();
+					setTimeout(function(){
+						dlg.destroy();
+					}, 2000);
+				});
+				domConstruct.place(stg.domNode, dlg.containerNode, "first");
+				stg.startup();
+				dlg.startup();
+				dlg.show();
+			});
+
 			var btnCancel = new Button({
 				label: 'Cancel',
 				onClick: function(){
@@ -608,6 +625,16 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			var pfState = this.pfState;
 			var isTransposed = pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
+
+			console.log("clustering data set size: ", data.length);
+			if(data.length > 1500000){
+				new Dialog({
+					title: "Notice",
+					content: "The data set is too large to cluster. Please use filter panel to reduce the size",
+					style: "width: 300px"
+				}).show();
+				return;
+			}
 
 			Topic.publish("ProteinFamilies", "showLoadingMask");
 

@@ -150,6 +150,32 @@ define("p3/widget/GridContainer", [
 					// console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
 
 				}
+
+				if (state.hashParams.defaultSort){
+					var sp = state.hashParams.defaultSort.split(",");
+					var sort = sp.map(function(s){
+						var r = {}
+						if (s.charAt(0)=="+"){
+							r.descending = false;
+							r.attribute = s.substr(1);
+						}else if (s.charAt(0)=="-"){
+							r.descending = true;
+							r.attribute = s.substr(1);
+						}else{
+							r.attribute=s;
+						}
+						return r;
+					})
+
+					this.set('queryOptions', {sort: sort});
+
+					if (this.grid){
+						console.log("Set Default Sort: ", sort);
+						this.grid.set('sort', sort);
+					}
+				}
+
+
 			}else{
 				state.hashParams = {}
 				if(!oldState && this.defaultFilter){
@@ -842,7 +868,7 @@ define("p3/widget/GridContainer", [
 									return d['feature_id']
 								});
 								Topic.publish("/navigate", {
-									href: "/view/PathwaySummary/?pathways=" + ids.join(','),
+									href: "/view/PathwaySummary/?features=" + ids.join(','),
 									target: "blank"
 								});
 							});
