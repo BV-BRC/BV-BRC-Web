@@ -178,7 +178,7 @@ define([
 						}
 						var q = {
 							method: "HomologyService.blast_fasta_to_genomes",
-							params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+							params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
 						};
 						def.resolve(q);
 						break;
@@ -204,7 +204,7 @@ define([
 							var genomeIds = Object.keys(genomeIdHash);
 							var q = {
 								method: "HomologyService.blast_fasta_to_genomes",
-								params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+								params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
 							};
 							def.resolve(q);
 						}));
@@ -218,7 +218,7 @@ define([
 
 						var q = {
 							method: "HomologyService.blast_fasta_to_taxon",
-							params: [encodeURIComponent(sequence), program, taxon, search_for, evalue, max_hits, 0]
+							params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
 						};
 						def.resolve(q);
 						break;
@@ -250,6 +250,7 @@ define([
 
 				xhr.post("https://p3.theseed.org/services/homology_service", {
 					headers: {
+						'Authorization': (window.App.authorizationToken || ""),
 						"Accept": "application/json"
 					},
 					handleAs: "json",
