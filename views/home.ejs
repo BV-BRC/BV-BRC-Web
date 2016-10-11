@@ -323,11 +323,11 @@ The Beta site will become the new Production site in late November 2016. In the 
 						<% news.forEach(function(svc,index) { %>
 							<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#555;font-weight:normal;"><%- new Date(Date.parse(svc.pubDate)).toLocaleDateString() %></span></div>
 							<div style="border:0px; border-top:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
-								<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><a href="<%- svc.link %>"><%- svc.title %></a></div>
+								<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><a href="<%- svc.link %>" target="_blank"><%- svc.title %></a></div>
 								<div style="text-align:left;padding-left:20px;"><%- svc.summary %></div>
 							</div>
 						<% }) %>
-						<div style="text-align:right;"><a href="http://enews.patricbrc.org">Read More</a></div>
+						<div style="text-align:right;"><a href="http://enews.patricbrc.org" target="_blank">Read More</a></div>
 					</td>
 					<td style="width:10px;"></td>
 					<td style="vertical-align:top;">
