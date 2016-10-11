@@ -80,7 +80,7 @@ define([
 			// window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
 
 			var dialog = new Dialog({title: "Download"});
-			var advDn = new AdvancedDownload({selection: [this.genome.genome_id], containerType: "genome_data"});
+			var advDn = new AdvancedDownload({selection: [this.genome], containerType: "genome_data"});
 			domConstruct.place(advDn.domNode, dialog.containerNode);
 			dialog.show();
 		},
