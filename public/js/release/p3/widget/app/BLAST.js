@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/app/templates/BLAST.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n      dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n    <div class=\"blast_form_wrapper\">\n        <div class=\"apptitle\">\n            <h3>BLAST</h3>\n            <p>[place holder for description of this service]</p>\n        </div>\n\n        <div class=\"blast_form\">\n            <div class=\"appbox appshadow\">\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Sequence</label>\n                </div>\n                <textarea name=\"sequence\"\n                          style=\"width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px\"\n                          data-dojo-attach-point=\"sequence\"\n                          data-dojo-type=\"dijit/form/Textarea\"\n                          data-dojo-props=\"rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true\"\n                          data-dojo-attach-event=\"onChange:onChangeSequence\"></textarea>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"sequence_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Program</label>\n                </div>\n                <select name=\"program\" style=\"margin-left:10px; width:96%\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeProgram\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"program\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"program_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin: 16px 0 7px 0\">\n                    <label class=\"appboxlabel\">Database</label>\n                </div>\n                <select name=\"database\" style=\"width:96%; margin-left:10px\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeDatabase\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"database\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"database_message\"></div>\n            </div>\n\n            <div class=\"approw\" style=\"text-align:center\">\n                <div class=\"approwsegment\" data-dojo-attach-point=\"advanced\">\n                    <label class=\"largelabel\">Advanced options</label>\n                    <div class=\"iconbox\" style=\"margin-left:0\">\n                        <i data-dojo-attach-point=\"advancedOptionIcon\" class=\"fa icon-caret-down fa-1\"></i>\n                    </div>\n                </div>\n            </div>\n\n            <div data-dojo-attach-point=\"advancedOptions\" style=\"display: none\">\n                <div class=\"appbox appshadow\">\n                    <div class=\"left half\" style=\"vertical-align: top\">\n                        <label class=\"paramlabel\">Add Genomes to Search: </label>\n                        <div data-dojo-attach-event=\"onChange:onSuggestNameChange\"\n                             data-dojo-type=\"p3/widget/GenomeNameSelector\"\n                             data-dojo-attach-point=\"genome_id\"\n                             data-dojo-props=\"placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true\"\n                             style=\"width:310px;\">\n                        </div>\n                        <div style=\"width:17px; display:inline-block;\">\n                            <i data-dojo-attach-event=\"click:onAddGenome\"\n                               class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                        </div>\n                    </div>\n                    <div class=\"left half\">\n                        <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"genomeTable\"\n                               style='width:330px;'>\n                            <tbody data-dojo-attach-point=\"genomeTableBody\"></tbody>\n                        </table>\n                    </div>\n                    <div class=\"clear\"></div>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"genome_id_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select genome group: </label><br/>\n                    <div name=\"genome_group\" style=\"width: 650px\"></div>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"genome_group_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select Taxon: </label><br/>\n                    <select name=\"taxon\" style=\"width: 650px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"taxonomy\">\n                    </select>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"taxonomy_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Search for: </label><br/>\n                    <select name=\"search_for\" style=\"width:250px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"search_for\">\n                        <option value=\"contigs\">Genomic sequences (contigs)</option>\n                        <option value=\"features\" selected=\"selected\">Genomic features (genes or proteins)</option>\n                    </select>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"search_for_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <div class=\"headerrow\">\n                        <label class=\"appboxlabel\">BLAST Parameters</label>\n                    </div>\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">Max hits: </label><br/>\n                        <select name=\"max_target\" style=\"width: 100px\"\n                                data-dojo-type=\"dijit/form/Select\"\n                                data-dojo-attach-point=\"max_hits\">\n                            <option value=\"1\">1</option>\n                            <option value=\"10\">10</option>\n                            <option value=\"50\" selected=\"selected\">50</option>\n                            <option value=\"100\">100</option>\n                            <option value=\"1000\">1000</option>\n                        </select>\n                    </div>\n\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">E value threshold: </label><br/>\n                        <input name=\"threshold\" type=\"text\" value=\"10\" style=\"width:50px\"\n                               data-dojo-type=\"dijit/form/TextBox\"\n                               data-dojo-attach-point=\"evalue\">\n                    </div>\n                    <div class=\"clear\"></div>\n                </div>\n            </div>\n\n            <div data-dojo-type=\"dijit/form/Button\"\n                 data-dojo-attach-point=\"mapButton\"\n                 data-dojo-attach-event=\"onClick:submit\"\n                 data-dojo-props=\"disabled:true\">\n                Search\n            </div>\n        </div>\n        <div class=\"reSubmitBtn\" style=\"visibility: hidden\"\n             data-dojo-type=\"dijit/form/Button\"\n             data-dojo-attach-event=\"onClick:resubmit\">Edit form and resubmit\n        </div>\n    </div>\n\n    <div class=\"blast_error hidden\">\n        <h3></h3>\n        <div class=\"blast_message\"></div>\n    </div>\n    <div class=\"blast_result\"></div>\n</form>\n\n"}});
+'url:p3/widget/app/templates/BLAST.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n      dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n    <div class=\"blast_form_wrapper\">\n        <div class=\"apptitle\">\n            <h3>BLAST</h3>\n            <p>[place holder for description of this service]</p>\n        </div>\n\n        <div class=\"blast_form\">\n            <div class=\"appbox appshadow\">\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Sequence</label>\n                </div>\n                <textarea name=\"sequence\"\n                          style=\"width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px\"\n                          data-dojo-attach-point=\"sequence\"\n                          data-dojo-type=\"dijit/form/Textarea\"\n                          data-dojo-props=\"rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true\"\n                          data-dojo-attach-event=\"onChange:onChangeSequence\"></textarea>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"sequence_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin-bottom: 7px\">\n                    <label class=\"appboxlabel\">Program</label>\n                </div>\n                <select name=\"program\" style=\"margin-left:10px; width:96%\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeProgram\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"program\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"program_message\"></div>\n\n                <div class=\"headerrow\" style=\"margin: 16px 0 7px 0\">\n                    <label class=\"appboxlabel\">Database</label>\n                </div>\n                <select name=\"database\" style=\"width:96%; margin-left:10px\"\n                        data-dojo-type=\"dijit/form/Select\"\n                        data-dojo-attach-event=\"onChange:onChangeDatabase\"\n                        data-dojo-props=\"disabled:true\"\n                        data-dojo-attach-point=\"database\">\n                </select>\n                <div class=\"form_msg_warning\" data-dojo-attach-point=\"database_message\"></div>\n            </div>\n\n            <div class=\"approw\" style=\"text-align:center\">\n                <div class=\"approwsegment\" data-dojo-attach-point=\"advanced\">\n                    <label class=\"largelabel\">Advanced options</label>\n                    <div class=\"iconbox\" style=\"margin-left:0\">\n                        <i data-dojo-attach-point=\"advancedOptionIcon\" class=\"fa icon-caret-down fa-1\"></i>\n                    </div>\n                </div>\n            </div>\n\n            <div data-dojo-attach-point=\"advancedOptions\" style=\"display: none\">\n                <div class=\"appbox appshadow\">\n                    <div class=\"left half\" style=\"vertical-align: top\">\n                        <label class=\"paramlabel\">Add Genomes to Search: </label>\n                        <div data-dojo-attach-event=\"onChange:onSuggestNameChange\"\n                             data-dojo-type=\"p3/widget/GenomeNameSelector\"\n                             data-dojo-attach-point=\"genome_id\"\n                             data-dojo-props=\"placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true\"\n                             style=\"width:310px;\">\n                        </div>\n                        <div style=\"width:17px; display:inline-block;\">\n                            <i data-dojo-attach-event=\"click:onAddGenome\"\n                               class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                        </div>\n                    </div>\n                    <div class=\"left half\">\n                        <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"genomeTable\"\n                               style='width:330px;'>\n                            <tbody data-dojo-attach-point=\"genomeTableBody\"></tbody>\n                        </table>\n                    </div>\n                    <div class=\"clear\"></div>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"genome_id_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select genome group: </label><br/>\n                    <div name=\"genome_group\" style=\"width: 650px\"></div>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"genome_group_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Select Taxon: </label><br/>\n                    <select name=\"taxon\" style=\"width: 650px\"\n                            data-dojo-type=\"p3/widget/TaxonNameSelector\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"taxonomy\">\n                    </select>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"taxonomy_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <label class=\"paramlabel\">Search for: </label><br/>\n                    <select name=\"search_for\" style=\"width:250px\"\n                            data-dojo-type=\"dijit/form/Select\"\n                            data-dojo-props=\"disabled:true\"\n                            data-dojo-attach-point=\"search_for\">\n                        <option value=\"contigs\">Genomic sequences (contigs)</option>\n                        <option value=\"features\" selected=\"selected\">Genomic features (genes or proteins)</option>\n                    </select>\n                    <div class=\"form_msg_warning\" data-dojo-attach-point=\"search_for_message\"></div>\n                </div>\n\n                <div class=\"appbox appshadow\">\n                    <div class=\"headerrow\">\n                        <label class=\"appboxlabel\">BLAST Parameters</label>\n                    </div>\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">Max hits: </label><br/>\n                        <select name=\"max_target\" style=\"width: 100px\"\n                                data-dojo-type=\"dijit/form/Select\"\n                                data-dojo-attach-point=\"max_hits\">\n                            <option value=\"1\">1</option>\n                            <option value=\"10\">10</option>\n                            <option value=\"50\" selected=\"selected\">50</option>\n                            <option value=\"100\">100</option>\n                            <option value=\"1000\">1000</option>\n                        </select>\n                    </div>\n\n                    <div class=\"left third\">\n                        <label class=\"paramlabel\">E value threshold: </label><br/>\n                        <input name=\"threshold\" type=\"text\" value=\"10\" style=\"width:50px\"\n                               data-dojo-type=\"dijit/form/TextBox\"\n                               data-dojo-attach-point=\"evalue\">\n                    </div>\n                    <div class=\"clear\"></div>\n                </div>\n            </div>\n\n            <div data-dojo-type=\"dijit/form/Button\"\n                 data-dojo-attach-point=\"mapButton\"\n                 data-dojo-attach-event=\"onClick:submit\"\n                 data-dojo-props=\"disabled:true\">\n                Search\n            </div>\n        </div>\n        <div class=\"reSubmitBtn\" style=\"visibility: hidden\"\n             data-dojo-type=\"dijit/form/Button\"\n             data-dojo-attach-event=\"onClick:resubmit\">Edit form and resubmit\n        </div>\n    </div>\n\n    <div class=\"blast_error hidden\">\n        <h3></h3>\n        <div class=\"blast_message\"></div>\n    </div>\n    <div class=\"blast_result\"></div>\n</form>\n\n"}});
 define("p3/widget/app/BLAST", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/request", "dojo/on", "dojo/store/Memory",
@@ -82,13 +82,13 @@ define("p3/widget/app/BLAST", [
 
 		startup: function(){
 
+			// activate genome group selector when user is logged in
 			if(window.App.user){
+				var ggDom = query('div[name="genome_group"]')[0];
+
 				this.genome_group = new WorkspaceObjectSelector();
 				this.genome_group.set('type', ['genome_group']);
 				this.genome_group.set('disabled', true);
-
-				var ggDom = query('div[name="genome_group"]')[0];
-
 				this.genome_group.placeAt(ggDom, "only");
 			}
 
@@ -149,7 +149,6 @@ define("p3/widget/app/BLAST", [
 			var program = this.program.get('value');
 			var evalue = this.evalue.get('value');
 			var max_hits = parseInt(this.max_hits.get('value'));
-			var method, params;
 			var def = new Deferred();
 
 			if(useDatabase){
@@ -157,12 +156,17 @@ define("p3/widget/app/BLAST", [
 					this.sequence_message.innerHTML = "Sequence is empty";
 					return;
 				}
-				def.resolve();
-				method = "HomologyService.blast_fasta_to_database";
-				params = [encodeURIComponent(sequence), program, database, evalue, max_hits, 0];
+
+				var q = {
+					method: "HomologyService.blast_fasta_to_database",
+					params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
+				};
+				def.resolve(q)
 			}else{
 				// blast against genomes/groups/taxon
 				var genomeIds = [];
+				var search_for = this.search_for.get('value');
+
 				switch(database){
 					case "selGenome":
 						query(".genomedata").forEach(function(item){
@@ -174,7 +178,11 @@ define("p3/widget/app/BLAST", [
 						}else{
 							this.genome_id_message.innerHTML = '';
 						}
-						def.resolve(genomeIds);
+						var q = {
+							method: "HomologyService.blast_fasta_to_genomes",
+							params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+						};
+						def.resolve(q);
 						break;
 					case "selGroup":
 						var path = this.genome_group.get('value');
@@ -196,7 +204,11 @@ define("p3/widget/app/BLAST", [
 								})
 							});
 							var genomeIds = Object.keys(genomeIdHash);
-							def.resolve(genomeIds);
+							var q = {
+								method: "HomologyService.blast_fasta_to_genomes",
+								params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+							};
+							def.resolve(q);
 						}));
 						break;
 					case "selTaxon":
@@ -205,23 +217,19 @@ define("p3/widget/app/BLAST", [
 							this.taxonomy_message.innerHTML = 'No taxon has selected';
 							return;
 						}
+
+						var q = {
+							method: "HomologyService.blast_fasta_to_taxon",
+							params: [encodeURIComponent(sequence), program, taxon, search_for, evalue, max_hits, 0]
+						};
+						def.resolve(q);
 						break;
 					default:
 						break;
 				}
-
-				var search_for = this.search_for.get('value');
-				method = "HomologyService.blast_fasta_to_genomes";
-				params = [encodeURIComponent(sequence), program, [], search_for, evalue, max_hits, 0];
 			}
 
-			var q = {
-				params: params,
-				method: method,
-				version: "1.1",
-				id: String(Math.random()).slice(2)
-			};
-
+			//
 			_self.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
 			domClass.add(query(".blast_form")[0], "hidden");
@@ -233,12 +241,12 @@ define("p3/widget/app/BLAST", [
 			// this.updateResult(data, "genome_sequence");
 			// return;
 
-			def.promise.then(function(genomeIds){
+			def.promise.then(function(q){
 
-				if(!useDatabase){
-					// console.log("updated genomeIds: ", genomeIds);
-					q.params[2] = genomeIds;
-				}
+				var q = lang.mixin(q, {
+					version: "1.1",
+					id: String(Math.random()).slice(2)
+				});
 
 				// console.log(q);
 
@@ -280,6 +288,7 @@ define("p3/widget/app/BLAST", [
 						},
 						data: {
 							q: resultIdField + ":(" + resultIds.join(' OR ') + ")",
+							rows: 25000,
 							fl: fl
 						}
 					}).then(function(keys){
@@ -521,8 +530,12 @@ define("p3/widget/app/BLAST", [
 					entry = lang.mixin(entry, features[target_id]);
 				}else{
 					target_id = target_id.replace("accn|", "");
-					entry["genome_id"] = features[target_id].genome_id;
-					entry = lang.mixin(entry, features[target_id]);
+					if(features.hasOwnProperty(target_id)){
+						entry["genome_id"] = features[target_id].genome_id;
+						entry = lang.mixin(entry, features[target_id]);
+					}else{
+						console.log("missing id: ", target_id);
+					}
 				}
 				entries.push(entry);
 			}, this);
@@ -696,7 +709,7 @@ define("p3/widget/app/BLAST", [
 				switch(val){
 					case "selGenome":
 						this.genome_id.set('disabled', false);
-						this.genome_group.set('disabled', true);
+						this.genome_group ? this.genome_group.set('disabled', true) : {};
 						this.taxonomy.set('disabled', true);
 						break;
 					case "selGroup":
@@ -706,12 +719,12 @@ define("p3/widget/app/BLAST", [
 						}
 
 						this.genome_id.set('disabled', true);
-						this.genome_group.set('disabled', false);
+						this.genome_group ? this.genome_group.set('disabled', false) : {};
 						this.taxonomy.set('disabled', true);
 						break;
 					case "selTaxon":
 						this.genome_id.set('disabled', true);
-						this.genome_group.set('disabled', true);
+						this.genome_group ? this.genome_group.set('disabled', true) : {};
 						this.taxonomy.set('disabled', false);
 						break;
 					default:
