@@ -166,7 +166,7 @@ define([
 			var maxName = 36;
 			var display_name = name;
 			if(name.length > maxName){
-				display_name = name.substr(0, (maxName / 2) - 2) + "...." + name.substr((name.length - (maxName / 2)) + 2);
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 
 			return display_name;
@@ -178,7 +178,7 @@ define([
 			var display_name = name;
 
 			if(name.length > maxName){
-				display_name = name.substr(0, (maxName / 2) - 2) + "...." + name.substr((name.length - (maxName / 2)) + 2);
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 
 			return display_name;
@@ -191,7 +191,7 @@ define([
 			console.log("this.user_genomes_featuregroup name = " + this.name);
 
 			if(name.length > maxName){
-				display_name = name.substr(0, (maxName / 2) - 2) + "...." + name.substr((name.length - (maxName / 2)) + 2);
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 
 			return display_name;
@@ -314,7 +314,7 @@ define([
 			if(this.validate()){
 				var values = this.getValues();
 				//console.log(values["user_genomes"]);
-				//console.log(values["genome_ids"]);				
+				//console.log(values["genome_ids"]);
 				if((values["user_genomes"] || values["user_feature_groups"] || values["genome_ids"]) && values["reference_genome_index"] > 0){
 					domClass.add(this.domNode, "Working");
 					domClass.remove(this.domNode, "Error");
