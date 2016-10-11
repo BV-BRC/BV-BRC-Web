@@ -149,10 +149,12 @@ define([
 			});
 
 			on(window,"message", function(msg){
+				console.log("onMessage: ", msg);
 				if (msg && msg.data=="RemoteReady"){
 					return;
 				}
 				msg = JSON.parse(msg.data);
+				console.log("Message From Remote: ", msg);
 				if (msg && msg.topic){
 					Topic.publish(msg.topic, msg.payload);
 				}

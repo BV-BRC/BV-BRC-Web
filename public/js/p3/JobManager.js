@@ -17,7 +17,7 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 				// console.log("Enumerate Task Results: ", tasks);
 				tasks[0].forEach(function(task){
 					// console.log("Get and Update Task: ", task);
-					// console.log("Checking for task: ", task.id)
+					//console.log("Checking for task: ", task.id)
 					// when(_DataStore.get(task.id), function(oldTask){
 					// 	if(!oldTask){
 					// 		 console.log("No Old Task, store as new");

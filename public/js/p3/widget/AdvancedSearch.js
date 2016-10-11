@@ -67,7 +67,7 @@ define([
 				if (total==1){
 					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
 				}else{
-					return ['/view/FeatureList/?',this.state.search,"#view_tab=features"].join("");
+					return ['/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score"].join("");
 				}
 			},
 			"taxonomy": function(docs,total){
@@ -169,7 +169,7 @@ define([
 		},
 
 		formatgenome_feature: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features",'">Genome Features&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score",'">Genome Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
