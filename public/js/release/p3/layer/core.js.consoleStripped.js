@@ -5074,10 +5074,12 @@ define([
 			});
 
 			on(window,"message", function(msg){
+				 0 && console.log("onMessage: ", msg);
 				if (msg && msg.data=="RemoteReady"){
 					return;
 				}
 				msg = JSON.parse(msg.data);
+				 0 && console.log("Message From Remote: ", msg);
 				if (msg && msg.topic){
 					Topic.publish(msg.topic, msg.payload);
 				}
@@ -10918,13 +10920,14 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"
 			//  0 && console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 
 			if (href.length>4000){
-				var parts = href.split("?");
-				href = parts[0];
+				var hparts = href.split("#");
+
+				var parts = hparts[0].split("?");
+				href = parts[0] + (hparts[1]?("#" + hparts[1]):"");
 				state.search = parts[1];
 			}
 
 			if(href != this._currentPath){
-				//  0 && console.log("pushState")
 				window.history.pushState(state || {}, "route", href);
 				this._handlePathChange(href, state || {})
 			}else if(state){
@@ -24295,7 +24298,7 @@ define([
 						clear = true;
 						break;
 					case "genome_features":
-						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features"});
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q + "#view_tab=features&defaultSort=-score"});
 						clear = true;
 						break;
 					case "genomes":
@@ -36123,7 +36126,7 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 				//  0 && console.log("Enumerate Task Results: ", tasks);
 				tasks[0].forEach(function(task){
 					//  0 && console.log("Get and Update Task: ", task);
-					//  0 && console.log("Checking for task: ", task.id)
+					// 0 && console.log("Checking for task: ", task.id)
 					// when(_DataStore.get(task.id), function(oldTask){
 					// 	if(!oldTask){
 					// 		  0 && console.log("No Old Task, store as new");
@@ -56291,12 +56294,12 @@ define([
 			},
 			collection_year: {
 				label: 'Collection Year',
-				field: 'collection_year',
-				hidden: true
+				field: 'collection_year'
 			},
 			collection_date: {
 				label: 'Collection Date',
-				field: 'collection_date'
+				field: 'collection_date',
+				hidden: true
 			},
 			completion_date: {
 				label: 'Completion Date',
@@ -59085,7 +59088,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-
+			 0 && console.log("QueryToEnglish Content: ", content, newVal);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + "</div>");
 			this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
 		},
@@ -59785,7 +59788,7 @@ define([
 			// window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
 
 			var dialog = new Dialog({title: "Download"});
-			var advDn = new AdvancedDownload({selection: [this.genome.genome_id], containerType: "genome_data"});
+			var advDn = new AdvancedDownload({selection: [this.genome], containerType: "genome_data"});
 			domConstruct.place(advDn.domNode, dialog.containerNode);
 			dialog.show();
 		},
@@ -74232,6 +74235,32 @@ define([
 					//  0 && console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
 
 				}
+
+				if (state.hashParams.defaultSort){
+					var sp = state.hashParams.defaultSort.split(",");
+					var sort = sp.map(function(s){
+						var r = {}
+						if (s.charAt(0)=="+"){
+							r.descending = false;
+							r.attribute = s.substr(1);
+						}else if (s.charAt(0)=="-"){
+							r.descending = true;
+							r.attribute = s.substr(1);
+						}else{
+							r.attribute=s;
+						}
+						return r;
+					})
+
+					this.set('queryOptions', {sort: sort});
+
+					if (this.grid){
+						 0 && console.log("Set Default Sort: ", sort);
+						this.grid.set('sort', sort);
+					}
+				}
+
+
 			}else{
 				state.hashParams = {}
 				if(!oldState && this.defaultFilter){
@@ -74924,7 +74953,7 @@ define([
 									return d['feature_id']
 								});
 								Topic.publish("/navigate", {
-									href: "/view/PathwaySummary/?pathways=" + ids.join(','),
+									href: "/view/PathwaySummary/?features=" + ids.join(','),
 									target: "blank"
 								});
 							});
@@ -77617,11 +77646,11 @@ define([
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "score", descending: true}]
+				// sort: [{attribute: "score", descending: true}]
 
-//				sort: [{attribute: "genome_name", descending: false},
-//					{attribute: "accession", descending: false},
-//					{attribute: "start", descending: false}]
+				sort: [{attribute: "genome_name", descending: false},
+					{attribute: "accession", descending: false},
+					{attribute: "start", descending: false}]
 			};
 			//  0 && console.log("this.queryOptions: ", this.queryOptions);
 		},
@@ -78559,12 +78588,12 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FilterContainerActionBar",
-	"dojo/_base/lang","dojo/dom-construct"
+	"dojo/_base/lang", "dojo/dom-construct", "./PerspectiveToolTip"
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,
 			TooltipDialog, ContainerActionBar,
-			lang,domConstruct){
+			lang, domConstruct, PerspectiveToolTipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -78680,66 +78709,39 @@ define([
 			}));
 		},
 
-		containerActions: GridContainer.prototype.containerActions.concat([
-		/*	[
-				"DownloadTable",
-				"fa icon-download fa-2x",
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewFeatureItem",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
-					label: "DOWNLOAD",
+					label: "FEATURE",
+					validTypes: ["genome_feature"],
 					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Download Table",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					var _self=this;
-
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
-					}else{
-						downloadTT.set("content", dfc);
-
-						on(downloadTT.domNode, "div:click", function(evt){
-							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
-							var currentQuery = _self.grid.get('query');
-
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
-
-							if (window.App.authorizationToken){
-								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
-
-							//window.open(url);
-							popup.close(downloadTT);
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
+					validContainerTypes: ["pathway_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						 0 && console.log("PressAndHold");
+						 0 && console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
+							around: button,
+							orient: ["below"]
 						});
 					}
-
-					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
-						orient: ["below"]
-					});
 				},
-				true,
-				"left"
-			]*/
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
+				function(selection, container){
+					//  0 && console.log(selection, container);
+					if(container.type !== "gene"){
+						return;
+					}
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
+				},
+				false
+			],
 			[
 				"ViewPathwayMap",
 				"fa icon-map-o fa-2x",
@@ -78787,13 +78789,13 @@ define([
 				false
 			]
 		]),
-		onSetState: function(attr,oldState,state){
+		onSetState: function(attr, oldState, state){
 			if(!state){
 				 0 && console.log("!state in grid container; return;")
 				return;
 			}
 			var q = [];
-			var _self=this;
+			var _self = this;
 			if(state.search){
 				q.push(state.search);
 			}
@@ -78809,18 +78811,18 @@ define([
 				}else if(!oldState && this.defaultFilter){
 					//  0 && console.log("       No original state, using default Filter");
 					state.hashParams.filter = this.defaultFilter;
-					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					//  0 && console.log("       Found oldState with hashparams.filter, using");
 					state.hashParams.filter = oldState.hashParams.filter;
 					// this.set('state', state);
-					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 					return;
 				}else if(this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
 					// this.set('state', state);
-					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 					return;
 				}else{
 					//  0 && console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
@@ -78834,7 +78836,7 @@ define([
 					state.hashParams.filter = oldState.hashParams.filter
 				}
 				// this.set('state', state);
-				this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+				this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 				return;
 			}
 			//  0 && console.log(" Has Filter Panel?", !!this.filterPanel);
@@ -78846,8 +78848,8 @@ define([
 			//  0 && console.log("setState query: ",q.join("&"), " state: ", state)
 			// this.set("query", q.join("&"));
 
-			if (this.grid){
-				this.grid.set("state",lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+			if(this.grid){
+				this.grid.set("state", lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 			}
 
 		}
@@ -79035,20 +79037,20 @@ define([
 		state: null,
 		genome_ids: null,
 		type: "pathway",
-		onSetState: function(attr,oldVal,state){
+		onSetState: function(attr, oldVal, state){
 
 			// 0 && console.log("PathwayMemoryStore onSetState() oldState:", oldVal);
 			// 0 && console.log("								 New State:", state);
 			var ov, nv;
 			if(oldVal){
 				ov = oldVal.search;
-				if (oldVal.hashParams.filter) {
+				if(oldVal.hashParams.filter){
 					ov = ov + oldVal.hashParams.filter;
 				}
 			}
 			if(state){
 				nv = state.search;
-				if (state.hashParams.filter){
+				if(state.hashParams.filter){
 					nv = nv + state.hashParams.filter;
 				}
 
@@ -79056,19 +79058,19 @@ define([
 
 			this.state = state;
 
-			if (!nv){
+			if(!nv){
 				this.setData([]);
 				this._loaded = true;
-				if (this._loadingDeferred){
+				if(this._loadingDeferred){
 					this.loadingDeferred.resolve(true);
 				}
-			}else if (ov!=nv){
-				if (this._loaded){
+			}else if(ov != nv){
+				if(this._loaded){
 					this._loaded = false;
 					delete this._loadingDeferred;
 					this.loadData();
-				}else {
-					if (this._loadingDeferred){
+				}else{
+					if(this._loadingDeferred){
 						var curDef = this._loadingDeferred;
 						when(this.loadData(), function(r){
 							curDef.resolve(r);
@@ -79087,7 +79089,7 @@ define([
 			this._loaded = false;
 			this.genome_ids = [];
 			lang.mixin(this, options);
-			this.watch("state", lang.hitch(this,"onSetState"));
+			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
 		query: function(query, opts){
@@ -79277,6 +79279,7 @@ define([
 								break;
 							case "genes":
 								doc.idx = doc.feature_id;
+								doc.document_type = "genome_feature";
 								break;
 							default:
 								break;
@@ -79311,13 +79314,13 @@ define([
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
-	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"dojox/widget/Standby",
 	"./ActionBar", "./ContainerActionBar",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
-			RadioButton, TextArea, TextBox, Button,
+			RadioButton, TextArea, TextBox, Button, Select,
 			Standby,
 			ActionBar, ContainerActionBar,
 			MainGridContainer, FilterGrid, HeatmapContainer){
@@ -79467,13 +79470,30 @@ define([
 				region: "left",
 				title: "filter",
 				content: "Filter By",
-				style: "width:380px; overflow:auto",
+				style: "width:283px; overflow: auto",
 				splitter: true
 			});
 
 			var familyTypePanel = new ContentPane({
 				region: "top"
 			});
+
+			var cbType = new Select({
+				name: "familyType",
+				value: 'pgfam',
+				options: [{
+					value: "plfam", label: "PATRIC genus-specific families (PLfams)"
+				}, {
+					value: "pgfam", label: "PATRIC cross-genus families (PGfams)"
+				}, {
+					value: "figfam", label: "FIGFam"
+				}]
+			});
+			cbType.on("change", function(){
+				Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
+			});
+			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
+/*
 			// plfam
 			var rb_plfam = new RadioButton({
 				name: "familyType",
@@ -79510,8 +79530,14 @@ define([
 			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
 			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
 			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
-
+*/
 			filterPanel.addChild(familyTypePanel);
+
+			var filterGridDescriptor = new ContentPane({
+				style: 'padding: 0',
+				content: '<div class="pfFilterOptions"><div class="present"><b>Present</b> in all families</div><div class="absent"><b>Absent</b> from all families</div><div class="mixed"><b>Either/Mixed</b></div></div>'
+			});
+			filterPanel.addChild(filterGridDescriptor);
 
 			// genome list grid
 			var filterGrid = new FilterGrid({
@@ -79526,7 +79552,7 @@ define([
 			});
 
 			var ta_keyword = new TextArea({
-				style: "width:360px; min-height:75px; margin-bottom: 10px"
+				style: "width:272px; min-height:75px; margin-bottom: 10px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
@@ -83259,13 +83285,13 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, PathJoin){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
 
 	var legend = [
 		'<div>',
@@ -83812,12 +83838,6 @@ define([
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
-				// var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
-				// 		return feature.feature_id;
-				// 	}).join(',') + ")))";
-				//
-				// Topic.publish("ProteinFamilies", "showMembersGrid", query);
-
 				var query = "?in(feature_id,(" + features.map(function(d){ return d.feature_id; }) + "))";
 				Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
 
@@ -83828,6 +83848,29 @@ define([
 				label: 'Add Proteins to Group',
 				disabled: (features.length === 0)
 			});
+			on(btnAddToWorkspace.domNode, "click", function(){
+				if(!window.App.user || !window.App.user.id){
+					Topic.publish("/login");
+					return;
+				}
+
+				var dlg = new Dialog({title: "Add This Feature To Group"});
+				var stg = new SelectionToGroup({
+					selection: features,
+					type: 'feature_group'
+				});
+				on(dlg.domNode, "dialogAction", function(evt){
+					dlg.hide();
+					setTimeout(function(){
+						dlg.destroy();
+					}, 2000);
+				});
+				domConstruct.place(stg.domNode, dlg.containerNode, "first");
+				stg.startup();
+				dlg.startup();
+				dlg.show();
+			});
+
 			var btnCancel = new Button({
 				label: 'Cancel',
 				onClick: function(){
@@ -83864,6 +83907,16 @@ define([
 			var pfState = this.pfState;
 			var isTransposed = pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
+
+			 0 && console.log("clustering data set size: ", data.length);
+			if(data.length > 1500000){
+				new Dialog({
+					title: "Notice",
+					content: "The data set is too large to cluster. Please use filter panel to reduce the size",
+					style: "width: 300px"
+				}).show();
+				return;
+			}
 
 			Topic.publish("ProteinFamilies", "showLoadingMask");
 
@@ -91068,15 +91121,22 @@ define([
 				case "in":
 					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");;
 					var v = term.args[1];
-					var vals = v.map(function(val){
-						return '<span class="searchValue">' + decodeURIComponent(val) + "</span>";
-					});
-					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span>(';
+					 0 && console.log("V: ",v)
+					var vals;
+					if (!(v instanceof Array)){
+						v = [v];
+					}
 
-					if (vals.length<3) {
-						out = out + vals.join('<span class="searchOperator"> OR </span>') + ")";
+					vals = v.map(walk);
+					
+					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span> ';
+
+					if (vals.length==1){
+						out = out + " IN " + vals.join("")
+					}else if (vals.length<3) {
+						out = out + vals.join('<span class="searchOperator"> OR </span>');
 					}else{
-						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...)';
+						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...';
 					}
 					// parsed.selected.push({field: f, value: v});
 					break;
@@ -91096,7 +91156,20 @@ define([
 				case "not":
 					out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
 					break;
+				case "GenomeGroup":
+					var groupParts = decodeURIComponent(term.args[0]).split("/")
+					var groupName = groupParts[groupParts.length-1];
+					out = 'Genome Group <span class="searchValue">' + groupName + "</span>"
+					break;
+				case "FeatureGroup":
+					var groupParts = decodeURIComponent(term.args[0]).split("/")
+					var groupName = groupParts[groupParts.length-1];
+					out = 'Feature Group <span class="searchValue">' + groupName + "</span>"
+					break;
 				default:
+					if (typeof term == "string"){
+						return '<span class="searchValue"> '  +decodeURIComponent(term) + '</span>';
+					}
 					 0 && console.log("Skipping Unused term: ", term.name, term.args);
 			}
 
@@ -115764,11 +115837,13 @@ define([
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
-	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview"
+	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview",
+	"../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
-			GenomeGridContainer, PathJoin, xhr, lang, Overview){
+			GenomeGridContainer, PathJoin, xhr, lang, Overview,
+			QueryToEnglish){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureList",
 		"disabled": false,
@@ -115788,15 +115863,15 @@ define([
 
 			var _self = this;
 
-			var url = PathJoin(this.apiServiceUrl, "genome_feature", "?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
-
-			xhr.get(url, {
+			xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 				headers: {
 					accept: "application/solr+json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				},
-				handleAs: "json"
+				handleAs: "json",
+				date: query + "&limit(1)"
 			}).then(function(res){
 
 				if(res && res.response && res.response.docs){
@@ -115808,7 +115883,7 @@ define([
 					 0 && console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
-				 0 && console.error("Error Retreiving Genomes: ", err);
+				 0 && console.error("Error Retreiving Features: ", err);
 			});
 
 		},
@@ -115827,9 +115902,10 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
+			var qe = QueryToEnglish(newVal);
+			// this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + qe + "</div>");
 
-			this.queryNode.innerHTML = decodeURIComponent(newVal);
+			this.queryNode.innerHTML = qe;
 		},
 
 		setActivePanelState: function(){
@@ -115844,7 +115920,7 @@ define([
 
 			switch(active){
 				case "features":
-					activeTab.set("state", this.state);
+					activeTab.set("state", lang.mixin({},this.state));
 					break;
 				default:
 					var activeQueryState;
@@ -122064,7 +122140,7 @@ define([
 'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"ondijitclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<span data-dojo-attach-point=\"arrowNode\" class=\"dijitInline dijitArrowNode\" role=\"presentation\"></span\n\t\t\t><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n\n    <div data-dojo-attach-point=\"groupTypeBox\" class=\"dijitHidden\">\n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeSelect\"  style=\"width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    </div>\n\n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden' data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n\n    <div data-dojo-attach-point=\"groupTypeBox\" class=\"dijitHidden\">\n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeSelect\"  style=\"width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    </div>\n\n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden' data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Add\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
 'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
 'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
