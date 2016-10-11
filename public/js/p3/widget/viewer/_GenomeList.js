@@ -133,7 +133,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-
+			console.log("QueryToEnglish Content: ", content, newVal);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + "</div>");
 			this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
 		},

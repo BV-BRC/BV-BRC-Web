@@ -62,13 +62,14 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"
 			// console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 
 			if (href.length>4000){
-				var parts = href.split("?");
-				href = parts[0];
+				var hparts = href.split("#");
+
+				var parts = hparts[0].split("?");
+				href = parts[0] + (hparts[1]?("#" + hparts[1]):"");
 				state.search = parts[1];
 			}
 
 			if(href != this._currentPath){
-				// console.log("pushState")
 				window.history.pushState(state || {}, "route", href);
 				this._handlePathChange(href, state || {})
 			}else if(state){

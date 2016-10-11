@@ -21,20 +21,20 @@ define("p3/store/PathwayMemoryStore", [
 		state: null,
 		genome_ids: null,
 		type: "pathway",
-		onSetState: function(attr,oldVal,state){
+		onSetState: function(attr, oldVal, state){
 
 			//console.log("PathwayMemoryStore onSetState() oldState:", oldVal);
 			//console.log("								 New State:", state);
 			var ov, nv;
 			if(oldVal){
 				ov = oldVal.search;
-				if (oldVal.hashParams.filter) {
+				if(oldVal.hashParams.filter){
 					ov = ov + oldVal.hashParams.filter;
 				}
 			}
 			if(state){
 				nv = state.search;
-				if (state.hashParams.filter){
+				if(state.hashParams.filter){
 					nv = nv + state.hashParams.filter;
 				}
 
@@ -42,19 +42,19 @@ define("p3/store/PathwayMemoryStore", [
 
 			this.state = state;
 
-			if (!nv){
+			if(!nv){
 				this.setData([]);
 				this._loaded = true;
-				if (this._loadingDeferred){
+				if(this._loadingDeferred){
 					this.loadingDeferred.resolve(true);
 				}
-			}else if (ov!=nv){
-				if (this._loaded){
+			}else if(ov != nv){
+				if(this._loaded){
 					this._loaded = false;
 					delete this._loadingDeferred;
 					this.loadData();
-				}else {
-					if (this._loadingDeferred){
+				}else{
+					if(this._loadingDeferred){
 						var curDef = this._loadingDeferred;
 						when(this.loadData(), function(r){
 							curDef.resolve(r);
@@ -73,7 +73,7 @@ define("p3/store/PathwayMemoryStore", [
 			this._loaded = false;
 			this.genome_ids = [];
 			lang.mixin(this, options);
-			this.watch("state", lang.hitch(this,"onSetState"));
+			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
 		query: function(query, opts){
@@ -263,6 +263,7 @@ define("p3/store/PathwayMemoryStore", [
 								break;
 							case "genes":
 								doc.idx = doc.feature_id;
+								doc.document_type = "genome_feature";
 								break;
 							default:
 								break;

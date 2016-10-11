@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FilterContainerActionBar",
-	"dojo/_base/lang","dojo/dom-construct"
+	"dojo/_base/lang", "dojo/dom-construct", "./PerspectiveToolTip"
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,
 			TooltipDialog, ContainerActionBar,
-			lang,domConstruct){
+			lang, domConstruct, PerspectiveToolTipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -123,66 +123,39 @@ define([
 			}));
 		},
 
-		containerActions: GridContainer.prototype.containerActions.concat([
-		/*	[
-				"DownloadTable",
-				"fa icon-download fa-2x",
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewFeatureItem",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
-					label: "DOWNLOAD",
+					label: "FEATURE",
+					validTypes: ["genome_feature"],
 					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Download Table",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					var _self=this;
-
-					var totalRows =_self.grid.totalRows;
-						console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
-					}else{
-						downloadTT.set("content", dfc);
-
-						on(downloadTT.domNode, "div:click", function(evt){
-							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
-							var currentQuery = _self.grid.get('query');
-
-							console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
-
-							if (window.App.authorizationToken){
-								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
-
-							//window.open(url);
-							popup.close(downloadTT);
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
+					validContainerTypes: ["pathway_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
+							around: button,
+							orient: ["below"]
 						});
 					}
-
-					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
-						orient: ["below"]
-					});
 				},
-				true,
-				"left"
-			]*/
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
+				function(selection, container){
+					// console.log(selection, container);
+					if(container.type !== "gene"){
+						return;
+					}
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
+				},
+				false
+			],
 			[
 				"ViewPathwayMap",
 				"fa icon-map-o fa-2x",
@@ -230,13 +203,13 @@ define([
 				false
 			]
 		]),
-		onSetState: function(attr,oldState,state){
+		onSetState: function(attr, oldState, state){
 			if(!state){
 				console.log("!state in grid container; return;")
 				return;
 			}
 			var q = [];
-			var _self=this;
+			var _self = this;
 			if(state.search){
 				q.push(state.search);
 			}
@@ -252,18 +225,18 @@ define([
 				}else if(!oldState && this.defaultFilter){
 					// console.log("       No original state, using default Filter");
 					state.hashParams.filter = this.defaultFilter;
-					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					// console.log("       Found oldState with hashparams.filter, using");
 					state.hashParams.filter = oldState.hashParams.filter;
 					// this.set('state', state);
-					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 					return;
 				}else if(this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
 					// this.set('state', state);
-					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 					return;
 				}else{
 					// console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
@@ -277,7 +250,7 @@ define([
 					state.hashParams.filter = oldState.hashParams.filter
 				}
 				// this.set('state', state);
-				this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+				this.set('state', lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 				return;
 			}
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
@@ -289,8 +262,8 @@ define([
 			// console.log("setState query: ",q.join("&"), " state: ", state)
 			// this.set("query", q.join("&"));
 
-			if (this.grid){
-				this.grid.set("state",lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+			if(this.grid){
+				this.grid.set("state", lang.mixin({}, state, {hashParams: lang.mixin({}, state.hashParams)}));
 			}
 
 		}
