@@ -51,7 +51,7 @@ define([
 			// create a loading mask
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.addChild(this.loadingMask);

@@ -456,7 +456,7 @@ define([
 
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.result_grid.addChild(this.loadingMask);
