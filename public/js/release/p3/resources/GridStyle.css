@@ -43,12 +43,28 @@
     width: 8%;
     text-align: center;
 }
+.patric .pfFilterGrid {
+    height: 270px;
+}
 .patric .pfFilterGrid TH.dgrid-cell {
     font-size: .95em;
 }
 .patric .pfFilterGrid TD.dgrid-cell {
     font-size: .85em;
     white-space: nowrap;
+}
+.patric .pfFilterOptions {
+    line-height: 12px;
+    font-size: 12px;
+}
+.patric .pfFilterOptions .present {
+    margin-left: 2px;
+}
+.patric .pfFilterOptions .absent {
+    margin-left: 22px;
+}
+.patric .pfFilterOptions .mixed {
+    margin-left: 42px;
 }
 .patric .dgrid-cell.field-accession {
     width: 10%;
