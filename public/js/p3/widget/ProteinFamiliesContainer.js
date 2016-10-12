@@ -65,6 +65,12 @@ define([
 				return;
 			}
 
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+				var family_type = params.family_type;
+				this.family_type_selector.set('value', family_type);
+			}
+
 			if(this.mainGridContainer){
 				this.mainGridContainer.set('state', state);
 			}
@@ -165,7 +171,7 @@ define([
 				region: "top"
 			});
 
-			var cbType = new Select({
+			var cbType = this.family_type_selector = new Select({
 				name: "familyType",
 				value: 'pgfam',
 				options: [{
