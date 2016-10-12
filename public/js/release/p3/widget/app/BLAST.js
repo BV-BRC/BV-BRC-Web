@@ -320,11 +320,11 @@ define("p3/widget/app/BLAST", [
 		},
 
 		buildErrorMessage: function(err){
-			console.log(err);
+			// console.log(err);
 			this.loadingMask.hide();
 			domClass.remove(query(".blast_error")[0], "hidden");
 			domClass.remove(query(".blast_message")[0], "hidden");
-			query(".blast_error h3")[0].innerHTML = "BLAST has error. Please report regarding this.";
+			query(".blast_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
 			query(".blast_message")[0].innerHTML = err.response.data.error.message;
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
@@ -458,7 +458,7 @@ define("p3/widget/app/BLAST", [
 
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.result_grid.addChild(this.loadingMask);
@@ -636,7 +636,7 @@ define("p3/widget/app/BLAST", [
 			var maxName = 50;
 			var display_name = name;
 			if(name.length > maxName){
-				display_name = name.substr(0, (maxName / 2) - 2) + "...." + name.substr((name.length - (maxName / 2)) + 2);
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 
 			return display_name;
