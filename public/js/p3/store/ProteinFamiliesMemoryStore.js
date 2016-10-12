@@ -36,6 +36,15 @@ define([
 				this._loaded = false;
 				delete this._loadingDeferred;
 			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+
+				params.family_type ? pfState.familyType = params.family_type : {};
+				// params.keyword ? pfState.keyword = params.keyword : {};
+			}else{
+				pfState.familyType = 'pgfam';
+			}
 		},
 
 		constructor: function(options){

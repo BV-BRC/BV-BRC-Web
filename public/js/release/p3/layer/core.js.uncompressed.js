@@ -29163,7 +29163,11 @@ define([
 			}), lang.hitch(this, function(err){
 				var parts = err.split("_ERROR_");
 				var m = parts[1] || parts[0];
-				var d = new Dialog({content: m, title: "Error Loading Workspace"});
+				var d = new Dialog({
+					content: m,
+					title: "Error Loading Workspace",
+					style: "width: 250px !important;",
+				});
 				d.show();
 			}));
 		},
@@ -78784,7 +78788,7 @@ define([
 						return p + "=" + url[p]
 					}).join("&");
 					// console.log(params);
-					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params, target: "blank"});
+					Topic.publish("/navigate", {href: "/view/PathwayMap/?" + params, target: "blank"});
 				},
 				false
 			]
@@ -79364,7 +79368,7 @@ define([
 			// create a loading mask
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.addChild(this.loadingMask);
@@ -79376,6 +79380,12 @@ define([
 			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
+			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+				var family_type = params.family_type;
+				this.family_type_selector.set('value', family_type);
 			}
 
 			if(this.mainGridContainer){
@@ -79478,7 +79488,7 @@ define([
 				region: "top"
 			});
 
-			var cbType = new Select({
+			var cbType = this.family_type_selector = new Select({
 				name: "familyType",
 				value: 'pgfam',
 				options: [{
@@ -81103,6 +81113,15 @@ define([
 			if(state && state.genome_ids){
 				this._loaded = false;
 				delete this._loadingDeferred;
+			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+
+				params.family_type ? pfState.familyType = params.family_type : {};
+				// params.keyword ? pfState.keyword = params.keyword : {};
+			}else{
+				pfState.familyType = 'pgfam';
 			}
 		},
 
@@ -95417,16 +95436,18 @@ define([
                 });
             }
 
+            if (!state){
+            	return;
+            }
+
             var location;
             if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
+            	state.hashParams.loc = state.feature.accession + ":" + Math.max(0,parseInt(state.feature.start)-3000) + ".." + (parseInt(state.feature.end)+3000);
+                state.hashParams.highlight = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
             var dataRoot;
 
-            if (!state){
-            	return;
-            }
 
             if (state.feature && state.feature.genome_id){
             	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
@@ -95450,7 +95471,7 @@ define([
 				baseUrl: "/public/js/jbrowse.repo/",
 				refSeqs: "{dataRoot}/refseqs",
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
-				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
+				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
 				forceTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
 				alwaysOnTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
@@ -111985,8 +112006,7 @@ define([
 			if(feature.hasOwnProperty('pathway')){
 				pwLink = feature['pathway'].map(function(pwStr){
 					var pw = pwStr.split('|');
-					// https://www.patricbrc.org/portal/portal/patric/CompPathwayMap?cType=genome&cId=83332.12&dm=feature&feature_id=PATRIC.83332.12.NC_000962.CDS.2052.3260.fwd&map=00240&algorithm=PATRIC&ec_number=
-					return '<a href="/view/PathwayMap/annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
+					return '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
 				}).join('<br>')
 			}
 
@@ -112120,9 +112140,9 @@ define([
 
 			// single gene viewer
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
-			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
-			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
+			var rangeEnd = (centerPos + 5000);
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene,product)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
@@ -112219,6 +112239,7 @@ define([
 
 			// allocate groups
 			var groups = [];
+			var overlapPadding = 100;
 			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
@@ -112227,7 +112248,7 @@ define([
 					if(g.max === 0){
 						// insert. init
 						g.m.push(d);
-						g.max = d.end;
+						g.max = d.end + overlapPadding;
 						break;
 					}
 
@@ -112240,7 +112261,7 @@ define([
 					else{
 						// insert data in current group
 						g.m.push(d);
-						g.max = d.end;
+						g.max = d.end + overlapPadding;
 						break;
 					}
 				}
@@ -112312,9 +112333,9 @@ define([
 						content.push('PATRIC ID: ' + d.patric_id);
 						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
+						content.push("Product: " + d.product);
 						content.push("Feature type: " + d.feature_type);
-						content.push("Strand: " + d.strand);
-						content.push("Location: " + d.start + "..." + d.end);
+						content.push("Location: " + d.start + "..." + d.end + " (" + d.strand + ")");
 
 						self.tooltipLayer.html(content.join("<br/>"))
 							.style("left", d3.event.pageX + "px")
@@ -122155,7 +122176,7 @@ define([
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
-'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\" title=\"Antimicrobial resistance data from antimicrobial susceptibility testing\"><span class=\"wrap\">Antimicrobial Resistance</span></h3>\n            <div class=\"apSummaryWidget\" data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of genomic features annotated by PATRIC and GenBank/RefSeq\"><span class=\"wrap\">Genomic Features</span></h3>\n            <div data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of proteins by their functional attributes and protein family assignments\"><span class=\"wrap\">Protein Features</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Genes of special interest to infectious disease researchers, such as virulence factors, antimicrobial resistance genes, human homologs, and potential drug targets\"><span class=\"wrap\">Specialty Genes</span></h3>\n            <div class=\"spgSummaryWidget\" data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddGenome\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onDownload\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-download fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Download</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n<!--\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddGenome\">Add Genome to Group</button>\n                <button data-dojo-attach-event=\"onclick:onDownload\">Download Genome</button>\n            </div>\n-->\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\" title=\"Antimicrobial resistance data from antimicrobial susceptibility testing\"><span class=\"wrap\">Antimicrobial Resistance</span></h3>\n            <div class=\"apSummaryWidget\" data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of genomic features annotated by PATRIC and GenBank/RefSeq\"><span class=\"wrap\">Genomic Features</span></h3>\n            <div class=\"gfSummaryWidget\" data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of proteins by their functional attributes and protein family assignments\"><span class=\"wrap\">Protein Features</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Genes of special interest to infectious disease researchers, such as virulence factors, antimicrobial resistance genes, human homologs, and potential drug targets\"><span class=\"wrap\">Specialty Genes</span></h3>\n            <div class=\"spgSummaryWidget\" data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddGenome\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onDownload\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-download fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Download</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n<!--\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddGenome\">Add Genome to Group</button>\n                <button data-dojo-attach-event=\"onclick:onDownload\">Download Genome</button>\n            </div>\n-->\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
