@@ -50,7 +50,7 @@ define([
             this.libraryStore=new Memory({data:[]});
             this.libraryID=0;
 		},
- 
+
 
         startup: function(){
             if (this._started) { return; }
@@ -58,7 +58,7 @@ define([
 			var _self=this;
 			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
             _self.output_path.set('value', _self.defaultPath);
-            
+
             //create help dialog for infobutton's with infobuttoninfo div's
             this.emptyTable(this.libsTable, this.startingRows);
 
@@ -71,7 +71,7 @@ define([
 				}
 			)}));
             // this.block_condition.show();
-				
+
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
 			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
 			//this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
@@ -80,7 +80,7 @@ define([
 		},
 
         emptyTable:function(target, rowLimit){
-			for (i = 0; i < rowLimit; i++) { 
+			for (i = 0; i < rowLimit; i++) {
 				var tr =  target.insertRow(0);//domConstr.create("tr",{},this.libsTableBody);
 				var td = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
 				var td2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
@@ -103,7 +103,7 @@ define([
             var condLibs=[];
 			var pairedLibs =[];
 			var singleLibs=[];
-			this.ingestAttachPoints(this.paramToAttachPt, submit_values);	
+			this.ingestAttachPoints(this.paramToAttachPt, submit_values);
 			//for (var k in values) {
 			//	if(!k.startsWith("libdat_")){
 			//		submit_values[k]=values[k];
@@ -137,7 +137,7 @@ define([
 				submit_values["single_end_libs"]=singleLibs;
 			}
 			return submit_values;
-				
+
 		},
         //gets values from dojo attach points listed in input_ptsi keys.
         //aliases them to input_pts values.  validates all values present if req
@@ -169,7 +169,7 @@ define([
 				else{
 					cur_value=this[attachname].value;
 				}
-					
+
 				if(typeof(cur_value) == "string"){
 					cur_value=cur_value.trim();
 				}
@@ -214,16 +214,16 @@ define([
 		makePairName:function(libRecord){
 			var fn =this.read1.searchBox.get("displayedValue");
 			var fn2 =this.read2.searchBox.get("displayedValue");
-			var maxName=14; 
+			var maxName=14;
 			if(fn.length > maxName){
-				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
+				fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
 			}
 			if(fn2.length > maxName){
-				fn2=fn2.substr(0,(maxName/2)-2)+".."+fn2.substr((fn2.length-(maxName/2))+2);
+				fn2=fn2.substr(0,(maxName/2)-2)+"..."+fn2.substr((fn2.length-(maxName/2))+2);
 			}
 			return "P("+fn+", "+fn2+")";
-		},	
-			
+		},
+
 
         makeConditionName:function(){
             return this.condition.get("displayedValue");
@@ -232,7 +232,7 @@ define([
 			var fn =this.read.searchBox.get("displayedValue");
                         maxName=24
 			if(fn.length > maxName){
-				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
+				fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
 			}
 			return "S("+fn+")";
 		},
@@ -291,11 +291,11 @@ define([
                 domConstruct.destroy(obj.row);
                 this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
                 if (this.addedLibs.counter < this.startingRows){
-                    var ntr = this.libsTable.insertRow(-1);	
+                    var ntr = this.libsTable.insertRow(-1);
                     var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
                     var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
                     var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
-                }	
+                }
                 obj.handle.remove();
                 this.libraryStore.remove(obj.id);
             },this);
@@ -304,7 +304,7 @@ define([
         onSuggestNameChange: function(){
         },
 
-		
+
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
             this.libraryID+=1;
@@ -312,7 +312,7 @@ define([
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest= this.pairToAttachPt1;
-			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
+			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed && lrec.read1 != lrec.read2){
@@ -338,7 +338,7 @@ define([
 				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
 			}
 		}
-		
+
 	});
 });
 

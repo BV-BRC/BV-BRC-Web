@@ -68,9 +68,9 @@ define([
 			this.numlibs.set('value', Number(this.addedLibs));
 		},
 		formatName: function(name){
-			var maxName = 30;
+			var maxName = 29;
 			if(name.length > maxName){
-				name = name.substr(0, (maxName / 2) - 2) + ".." + name.substr((name.length - (maxName / 2)) + 2);
+				name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 			return name;
 		},
@@ -140,7 +140,7 @@ define([
 				td.libRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + " (" + count + " genomes)" + "</div>";
 				var tdinfo = domConstruct.create('td', {innerHTML: ""}, tr);
-				var td2 = domConstruct.create('td', {innerHTML: "<i class='fa icon-x fa-1x'/>"}, tr);
+				var td2 = domConstruct.create('td', {innerHTML: "<i class='fa icon-x fa-1x library-rm'/>"}, tr);
 
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);

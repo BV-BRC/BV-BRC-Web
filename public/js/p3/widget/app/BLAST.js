@@ -634,7 +634,7 @@ define([
 			var maxName = 50;
 			var display_name = name;
 			if(name.length > maxName){
-				display_name = name.substr(0, (maxName / 2) - 2) + "...." + name.substr((name.length - (maxName / 2)) + 2);
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 
 			return display_name;
