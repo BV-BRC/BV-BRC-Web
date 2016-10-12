@@ -18,16 +18,14 @@ define("p3/widget/viewer/PathwayMap", [
 				return;
 			}
 
-			var parts = state.pathname.split("/");
-			var params = parts[parts.length - 1];
-
-			// var pmState = {}; // pathway_id, ec_number, feature_id, taxon_id, annotation
-			params.split('&').forEach(function(p){
-				var kv = p.split("=");
-				if(kv[1]){
-					state[kv[0]] = kv[1];
-				}
+			var params = {};
+			var qparts = state.search.split("&");
+			qparts.forEach(function(qp){
+				var parts = qp.split("=");
+				params[parts[0]] = parts[1].split(",");
 			});
+			state = lang.mixin(state, params);
+
 			if(!state.pathway_id) return;
 
 			// taxon_id -> state.genome_ids or genome_id ->state.genome_ids
@@ -36,7 +34,6 @@ define("p3/widget/viewer/PathwayMap", [
 				this.viewer.set('visible', true);
 			}
 			else if(state.hasOwnProperty('genome_ids')){
-				state.genome_ids = state.genome_ids.split(',');
 				this.viewer.set('visible', true);
 			}
 			else if(state.hasOwnProperty('taxon_id')){

@@ -267,10 +267,10 @@ define("p3/widget/app/Rnaseq", [
 			var fn2 = this.read2.searchBox.get("displayedValue");
 			var maxName = 14;
 			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + ".." + fn.substr((fn.length - (maxName / 2)) + 2);
+				fn = fn.substr(0, (maxName / 2) - 2) + "..." + fn.substr((fn.length - (maxName / 2)) + 2);
 			}
 			if(fn2.length > maxName){
-				fn2 = fn2.substr(0, (maxName / 2) - 2) + ".." + fn2.substr((fn2.length - (maxName / 2)) + 2);
+				fn2 = fn2.substr(0, (maxName / 2) - 2) + "..." + fn2.substr((fn2.length - (maxName / 2)) + 2);
 			}
 			return "P(" + fn + ", " + fn2 + ")";
 		},
@@ -282,7 +282,7 @@ define("p3/widget/app/Rnaseq", [
 			var fn = this.read.searchBox.get("displayedValue");
 			maxName = 24
 			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + ".." + fn.substr((fn.length - (maxName / 2)) + 2);
+				fn = fn.substr(0, (maxName / 2) - 2) + "..." + fn.substr((fn.length - (maxName / 2)) + 2);
 			}
 			return "S(" + fn + ")";
 		},
@@ -479,7 +479,7 @@ define("p3/widget/app/Rnaseq", [
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest = this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
-			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
+			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);
 			var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if(chkPassed && lrec.read1 != lrec.read2){

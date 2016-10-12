@@ -9783,10 +9783,20 @@ table.librarytable.disabled{
 }
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
-.emptyrow {min-height:23px;
-	   max-height:23px;}
-.libraryrow {max-height:23px;
-            min-height:23px;}
+.emptyrow {
+    min-height: 23px;
+    max-height: 23px;
+}
+.libraryrow {
+    max-height: 23px;
+    min-height: 23px;
+    white-space: nowrap;
+    float: left;
+}
+table.librarytable td:last-child i {
+    position: relative;
+    top: 2px;
+}
 .headerrow{
 width: 100%;
 display:inline-block;
@@ -9916,7 +9926,7 @@ font-size: 12px;
     border: 2px solid #DEDEDE; border-radius: 20px;
     position: absolute; top: 0; bottom: 0; right: 35px;
     -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s; 
+    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;
@@ -10242,6 +10252,10 @@ font-size: 12px;
 .patric .apSummaryWidget.SummaryWidget .field-resistant_phenotype {
     width: 15%;
 }
+.patric .gfSummaryWidget.SummaryWidget .field-feature_type {
+    width: 60%;
+    text-align: left;
+}
 .patric .spgSummaryWidget.SummaryWidget .field-source_x {
     width: 20%;
 }
@@ -10321,12 +10335,15 @@ font-size: 12px;
     width: 8%;
     text-align: center;
 }
+.patric .tgFilterGrid,
 .patric .pfFilterGrid {
     height: 270px;
 }
+.patric .tgFilterGrid TH.dgrid-cell,
 .patric .pfFilterGrid TH.dgrid-cell {
     font-size: .95em;
 }
+.patric .tgFilterGrid TD.dgrid-cell,
 .patric .pfFilterGrid TD.dgrid-cell {
     font-size: .85em;
     white-space: nowrap;
@@ -10685,7 +10702,6 @@ font-size: 12px;
 .patric div.tooltip {
     position: absolute;
     padding: 10px;
-    font: 15px sans-serif;
     background: lightsteelblue;
     border: 0;
     border-radius: 4px;
