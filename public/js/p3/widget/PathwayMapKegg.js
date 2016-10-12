@@ -37,7 +37,7 @@ define([
 					if(this.isPopupOpen){
 						this.isPopupOpen = false;
 						popup.close();
-					}else {
+					}else{
 						popup.open({
 							parent: this,
 							popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
@@ -295,6 +295,7 @@ define([
 					def.resolve([idValue]);
 					break;
 				case "feature":
+					var idValueStr = (typeof idValue == "string") ? idValue.replace(',', ' OR ') : idValue.join(' OR ');
 					when(request.post(_self.apiServer + '/pathway/', {
 						handleAs: 'json',
 						headers: {
@@ -303,7 +304,7 @@ define([
 							'X-Requested-With': null,
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
-						data: 'q=pathway_id:' + pathwayId + ' AND feature_id:(' + idValue.replace(',', ' OR ') + ')&fl=ec_number'
+						data: 'q=pathway_id:' + pathwayId + ' AND feature_id:(' + idValueStr + ')&fl=ec_number'
 					}), function(response){
 
 						var ecNumbers = response.map(function(row){
