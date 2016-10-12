@@ -35,6 +35,7 @@ define([
 
 			// allocate groups
 			var groups = [];
+			var overlapPadding = 100;
 			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
@@ -43,7 +44,7 @@ define([
 					if(g.max === 0){
 						// insert. init
 						g.m.push(d);
-						g.max = d.end;
+						g.max = d.end + overlapPadding;
 						break;
 					}
 
@@ -56,7 +57,7 @@ define([
 					else{
 						// insert data in current group
 						g.m.push(d);
-						g.max = d.end;
+						g.max = d.end + overlapPadding;
 						break;
 					}
 				}
@@ -128,9 +129,9 @@ define([
 						content.push('PATRIC ID: ' + d.patric_id);
 						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
+						content.push("Product: " + d.product);
 						content.push("Feature type: " + d.feature_type);
-						content.push("Strand: " + d.strand);
-						content.push("Location: " + d.start + "..." + d.end);
+						content.push("Location: " + d.start + "..." + d.end + " (" + d.strand + ")");
 
 						self.tooltipLayer.html(content.join("<br/>"))
 							.style("left", d3.event.pageX + "px")

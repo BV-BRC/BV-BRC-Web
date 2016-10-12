@@ -318,11 +318,11 @@ define([
 		},
 
 		buildErrorMessage: function(err){
-			console.log(err);
+			// console.log(err);
 			this.loadingMask.hide();
 			domClass.remove(query(".blast_error")[0], "hidden");
 			domClass.remove(query(".blast_message")[0], "hidden");
-			query(".blast_error h3")[0].innerHTML = "BLAST has error. Please report regarding this.";
+			query(".blast_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
 			query(".blast_message")[0].innerHTML = err.response.data.error.message;
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
@@ -456,7 +456,7 @@ define([
 
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.result_grid.addChild(this.loadingMask);

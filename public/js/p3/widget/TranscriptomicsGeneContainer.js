@@ -99,12 +99,13 @@ define([
 				region: "left",
 				title: "filter",
 				content: "Filter By",
-				style: "width:380px; overflow:auto",
+				style: "width:283px; overflow:auto",
 				splitter: true
 			});
 
 			// genome list grid
 			var filterGrid = new FilterGrid({
+				"class": "tgFilterGrid",
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
