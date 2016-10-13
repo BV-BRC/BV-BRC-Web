@@ -47,6 +47,14 @@
 .patric .pfFilterGrid {
     height: 270px;
 }
+.dgrid-cell.dgrid-column-pathway_summary_name.field-pathway_name {
+    width: 55%;
+}
+.dgrid-cell.dgrid-column-genes_selected,
+.dgrid-cell.dgrid-column-genes_annotated,
+.dgrid-cell.dgrid-column-coverage {
+    width: 15%;
+}
 .patric .tgFilterGrid TH.dgrid-cell,
 .patric .pfFilterGrid TH.dgrid-cell {
     font-size: .95em;
@@ -56,9 +64,11 @@
     font-size: .85em;
     white-space: nowrap;
 }
+.patric .tgFilterOptions,
 .patric .pfFilterOptions {
     line-height: 12px;
     font-size: 12px;
+    overflow: hidden;
 }
 .patric .pfFilterOptions .present {
     margin-left: 2px;
@@ -68,6 +78,11 @@
 }
 .patric .pfFilterOptions .mixed {
     margin-left: 42px;
+}
+.patric .tgFilterOptions div {
+    display: inline-block;
+    width: 21px;
+    text-align: center;
 }
 .patric .dgrid-cell.field-accession {
     width: 10%;
