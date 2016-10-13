@@ -73,6 +73,7 @@
 .patric .pfFilterOptions {
     line-height: 12px;
     font-size: 12px;
+    overflow: hidden;
 }
 .patric .pfFilterOptions .present {
     margin-left: 2px;
