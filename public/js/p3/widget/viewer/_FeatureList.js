@@ -124,11 +124,6 @@ define([
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
-			// return new ContentPane({
-			// 	title: "Overview",
-			// 	content: "Feature Overview", 
-			// 	id: this.viewer.id + "_overview"
-			// })
 		},
 
 		postCreate: function(){
