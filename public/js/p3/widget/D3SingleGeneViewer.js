@@ -126,7 +126,7 @@ define([
 							.style("opacity", .95);
 
 						var content = [];
-						content.push('PATRIC ID: ' + d.patric_id);
+						(d.patric_id) ? content.push('PATRIC ID: ' + d.patric_id) : {};
 						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						content.push("Product: " + d.product);

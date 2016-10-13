@@ -46,6 +46,10 @@ define([
 			this.set("publications", feature);
 			this.set("functionalProperties", feature);
 			this.set("staticLinks", feature);
+
+			if(!feature.patric_id){
+				domClass.remove(this.isRefSeqOnly, "hidden");
+			}
 		},
 		_setStaticLinksAttr: function(feature){
 
