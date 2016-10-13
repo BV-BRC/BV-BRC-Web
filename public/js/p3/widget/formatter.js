@@ -44,33 +44,6 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 	};
 
 	var formatters = {
-		linkGenome: function(value, row){
-			return '<a href="/portal/portal/patric/Genome?cType=genome&cId=' + row.genome_id + '">' + value + '</a>';
-		},
-		linkGenomePATRICCDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=PATRIC&filtertype=">' + value + '</a>';
-			}
-		},
-		linkGenomeBRC1CDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=BRC1&filtertype=">' + value + '</a>';
-			}
-		},
-		linkGenomeRefSeqCDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=RefSeq&filtertype=">' + value + '</a>';
-			}
-		},
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},
