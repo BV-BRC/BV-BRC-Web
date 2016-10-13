@@ -17,7 +17,7 @@ define("p3/widget/PathwaySummaryGrid", [
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}),
-			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+			pathway_summary_name: {label: 'Pathway Name', field: 'pathway_name'},
 			genes_selected: {label: '# of Genes Selected', field: 'genes_selected'},
 			genes_annotated: {label: '# of Genes Annotated', field: 'genes_annotated'},
 			coverage: {label: '% Coverage', field: 'coverage'}
@@ -90,7 +90,7 @@ define("p3/widget/PathwaySummaryGrid", [
 		},
 		_setState: function(state){
 			if(!this.store){
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, lang.mixin({},state)));
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, lang.mixin({}, state)));
 			}else{
 				this.store.set('state', state);
 			}

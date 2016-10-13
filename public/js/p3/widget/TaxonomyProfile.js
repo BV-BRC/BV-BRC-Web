@@ -51,6 +51,10 @@ define([
 				data: "in(genome_id,(" + genomeIds.join(",") + "))&limit(1)&facet((pivot,(species,genome_id)),(mincount,1),(limit,-1))&json(nl,map)"
 			}).then(lang.hitch(this, function(res){
 
+					if(res.length == 0){
+						return;
+					}
+
 					var facet = res.facet_counts.facet_pivot['species,genome_id'];
 					// console.log("facet: ", facet);
 
