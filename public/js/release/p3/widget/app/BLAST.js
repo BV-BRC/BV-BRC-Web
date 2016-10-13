@@ -16,9 +16,9 @@ define("p3/widget/app/BLAST", [
 			Standby,
 			GridContainer, Grid, selector, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
-	const NA = "nucleotide", AA = "protein";
+	var NA = "nucleotide", AA = "protein";
 
-	const ProgramDefs = [
+	var ProgramDefs = [
 		{
 			value: "blastn",
 			label: "blastn - search a nucleotide database using a nucleotide query",
@@ -51,7 +51,7 @@ define("p3/widget/app/BLAST", [
 		}
 	];
 
-	const DatabaseDefs = [
+	var DatabaseDefs = [
 		{value: "ref.fna", label: "Reference or Representative Genomes (fna)"},
 		{value: "ref.ffn", label: "Reference or Representative Genome features (ffn)"},
 		{value: "ref.faa", label: "Reference or Representative Genome proteins (faa)"},
@@ -112,7 +112,7 @@ define("p3/widget/app/BLAST", [
 		},
 
 		hasSingleFastaSequence: function(sequence){
-			return sequence.indexOf('>') > -1 && (sequence.indexOf('>') == sequence.lastIndexOf('>'));
+			return (sequence.indexOf('>') == sequence.lastIndexOf('>'));
 		},
 
 		isNucleotideFastaSequence: function(sequence){

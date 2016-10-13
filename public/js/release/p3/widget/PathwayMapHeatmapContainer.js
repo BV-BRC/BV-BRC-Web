@@ -3,13 +3,13 @@ define("p3/widget/PathwayMapHeatmapContainer", [
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin", "../store/PathwayMapMemoryStore"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin", "../store/PathwayMapMemoryStore"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, PathJoin, Store){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, Store){
 
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
@@ -320,13 +320,36 @@ define("p3/widget/PathwayMapHeatmapContainer", [
 				disabled: (featureIds.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
-				Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds + "))", target: "blank"});
+				Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds + "))#view_tab=features", target: "blank"});
 			});
 
 			var btnAddToWorkspace = new Button({
 				label: 'Add Proteins to Group',
 				disabled: (featureIds.length === 0)
 			});
+			on(btnAddToWorkspace.domNode, "click", function(){
+				if(!window.App.user || !window.App.user.id){
+					Topic.publish("/login");
+					return;
+				}
+
+				var dlg = new Dialog({title: "Add This Feature To Group"});
+				var stg = new SelectionToGroup({
+					selection: features,
+					type: 'feature_group'
+				});
+				on(dlg.domNode, "dialogAction", function(evt){
+					dlg.hide();
+					setTimeout(function(){
+						dlg.destroy();
+					}, 2000);
+				});
+				domConstruct.place(stg.domNode, dlg.containerNode, "first");
+				stg.startup();
+				dlg.startup();
+				dlg.show();
+			});
+
 			var btnCancel = new Button({
 				label: 'Cancel',
 				onClick: function(){
