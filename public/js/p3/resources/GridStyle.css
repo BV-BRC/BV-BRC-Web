@@ -59,6 +59,16 @@
     height: 270px;
 }
 
+/* pathway summary */
+.dgrid-cell.dgrid-column-pathway_summary_name.field-pathway_name {
+    width: 55%;
+}
+.dgrid-cell.dgrid-column-genes_selected,
+.dgrid-cell.dgrid-column-genes_annotated,
+.dgrid-cell.dgrid-column-coverage {
+    width: 15%;
+}
+
 .patric .tgFilterGrid TH.dgrid-cell,
 .patric .pfFilterGrid TH.dgrid-cell {
     font-size: .95em;
