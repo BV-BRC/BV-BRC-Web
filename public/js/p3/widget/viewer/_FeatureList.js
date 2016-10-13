@@ -56,13 +56,13 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-
+			this.inherited(arguments);
 			this.set("query", state.search);
 
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "features"){
+			// if(active == "features"){
 				this.setActivePanelState();
-			}
+			// }
 
 			this.inherited(arguments);
 		},
@@ -75,8 +75,9 @@ define([
 		},
 
 		setActivePanelState: function(){
-
+			console.log("Active Panel: ", active)
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			console.log("Active Panel: ", active)
 
 			var activeTab = this[active];
 
@@ -85,8 +86,9 @@ define([
 			}
 
 			switch(active){
+				case "overview":
 				case "features":
-					activeTab.set("state", lang.mixin({},this.state));
+					activeTab.set("state", this.state); //lang.mixin({},this.state));
 					break;
 				default:
 					var activeQueryState;
