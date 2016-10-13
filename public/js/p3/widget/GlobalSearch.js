@@ -29,6 +29,7 @@ define([
 				}
 
 				console.log("Search Filter: ", searchFilter);
+				query = query.replace(/'/g,"").replace(/:/g, " ");
 				var q = searchToQuery(query);
 				
 				var clear = false;

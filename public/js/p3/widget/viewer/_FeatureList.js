@@ -28,6 +28,8 @@ define([
 
 			var _self = this;
 
+			console.log("FeatureList QUERY: ", query)
+
 			xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 				headers: {
 					accept: "application/solr+json",
@@ -36,16 +38,16 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json",
-				date: query + "&limit(1)"
+				data: query + "&limit(1)"
 			}).then(function(res){
-
+				console.log("Got FeatureList Query Results: ", res)
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
 						_self._set("total_features", res.response.numFound);
 					}
 				}else{
-					console.log("Invalid Response for: ", url);
+					console.log("Invalid Response for: ", query);
 				}
 			}, function(err){
 				console.error("Error Retreiving Features: ", err);
@@ -54,7 +56,6 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			this.set("query", state.search);
 
@@ -70,7 +71,7 @@ define([
 			var qe = QueryToEnglish(newVal);
 			// this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + qe + "</div>");
 
-			this.queryNode.innerHTML = qe;
+			this.queryNode.innerHTML = "Features: " + qe;
 		},
 
 		setActivePanelState: function(){
@@ -137,7 +138,7 @@ define([
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
 				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-				disabled: false
+				disabled: false,
 			});
 
 			this.viewer.addChild(this.overview);
