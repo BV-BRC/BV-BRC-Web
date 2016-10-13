@@ -37,7 +37,7 @@ Note: authentication is stored as a session cookie.  You can clear it via your b
 
 ```
 redis-server
-./bin/p3-web
+npm start
 ```
 
 Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.  
@@ -53,11 +53,7 @@ Contributing
 4. Push to the branch: `git push origin my-new-feature`
 5. Submit a pull request
 
-## Builds
-
-Although a build a is not explicitly required to make a PR, it's a good idea to ensure your code will build.
-
-Before creating a build, make sure you fork is up to date with master of `PATRIC3/p3_web`:
+### Syncing your fork
 
 ```
 // if needed, create an 'upstream' remote with 'git remote add upstream https://github.com/PATRIC3/p3_web/'
@@ -66,15 +62,23 @@ git submodule update --init
 git merge upstream/master 
 ```
 
-The following will create a build in `./public/js/release`.  
+Read more here [here](https://help.github.com/articles/syncing-a-fork/).
+
+## Builds
+
+Although a build a is not explicitly required to make a PR, it's a good idea to ensure your code will build.
+
+Before creating a build, sync your fork with the master of `PATRIC3/p3_web` as above.
+
+The following will create a build in `./public/js/release`:
 
 ```
 ./buildCLient.sh
 ```
 
-**Note**: jBrowse is currently causing some havoc in builds.  You can 'fix' this by commiting out `xstyle/load-css` in `./public/js/JBrowse/main.js`.
+**Note**: jBrowse is currently causing some havoc in builds.  You can 'fix' this by commenting out `xstyle/load-css` in `./public/js/JBrowse/main.js`.
 
-#### Committing builds
+### Committing builds
 
 Increment the `version` in `./package.json`, following the semantic versioning specification, and commit the new build:
 

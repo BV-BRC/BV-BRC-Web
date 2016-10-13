@@ -68,9 +68,9 @@ define([
 			this.numlibs.set('value', Number(this.addedLibs));
 		},
 		formatName: function(name){
-			var maxName = 30;
+			var maxName = 29;
 			if(name.length > maxName){
-				name = name.substr(0, (maxName / 2) - 2) + ".." + name.substr((name.length - (maxName / 2)) + 2);
+				name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 			return name;
 		},

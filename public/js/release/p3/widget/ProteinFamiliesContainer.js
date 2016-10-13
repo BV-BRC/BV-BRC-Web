@@ -1,13 +1,13 @@
 define("p3/widget/ProteinFamiliesContainer", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
-	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"dojox/widget/Standby",
 	"./ActionBar", "./ContainerActionBar",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
-			RadioButton, TextArea, TextBox, Button,
+			RadioButton, TextArea, TextBox, Button, Select,
 			Standby,
 			ActionBar, ContainerActionBar,
 			MainGridContainer, FilterGrid, HeatmapContainer){
@@ -51,7 +51,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			// create a loading mask
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.addChild(this.loadingMask);
@@ -63,6 +63,12 @@ define("p3/widget/ProteinFamiliesContainer", [
 			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
+			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+				var family_type = params.family_type;
+				this.family_type_selector.set('value', family_type);
 			}
 
 			if(this.mainGridContainer){
@@ -157,13 +163,30 @@ define("p3/widget/ProteinFamiliesContainer", [
 				region: "left",
 				title: "filter",
 				content: "Filter By",
-				style: "width:380px; overflow:auto",
+				style: "width:283px; overflow: auto",
 				splitter: true
 			});
 
 			var familyTypePanel = new ContentPane({
 				region: "top"
 			});
+
+			var cbType = this.family_type_selector = new Select({
+				name: "familyType",
+				value: 'pgfam',
+				options: [{
+					value: "plfam", label: "PATRIC genus-specific families (PLfams)"
+				}, {
+					value: "pgfam", label: "PATRIC cross-genus families (PGfams)"
+				}, {
+					value: "figfam", label: "FIGFam"
+				}]
+			});
+			cbType.on("change", function(){
+				Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
+			});
+			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
+/*
 			// plfam
 			var rb_plfam = new RadioButton({
 				name: "familyType",
@@ -200,8 +223,14 @@ define("p3/widget/ProteinFamiliesContainer", [
 			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
 			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
 			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
-
+*/
 			filterPanel.addChild(familyTypePanel);
+
+			var filterGridDescriptor = new ContentPane({
+				style: 'padding: 0',
+				content: '<div class="pfFilterOptions"><div class="present"><b>Present</b> in all families</div><div class="absent"><b>Absent</b> from all families</div><div class="mixed"><b>Either/Mixed</b></div></div>'
+			});
+			filterPanel.addChild(filterGridDescriptor);
 
 			// genome list grid
 			var filterGrid = new FilterGrid({
@@ -216,7 +245,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			});
 
 			var ta_keyword = new TextArea({
-				style: "width:360px; min-height:75px; margin-bottom: 10px"
+				style: "width:272px; min-height:75px; margin-bottom: 10px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");

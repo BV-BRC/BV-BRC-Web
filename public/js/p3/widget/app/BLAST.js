@@ -14,9 +14,9 @@ define([
 			Standby,
 			GridContainer, Grid, selector, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
-	const NA = "nucleotide", AA = "protein";
+	var NA = "nucleotide", AA = "protein";
 
-	const ProgramDefs = [
+	var ProgramDefs = [
 		{
 			value: "blastn",
 			label: "blastn - search a nucleotide database using a nucleotide query",
@@ -49,7 +49,7 @@ define([
 		}
 	];
 
-	const DatabaseDefs = [
+	var DatabaseDefs = [
 		{value: "ref.fna", label: "Reference or Representative Genomes (fna)"},
 		{value: "ref.ffn", label: "Reference or Representative Genome features (ffn)"},
 		{value: "ref.faa", label: "Reference or Representative Genome proteins (faa)"},
@@ -110,7 +110,7 @@ define([
 		},
 
 		hasSingleFastaSequence: function(sequence){
-			return sequence.indexOf('>') > -1 && (sequence.indexOf('>') == sequence.lastIndexOf('>'));
+			return (sequence.indexOf('>') == sequence.lastIndexOf('>'));
 		},
 
 		isNucleotideFastaSequence: function(sequence){
@@ -178,7 +178,7 @@ define([
 						}
 						var q = {
 							method: "HomologyService.blast_fasta_to_genomes",
-							params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+							params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
 						};
 						def.resolve(q);
 						break;
@@ -204,7 +204,7 @@ define([
 							var genomeIds = Object.keys(genomeIdHash);
 							var q = {
 								method: "HomologyService.blast_fasta_to_genomes",
-								params: [encodeURIComponent(sequence), program, genomeIds, search_for, evalue, max_hits, 0]
+								params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
 							};
 							def.resolve(q);
 						}));
@@ -218,7 +218,7 @@ define([
 
 						var q = {
 							method: "HomologyService.blast_fasta_to_taxon",
-							params: [encodeURIComponent(sequence), program, taxon, search_for, evalue, max_hits, 0]
+							params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
 						};
 						def.resolve(q);
 						break;
@@ -250,6 +250,7 @@ define([
 
 				xhr.post("https://p3.theseed.org/services/homology_service", {
 					headers: {
+						'Authorization': (window.App.authorizationToken || ""),
 						"Accept": "application/json"
 					},
 					handleAs: "json",
@@ -317,11 +318,11 @@ define([
 		},
 
 		buildErrorMessage: function(err){
-			console.log(err);
+			// console.log(err);
 			this.loadingMask.hide();
 			domClass.remove(query(".blast_error")[0], "hidden");
 			domClass.remove(query(".blast_message")[0], "hidden");
-			query(".blast_error h3")[0].innerHTML = "BLAST has error. Please report regarding this.";
+			query(".blast_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
 			query(".blast_message")[0].innerHTML = err.response.data.error.message;
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
@@ -455,7 +456,7 @@ define([
 
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.result_grid.addChild(this.loadingMask);
@@ -633,7 +634,7 @@ define([
 			var maxName = 50;
 			var display_name = name;
 			if(name.length > maxName){
-				display_name = name.substr(0, (maxName / 2) - 2) + "...." + name.substr((name.length - (maxName / 2)) + 2);
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
 			}
 
 			return display_name;

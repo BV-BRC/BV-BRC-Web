@@ -866,7 +866,7 @@ define([
 									return d['feature_id']
 								});
 								Topic.publish("/navigate", {
-									href: "/view/PathwaySummary/?pathways=" + ids.join(','),
+									href: "/view/PathwaySummary/?features=" + ids.join(','),
 									target: "blank"
 								});
 							});

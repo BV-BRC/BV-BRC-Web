@@ -788,16 +788,18 @@ define([
                 });
             }
 
+            if (!state){
+            	return;
+            }
+
             var location;
             if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
+            	state.hashParams.loc = state.feature.accession + ":" + Math.max(0,parseInt(state.feature.start)-3000) + ".." + (parseInt(state.feature.end)+3000);
+                state.hashParams.highlight = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
             var dataRoot;
 
-            if (!state){
-            	return;
-            }
 
             if (state.feature && state.feature.genome_id){
             	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
@@ -821,7 +823,7 @@ define([
 				baseUrl: "/public/js/jbrowse.repo/",
 				refSeqs: "{dataRoot}/refseqs",
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
-				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
+				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
 				forceTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
 				alwaysOnTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,

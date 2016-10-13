@@ -94,12 +94,12 @@ define([
 			},
 			collection_year: {
 				label: 'Collection Year',
-				field: 'collection_year',
-				hidden: true
+				field: 'collection_year'
 			},
 			collection_date: {
 				label: 'Collection Date',
-				field: 'collection_date'
+				field: 'collection_date',
+				hidden: true
 			},
 			completion_date: {
 				label: 'Completion Date',

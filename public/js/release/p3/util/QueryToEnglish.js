@@ -26,15 +26,22 @@ define("p3/util/QueryToEnglish", [
 				case "in":
 					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");;
 					var v = term.args[1];
-					var vals = v.map(function(val){
-						return '<span class="searchValue">' + decodeURIComponent(val) + "</span>";
-					});
-					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span>(';
+					console.log("V: ",v)
+					var vals;
+					if (!(v instanceof Array)){
+						v = [v];
+					}
 
-					if (vals.length<3) {
-						out = out + vals.join('<span class="searchOperator"> OR </span>') + ")";
+					vals = v.map(walk);
+					
+					out = '<span class="searchField">' +f +' </span>' + '<span class="searchOperator"> is </span> ';
+
+					if (vals.length==1){
+						out = out + " IN " + vals.join("")
+					}else if (vals.length<3) {
+						out = out + vals.join('<span class="searchOperator"> OR </span>');
 					}else{
-						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...)';
+						out = out + vals.slice(0,2).join('<span class="searchOperator"> OR </span>') + ' ... ' + (vals.length-2) + ' more ...';
 					}
 					// parsed.selected.push({field: f, value: v});
 					break;
@@ -54,7 +61,20 @@ define("p3/util/QueryToEnglish", [
 				case "not":
 					out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
 					break;
+				case "GenomeGroup":
+					var groupParts = decodeURIComponent(term.args[0]).split("/")
+					var groupName = groupParts[groupParts.length-1];
+					out = 'Genome Group <span class="searchValue">' + groupName + "</span>"
+					break;
+				case "FeatureGroup":
+					var groupParts = decodeURIComponent(term.args[0]).split("/")
+					var groupName = groupParts[groupParts.length-1];
+					out = 'Feature Group <span class="searchValue">' + groupName + "</span>"
+					break;
 				default:
+					if (typeof term == "string"){
+						return '<span class="searchValue"> '  +decodeURIComponent(term) + '</span>';
+					}
 					console.log("Skipping Unused term: ", term.name, term.args);
 			}
 

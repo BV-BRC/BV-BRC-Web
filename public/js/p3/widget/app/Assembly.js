@@ -228,10 +228,10 @@ define([
 			var fn2 = _self.read2.searchBox.get("displayedValue");
 			var maxName = 12;
 			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + ".." + fn.substr((fn.length - (maxName / 2)) + 2);
+				fn = fn.substr(0, (maxName / 2) - 2) + "..." + fn.substr((fn.length - (maxName / 2)) + 2);
 			}
 			if(fn2.length > maxName){
-				fn2 = fn2.substr(0, (maxName / 2) - 2) + ".." + fn2.substr((fn2.length - (maxName / 2)) + 2);
+				fn2 = fn2.substr(0, (maxName / 2) - 2) + "..." + fn2.substr((fn2.length - (maxName / 2)) + 2);
 			}
 			if(_self.interleaved.turnedOn){
 				return "P(" + fn + ")";
@@ -280,7 +280,7 @@ define([
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest = this.interleaved.turnedOn ? this.pairToAttachPt2 : this.pairToAttachPt1;
-			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
+			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);
 			var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
 			this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if(chkPassed){

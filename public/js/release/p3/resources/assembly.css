@@ -61,10 +61,20 @@ table.librarytable.disabled{
 }
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
-.emptyrow {min-height:23px;
-	   max-height:23px;}
-.libraryrow {max-height:23px;
-            min-height:23px;}
+.emptyrow {
+    min-height: 23px;
+    max-height: 23px;
+}
+.libraryrow {
+    max-height: 23px;
+    min-height: 23px;
+    white-space: nowrap;
+    float: left;
+}
+table.librarytable td > i {
+    position: relative;
+    top: 3px;
+}
 .headerrow{
 width: 100%;
 display:inline-block;
@@ -194,7 +204,7 @@ font-size: 12px;
     border: 2px solid #DEDEDE; border-radius: 20px;
     position: absolute; top: 0; bottom: 0; right: 35px;
     -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s; 
+    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;

@@ -99,6 +99,10 @@
 .patric .apSummaryWidget.SummaryWidget .field-resistant_phenotype {
     width: 15%;
 }
+.patric .gfSummaryWidget.SummaryWidget .field-feature_type {
+    width: 60%;
+    text-align: left;
+}
 .patric .spgSummaryWidget.SummaryWidget .field-source_x {
     width: 20%;
 }

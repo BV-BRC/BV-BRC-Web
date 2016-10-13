@@ -3,6 +3,6 @@
     "editor.scrollBeyondLastLine": false,
 	"files.trimTrailingWhitespace": true,
     "files.exclude": {
-        "public/js/release/p3/*": true
+        "public/js/release/*": true
     }
 }

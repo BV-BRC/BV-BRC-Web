@@ -549,6 +549,16 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			var isTransposed = tgState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
+			console.log("clustering data set size: ", data.length);
+			if(data.length > 1500000){
+				new Dialog({
+					title: "Notice",
+					content: "The data set is too large to cluster. Please use filter panel to reduce the size",
+					style: "width: 300px"
+				}).show();
+				return;
+			}
+
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
@@ -563,7 +573,13 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 
 				// re-draw heatmap
 				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
-			}));
+			}), function(err){
+
+				new Dialog({
+					title: err.status,
+					content: err.text
+				}).show();
+			});
 		}
 	});
 });
