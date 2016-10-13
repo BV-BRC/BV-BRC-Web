@@ -83,11 +83,10 @@ table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
     white-space: nowrap;
     float: left;
 }
-table.librarytable td:last-child i {
+table.librarytable td > i {
     position: relative;
-    top: 2px;
+    top: 3px;
 }
-
 
 .headerrow{
 width: 100%;
