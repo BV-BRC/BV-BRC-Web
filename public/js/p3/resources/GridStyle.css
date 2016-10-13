@@ -70,6 +70,7 @@
     white-space: nowrap;
 }
 
+.patric .tgFilterOptions,
 .patric .pfFilterOptions {
     line-height: 12px;
     font-size: 12px;
@@ -83,6 +84,12 @@
 }
 .patric .pfFilterOptions .mixed {
     margin-left: 42px;
+}
+
+.patric .tgFilterOptions div {
+    display: inline-block;
+    width: 21px;
+    text-align: center;
 }
 
 /* sequences */

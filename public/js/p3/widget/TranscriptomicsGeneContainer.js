@@ -103,6 +103,12 @@ define([
 				splitter: true
 			});
 
+			var filterGridDescriptor = new ContentPane({
+				style: 'padding: 0',
+				content: '<div class="tgFilterOptions"><div><img src="/public/js/p3/resources/images/expression_data_up.png" alt="Up regulate" title="Up regulate"></div><div><img src="/public/js/p3/resources/images/expression_data_down.png" alt="Down regulate" title="Down regulate"></div><div><img src="/public/js/p3/resources/images/expression_data_mixed.png" alt="Don\'t care" title="Don\'t care"></div></div>'
+			});
+			filterPanel.addChild(filterGridDescriptor);
+
 			// genome list grid
 			var filterGrid = new FilterGrid({
 				"class": "tgFilterGrid",
