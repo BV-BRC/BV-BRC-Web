@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-	"dojo/_base/lang", "dojo/mouse","rql/js-array",
+	"dojo/_base/lang", "dojo/mouse", "rql/js-array",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class","FileSaver","dojo/when"
+	"./AdvancedDownload", "dojo/dom-class", "FileSaver", "dojo/when"
 ], function(declare, on, domConstruct,
-			lang, Mouse,rql,
+			lang, Mouse, rql,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
 			AdvancedDownload, domClass, saveAs, when){
@@ -37,18 +37,18 @@ define([
 			popup.close(this);
 		},
 
-		downloadSelection: function(type,selection){
-		
+		downloadSelection: function(type, selection){
+
 			var conf = this.downloadableConfig[this.containerType];
 			var sel = selection.map(function(sel){
 				return sel[conf.field || conf.pk]
 			});
 
 			console.log("DOWNLOAD TYPE: ", type)
-			if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
+			if(conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
 				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
-				when(this.grid.store.query({}), lang.hitch(this,function(results){
-					results = rql.query(query,{},results);
+				when(this.grid.store.query({}), lang.hitch(this, function(results){
+					results = rql.query(query, {}, results);
 					var data = this["_to" + type.toLowerCase()](results);
 					saveAs(new Blob([data]), this.containerType + "_selection." + type);
 				}));
@@ -67,9 +67,9 @@ define([
 						accept = "application/" + type;
 						break;
 				}
-				
+
 				var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
-				
+
 				if(baseUrl.charAt(-1) !== "/"){
 					baseUrl = baseUrl + "/";
 				}
@@ -79,10 +79,9 @@ define([
 
 				baseUrl = baseUrl + "?&http_download=true&http_accept=" + accept
 
-				if (window.App.authorizationToken){
+				if(window.App.authorizationToken){
 					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 				}
-				
 
 				var form = domConstruct.create("form", {
 					style: "display: none;",
@@ -90,18 +89,18 @@ define([
 					enctype: 'application/x-www-form-urlencoded',
 					name: "downloadForm",
 					method: "post",
-					action: baseUrl 
+					action: baseUrl
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
-			 }
+			}
 		},
 
 		_tocsv: function(selection){
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header=[]
+			var header = []
 			keys.forEach(function(key){
 				header.push(key);
 			});
@@ -120,12 +119,11 @@ define([
 
 		},
 
-
 		_totsv: function(selection){
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header=[]
+			var header = []
 			keys.forEach(function(key){
 				header.push(key);
 			});
@@ -169,7 +167,7 @@ define([
 				// 	return sel[conf.field || conf.pk]
 				// });
 
-				_self.downloadSelection(rel,_self.selection)
+				_self.downloadSelection(rel, _self.selection)
 			});
 
 			var dstContent = domConstruct.create("div", {});
@@ -226,7 +224,7 @@ define([
 			},
 			"sequence_data": {
 				"label": "Sequences",
-				"dataType": "sequence",
+				"dataType": "genome_sequence",
 				pk: "sequence_id",
 				tableData: true,
 				otherData: ["dna+fasta", "protein+fasta"]
