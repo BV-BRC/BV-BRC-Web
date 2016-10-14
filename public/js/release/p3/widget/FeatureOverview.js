@@ -5,13 +5,13 @@ define("p3/widget/FeatureOverview", [
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer, SelectionToGroup){
+			DataItemFormatter, ExternalItemFormatter, formatter, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -179,7 +179,16 @@ define("p3/widget/FeatureOverview", [
 				var opts = {
 					columns: [
 						{label: "Database", field: "id_type"},
-						{label: "Identifier", field: "id_value"}
+						{label: "Identifier", field: "id_value",
+							renderCell: function(obj, val, node){
+								var baseUrl = formatter.getExternalLinks(obj['id_type']);
+								if(obj['id_type'].match(/"HOGENOM|OMA|ProtClustDB|eggNOG"/)){
+									node.innerHTML = '<a href="' + baseUrl + obj['uniprotkb_accession'] + '" taget=_blank>' + val + '</a>';
+								}else{
+									node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';
+								}
+							}
+						}
 					]
 				};
 

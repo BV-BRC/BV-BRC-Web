@@ -24277,6 +24277,7 @@ define([
 				}
 
 				 0 && console.log("Search Filter: ", searchFilter);
+				query = query.replace(/'/g,"").replace(/:/g, " ");
 				var q = searchToQuery(query);
 				
 				var clear = false;
@@ -32962,34 +32963,166 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		return locale.format(obj, format || {formatLength: "short"});
 	};
 
+	var getExternalLinks = function(target){
+		var link;
+
+		if (target.match(/ncbi_gene/i)) {
+			link = "//www.ncbi.nlm.nih.gov/sites/entrez?db=gene&cmd=Retrieve&dopt=full_report&list_uids=";
+		}
+		else if (target.match(/ncbi_accession/i)) {
+			link = "//www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?db=nucleotide&val=";
+		}
+		else if (target.match(/ncbi_protein/i) || target.match(/RefSeq/i) || target.match(/GI/i)) {
+			link = "//www.ncbi.nlm.nih.gov/protein/";
+		}
+		else if (target.match(/RefSeq_NT/i)) {
+			link = "//www.ncbi.nlm.nih.gov/nuccore/"; // NC_010067.1 - // nucleotide db
+		}
+		else if (target.match(/go_term/i)) {
+			link = "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="; // GO:0004747
+		}
+		else if (target.match(/ec_number/i)) {
+			link = "http://enzyme.expasy.org/EC/"; // 2.7.1.15
+		}
+		else if (target.match(/kegg_pathwaymap/i) || target.match(/KEGG/i)) {
+			link = "http://www.genome.jp/dbget-bin/www_bget?"; // pathway+map00010
+		}
+		else if (target.match(/UniProtKB-Accession/i) || target.match(/UniProtKB-ID/i)) {
+			link = "http://www.uniprot.org/uniprot/"; // A9MFG0 or ASTD_SALAR
+		}
+		else if (target.match(/UniRef100/i) || target.match(/UniRef90/i) || target.match(/UniRef50/i)) {
+			link = "http://www.uniprot.org/uniref/"; // UniRef100_A9MFG0, UniRef90_B5F7J0, or // UniRef50_Q1C8A9
+		}
+		else if (target.match(/UniParc/i)) {
+			link = "http://www.uniprot.org/uniparc/"; // UPI0001603B3F
+		}
+		else if (target.match(/EMBL/i) || target.match(/EMBL-CDS/i)) {
+			link = "//www.ebi.ac.uk/ena/data/view/"; // CP000880, ABX21565
+		}
+		else if (target.match(/GeneID/i)) {
+			link = "//www.ncbi.nlm.nih.gov/sites/entrez?db=gene&term="; // 5763416;
+		}
+		else if (target.match(/GenomeReviews/i)) {
+			link = "http://www.genomereviews.ebi.ac.uk/GR/contigview?chr="; // CP000880_GR
+		}
+		else if (target.match(/eggNOG/i)) {
+			link = "http://eggnog.embl.de/cgi_bin/display_multi_clusters.pl?linksource=uniprot&level=0&1="; // Q2YII1 -- uniprot accession
+		}
+		else if (target.match(/HOGENOM/i)) {
+			link = "http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?db=HOGENOM&query="; // A9MFG0 -- uniprot accession
+		}
+		else if (target.match(/OMA/i)) {
+			link = "http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1="; // A9MFG0 -- uniprot accession
+		}
+		else if (target.match(/ProtClustDB/i)) {
+			link = "//www.ncbi.nlm.nih.gov/sites/entrez?Db=proteinclusters&Cmd=DetailsSearch&Term="; // A9MFG0 -- uniprot accession
+		}
+		else if (target.match(/BioCyc/i)) {
+			link = "http://biocyc.org/getid?id="; // BMEL359391:BAB2_0179-MONOMER
+		}
+		else if (target.match(/NMPDR/i)) {
+			link = "//www.nmpdr.org/linkin.cgi?id="; // fig|382638.8.peg.1669"
+		}
+		else if (target.match(/EnsemblGenome/i) || target.match(/EnsemblGenome_TRS/i)
+			|| target.match(/EnsemblGenome_PRO/i)) {
+			link = "http://www.ensemblgenomes.org/id/"; // EBMYCT00000005579
+		}
+		else if (target.match(/BEIR/i)) {
+			link = "http://www.beiresources.org/Catalog/ItemDetails/tabid/522/Default.aspx?Template=Clones&BEINum=";
+		}
+		else if (target.match(/PDB/i)) {
+			link = "Jmol?structureID=";
+		}
+		else if (target.match(/STRING/i)) { // 204722.BR0001
+			link = "http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=";
+		}
+		else if (target.match(/MEROPS/i)) { // M50.005
+			link = "http://merops.sanger.ac.uk/cgi-bin/pepsum?id=";
+		}
+		else if (target.match(/PATRIC/i)) { // 17788255
+			link = "Feature?cType=feature&cId=";
+		}
+		else if (target.match(/OrthoDB/i)) { // EOG689HR1
+			link = "http://cegg.unige.ch/orthodb7/results?searchtext=";
+		}
+		else if (target.match(/NCBI_TaxID/i)) { // 29461
+			link = "//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=";
+		}
+		else if (target.match(/KO/i)) { // K04756
+			link = "http://www.genome.jp/dbget-bin/www_bget?ko:";
+		}
+		else if (target.match(/TubercuList/i)) { // Rv2429
+			link = "http://tuberculist.epfl.ch/quicksearch.php?gene+name=";
+		}
+		else if (target.match(/PeroxiBase/i)) { // 4558
+			link = "http://peroxibase.toulouse.inra.fr/browse/process/view_perox.php?id=";
+		}
+		else if (target.match(/Reactome/i)) { // REACT_116125
+			link = "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=";
+		}
+		else if (target.match(/VFDB/i)) {
+			link = "http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID="; // VFG1817
+		}
+		else if (target.match(/VFDB_HOME/i)) {
+			link = "http://www.mgc.ac.cn/VFs/";
+		}
+		else if (target.match(/Victors/i)) {
+			link = "http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id="; // 220
+		}
+		else if (target.match(/Victors_HOME/i)) {
+			link = "http://www.phidias.us/victors/";
+		}
+		else if (target.match(/PATRIC_VF/i)) {
+			link = "SpecialtyGeneEvidence?source=PATRIC_VF&sourceId="; // Rv3875
+		}
+		else if (target.match(/PATRIC_VF_HOME/i)) {
+			link = "SpecialtyGeneSource?source=PATRIC_VF&kw=";
+		}
+		else if (target.match(/ARDB/i)) {
+			link = "//ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term="; // AAL09826
+		}
+		else if (target.match(/ARDB_HOME/i)) {
+			link = "//ardb.cbcb.umd.edu/";
+		}
+		else if (target.match(/CARD/i)) {
+			link = ""; //TODO: need to add
+		}
+		else if (target.match(/CARD_HOME/i)) {
+			link = "http://arpcard.mcmaster.ca";
+		}
+		else if (target.match(/DrugBank/i)) {
+			link = "http://v3.drugbank.ca/molecules/"; // 1
+		}
+		else if (target.match(/DrugBank_HOME/i)) {
+			link = "http://v3.drugbank.ca";
+		}
+		else if (target.match(/TTD/i)) {
+			link = "http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID="; // TTDS00427
+		}
+		else if (target.match(/TTD_HOME/i)) {
+			link = "http://bidd.nus.edu.sg/group/TTD/ttd.asp";
+		}
+		else if (target.match(/Human/i)) {
+			link = "//www.ncbi.nlm.nih.gov/protein/"; // NP_001005484.1
+		}
+		else if (target.match(/Human_HOME/i)) {
+			link = "//www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26";
+		}
+		else if (target.match(/bioproject_accession/i)) {
+			link = "http://www.ncbi.nlm.nih.gov/bioproject/?term=";
+		}
+		else if (target.match(/biosample_accession/i)) {
+			link = "http://www.ncbi.nlm.nih.gov/biosample/";
+		}
+		else if (target.match(/assembly_accession/i)) {
+			link = "http://www.ncbi.nlm.nih.gov/assembly/";
+		}
+		// edit patric-searches-and-tools/WebContent/js/specialty_gene_list_grids.js as well
+		return link;
+	}
+
 	var formatters = {
-		linkGenome: function(value, row){
-			return '<a href="/portal/portal/patric/Genome?cType=genome&cId=' + row.genome_id + '">' + value + '</a>';
-		},
-		linkGenomePATRICCDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=PATRIC&filtertype=">' + value + '</a>';
-			}
-		},
-		linkGenomeBRC1CDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=BRC1&filtertype=">' + value + '</a>';
-			}
-		},
-		linkGenomeRefSeqCDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=RefSeq&filtertype=">' + value + '</a>';
-			}
-		},
+		getExternalLinks: getExternalLinks,
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},
@@ -76671,12 +76804,12 @@ define([
 'p3/widget/DownloadTooltipDialog':function(){
 define([
 	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-	"dojo/_base/lang", "dojo/mouse","rql/js-array",
+	"dojo/_base/lang", "dojo/mouse", "rql/js-array",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class","FileSaver","dojo/when"
+	"./AdvancedDownload", "dojo/dom-class", "FileSaver", "dojo/when"
 ], function(declare, on, domConstruct,
-			lang, Mouse,rql,
+			lang, Mouse, rql,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
 			AdvancedDownload, domClass, saveAs, when){
@@ -76708,18 +76841,18 @@ define([
 			popup.close(this);
 		},
 
-		downloadSelection: function(type,selection){
-		
+		downloadSelection: function(type, selection){
+
 			var conf = this.downloadableConfig[this.containerType];
 			var sel = selection.map(function(sel){
 				return sel[conf.field || conf.pk]
 			});
 
 			 0 && console.log("DOWNLOAD TYPE: ", type)
-			if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
+			if(conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
 				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
-				when(this.grid.store.query({}), lang.hitch(this,function(results){
-					results = rql.query(query,{},results);
+				when(this.grid.store.query({}), lang.hitch(this, function(results){
+					results = rql.query(query, {}, results);
 					var data = this["_to" + type.toLowerCase()](results);
 					saveAs(new Blob([data]), this.containerType + "_selection." + type);
 				}));
@@ -76738,9 +76871,9 @@ define([
 						accept = "application/" + type;
 						break;
 				}
-				
+
 				var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
-				
+
 				if(baseUrl.charAt(-1) !== "/"){
 					baseUrl = baseUrl + "/";
 				}
@@ -76750,10 +76883,9 @@ define([
 
 				baseUrl = baseUrl + "?&http_download=true&http_accept=" + accept
 
-				if (window.App.authorizationToken){
+				if(window.App.authorizationToken){
 					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 				}
-				
 
 				var form = domConstruct.create("form", {
 					style: "display: none;",
@@ -76761,18 +76893,18 @@ define([
 					enctype: 'application/x-www-form-urlencoded',
 					name: "downloadForm",
 					method: "post",
-					action: baseUrl 
+					action: baseUrl
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
-			 }
+			}
 		},
 
 		_tocsv: function(selection){
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header=[]
+			var header = []
 			keys.forEach(function(key){
 				header.push(key);
 			});
@@ -76791,12 +76923,11 @@ define([
 
 		},
 
-
 		_totsv: function(selection){
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header=[]
+			var header = []
 			keys.forEach(function(key){
 				header.push(key);
 			});
@@ -76840,7 +76971,7 @@ define([
 				// 	return sel[conf.field || conf.pk]
 				// });
 
-				_self.downloadSelection(rel,_self.selection)
+				_self.downloadSelection(rel, _self.selection)
 			});
 
 			var dstContent = domConstruct.create("div", {});
@@ -76897,7 +77028,7 @@ define([
 			},
 			"sequence_data": {
 				"label": "Sequences",
-				"dataType": "sequence",
+				"dataType": "genome_sequence",
 				pk: "sequence_id",
 				tableData: true,
 				otherData: ["dna+fasta", "protein+fasta"]
@@ -83765,9 +83896,11 @@ define([
 				"class": "dijitDialogPaneActionBar"
 			});
 
+			var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+
 			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadHM = new TooltipDialog({
-				content: dfc,
+				content: dhc,
 				onMouseLeave: function(){
 					popup.close(downloadHM);
 				}
@@ -83839,7 +83972,7 @@ define([
 						return f.feature_id;
 					}).join(",") + "))";
 
-				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);
 			});
 
@@ -90499,10 +90632,10 @@ define([
 			genes: {label: "Genes", field: "genes", hidden: false},
 			pubmed: {label: "PubMed", field: "pmid", hidden: false},
 			// linkout: {label: "Link Out", field: "", hidden: false},
-			organism: {label: "Organism", field: "organism", hidden: false},
-			strain: {label: "Strain", field: "strain", hidden: false},
-			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},
-			expCond: {label: "Experimental Condition", field: "condition", hidden: false},
+			organism: {label: "Organism", field: "organism", hidden: false, sortable: false},
+			strain: {label: "Strain", field: "strain", hidden: false, sortable: false},
+			geneMod: {label: "Gene Modification", field: "mutant", hidden: false, sortable: false},
+			expCond: {label: "Experimental Condition", field: "condition", hidden: false, sortable: false},
 			timeSeries: {label: "Time Series", field: "timeseries", hidden: false},
 			releaseDate: {label: "Release Date", field: "release_date", hidden: false},
 			author: {label: "Author", field: "author", hidden: true},
@@ -95188,6 +95321,25 @@ define([
 			});
 		},
 
+
+		_initialLocation: function() {
+		    var oldLocMap = dojo.fromJson( this.cookie('location') ) || {};
+		    if( this.config.location ) {
+		        return this.config.location;
+		    } else if( this.refSeq && this.refSeq.name && oldLocMap[this.refSeq.name] ) {
+		        return oldLocMap[this.refSeq.name].l || oldLocMap[this.refSeq.name];
+		    } else if( this.config.defaultLocation ){
+		        return this.config.defaultLocation;
+		    } else if (this.refSeq){
+		        return Util.assembleLocString({
+		                                          ref:   this.refSeq.name,
+		                                          start: 0.4 * ( this.refSeq.start + this.refSeq.end ),
+		                                          end:   0.6 * ( this.refSeq.start + this.refSeq.end )
+		                                      });
+		    }else{
+		    	 0 && console.error("Problem Establishing JBrowse _initialLocation")
+		    }
+		},
 		makeGlobalMenu: function(menuName){
 			var items = ( this._globalMenuItems || {} )[menuName] || [];
 			if(!items.length)
@@ -95249,6 +95401,7 @@ define([
 				if(typeof this.config.refSeqs == 'string')
 					this.config.refSeqs = {url: this.resolveUrl(this.config.refSeqs)};
 				var thisB = this;
+
 				 0 && console.log("refSeqs url: ", this.config.refSeqs.url)
 				request(this.config.refSeqs.url, {handleAs: 'text'})
 					.then(lang.hitch(this,function(o){
@@ -95265,9 +95418,12 @@ define([
                             });
 
 							 0 && console.log(" call addREfseqs fromJson: ", o);
-							thisB.addRefseqs(refseqConfig);
-							//thisB.addRefseqs(dojo.fromJson(o));
-							 0 && console.log("After Add RefSeqs fromJson")
+							if (refseqConfig && refseqConfig.length>0){
+								 0 && console.log(" call addREfseqs fromJson: ", o);
+								thisB.addRefseqs(refseqConfig);
+								//thisB.addRefseqs(dojo.fromJson(o));
+								 0 && console.log("After Add RefSeqs fromJson")
+							}
 							deferred.resolve({success: true});
 						}),
 						function(e){
@@ -95343,7 +95499,7 @@ define([
 						p.location = 'plugins/' + p.name;
 
 					var resolved = this.resolveUrl(p.location);
-					 0 && console.log("RESOLVED: ", resolved)
+
 					// figure out js path
 					if(!( 'js' in p ))
 						p.js = resolved + "/js"; //URL resolution for this is taken care of by the JS loader
@@ -95367,7 +95523,6 @@ define([
 						deferred.resolve({success: true});
 					});
 
-				 0 && console.log("Call Require: ", plugins)
 				require({
 						packages: array.map(plugins, function(p){
 							return {
@@ -95380,9 +95535,7 @@ define([
 						return p.name;
 					}),
 					dojo.hitch(this, function(){
-						 0 && console.log("callback forEach: ", this, arguments)
 						array.forEach(arguments, function(pluginClass, i){
-							 0 && console.log("pluginClass: ", pluginClass, " i: ", i);
 							var plugin = plugins[i];
 							var thisPluginDone = pluginDeferreds[i];
 
@@ -95469,11 +95622,11 @@ define([
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
-				refSeqs: "{dataRoot}/refseqs",
+				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
-				alwaysOnTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
+				forceTracks: ["PATRICGenes","RefSeqGenes"].join(","),
+				alwaysOnTracks: ["PATRICGenes","RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -111794,13 +111947,13 @@ define([
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer, SelectionToGroup){
+			DataItemFormatter, ExternalItemFormatter, formatter, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -111968,7 +112121,16 @@ define([
 				var opts = {
 					columns: [
 						{label: "Database", field: "id_type"},
-						{label: "Identifier", field: "id_value"}
+						{label: "Identifier", field: "id_value",
+							renderCell: function(obj, val, node){
+								var baseUrl = formatter.getExternalLinks(obj['id_type']);
+								if(obj['id_type'].match(/"HOGENOM|OMA|ProtClustDB|eggNOG"/)){
+									node.innerHTML = '<a href="' + baseUrl + obj['uniprotkb_accession'] + '" taget=_blank>' + val + '</a>';
+								}else{
+									node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';
+								}
+							}
+						}
 					]
 				};
 
@@ -115888,6 +116050,8 @@ define([
 
 			var _self = this;
 
+			 0 && console.log("FeatureList QUERY: ", query)
+
 			xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 				headers: {
 					accept: "application/solr+json",
@@ -115896,16 +116060,16 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json",
-				date: query + "&limit(1)"
+				data: query + "&limit(1)"
 			}).then(function(res){
-
+				 0 && console.log("Got FeatureList Query Results: ", res)
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
 						_self._set("total_features", res.response.numFound);
 					}
 				}else{
-					 0 && console.log("Invalid Response for: ", url);
+					 0 && console.log("Invalid Response for: ", query);
 				}
 			}, function(err){
 				 0 && console.error("Error Retreiving Features: ", err);
@@ -115914,14 +116078,13 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			//  0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-
+			this.inherited(arguments);
 			this.set("query", state.search);
 
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "features"){
+			// if(active == "features"){
 				this.setActivePanelState();
-			}
+			// }
 
 			this.inherited(arguments);
 		},
@@ -115930,12 +116093,13 @@ define([
 			var qe = QueryToEnglish(newVal);
 			// this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + qe + "</div>");
 
-			this.queryNode.innerHTML = qe;
+			this.queryNode.innerHTML = "Features: " + qe;
 		},
 
 		setActivePanelState: function(){
-
+			 0 && console.log("Active Panel: ", active)
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			 0 && console.log("Active Panel: ", active)
 
 			var activeTab = this[active];
 
@@ -115944,8 +116108,9 @@ define([
 			}
 
 			switch(active){
+				case "overview":
 				case "features":
-					activeTab.set("state", lang.mixin({},this.state));
+					activeTab.set("state", this.state); //lang.mixin({},this.state));
 					break;
 				default:
 					var activeQueryState;
@@ -115997,7 +116162,7 @@ define([
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
 				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-				disabled: false
+				disabled: false,
 			});
 
 			this.viewer.addChild(this.overview);
@@ -116544,6 +116709,10 @@ define([
 				},
 				data: "in(genome_id,(" + genomeIds.join(",") + "))&limit(1)&facet((pivot,(species,genome_id)),(mincount,1),(limit,-1))&json(nl,map)"
 			}).then(lang.hitch(this, function(res){
+
+					if(res.length == 0){
+						return;
+					}
 
 					var facet = res.facet_counts.facet_pivot['species,genome_id'];
 					//  0 && console.log("facet: ", facet);
