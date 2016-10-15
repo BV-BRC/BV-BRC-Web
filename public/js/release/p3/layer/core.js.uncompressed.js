@@ -14486,6 +14486,7 @@ define([
 			}
 		},
 		_userWorkspacesGetter: function(){
+			var _self = this;
 			if(this.userWorkspaces && this.userWorkspaces.length > 0){
 				return this.userWorkspaces;
 			}
@@ -14501,20 +14502,7 @@ define([
 					res = []
 				}else{
 					res = results[0][p].map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					})
 				}
 
@@ -14554,22 +14542,8 @@ define([
 					throw new Error("Error Creating Object");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					};
 					Topic.publish("/refreshWorkspace", {});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			});
 		},
@@ -14675,6 +14649,7 @@ define([
 		},
 
 		createFolder: function(paths){
+			var _self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -14692,24 +14667,9 @@ define([
 					throw new Error("Error Creating Folder");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					}
-
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			}));
 		},
@@ -14785,11 +14745,13 @@ define([
 		},
 
 		getObjectsByType: function(types, showHidden){
+			var _self = this;
 			types = (types instanceof Array) ? types : [types];
 			// console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
-				//console.log("current: ", current, current.path);
+				var _self = this;
+
 				var path = current.path;
 				return Deferred.when(this.api("Workspace.ls", [{
 					paths: [current.path],
@@ -14807,21 +14769,7 @@ define([
 					//console.log("array res", res);
 
 					res = res.map(function(r){
-						//console.log("r: ", r);
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(r.type == "folder"){
 							if(r.path.split("/").some(function(p){
@@ -14992,20 +14940,7 @@ define([
 					//console.log("array res", res);
 
 					res = res.map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(!showHidden && r.name.charAt(0) == "."){
 							return false;
@@ -15021,6 +14956,24 @@ define([
 					//console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
+		},
+
+		metaListToObj: function(list) {
+			return {
+				id: list[4],
+				path: list[2] + list[0],
+				name: list[0],
+				type: list[1],
+				creation_time: list[3],
+				link_reference: list[11],
+				owner_id: list[5],
+				size: list[6],
+				userMeta: list[7],
+				autoMeta: list[8],
+				user_permission: list[9],
+				global_permission: list[10],
+				timestamp: Date.parse(list[3])
+			}
 		},
 
 		_userWorkspacesSetter: function(val){
@@ -43327,9 +43280,11 @@ define([
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
-				// console.log("Ws Objects: ", items);
+
+				// sort by most recent
+				items.sort(function(a,b) { return b.timestamp - a.timestamp; });
+
 				var store = new Memory({data: items, idProperty: "path"});
-				// console.log('store: ', store);
 
 				// console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store", store);
@@ -77827,6 +77782,9 @@ define([
 		},
 		updateColumnHiddenState: function(query){
 			// console.log("updateColumnHiddenState: ", query);
+			if (this._updatedColumnHiddenState){
+				return;
+			}
 			var _self = this;
 			if(!query){
 				return;
@@ -77859,6 +77817,8 @@ define([
 				_self.toggleColumnHiddenState('genome_name', false);
 				_self.toggleColumnHiddenState('genome_id', false);
 			}
+
+			this._updatedColumnHiddenState=true;
 		},
 		startup: function(){
 			var _self = this;
@@ -80870,12 +80830,14 @@ return declare("dojox.widget.Standby", [_Widget, _TemplatedMixin],{
 },
 'p3/widget/ProteinFamiliesGridContainer':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/when", "dojo/request",
-	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin"
-], function(declare, lang, on, Topic, when, request,
-			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/when", "dojo/request", "dojo/dom-construct",
+	"dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
+	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin", "./SelectionToGroup"
+], function(declare, lang,
+			on, Topic, when, request, domConstruct,
+			popup, TooltipDialog, Dialog,
+			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup){
 
 	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
 		'<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
@@ -80974,7 +80936,7 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max:5000,
+					max: 5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["proteinfamily_data"]
 				},
@@ -81053,6 +81015,55 @@ define([
 
 					window.open("/view/FeatureList/" + query + "#view_tab=features");
 					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				},
+				false
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 100,
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(featureIds){
+
+						var dlg = new Dialog({title: "Copy Selection to Group"});
+						var stg = new SelectionToGroup({
+							selection: featureIds,
+							type: "feature_group",
+							path: ""
+						});
+						on(dlg.domNode, "dialogAction", function(){
+							dlg.hide();
+							setTimeout(function(){
+								dlg.destroy();
+							}, 2000);
+						});
+						domConstruct.place(stg.domNode, dlg.containerNode, "first");
+						stg.startup();
+						dlg.startup();
+						dlg.show();
+					});
 				},
 				false
 			]
