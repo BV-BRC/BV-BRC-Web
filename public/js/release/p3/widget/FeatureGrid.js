@@ -57,6 +57,9 @@ define("p3/widget/FeatureGrid", [
 		},
 		updateColumnHiddenState: function(query){
 			// console.log("updateColumnHiddenState: ", query);
+			if (this._updatedColumnHiddenState){
+				return;
+			}
 			var _self = this;
 			if(!query){
 				return;
@@ -89,6 +92,8 @@ define("p3/widget/FeatureGrid", [
 				_self.toggleColumnHiddenState('genome_name', false);
 				_self.toggleColumnHiddenState('genome_id', false);
 			}
+
+			this._updatedColumnHiddenState=true;
 		},
 		startup: function(){
 			var _self = this;
