@@ -54,6 +54,7 @@ define([
 		{value: "ref.ffn", label: "Reference or Representative Genome features (ffn)"},
 		{value: "ref.faa", label: "Reference or Representative Genome proteins (faa)"},
 		{value: "ref.frn", label: "Reference or Representative Genome RNAs features (frn)"},
+		{value: "16sRNA.frn", label: "PATRIC 16s RNA Genes (frn)"},
 		{value: "transcriptomics.fna", label: "Transcriptomics Genomes (fna)"},
 		{value: "transcriptomics.ffn", label: "Transcriptomics Genomes features (ffn)"},
 		{value: "plasmid.fna", label: "plasmid contigs (fna)"},
