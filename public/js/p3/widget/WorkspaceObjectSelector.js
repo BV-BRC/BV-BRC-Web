@@ -367,9 +367,11 @@ define([
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
-				// console.log("Ws Objects: ", items);
+
+				// sort by most recent
+				items.sort(function(a,b) { return b.timestamp - a.timestamp; });
+
 				var store = new Memory({data: items, idProperty: "path"});
-				// console.log('store: ', store);
 
 				// console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store", store);
