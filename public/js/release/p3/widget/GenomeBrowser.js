@@ -540,6 +540,25 @@ define("p3/widget/GenomeBrowser", [
 			});
 		},
 
+
+		_initialLocation: function() {
+		    var oldLocMap = dojo.fromJson( this.cookie('location') ) || {};
+		    if( this.config.location ) {
+		        return this.config.location;
+		    } else if( this.refSeq && this.refSeq.name && oldLocMap[this.refSeq.name] ) {
+		        return oldLocMap[this.refSeq.name].l || oldLocMap[this.refSeq.name];
+		    } else if( this.config.defaultLocation ){
+		        return this.config.defaultLocation;
+		    } else if (this.refSeq){
+		        return Util.assembleLocString({
+		                                          ref:   this.refSeq.name,
+		                                          start: 0.4 * ( this.refSeq.start + this.refSeq.end ),
+		                                          end:   0.6 * ( this.refSeq.start + this.refSeq.end )
+		                                      });
+		    }else{
+		    	console.error("Problem Establishing JBrowse _initialLocation")
+		    }
+		},
 		makeGlobalMenu: function(menuName){
 			var items = ( this._globalMenuItems || {} )[menuName] || [];
 			if(!items.length)
@@ -601,6 +620,7 @@ define("p3/widget/GenomeBrowser", [
 				if(typeof this.config.refSeqs == 'string')
 					this.config.refSeqs = {url: this.resolveUrl(this.config.refSeqs)};
 				var thisB = this;
+
 				console.log("refSeqs url: ", this.config.refSeqs.url)
 				request(this.config.refSeqs.url, {handleAs: 'text'})
 					.then(lang.hitch(this,function(o){
@@ -617,9 +637,12 @@ define("p3/widget/GenomeBrowser", [
                             });
 
 							console.log(" call addREfseqs fromJson: ", o);
-							thisB.addRefseqs(refseqConfig);
-							//thisB.addRefseqs(dojo.fromJson(o));
-							console.log("After Add RefSeqs fromJson")
+							if (refseqConfig && refseqConfig.length>0){
+								console.log(" call addREfseqs fromJson: ", o);
+								thisB.addRefseqs(refseqConfig);
+								//thisB.addRefseqs(dojo.fromJson(o));
+								console.log("After Add RefSeqs fromJson")
+							}
 							deferred.resolve({success: true});
 						}),
 						function(e){
@@ -695,7 +718,7 @@ define("p3/widget/GenomeBrowser", [
 						p.location = 'plugins/' + p.name;
 
 					var resolved = this.resolveUrl(p.location);
-					console.log("RESOLVED: ", resolved)
+
 					// figure out js path
 					if(!( 'js' in p ))
 						p.js = resolved + "/js"; //URL resolution for this is taken care of by the JS loader
@@ -719,7 +742,6 @@ define("p3/widget/GenomeBrowser", [
 						deferred.resolve({success: true});
 					});
 
-				console.log("Call Require: ", plugins)
 				require({
 						packages: array.map(plugins, function(p){
 							return {
@@ -732,9 +754,7 @@ define("p3/widget/GenomeBrowser", [
 						return p.name;
 					}),
 					dojo.hitch(this, function(){
-						console.log("callback forEach: ", this, arguments)
 						array.forEach(arguments, function(pluginClass, i){
-							console.log("pluginClass: ", pluginClass, " i: ", i);
 							var plugin = plugins[i];
 							var thisPluginDone = pluginDeferreds[i];
 
@@ -788,16 +808,18 @@ define("p3/widget/GenomeBrowser", [
                 });
             }
 
+            if (!state){
+            	return;
+            }
+
             var location;
             if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
+            	state.hashParams.loc = state.feature.accession + ":" + Math.max(0,parseInt(state.feature.start)-3000) + ".." + (parseInt(state.feature.end)+3000);
+                state.hashParams.highlight = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
             var dataRoot;
 
-            if (!state){
-            	return;
-            }
 
             if (state.feature && state.feature.genome_id){
             	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
@@ -819,11 +841,11 @@ define("p3/widget/GenomeBrowser", [
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
-				refSeqs: "{dataRoot}/refseqs",
+				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
-				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
-				alwaysOnTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
+				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
+				forceTracks: ["PATRICGenes","RefSeqGenes"].join(","),
+				alwaysOnTracks: ["PATRICGenes","RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,

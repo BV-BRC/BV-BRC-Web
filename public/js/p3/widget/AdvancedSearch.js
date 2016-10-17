@@ -413,7 +413,7 @@ define([
 		onKeyPress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchBox.get('value');
-
+				query = query.replace(/'/g,"").replace(/:/g, " ");
 				if (!query){
 					this.viewer.set("content","");
 				}

@@ -115,6 +115,10 @@ define("p3/store/IDMappingMemoryStore", [
 						summary.found = data.length;
 						Topic.publish("IDMapping", "updateHeader", summary);
 
+						data.forEach(function(d){
+							d['target'] = d[toId]
+						});
+
 						_self.setData(data);
 						_self._loaded = true;
 						return true;

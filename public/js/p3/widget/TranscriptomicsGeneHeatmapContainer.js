@@ -362,9 +362,11 @@ define([
 				"class": "dijitDialogPaneActionBar"
 			});
 
+			var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+
 			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadHM = new TooltipDialog({
-				content: dfc,
+				content: dhc,
 				onMouseLeave: function(){
 					popup.close(downloadHM);
 				}
@@ -433,7 +435,7 @@ define([
 				var rel = e.target.attributes.rel.value;
 				var currentQuery = "?in(feature_id,(" + geneIds + "))";
 
-				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);
 			});
 

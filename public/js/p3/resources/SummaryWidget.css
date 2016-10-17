@@ -123,6 +123,12 @@
     width: 15%;
 }
 
+/* Genomic Features at genome overview */
+.patric .gfSummaryWidget.SummaryWidget .field-feature_type {
+    width: 60%;
+    text-align: left;
+}
+
 /* specialty genes at genome overview */
 .patric .spgSummaryWidget.SummaryWidget .field-source_x {
     width: 20%;

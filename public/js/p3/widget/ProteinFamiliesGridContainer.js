@@ -1,10 +1,12 @@
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/when", "dojo/request",
-	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin"
-], function(declare, lang, on, Topic, when, request,
-			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/when", "dojo/request", "dojo/dom-construct",
+	"dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
+	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin", "./SelectionToGroup"
+], function(declare, lang,
+			on, Topic, when, request, domConstruct,
+			popup, TooltipDialog, Dialog,
+			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup){
 
 	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
 		'<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
@@ -103,7 +105,7 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max:5000,
+					max: 5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["proteinfamily_data"]
 				},
@@ -182,6 +184,55 @@ define([
 
 					window.open("/view/FeatureList/" + query + "#view_tab=features");
 					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				},
+				false
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 100,
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(featureIds){
+
+						var dlg = new Dialog({title: "Copy Selection to Group"});
+						var stg = new SelectionToGroup({
+							selection: featureIds,
+							type: "feature_group",
+							path: ""
+						});
+						on(dlg.domNode, "dialogAction", function(){
+							dlg.hide();
+							setTimeout(function(){
+								dlg.destroy();
+							}, 2000);
+						});
+						domConstruct.place(stg.domNode, dlg.containerNode, "first");
+						stg.startup();
+						dlg.startup();
+						dlg.show();
+					});
 				},
 				false
 			]

@@ -54,22 +54,37 @@
     text-align: center;
 }
 
+.patric .tgFilterGrid,
 .patric .pfFilterGrid {
     height: 270px;
 }
 
+/* pathway summary */
+.dgrid-cell.dgrid-column-pathway_summary_name.field-pathway_name {
+    width: 55%;
+}
+.dgrid-cell.dgrid-column-genes_selected,
+.dgrid-cell.dgrid-column-genes_annotated,
+.dgrid-cell.dgrid-column-coverage {
+    width: 15%;
+}
+
+.patric .tgFilterGrid TH.dgrid-cell,
 .patric .pfFilterGrid TH.dgrid-cell {
     font-size: .95em;
 }
 
+.patric .tgFilterGrid TD.dgrid-cell,
 .patric .pfFilterGrid TD.dgrid-cell {
     font-size: .85em;
     white-space: nowrap;
 }
 
+.patric .tgFilterOptions,
 .patric .pfFilterOptions {
     line-height: 12px;
     font-size: 12px;
+    overflow: hidden;
 }
 .patric .pfFilterOptions .present {
     margin-left: 2px;
@@ -79,6 +94,12 @@
 }
 .patric .pfFilterOptions .mixed {
     margin-left: 42px;
+}
+
+.patric .tgFilterOptions div {
+    display: inline-block;
+    width: 21px;
+    text-align: center;
 }
 
 /* sequences */
@@ -161,6 +182,10 @@
 .blast_form_wrapper {
     width: 700px;
     margin: 0 auto 10px auto;
+}
+
+.blast_form {
+    margin-top: 10px;
 }
 
 .blast_result {

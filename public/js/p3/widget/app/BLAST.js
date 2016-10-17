@@ -14,9 +14,9 @@ define([
 			Standby,
 			GridContainer, Grid, selector, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
-	const NA = "nucleotide", AA = "protein";
+	var NA = "nucleotide", AA = "protein";
 
-	const ProgramDefs = [
+	var ProgramDefs = [
 		{
 			value: "blastn",
 			label: "blastn - search a nucleotide database using a nucleotide query",
@@ -49,11 +49,12 @@ define([
 		}
 	];
 
-	const DatabaseDefs = [
+	var DatabaseDefs = [
 		{value: "ref.fna", label: "Reference or Representative Genomes (fna)"},
 		{value: "ref.ffn", label: "Reference or Representative Genome features (ffn)"},
 		{value: "ref.faa", label: "Reference or Representative Genome proteins (faa)"},
 		{value: "ref.frn", label: "Reference or Representative Genome RNAs features (frn)"},
+		{value: "16sRNA.frn", label: "PATRIC 16s RNA Genes (frn)"},
 		{value: "transcriptomics.fna", label: "Transcriptomics Genomes (fna)"},
 		{value: "transcriptomics.ffn", label: "Transcriptomics Genomes features (ffn)"},
 		{value: "plasmid.fna", label: "plasmid contigs (fna)"},
@@ -110,7 +111,7 @@ define([
 		},
 
 		hasSingleFastaSequence: function(sequence){
-			return sequence.indexOf('>') > -1 && (sequence.indexOf('>') == sequence.lastIndexOf('>'));
+			return (sequence.indexOf('>') == sequence.lastIndexOf('>'));
 		},
 
 		isNucleotideFastaSequence: function(sequence){
@@ -318,11 +319,11 @@ define([
 		},
 
 		buildErrorMessage: function(err){
-			console.log(err);
+			// console.log(err);
 			this.loadingMask.hide();
 			domClass.remove(query(".blast_error")[0], "hidden");
 			domClass.remove(query(".blast_message")[0], "hidden");
-			query(".blast_error h3")[0].innerHTML = "BLAST has error. Please report regarding this.";
+			query(".blast_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
 			query(".blast_message")[0].innerHTML = err.response.data.error.message;
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
@@ -456,7 +457,7 @@ define([
 
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.result_grid.addChild(this.loadingMask);

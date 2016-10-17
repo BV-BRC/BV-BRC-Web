@@ -51,7 +51,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			// create a loading mask
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.addChild(this.loadingMask);
@@ -63,6 +63,12 @@ define("p3/widget/ProteinFamiliesContainer", [
 			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
+			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+				var family_type = params.family_type;
+				this.family_type_selector.set('value', family_type);
 			}
 
 			if(this.mainGridContainer){
@@ -165,7 +171,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 				region: "top"
 			});
 
-			var cbType = new Select({
+			var cbType = this.family_type_selector = new Select({
 				name: "familyType",
 				value: 'pgfam',
 				options: [{

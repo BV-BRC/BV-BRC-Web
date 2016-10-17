@@ -14486,6 +14486,7 @@ define([
 			}
 		},
 		_userWorkspacesGetter: function(){
+			var _self = this;
 			if(this.userWorkspaces && this.userWorkspaces.length > 0){
 				return this.userWorkspaces;
 			}
@@ -14501,20 +14502,7 @@ define([
 					res = []
 				}else{
 					res = results[0][p].map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					})
 				}
 
@@ -14554,22 +14542,8 @@ define([
 					throw new Error("Error Creating Object");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					};
 					Topic.publish("/refreshWorkspace", {});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			});
 		},
@@ -14675,6 +14649,7 @@ define([
 		},
 
 		createFolder: function(paths){
+			var _self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -14692,24 +14667,9 @@ define([
 					throw new Error("Error Creating Folder");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					}
-
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			}));
 		},
@@ -14785,11 +14745,13 @@ define([
 		},
 
 		getObjectsByType: function(types, showHidden){
+			var _self = this;
 			types = (types instanceof Array) ? types : [types];
 			//  0 && console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
-				// 0 && console.log("current: ", current, current.path);
+				var _self = this;
+
 				var path = current.path;
 				return Deferred.when(this.api("Workspace.ls", [{
 					paths: [current.path],
@@ -14807,21 +14769,7 @@ define([
 					// 0 && console.log("array res", res);
 
 					res = res.map(function(r){
-						// 0 && console.log("r: ", r);
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(r.type == "folder"){
 							if(r.path.split("/").some(function(p){
@@ -14992,20 +14940,7 @@ define([
 					// 0 && console.log("array res", res);
 
 					res = res.map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(!showHidden && r.name.charAt(0) == "."){
 							return false;
@@ -15021,6 +14956,24 @@ define([
 					// 0 && console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
+		},
+
+		metaListToObj: function(list) {
+			return {
+				id: list[4],
+				path: list[2] + list[0],
+				name: list[0],
+				type: list[1],
+				creation_time: list[3],
+				link_reference: list[11],
+				owner_id: list[5],
+				size: list[6],
+				userMeta: list[7],
+				autoMeta: list[8],
+				user_permission: list[9],
+				global_permission: list[10],
+				timestamp: Date.parse(list[3])
+			}
 		},
 
 		_userWorkspacesSetter: function(val){
@@ -24277,6 +24230,7 @@ define([
 				}
 
 				 0 && console.log("Search Filter: ", searchFilter);
+				query = query.replace(/'/g,"").replace(/:/g, " ");
 				var q = searchToQuery(query);
 				
 				var clear = false;
@@ -29163,7 +29117,11 @@ define([
 			}), lang.hitch(this, function(err){
 				var parts = err.split("_ERROR_");
 				var m = parts[1] || parts[0];
-				var d = new Dialog({content: m, title: "Error Loading Workspace"});
+				var d = new Dialog({
+					content: m,
+					title: "Error Loading Workspace",
+					style: "width: 250px !important;",
+				});
 				d.show();
 			}));
 		},
@@ -32958,34 +32916,166 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		return locale.format(obj, format || {formatLength: "short"});
 	};
 
+	var getExternalLinks = function(target){
+		var link;
+
+		if (target.match(/ncbi_gene/i)) {
+			link = "//www.ncbi.nlm.nih.gov/sites/entrez?db=gene&cmd=Retrieve&dopt=full_report&list_uids=";
+		}
+		else if (target.match(/ncbi_accession/i)) {
+			link = "//www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?db=nucleotide&val=";
+		}
+		else if (target.match(/ncbi_protein/i) || target.match(/RefSeq/i) || target.match(/GI/i)) {
+			link = "//www.ncbi.nlm.nih.gov/protein/";
+		}
+		else if (target.match(/RefSeq_NT/i)) {
+			link = "//www.ncbi.nlm.nih.gov/nuccore/"; // NC_010067.1 - // nucleotide db
+		}
+		else if (target.match(/go_term/i)) {
+			link = "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="; // GO:0004747
+		}
+		else if (target.match(/ec_number/i)) {
+			link = "http://enzyme.expasy.org/EC/"; // 2.7.1.15
+		}
+		else if (target.match(/kegg_pathwaymap/i) || target.match(/KEGG/i)) {
+			link = "http://www.genome.jp/dbget-bin/www_bget?"; // pathway+map00010
+		}
+		else if (target.match(/UniProtKB-Accession/i) || target.match(/UniProtKB-ID/i)) {
+			link = "http://www.uniprot.org/uniprot/"; // A9MFG0 or ASTD_SALAR
+		}
+		else if (target.match(/UniRef100/i) || target.match(/UniRef90/i) || target.match(/UniRef50/i)) {
+			link = "http://www.uniprot.org/uniref/"; // UniRef100_A9MFG0, UniRef90_B5F7J0, or // UniRef50_Q1C8A9
+		}
+		else if (target.match(/UniParc/i)) {
+			link = "http://www.uniprot.org/uniparc/"; // UPI0001603B3F
+		}
+		else if (target.match(/EMBL/i) || target.match(/EMBL-CDS/i)) {
+			link = "//www.ebi.ac.uk/ena/data/view/"; // CP000880, ABX21565
+		}
+		else if (target.match(/GeneID/i)) {
+			link = "//www.ncbi.nlm.nih.gov/sites/entrez?db=gene&term="; // 5763416;
+		}
+		else if (target.match(/GenomeReviews/i)) {
+			link = "http://www.genomereviews.ebi.ac.uk/GR/contigview?chr="; // CP000880_GR
+		}
+		else if (target.match(/eggNOG/i)) {
+			link = "http://eggnog.embl.de/cgi_bin/display_multi_clusters.pl?linksource=uniprot&level=0&1="; // Q2YII1 -- uniprot accession
+		}
+		else if (target.match(/HOGENOM/i)) {
+			link = "http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?db=HOGENOM&query="; // A9MFG0 -- uniprot accession
+		}
+		else if (target.match(/OMA/i)) {
+			link = "http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1="; // A9MFG0 -- uniprot accession
+		}
+		else if (target.match(/ProtClustDB/i)) {
+			link = "//www.ncbi.nlm.nih.gov/sites/entrez?Db=proteinclusters&Cmd=DetailsSearch&Term="; // A9MFG0 -- uniprot accession
+		}
+		else if (target.match(/BioCyc/i)) {
+			link = "http://biocyc.org/getid?id="; // BMEL359391:BAB2_0179-MONOMER
+		}
+		else if (target.match(/NMPDR/i)) {
+			link = "//www.nmpdr.org/linkin.cgi?id="; // fig|382638.8.peg.1669"
+		}
+		else if (target.match(/EnsemblGenome/i) || target.match(/EnsemblGenome_TRS/i)
+			|| target.match(/EnsemblGenome_PRO/i)) {
+			link = "http://www.ensemblgenomes.org/id/"; // EBMYCT00000005579
+		}
+		else if (target.match(/BEIR/i)) {
+			link = "http://www.beiresources.org/Catalog/ItemDetails/tabid/522/Default.aspx?Template=Clones&BEINum=";
+		}
+		else if (target.match(/PDB/i)) {
+			link = "Jmol?structureID=";
+		}
+		else if (target.match(/STRING/i)) { // 204722.BR0001
+			link = "http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=";
+		}
+		else if (target.match(/MEROPS/i)) { // M50.005
+			link = "http://merops.sanger.ac.uk/cgi-bin/pepsum?id=";
+		}
+		else if (target.match(/PATRIC/i)) { // 17788255
+			link = "Feature?cType=feature&cId=";
+		}
+		else if (target.match(/OrthoDB/i)) { // EOG689HR1
+			link = "http://cegg.unige.ch/orthodb7/results?searchtext=";
+		}
+		else if (target.match(/NCBI_TaxID/i)) { // 29461
+			link = "//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=";
+		}
+		else if (target.match(/KO/i)) { // K04756
+			link = "http://www.genome.jp/dbget-bin/www_bget?ko:";
+		}
+		else if (target.match(/TubercuList/i)) { // Rv2429
+			link = "http://tuberculist.epfl.ch/quicksearch.php?gene+name=";
+		}
+		else if (target.match(/PeroxiBase/i)) { // 4558
+			link = "http://peroxibase.toulouse.inra.fr/browse/process/view_perox.php?id=";
+		}
+		else if (target.match(/Reactome/i)) { // REACT_116125
+			link = "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=";
+		}
+		else if (target.match(/VFDB/i)) {
+			link = "http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID="; // VFG1817
+		}
+		else if (target.match(/VFDB_HOME/i)) {
+			link = "http://www.mgc.ac.cn/VFs/";
+		}
+		else if (target.match(/Victors/i)) {
+			link = "http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id="; // 220
+		}
+		else if (target.match(/Victors_HOME/i)) {
+			link = "http://www.phidias.us/victors/";
+		}
+		else if (target.match(/PATRIC_VF/i)) {
+			link = "SpecialtyGeneEvidence?source=PATRIC_VF&sourceId="; // Rv3875
+		}
+		else if (target.match(/PATRIC_VF_HOME/i)) {
+			link = "SpecialtyGeneSource?source=PATRIC_VF&kw=";
+		}
+		else if (target.match(/ARDB/i)) {
+			link = "//ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term="; // AAL09826
+		}
+		else if (target.match(/ARDB_HOME/i)) {
+			link = "//ardb.cbcb.umd.edu/";
+		}
+		else if (target.match(/CARD/i)) {
+			link = ""; //TODO: need to add
+		}
+		else if (target.match(/CARD_HOME/i)) {
+			link = "http://arpcard.mcmaster.ca";
+		}
+		else if (target.match(/DrugBank/i)) {
+			link = "http://v3.drugbank.ca/molecules/"; // 1
+		}
+		else if (target.match(/DrugBank_HOME/i)) {
+			link = "http://v3.drugbank.ca";
+		}
+		else if (target.match(/TTD/i)) {
+			link = "http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID="; // TTDS00427
+		}
+		else if (target.match(/TTD_HOME/i)) {
+			link = "http://bidd.nus.edu.sg/group/TTD/ttd.asp";
+		}
+		else if (target.match(/Human/i)) {
+			link = "//www.ncbi.nlm.nih.gov/protein/"; // NP_001005484.1
+		}
+		else if (target.match(/Human_HOME/i)) {
+			link = "//www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26";
+		}
+		else if (target.match(/bioproject_accession/i)) {
+			link = "http://www.ncbi.nlm.nih.gov/bioproject/?term=";
+		}
+		else if (target.match(/biosample_accession/i)) {
+			link = "http://www.ncbi.nlm.nih.gov/biosample/";
+		}
+		else if (target.match(/assembly_accession/i)) {
+			link = "http://www.ncbi.nlm.nih.gov/assembly/";
+		}
+		// edit patric-searches-and-tools/WebContent/js/specialty_gene_list_grids.js as well
+		return link;
+	}
+
 	var formatters = {
-		linkGenome: function(value, row){
-			return '<a href="/portal/portal/patric/Genome?cType=genome&cId=' + row.genome_id + '">' + value + '</a>';
-		},
-		linkGenomePATRICCDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=PATRIC&filtertype=">' + value + '</a>';
-			}
-		},
-		linkGenomeBRC1CDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=BRC1&filtertype=">' + value + '</a>';
-			}
-		},
-		linkGenomeRefSeqCDS: function(value, row){
-			if(value == 0 || value == ''){
-				return value;
-			}
-			else{
-				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=RefSeq&filtertype=">' + value + '</a>';
-			}
-		},
+		getExternalLinks: getExternalLinks,
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},
@@ -43190,9 +43280,11 @@ define([
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
-				//  0 && console.log("Ws Objects: ", items);
+
+				// sort by most recent
+				items.sort(function(a,b) { return b.timestamp - a.timestamp; });
+
 				var store = new Memory({data: items, idProperty: "path"});
-				//  0 && console.log('store: ', store);
 
 				//  0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store", store);
@@ -76667,12 +76759,12 @@ define([
 'p3/widget/DownloadTooltipDialog':function(){
 define([
 	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-	"dojo/_base/lang", "dojo/mouse","rql/js-array",
+	"dojo/_base/lang", "dojo/mouse", "rql/js-array",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class","FileSaver","dojo/when"
+	"./AdvancedDownload", "dojo/dom-class", "FileSaver", "dojo/when"
 ], function(declare, on, domConstruct,
-			lang, Mouse,rql,
+			lang, Mouse, rql,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
 			AdvancedDownload, domClass, saveAs, when){
@@ -76704,18 +76796,18 @@ define([
 			popup.close(this);
 		},
 
-		downloadSelection: function(type,selection){
-		
+		downloadSelection: function(type, selection){
+
 			var conf = this.downloadableConfig[this.containerType];
 			var sel = selection.map(function(sel){
 				return sel[conf.field || conf.pk]
 			});
 
 			 0 && console.log("DOWNLOAD TYPE: ", type)
-			if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
+			if(conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
 				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
-				when(this.grid.store.query({}), lang.hitch(this,function(results){
-					results = rql.query(query,{},results);
+				when(this.grid.store.query({}), lang.hitch(this, function(results){
+					results = rql.query(query, {}, results);
 					var data = this["_to" + type.toLowerCase()](results);
 					saveAs(new Blob([data]), this.containerType + "_selection." + type);
 				}));
@@ -76734,9 +76826,9 @@ define([
 						accept = "application/" + type;
 						break;
 				}
-				
+
 				var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
-				
+
 				if(baseUrl.charAt(-1) !== "/"){
 					baseUrl = baseUrl + "/";
 				}
@@ -76746,10 +76838,9 @@ define([
 
 				baseUrl = baseUrl + "?&http_download=true&http_accept=" + accept
 
-				if (window.App.authorizationToken){
+				if(window.App.authorizationToken){
 					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 				}
-				
 
 				var form = domConstruct.create("form", {
 					style: "display: none;",
@@ -76757,18 +76848,18 @@ define([
 					enctype: 'application/x-www-form-urlencoded',
 					name: "downloadForm",
 					method: "post",
-					action: baseUrl 
+					action: baseUrl
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
-			 }
+			}
 		},
 
 		_tocsv: function(selection){
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header=[]
+			var header = []
 			keys.forEach(function(key){
 				header.push(key);
 			});
@@ -76787,12 +76878,11 @@ define([
 
 		},
 
-
 		_totsv: function(selection){
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header=[]
+			var header = []
 			keys.forEach(function(key){
 				header.push(key);
 			});
@@ -76836,7 +76926,7 @@ define([
 				// 	return sel[conf.field || conf.pk]
 				// });
 
-				_self.downloadSelection(rel,_self.selection)
+				_self.downloadSelection(rel, _self.selection)
 			});
 
 			var dstContent = domConstruct.create("div", {});
@@ -76893,7 +76983,7 @@ define([
 			},
 			"sequence_data": {
 				"label": "Sequences",
-				"dataType": "sequence",
+				"dataType": "genome_sequence",
 				pk: "sequence_id",
 				tableData: true,
 				otherData: ["dna+fasta", "protein+fasta"]
@@ -77692,6 +77782,9 @@ define([
 		},
 		updateColumnHiddenState: function(query){
 			//  0 && console.log("updateColumnHiddenState: ", query);
+			if (this._updatedColumnHiddenState){
+				return;
+			}
 			var _self = this;
 			if(!query){
 				return;
@@ -77724,6 +77817,8 @@ define([
 				_self.toggleColumnHiddenState('genome_name', false);
 				_self.toggleColumnHiddenState('genome_id', false);
 			}
+
+			this._updatedColumnHiddenState=true;
 		},
 		startup: function(){
 			var _self = this;
@@ -78784,7 +78879,7 @@ define([
 						return p + "=" + url[p]
 					}).join("&");
 					//  0 && console.log(params);
-					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params, target: "blank"});
+					Topic.publish("/navigate", {href: "/view/PathwayMap/?" + params, target: "blank"});
 				},
 				false
 			]
@@ -79364,7 +79459,7 @@ define([
 			// create a loading mask
 			this.loadingMask = new Standby({
 				target: this.id,
-				image: "/public/js/p3/resources/images/ring-alt.svg",
+				image: "/public/js/p3/resources/images/spin.svg",
 				color: "#efefef"
 			});
 			this.addChild(this.loadingMask);
@@ -79376,6 +79471,12 @@ define([
 			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				 0 && console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
+			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+				var family_type = params.family_type;
+				this.family_type_selector.set('value', family_type);
 			}
 
 			if(this.mainGridContainer){
@@ -79478,7 +79579,7 @@ define([
 				region: "top"
 			});
 
-			var cbType = new Select({
+			var cbType = this.family_type_selector = new Select({
 				name: "familyType",
 				value: 'pgfam',
 				options: [{
@@ -80729,12 +80830,14 @@ return declare("dojox.widget.Standby", [_Widget, _TemplatedMixin],{
 },
 'p3/widget/ProteinFamiliesGridContainer':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/when", "dojo/request",
-	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin"
-], function(declare, lang, on, Topic, when, request,
-			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/when", "dojo/request", "dojo/dom-construct",
+	"dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
+	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin", "./SelectionToGroup"
+], function(declare, lang,
+			on, Topic, when, request, domConstruct,
+			popup, TooltipDialog, Dialog,
+			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup){
 
 	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
 		'<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
@@ -80833,7 +80936,7 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max:5000,
+					max: 5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["proteinfamily_data"]
 				},
@@ -80912,6 +81015,55 @@ define([
 
 					window.open("/view/FeatureList/" + query + "#view_tab=features");
 					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				},
+				false
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 100,
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(featureIds){
+
+						var dlg = new Dialog({title: "Copy Selection to Group"});
+						var stg = new SelectionToGroup({
+							selection: featureIds,
+							type: "feature_group",
+							path: ""
+						});
+						on(dlg.domNode, "dialogAction", function(){
+							dlg.hide();
+							setTimeout(function(){
+								dlg.destroy();
+							}, 2000);
+						});
+						domConstruct.place(stg.domNode, dlg.containerNode, "first");
+						stg.startup();
+						dlg.startup();
+						dlg.show();
+					});
 				},
 				false
 			]
@@ -81103,6 +81255,15 @@ define([
 			if(state && state.genome_ids){
 				this._loaded = false;
 				delete this._loadingDeferred;
+			}
+
+			if(state && state.hashParams && state.hashParams.params){
+				var params = JSON.parse(state.hashParams.params);
+
+				params.family_type ? pfState.familyType = params.family_type : {};
+				// params.keyword ? pfState.keyword = params.keyword : {};
+			}else{
+				pfState.familyType = 'pgfam';
 			}
 		},
 
@@ -83746,9 +83907,11 @@ define([
 				"class": "dijitDialogPaneActionBar"
 			});
 
+			var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+
 			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadHM = new TooltipDialog({
-				content: dfc,
+				content: dhc,
 				onMouseLeave: function(){
 					popup.close(downloadHM);
 				}
@@ -83820,7 +83983,7 @@ define([
 						return f.feature_id;
 					}).join(",") + "))";
 
-				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);
 			});
 
@@ -90480,10 +90643,10 @@ define([
 			genes: {label: "Genes", field: "genes", hidden: false},
 			pubmed: {label: "PubMed", field: "pmid", hidden: false},
 			// linkout: {label: "Link Out", field: "", hidden: false},
-			organism: {label: "Organism", field: "organism", hidden: false},
-			strain: {label: "Strain", field: "strain", hidden: false},
-			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},
-			expCond: {label: "Experimental Condition", field: "condition", hidden: false},
+			organism: {label: "Organism", field: "organism", hidden: false, sortable: false},
+			strain: {label: "Strain", field: "strain", hidden: false, sortable: false},
+			geneMod: {label: "Gene Modification", field: "mutant", hidden: false, sortable: false},
+			expCond: {label: "Experimental Condition", field: "condition", hidden: false, sortable: false},
 			timeSeries: {label: "Time Series", field: "timeseries", hidden: false},
 			releaseDate: {label: "Release Date", field: "release_date", hidden: false},
 			author: {label: "Author", field: "author", hidden: true},
@@ -95169,6 +95332,25 @@ define([
 			});
 		},
 
+
+		_initialLocation: function() {
+		    var oldLocMap = dojo.fromJson( this.cookie('location') ) || {};
+		    if( this.config.location ) {
+		        return this.config.location;
+		    } else if( this.refSeq && this.refSeq.name && oldLocMap[this.refSeq.name] ) {
+		        return oldLocMap[this.refSeq.name].l || oldLocMap[this.refSeq.name];
+		    } else if( this.config.defaultLocation ){
+		        return this.config.defaultLocation;
+		    } else if (this.refSeq){
+		        return Util.assembleLocString({
+		                                          ref:   this.refSeq.name,
+		                                          start: 0.4 * ( this.refSeq.start + this.refSeq.end ),
+		                                          end:   0.6 * ( this.refSeq.start + this.refSeq.end )
+		                                      });
+		    }else{
+		    	 0 && console.error("Problem Establishing JBrowse _initialLocation")
+		    }
+		},
 		makeGlobalMenu: function(menuName){
 			var items = ( this._globalMenuItems || {} )[menuName] || [];
 			if(!items.length)
@@ -95230,6 +95412,7 @@ define([
 				if(typeof this.config.refSeqs == 'string')
 					this.config.refSeqs = {url: this.resolveUrl(this.config.refSeqs)};
 				var thisB = this;
+
 				 0 && console.log("refSeqs url: ", this.config.refSeqs.url)
 				request(this.config.refSeqs.url, {handleAs: 'text'})
 					.then(lang.hitch(this,function(o){
@@ -95246,9 +95429,12 @@ define([
                             });
 
 							 0 && console.log(" call addREfseqs fromJson: ", o);
-							thisB.addRefseqs(refseqConfig);
-							//thisB.addRefseqs(dojo.fromJson(o));
-							 0 && console.log("After Add RefSeqs fromJson")
+							if (refseqConfig && refseqConfig.length>0){
+								 0 && console.log(" call addREfseqs fromJson: ", o);
+								thisB.addRefseqs(refseqConfig);
+								//thisB.addRefseqs(dojo.fromJson(o));
+								 0 && console.log("After Add RefSeqs fromJson")
+							}
 							deferred.resolve({success: true});
 						}),
 						function(e){
@@ -95324,7 +95510,7 @@ define([
 						p.location = 'plugins/' + p.name;
 
 					var resolved = this.resolveUrl(p.location);
-					 0 && console.log("RESOLVED: ", resolved)
+
 					// figure out js path
 					if(!( 'js' in p ))
 						p.js = resolved + "/js"; //URL resolution for this is taken care of by the JS loader
@@ -95348,7 +95534,6 @@ define([
 						deferred.resolve({success: true});
 					});
 
-				 0 && console.log("Call Require: ", plugins)
 				require({
 						packages: array.map(plugins, function(p){
 							return {
@@ -95361,9 +95546,7 @@ define([
 						return p.name;
 					}),
 					dojo.hitch(this, function(){
-						 0 && console.log("callback forEach: ", this, arguments)
 						array.forEach(arguments, function(pluginClass, i){
-							 0 && console.log("pluginClass: ", pluginClass, " i: ", i);
 							var plugin = plugins[i];
 							var thisPluginDone = pluginDeferreds[i];
 
@@ -95417,16 +95600,18 @@ define([
                 });
             }
 
+            if (!state){
+            	return;
+            }
+
             var location;
             if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
+            	state.hashParams.loc = state.feature.accession + ":" + Math.max(0,parseInt(state.feature.start)-3000) + ".." + (parseInt(state.feature.end)+3000);
+                state.hashParams.highlight = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
             var dataRoot;
 
-            if (!state){
-            	return;
-            }
 
             if (state.feature && state.feature.genome_id){
             	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
@@ -95448,11 +95633,11 @@ define([
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
-				refSeqs: "{dataRoot}/refseqs",
+				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
-				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
-				alwaysOnTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
+				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
+				forceTracks: ["PATRICGenes","RefSeqGenes"].join(","),
+				alwaysOnTracks: ["PATRICGenes","RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -111773,13 +111958,13 @@ define([
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer, SelectionToGroup){
+			DataItemFormatter, ExternalItemFormatter, formatter, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -111816,6 +112001,10 @@ define([
 			this.set("publications", feature);
 			this.set("functionalProperties", feature);
 			this.set("staticLinks", feature);
+
+			if(!feature.patric_id){
+				domClass.remove(this.isRefSeqOnly, "hidden");
+			}
 		},
 		_setStaticLinksAttr: function(feature){
 
@@ -111943,7 +112132,16 @@ define([
 				var opts = {
 					columns: [
 						{label: "Database", field: "id_type"},
-						{label: "Identifier", field: "id_value"}
+						{label: "Identifier", field: "id_value",
+							renderCell: function(obj, val, node){
+								var baseUrl = formatter.getExternalLinks(obj['id_type']);
+								if(obj['id_type'].match(/"HOGENOM|OMA|ProtClustDB|eggNOG"/)){
+									node.innerHTML = '<a href="' + baseUrl + obj['uniprotkb_accession'] + '" taget=_blank>' + val + '</a>';
+								}else{
+									node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';
+								}
+							}
+						}
 					]
 				};
 
@@ -111985,8 +112183,7 @@ define([
 			if(feature.hasOwnProperty('pathway')){
 				pwLink = feature['pathway'].map(function(pwStr){
 					var pw = pwStr.split('|');
-					// https://www.patricbrc.org/portal/portal/patric/CompPathwayMap?cType=genome&cId=83332.12&dm=feature&feature_id=PATRIC.83332.12.NC_000962.CDS.2052.3260.fwd&map=00240&algorithm=PATRIC&ec_number=
-					return '<a href="/view/PathwayMap/annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
+					return '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
 				}).join('<br>')
 			}
 
@@ -112120,9 +112317,9 @@ define([
 
 			// single gene viewer
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
-			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
-			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
+			var rangeEnd = (centerPos + 5000);
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene,product)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
@@ -112219,6 +112416,7 @@ define([
 
 			// allocate groups
 			var groups = [];
+			var overlapPadding = 100;
 			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
@@ -112227,7 +112425,7 @@ define([
 					if(g.max === 0){
 						// insert. init
 						g.m.push(d);
-						g.max = d.end;
+						g.max = d.end + overlapPadding;
 						break;
 					}
 
@@ -112240,7 +112438,7 @@ define([
 					else{
 						// insert data in current group
 						g.m.push(d);
-						g.max = d.end;
+						g.max = d.end + overlapPadding;
 						break;
 					}
 				}
@@ -112309,12 +112507,12 @@ define([
 							.style("opacity", .95);
 
 						var content = [];
-						content.push('PATRIC ID: ' + d.patric_id);
+						(d.patric_id) ? content.push('PATRIC ID: ' + d.patric_id) : {};
 						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
+						content.push("Product: " + d.product);
 						content.push("Feature type: " + d.feature_type);
-						content.push("Strand: " + d.strand);
-						content.push("Location: " + d.start + "..." + d.end);
+						content.push("Location: " + d.start + "..." + d.end + " (" + d.strand + ")");
 
 						self.tooltipLayer.html(content.join("<br/>"))
 							.style("left", d3.event.pageX + "px")
@@ -115863,6 +116061,8 @@ define([
 
 			var _self = this;
 
+			 0 && console.log("FeatureList QUERY: ", query)
+
 			xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 				headers: {
 					accept: "application/solr+json",
@@ -115871,16 +116071,16 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json",
-				date: query + "&limit(1)"
+				data: query + "&limit(1)"
 			}).then(function(res){
-
+				 0 && console.log("Got FeatureList Query Results: ", res)
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
 						_self._set("total_features", res.response.numFound);
 					}
 				}else{
-					 0 && console.log("Invalid Response for: ", url);
+					 0 && console.log("Invalid Response for: ", query);
 				}
 			}, function(err){
 				 0 && console.error("Error Retreiving Features: ", err);
@@ -115889,14 +116089,13 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			//  0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-
+			this.inherited(arguments);
 			this.set("query", state.search);
 
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "features"){
+			// if(active == "features"){
 				this.setActivePanelState();
-			}
+			// }
 
 			this.inherited(arguments);
 		},
@@ -115905,12 +116104,13 @@ define([
 			var qe = QueryToEnglish(newVal);
 			// this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + qe + "</div>");
 
-			this.queryNode.innerHTML = qe;
+			this.queryNode.innerHTML = "Features: " + qe;
 		},
 
 		setActivePanelState: function(){
-
+			 0 && console.log("Active Panel: ", active)
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			 0 && console.log("Active Panel: ", active)
 
 			var activeTab = this[active];
 
@@ -115919,8 +116119,9 @@ define([
 			}
 
 			switch(active){
+				case "overview":
 				case "features":
-					activeTab.set("state", lang.mixin({},this.state));
+					activeTab.set("state", this.state); //lang.mixin({},this.state));
 					break;
 				default:
 					var activeQueryState;
@@ -115972,7 +116173,7 @@ define([
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
 				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-				disabled: false
+				disabled: false,
 			});
 
 			this.viewer.addChild(this.overview);
@@ -116519,6 +116720,10 @@ define([
 				},
 				data: "in(genome_id,(" + genomeIds.join(",") + "))&limit(1)&facet((pivot,(species,genome_id)),(mincount,1),(limit,-1))&json(nl,map)"
 			}).then(lang.hitch(this, function(res){
+
+					if(res.length == 0){
+						return;
+					}
 
 					var facet = res.facet_counts.facet_pivot['species,genome_id'];
 					//  0 && console.log("facet: ", facet);
@@ -122155,7 +122360,7 @@ define([
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
-'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\" title=\"Antimicrobial resistance data from antimicrobial susceptibility testing\"><span class=\"wrap\">Antimicrobial Resistance</span></h3>\n            <div class=\"apSummaryWidget\" data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of genomic features annotated by PATRIC and GenBank/RefSeq\"><span class=\"wrap\">Genomic Features</span></h3>\n            <div data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of proteins by their functional attributes and protein family assignments\"><span class=\"wrap\">Protein Features</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Genes of special interest to infectious disease researchers, such as virulence factors, antimicrobial resistance genes, human homologs, and potential drug targets\"><span class=\"wrap\">Specialty Genes</span></h3>\n            <div class=\"spgSummaryWidget\" data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddGenome\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onDownload\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-download fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Download</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n<!--\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddGenome\">Add Genome to Group</button>\n                <button data-dojo-attach-event=\"onclick:onDownload\">Download Genome</button>\n            </div>\n-->\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\" title=\"Antimicrobial resistance data from antimicrobial susceptibility testing\"><span class=\"wrap\">Antimicrobial Resistance</span></h3>\n            <div class=\"apSummaryWidget\" data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of genomic features annotated by PATRIC and GenBank/RefSeq\"><span class=\"wrap\">Genomic Features</span></h3>\n            <div class=\"gfSummaryWidget\" data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of proteins by their functional attributes and protein family assignments\"><span class=\"wrap\">Protein Features</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Genes of special interest to infectious disease researchers, such as virulence factors, antimicrobial resistance genes, human homologs, and potential drug targets\"><span class=\"wrap\">Specialty Genes</span></h3>\n            <div class=\"spgSummaryWidget\" data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddGenome\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onDownload\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-download fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Download</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n<!--\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddGenome\">Add Genome to Group</button>\n                <button data-dojo-attach-event=\"onclick:onDownload\">Download Genome</button>\n            </div>\n-->\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
@@ -122169,7 +122374,7 @@ define([
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div class=\"sgViewerWidget\" data-dojo-attach-point=\"sgViewerNode\">\n                <span>Loading ...</span>\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Database Identifiers</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\" data-dojo-attach-point=\"isRefSeqOnly\">\n            <span><b>Note:</b> There is no corresponding PATRIC feature.</span>\n        </div>\n        <div class=\"section\">\n            <div class=\"sgViewerWidget\" data-dojo-attach-point=\"sgViewerNode\">\n                <span>Loading ...</span>\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Database Identifiers</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/FeatureListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Feature Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Function Profile</span></h3>\n            <div class=\"fpSummaryWidget\" data-dojo-attach-point=\"fpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/FunctionalProfile\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Taxonomy Profile</span></h3>\n            <div class=\"tpSummaryWidget\" data-dojo-attach-point=\"tpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/TaxonomyProfile\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}

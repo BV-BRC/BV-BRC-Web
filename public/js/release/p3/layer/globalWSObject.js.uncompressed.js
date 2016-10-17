@@ -16467,6 +16467,7 @@ define([
 			}
 		},
 		_userWorkspacesGetter: function(){
+			var _self = this;
 			if(this.userWorkspaces && this.userWorkspaces.length > 0){
 				return this.userWorkspaces;
 			}
@@ -16482,20 +16483,7 @@ define([
 					res = []
 				}else{
 					res = results[0][p].map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					})
 				}
 
@@ -16535,22 +16523,8 @@ define([
 					throw new Error("Error Creating Object");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					};
 					Topic.publish("/refreshWorkspace", {});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			});
 		},
@@ -16656,6 +16630,7 @@ define([
 		},
 
 		createFolder: function(paths){
+			var _self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -16673,24 +16648,9 @@ define([
 					throw new Error("Error Creating Folder");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					}
-
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			}));
 		},
@@ -16766,11 +16726,13 @@ define([
 		},
 
 		getObjectsByType: function(types, showHidden){
+			var _self = this;
 			types = (types instanceof Array) ? types : [types];
 			// console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
-				//console.log("current: ", current, current.path);
+				var _self = this;
+
 				var path = current.path;
 				return Deferred.when(this.api("Workspace.ls", [{
 					paths: [current.path],
@@ -16788,21 +16750,7 @@ define([
 					//console.log("array res", res);
 
 					res = res.map(function(r){
-						//console.log("r: ", r);
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(r.type == "folder"){
 							if(r.path.split("/").some(function(p){
@@ -16973,20 +16921,7 @@ define([
 					//console.log("array res", res);
 
 					res = res.map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(!showHidden && r.name.charAt(0) == "."){
 							return false;
@@ -17002,6 +16937,24 @@ define([
 					//console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
+		},
+
+		metaListToObj: function(list) {
+			return {
+				id: list[4],
+				path: list[2] + list[0],
+				name: list[0],
+				type: list[1],
+				creation_time: list[3],
+				link_reference: list[11],
+				owner_id: list[5],
+				size: list[6],
+				userMeta: list[7],
+				autoMeta: list[8],
+				user_permission: list[9],
+				global_permission: list[10],
+				timestamp: Date.parse(list[3])
+			}
 		},
 
 		_userWorkspacesSetter: function(val){
