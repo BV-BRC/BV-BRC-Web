@@ -10579,7 +10579,7 @@ font-size: 12px;
 }
 .DataItemValue {
     vertical-align: top;
-    word-break: normal;
+    word-break: break-all;
 }
 .chart-wrapper.amr{
     overflow-x: scroll;
