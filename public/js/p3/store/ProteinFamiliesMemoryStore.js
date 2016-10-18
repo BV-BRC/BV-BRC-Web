@@ -8,7 +8,7 @@ define([
 			Memory, QueryResults,
 			ArrangeableMemoryStore){
 
-	var pfState = {
+	var pfStateDefault = {
 		familyType: 'pgfam', // default
 		heatmapAxis: '',
 		genomeIds: [],
@@ -22,18 +22,23 @@ define([
 		min_genome_count: null,
 		max_genome_count: null
 	};
+	var pfState = {};
 
 	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
-		pfState: pfState,
+		pfState: null,
 
 		onSetState: function(attr, oldVal, state){
 			// console.warn("onSetState", state, state.genome_ids);
+			// TODO: not just state contains genome_ids, but check when it changes to reset pfState
+			// TODO: change to relies on this.pfState, not the global pfState.
 			if(state && state.genome_ids){
 				this._loaded = false;
+				this.pfState = pfState = lang.mixin(this.pfState, {}, pfStateDefault);
+				pfState.genomeFilterStatus = {}; // lang.mixin does not override deeply
 				delete this._loadingDeferred;
 			}
 
@@ -42,8 +47,6 @@ define([
 
 				params.family_type ? pfState.familyType = params.family_type : {};
 				// params.keyword ? pfState.keyword = params.keyword : {};
-			}else{
-				pfState.familyType = 'pgfam';
 			}
 		},
 
