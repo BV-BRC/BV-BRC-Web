@@ -61,7 +61,7 @@ define([
 
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			// if(active == "features"){
-				this.setActivePanelState();
+			this.setActivePanelState();
 			// }
 
 			this.inherited(arguments);
@@ -140,7 +140,7 @@ define([
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
 				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-				disabled: false,
+				disabled: false
 			});
 
 			this.viewer.addChild(this.overview);

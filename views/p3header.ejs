@@ -61,7 +61,7 @@
 				<a href="/">
 					<img class="p3LogoImage" src="/js/p3/resources/images/patric_logo_bg.png" />
 					<span class="logo">PATRIC</span>
-					<span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel||"" %>
+					<span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel||"" %></span>
 				</a>
 			</td>
 			<td style="text-align:left;">
@@ -97,10 +97,6 @@
 					</div>
 				</div>
 
-
-
-
-
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
 					<span>DATA</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
@@ -109,15 +105,6 @@
 								<tr>
 									<td style='vertical-align: top;width:175px'>
 										<div class="menuHeader">Data Types</div>
-											<!--<div><i class="fa icon-caret-down fa-1x noHoverIcon"></i>&nbsp;Genomes</div>-->
-											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a></div>-->
-											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
-											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Representative%22)">Representative Genomes</a></div>
-											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))">Antibiotic Resistance</a></div>
-											<div><a class="navigationLink" href="/view/FeatureList/?keyword(*)">Genomic Features</a></div>
-											<div><a class="navigationLink" href="/view/SpecialtyGeneList/?keyword(*)">Specialty Genes</a></div>-->
-											<!--<div><a class="navigationLink" href="/view/PathwayList/?keyword(*)">Pathways</a></div>-->
-											<!--<div><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?keyword(*)">Transcriptomics Experiments</a></div>-->
 											<div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic Resistance</a></div>
 											<div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
 											<div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic Features</a></div>
@@ -136,7 +123,15 @@
 										<div><a class="navigationLink" href="/content/niaid-structural-genomics" target="_blank">NIAID Structural Genomics</a></div>
 										<div><a class="navigationLink" href="/content/niaid-systems-biology" target="_blank">NIAID Systems Biology</a></div>
 										<div><a class="navigationLink" href="/content/niaid-functional-genomics" target="_blank">NIAID Functional Genomics</a></div>
-									</td>	
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="menuHeader">Download Data</div>
+										<div><a href="ftp://ftp.patricbrc.org/patric2" target="_blank">FTP Server</a></div>
+									</td>
+									<td></td>
+									<td></td>
 								</tr>
 							</tbody></table>
 						</div>
@@ -146,7 +141,7 @@
 					<span>WORKSPACES</span>
 	
 					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div >
+						<div>
 							<table><tbody>
 								<tr>
 									<td style='vertical-align: top;width:175px'>
@@ -172,7 +167,7 @@
 										<div><a class="navigationLink" href="/workspace/published">Published</a></div>
 										<div id="PublishedWorkspaces">
 										</div>-->
-
+										</div>
 									</td>
 									<td style="vertical-align:top;" class="ShowWithAuth">
 										<a class="navigationLink" href="/job/">Your Jobs</a>
@@ -188,7 +183,7 @@
 					<span>SERVICES</span>
 	
 					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div >
+						<div>
 							<table><tbody>
 								<tr>
 									<td style='vertical-align: top;width: 180px;'>
@@ -207,8 +202,7 @@
 									<td style="vertical-align:top;width:180px;">
 										<div class="menuHeader">Protein Tools</div>
 											<div><a class="navigationLink" href="/app/ProteinFamily">Protein Family Sorter</a></div>
-											<div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a>
-										</div>
+											<div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a></div>
 										<div><p> </p></div>
 										<div class="menuHeader">Metabolomics</div>
 											<div><a class="navigationLink" href="/app/ComparativePathway">Comparative Pathway</a></div>
@@ -240,7 +234,6 @@
 					</div>
 				</div>
 
-			</div>
 			</td>
 			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;"> 
 					<input style="width:100%" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
@@ -279,6 +272,7 @@
 						<hr>
 						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">Account Settings</a> </div>
 						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
+						</div>
 					</div>
 				</div>
 			</td>
