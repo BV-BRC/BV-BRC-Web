@@ -77,6 +77,7 @@ define("p3/widget/app/BLAST", [
 		loadingMask: null,
 		result_store: null,
 		result_grid: null,
+		defaultPath: "",
 		constructor: function(){
 			this.genomeToAttachPt = ["genome_id"];
 		},
@@ -85,9 +86,12 @@ define("p3/widget/app/BLAST", [
 
 			// activate genome group selector when user is logged in
 			if(window.App.user){
+				this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+
 				var ggDom = query('div[name="genome_group"]')[0];
 
 				this.genome_group = new WorkspaceObjectSelector();
+				this.genome_group.set('path', this.defaultPath);
 				this.genome_group.set('type', ['genome_group']);
 				this.genome_group.set('disabled', true);
 				this.genome_group.placeAt(ggDom, "only");
