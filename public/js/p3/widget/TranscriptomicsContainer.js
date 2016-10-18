@@ -194,6 +194,7 @@ define([
 				facetFields: this.facetFields,
 				state: this.state,
 				"className": "BrowserHeader",
+				currentContainerWidget: this,
 				dataModel: "transcriptomics_experiment"
 			});
 
