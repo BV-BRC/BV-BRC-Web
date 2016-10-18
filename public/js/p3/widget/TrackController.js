@@ -19,7 +19,7 @@ define([
 			dom.setSelectable(this.domNode, false);
 			Topic.subscribe("/addTrack", lang.hitch(this, "onAddTrack"));
 
-// use  <i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddCustomTrack' /> and <i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddUserTrack' /> in TrackController.html instead 
+// Comment out the following codes. Use  <i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddCustomTrack' /> and <i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddUserTrack' /> in TrackController.html instead 
 /*
             var customTrackHelp = "Add custom tracks by selecting feature type, strand and keywords to show genes of interest."; 
             var customTT = new TooltipDialog({
