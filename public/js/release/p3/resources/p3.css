@@ -10442,6 +10442,9 @@ font-size: 12px;
     width: 700px;
     margin: 0 auto 10px auto;
 }
+.blast_form {
+    margin-top: 10px;
+}
 .blast_result {
     height: 500px;
 }
@@ -10576,7 +10579,7 @@ font-size: 12px;
 }
 .DataItemValue {
     vertical-align: top;
-    word-break: normal;
+    word-break: break-all;
 }
 .chart-wrapper.amr{
     overflow-x: scroll;
@@ -11520,7 +11523,7 @@ body.patric {
     font-weight: 200;
 }
 body.patric {
-    min-width: 1024px;
+    min-width: 1099px;
 }
 A, A:visited {
     text-decoration: none;

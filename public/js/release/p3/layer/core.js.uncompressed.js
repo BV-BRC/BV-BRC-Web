@@ -14486,6 +14486,7 @@ define([
 			}
 		},
 		_userWorkspacesGetter: function(){
+			var _self = this;
 			if(this.userWorkspaces && this.userWorkspaces.length > 0){
 				return this.userWorkspaces;
 			}
@@ -14501,20 +14502,7 @@ define([
 					res = []
 				}else{
 					res = results[0][p].map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					})
 				}
 
@@ -14554,22 +14542,8 @@ define([
 					throw new Error("Error Creating Object");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					};
 					Topic.publish("/refreshWorkspace", {});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			});
 		},
@@ -14675,6 +14649,7 @@ define([
 		},
 
 		createFolder: function(paths){
+			var _self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -14692,24 +14667,9 @@ define([
 					throw new Error("Error Creating Folder");
 				}else{
 					var r = results[0][0];
-					var out = {
-						id: r[4],
-						path: r[2] + r[0],
-						name: r[0],
-						type: r[1],
-						creation_time: r[3],
-						link_reference: r[11],
-						owner_id: r[5],
-						size: r[6],
-						userMeta: r[7],
-						autoMeta: r[8],
-						user_permission: r[9],
-						global_permission: r[10]
-					}
-
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
-					return out;
+					return _self.metaListToObj(r);
 				}
 			}));
 		},
@@ -14785,11 +14745,13 @@ define([
 		},
 
 		getObjectsByType: function(types, showHidden){
+			var _self = this;
 			types = (types instanceof Array) ? types : [types];
 			// console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
-				//console.log("current: ", current, current.path);
+				var _self = this;
+
 				var path = current.path;
 				return Deferred.when(this.api("Workspace.ls", [{
 					paths: [current.path],
@@ -14807,21 +14769,7 @@ define([
 					//console.log("array res", res);
 
 					res = res.map(function(r){
-						//console.log("r: ", r);
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(r.type == "folder"){
 							if(r.path.split("/").some(function(p){
@@ -14992,20 +14940,7 @@ define([
 					//console.log("array res", res);
 
 					res = res.map(function(r){
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
+						return _self.metaListToObj(r);
 					}).filter(function(r){
 						if(!showHidden && r.name.charAt(0) == "."){
 							return false;
@@ -15021,6 +14956,24 @@ define([
 					//console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
+		},
+
+		metaListToObj: function(list) {
+			return {
+				id: list[4],
+				path: list[2] + list[0],
+				name: list[0],
+				type: list[1],
+				creation_time: list[3],
+				link_reference: list[11],
+				owner_id: list[5],
+				size: list[6],
+				userMeta: list[7],
+				autoMeta: list[8],
+				user_permission: list[9],
+				global_permission: list[10],
+				timestamp: Date.parse(list[3])
+			}
 		},
 
 		_userWorkspacesSetter: function(val){
@@ -43327,9 +43280,11 @@ define([
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
-				// console.log("Ws Objects: ", items);
+
+				// sort by most recent
+				items.sort(function(a,b) { return b.timestamp - a.timestamp; });
+
 				var store = new Memory({data: items, idProperty: "path"});
-				// console.log('store: ', store);
 
 				// console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store", store);
@@ -59307,6 +59262,9 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
+						if(activeTab._firstView){
+							Topic.publish("ProteinFamilies", "showMainGrid");
+						}
 					}
 
 					if(activeQueryState){
@@ -77827,6 +77785,9 @@ define([
 		},
 		updateColumnHiddenState: function(query){
 			// console.log("updateColumnHiddenState: ", query);
+			if (this._updatedColumnHiddenState){
+				return;
+			}
 			var _self = this;
 			if(!query){
 				return;
@@ -77859,6 +77820,8 @@ define([
 				_self.toggleColumnHiddenState('genome_name', false);
 				_self.toggleColumnHiddenState('genome_id', false);
 			}
+
+			this._updatedColumnHiddenState=true;
 		},
 		startup: function(){
 			var _self = this;
@@ -79483,6 +79446,7 @@ define([
 						break;
 					case "updatePfState":
 						self.pfState = value;
+						self.updateFilterPanel(value);
 						break;
 					case "showLoadingMask":
 						self.loadingMask.show();
@@ -79511,12 +79475,6 @@ define([
 			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
-			}
-
-			if(state && state.hashParams && state.hashParams.params){
-				var params = JSON.parse(state.hashParams.params);
-				var family_type = params.family_type;
-				this.family_type_selector.set('value', family_type);
 			}
 
 			if(this.mainGridContainer){
@@ -79605,6 +79563,33 @@ define([
 			this.inherited(arguments);
 			this._firstView = true;
 		},
+		updateFilterPanel: function(pfState){
+			// console.log("update filter panel selections", pfState);
+
+			this.family_type_selector.set('value', pfState['familyType']);
+			this.ta_keyword.set('value', pfState['keyword']);
+			this.rb_perfect_match.reset();
+			this.rb_non_perfect_match.reset();
+			this.rb_all_match.reset();
+			switch(pfState['perfectFamMatch']){
+				case "A":
+					this.rb_all_match.set('checked', true);
+					break;
+				case "Y":
+					this.rb_perfect_match.set('checked', true);
+					break;
+				case "N":
+					this.rb_non_perfect_match.set('checked', true);
+					break;
+				default:
+					break;
+			}
+			this.tb_num_protein_family_min.set('value', pfState['min_member_count'] || '');
+			this.tb_num_protein_family_max.set('value', pfState['max_member_count'] || '');
+			this.tb_num_genome_family_min.set('value', pfState['min_genome_count'] || '');
+			this.tb_num_genome_family_max.set('value', pfState['max_genome_count'] || '');
+
+		},
 		_buildFilterPanel: function(){
 
 			var filterPanel = new ContentPane({
@@ -79634,44 +79619,7 @@ define([
 				Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
 			});
 			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
-/*
-			// plfam
-			var rb_plfam = new RadioButton({
-				name: "familyType",
-				value: "plfam"
-			});
-			rb_plfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", "plfam")
-			});
-			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
-			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
 
-			// pgfam
-			var rb_pgfam = new RadioButton({
-				name: "familyType",
-				checked: true,
-				value: "pgfam"
-			});
-			rb_pgfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", "pgfam")
-			});
-			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
-			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
-
-			// figfam
-			var rb_figfam = new RadioButton({
-				name: "familyType",
-				value: "figfam"
-			});
-			rb_figfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
-			});
-			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
-			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
-*/
 			filterPanel.addChild(familyTypePanel);
 
 			var filterGridDescriptor = new ContentPane({
@@ -79692,7 +79640,7 @@ define([
 				region: "bottom"
 			});
 
-			var ta_keyword = new TextArea({
+			var ta_keyword = this.ta_keyword = new TextArea({
 				style: "width:272px; min-height:75px; margin-bottom: 10px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
@@ -79702,7 +79650,7 @@ define([
 			//
 			domConstruct.place("<br/>", otherFilterPanel.containerNode, "last");
 
-			var rb_perfect_match = new RadioButton({
+			var rb_perfect_match = this.rb_perfect_match = new RadioButton({
 				name: "familyMatch",
 				value: "perfect"
 			});
@@ -79711,7 +79659,7 @@ define([
 			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
 
-			var rb_non_perfect_match = new RadioButton({
+			var rb_non_perfect_match = this.rb_non_perfect_match = new RadioButton({
 				name: "familyMatch",
 				value: "non_perfect"
 			});
@@ -79720,7 +79668,7 @@ define([
 			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
 
-			var rb_all_match = new RadioButton({
+			var rb_all_match = this.rb_all_match = new RadioButton({
 				name: "familyMatch",
 				value: "all_match",
 				checked: true
@@ -79733,12 +79681,12 @@ define([
 			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
-			var tb_num_protein_family_min = new TextBox({
+			var tb_num_protein_family_min = this.tb_num_protein_family_min = new TextBox({
 				name: "numProteinFamilyMin",
 				value: "",
 				style: "width: 40px"
 			});
-			var tb_num_protein_family_max = new TextBox({
+			var tb_num_protein_family_max = this.tb_num_protein_family_max = new TextBox({
 				name: "numProteinFamilyMax",
 				value: "",
 				style: "width:40px"
@@ -79749,12 +79697,12 @@ define([
 			domConstruct.place(tb_num_protein_family_max.domNode, otherFilterPanel.containerNode, "last");
 
 			var label_num_genome_family = domConstruct.create("label", {innerHTML: "Number of Genomes per Family<br/>"});
-			var tb_num_genome_family_min = new TextBox({
+			var tb_num_genome_family_min = this.tb_num_genome_family_min = new TextBox({
 				name: "numGenomeFamilyMin",
 				value: "",
 				style: "width: 40px"
 			});
-			var tb_num_genome_family_max = new TextBox({
+			var tb_num_genome_family_max = this.tb_num_genome_family_max = new TextBox({
 				name: "numGenomeFamilyMax",
 				value: "",
 				style: "width:40px"
@@ -80870,12 +80818,14 @@ return declare("dojox.widget.Standby", [_Widget, _TemplatedMixin],{
 },
 'p3/widget/ProteinFamiliesGridContainer':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/when", "dojo/request",
-	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin"
-], function(declare, lang, on, Topic, when, request,
-			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/when", "dojo/request", "dojo/dom-construct",
+	"dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
+	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin", "./SelectionToGroup"
+], function(declare, lang,
+			on, Topic, when, request, domConstruct,
+			popup, TooltipDialog, Dialog,
+			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup){
 
 	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
 		'<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
@@ -80974,7 +80924,7 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max:5000,
+					max: 5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["proteinfamily_data"]
 				},
@@ -81053,6 +81003,55 @@ define([
 
 					window.open("/view/FeatureList/" + query + "#view_tab=features");
 					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				},
+				false
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 100,
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(featureIds){
+
+						var dlg = new Dialog({title: "Copy Selection to Group"});
+						var stg = new SelectionToGroup({
+							selection: featureIds,
+							type: "feature_group",
+							path: ""
+						});
+						on(dlg.domNode, "dialogAction", function(){
+							dlg.hide();
+							setTimeout(function(){
+								dlg.destroy();
+							}, 2000);
+						});
+						domConstruct.place(stg.domNode, dlg.containerNode, "first");
+						stg.startup();
+						dlg.startup();
+						dlg.show();
+					});
 				},
 				false
 			]
@@ -81217,7 +81216,7 @@ define([
 			Memory, QueryResults,
 			ArrangeableMemoryStore){
 
-	var pfState = {
+	var pfStateDefault = {
 		familyType: 'pgfam', // default
 		heatmapAxis: '',
 		genomeIds: [],
@@ -81231,18 +81230,24 @@ define([
 		min_genome_count: null,
 		max_genome_count: null
 	};
+	var pfState = {};
 
 	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
-		pfState: pfState,
+		pfState: null,
 
 		onSetState: function(attr, oldVal, state){
 			// console.warn("onSetState", state, state.genome_ids);
+			// TODO: not just state contains genome_ids, but check when it changes to reset pfState
+			// TODO: change to relies on this.pfState, not the global pfState.
 			if(state && state.genome_ids){
 				this._loaded = false;
+				this.pfState = pfState = lang.mixin(this.pfState, {}, pfStateDefault);
+				pfState.genomeFilterStatus = {}; // lang.mixin does not override deeply
+				this._filtered = undefined; // reset flag prevent to read stored _original
 				delete this._loadingDeferred;
 			}
 
@@ -81251,8 +81256,6 @@ define([
 
 				params.family_type ? pfState.familyType = params.family_type : {};
 				// params.keyword ? pfState.keyword = params.keyword : {};
-			}else{
-				pfState.familyType = 'pgfam';
 			}
 		},
 
@@ -90429,6 +90432,7 @@ define([
 				facetFields: this.facetFields,
 				state: this.state,
 				"className": "BrowserHeader",
+				currentContainerWidget: this,
 				dataModel: "transcriptomics_experiment"
 			});
 
@@ -94583,6 +94587,12 @@ define([
 				default:
 					if(activeQueryState){
 						// console.log("Using Default ActiveQueryState: ", activeQueryState);
+						if(active == "proteinFamilies"){
+							// activeQueryState.search = "";
+							if(activeTab._firstView){
+								Topic.publish("ProteinFamilies", "showMainGrid");
+							}
+						}
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.log("Missing Active Query State for: ", active)

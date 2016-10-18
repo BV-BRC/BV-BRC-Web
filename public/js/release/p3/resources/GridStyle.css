@@ -150,6 +150,9 @@
     width: 700px;
     margin: 0 auto 10px auto;
 }
+.blast_form {
+    margin-top: 10px;
+}
 .blast_result {
     height: 500px;
 }

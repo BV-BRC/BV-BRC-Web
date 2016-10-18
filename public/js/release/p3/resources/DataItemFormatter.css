@@ -33,5 +33,5 @@
 }
 .DataItemValue {
     vertical-align: top;
-    word-break: normal;
+    word-break: break-all;
 }

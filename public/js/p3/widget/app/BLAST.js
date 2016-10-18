@@ -54,6 +54,7 @@ define([
 		{value: "ref.ffn", label: "Reference or Representative Genome features (ffn)"},
 		{value: "ref.faa", label: "Reference or Representative Genome proteins (faa)"},
 		{value: "ref.frn", label: "Reference or Representative Genome RNAs features (frn)"},
+		{value: "16sRNA.frn", label: "PATRIC 16s RNA Genes (frn)"},
 		{value: "transcriptomics.fna", label: "Transcriptomics Genomes (fna)"},
 		{value: "transcriptomics.ffn", label: "Transcriptomics Genomes features (ffn)"},
 		{value: "plasmid.fna", label: "plasmid contigs (fna)"},
@@ -74,6 +75,7 @@ define([
 		loadingMask: null,
 		result_store: null,
 		result_grid: null,
+		defaultPath: "",
 		constructor: function(){
 			this.genomeToAttachPt = ["genome_id"];
 		},
@@ -82,9 +84,12 @@ define([
 
 			// activate genome group selector when user is logged in
 			if(window.App.user){
+				this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+
 				var ggDom = query('div[name="genome_group"]')[0];
 
 				this.genome_group = new WorkspaceObjectSelector();
+				this.genome_group.set('path', this.defaultPath);
 				this.genome_group.set('type', ['genome_group']);
 				this.genome_group.set('disabled', true);
 				this.genome_group.placeAt(ggDom, "only");
