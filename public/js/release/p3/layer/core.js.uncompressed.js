@@ -29120,7 +29120,7 @@ define([
 				var d = new Dialog({
 					content: m,
 					title: "Error Loading Workspace",
-					style: "width: 250px !important;",
+					style: "width: 250px !important;"
 				});
 				d.show();
 			}));
@@ -116172,7 +116172,7 @@ define([
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
 				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-				disabled: false,
+				disabled: false
 			});
 
 			this.viewer.addChild(this.overview);
