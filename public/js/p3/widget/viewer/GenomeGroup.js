@@ -1,9 +1,9 @@
 define([
-	"dojo/_base/declare", "./_GenomeList", "dojo/on",
+	"dojo/_base/declare", "./_GenomeList", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "dijit/layout/TabContainer", "../GenomeListOverview",
 	"dojo/request", "dojo/_base/lang"
-], function(declare, GenomeList, on,
+], function(declare, GenomeList, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Overview,
 			xhr, lang){
@@ -62,6 +62,12 @@ define([
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
 						activeQueryState = this.state;
+					}
+
+					if(activeQueryState && active == "proteinFamilies"){
+						if(activeTab._firstView){
+							Topic.publish("ProteinFamilies", "showMainGrid");
+						}
 					}
 
 					if(activeQueryState){
