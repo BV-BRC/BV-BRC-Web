@@ -81262,6 +81262,7 @@ define([
 				this._loaded = false;
 				this.pfState = pfState = lang.mixin(this.pfState, {}, pfStateDefault);
 				pfState.genomeFilterStatus = {}; // lang.mixin does not override deeply
+				this._filtered = undefined; // reset flag prevent to read stored _original
 				delete this._loadingDeferred;
 			}
 
