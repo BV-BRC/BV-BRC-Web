@@ -1,4 +1,4 @@
-Build started: Tue Oct 18 2016 00:08:59 GMT-0400 (EDT)
+Build started: Tue Oct 18 2016 09:03:42 GMT-0400 (EDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -704,11 +704,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/PhyloTree
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js (compile time:1.564s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js (compile time:4.906s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js (compile time:6.425s)
-	/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js (compile time:7.37s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:7.476s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js (compile time:1.072s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js (compile time:3.425s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js (compile time:4.809s)
+	/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js (compile time:5.529s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:5.919s)
 info(106) Optimizing CSS.
 	file: /Users/hsyoo/dev/p3_web/public/js/dojo/_firebug/firebug.css
 	file: /Users/hsyoo/dev/p3_web/public/js/dojo/resources/dnd.css
@@ -2751,33 +2751,33 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.564s)
+Done (compile time:1.072s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.564s)
+Done (compile time:1.072s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:29121: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 					content: m,
 					^
 
-core.js.uncompressed.js:116186: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
+core.js.uncompressed.js:116172: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 				title: "Features",
 				^
 
 2 error(s), 0 warning(s)
-Done (compile time:4.906s)
+Done (compile time:3.425s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.564s)
+Done (compile time:1.072s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:29121: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 					content: m,
 					^
 
-core.js.uncompressed.js:116186: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
+core.js.uncompressed.js:116172: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 				title: "Features",
 				^
 
 2 error(s), 0 warning(s)
-Done (compile time:4.906s)
+Done (compile time:3.425s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2792,20 +2792,20 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.425s)
+Done (compile time:4.809s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.564s)
+Done (compile time:1.072s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:29121: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 					content: m,
 					^
 
-core.js.uncompressed.js:116186: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
+core.js.uncompressed.js:116172: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 				title: "Features",
 				^
 
 2 error(s), 0 warning(s)
-Done (compile time:4.906s)
+Done (compile time:3.425s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2820,7 +2820,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.425s)
+Done (compile time:4.809s)
 /Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2943,20 +2943,20 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.37s)
+Done (compile time:5.529s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.564s)
+Done (compile time:1.072s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:29121: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 					content: m,
 					^
 
-core.js.uncompressed.js:116186: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
+core.js.uncompressed.js:116172: ERROR - Parse error. IE8 (and below) will parse trailing commas in array and object literals incorrectly. If you are targeting newer versions of JS, set the appropriate language_in option.
 				title: "Features",
 				^
 
 2 error(s), 0 warning(s)
-Done (compile time:4.906s)
+Done (compile time:3.425s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2971,7 +2971,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.425s)
+Done (compile time:4.809s)
 /Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3094,7 +3094,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.37s)
+Done (compile time:5.529s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3221,7 +3221,7 @@ globalWSObject.js.uncompressed.js:17104: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:7.476s)
+Done (compile time:5.919s)
 
 
 Has Features Detected
@@ -4152,4 +4152,4 @@ Has Features Detected
 Process finished normally
 	errors: 1
 	warnings: 88
-	build time: 75.65 seconds
+	build time: 72.832 seconds

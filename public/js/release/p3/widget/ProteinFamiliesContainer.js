@@ -35,6 +35,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 						break;
 					case "updatePfState":
 						self.pfState = value;
+						self.updateFilterPanel(value);
 						break;
 					case "showLoadingMask":
 						self.loadingMask.show();
@@ -63,12 +64,6 @@ define("p3/widget/ProteinFamiliesContainer", [
 			if(state.genome_ids && state.genome_ids.length > this.maxGenomeCount){
 				console.log("Too Many Genomes for Protein Families Display", state.genome_ids.length);
 				return;
-			}
-
-			if(state && state.hashParams && state.hashParams.params){
-				var params = JSON.parse(state.hashParams.params);
-				var family_type = params.family_type;
-				this.family_type_selector.set('value', family_type);
 			}
 
 			if(this.mainGridContainer){
@@ -157,6 +152,33 @@ define("p3/widget/ProteinFamiliesContainer", [
 			this.inherited(arguments);
 			this._firstView = true;
 		},
+		updateFilterPanel: function(pfState){
+			// console.log("update filter panel selections", pfState);
+
+			this.family_type_selector.set('value', pfState['familyType']);
+			this.ta_keyword.set('value', pfState['keyword']);
+			this.rb_perfect_match.reset();
+			this.rb_non_perfect_match.reset();
+			this.rb_all_match.reset();
+			switch(pfState['perfectFamMatch']){
+				case "A":
+					this.rb_all_match.set('checked', true);
+					break;
+				case "Y":
+					this.rb_perfect_match.set('checked', true);
+					break;
+				case "N":
+					this.rb_non_perfect_match.set('checked', true);
+					break;
+				default:
+					break;
+			}
+			this.tb_num_protein_family_min.set('value', pfState['min_member_count'] || '');
+			this.tb_num_protein_family_max.set('value', pfState['max_member_count'] || '');
+			this.tb_num_genome_family_min.set('value', pfState['min_genome_count'] || '');
+			this.tb_num_genome_family_max.set('value', pfState['max_genome_count'] || '');
+
+		},
 		_buildFilterPanel: function(){
 
 			var filterPanel = new ContentPane({
@@ -186,44 +208,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 				Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
 			});
 			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
-/*
-			// plfam
-			var rb_plfam = new RadioButton({
-				name: "familyType",
-				value: "plfam"
-			});
-			rb_plfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", "plfam")
-			});
-			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
-			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
 
-			// pgfam
-			var rb_pgfam = new RadioButton({
-				name: "familyType",
-				checked: true,
-				value: "pgfam"
-			});
-			rb_pgfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", "pgfam")
-			});
-			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
-			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
-
-			// figfam
-			var rb_figfam = new RadioButton({
-				name: "familyType",
-				value: "figfam"
-			});
-			rb_figfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
-			});
-			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
-			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
-*/
 			filterPanel.addChild(familyTypePanel);
 
 			var filterGridDescriptor = new ContentPane({
@@ -244,7 +229,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 				region: "bottom"
 			});
 
-			var ta_keyword = new TextArea({
+			var ta_keyword = this.ta_keyword = new TextArea({
 				style: "width:272px; min-height:75px; margin-bottom: 10px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
@@ -254,7 +239,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			//
 			domConstruct.place("<br/>", otherFilterPanel.containerNode, "last");
 
-			var rb_perfect_match = new RadioButton({
+			var rb_perfect_match = this.rb_perfect_match = new RadioButton({
 				name: "familyMatch",
 				value: "perfect"
 			});
@@ -263,7 +248,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
 
-			var rb_non_perfect_match = new RadioButton({
+			var rb_non_perfect_match = this.rb_non_perfect_match = new RadioButton({
 				name: "familyMatch",
 				value: "non_perfect"
 			});
@@ -272,7 +257,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
 
-			var rb_all_match = new RadioButton({
+			var rb_all_match = this.rb_all_match = new RadioButton({
 				name: "familyMatch",
 				value: "all_match",
 				checked: true
@@ -285,12 +270,12 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
-			var tb_num_protein_family_min = new TextBox({
+			var tb_num_protein_family_min = this.tb_num_protein_family_min = new TextBox({
 				name: "numProteinFamilyMin",
 				value: "",
 				style: "width: 40px"
 			});
-			var tb_num_protein_family_max = new TextBox({
+			var tb_num_protein_family_max = this.tb_num_protein_family_max = new TextBox({
 				name: "numProteinFamilyMax",
 				value: "",
 				style: "width:40px"
@@ -301,12 +286,12 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place(tb_num_protein_family_max.domNode, otherFilterPanel.containerNode, "last");
 
 			var label_num_genome_family = domConstruct.create("label", {innerHTML: "Number of Genomes per Family<br/>"});
-			var tb_num_genome_family_min = new TextBox({
+			var tb_num_genome_family_min = this.tb_num_genome_family_min = new TextBox({
 				name: "numGenomeFamilyMin",
 				value: "",
 				style: "width: 40px"
 			});
-			var tb_num_genome_family_max = new TextBox({
+			var tb_num_genome_family_max = this.tb_num_genome_family_max = new TextBox({
 				name: "numGenomeFamilyMax",
 				value: "",
 				style: "width:40px"
