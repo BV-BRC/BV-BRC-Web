@@ -313,12 +313,6 @@ define([
 			//console.log(lrec);
 		},
 
-		onReset: function(evt){
-			domClass.remove(this.domNode, "Working");
-			domClass.remove(this.domNode, "Error");
-			domClass.remove(this.domNode, "Submitted");
-		},
-
 		onSubmit: function(evt){
 			var _self = this;
 
