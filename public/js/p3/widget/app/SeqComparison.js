@@ -1,13 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class",
-	"dojo/text!./templates/SeqComparison.html", "./AppBase", "dojo/dom-construct",
+	"dojo/text!./templates/SeqComparison.html", "./AppBase", "dojo/dom-construct", "dijit/registry",
 	"dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "dojo/domReady!", "dijit/form/NumberTextBox",
 	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog",
 	"dojo/NodeList-traverse", "../../WorkspaceManager", "dojo/store/Memory", "dojox/widget/Standby"
 ], function(declare, WidgetBase, on,
 			domClass,
-			Template, AppBase, domConstruct,
+			Template, AppBase, domConstruct, registry,
 			Deferred, aspect, lang, domReady, NumberTextBox,
 			query, dom, popup, Tooltip, Dialog, TooltipDialog,
 			children, WorkspaceManager, Memory, Standby){
@@ -26,6 +26,7 @@ define([
 			this.genomeToAttachPt = ["comp_genome_id"];
 			this.fastaToAttachPt = ["user_genomes_fasta"];
 			this.featureGroupToAttachPt = ["user_genomes_featuregroup"];
+			this.numref = 0;
 		},
 
 		startup: function(){
@@ -38,6 +39,7 @@ define([
 			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
 			_self.output_path.set('value', _self.defaultPath);
 
+			this.numref = 0;
 			this.emptyTable(this.genomeTable, this.startingRows);
 			this.numgenomes.startup();
 			this.advrow.turnedOn = (this.advrow.style.display != 'none');
@@ -158,7 +160,12 @@ define([
 		},
 
 		onSuggestNameChange: function(){
-			console.log("change genome name");
+			if (this.ref_genome_id.get('value') || this.ref_user_genomes_fasta.get('value') || this.ref_user_genomes_featuregroup.get('value')) {
+				this.numref = 1;
+			} else {
+				this.numref = 0;			
+			}
+			//console.log("change genome name, this.numref=", this.numref, "this.ref_genome_id.get('value')=", this.ref_genome_id.get('value'));
 		},
 
 		makeGenomeName: function(){
@@ -188,7 +195,7 @@ define([
 			var name = this.user_genomes_featuregroup.searchBox.get("displayedValue");
 			var maxName = 36;
 			var display_name = name;
-			console.log("this.user_genomes_featuregroup name = " + this.name);
+			//console.log("this.user_genomes_featuregroup name = " + this.name);
 
 			if(name.length > maxName){
 				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
@@ -208,11 +215,11 @@ define([
 		},
 
 		onAddGenome: function(){
-			console.log("Create New Row", domConstruct);
+			//console.log("Create New Row", domConstruct);
 			var lrec = {};
 			var chkPassed = this.ingestAttachPoints(this.genomeToAttachPt, lrec);
-			console.log("this.genomeToAttachPt = " + this.genomeToAttachPt);
-			console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+			//console.log("this.genomeToAttachPt = " + this.genomeToAttachPt);
+			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			if(chkPassed && this.addedGenomes < this.maxGenomes){
 				var tr = this.genomeTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
@@ -237,15 +244,15 @@ define([
 				}));
 				this.increaseGenome();
 			}
-			console.log(lrec);
+			//console.log(lrec);
 		},
 
 		onAddFasta: function(){
 			console.log("Create New Row", domConstruct);
 			var lrec = {};
 			var chkPassed = this.ingestAttachPoints(this.fastaToAttachPt, lrec);
-			console.log("this.fastaToAttachPt = " + this.fastaToAttachPt);
-			console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+			//console.log("this.fastaToAttachPt = " + this.fastaToAttachPt);
+			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			if(chkPassed && this.addedGenomes < this.maxGenomes){
 				var tr = this.genomeTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
@@ -270,15 +277,15 @@ define([
 				}));
 				this.increaseGenome();
 			}
-			console.log(lrec);
+			//console.log(lrec);
 		},
 
 		onAddFeatureGroup: function(){
 			console.log("Create New Row", domConstruct);
 			var lrec = {};
 			var chkPassed = this.ingestAttachPoints(this.featureGroupToAttachPt, lrec);
-			console.log("this.featureGroupToAttachPt = " + this.featureGroupToAttachPt);
-			console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+			//console.log("this.featureGroupToAttachPt = " + this.featureGroupToAttachPt);
+			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			if(chkPassed && this.addedGenomes < this.maxGenomes){
 				var tr = this.genomeTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
@@ -303,7 +310,13 @@ define([
 				}));
 				this.increaseGenome();
 			}
-			console.log(lrec);
+			//console.log(lrec);
+		},
+
+		onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
 		},
 
 		onSubmit: function(evt){
@@ -313,9 +326,23 @@ define([
 			evt.stopPropagation();
 			if(this.validate()){
 				var values = this.getValues();
-				//console.log(values["user_genomes"]);
-				//console.log(values["genome_ids"]);
-				if((values["user_genomes"] || values["user_feature_groups"] || values["genome_ids"]) && values["reference_genome_index"] > 0){
+				//console.log("user_genomes ", values["user_genomes"]);
+				//console.log("user_feature_groups ", values["user_feature_groups"]);
+				//console.log("genome_ids ", values["genome_ids"]);
+				//console.log("reference_genome_index ", values["reference_genome_index"]);
+				var numUserGenome = 0;
+				
+				if (values["user_genomes"]) {
+					numUserGenome += values["user_genomes"].length;
+				}
+				if (values["user_feature_groups"]) {
+					numUserGenome += values["user_feature_groups"].length;
+				}
+				if (values["genome_ids"]) {
+					numUserGenome += values["genome_ids"].length;
+				}								
+								
+				if(numUserGenome>1 && values["reference_genome_index"] > 0){
 					domClass.add(this.domNode, "Working");
 					domClass.remove(this.domNode, "Error");
 					domClass.remove(this.domNode, "Submitted");
@@ -350,6 +377,7 @@ define([
 				}
 
 			}else{
+				domClass.add(this.domNode, "Error");
 				console.log("Form is incomplete");
 			}
 		},
