@@ -104,7 +104,7 @@ define("p3/widget/FlippableDialog", [
 
 				}
 				var titleDim = domGeometry.getMarginBox(this.titleBar);
-				console.log("titleContent: ", titleDim);
+				//console.log("titleContent: ", titleDim);
 				domGeometry.setMarginBox(this.backpaneTitleBar, titleDim);
 				var dim = domGeometry.getMarginBox(this.domNode);
 				var contentDim = utils.marginBox2contentBox(this.domNode, dim);

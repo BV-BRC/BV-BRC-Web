@@ -126,6 +126,12 @@ define("p3/widget/app/AppBase", [
 			this._started = true;
 		},
 
+		onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
+		},
+
 		onSubmit: function(evt){
 			var _self = this;
 

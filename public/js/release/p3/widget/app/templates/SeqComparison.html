@@ -9,7 +9,8 @@
   
 	<div style="width:800px; margin:auto" class="formFieldsContainer">
 		<div style="display: none;">
-			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:0,max:10},"/>
+			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:10},"/>
+			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numref" data-dojo-props="constraints:{min:0},"/>
 		</div>
 
 		<table class="assemblyblocks" style="width:100%">
@@ -80,9 +81,9 @@
 						<label>Select a genome</label></br>
 						<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="ref_genome_id" maxHeight=200 style="width:85%" required="false" data-dojo-attach-point="ref_genome_id"></div></br>
 						<label>or a fasta file</label></br>
-						<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ref_user_genomes_fasta" style="width:100%" required="false" data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace for Comparison',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
+						<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ref_user_genomes_fasta" style="width:100%" required="false" data-dojo-attach-point="ref_user_genomes_fasta" data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace for Comparison',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
 						<label>or a feature group</label></br>
-						<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ref_user_genomes_featuregroup" style="width:100%" required="false" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+						<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ref_user_genomes_featuregroup" style="width:100%" required="false" data-dojo-attach-point="ref_user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
 				</div>
 			</div>
 			
@@ -139,7 +140,7 @@
 		    Comparing Genomes
 		</div>
 		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-			Error Submitting Job
+			Error Submitting Job. Please check the submission form.
 		</div>
 		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
 			Genome Comparison should be finished shortly. Check workspace for results.
