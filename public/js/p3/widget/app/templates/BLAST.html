@@ -52,13 +52,13 @@
             </div>
 
             <div data-dojo-attach-point="advancedOptions" style="display: none">
-                <div class="appbox appshadow">
+                <div class="appbox appshadow hidden" data-dojo-attach-point="genome_id_wrapper">
                     <div class="left half" style="vertical-align: top">
                         <label class="paramlabel">Add Genomes to Search: </label>
                         <div data-dojo-attach-event="onChange:onSuggestNameChange"
                              data-dojo-type="p3/widget/GenomeNameSelector"
                              data-dojo-attach-point="genome_id"
-                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true"
+                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
                              style="width:310px;">
                         </div>
                         <div style="width:17px; display:inline-block;">
@@ -76,27 +76,25 @@
                     <div class="form_msg_warning" data-dojo-attach-point="genome_id_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appbox appshadow hidden" data-dojo-attach-point="genome_group_wrapper">
                     <label class="paramlabel">Select genome group: </label><br/>
                     <div name="genome_group" style="width: 650px"></div>
                     <div class="form_msg_warning" data-dojo-attach-point="genome_group_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appbox appshadow hidden" data-dojo-attach-point="taxon_wrapper">
                     <label class="paramlabel">Select Taxon: </label><br/>
                     <select name="taxon" style="width: 650px"
                             data-dojo-type="p3/widget/TaxonNameSelector"
-                            data-dojo-props="disabled:true"
                             data-dojo-attach-point="taxonomy">
                     </select>
                     <div class="form_msg_warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appbox appshadow hidden" data-dojo-attach-point="search_for_wrapper">
                     <label class="paramlabel">Search for: </label><br/>
                     <select name="search_for" style="width:250px"
                             data-dojo-type="dijit/form/Select"
-                            data-dojo-props="disabled:true"
                             data-dojo-attach-point="search_for">
                         <option value="contigs">Genomic sequences (contigs)</option>
                         <option value="features" selected="selected">Genomic features (genes, proteins or RNAs)</option>

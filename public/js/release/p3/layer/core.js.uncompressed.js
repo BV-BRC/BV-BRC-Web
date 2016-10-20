@@ -41033,7 +41033,7 @@ define([
 
 				}
 				var titleDim = domGeometry.getMarginBox(this.titleBar);
-				console.log("titleContent: ", titleDim);
+				//console.log("titleContent: ", titleDim);
 				domGeometry.setMarginBox(this.backpaneTitleBar, titleDim);
 				var dim = domGeometry.getMarginBox(this.domNode);
 				var contentDim = utils.marginBox2contentBox(this.domNode, dim);
@@ -41107,9 +41107,9 @@ define([
 		},
 
 		onUploadTypeChanged: function(val){
-			console.log("UPLOAD TYPE CHANGED: ", val);
+			// console.log("Upload type changed: ", val);
 			var formats = this.knownTypes[val].formats;
-			console.log("formats: ", val, formats);
+			// console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML = formats.join(", ");
 
 			var description = this.knownTypes[val].description;
@@ -41124,7 +41124,7 @@ define([
 				}else{
 					domClass.remove(this.fileFilterContainer, "dijitHidden");
 				}
-				console.log("set formats to: ", formats.join(","));
+				// console.log("set formats to: ", formats.join(","));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
@@ -41152,7 +41152,16 @@ define([
 
 		createUploadTable: function(empty){
 
+			// remove existing container as long as not adding multiple rows,
+			// since createUploadTable is called on each file change
+			// Note: this should probably be refactored
+			// to always leave the header in place
+			if (!this.multiple) {
+				domConstruct.empty(this.fileTableContainer);
+			}
+
 			if(!this.uploadTable){
+
 				var table = domConstruct.create("table", {
 					style: {
 						border: "1px solid #eee",
@@ -41181,16 +41190,20 @@ define([
 					}
 				}, htr);
 				if(empty){
-					var row = domConstruct.create("tr", {"class": "fileRow"}, this.uploadTable);
-					domConstruct.create("td", {
-						style: {"padding-left": "5px", "text-align": "left"},
-						innerHTML: "<i>None</i>"
-					}, row);
-					domConstruct.create("td", {style: {"text-align": "left"}}, row);
-					domConstruct.create("td", {style: {"text-align": "left"}}, row);
-					domConstruct.create("td", {style: {"text-align": "right"}}, row);
+					this.createNoneSelectedRow();
 				}
 			}
+		},
+
+		createNoneSelectedRow: function() {
+			var row = domConstruct.create("tr", {"class": "fileRow noneSelected"}, this.uploadTable);
+			domConstruct.create("td", {
+				style: {"padding-left": "5px", "text-align": "left"},
+				innerHTML: "<i>None</i>"
+			}, row);
+			domConstruct.create("td", {style: {"text-align": "left"}}, row);
+			domConstruct.create("td", {style: {"text-align": "left"}}, row);
+			domConstruct.create("td", {style: {"text-align": "right"}}, row);
 		},
 
 		createNewFileInput: function(){
@@ -41206,7 +41219,6 @@ define([
 			}
 
 			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
-			console.log("Created fileInput: ", this.fileInput);
 			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
 			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
 
@@ -41221,12 +41233,10 @@ define([
 			this.createNewFileInput();
 
 			var _self = this;
-			console.log("Add Dropdown Options");
 			Object.keys(this.knownTypes).filter(function(t){
-				console.log("CHECKING: ", t);
 				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
 			}).forEach(function(t){
-				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
+				//console.log("* Add option: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
 				_self.uploadType.addOption({disabled: false, label: _self.knownTypes[t].label, value: t});
 			});
 
@@ -41265,7 +41275,6 @@ define([
 			this.createUploadTable(true);
 		},
 		validate: function(){
-			console.log("this.validate()", this);
 			var valid = this.inherited(arguments);
 			var validFiles = []
 			Query("TR.fileRow", this.uploadTable).map(function(tr){
@@ -41292,48 +41301,38 @@ define([
 			var obj = {path: uploadDirectory, name: file.name, type: type}
 			return Deferred.when(WorkspaceManager.create(obj, true), function(obj){
 				domClass.add(_self.domNode, "Working");
-				console.log("obj: ", obj);
-				console.log("obj.link_reference: ", obj.link_reference);
-//				console.log("getUrlRes",getUrlRes, getUrlRes[0]);
-//				var uploadUrl = getUrlRes[0][0][11];
 				var uploadUrl = obj.link_reference;
-//				console.log("uploadUrl: ", uploadUrl);
-				if(!_self.uploadTable){
-					var table = domConstruct.create("table", {style: {width: "100%"}}, _self.fileTableContainer);
-					_self.uploadTable = domConstruct.create('tbody', {}, table)
-				}
 
-				var row = domConstruct.create("tr", {}, _self.uploadTable);
-				var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
+				_self.resetUploadTable();
 
-//					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
 				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
 				UploadManager.upload(msg, window.App.authorizationToken);
 				return obj;
 			});
 
 		},
+		resetUploadTable: function() {
+			console.log('called restUploadTable')
+			domConstruct.destroy(this.uploadTable);
+			delete this.uploadTable;
+		},
 		onFileSelectionChange: function(evt){
-			console.log("onFileSelectionChange", evt, this.fileInput);
+
+			// remove the "none" row when adding files
+			domConstruct.destroy( Query(".noneSelected", this.uploadTable)[0] );
 
 			if(this.uploadTable && !this.multiple){
-				domConstruct.empty(this.uploadTable);
-				delete this.uploadTable;
+				this.resetUploadTable();
 			}
-
+			// only recreate upload table header
 			this.createUploadTable(false);
 
 			var files = evt.target.files;
-			console.log("files: ", files);
 			var _self = this;
-
 			Object.keys(files).forEach(function(idx){
-				console.log("files key: ", idx);
 				var file = files[idx];
 				if(file && file.name && file.size){
-					console.log("file: ", file);
 					var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
-					console.log('setfiletype: ', _self.uploadType.get('value'))
 					domAttr.set(row, "data-filename", file.name);
 					domAttr.set(row, "data-filetype", _self.uploadType.get('value'));
 					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
@@ -41343,6 +41342,13 @@ define([
 					var handle = on(delNode, "click", lang.hitch(this, function(evt){
 						handle.remove();
 						domConstruct.destroy(row);
+
+						// add "none selected" if all files were removed
+						var rowCount = Query("tr.fileRow", this.uploadTable).length;
+						if ( rowCount == 0) {
+							_self.createNoneSelectedRow()
+						}
+
 						this.validate()
 					}));
 				}
@@ -41361,18 +41367,13 @@ define([
 				return;
 			}
 
-//			domClass.add(_self.domNode, "working");
-			var validFiles = []
 			var inputFiles = {};
 			var defs = [];
 			var wsFiles = []
 
 			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
-				console.log("FI: ", FI);
 				Object.keys(FI.files).forEach(lang.hitch(this, function(key){
-					console.log(" FI FILE KEY: ", key);
 					var f = FI.files[key];
-					console.log(" f: ", f);
 					if(f.name){
 						console.log(" f.name: ", f.name);
 						inputFiles[f.name] = f;
@@ -41380,17 +41381,10 @@ define([
 				}));
 			}));
 
-			console.log("InputFIles: ", inputFiles);
-			console.log("uploadTable: ", this.uploadTable);
 			Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
-				console.log("File INPUT Row: ", tr, domAttr.get(tr, "data-filename"), domAttr.get(tr, "data-filetype"));
-//				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
-//				console.log("V: ", v);
-//				validFiles.push(v);
+
 				if(tr && domAttr.get(tr, "data-filename")){
-					console.log("Got Name: ", domAttr.get(tr, "data-filename"));
 					var f = inputFiles[domAttr.get(tr, "data-filename")];
-					console.log("Got File: ", f);
 					if(f.name){
 						defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
 							wsFiles.push(res);
@@ -41402,6 +41396,10 @@ define([
 
 			All(defs).then(function(results){
 				console.log("UPLOAD Create WS files results: ", wsFiles);
+
+				// create fresh upload table when uploads are commplete
+				_self.createUploadTable(true);
+
 				on.emit(_self.domNode, "dialogAction", {action: "close", files: wsFiles, bubbles: true});
 			});
 		},
@@ -43119,7 +43117,7 @@ define([
 					_self.dialog.hide();
 				});
 				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
 
 				on(selectionPane.domNode, "i:click", function(evt){
 					// console.log("Click: ", evt);
@@ -85241,9 +85239,10 @@ define([
 					r.start = 0;
 					r.end = r.length;
 					return r;
-				}).sort(function(a, b){
-					return a.name > b.name;
 				})
+				//.sort(function(a, b){  			// use query sorting instead: sort(+accession)
+				//	return a.name > b.name;
+				//})
 				return refseqs;
 			}));
 		},
@@ -85307,9 +85306,10 @@ define([
 					r.name = r.accession;
 					r.length = r.end - r.start;
 					return r;
-				}).sort(function(a, b){
-					return a.name > b.name;
 				})
+//				.sort(function(a, b){				// use query sorting instead: &sort(+accession,+start)
+//					return a.name > b.name;
+//				})
 
 				console.log("******before set data track title:", title, " refseqs:", refseqs, "type of refseqs", typeof refseqs);
 				track.set("data", refseqs);
@@ -85747,6 +85747,8 @@ define([
 			dom.setSelectable(this.domNode, false);
 			Topic.subscribe("/addTrack", lang.hitch(this, "onAddTrack"));
 
+// Comment out the following codes. Use  <i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddCustomTrack' /> and <i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddUserTrack' /> in TrackController.html instead 
+/*
             var customTrackHelp = "Add custom tracks by selecting feature type, strand and keywords to show genes of interest."; 
             var customTT = new TooltipDialog({
                 content: customTrackHelp, 
@@ -85783,8 +85785,7 @@ define([
                     orient: ["below-centered"]                    
                 });
             });	
-
-
+*/
 		},
 
 		visibleIconClass: "icon-eye",
@@ -91638,6 +91639,12 @@ define([
 
 			this.gethelp();
 			this._started = true;
+		},
+
+		onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
 		},
 
 		onSubmit: function(evt){
@@ -116093,7 +116100,7 @@ define([
 
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			// if(active == "features"){
-				this.setActivePanelState();
+			this.setActivePanelState();
 			// }
 
 			this.inherited(arguments);
@@ -122363,7 +122370,7 @@ define([
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\tCustom tracks\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:20%; margin-left:3px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:37%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\tUpload your own data\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:3px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:30%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateUserFileType\" data-dojo-attach-point=\"plot_type_select\" >\n\t\t\t<option value=\"tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"line\">Line Plot</option>\n\t\t\t<option value=\"histogram\">Histogram</option>\n\t\t\t<option value=\"heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:55%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;background: #efefef\">Available tracks</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\t<div data-dojo-attach-point=\"customTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px; margin-top:15px;background: #efefef\">\n\t<table><tr><td>\n\tAdd custom tracks&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddCustomTrack' />\n\t</td></tr></table>\n\t</div>\n\t<div style=\"text-align:left; margin-top:2px;padding:2px;\" data-dojo-attach-point=\"customTrackSection\">\n\t\t<select required name=\"type\" style=\"width:20%; margin-left:3px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_type_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select type',missingMessage:'select type'\">\n\t\t\t<option value=\"\" default selected hidden>Type</option>\n\t\t\t<option value=\"CDS\">CDS</option>\n\t\t\t<option value=\"RNA\">RNA</option>\n\t\t\t<option value=\"Miscellaneous\">Misc</option>\n\t\t</select>\n\t\t<select required name=\"strand\" style=\"width:25%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-attach-point=\"track_strand_select\" data-dojo-props=\"intermediateChanges:true,promptMessage:'select strand',missingMessage:'select strand'\">\n\t\t\t<option value=\"\" default selected hidden>Strand</option>\n\t\t\t<option value=\"both\">both</option>\n\t\t\t<option value=\"+\">forward</option>\n\t\t\t<option value=\"-\">reverse</option>\n\t\t</select>\n\t\t<input required type=\"text\" style=\"width:37%; margin-left:2px;\" data-dojo-attach-event=\"onChange:validateCustomSelection\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'\" data-dojo-type=\"dijit/form/ValidationTextBox\" id=\"keyword\" name=\"keyword\" data-dojo-attach-point=\"keyword_box\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddCustomTrack\" data-dojo-attach-point=\"customTrackButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\n\n\t<div data-dojo-attach-point=\"userTrackInfo\" style=\"font-size:1em; font-weight: bold; text-align:center;margin-bottom: 5px;margin-top:20px; background: #efefef\">\n\t<table><tr><td>\n\tUpload your own data&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:AddUserTrack' />\n\t</td></tr></table>\n\t</div>\n\t<div style=\"text-align:left;margin-top:2px;padding:3px;\" data-dojo-attach-point=\"userTrackSection\">\n\t\t<select required name=\"plot_type\" style=\"width:30%; margin-left:2px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:validateUserFileType\" data-dojo-attach-point=\"plot_type_select\" >\n\t\t\t<option value=\"tiles\" default selected hidden>Tiles</option>\n\t\t\t<option value=\"line\">Line Plot</option>\n\t\t\t<option value=\"histogram\">Histogram</option>\n\t\t\t<option value=\"heatmap\">Heatmap</option>\n\t\t</select>\n\t\t<input type=\"file\" style=\"width:55%; margin-left:2px;\" name=\"data_file\" id=\"data_file\" accept=\"text/plain\" data-dojo-attach-event=\"onChange:validateUserFileSelection\" data-dojo-attach-point=\"data_file_select\"/>\n\t\t<button style=\"margin-left:2px\" data-dojo-type=\"dijit/form/Button\"  data-dojo-attach-event=\"onClick:onAddUserFileTrack\" data-dojo-attach-point=\"userFileButton\" data-dojo-props=\"disabled:true\">+</button>\n\t</div>\t\n\n\t<button style=\"margin-top:25px;\" data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\t\n\n</div>",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
