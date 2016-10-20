@@ -206,7 +206,7 @@ define([
 					_self.dialog.hide();
 				});
 				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
 
 				on(selectionPane.domNode, "i:click", function(evt){
 					// console.log("Click: ", evt);
