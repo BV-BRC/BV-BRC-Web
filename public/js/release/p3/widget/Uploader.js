@@ -50,9 +50,9 @@ define("p3/widget/Uploader", [
 		},
 
 		onUploadTypeChanged: function(val){
-			console.log("UPLOAD TYPE CHANGED: ", val);
+			// console.log("Upload type changed: ", val);
 			var formats = this.knownTypes[val].formats;
-			console.log("formats: ", val, formats);
+			// console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML = formats.join(", ");
 
 			var description = this.knownTypes[val].description;
@@ -67,7 +67,7 @@ define("p3/widget/Uploader", [
 				}else{
 					domClass.remove(this.fileFilterContainer, "dijitHidden");
 				}
-				console.log("set formats to: ", formats.join(","));
+				// console.log("set formats to: ", formats.join(","));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
@@ -95,7 +95,16 @@ define("p3/widget/Uploader", [
 
 		createUploadTable: function(empty){
 
+			// remove existing container as long as not adding multiple rows,
+			// since createUploadTable is called on each file change
+			// Note: this should probably be refactored
+			// to always leave the header in place
+			if (!this.multiple) {
+				domConstruct.empty(this.fileTableContainer);
+			}
+
 			if(!this.uploadTable){
+
 				var table = domConstruct.create("table", {
 					style: {
 						border: "1px solid #eee",
@@ -124,16 +133,20 @@ define("p3/widget/Uploader", [
 					}
 				}, htr);
 				if(empty){
-					var row = domConstruct.create("tr", {"class": "fileRow"}, this.uploadTable);
-					domConstruct.create("td", {
-						style: {"padding-left": "5px", "text-align": "left"},
-						innerHTML: "<i>None</i>"
-					}, row);
-					domConstruct.create("td", {style: {"text-align": "left"}}, row);
-					domConstruct.create("td", {style: {"text-align": "left"}}, row);
-					domConstruct.create("td", {style: {"text-align": "right"}}, row);
+					this.createNoneSelectedRow();
 				}
 			}
+		},
+
+		createNoneSelectedRow: function() {
+			var row = domConstruct.create("tr", {"class": "fileRow noneSelected"}, this.uploadTable);
+			domConstruct.create("td", {
+				style: {"padding-left": "5px", "text-align": "left"},
+				innerHTML: "<i>None</i>"
+			}, row);
+			domConstruct.create("td", {style: {"text-align": "left"}}, row);
+			domConstruct.create("td", {style: {"text-align": "left"}}, row);
+			domConstruct.create("td", {style: {"text-align": "right"}}, row);
 		},
 
 		createNewFileInput: function(){
@@ -149,7 +162,6 @@ define("p3/widget/Uploader", [
 			}
 
 			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
-			console.log("Created fileInput: ", this.fileInput);
 			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
 			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
 
@@ -164,12 +176,10 @@ define("p3/widget/Uploader", [
 			this.createNewFileInput();
 
 			var _self = this;
-			console.log("Add Dropdown Options");
 			Object.keys(this.knownTypes).filter(function(t){
-				console.log("CHECKING: ", t);
 				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
 			}).forEach(function(t){
-				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
+				//console.log("* Add option: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
 				_self.uploadType.addOption({disabled: false, label: _self.knownTypes[t].label, value: t});
 			});
 
@@ -208,7 +218,6 @@ define("p3/widget/Uploader", [
 			this.createUploadTable(true);
 		},
 		validate: function(){
-			console.log("this.validate()", this);
 			var valid = this.inherited(arguments);
 			var validFiles = []
 			Query("TR.fileRow", this.uploadTable).map(function(tr){
@@ -235,48 +244,38 @@ define("p3/widget/Uploader", [
 			var obj = {path: uploadDirectory, name: file.name, type: type}
 			return Deferred.when(WorkspaceManager.create(obj, true), function(obj){
 				domClass.add(_self.domNode, "Working");
-				console.log("obj: ", obj);
-				console.log("obj.link_reference: ", obj.link_reference);
-//				console.log("getUrlRes",getUrlRes, getUrlRes[0]);
-//				var uploadUrl = getUrlRes[0][0][11];
 				var uploadUrl = obj.link_reference;
-//				console.log("uploadUrl: ", uploadUrl);
-				if(!_self.uploadTable){
-					var table = domConstruct.create("table", {style: {width: "100%"}}, _self.fileTableContainer);
-					_self.uploadTable = domConstruct.create('tbody', {}, table)
-				}
 
-				var row = domConstruct.create("tr", {}, _self.uploadTable);
-				var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
+				_self.resetUploadTable();
 
-//					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
 				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
 				UploadManager.upload(msg, window.App.authorizationToken);
 				return obj;
 			});
 
 		},
+		resetUploadTable: function() {
+			console.log('called restUploadTable')
+			domConstruct.destroy(this.uploadTable);
+			delete this.uploadTable;
+		},
 		onFileSelectionChange: function(evt){
-			console.log("onFileSelectionChange", evt, this.fileInput);
+
+			// remove the "none" row when adding files
+			domConstruct.destroy( Query(".noneSelected", this.uploadTable)[0] );
 
 			if(this.uploadTable && !this.multiple){
-				domConstruct.empty(this.uploadTable);
-				delete this.uploadTable;
+				this.resetUploadTable();
 			}
-
+			// only recreate upload table header
 			this.createUploadTable(false);
 
 			var files = evt.target.files;
-			console.log("files: ", files);
 			var _self = this;
-
 			Object.keys(files).forEach(function(idx){
-				console.log("files key: ", idx);
 				var file = files[idx];
 				if(file && file.name && file.size){
-					console.log("file: ", file);
 					var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
-					console.log('setfiletype: ', _self.uploadType.get('value'))
 					domAttr.set(row, "data-filename", file.name);
 					domAttr.set(row, "data-filetype", _self.uploadType.get('value'));
 					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
@@ -286,6 +285,13 @@ define("p3/widget/Uploader", [
 					var handle = on(delNode, "click", lang.hitch(this, function(evt){
 						handle.remove();
 						domConstruct.destroy(row);
+
+						// add "none selected" if all files were removed
+						var rowCount = Query("tr.fileRow", this.uploadTable).length;
+						if ( rowCount == 0) {
+							_self.createNoneSelectedRow()
+						}
+
 						this.validate()
 					}));
 				}
@@ -304,18 +310,13 @@ define("p3/widget/Uploader", [
 				return;
 			}
 
-//			domClass.add(_self.domNode, "working");
-			var validFiles = []
 			var inputFiles = {};
 			var defs = [];
 			var wsFiles = []
 
 			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
-				console.log("FI: ", FI);
 				Object.keys(FI.files).forEach(lang.hitch(this, function(key){
-					console.log(" FI FILE KEY: ", key);
 					var f = FI.files[key];
-					console.log(" f: ", f);
 					if(f.name){
 						console.log(" f.name: ", f.name);
 						inputFiles[f.name] = f;
@@ -323,17 +324,10 @@ define("p3/widget/Uploader", [
 				}));
 			}));
 
-			console.log("InputFIles: ", inputFiles);
-			console.log("uploadTable: ", this.uploadTable);
 			Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
-				console.log("File INPUT Row: ", tr, domAttr.get(tr, "data-filename"), domAttr.get(tr, "data-filetype"));
-//				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
-//				console.log("V: ", v);
-//				validFiles.push(v);
+
 				if(tr && domAttr.get(tr, "data-filename")){
-					console.log("Got Name: ", domAttr.get(tr, "data-filename"));
 					var f = inputFiles[domAttr.get(tr, "data-filename")];
-					console.log("Got File: ", f);
 					if(f.name){
 						defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
 							wsFiles.push(res);
@@ -345,6 +339,10 @@ define("p3/widget/Uploader", [
 
 			All(defs).then(function(results){
 				console.log("UPLOAD Create WS files results: ", wsFiles);
+
+				// create fresh upload table when uploads are commplete
+				_self.createUploadTable(true);
+
 				on.emit(_self.domNode, "dialogAction", {action: "close", files: wsFiles, bubbles: true});
 			});
 		},

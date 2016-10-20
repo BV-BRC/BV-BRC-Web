@@ -44,9 +44,10 @@ define("p3/widget/CircularViewerContainer", [
 					r.start = 0;
 					r.end = r.length;
 					return r;
-				}).sort(function(a, b){
-					return a.name > b.name;
 				})
+				//.sort(function(a, b){  			// use query sorting instead: sort(+accession)
+				//	return a.name > b.name;
+				//})
 				return refseqs;
 			}));
 		},
@@ -110,9 +111,10 @@ define("p3/widget/CircularViewerContainer", [
 					r.name = r.accession;
 					r.length = r.end - r.start;
 					return r;
-				}).sort(function(a, b){
-					return a.name > b.name;
 				})
+//				.sort(function(a, b){				// use query sorting instead: &sort(+accession,+start)
+//					return a.name > b.name;
+//				})
 
 				console.log("******before set data track title:", title, " refseqs:", refseqs, "type of refseqs", typeof refseqs);
 				track.set("data", refseqs);

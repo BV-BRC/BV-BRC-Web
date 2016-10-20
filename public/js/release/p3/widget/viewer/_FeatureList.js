@@ -61,7 +61,7 @@ define("p3/widget/viewer/_FeatureList", [
 
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			// if(active == "features"){
-				this.setActivePanelState();
+			this.setActivePanelState();
 			// }
 
 			this.inherited(arguments);
