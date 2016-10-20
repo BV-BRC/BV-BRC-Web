@@ -91,7 +91,6 @@ define([
 				this.genome_group = new WorkspaceObjectSelector();
 				this.genome_group.set('path', this.defaultPath);
 				this.genome_group.set('type', ['genome_group']);
-				this.genome_group.set('disabled', true);
 				this.genome_group.placeAt(ggDom, "only");
 			}
 
@@ -708,13 +707,15 @@ define([
 				// show advance options
 				this.toggleAdvanced(true);
 
-				this.search_for.set('disabled', false);
+				domClass.remove(this.search_for_wrapper, "hidden");
 
 				switch(val){
 					case "selGenome":
-						this.genome_id.set('disabled', false);
-						this.genome_group ? this.genome_group.set('disabled', true) : {};
-						this.taxonomy.set('disabled', true);
+						domClass.remove(this.genome_id_wrapper, "hidden");
+						if(this.genome_group){
+							domClass.add(this.genome_group_wrapper, "hidden");
+						}
+						domClass.add(this.taxon_wrapper, "hidden");
 						break;
 					case "selGroup":
 						if(!window.App.user){
@@ -722,14 +723,18 @@ define([
 							return;
 						}
 
-						this.genome_id.set('disabled', true);
-						this.genome_group ? this.genome_group.set('disabled', false) : {};
-						this.taxonomy.set('disabled', true);
+						domClass.add(this.genome_id_wrapper, "hidden");
+						if(this.genome_group){
+							domClass.remove(this.genome_group_wrapper, "hidden");
+						}
+						domClass.add(this.taxon_wrapper, "hidden");
 						break;
 					case "selTaxon":
-						this.genome_id.set('disabled', true);
-						this.genome_group ? this.genome_group.set('disabled', true) : {};
-						this.taxonomy.set('disabled', false);
+						domClass.add(this.genome_id_wrapper, "hidden");
+						if(this.genome_group){
+							domClass.add(this.genome_group_wrapper, "hidden");
+						}
+						domClass.remove(this.taxon_wrapper, "hidden");
 						break;
 					default:
 						break;
@@ -737,10 +742,10 @@ define([
 			}else{
 				this.toggleAdvanced(false);
 
-				this.search_for.set('disabled', true);
-				this.genome_id.set('disabled', true);
-				this.genome_group.set('disabled', true);
-				this.taxonomy.set('disabled', true);
+				domClass.add(this.search_for_wrapper, "hidden");
+				domClass.add(this.genome_id_wrapper, "hidden");
+				domClass.add(this.genome_group_wrapper, "hidden");
+				domClass.add(this.taxon_wrapper, "hidden");
 			}
 
 			this.validate();
