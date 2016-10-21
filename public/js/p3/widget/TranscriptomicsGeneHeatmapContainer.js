@@ -454,8 +454,9 @@ define([
 				if(typeof(geneIds) == "object"){
 					Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + geneIds + "))#view_tab=features", target: "blank"});
 				}else{
-					Topic.publish("/navigate", {href: "/view/Feature/?eq(feature_id," + geneIds + ")", target: "blank"});
+					Topic.publish("/navigate", {href: "/view/Feature/" + geneIds, target: "blank"});
 				}
+				_self.dialog.hide();
 			});
 
 			var btnAddToWorkspace = new Button({
