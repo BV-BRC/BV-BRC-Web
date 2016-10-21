@@ -452,9 +452,9 @@ define([
 			});
 			on(btnShowDetails.domNode, "click", function(){
 				if(typeof(geneIds) == "object"){
-					window.open("/view/FeatureList/?in(feature_id,(" + geneIds + "))");
+					Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + geneIds + "))#view_tab=features", target: "blank"});
 				}else{
-					window.open("/view/Feature/?eq(feature_id," + geneIds + ")");
+					Topic.publish("/navigate", {href: "/view/Feature/?eq(feature_id," + geneIds + ")", target: "blank"});
 				}
 			});
 
