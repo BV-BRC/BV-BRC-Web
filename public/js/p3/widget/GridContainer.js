@@ -38,7 +38,7 @@ define([
 			return d[idType];
 		});
 
-		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 	});
 
 	var downloadSelectionTT = new DownloadTooltipDialog({});
@@ -59,7 +59,7 @@ define([
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
 
-		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup, target: "blank"});
 		popup.close(idMappingTTDialog);
 	});
 
@@ -613,7 +613,7 @@ define([
 						return d['feature_id'];
 					});
 					// console.log("OPEN MSA VIEWER");
-					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 
 				},
 				false
