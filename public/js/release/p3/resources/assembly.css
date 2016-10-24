@@ -1,66 +1,84 @@
-.appshadow{
-	border: 1px solid #aaa;
+.appTemplate {
+    width: 750px;
+    margin: auto;
 }
-.appsetup{
-margin-top:0;
-padding:15px 50px 10px 10px;
-text-align: right;
-background-color: #F0F1F3;
+.appShadow {
+    border: 1px solid #aaa;
 }
-.appSubmissionArea{
-margin-bottom:20px;
+.appSetup {
+    margin-top: 0;
+    padding: 15px 50px 10px 10px;
+    text-align: right;
+    background-color: #F0F1F3;
+}
+.appSubmissionArea {
+    margin-bottom: 20px;
 }
 .nonModal_underlay {
-    display:none
+    display: none
 }
-.appField{
-width:300px;
+.appField {
+    width: 300px;
 }
-.apptitle{
-margin-top:20px;
-margin-left:20px;
+.appTitle {
+    margin-top: 10px;
+}
+.appTitle .breadcrumb {
+    
+}
+.appTitle h3 {
+    margin: 0 0 10px 10px;
+}
+.appTitle p {
+    margin-left: 15px;
 }
 .paramlabel {
-	font-size: .65em;
-	text-transform: uppercase;
+    font-size: .65em;
+    text-transform: uppercase;
 }
 label.largelabel {
-	font-size: .80em;
-	text-transform: uppercase;
-	vertical-align: middle;
+    font-size: .80em;
+    text-transform: uppercase;
+    vertical-align: middle;
 }
-td.iconcol{
-    margin-right:10px;
+td.iconcol {
+    margin-right: 10px;
 }
-td.textcol{
-	padding-left:5px;
-	min-height:23px;
-    width:85%;
+td.textcol {
+    padding-left: 5px;
+    min-height: 23px;
+    width: 85%;
 }
-table.appHelpTable th{
-	border: none;
+table.appHelpTable th {
+    border: none;
 }
 a.appHelpLink {
-color: #004c99;
+    color: #004c99;
 }
-.librarytable{
-	width: 300px;
-	border-collapse:collapse;
-	border: 1px solid rgb(171,171,171);
-        font-size: 13px;
+.librarytable {
+    width: 300px;
+    border-collapse: collapse;
+    border: 1px solid rgb(171, 171, 171);
+    font-size: 13px;
 }
-table.assemblyblocks td{vertical-align:top;}
-table.librarytable.disabled{
+table.assemblyblocks td {
+    vertical-align: top;
+}
+table.librarytable.disabled {
     opacity: 0.4; 
-    filter: alpha(opacity = 60);
+    filter: alpha(opacity=60);
     color: #ccc;
 }
-.apphelp a{
+.apphelp a {
     text-decoration: underline;
     color: #06C;
 }
-table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
-table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
+table.librarytable tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+table.librarytable tr:nth-child(even) {
+    background-color: #f5f5f5;
+}
 .emptyrow {
     min-height: 23px;
     max-height: 23px;
@@ -75,136 +93,168 @@ table.librarytable td > i {
     position: relative;
     top: 3px;
 }
-.headerrow{
-width: 100%;
-display:inline-block;
-margin-top:5px;
-padding-left:10px;
+.headerrow {
+    width: 100%;
+    display: inline-block;
+    margin-top: 5px;
+    padding-left: 10px;
 }
-.approw{
-width: 100%;
-margin-top:5px;
+.appRow {
+    width: 100%;
+    margin-top: 5px;
 }
-.halfAppRow{
-width:150px;
-display:inline-block;
+.halfAppRow {
+    width: 150px;
+    display: inline-block;
 }
-.half2AppRow{
-width:150px;
-display:inline-block;
-margin-left:10px;
+.half2AppRow {
+    width: 150px;
+    display: inline-block;
+    margin-left: 10px;
 }
-.infobuttoninfo{
-overflow: auto;
+.infobuttoninfo {
+    overflow: auto;
 }
-.dijitDialogPopup{
-min-width: 400px;
-max-height: 500px;
+.dijitDialogPopup {
+    min-width: 400px;
+    max-height: 500px;
 }
-.claro .dijitDialogTitleBar{
-background-color: #F0F1F3;
+.claro .dijitDialogTitleBar {
+    background-color: #F0F1F3;
 }
-.appbox{
-background-color: #F0F1F3;
-margin: 0 0 10px 10px;
-width: auto;
-padding: 5px 0 10px 10px;
-text-align: left;
+.appBox {
+    background-color: #F0F1F3;
+    margin: 0 0 10px 10px;
+    width: auto;
+    padding: 5px 0 10px 10px;
+    text-align: left;
 }
-.approwsegment{
-display:inline-block;
-text-align: center;
-margin: 0 0 0 15px;
+.appRowSegment {
+    display: inline-block;
+    text-align: center;
+    margin: 0 0 0 15px;
 }
-.insertspinner{
-width:80px;
+.insertspinner {
+    width: 80px;
 }
 .readbutton {
-font: 1.5em "Georgia", "Apple Symbols", serif;
-line-height: .8;
-width: 40px;
-text-align: center;
-padding: auto;
-margin:5px 0 5px 5px;
+    font: 1.5em "Georgia", "Apple Symbols", serif;
+    line-height: .8;
+    width: 40px;
+    text-align: center;
+    padding: auto;
+    margin: 5px 0 5px 5px;
 }
-.readbuttons{
-text-align: left;
-margin:10px 0 0 10px;
+.readbuttons {
+    text-align: left;
+    margin: 10px 0 0 10px;
 }
-.iconbox{
-display:inline-block;
-margin-left:5px;
-vertical-align:middle;
+.iconbox {
+    display: inline-block;
+    margin-left: 5px;
+    vertical-align: middle;
 }
-div.infobox i{color: rgb(52, 105, 142);}
-label.appboxlabel {
-text-align:left;
-margin: 10px 0 10px 0;
-font-size: 14px;
-line-height: 16px;
-text-transform: none;
-font-weight: bold;
+div.infobox i {
+    color: rgb(52, 105, 142);
 }
-div.appsublabel{
-font-size: 12px;
+label.appBoxLabel {
+    text-align: left;
+    margin: 10px 0 10px 0;
+    font-size: 14px;
+    line-height: 16px;
+    text-transform: none;
+    font-weight: bold;
+}
+div.appsublabel {
+    font-size: 12px;
 }
 .round-button {
-    display:block;
-    width:30px;
-    height:30px;
+    display: block;
+    width: 30px;
+    height: 30px;
     border: 2px solid #f5f5f5;
     border-radius: 50%;
-    color:#f5f5f5;
-    text-align:center;
-    text-decoration:none;
+    color: #f5f5f5;
+    text-align: center;
+    text-decoration: none;
     
     box-shadow: 0 0 3px gray;
-    font-size:20px;
-    font-weight:bold;
+    font-size: 20px;
+    font-weight: bold;
     padding: 0 0 15px 0;
 }
 .round-button:hover {
     
 }
 .onoffswitch {
-    position: relative; width: 55px;
-    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    position: relative;
+    width: 55px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 .onoffswitch-checkbox {
     display: none;
 }
 .onoffswitch-label {
-    display: block; overflow: hidden; cursor: pointer;
-    border: 2px solid #DEDEDE; border-radius: 20px;
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #DEDEDE;
+    border-radius: 20px;
 }
 .onoffswitch-inner {
-    display: block; width: 200%; margin-left: -100%;
-    -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
-    -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    -moz-transition: margin 0.3s ease-in 0s;
+    -webkit-transition: margin 0.3s ease-in 0s;
+    -o-transition: margin 0.3s ease-in 0s;
+    transition: margin 0.3s ease-in 0s;
 }
 .onoffswitch-inner:before, .onoffswitch-inner:after {
-    display: block; float: left; width: 50%; height: 16px; padding: 0; line-height: 16px;
-    font-size: 10px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+    display: block;
+    float: left;
+    width: 50%;
+    height: 16px;
+    padding: 0;
+    line-height: 16px;
+    font-size: 10px;
+    color: white;
+    font-family: Trebuchet, Arial, sans-serif;
+    font-weight: bold;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
 .onoffswitch-inner:before {
     content: "ON";
     padding-left: 10px;
-    background-color: #47A8D8; color: #FFFFFF;
+    background-color: #47A8D8;
+    color: #FFFFFF;
 }
 .onoffswitch-inner:after {
     content: "OFF";
     padding-right: 10px;
-    background-color: #EEEEEE; color: #A3A3A3;
+    background-color: #EEEEEE;
+    color: #A3A3A3;
     text-align: right;
 }
 .onoffswitch-switch {
-    display: block; width: 12px; margin: 2px;
+    display: block;
+    width: 12px;
+    margin: 2px;
     background: #FFFFFF;
-    border: 2px solid #DEDEDE; border-radius: 20px;
-    position: absolute; top: 0; bottom: 0; right: 35px;
-    -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+    border: 2px solid #DEDEDE;
+    border-radius: 20px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 35px;
+    -moz-transition: all 0.3s ease-in 0s;
+    -webkit-transition: all 0.3s ease-in 0s;
+    -o-transition: all 0.3s ease-in 0s;
+    transition: all 0.3s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;

@@ -1,104 +1,134 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div style="width: 400px;margin:auto;">
-    <div class="apptitle" id="apptitle">
-		<h3>Genome Annotation</h3>
-  	  	<p>Annotates genomes using RASTtk.</p>
-    </div>
-	<div style="width:400px; margin:auto" class="formFieldsContainer">
-		<div id="annotationBox" style="width:400px;" class="appbox appshadow">
-			<div class="headerrow">
-				<div style="width:85%;display:inline-block;">
-					<label class="appboxlabel">Parameters</label>
-					<div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa icon-info-circle fa"></i>
-					</div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appFieldLong">
-					<label>Contigs</label><br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
-				</div>
-			</div>
-
-			<div class="approw">
-				<div class="appFieldLong">
-					<label>Domain</label><br>
-					<select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="Bacteria">Bacteria</option>
-						<option value="Archaea">Archaea</option>
-					</select>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="approwsegment" style="margin-left: 0px; text-align:left; width:70%">
-					<label class="paramlabel">Taxonomy Name</label>
-                    <div name="taxoninfo" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-info-circle fa"></i>
-                    </div><br>
-					<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
-				</div> 
-				<div class="approwsegment" style="text-align:left; width:20%">
-					<label>Taxonomy ID</label><br>
-					<div data-dojo-attach-event="onChange:onTaxIDChange" data-dojo-type="p3/widget/TaxIDSelector" value=""  name="tax_id" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="tax_idWidget"></div>
-				</div> 
-			</div>
-			<div class="approw">
-				<div class="appFieldLong">
-					<label>My Label</label><br>
-                    <div data-dojo-type="dijit/form/ValidationTextBox"  data-dojo-attach-event="onChange:updateOutputName" name="my_label" data-dojo-attach-point="myLabelWidget" required="true" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'"></div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appFieldLong" style="width:380px">
-					<label>Output Name</label><br>
-					<div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appFieldLong">
-					<label>Genetic Code</label><br>
-					<select data-dojo-attach-point="genetic_code" data-dojo-type="dijit/form/Select" name="code" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="11">11 (Archaea & most Bacteria)</option>
-						<option value="4">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>
-					</select>
-				</div>
-			</div>
-			<div class="approw" style="display:none">
-				<div class="appFieldLong">
-					<label>Optional Annotation Source</label><br>
-                     <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="reference_genome_id" maxHeight=200 style="width:100%" required="false" data-dojo-attach-point="ref_genome_id"></div>
+    <div class="appTemplate" style="width: 450px">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>Genome Annotation</h3>
+            <p>Annotates genomes using RASTtk.</p>
+        </div>
+        <div style="width:450px; margin:auto" class="formFieldsContainer">
+            <div id="annotationBox" style="width:400px;" class="appBox appShadow">
+                <div class="headerrow">
+                    <div style="width:85%;display:inline-block;">
+                        <label class="appBoxLabel">Parameters</label>
+                        <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
+                            <i class="fa icon-info-circle fa"></i>
+                        </div>
+                    </div>
                 </div>
-			</div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <label>Contigs</label><br>
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%"
+                             required="true"
+                             data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
+                    </div>
+                </div>
+
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <label>Domain</label><br>
+                        <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName"
+                                style="width:300px" required="true"
+                                data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                            <option value="Bacteria">Bacteria</option>
+                            <option value="Archaea">Archaea</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
+                        <label class="paramlabel">Taxonomy Name</label>
+                        <div name="taxoninfo" class="infobox iconbox infobutton tooltipinfo">
+                            <i class="fa icon-info-circle fa"></i>
+                        </div>
+                        <br>
+                        <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                             data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" maxHeight=200
+                             style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
+                    </div>
+                    <div class="appRowSegment" style="text-align:left; width:20%">
+                        <label>Taxonomy ID</label><br>
+                        <div data-dojo-attach-event="onChange:onTaxIDChange" data-dojo-type="p3/widget/TaxIDSelector"
+                             value="" name="tax_id" maxHeight=200 style="width:100%" required="true"
+                             data-dojo-attach-point="tax_idWidget"></div>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <label>My Label</label><br>
+                        <div data-dojo-type="dijit/form/ValidationTextBox"
+                             data-dojo-attach-event="onChange:updateOutputName" name="my_label"
+                             data-dojo-attach-point="myLabelWidget" style="width: 300px" required="true"
+                             data-dojo-props="intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'"></div>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong" style="width:380px">
+                        <label>Output Name</label><br>
+                        <div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3"
+                             data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                             style="width:100%" required="true"
+                             data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <label>Genetic Code</label><br>
+                        <select data-dojo-attach-point="genetic_code" data-dojo-type="dijit/form/Select" name="code"
+                                style="width:300px" required="true"
+                                data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                            <option value="11">11 (Archaea & most Bacteria)</option>
+                            <option value="4">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="appRow" style="display:none">
+                    <div class="appFieldLong">
+                        <label>Optional Annotation Source</label><br>
+                        <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                             data-dojo-type="p3/widget/GenomeNameSelector" name="reference_genome_id" maxHeight=200
+                             style="width:100%" required="false" data-dojo-attach-point="ref_genome_id"></div>
+                    </div>
+                </div>
 
 
-			<div class="approw">
-				<div class="appFieldLong">
-					<label>Output Folder</label><br>
-					<div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-				</div>
-			</div>
-			
-		</div>
-		</div>
-	<div class="appSubmissionArea">
-		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-		    Submitting Annotation Job
-		</div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <label>Output Folder</label><br>
+                        <div data-dojo-attach-point="output_pathWidget"
+                             data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%"
+                             required="true"
+                             data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
+                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                    </div>
+                </div>
 
-		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-			Error Submitting Job
-		</div>
-		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-			Annotation Job has been queued.
-		</div>
-		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Annotate</div>
-		</div>
-	</div>
+            </div>
+        </div>
+        <div class="appSubmissionArea">
+            <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+                 style="margin-top:10px; text-align:center;">
+                Submitting Annotation Job
+            </div>
+
+            <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+                 style="margin-top:10px; text-align:center;">
+                Error Submitting Job
+            </div>
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+                 style="margin-top:10px; text-align:center;">
+                Annotation Job has been queued.
+            </div>
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                     data-dojo-type="dijit/form/Button">Cancel
+                </div>
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Annotate</div>
+            </div>
+        </div>
+    </div>
 </form>
 

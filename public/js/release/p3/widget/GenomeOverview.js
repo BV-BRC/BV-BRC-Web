@@ -66,7 +66,7 @@ define("p3/widget/GenomeOverview", [
 				selection: [this.genome],
 				type: 'genome_group'
 			});
-			on(dlg.domNode, "dialogAction", function(evt){
+			on(dlg.domNode, "dialogAction", function(){
 				dlg.hide();
 				setTimeout(function(){
 					dlg.destroy();
@@ -79,7 +79,6 @@ define("p3/widget/GenomeOverview", [
 		},
 
 		onDownload: function(){
-			// window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
 
 			var dialog = new Dialog({title: "Download"});
 			var advDn = new AdvancedDownload({selection: [this.genome], containerType: "genome_data"});
