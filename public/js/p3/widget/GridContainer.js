@@ -280,14 +280,12 @@ define([
 						}, this)){
 						// console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
-						console.log("Button Node: ", button)
 
 						query(".ActionButtonText", button).forEach(function(node){
 							node.innerHTML = "SHOW";
 						})
 
 						query(".ActionButton", button).forEach(function(node){
-							console.log("ActionButtonNode: ", node)
 							domClass.remove(node, "icon-chevron-circle-right");
 							domClass.add(node, "icon-chevron-circle-left");
 						})
