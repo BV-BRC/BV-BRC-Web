@@ -3,13 +3,13 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin", "FileSaver"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, saveAs){
 
 	var legend = [
 		'<div>',
@@ -492,11 +492,13 @@ define([
 			on(downloadHM.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var DELIMITER;
+				var DELIMITER, ext;
 				if(rel === 'text/csv'){
 					DELIMITER = ',';
+					ext = 'csv';
 				}else{
 					DELIMITER = '\t';
+					ext = 'txt';
 				}
 
 				var colIndexes = [];
@@ -523,8 +525,8 @@ define([
 						data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
 					}
 				});
-				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
-				// refer http://jsfiddle.net/a856P/51/ for further implementation
+
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'ProteinFamilies.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){
