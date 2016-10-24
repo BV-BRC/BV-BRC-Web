@@ -240,6 +240,7 @@ define([
 
 			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
 				headers: {
@@ -248,6 +249,8 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -267,6 +270,7 @@ define([
 
 			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
@@ -277,6 +281,8 @@ define([
 				},
 				data: query
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
 				var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
