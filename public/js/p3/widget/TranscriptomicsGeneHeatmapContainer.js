@@ -552,7 +552,7 @@ define([
 			var isTransposed = tgState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
-			console.log("clustering data set size: ", data.length);
+			// console.log("clustering data set size: ", data.length);
 			if(data.length > 1500000){
 				new Dialog({
 					title: "Notice",
@@ -579,8 +579,8 @@ define([
 			}), function(err){
 
 				new Dialog({
-					title: err.status,
-					content: err.text
+					title: err.status || ' ',
+					content: err.text || err
 				}).show();
 			});
 		}
