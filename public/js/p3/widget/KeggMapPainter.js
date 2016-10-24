@@ -87,6 +87,13 @@ define(["d3/d3"], function(d3){
 				d3.select("#map_div").selectAll("*").remove();
 			},
 
+			export: function(){
+				return d3.select("#map_wrapper")
+					.attr("version", 1.1)
+					.attr("xmlns", "http://www.w3.org/2000/svg")
+					.node().parentNode.innerHTML;
+			},
+
 			highlight: function(keys){
 
 				this.data.forEach(function(d){

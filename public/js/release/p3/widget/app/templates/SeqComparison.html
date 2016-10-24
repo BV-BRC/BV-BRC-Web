@@ -1,154 +1,209 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div style="width:800px;margin:auto;">
-	<div class="apptitle" id="apptitle">
-	    <h3>Proteome Comparison</h3>
-	    <p>Protein sequence-based comparison using bi-directional BLASTP.</p>
-	</div>
-  
-	<div style="width:800px; margin:auto" class="formFieldsContainer">
-		<div style="display: none;">
-			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:10},"/>
-			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numref" data-dojo-props="constraints:{min:0},"/>
-		</div>
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>Proteome Comparison</h3>
+            <p>Protein sequence-based comparison using bi-directional BLASTP.</p>
+        </div>
 
-		<table class="assemblyblocks" style="width:100%">
-		<tr>
-		<td style="width:50%">
-			<table style="width:100%">
-			<tr>
-			<td>
-		
-			<div id="dataBox" class="appbox appshadow">
-				<div class="headerrow">
-					<div style="width:85%;display:inline-block;">
-						<label class="appboxlabel">Parameters</label>
-						<div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-							<i class="fa icon-info-circle fa"></i>
-						</div>
-					</div>
-				</div>
+        <div class="formFieldsContainer">
+            <div style="display: none;">
+                <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false"
+                       data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:10},"/>
+                <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false"
+                       data-dojo-attach-point="numref" data-dojo-props="constraints:{min:0},"/>
+            </div>
 
-				<div class="approw">
-					<div class="approw" data-dojo-attach-point="advanced">
-						<label>Advanced Parameters (optional)</label>
-						<div class="iconbox" style="margin-left:0px">
-							<i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
-						</div>
-					</div>
-				</div>
-				<div class="approw"  data-dojo-attach-point="advrow" style="display: none">
-					<div class="halfAppRow">
-						<label class="paramlabel" for="min_seq_cov">Minimum % coverage</label></br>
-						<div class="insertspinner" name="min_seq_cov" data-dojo-type="dijit/form/NumberSpinner" value="30" data-dojo-attach-point="insert_size_mean" data-dojo-props="smallDelta:5, constraints:{min:10,max:100,places:0}" ></div>
-					</div>
-				<div class="half2AppRow">
-						<label class="paramlabel" for="max_e_val">Blast E-value</label></br>		
-						<div data-dojo-type="dijit/form/ValidationTextBox" name="max_e_val" value="1e-5" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'E value is optional, default is set to 1e-5',missingMessage:'E value is optional, default is set to 1e-5.',trim:true,placeHolder:'1e-5'"></div>
-					</div>
-				<div class="halfAppRow">
-						<label class="paramlabel" for="min_ident">Minimum % identity</label></br>
-						<div class="insertspinner" name="min_ident" data-dojo-type="dijit/form/NumberSpinner" value="10" data-dojo-attach-point="min_ident" data-dojo-props="smallDelta:5, constraints:{min:10,max:100,places:0}" ></div>
-					</div>
-				</div>
-				<div class="approw">
-					<label for="output_path" class="paramlabel">Output Folder</label></br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path"  required="true" data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-				</div>
-				<div class="approw">
-					<label class="paramlabel">Output Name</label></br>
-					<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-				</div>
+            <table class="assemblyblocks">
+                <tr>
+                    <td style="width:50%">
+                        <table>
+                            <tr>
+                                <td>
 
-			</div>
-			
-			</td>
-			</tr>
-			<tr>
-			<td>		
-			<div id="dataBox" class="appbox appshadow">
-				<div class="headerrow">
-					<div style="width:85%;display:inline-block;">
-						<label class="appboxlabel">Reference Genome</label>
-						<div name="referenceinfo" class="infobox iconbox infobutton dialoginfo">
-							<i class="fa icon-info-circle fa"></i>
-						</div>
-					</div>
-				</div>
-				<div class="approw">
-						<label>Select one reference genome from the following options:</label></br>
-						<label>Select a genome</label></br>
-						<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="ref_genome_id" maxHeight=200 style="width:85%" required="false" data-dojo-attach-point="ref_genome_id"></div></br>
-						<label>or a fasta file</label></br>
-						<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ref_user_genomes_fasta" style="width:100%" required="false" data-dojo-attach-point="ref_user_genomes_fasta" data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace for Comparison',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
-						<label>or a feature group</label></br>
-						<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ref_user_genomes_featuregroup" style="width:100%" required="false" data-dojo-attach-point="ref_user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
-				</div>
-			</div>
-			
-			</td>
-			</tr>			
-			</table>
-			
-		</td>		
-		<td>	
-		<div id="dataBox" class="appbox appshadow">
-			<div class="headerrow">
-				<div style="width:90%;display:inline-block;">
-					<label class="appboxlabel">Comparison Genomes</label>
-					<div name="comparisoninfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa icon-info-circle fa"></i>
-					</div>
-				</div>
-			</div>
-			<div class="approw">
-					<label>ADD UP TO 9 GENOMES TO COMPARE (USE PLUS BUTTONS TO ADD)</label></br>                     
-                    <label>Select genome</label></br>
-                    <div style="width:85%;display:inline-block;" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200 required="false" data-dojo-attach-point="comp_genome_id" data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"></div>
-					<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div></br>
-                    <label>And/or select fasta file</label></br>
-					<div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_fasta" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace for Comparison',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
-					<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i></div></br>
-                    <label>And/or select feature group</label></br>
-					<div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
-					<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i></div></br>
-			</div>
+                                    <div class="appBox appShadow">
+                                        <div class="headerrow">
+                                            <div style="width:85%;display:inline-block;">
+                                                <label class="appBoxLabel">Parameters</label>
+                                                <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa"></i>
+                                                </div>
+                                            </div>
+                                        </div>
 
-			<div class="approw">
-					<label> selected genome table</label>
-			</div>
-						
-			<div class="approw" style="width:90%; margin-top:10px; text-align: center;">
-			<table class="librarytable" frame="box" data-dojo-attach-point="genomeTable" style='margin:0 0 0 10px; width:100%;'>
-				<tbody data-dojo-attach-point="genomeTableBody">
-						
-				</tbody>
-			</table>
-			</div>			
+                                        <div class="appRow">
+                                            <div class="appRow" data-dojo-attach-point="advanced">
+                                                <label>Advanced Parameters (optional)</label>
+                                                <div class="iconbox" style="margin-left:0px">
+                                                    <i data-dojo-attach-point="advicon"
+                                                       class="fa icon-caret-down fa-1"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="appRow" data-dojo-attach-point="advrow" style="display: none">
+                                            <div class="halfAppRow">
+                                                <label class="paramlabel">Minimum %
+                                                    coverage</label></br>
+                                                <div class="insertspinner" name="min_seq_cov"
+                                                     data-dojo-type="dijit/form/NumberSpinner" value="30"
+                                                     data-dojo-attach-point="insert_size_mean"
+                                                     data-dojo-props="smallDelta:5, constraints:{min:10,max:100,places:0}"></div>
+                                            </div>
+                                            <div class="half2AppRow">
+                                                <label class="paramlabel">Blast E-value</label></br>
+                                                <div data-dojo-type="dijit/form/ValidationTextBox" name="max_e_val"
+                                                     value="1e-5" style="width:100%" required="false"
+                                                     data-dojo-props="intermediateChanges:true,promptMessage:'E value is optional, default is set to 1e-5',missingMessage:'E value is optional, default is set to 1e-5.',trim:true,placeHolder:'1e-5'"></div>
+                                            </div>
+                                            <div class="halfAppRow">
+                                                <label class="paramlabel">Minimum %
+                                                    identity</label></br>
+                                                <div class="insertspinner" name="min_ident"
+                                                     data-dojo-type="dijit/form/NumberSpinner" value="10"
+                                                     data-dojo-attach-point="min_ident"
+                                                     data-dojo-props="smallDelta:5, constraints:{min:10,max:100,places:0}"></div>
+                                            </div>
+                                        </div>
+                                        <div class="appRow">
+                                            <label class="paramlabel">Output Folder</label></br>
+                                            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                                                 data-dojo-attach-point="output_path" required="true"
+                                                 data-dojo-props="type:['folder'],multi:false"
+                                                 data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                                        </div>
+                                        <div class="appRow">
+                                            <label class="paramlabel">Output Name</label></br>
+                                            <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                                                 name="output_file" data-dojo-attach-point="output_file"
+                                                 style="width:85%" required="true"
+                                                 data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+                                        </div>
 
-		</div>
-		</td>		
-		</tr>
-		</table>
-	  </div>
-	</div>
+                                    </div>
 
-	<div class="appSubmissionArea">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="appBox appShadow">
+                                        <div class="headerrow">
+                                            <div style="width:85%;display:inline-block;">
+                                                <label class="appBoxLabel">Reference Genome</label>
+                                                <div name="referenceinfo" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="appRow">
+                                            <label>Select one reference genome from the following options:</label></br>
+                                            <label>Select a genome</label></br>
+                                            <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                                                 data-dojo-type="p3/widget/GenomeNameSelector" name="ref_genome_id"
+                                                 maxHeight=200 style="width:85%" required="false"
+                                                 data-dojo-attach-point="ref_genome_id"></div>
+                                            </br>
+                                            <label>or a fasta file</label></br>
+                                            <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                                                 data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                                                 name="ref_user_genomes_fasta" style="width:100%" required="false"
+                                                 data-dojo-attach-point="ref_user_genomes_fasta"
+                                                 data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace for Comparison',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
+                                            <label>or a feature group</label></br>
+                                            <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                                                 data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                                                 name="ref_user_genomes_featuregroup" style="width:100%"
+                                                 required="false" data-dojo-attach-point="ref_user_genomes_featuregroup"
+                                                 data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+                                        </div>
+                                    </div>
 
-		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-		    Comparing Genomes
-		</div>
-		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-			Error Submitting Job. Please check the submission form.
-		</div>
-		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-			Genome Comparison should be finished shortly. Check workspace for results.
-		</div>
-		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-		</div>
-	</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </td>
+                    <td>
+                        <div class="appBox appShadow">
+                            <div class="headerrow">
+                                <div style="width:90%;display:inline-block;">
+                                    <label class="appBoxLabel">Comparison Genomes</label>
+                                    <div name="comparisoninfo" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label>ADD UP TO 9 GENOMES TO COMPARE (USE PLUS BUTTONS TO ADD)</label></br>
+                                <label>Select genome</label></br>
+                                <div style="width:85%;display:inline-block;"
+                                     data-dojo-attach-event="onChange:onSuggestNameChange"
+                                     data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200
+                                     required="false" data-dojo-attach-point="comp_genome_id"
+                                     data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"></div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddGenome"
+                                        class="fa icon-plus-circle fa-lg"></i></div>
+                                </br>
+                                <label>And/or select fasta file</label></br>
+                                <div style="width:85%;display:inline-block;"
+                                     data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_fasta"
+                                     required="false" data-dojo-attach-point="user_genomes_fasta"
+                                     data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace for Comparison',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
+                                </div>
+                                </br>
+                                <label>And/or select feature group</label></br>
+                                <div style="width:85%;display:inline-block;"
+                                     data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup"
+                                     required="false" data-dojo-attach-point="user_genomes_featuregroup"
+                                     data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddFeatureGroup"
+                                        class="fa icon-plus-circle fa-lg"></i></div>
+                                </br>
+                            </div>
+
+                            <div class="appRow">
+                                <label> selected genome table</label>
+                            </div>
+
+                            <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
+                                <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable"
+                                       style='margin:0 0 0 10px; width:100%;'>
+                                    <tbody data-dojo-attach-point="genomeTableBody">
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="appSubmissionArea">
+
+        <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+             style="margin-top:10px; text-align:center;">
+            Comparing Genomes
+        </div>
+        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+             style="margin-top:10px; text-align:center;">
+            Error Submitting Job. Please check the submission form.
+        </div>
+        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+             style="margin-top:10px; text-align:center;">
+            Genome Comparison should be finished shortly. Check workspace for results.
+        </div>
+        <div style="margin-top: 10px; text-align:center;">
+            <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+            <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+        </div>
+    </div>
 </form>
 

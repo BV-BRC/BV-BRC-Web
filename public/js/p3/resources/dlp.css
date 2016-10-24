@@ -1,12 +1,11 @@
-.patric .dlp.container.main-container {
+.patric .dlp {
   width: 967px;
-  margin: 15px auto 30px auto;
+  margin: 5px auto 0 auto;
   position: relative
 }
 
 .patric .dlp h2 {
   color: #666666;
-  text-transform: uppercase;
   font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
 }
 
