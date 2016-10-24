@@ -3,19 +3,57 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request", "dojo/promise/all",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./KeggMapPainter"
+	"./ContainerActionBar", "FileSaver", "./KeggMapPainter"
 
 ], function(declare, lang, Deferred,
 			on, Topic, domConstruct, dom, Query, when, request, All,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar){
+			ContainerActionBar, saveAs){
 
 	var legend = '<div class="kegg-map-legend-color-box white"></div><div class="kegg-map-legend-label">Not Annotated</div><div class="clear"></div>' +
 		'<div class="kegg-map-legend-color-box green"></div><div class="kegg-map-legend-label">Annotated</div><div class="clear"></div>' +
 		'<div class="kegg-map-legend-color-box darkgreen"></div><div class="kegg-map-legend-label">Present in some genomes</div><div class="clear"></div>' +
 		'<div class="kegg-map-legend-color-box blue"></div><div class="kegg-map-legend-label">Selected</div><div class="clear"></div>' +
 		'<div class="kegg-map-legend-color-box red"></div><div class="kegg-map-legend-label">Selected from EC table</div><div class="clear"></div>';
+
+	// refer http://stackoverflow.com/questions/6150289/how-to-convert-image-into-base64-string-using-javascript
+	// source code from https://gist.github.com/HaNdTriX/7704632
+	// modified callback caller to return img size.
+	function toDataUrl(src, callback, outputFormat){
+		// Create an Image object
+		var img = new Image();
+		// Add CORS approval to prevent a tainted canvas
+		img.crossOrigin = 'Anonymous';
+		img.onload = function(){
+			// Create an html canvas element
+			var canvas = document.createElement('CANVAS');
+			// Create a 2d context
+			var ctx = canvas.getContext('2d');
+			var dataURL;
+			// Resize the canavas to the image dimensions
+			canvas.height = this.height;
+			canvas.width = this.width;
+			// Draw the image to a canvas
+			ctx.drawImage(this, 0, 0);
+			// Convert the canvas to a data url
+			dataURL = canvas.toDataURL(outputFormat);
+			// Return the data url via callback
+			callback(dataURL, canvas.width, canvas.height);
+			// Mark the canavas to be ready for garbage
+			// collection
+			canvas = null;
+		};
+		// Load the image
+		img.src = src;
+		// make sure the load event fires for cached images too
+		if(img.complete || img.complete === undefined){
+			// Flush cache
+			img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+			// Try again
+			img.src = src;
+		}
+	}
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -54,7 +92,8 @@ define([
 				"fa icon-print fa-2x",
 				{label: "Print", multiple: false, validTypes: ["*"]},
 				function(){
-					console.log("print");
+					var svg = this.pNS.export();
+					saveAs(new Blob([svg], {type: 'image/svg+xml'}), "PathwayMap.svg");
 				},
 				true
 			]
@@ -91,6 +130,7 @@ define([
 			}
 
 			this.containerActionBar = new ContainerActionBar({
+				baseClass: "BrowserHeader",
 				region: "top"
 			});
 			this.containerActions.forEach(function(a){
@@ -98,11 +138,16 @@ define([
 			}, this);
 			this.addChild(this.containerActionBar);
 
-			this.addChild(new ContentPane({
-				region: "center",
-				style: "padding:0",
-				content: '<svg id="map_div" style="width:1700px;height:1700px;position:absolute;"></svg><img id="map_img" src="/patric/images/pathways/map' + this.state.pathway_id + '.png" alt=""/>',
-			}));
+			var _self = this;
+			var pathwayImgUrl = '/patric/images/pathways/map' + this.state.pathway_id + '.png';
+			toDataUrl(pathwayImgUrl, function(base64Img, width, height){
+				// draw map panel
+				_self.addChild(new ContentPane({
+					region: "center",
+					style: "padding:0",
+					content: '<svg id="map_div" style="width:' + width + 'px;height:' + height + 'px;position:absolute;"><image width="' + width + '" height="' + height + '" xlink:href="' + base64Img + '" /></svg>',
+				}));
+			});
 
 			this.inherited(arguments);
 			this._firstView = true;
