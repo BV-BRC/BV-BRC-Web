@@ -3,20 +3,19 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin", "../store/PathwayMapMemoryStore"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, Store){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
 
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
 		pmState: null,
-		store: null,
 		containerActions: [
 			[
 				"Flip Axis",
@@ -110,6 +109,7 @@ define([
 
 			var query = "?and(eq(ec_number," + ecNumber + "),eq(genome_id," + genomeId + "),eq(annotation,PATRIC))";
 
+			Topic.publish("PathwayMap", "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "pathway", query), {
 				handleAs: 'json',
 				headers: {
@@ -118,6 +118,8 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("PathwayMap", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, ecNumber, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, ecNumber, genomeId, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -137,6 +139,7 @@ define([
 
 			var query = "and(in(ec_number,(" + ecNumbers + ")),in(genome_id,(" + genomeIds + ")),eq(annotation,PATRIC))&limit(25000,0)";
 
+			Topic.publish("PathwayMap", "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "pathway"), {
 				handleAs: 'json',
 				headers: {
@@ -147,6 +150,7 @@ define([
 				},
 				data: query
 			}).then(lang.hitch(this, function(response){
+				Topic.publish("PathwayMap", "hideLoadingMask");
 
 				// dedupe features
 				var featureSet = {};
@@ -199,22 +203,10 @@ define([
 			text.push('<b>Product:</b> ' + description);
 			text.push('<b>EC Number:</b> ' + ecNumber);
 			text.push('<b>Members:</b> ' + memberCount);
-			// features.forEach(function(feature){
-			// 	var featureLink = '<a href="/view/Feature/' + feature.feature_id + '" target="_blank">' + feature.patric_id + '</a>';
-			// 	if(feature.refseq_locus_tag !== undefined){
-			// 		featureLink += ", " + feature.refseq_locus_tag;
-			// 	}
-			// 	if(feature.alt_locus_tag !== undefined){
-			// 		featureLink += ", " + feature.alt_locus_tag;
-			// 	}
-			// 	text.push(featureLink);
-			// });
 
 			return text.join("<br>");
 		},
 		_buildPanelCellsSelected: function(isTransposed, ecNumbers, genomeIds, features){
-
-			//var membersCount = this._countMembers(colIDs, rowIDs);
 
 			var text = [];
 			text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
@@ -323,6 +315,8 @@ define([
 			});
 			on(btnShowDetails.domNode, "click", function(){
 				Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds + "))#view_tab=features", target: "blank"});
+
+				_self.dialog.hide();
 			});
 
 			var btnAddToWorkspace = new Button({
