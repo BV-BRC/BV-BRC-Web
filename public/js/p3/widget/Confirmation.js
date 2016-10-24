@@ -36,7 +36,10 @@ define([
 				_self.destroy();
 			}, 2000);
 		},
-		_onSubmit: function(){
+		_onSubmit: function(evt){
+			evt.preventDefault();
+			evt.stopPropagation();
+
 			this.onConfirm();
 			this.hide();
 			var _self = this;
@@ -47,7 +50,7 @@ define([
 		},
 		startup: function(){
 			this.inherited(arguments);
-//			this.set('content', content);	
+//			this.set('content', content);
 		}
 	});
 
