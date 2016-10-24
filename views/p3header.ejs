@@ -1,5 +1,5 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
-<!--
+    <!--
 	<div class="TopMenuBar">
 		<span style="float:left;margin-left:4px;font-weight:200;"><span style="font-weight:900;color:#76A72D;">PAT</span>HOSYSTEMS <span style="font-weight:900;color:#76A72D;">R</span>ESOURCE <span style="font-weight:900;color:#76A72D;">I</span>NTEGRATION <span style="font-weight:900;color:#76A72D;">C</span>ENTER</span>
 
@@ -19,263 +19,273 @@
 		<a class="HideWithAuth loginLink TopMenuLink" href="/register">REGISTER</a> 
 		<a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a>
 	</div>
-
 -->
 
+    <% var services = [
+        {name: "Acinetobacter", href: "/view/Taxonomy/469#view_tab=overview"},
+        {name: "Bacillus", href: "/view/Taxonomy/1386#view_tab=overview"},
+        {name: "Bartonella", href: "/view/Taxonomy/773#view_tab=overview"},
+        {name: "Borellia", href: "/view/Taxonomy/138#view_tab=overview"},
+        {name: "Brucella", href: "/view/Taxonomy/234#view_tab=overview"},
+        {name: "Burkholderia", href: "/view/Taxonomy/32008#view_tab=overview"},
+        {name: "Campylobacter", href: "/view/Taxonomy/194#view_tab=overview"},
+        {name: "Chlamydia", href: "/view/Taxonomy/810#view_tab=overview"},
+        {name: "Clostridium", href: "/view/Taxonomy/1485#view_tab=overview"},
+        {name: "Coxiella", href: "/view/Taxonomy/776#view_tab=overview"},
+        {name: "Ehrlichia", href: "/view/Taxonomy/943#view_tab=overview"},
+        {name: "Escherichia", href: "/view/Taxonomy/561#view_tab=overview"},
+        {name: "Francisella", href: "/view/Taxonomy/262#view_tab=overview"},
+        {name: "Helicobacter", href: "/view/Taxonomy/209#view_tab=overview"},
+        {name: "Listeria", href: "/view/Taxonomy/1637#view_tab=overview"},
+        {name: "Mycobacterium", href: "/view/Taxonomy/1763#view_tab=overview"},
+        {name: "Pseudomonas", href: "/view/Taxonomy/286#view_tab=overview"},
+        {name: "Rickettsia", href: "/view/Taxonomy/780#view_tab=overview"},
+        {name: "Salmonella", href: "/view/Taxonomy/590#view_tab=overview"},
+        {name: "Shigella", href: "/view/Taxonomy/620#view_tab=overview"},
+        {name: "Staphylococcus", href: "/view/Taxonomy/1279#view_tab=overview"},
+        {name: "Streptococcus", href: "/view/Taxonomy/1301#view_tab=overview"},
+        {name: "Vibrio", href: "/view/Taxonomy/662#view_tab=overview"},
+        {name: "Yersinia", href: "/view/Taxonomy/629#view_tab=overview"}
+    ]
 
-	<% var services = [
-		{name: "Acinetobacter", href: "/view/Taxonomy/469#view_tab=overview"},
-		{name: "Bacillus", href: "/view/Taxonomy/1386#view_tab=overview"},
-		{name: "Bartonella", href: "/view/Taxonomy/773#view_tab=overview"},
-		{name: "Borellia", href: "/view/Taxonomy/138#view_tab=overview"},
-		{name: "Brucella", href: "/view/Taxonomy/234#view_tab=overview"},
-		{name: "Burkholderia", href: "/view/Taxonomy/32008#view_tab=overview"},
-		{name: "Campylobacter", href: "/view/Taxonomy/194#view_tab=overview"},
-		{name: "Chlamydia", href: "/view/Taxonomy/810#view_tab=overview"},
-		{name: "Clostridium", href: "/view/Taxonomy/1485#view_tab=overview"},
-		{name: "Coxiella", href: "/view/Taxonomy/776#view_tab=overview"},
-		{name: "Ehrlichia", href: "/view/Taxonomy/943#view_tab=overview"},
-		{name: "Escherichia", href: "/view/Taxonomy/561#view_tab=overview"},
-		{name: "Francisella", href: "/view/Taxonomy/262#view_tab=overview"},
-		{name: "Helicobacter", href: "/view/Taxonomy/209#view_tab=overview"},
-		{name: "Listeria", href: "/view/Taxonomy/1637#view_tab=overview"},
-		{name: "Mycobacterium", href: "/view/Taxonomy/1763#view_tab=overview"},
-		{name: "Pseudomonas", href: "/view/Taxonomy/286#view_tab=overview"},
-		{name: "Rickettsia", href: "/view/Taxonomy/780#view_tab=overview"},
-		{name: "Salmonella", href: "/view/Taxonomy/590#view_tab=overview"},
-		{name: "Shigella", href: "/view/Taxonomy/620#view_tab=overview"},
-		{name: "Staphylococcus", href: "/view/Taxonomy/1279#view_tab=overview"},
-		{name: "Streptococcus", href: "/view/Taxonomy/1301#view_tab=overview"},
-		{name: "Vibrio", href: "/view/Taxonomy/662#view_tab=overview"},
-		{name: "Yersinia", href: "/view/Taxonomy/629#view_tab=overview"}
-	] 
 
+    var servicesMiddle = Math.round(services.length / 2);
+    %>
 
-	var servicesMiddle= Math.round(services.length/2);
+    <div class="P3Header" style="display: flex">
+        <div style="width: 220px;">
+            <a href="/">
+                <img class="p3LogoImage" src="/js/p3/resources/images/patric_logo_bg.png"/>
+                <span class="logo">PATRIC</span>
+                <span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel || "" %></span>
+            </a>
+        </div>
+        <div style="vertical-align: top; min-width: 435px; flex: 1">
+            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <span>ORGANISMS</span>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div style="width:225px">
+                        <div class="menuHeader">Bacterial Pathogens</div>
+                        <div class="menuItems">
+                            <% for (var i = 0; i < servicesMiddle;i++){ %>
+                            <div>
+                                        <span class="menuItem half"><a class="navigationLink"
+                                                                       href="<%- services[i].href %>"><%- services[i].name %></a></span>
+                                <span class="menuItem half">
+                                    <% if (services[servicesMiddle + i]) { %>
+                                    <a class="navigationLink"
+                                       href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
+                                    <% } %>
+                                </span>
+                            </div>
+                            <% } %>
+                            <br>
+                            <div>
+                                <span class="menuItem half"><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></span>
+                                <span class="menuItem half"><a class="navigationLink"
+                                                               href="/view/Taxonomy/2157">All Archaea</a></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-	%>
+            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <span>DATA</span>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div>
+                        <div style='vertical-align: top;width:150px;display:inline-block;margin-right: 5px;'>
+                            <div class="menuHeader">Data Types</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
+                                        Resistance</a></div>
+                                <div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
+                                <div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic
+                                        Features</a></div>
+                                <div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
+                                <div><a class="navigationLink" href="/view/DataType/ProteinFamilies">Protein
+                                        Families</a></div>
+                                <div><a class="navigationLink" href="/view/DataType/SpecialtyGenes">Specialty
+                                        Genes</a></div>
+                                <div><a class="navigationLink"
+                                        href="/view/DataType/Transcriptomics">Transcriptomics</a></div>
+                            </div>
+                            <div class="menuHeader">Download Data</div>
+                            <div class="menuItems">
+                                <div><a href="ftp://ftp.patricbrc.org/patric2" target="_blank">FTP Server</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div style='vertical-align:top;width:200px;display: inline-block'>
+                            <div class="menuHeader">Specialty Data Collections</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/content/patric-collaborations"
+                                        target="_blank">PATRIC Collaborations</a></div>
+                                <div><a class="navigationLink" href="/content/patric-dbps" target="_blank">PATRIC
+                                        DBPs</a></div>
+                                <div><a class="navigationLink" href="/content/niaid-clinical-proteomics"
+                                        target="_blank">NIAID Clinical Proteomics</a></div>
+                                <div><a class="navigationLink" href="/content/niaid-genome-sequencing"
+                                        target="_blank">NIAID Genome Sequencing</a></div>
+                                <div><a class="navigationLink" href="/content/niaid-structural-genomics"
+                                        target="_blank">NIAID Structural Genomics</a></div>
+                                <div><a class="navigationLink" href="/content/niaid-systems-biology"
+                                        target="_blank">NIAID Systems Biology</a></div>
+                                <div><a class="navigationLink" href="/content/niaid-functional-genomics"
+                                        target="_blank">NIAID Functional Genomics</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <span>WORKSPACES</span>
 
-	<div class="P3Header">
-		<table style="width:100%;margin:0px;padding:0px;border-collapse:collapse;border-spacing:0px;"><tbody><tr>
-			<td style="text-align:left;width:220px;">
-				<a href="/">
-					<img class="p3LogoImage" src="/js/p3/resources/images/patric_logo_bg.png" />
-					<span class="logo">PATRIC</span>
-					<span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel||"" %></span>
-				</a>
-			</td>
-			<td style="text-align:left;">
-				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>ORGANISMS</span>
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div >
-							<table><tbody>
-								<tr>
-									<td style='vertical-align: top;width:225px;'>
-										<div class="menuHeader">Bacterial Pathogens</div>
-										<table>
-											<% for (var i=0; i<servicesMiddle;i++){ %>
-												<tr>
-													<td><a class="navigationLink" href="<%- services[i].href %>"><%- services[i].name %></a></td>
-													<td>
-													<% if (services[servicesMiddle+i]) { %>
-														<a class="navigationLink" href="<%- services[servicesMiddle+i].href %>"><%- services[servicesMiddle+i].name %></a>
-													<% } %>
-													</td>
-												</tr>
-											<% } %>
-											<tr><td>&nbsp;</td></tr>
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/2157">All Archaea</a></td>
-											</tr>
-										</table>
-									</td>
-								</tr>
-							</tbody></table>
-						</div>
-					</div>
-				</div>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div>
+                        <div style='vertical-align: top;width:175px;display:inline-block'>
+                            <div class="HideWithAuth">
+                                Please <a class="loginLink">login</a> to view your workspaces.
+                            </div>
+                            <div class="ShowWithAuth">
+                                <div><i class="fa icon-caret-down fa-1x noHoverIcon"
+                                        style="color:#333;cursor:normal;"></i>&nbsp;<a
+                                            class="navigationLink" id="YourWorkspaceLink">Your
+                                        Workspaces</a></div>
 
-				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>DATA</span>
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div >
-							<table><tbody>
-								<tr>
-									<td style='vertical-align: top;width:175px'>
-										<div class="menuHeader">Data Types</div>
-											<div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic Resistance</a></div>
-											<div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
-											<div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic Features</a></div>
-											<div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
-											<div><a class="navigationLink" href="/view/DataType/ProteinFamilies">Protein Families</a></div>
-											<div><a class="navigationLink" href="/view/DataType/SpecialtyGenes">Specialty Genes</a></div>
-											<div><a class="navigationLink" href="/view/DataType/Transcriptomics">Transcriptomics</a></div>
-									</td>
-									<td style='width:5px;'></td>
-									<td style='vertical-align:top;width:200px;'>
-										<div class="menuHeader">Specialty Data Collections</div>
-										<div><a class="navigationLink" href="/content/patric-collaborations" target="_blank">PATRIC Collaborations</a></div>
-										<div><a class="navigationLink" href="/content/patric-dbps" target="_blank">PATRIC DBPs</a></div>
-										<div><a class="navigationLink" href="/content/niaid-clinical-proteomics" target="_blank">NIAID Clinical Proteomics</a></div>
-										<div><a class="navigationLink" href="/content/niaid-genome-sequencing" target="_blank">NIAID Genome Sequencing</a></div>
-										<div><a class="navigationLink" href="/content/niaid-structural-genomics" target="_blank">NIAID Structural Genomics</a></div>
-										<div><a class="navigationLink" href="/content/niaid-systems-biology" target="_blank">NIAID Systems Biology</a></div>
-										<div><a class="navigationLink" href="/content/niaid-functional-genomics" target="_blank">NIAID Functional Genomics</a></div>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<div class="menuHeader">Download Data</div>
-										<div><a href="ftp://ftp.patricbrc.org/patric2" target="_blank">FTP Server</a></div>
-									</td>
-									<td></td>
-									<td></td>
-								</tr>
-							</tbody></table>
-						</div>
-					</div>
-				</div>
-				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>WORKSPACES</span>
-	
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div>
-							<table><tbody>
-								<tr>
-									<td style='vertical-align: top;width:175px'>
-										<div class="HideWithAuth">
-											Please <a class="loginLink">login</a> to view your workspaces.
-										</div>
+                                <div id="YourWorkspaces">
+                                </div>
 
-										<div class="ShowWithAuth">
-											<div><i class="fa icon-caret-down fa-1x noHoverIcon" style="color:#333;cursor:normal;"></i>&nbsp;<a class="navigationLink" id="YourWorkspaceLink">Your Workspaces</a></div>
-										
-										<div id="YourWorkspaces">
-										</div>
+                                <!--<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
+                                <div id="SharedWithYouWorkspaces">
+                                </div>
+                                </div>
 
-										<!--<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
-										<div id="SharedWithYouWorkspaces">
-										</div>
-										</div>
+                                <div><a class="navigationLink" href="/workspace/public">Public</a></div>
+                                <div id="PublicWorkspaces">
+                                </div>
 
-										<div><a class="navigationLink" href="/workspace/public">Public</a></div>
-										<div id="PublicWorkspaces">
-										</div>
+                                <div><a class="navigationLink" href="/workspace/published">Published</a></div>
+                                <div id="PublishedWorkspaces">
+                                </div>-->
+                            </div>
+                        </div>
+                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
+                            <a class="navigationLink" href="/job/">Your Jobs</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-										<div><a class="navigationLink" href="/workspace/published">Published</a></div>
-										<div id="PublishedWorkspaces">
-										</div>-->
-										</div>
-									</td>
-									<td style="vertical-align:top;" class="ShowWithAuth">
-										<a class="navigationLink" href="/job/">Your Jobs</a>
-									</td>
-	
-								</tr>
-							</tbody></table>
-						</div>
-					</div>
-				</div>
-	
-				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>SERVICES</span>
-	
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div>
-							<table><tbody>
-								<tr>
-									<td style='vertical-align: top;width: 180px;'>
-										<div class="menuHeader">Genomics</div>
-										<div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
-										<div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
-										<div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>
-										<div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
-										<div><p> </p></div>
-										<div class="menuHeader">Transcriptomics</div>
-										<div><a class="navigationLink" href="/app/Expression">Expression Import</a></div>
-										<div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
-										
-									</td>
-									<td style="width:5px;"></td>
-									<td style="vertical-align:top;width:180px;">
-										<div class="menuHeader">Protein Tools</div>
-											<div><a class="navigationLink" href="/app/ProteinFamily">Protein Family Sorter</a></div>
-											<div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a></div>
-										<div><p> </p></div>
-										<div class="menuHeader">Metabolomics</div>
-											<div><a class="navigationLink" href="/app/ComparativePathway">Comparative Pathway</a></div>
-											<div><a class="navigationLink" href="/app/Reconstruct">Model Reconstruction</a></div>
-										<!-- <div class="menuHeader">Utilities</div>
-										<div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>-->
-									</td>
-								</tr>
-								<!-- 
-								<tr>
-									<td colspan=3 style="text-align: right">
-										<a href="/content/tools">All Tools <i class="icon-chevron-circle-right fa-1x fa" style="margin:0px;padding:0px"></i></a>
-									</td>
-								</tr>
-								-->
-							</tbody></table>
-						</div>
-					</div>
-				</div>
-				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>HELP</span>
+            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <span>SERVICES</span>
 
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
-						<div><a class="" href="/content/Tutorials">Tutorials</a></div>
- 						<div><a class="" href="/content/UserGuide">User Guides</a></div>
- 						<hr>
-						<div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
-					</div>
-				</div>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div>
+                        <div style='vertical-align: top;width: 180px;margin-right:5px;display:inline-block'>
+                            <div class="menuHeader">Genomics</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
+                                <div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
+                                <div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>
+                                <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a>
+                                </div>
+                            </div>
+                            <p></p>
+                            <div class="menuHeader">Transcriptomics</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/app/Expression">Expression Import</a>
+                                </div>
+                                <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+                            </div>
+                        </div>
+                        <div style="vertical-align:top;width:180px;display:inline-block">
+                            <div class="menuHeader">Protein Tools</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/app/ProteinFamily">Protein Family
+                                        Sorter</a></div>
+                                <div><a class="navigationLink" href="/app/SeqComparison">Proteome
+                                        Comparison</a></div>
+                            </div>
+                            <p></p>
+                            <div class="menuHeader">Metabolomics</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/app/ComparativePathway">Comparative
+                                        Pathway</a></div>
+                                <div><a class="navigationLink" href="/app/Reconstruct">Model
+                                        Reconstruction</a></div>
+                                <!-- <div class="menuHeader">Utilities</div>
+                                <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <span>HELP</span>
 
-			</td>
-			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;"> 
-					<input style="width:100%" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
-			</td>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
+                    <div><a class="" href="/content/Tutorials">Tutorials</a></div>
+                    <div><a class="" href="/content/UserGuide">User Guides</a></div>
+                    <hr>
+                    <div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
+                </div>
+            </div>
 
-			<td  class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding:2px;width:125px;">
-  			    <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
-				<div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Login</div>
-			</td>
+        </div>
+        <div style="padding: 6px 10px 2px 2px; width: 120px; flex: 0.7">
+            <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden"
+                   data-dojo-type="p3/widget/GlobalSearch"/>
+        </div>
 
-			<td style="width:1%;">
-				<div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
-					<span></span>
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div><a class="TopMenuLink" href="http://enews.patricbrc.org/" title="News" target="_blank">PATRIC News</a>  </div>
-						<div><a class="TopMenuLink" href="/content/publications" title="Publications">Publications</a>  </div>
-						<hr>
+        <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 3px 2px 0 0; width:125px;">
+            <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
+            <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Login</div>
+        </div>
 
-						<!--<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> Upcoming Workshops </a> </div> -->
+        <div>
+            <div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton"
+                 data-dojo-props="iconClass:'icon-bars fa-2x'">
+                <span></span>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div><a class="TopMenuLink" href="http://enews.patricbrc.org/" title="News" target="_blank">PATRIC
+                            News</a></div>
+                    <div><a class="TopMenuLink" href="/content/publications"
+                            title="Publications">Publications</a></div>
+                    <hr>
 
-						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">About PATRIC </a></div>
-						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">Cite PATRIC</a>	</div>
-						<div><a class="TopMenuLink" href="/content/SWG" title="Scientific Working Group">Scientific Working Group</a></div>
-						<div><a class="TopMenuLink" href="/content/personnel" title="Personnel">Personnel</a></div>
-						<div><a class="TopMenuLink" href="/content/collaborators" title="Collaborators">Collaborators</a></div>
-						<div><a class="TopMenuLink" href="/content/related_sites" title="Related Sites">Related Sites</a></div>
-						<div><a class="TopMenuLink" href="https://github.com/cidvbi/PATRIC" title="System Architecture" target="_blank">System Architecture</a></div>
-					</div>
-				</div>
-			</td>
-			<td style="width:1%;" class="showOnLoad ShowWithAuth dijitHidden">
-				<div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'" style="padding-top:2px">
-					<span></span>
-					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span>
-						<hr>
-						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">Account Settings</a> </div>
-						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
-						</div>
-					</div>
-				</div>
-			</td>
-		</tr></tbody></table>
-	</div>
+                    <!--<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> Upcoming Workshops </a> </div> -->
+
+                    <div><a class="TopMenuLink" href="/content/about" title="About PATRIC">About PATRIC </a>
+                    </div>
+                    <div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">Cite PATRIC</a>
+                    </div>
+                    <div><a class="TopMenuLink" href="/content/SWG" title="Scientific Working Group">Scientific
+                            Working Group</a></div>
+                    <div><a class="TopMenuLink" href="/content/personnel" title="Personnel">Personnel</a></div>
+                    <div><a class="TopMenuLink" href="/content/collaborators" title="Collaborators">Collaborators</a>
+                    </div>
+                    <div><a class="TopMenuLink" href="/content/related_sites" title="Related Sites">Related
+                            Sites</a></div>
+                    <div><a class="TopMenuLink" href="https://github.com/cidvbi/PATRIC"
+                            title="System Architecture" target="_blank">System Architecture</a></div>
+                </div>
+            </div>
+        </div>
+        <div class="showOnLoad ShowWithAuth dijitHidden">
+            <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
+                 data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'">
+                <span></span>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span>
+                        <hr>
+                        <div><a class="ShowWithAuth TopMenuLink"
+                                href="<%- request.applicationOptions.accountURL %>">Account Settings</a></div>
+                        <div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
