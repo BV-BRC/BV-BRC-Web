@@ -88,7 +88,7 @@ define(["d3/d3"], function(d3){
 			},
 
 			export: function(){
-				return d3.select("#map_div")
+				return d3.select("#map_wrapper")
 					.attr("version", 1.1)
 					.attr("xmlns", "http://www.w3.org/2000/svg")
 					.node().parentNode.innerHTML;

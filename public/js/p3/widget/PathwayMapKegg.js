@@ -145,7 +145,7 @@ define([
 				_self.addChild(new ContentPane({
 					region: "center",
 					style: "padding:0",
-					content: '<svg id="map_div" style="width:' + width + 'px;height:' + height + 'px;position:absolute;"><image width="' + width + '" height="' + height + '" xlink:href="' + base64Img + '" /></svg>',
+					content: '<svg id="map_wrapper" style="width:' + width + 'px;height:' + height + 'px;position:absolute;"><g><image width="' + width + '" height="' + height + '" xlink:href="' + base64Img + '" /></g><g id="map_div"></g></svg>',
 				}));
 			});
 
