@@ -1,87 +1,100 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div style="width: 450px;margin:auto;">
-	<div class="apptitle" id="apptitle">
-	    <h3>Sequence Similarity</h3>
-	    <p>Sequence Similarity Search.</p>
-	</div>
-  
-	<div style="width:450px; margin:auto" class="formFieldsContainer">
-		<div id="dataBox" class="appbox appshadow">
+    <div class="appTemplate" style="width: 450px;">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>Sequence Similarity</h3>
+            <p>Sequence Similarity Search.</p>
+        </div>
 
-			<div class="approw">
-				<label for="searchSequence" class="paramlabel">Query Sequence</label><br>
-				<div data-dojo-type="dijit/form/SimpleTextarea"  name="searchSequence" data-dojo-attach-point="searchSequence" rows="10" style="width:95%"></div>
-			</div>
-	
-			<div class="approw">
-				<label>Search By</label><br>
-				<div data-dojo-type="dijit/form/Select" name="searchBy" style="width:95%" data-dojo-attach-point="searchBy" data-dojo-attach-event="onChange:onSearchByChange">
-					<option value="genome" selected="true">Genome</option>
-					<option value="taxon">Species or Genus</option>
-					<option value="genomeGroup">Genome Group</option>
-					<option value="featureGroup">Feature Group</option>
-					<option value="specialtyDBs">Specialty DBs</option>
-				</div>
-			</div>
+        <div class="formFieldsContainer">
+            <div class="appBox appShadow">
 
-			<div class="approw"  data-dojo-attach-point="genome_id_container">
-				<label>Genome</label><br>
-				<div data-dojo-type="p3/widget/GenomeNameSelector" name="genome_id" maxHeight=200 style="width:95%" data-dojo-attach-point="genome_id"></div>
-			</div>
-			<div class="approw dijitHidden"  data-dojo-attach-point="taxon_id_container">
-				<label>Species or Genus</label><br>
-				<div data-dojo-type="p3/widget/TaxonNameSelector" name="taxon_id" maxHeight=200 style="width:95%"  data-dojo-attach-point="taxon_id"></div>
-			</div>
+                <div class="appRow">
+                    <label class="paramlabel">Query Sequence</label><br>
+                    <div data-dojo-type="dijit/form/SimpleTextarea" name="searchSequence"
+                         data-dojo-attach-point="searchSequence" rows="10" style="width:95%"></div>
+                </div>
 
-			<div class="approw dijitHidden"  data-dojo-attach-point="genomeGroup_container">
-				<label for="genomeGroup" class="paramlabel">Genome Group</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="genome_group" data-dojo-attach-point="genomeGroup"  data-dojo-props="type:['genome_group'],multi:false"></div>
-			</div>
+                <div class="appRow">
+                    <label>Search By</label><br>
+                    <div data-dojo-type="dijit/form/Select" name="searchBy" style="width:95%"
+                         data-dojo-attach-point="searchBy" data-dojo-attach-event="onChange:onSearchByChange">
+                        <option value="genome" selected="true">Genome</option>
+                        <option value="taxon">Species or Genus</option>
+                        <option value="genomeGroup">Genome Group</option>
+                        <option value="featureGroup">Feature Group</option>
+                        <option value="specialtyDBs">Specialty DBs</option>
+                    </div>
+                </div>
 
-			<div class="approw dijitHidden"  data-dojo-attach-point="featureGroup_container">
-				<label for="featureGroup" class="paramlabel">Feature Group</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="feature_group" data-dojo-attach-point="featureGroup"  data-dojo-props="type:['feature_group'],multi:false"></div>
-			</div>
-			<div class="approw" >
-				<label class="paramlabel">Target Type</label><br>
-				<div data-dojo-type="dijit/form/Select" name="targetType" style="width:95%" data-dojo-attach-point="targetType">
-					<option value="genome">Contigs</option>
-					<option value="taxon">Feature DNA</option>
-					<option value="genomeGroup" selected="true">Proteins</option>
-				</div>
-			</div>
-	
-			
-			<!--
-			<div class="approw">
-				<label for="output_path" class="paramlabel">Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path"  data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-			</div>
-			<div class="approw">
-				<label class="paramlabel">Output Name</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:85%" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-			</div>
-			-->
-		</div>
-	</div>
+                <div class="appRow" data-dojo-attach-point="genome_id_container">
+                    <label>Genome</label><br>
+                    <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome_id" maxHeight=200 style="width:95%"
+                         data-dojo-attach-point="genome_id"></div>
+                </div>
+                <div class="appRow dijitHidden" data-dojo-attach-point="taxon_id_container">
+                    <label>Species or Genus</label><br>
+                    <div data-dojo-type="p3/widget/TaxonNameSelector" name="taxon_id" maxHeight=200 style="width:95%"
+                         data-dojo-attach-point="taxon_id"></div>
+                </div>
 
-	<div class="appSubmissionArea">
+                <div class="appRow dijitHidden" data-dojo-attach-point="genomeGroup_container">
+                    <label class="paramlabel">Genome Group</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genome_group"
+                         data-dojo-attach-point="genomeGroup" data-dojo-props="type:['genome_group'],multi:false"></div>
+                </div>
 
-		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-		   	Searching for Sequence Similarity... 
-		</div>
-		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-			Error Submitting Job
-		</div>
-		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-			Sequence Similarity search should be finished shortly. Check workspace for results.
-		</div>
-		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-		</div>
-	</div>
+                <div class="appRow dijitHidden" data-dojo-attach-point="featureGroup_container">
+                    <label class="paramlabel">Feature Group</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="feature_group"
+                         data-dojo-attach-point="featureGroup"
+                         data-dojo-props="type:['feature_group'],multi:false"></div>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Target Type</label><br>
+                    <div data-dojo-type="dijit/form/Select" name="targetType" style="width:95%"
+                         data-dojo-attach-point="targetType">
+                        <option value="genome">Contigs</option>
+                        <option value="taxon">Feature DNA</option>
+                        <option value="genomeGroup" selected="true">Proteins</option>
+                    </div>
+                </div>
+
+
+                <!--
+                <div class="appRow">
+                    <label for="output_path" class="paramlabel">Output Folder</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path"  data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Output Name</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:85%" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+                </div>
+                -->
+            </div>
+        </div>
+
+        <div class="appSubmissionArea">
+
+            <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+                 style="margin-top:10px; text-align:center;">
+                Searching for Sequence Similarity...
+            </div>
+            <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+                 style="margin-top:10px; text-align:center;">
+                Error Submitting Job
+            </div>
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+                 style="margin-top:10px; text-align:center;">
+                Sequence Similarity search should be finished shortly. Check workspace for results.
+            </div>
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+            </div>
+        </div>
+    </div>
 </form>
 

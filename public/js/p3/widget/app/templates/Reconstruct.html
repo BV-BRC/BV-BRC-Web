@@ -1,123 +1,137 @@
-<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div style="width: 340px; margin:auto;">
-        <div class="apptitle" id="apptitle">
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    <div class="appTemplate" style="width: 340px;">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
             <h3>Reconstruct Metabolic Model</h3>
             <p>Reconstruct a Metabolic Model</p>
         </div>
-    </div>
 
-    <div style="width: 340px; margin:auto;" class="formFieldsContainer">
+        <div class="formFieldsContainer">
 
-        <div class="appbox appshadow">
-            <label class="appboxlabel">Select a Genome</label>
-            <div name="select-genome" class="infobox iconbox infobutton dialoginfo">
-                <i class="fa icon-info-circle fa"></i>
-            </div>
-
-            <div class="approw">
-                <div class="appField">
-                    <label>Genome</label><br>
-                    <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
+            <div class="appBox appShadow">
+                <label class="appBoxLabel">Select a Genome</label>
+                <div name="select-genome" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa"></i>
                 </div>
-            </div>
-            <!--
 
-            <div class="appField">
-                <label for="genome">Genome from Workspaces</label>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                     name="genome"
-                     style="width:100%"
-                     required="true"
-                     data-dojo-props="type:['job_result'],multi:false,promptMessage:'Select a genome job result in your workspace for Model Reconstruction',missingMessage:'Genome job result must be provided.'">
-                </div>
-            </div>
-            <div class="approw" style="margin-left: 145px;">
-                OR
-            </div>
-            <div class="approw">
-                <div class="appField">
-                    <label>Genome from Data API</label><br>
-                    <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="genome" maxHeight=200 style="width:100%" data-dojo-attach-point="scientific_nameWidget"></div>
-                </div>
-            </div>
-            -->
-        </div>
-    </div>
-
-
-    <div style="width: 340px; margin:auto;" class="formFieldsContainer">
-        <div class="appbox appshadow">
-            <label class="appboxlabel">Optional Parameters</label>
-            <div name="optional-params" class="infobox iconbox infobutton dialoginfo">
-                <i class="fa icon-info-circle fa"></i>
-            </div>
-
-            <!--
-            <div class="approw">
-                <div class="appField">
-                    <label>Output Folder</label><br>
-                    <div data-dojo-attach-point="output_pathWidget"
-                         data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                         name="output_path"
-                         style="width:100%"
-                         data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your model. This will be a directory.',missingMessage:'Output Folder must be selected.'"
-                         data-dojo-attach-event="onChange:onOutputPathChange">
+                <div class="appRow">
+                    <div class="appField">
+                        <label>Genome</label><br>
+                        <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                             data-dojo-type="p3/widget/GenomeNameSelector" name="genome" maxHeight=200 style="width:100%"
+                             required="true" data-dojo-attach-point="genome_nameWidget"></div>
                     </div>
                 </div>
+                <!--
+
+                <div class="appField">
+                    <label for="genome">Genome from Workspaces</label>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                         name="genome"
+                         style="width:100%"
+                         required="true"
+                         data-dojo-props="type:['job_result'],multi:false,promptMessage:'Select a genome job result in your workspace for Model Reconstruction',missingMessage:'Genome job result must be provided.'">
+                    </div>
+                </div>
+                <div class="appRow" style="margin-left: 145px;">
+                    OR
+                </div>
+                <div class="appRow">
+                    <div class="appField">
+                        <label>Genome from Data API</label><br>
+                        <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="genome" maxHeight=200 style="width:100%" data-dojo-attach-point="scientific_nameWidget"></div>
+                    </div>
+                </div>
+                -->
             </div>
-            -->
-            <div class="approw">
-                <div class="appField">
-                    <label>Media</label><br>
-                    <div data-dojo-type="p3/widget/MediaSelector" name="media" style="width:100%" data-dojo-attach-point="mediaSelector"></div>
+        </div>
+
+
+        <div style="width: 340px; margin:auto;" class="formFieldsContainer">
+            <div class="appBox appShadow">
+                <label class="appBoxLabel">Optional Parameters</label>
+                <div name="optional-params" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa"></i>
                 </div>
+
+                <!--
+                <div class="appRow">
+                    <div class="appField">
+                        <label>Output Folder</label><br>
+                        <div data-dojo-attach-point="output_pathWidget"
+                             data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                             name="output_path"
+                             style="width:100%"
+                             data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your model. This will be a directory.',missingMessage:'Output Folder must be selected.'"
+                             data-dojo-attach-event="onChange:onOutputPathChange">
+                        </div>
+                    </div>
+                </div>
+                -->
+                <div class="appRow">
+                    <div class="appField">
+                        <label>Media</label><br>
+                        <div data-dojo-type="p3/widget/MediaSelector" name="media" style="width:100%"
+                             data-dojo-attach-point="mediaSelector"></div>
+                    </div>
+                </div>
+
+                <div class="appRow">
+                    <div class="appField">
+                        <label>Output Name</label>
+                        <div data-dojo-attach-point="output_nameWidget"
+                             data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                             style="width:100%"
+                             data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your model',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+                    </div>
+                </div>
+
+                <!--<div class="appRow">
+                    <div class="appField">
+                        <label>Template Model</label><br>
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="template_model" style="width:100%" data-dojo-props="type:['genome'],multi:false,promptMessage:'Optionally select a template from which model should be constructed.'"></div>
+                    </div>
+                </div>-->
+                <!--<div class="appRow">
+                    <div class="appField">
+                        <input name="core_model" data-dojo-type="dijit/form/CheckBox" value="true" />
+                        <label for="coreModel">Construct Core Model?</label>
+                    </div>
+                </div>-->
+
+                <!--<div class="appRow">
+                    <div class="appField">
+                        <input name="fulldb" data-dojo-type="dijit/form/CheckBox" checked="false" />
+                        <label for="fulldb">Include Full Database?</label>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+
+
+        <div class="appSubmissionArea">
+            <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+                 style="margin-top:10px; text-align:center;">
+                Submitting Model Reconstruction Job
             </div>
 
-            <div class="approw">
-                <div class="appField">
-                    <label>Output Name</label>
-                    <div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your model',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+            <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+                 style="margin-top:10px; text-align:center;">
+                Error Submitting Job
+            </div>
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+                 style="margin-top:10px; text-align:center;">
+                Model Reconstruction Job has been queued.
+            </div>
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                     data-dojo-type="dijit/form/Button">Cancel
+                </div>
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Reconstruct
                 </div>
             </div>
-
-            <!--<div class="approw">
-                <div class="appField">
-                    <label>Template Model</label><br>
-                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="template_model" style="width:100%" data-dojo-props="type:['genome'],multi:false,promptMessage:'Optionally select a template from which model should be constructed.'"></div>
-                </div>
-            </div>-->
-            <!--<div class="approw">
-                <div class="appField">
-                    <input name="core_model" data-dojo-type="dijit/form/CheckBox" value="true" />
-                    <label for="coreModel">Construct Core Model?</label>
-                </div>
-            </div>-->
-
-            <!--<div class="approw">
-                <div class="appField">
-                    <input name="fulldb" data-dojo-type="dijit/form/CheckBox" checked="false" />
-                    <label for="fulldb">Include Full Database?</label>
-                </div>
-            </div>-->
-        </div>
-    </div>
-
-
-    <div class="appSubmissionArea">
-        <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-            Submitting Model Reconstruction Job
-        </div>
-
-        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-            Error Submitting Job
-        </div>
-        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-            Model Reconstruction Job has been queued.
-        </div>
-        <div style="margin-top: 10px; text-align:center;">
-            <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-            <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-            <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Reconstruct</div>
         </div>
     </div>
 </form>

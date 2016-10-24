@@ -1,45 +1,46 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div style="width: 700px;margin:auto;">
-        <div class="apptitle" id="apptitle">
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
             <h3>Comparative Pathway Tool</h3>
-            <p>[placeholder for description]</p>
+            <p>Comparative Pathway Tool allows you to identify a set of pathways based on taxonomy, EC number, pathway ID, pathway name and/or specific annotation type. For more information on Comparative Pathway Tool please see our Comparative Pathway Tool User Guide. For an explanation of various annotation sources, please see Annotation User Guide.</p>
         </div>
-        <div style="width:700px; margin:auto" class="formFieldsContainer">
+        <div class="formFieldsContainer">
             <div style="display: none;">
                 <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
                        data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
             </div>
-            <table class="assemblyblocks" style="width:100%">
+            <table class="assemblyblocks">
                 <tr>
                     <td>
-                        <div class="appbox appshadow">
+                        <div class="appBox appShadow">
                             <div class="headerrow">
                                 <div style="width:85%;display:inline-block;">
-                                    <label class="appboxlabel"> Select Genome</label>
+                                    <label class="appBoxLabel"> Select Genome</label>
                                 </div>
                                 <div style="width:10%;display:inline-block;">
                                     <i data-dojo-attach-event="click:onAddGenome"
                                        class="fa icon-arrow-circle-o-right fa-lg"></i>
                                 </div>
                             </div>
-                            <div class="approw">
+                            <div class="appRow">
                                 <label class="paramlabel">Genome</label><br>
                                 <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome"
                                      data-dojo-attach-point="genome" style="width: 300px" required="false"></div>
                             </div>
                         </div>
-                        <div class="appbox appshadow">
+                        <div class="appBox appShadow">
                             <div class="headerrow">
                                 <div style="width:85%;display:inline-block;">
-                                    <label class="appboxlabel"> Select Genome Group</label>
+                                    <label class="appBoxLabel"> Select Genome Group</label>
                                 </div>
                                 <div style="width:10%;display:inline-block;">
                                     <i data-dojo-attach-event="click:onAddGenomeGroup"
                                        class="fa icon-arrow-circle-o-right fa-lg"></i>
                                 </div>
                             </div>
-                            <div class="approw">
+                            <div class="appRow">
                                 <label class="paramlabel">Genome Group</label><br>
                                 <div name="genome_group" style="width:300px">
                                     Disabled: please login to enable genome group selection
@@ -47,14 +48,14 @@
                             </div>
                         </div>
 
-                        <div class="appbox appshadow">
+                        <div class="appBox appShadow">
                             <div class="headerrow">
-                                <label class="appboxlabel">Parameters</label>
+                                <label class="appBoxLabel">Parameters</label>
                                 <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
                                     <i class="fa icon-info-circle fa"></i>
                                 </div>
                             </div>
-                            <div class="approw">
+                            <div class="appRow">
                                 <br/>
                                 <select data-dojo-type="dijit/form/Select"
                                         name="search_on" style="width: 25%"
@@ -68,7 +69,7 @@
                                      data-dojo-attach-point="keyword"
                                      data-dojo-props="trim:true,placeHolder:'Keyword'"></div>
                             </div>
-                            <div class="approw">
+                            <div class="appRow">
                                 <label class="paramlabel">Annotation</label><br>
                                 <select data-dojo-type="dijit/form/Select" name="annotation"
                                         data-dojo-attach-point="annotation" style="width:300px" required="true">
@@ -80,16 +81,16 @@
                         </div>
                     </td>
                     <td>
-                        <div class="appbox appshadow" style="height:251px; width:330px">
+                        <div class="appBox appShadow" style="height:251px; width:330px">
                             <div class="headerrow">
-                                <label class="appboxlabel">Selected genomes</label>
+                                <label class="appBoxLabel">Selected genomes</label>
                                 <div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
                                     <i class="fa icon-info-circle fa"></i>
                                 </div>
                                 <br>
                                 <div class="appsublabel">Place genome(s) here using the arrow buttons.</div>
                             </div>
-                            <div class="approw" style="width:100%; margin-top:10px; text-align: center;">
+                            <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
                                 <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
                                        style='margin:0 0 0 10px; width:90%;'>
                                     <tbody data-dojo-attach-point="libsTableBody">
