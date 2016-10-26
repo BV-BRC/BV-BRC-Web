@@ -14,44 +14,44 @@
 		<table class="assemblyblocks" style="width:100%">
 		<tr>
 		<td>
-		<div id="pairedBox" class="appbox appshadow">
+		<div id="pairedBox" class="appBox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
-					<h4 class="appboxlabel"> Paired read library</h4>
+					<h4 class="appBoxLabel"> Paired read library</h4>
 				</div>
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
 			</div>
-			<div class="approw">
+			<div class="appRow">
 				<label class="paramlabel" for="libdat_file1pair">Read File 1</label><br>
 				<div data-dojo-type="/dijit/form/TextBox" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
 			</div>
-			<div class="approw">
+			<div class="appRow">
 				<label class="paramlabel" for="libdat_file2pair">Read File 2</label><br>
 				<div data-dojo-type="dijit/form/TextBox" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
 			</div>
-			<div class="approw">
-				<div class="approwsegment" style="margin:0 0 0 0">
+			<div class="appRow">
+				<div class="appRowSegment" style="margin:0 0 0 0">
 					<label class="paramlabel" for="libdat_interleaved">Interleaved</label><br>
 					<select data-dojo-type="dijit/form/Select" name="libdat_interleaved" data-dojo-attach-point="interleaved" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 					<option value="true">True</option>
 					<option value="false">False</option>
 					</select>
 				</div>
-				<div class="approwsegment">
+				<div class="appRowSegment">
 					<label class="paramlabel" for="libdat__avginsert">Mean Insert Size</label><br>
 					<div class="insertspinner" name="libdat_avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_mean" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>
 				</div>
-				<div class="approwsegment">
+				<div class="appRowSegment">
 					<label class="paramlabel" for="libdat_stdinsert">Std. Insert</label><br>		
 					<div class="insertspinner" name="libdat_stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_stdev" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>		
 				</div>
 			</div>
                 </div>
 
-		<div class="appbox appshadow">
+		<div class="appBox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
-					<h4 class="appboxlabel">Single read library</h4>
+					<h4 class="appBoxLabel">Single read library</h4>
 				</div>
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
 			</div>
@@ -59,9 +59,9 @@
 			<div data-dojo-type="/dijit/form/TextBox" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
                 </div>
 
-		<div class="appbox appshadow">
-			<h4 class="appboxlabel">Parameters</h4>
-			<div class="approw">
+		<div class="appBox appshadow">
+			<h4 class="appBoxLabel">Parameters</h4>
+			<div class="appRow">
 				<label for="recipe" class="paramlabel">Assembly Strategy</label><br>
 				<select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 				<option value="auto">auto</option>
@@ -72,22 +72,22 @@
 				<option value="kiki">kiki</option>
 				</select>
 			</div>
-			<div class="approw">
+			<div class="appRow">
 				<label for="output_path" class="paramlabel">Output Folder</label><br>
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false, value:'${activeWorkspacePath}'"></div>
 			</div>
-			<div class="approw">
+			<div class="appRow">
 				<div data-dojo-type="dijit/form/ValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'"></div>
 			</div>
-			<div class="approw">
+			<div class="appRow">
                                 <label class="paramlabel" for="reference_assembly">Benchmark Contigs</label><br>
                                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="reference_assembly" data-dojo-attach-point="reference_assembly" style="width:300px" required="false" data-dojo-props="type:['contigs'],multi:false,placeHolder:'Optional'"></div>
 			</div>
         	</div>
 		</td>
 		<td>
-		<div class="appbox appshadow" style="min-height: 400px; height:auto; width:330px">
-			<h4 class="appboxlabel">Participating libraries</h4>
+		<div class="appBox appshadow" style="min-height: 400px; height:auto; width:330px">
+			<h4 class="appBoxLabel">Participating libraries</h4>
 			<div style="width:100%; text-align: center;">
 			<table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style='margin:0 0 0 10px; width:90%;'>
 				<tbody data-dojo-attach-point="libsTableBody">

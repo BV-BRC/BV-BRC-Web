@@ -1,131 +1,158 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div style="width: 670px;margin:auto;">
-	<div class="apptitle" id="apptitle">
-	    <h3>Differential Expression Import</h3>
-	    <p>Transform differential expression data for viewing on PATRIC</p>
-	</div>
-  
-	<div style="width:670px; margin:auto" class="formFieldsContainer">
-		<table class="assemblyblocks">
-		<tr>
-		<td style="height:150px;">
+    <div class="appTemplate" style="width: 670px">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>Differential Expression Import</h3>
+            <p>Transform differential expression data for viewing on PATRIC</p>
+        </div>
 
-		<div id="dataBox" style="width:300px" class="appbox appshadow">
-			<div class="headerrow">
-				<div style="width:85%;display:inline-block;">
-					<label class="appboxlabel">Experiment Data</label>
-					<div name="datainfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa icon-info-circle fa"></i>
-					</div>
-				</div>
-			</div>
-			<div class="approw">
-				<div style="text-align:left;">
-					<label>Experiment Data File</label><br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="xfile" name="xfile" style="width:100%" required="true" data-dojo-props="type:['expression_gene_matrix', 'expression_gene_list', 'diffexp_input_data'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="halfAppRow">
-					<label>Experiment Type</label><br>
-					<select data-dojo-type="dijit/form/Select" name="data_type" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="transcriptomics">Transcriptomics</option>
-						<option value="proteomics">Proteomics</option>
-						<option value="phenomics">Phenomics</option>
-					</select>
-				</div>
-			</div>
-            <div class="approw">
-                <div class="text-align:left;">
-                    <label>Target Genome</label><br>
-                    <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome_id" maxHeight=200 style="width:90%" data-dojo-props="placeHolder: 'Optional'", required="false" data-dojo-attach-point="genome_nameWidget"></div>
-                </div> 
+        <div class="formFieldsContainer">
+            <table class="assemblyblocks">
+                <tr>
+                    <td>
+                        <div style="width:300px" class="appBox appShadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appBoxLabel">Experiment Data</label>
+                                    <div name="datainfo" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <div style="text-align:left;">
+                                    <label>Experiment Data File</label><br>
+                                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                                         data-dojo-attach-point="xfile" name="xfile" style="width:100%" required="true"
+                                         data-dojo-props="type:['expression_gene_matrix', 'expression_gene_list', 'diffexp_input_data'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <div class="halfAppRow">
+                                    <label>Experiment Type</label><br>
+                                    <select data-dojo-type="dijit/form/Select" name="data_type" style="width:100%"
+                                            required="true"
+                                            data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                                        <option value="transcriptomics">Transcriptomics</option>
+                                        <option value="proteomics">Proteomics</option>
+                                        <option value="phenomics">Phenomics</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <div class="text-align:left;">
+                                    <label>Target Genome</label><br>
+                                    <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome_id" maxHeight=200
+                                         style="width:90%" data-dojo-props="placeHolder: 'Optional'" , required="false"
+                                         data-dojo-attach-point="genome_nameWidget"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+                    <td rowspan="2">
+                        <div id="experimentBox" style="margin-left:0px" class="appBox appShadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appBoxLabel">Experiment Information</label>
+                                    <div name="experimentinfo" class="infobox iconbox infobutton tooltipinfo">
+                                        <i class="fa icon-info-circle fa"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <div class="appField">
+                                    <label>Experiment Title</label><br>
+                                    <div data-dojo-attach-point="output_nameWidget"
+                                         data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                                         name="experiment_title" style="width:100%" required="true"
+                                         data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <div class="appField">
+                                    <label>Experiment Description</label><br>
+                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description"
+                                         style="width:100%" required="true"
+                                         data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment description must be provided.',trim:true,placeHolder:'Description'"></div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <div class="appField">
+                                    <label>Organism Name</label><br>
+                                    <div data-dojo-type="p3/widget/TaxonNameSelector" name="organism" maxHeight=200
+                                         style="width:100%" required="false"
+                                         data-dojo-attach-point="scientific_nameWidget"></div>
+                                </div>
+                            </div>
+
+                            <div class="appRow">
+                                <div class="appField">
+                                    <label>Pubmed ID</label><br>
+                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%"
+                                         required="false"
+                                         data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label>Output Folder</label><br>
+                                <div data-dojo-attach-point="output_pathWidget"
+                                     data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                                     style="width:100%" required="true"
+                                     data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
+                                     data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="metaBox" style="width:300px" class="appBox appShadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appBoxLabel">Optional Metadata</label>
+                                    <div name="optionalinfo" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label>Metadata File</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="mfile" style="width:100%"
+                                     required="false"
+                                     data-dojo-props="type:['expression_experiment_metadata', 'diffexp_input_metadata'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
+                            </div>
+                        </div>
+                    </td>
+            </table>
+        </div>
+    </div>
+
+    <div class="appSubmissionArea">
+
+        <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+             style="margin-top:10px; text-align:center;">
+            Converting Expression Data
+        </div>
+
+        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+             style="margin-top:10px; text-align:center;">
+            Error Submitting Job
+        </div>
+        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+             style="margin-top:10px; text-align:center;">
+            Conversion should be finished shortly. Check workspace for results.
+        </div>
+        <div style="margin-top: 10px; text-align:center;">
+            <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                 data-dojo-type="dijit/form/Button">Cancel
             </div>
-			
-		</div>
-		</td>
-		<td rowspan="2">
-		<div id="experimentBox" style="margin-left:0px" class="appbox appshadow">
-			<div class="headerrow">
-				<div style="width:85%;display:inline-block;">
-					<label class="appboxlabel">Experiment Information</label>
-					<div name="experimentinfo" class="infobox iconbox infobutton tooltipinfo">
-						<i class="fa icon-info-circle fa"></i>
-					</div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appField">
-				<label>Experiment Title</label><br>
-				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="experiment_title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appField">
-				<label>Experiment Description</label><br>
-				<div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment description must be provided.',trim:true,placeHolder:'Description'"></div>
-				</div>
-			</div>
-            <div class="approw">
-                    <div class="appField">
-                            <label>Organism Name</label><br>
-                            <div data-dojo-type="p3/widget/TaxonNameSelector" name="organism" maxHeight=200 style="width:100%" required="false" data-dojo-attach-point="scientific_nameWidget"></div>
-                    </div>
-            </div>
-
-			<div class="approw">
-				<div class="appField">
-				<label>Pubmed ID</label><br>
-				<div data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
-				</div>
-			</div>
-			<div class="approw">
-				<label>Output Folder</label><br>
-				<div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-			</div>
-			
-		</div>
-		</td>
-		</tr>
-		<tr>
-		<td>
-		<div id="metaBox" style="width:300px" class="appbox appshadow">
-			<div class="headerrow">
-				<div style="width:85%;display:inline-block;">
-					<label class="appboxlabel">Optional Metadata</label>
-					<div name="optionalinfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa icon-info-circle fa"></i>
-					</div>
-				</div>
-			</div>
-			<div class="approw">
-				<label>Metadata File</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="mfile" style="width:100%" required="false" data-dojo-props="type:['expression_experiment_metadata', 'diffexp_input_metadata'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
-			</div>
-		</td>
-		</table>
-	</div>
-	</div>
-
-	<div class="appSubmissionArea">
-
-		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-		    Converting Expression Data
-		</div>
-
-		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-			Error Submitting Job
-		</div>
-		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-			Conversion should be finished shortly. Check workspace for results.
-		</div>
-		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-		</div>
-	</div>
+            <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+            <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+        </div>
+    </div>
 </form>
 

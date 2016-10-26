@@ -59865,7 +59865,7 @@ define([
 				selection: [this.genome],
 				type: 'genome_group'
 			});
-			on(dlg.domNode, "dialogAction", function(evt){
+			on(dlg.domNode, "dialogAction", function(){
 				dlg.hide();
 				setTimeout(function(){
 					dlg.destroy();
@@ -59878,7 +59878,6 @@ define([
 		},
 
 		onDownload: function(){
-			// window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
 
 			var dialog = new Dialog({title: "Download"});
 			var advDn = new AdvancedDownload({selection: [this.genome], containerType: "genome_data"});
@@ -74074,27 +74073,19 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./FeatureGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang","dojo/dom-construct"
+	"dojo/_base/lang", "dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			FeatureGrid, popup, Topic,
 			TooltipDialog, FacetFilterPanel,
-			lang,domConstruct){
+			lang, domConstruct){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
 	});
-
 
 	return declare([GridContainer], {
 		gridCtor: FeatureGrid,
@@ -74121,44 +74112,50 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
-					var _self=this;
+				function(){
+					var _self = this;
 
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					var totalRows = _self.grid.totalRows;
+					//  0 && console.log("TOTAL ROWS: ", totalRows);
+					if(totalRows > _self.maxDownloadSize){
+						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
 					}else{
 						downloadTT.set("content", dfc);
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
+							var dataType = _self.dataModel;
 							var currentQuery = _self.grid.get('query');
 
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+							//  0 && console.log("DownloadQuery: ", currentQuery);
+							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							// if (window.App.authorizationToken){
-							// 	query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							// }
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
+							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+							if(baseUrl.charAt(-1) !== "/"){
+								baseUrl = baseUrl + "/";
+							}
+							baseUrl = baseUrl + dataType + "/?";
 
-							if (window.App.authorizationToken){
+							if(window.App.authorizationToken){
 								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
 
-							//window.open(url);
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							var form = domConstruct.create("form", {
+								style: "display: none;",
+								id: "downloadForm",
+								enctype: 'application/x-www-form-urlencoded',
+								name: "downloadForm",
+								method: "post",
+								action: baseUrl
+							}, _self.domNode);
+							domConstruct.create('input', {
+								type: "hidden",
+								value: encodeURIComponent(query),
+								name: "rql"
+							}, form);
+							form.submit();
+
 							popup.close(downloadTT);
 						});
 					}
@@ -74218,7 +74215,7 @@ define([
 			return d[idType];
 		});
 
-		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 	});
 
 	var downloadSelectionTT = new DownloadTooltipDialog({});
@@ -74239,7 +74236,7 @@ define([
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
 
-		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup, target: "blank"});
 		popup.close(idMappingTTDialog);
 	});
 
@@ -74460,14 +74457,12 @@ define([
 						}, this)){
 						//  0 && console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
-						 0 && console.log("Button Node: ", button)
 
 						query(".ActionButtonText", button).forEach(function(node){
 							node.innerHTML = "SHOW";
 						})
 
 						query(".ActionButton", button).forEach(function(node){
-							 0 && console.log("ActionButtonNode: ", node)
 							domClass.remove(node, "icon-chevron-circle-right");
 							domClass.add(node, "icon-chevron-circle-left");
 						})
@@ -74793,7 +74788,7 @@ define([
 						return d['feature_id'];
 					});
 					//  0 && console.log("OPEN MSA VIEWER");
-					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 
 				},
 				false
@@ -76987,7 +76982,7 @@ define([
 				"dataType": "genome_sequence",
 				pk: "sequence_id",
 				tableData: true,
-				otherData: ["dna+fasta", "protein+fasta"]
+				otherData: ["dna+fasta"]
 			},
 			"feature_data": {
 				"label": "Features",
@@ -78270,20 +78265,13 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
+	"dojo/_base/lang", "dojo/on", "dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
 			lang, on, domConstruct){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
@@ -78311,42 +78299,52 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
-					var _self=this;
+				function(){
+					var _self = this;
 
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					var totalRows = _self.grid.totalRows;
+					//  0 && console.log("TOTAL ROWS: ", totalRows);
+					if(totalRows > _self.maxDownloadSize){
+						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
 					}else{
 						downloadTT.set("content", dfc);
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
+							var dataType = _self.dataModel;
 							var currentQuery = _self.grid.get('query');
 
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
+							//  0 && console.log("DownloadQuery: ", currentQuery);
+							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
+							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+							if(baseUrl.charAt(-1) !== "/"){
+								baseUrl = baseUrl + "/";
+							}
+							baseUrl = baseUrl + dataType + "/?";
+
+							if(window.App.authorizationToken){
 								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 							}
-				
+
 							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
 
-							 0 && console.log("DOWNLOAD QUERY: ", query, "DOWNLOAD URL: ", baseUrl);
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
+							//  0 && console.log("DOWNLOAD QUERY: ", query, "DOWNLOAD URL: ", baseUrl);
+							var form = domConstruct.create("form", {
+								style: "display: none;",
+								id: "downloadForm",
+								enctype: 'application/x-www-form-urlencoded',
+								name: "downloadForm",
+								method: "post",
+								action: baseUrl
+							}, _self.domNode);
+							domConstruct.create('input', {
+								type: "hidden",
+								value: encodeURIComponent(query),
+								name: "rql"
+							}, form);
+							form.submit();
 
-							//window.open(url);
 							popup.close(downloadTT);
 						});
 					}
@@ -80999,8 +80997,7 @@ define([
 							return sel.family_id;
 						}).join(',') + ")))";
 
-					window.open("/view/FeatureList/" + query + "#view_tab=features");
-					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
+					Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
 				},
 				false
 			], [
@@ -83436,13 +83433,13 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin", "FileSaver"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, saveAs){
 
 	var legend = [
 		'<div>',
@@ -83673,6 +83670,7 @@ define([
 
 			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
 				headers: {
@@ -83681,6 +83679,8 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -83700,6 +83700,7 @@ define([
 
 			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
@@ -83710,6 +83711,8 @@ define([
 				},
 				data: query
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
 				var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -83919,11 +83922,13 @@ define([
 			on(downloadHM.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var DELIMITER;
+				var DELIMITER, ext;
 				if(rel === 'text/csv'){
 					DELIMITER = ',';
+					ext = 'csv';
 				}else{
 					DELIMITER = '\t';
+					ext = 'txt';
 				}
 
 				var colIndexes = [];
@@ -83950,8 +83955,8 @@ define([
 						data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
 					}
 				});
-				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
-				// refer http://jsfiddle.net/a856P/51/ for further implementation
+
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'ProteinFamilies.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){
@@ -90481,20 +90486,13 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./TranscriptomicsExperimentGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
+	"dojo/_base/lang", "dojo/on", "dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on,domConstruct){
+			lang, on, domConstruct){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
@@ -90502,28 +90500,36 @@ define([
 	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
+		var _self = this;
 
 		var rel = evt.target.attributes.rel.value;
-		var dataType=_self.dataModel;
+		var dataType = _self.dataModel;
 		var currentQuery = _self.grid.get('query');
 
-		 0 && console.log("DownloadQuery: ", currentQuery);
-		var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+		//  0 && console.log("DownloadQuery: ", currentQuery);
+		var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-        var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-        if(baseUrl.charAt(-1) !== "/"){
-             baseUrl = baseUrl + "/";
-        }
-        baseUrl = baseUrl + dataType + "/?";
+		var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+		if(baseUrl.charAt(-1) !== "/"){
+			baseUrl = baseUrl + "/";
+		}
+		baseUrl = baseUrl + dataType + "/?";
 
-		if (window.App.authorizationToken){
+		if(window.App.authorizationToken){
 			baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 		}
 
 		baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-        form.submit();			
+		var form = domConstruct.create("form", {
+			style: "display: none;",
+			id: "downloadForm",
+			enctype: 'application/x-www-form-urlencoded',
+			name: "downloadForm",
+			method: "post",
+			action: baseUrl
+		}, _self.domNode);
+		domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
+		form.submit();
 
 		popup.close(downloadTT);
 	});
@@ -90549,46 +90555,56 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
-					var _self=this;
+				function(){
+					var _self = this;
 
-					if (!_self.grid){
+					if(!_self.grid){
 						 0 && console.log("Grid Not Defined");
 						return;
 					}
 
-					 0 && console.log("_self.grid: ", _self.grid);
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					//  0 && console.log("_self.grid: ", _self.grid);
+					var totalRows = _self.grid.totalRows;
+					//  0 && console.log("TOTAL ROWS: ", totalRows);
+					if(totalRows > _self.maxDownloadSize){
+						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
 					}else{
 						downloadTT.set("content", dfc);
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
+							var dataType = _self.dataModel;
 							var currentQuery = _self.grid.get('query');
 
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
+							//  0 && console.log("DownloadQuery: ", currentQuery);
+							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
+							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+							if(baseUrl.charAt(-1) !== "/"){
+								baseUrl = baseUrl + "/";
+							}
+							baseUrl = baseUrl + dataType + "/?";
+
+							if(window.App.authorizationToken){
 								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
 
-							//window.open(url);
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							var form = domConstruct.create("form", {
+								style: "display: none;",
+								id: "downloadForm",
+								enctype: 'application/x-www-form-urlencoded',
+								name: "downloadForm",
+								method: "post",
+								action: baseUrl
+							}, _self.domNode);
+							domConstruct.create('input', {
+								type: "hidden",
+								value: encodeURIComponent(query),
+								name: "rql"
+							}, form);
+							form.submit();
+
 							popup.close(downloadTT);
 						});
 					}
@@ -90966,10 +90982,9 @@ define([
 ], function(declare, GridContainer, on,
 			GenomeGrid, popup, lang,
 			TooltipDialog, FacetFilterPanel, Topic,
-			domConstruct
-	){
+			domConstruct){
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
@@ -90982,7 +90997,7 @@ define([
 		containerType: "genome_data",
 		facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_year"],
 		getFilterPanel: function(opts){
-			return;
+
 		},
 		enableAnchorButton: true,
 		dataModel: "genome",
@@ -91000,40 +91015,50 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
-					var _self=this;
+				function(){
+					var _self = this;
 
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					var totalRows = _self.grid.totalRows;
+					//  0 && console.log("TOTAL ROWS: ", totalRows);
+					if(totalRows > _self.maxDownloadSize){
+						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
 					}else{
 						downloadTT.set("content", dfc);
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
+							var dataType = _self.dataModel;
 							var currentQuery = _self.grid.get('query');
 
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
+							//  0 && console.log("DownloadQuery: ", currentQuery);
+							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
+							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+							if(baseUrl.charAt(-1) !== "/"){
+								baseUrl = baseUrl + "/";
+							}
+							baseUrl = baseUrl + dataType + "/?";
+
+							if(window.App.authorizationToken){
 								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
 
-							//window.open(url);
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							var form = domConstruct.create("form", {
+								style: "display: none;",
+								id: "downloadForm",
+								enctype: 'application/x-www-form-urlencoded',
+								name: "downloadForm",
+								method: "post",
+								action: baseUrl
+							}, _self.domNode);
+							domConstruct.create('input', {
+								type: "hidden",
+								value: encodeURIComponent(query),
+								name: "rql"
+							}, form);
+							form.submit();
+
 							popup.close(downloadTT);
 						});
 					}
@@ -91057,20 +91082,13 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SequenceGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
+	"dojo/_base/lang", "dojo/on", "dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
 			lang, on, domConstruct){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
@@ -91096,40 +91114,50 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
-					var _self=this;
+				function(){
+					var _self = this;
 
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					var totalRows = _self.grid.totalRows;
+					//  0 && console.log("TOTAL ROWS: ", totalRows);
+					if(totalRows > _self.maxDownloadSize){
+						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
 					}else{
 						downloadTT.set("content", dfc);
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
+							var dataType = _self.dataModel;
 							var currentQuery = _self.grid.get('query');
 
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-		
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
+							//  0 && console.log("DownloadQuery: ", currentQuery);
+							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
+							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+							if(baseUrl.charAt(-1) !== "/"){
+								baseUrl = baseUrl + "/";
+							}
+							baseUrl = baseUrl + dataType + "/?";
+
+							if(window.App.authorizationToken){
 								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
 
-							//window.open(url);
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							var form = domConstruct.create("form", {
+								style: "display: none;",
+								id: "downloadForm",
+								enctype: 'application/x-www-form-urlencoded',
+								name: "downloadForm",
+								method: "post",
+								action: baseUrl
+							}, _self.domNode);
+							domConstruct.create('input', {
+								type: "hidden",
+								value: encodeURIComponent(query),
+								name: "rql"
+							}, form);
+							form.submit();
+
 							popup.close(downloadTT);
 						});
 					}
@@ -112976,12 +113004,11 @@ define([
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		var self = this;
-		//  0 && console.log("REL: ", rel);
+
 		var selection = self.actionPanel.get('selection');
 		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		//  0 && console.log("selection: ", selection);
-		//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
+
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
@@ -113004,10 +113031,6 @@ define([
 						break;
 				}
 			}));
-		// 0 && console.log("GeneExpressionGridContainer constructor: self ", self);
-		// 0 && console.log("GeneExpressionGridContainer constructor: state ", self.state);
-		// 0 && console.log("GeneExpressionGridContainer constructor: title ", self.title);
-		// 0 && console.log("GeneExpressionGridContainer constructor: content ", self.content);
 		},
 		buildQuery: function(){
 			// prevent further filtering. DO NOT DELETE
@@ -113038,10 +113061,12 @@ define([
 
 		startup: function(){
 			// 0 && console.log("GeneExpressionGridContainer startup()");
-			if (this._started) { return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			this._set("state", this.get("state"));
-			 0 && console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
+			//  0 && console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
@@ -113055,45 +113080,54 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
-					 0 && console.log("GeneExpressionGrid Download: ", selection);
+				function(){
+					//  0 && console.log("GeneExpressionGrid Download: ", selection);
+					var _self = this;
 
-
-					var totalRows =_self.grid.totalRows;
-						 0 && console.log("TOTAL ROWS: ", totalRows);
-					if (totalRows > _self.maxDownloadSize){
-						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					var totalRows = _self.grid.totalRows;
+					//  0 && console.log("TOTAL ROWS: ", totalRows);
+					if(totalRows > _self.maxDownloadSize){
+						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
 					}else{
 						downloadTT.set("content", dfc);
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType=_self.dataModel;
+							var dataType = _self.dataModel;
 							var currentQuery = _self.grid.get('query');
 
-							 0 && console.log("DownloadQuery: ", currentQuery);
-							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-				
-			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
-	                        if(baseUrl.charAt(-1) !== "/"){
-	                             baseUrl = baseUrl + "/";
-	                        }
-	                        baseUrl = baseUrl + dataType + "/?";
+							//  0 && console.log("DownloadQuery: ", currentQuery);
+							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
 
-							if (window.App.authorizationToken){
+							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
+							if(baseUrl.charAt(-1) !== "/"){
+								baseUrl = baseUrl + "/";
+							}
+							baseUrl = baseUrl + dataType + "/?";
+
+							if(window.App.authorizationToken){
 								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 							}
-				
-							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-	                        form.submit();			
 
-							//window.open(url);
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							var form = domConstruct.create("form", {
+								style: "display: none;",
+								id: "downloadForm",
+								enctype: 'application/x-www-form-urlencoded',
+								name: "downloadForm",
+								method: "post",
+								action: baseUrl
+							}, _self.domNode);
+							domConstruct.create('input', {
+								type: "hidden",
+								value: encodeURIComponent(query),
+								name: "rql"
+							}, form);
+							form.submit();
+
 							popup.close(downloadTT);
 						});
 					}
-
 
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
@@ -122374,7 +122408,7 @@ define([
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa icon-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa icon-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n      dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"appTemplate\" style=\"width: 450px\">\n        <div class=\"appTitle\">\n            <span class=\"breadcrumb\">Services</span>\n            <h3>Genome Annotation</h3>\n            <p>Annotates genomes using RASTtk.</p>\n        </div>\n        <div style=\"width:450px; margin:auto\" class=\"formFieldsContainer\">\n            <div id=\"annotationBox\" style=\"width:400px;\" class=\"appBox appShadow\">\n                <div class=\"headerrow\">\n                    <div style=\"width:85%;display:inline-block;\">\n                        <label class=\"appBoxLabel\">Parameters</label>\n                        <div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n                            <i class=\"fa icon-info-circle fa\"></i>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"appRow\">\n                    <div class=\"appFieldLong\">\n                        <label>Contigs</label><br>\n                        <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\"\n                             required=\"true\"\n                             data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n                    </div>\n                </div>\n\n                <div class=\"appRow\">\n                    <div class=\"appFieldLong\">\n                        <label>Domain</label><br>\n                        <select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\"\n                                style=\"width:300px\" required=\"true\"\n                                data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n                            <option value=\"Bacteria\">Bacteria</option>\n                            <option value=\"Archaea\">Archaea</option>\n                        </select>\n                    </div>\n                </div>\n                <div class=\"appRow\">\n                    <div class=\"appRowSegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n                        <label class=\"paramlabel\">Taxonomy Name</label>\n                        <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                            <i class=\"fa icon-info-circle fa\"></i>\n                        </div>\n                        <br>\n                        <div data-dojo-attach-event=\"onChange:onSuggestNameChange\"\n                             data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200\n                             style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n                    </div>\n                    <div class=\"appRowSegment\" style=\"text-align:left; width:20%\">\n                        <label>Taxonomy ID</label><br>\n                        <div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\"\n                             value=\"\" name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\"\n                             data-dojo-attach-point=\"tax_idWidget\"></div>\n                    </div>\n                </div>\n                <div class=\"appRow\">\n                    <div class=\"appFieldLong\">\n                        <label>My Label</label><br>\n                        <div data-dojo-type=\"dijit/form/ValidationTextBox\"\n                             data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\"\n                             data-dojo-attach-point=\"myLabelWidget\" style=\"width: 300px\" required=\"true\"\n                             data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n                    </div>\n                </div>\n                <div class=\"appRow\">\n                    <div class=\"appFieldLong\" style=\"width:380px\">\n                        <label>Output Name</label><br>\n                        <div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\"\n                             data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\"\n                             style=\"width:100%\" required=\"true\"\n                             data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n                    </div>\n                </div>\n                <div class=\"appRow\">\n                    <div class=\"appFieldLong\">\n                        <label>Genetic Code</label><br>\n                        <select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\"\n                                style=\"width:300px\" required=\"true\"\n                                data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n                            <option value=\"11\">11 (Archaea & most Bacteria)</option>\n                            <option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n                        </select>\n                    </div>\n                </div>\n                <div class=\"appRow\" style=\"display:none\">\n                    <div class=\"appFieldLong\">\n                        <label>Optional Annotation Source</label><br>\n                        <div data-dojo-attach-event=\"onChange:onSuggestNameChange\"\n                             data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200\n                             style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                    </div>\n                </div>\n\n\n                <div class=\"appRow\">\n                    <div class=\"appFieldLong\">\n                        <label>Output Folder</label><br>\n                        <div data-dojo-attach-point=\"output_pathWidget\"\n                             data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\"\n                             required=\"true\"\n                             data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\"\n                             data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n                    </div>\n                </div>\n\n            </div>\n        </div>\n        <div class=\"appSubmissionArea\">\n            <div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\"\n                 style=\"margin-top:10px; text-align:center;\">\n                Submitting Annotation Job\n            </div>\n\n            <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\"\n                 style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n            </div>\n            <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\"\n                 style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n            </div>\n            <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\"\n                     data-dojo-type=\"dijit/form/Button\">Cancel\n                </div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n            </div>\n        </div>\n    </div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"taxonomySummaryNode\">\n                Loading Taxonomy Summary...\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title close\" title=\"Select genomes of high quality sequences and annotations and/or used by researchers for clinical studies, experimental validation, and comparative analysis.\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title close\" title=\"Summary of genomes by available antimicrobial resistance phenotype data.\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title close\" title=\"Summary of genomes by key metadata attributes.\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context.\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
