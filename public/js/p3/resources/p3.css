@@ -208,7 +208,7 @@ table.p3basic td, th {
 table.striped tr:nth-child(odd) td,
 table.striped tr:nth-child(odd) th,
 table tr.even td {
-    background: #efefef;
+    background: #f5f5f5;
 }
 
 .claro .dijitDialog {
@@ -757,6 +757,7 @@ table {
     color: #666;
     font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
     font-size: 1.5em;
+    margin-right: 10px;
 }
 
 .menuHeader {

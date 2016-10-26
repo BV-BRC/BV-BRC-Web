@@ -90,17 +90,7 @@ define([
 				{label: 'Source', value: m.source}
 			];
 
-			return this.keyValueTable(table);
-		},
-
-		keyValueTable: function(spec){
-			var table = ['<table class="p3basic striped" id="data-table"><tbody>'];
-			for(var i = 0; i < spec.length; i++){
-				var row = spec[i];
-				table.push('<tr><td><b>' + row.label + '</b></td><td>' + row.value + '</td></tr>');
-			}
-			table.push("</tbody></table>");
-			return table.join("");
+			return formatter.keyValueTable(table);
 		},
 
 		startup: function(){

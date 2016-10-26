@@ -402,6 +402,25 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 			}
 
 			return _autoLabels;
+		},
+
+		// takes an array of form [{label: "", value: ""} ... ]
+		// or a autoLabel hash and producs a simple key/value table
+		keyValueTable: function(spec){
+			console.log('spec!')
+			var table = ['<table class="p3basic striped" id="data-table"><tbody>'];
+			if (spec instanceof Array) {
+				for(var i = 0; i < spec.length; i++){
+					var row = spec[i];
+					table.push('<tr><td width="10%"><b>' + row.label + '</b></td><td>' + row.value + '</td></tr>');
+				}
+			} else {
+				for(var item in spec){
+					table.push('<tr><td width="10%"><b>' +  spec[item].label + '</b></td><td>' + spec[item].value + '</td></tr>');
+				}
+			}
+			table.push("</tbody></table>");
+			return table.join("");
 		}
 
 	};
