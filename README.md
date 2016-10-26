@@ -3,7 +3,7 @@
 
 ## Requirements
 
-node   (5.0+)
+node   (4.6.1+)
 
 redis  (3.2+) http://redis.io/
 
@@ -14,18 +14,18 @@ redis  (3.2+) http://redis.io/
 git clone --recursive  https://github.com/PATRIC3/p3_web.git
 cd p3_web
 npm install
-cp p3-web.conf.sample p3-web.conf  (and edit as necessary) 
+cp p3-web.conf.sample p3-web.conf  (and edit as necessary)
 ```
 
 ## Authentication config for development
 
 In `./p3-web.conf`, place a token and user id/name as follows:
-  
+
 ``` json
 {
     "devAuthorizationToken": "token",
     "devUser": {
-        "id":"user@patricbrc.org", 
+        "id":"user@patricbrc.org",
         "name": "user name"
     }
 }
@@ -40,8 +40,8 @@ redis-server
 npm start
 ```
 
-Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.  
- 
+Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.
+
 
 ## Contributing
 
@@ -59,7 +59,7 @@ Contributing
 // if needed, create an 'upstream' remote with 'git remote add upstream https://github.com/PATRIC3/p3_web/'
 git fetch upstream
 git submodule update --init
-git merge upstream/master 
+git merge upstream/master
 ```
 
 Read more here [here](https://help.github.com/articles/syncing-a-fork/).
