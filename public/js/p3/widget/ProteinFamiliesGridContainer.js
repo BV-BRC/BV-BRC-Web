@@ -182,8 +182,7 @@ define([
 							return sel.family_id;
 						}).join(',') + ")))";
 
-					window.open("/view/FeatureList/" + query + "#view_tab=features");
-					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
+					Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
 				},
 				false
 			], [

@@ -1,15 +1,17 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div class="blast_form_wrapper">
-        <div class="apptitle">
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
             <h3>BLAST</h3>
-            <p>The BLAST Search allows you to search against public or private genomes in PATRIC or other reference databases using a DNA or protein sequence and find matching genomes, genes, RNAs, or proteins.</p>
+            <p>The BLAST Search allows you to search against public or private genomes in PATRIC or other reference
+                databases using a DNA or protein sequence and find matching genomes, genes, RNAs, or proteins.</p>
         </div>
 
         <div class="blast_form">
-            <div class="appbox appshadow">
+            <div class="appBox appShadow">
                 <div class="headerrow" style="margin-bottom: 7px">
-                    <label class="appboxlabel">Sequence</label>
+                    <label class="appBoxLabel">Sequence</label>
                 </div>
                 <textarea name="sequence"
                           style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
@@ -20,7 +22,7 @@
                 <div class="form_msg_warning" data-dojo-attach-point="sequence_message"></div>
 
                 <div class="headerrow" style="margin-bottom: 7px">
-                    <label class="appboxlabel">Program</label>
+                    <label class="appBoxLabel">Program</label>
                 </div>
                 <select name="program" style="margin-left:10px; width:96%"
                         data-dojo-type="dijit/form/Select"
@@ -31,7 +33,7 @@
                 <div class="form_msg_warning" data-dojo-attach-point="program_message"></div>
 
                 <div class="headerrow" style="margin: 16px 0 7px 0">
-                    <label class="appboxlabel">Database</label>
+                    <label class="appBoxLabel">Database</label>
                 </div>
                 <select name="database" style="width:96%; margin-left:10px"
                         data-dojo-type="dijit/form/Select"
@@ -42,8 +44,8 @@
                 <div class="form_msg_warning" data-dojo-attach-point="database_message"></div>
             </div>
 
-            <div class="approw" style="text-align:center">
-                <div class="approwsegment" data-dojo-attach-point="advanced">
+            <div class="appRow" style="text-align:center">
+                <div class="appRowSegment" data-dojo-attach-point="advanced">
                     <label class="largelabel">Advanced options</label>
                     <div class="iconbox" style="margin-left:0">
                         <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
@@ -52,13 +54,13 @@
             </div>
 
             <div data-dojo-attach-point="advancedOptions" style="display: none">
-                <div class="appbox appshadow">
+                <div class="appBox appShadow hidden" data-dojo-attach-point="genome_id_wrapper">
                     <div class="left half" style="vertical-align: top">
                         <label class="paramlabel">Add Genomes to Search: </label>
                         <div data-dojo-attach-event="onChange:onSuggestNameChange"
                              data-dojo-type="p3/widget/GenomeNameSelector"
                              data-dojo-attach-point="genome_id"
-                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true"
+                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
                              style="width:310px;">
                         </div>
                         <div style="width:17px; display:inline-block;">
@@ -76,27 +78,25 @@
                     <div class="form_msg_warning" data-dojo-attach-point="genome_id_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appBox appShadow hidden" data-dojo-attach-point="genome_group_wrapper">
                     <label class="paramlabel">Select genome group: </label><br/>
                     <div name="genome_group" style="width: 650px"></div>
                     <div class="form_msg_warning" data-dojo-attach-point="genome_group_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appBox appShadow hidden" data-dojo-attach-point="taxon_wrapper">
                     <label class="paramlabel">Select Taxon: </label><br/>
                     <select name="taxon" style="width: 650px"
                             data-dojo-type="p3/widget/TaxonNameSelector"
-                            data-dojo-props="disabled:true"
                             data-dojo-attach-point="taxonomy">
                     </select>
                     <div class="form_msg_warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appBox appShadow hidden" data-dojo-attach-point="search_for_wrapper">
                     <label class="paramlabel">Search for: </label><br/>
                     <select name="search_for" style="width:250px"
                             data-dojo-type="dijit/form/Select"
-                            data-dojo-props="disabled:true"
                             data-dojo-attach-point="search_for">
                         <option value="contigs">Genomic sequences (contigs)</option>
                         <option value="features" selected="selected">Genomic features (genes, proteins or RNAs)</option>
@@ -104,9 +104,9 @@
                     <div class="form_msg_warning" data-dojo-attach-point="search_for_message"></div>
                 </div>
 
-                <div class="appbox appshadow">
+                <div class="appBox appShadow">
                     <div class="headerrow">
-                        <label class="appboxlabel">BLAST Parameters</label>
+                        <label class="appBoxLabel">BLAST Parameters</label>
                     </div>
                     <div class="left third">
                         <label class="paramlabel">Max hits: </label><br/>
@@ -117,7 +117,7 @@
                             <option value="10">10</option>
                             <option value="50" selected="selected">50</option>
                             <option value="100">100</option>
-                            <option value="1000">1000</option>
+                            <option value="500">500</option>
                         </select>
                     </div>
 
@@ -130,12 +130,15 @@
                     <div class="clear"></div>
                 </div>
             </div>
-
-            <div data-dojo-type="dijit/form/Button"
-                 data-dojo-attach-point="mapButton"
-                 data-dojo-attach-event="onClick:submit"
-                 data-dojo-props="disabled:true">
-                Search
+        </div>
+        <div class="appSubmissionArea">
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-type="dijit/form/Button"
+                     data-dojo-attach-point="mapButton"
+                     data-dojo-attach-event="onClick:submit"
+                     data-dojo-props="disabled:true">
+                    Search
+                </div>
             </div>
         </div>
         <div class="reSubmitBtn" style="visibility: hidden"

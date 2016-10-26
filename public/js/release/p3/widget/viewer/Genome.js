@@ -75,6 +75,12 @@ define("p3/widget/viewer/Genome", [
 				default:
 					if(activeQueryState){
 						// console.log("Using Default ActiveQueryState: ", activeQueryState);
+						if(active == "proteinFamilies"){
+							// activeQueryState.search = "";
+							if(activeTab._firstView){
+								Topic.publish("ProteinFamilies", "showMainGrid");
+							}
+						}
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.log("Missing Active Query State for: ", active)

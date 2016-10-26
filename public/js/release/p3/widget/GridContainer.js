@@ -40,7 +40,7 @@ define("p3/widget/GridContainer", [
 			return d[idType];
 		});
 
-		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 	});
 
 	var downloadSelectionTT = new DownloadTooltipDialog({});
@@ -61,7 +61,7 @@ define("p3/widget/GridContainer", [
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
 
-		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup, target: "blank"});
 		popup.close(idMappingTTDialog);
 	});
 
@@ -282,14 +282,12 @@ define("p3/widget/GridContainer", [
 						}, this)){
 						// console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
-						console.log("Button Node: ", button)
 
 						query(".ActionButtonText", button).forEach(function(node){
 							node.innerHTML = "SHOW";
 						})
 
 						query(".ActionButton", button).forEach(function(node){
-							console.log("ActionButtonNode: ", node)
 							domClass.remove(node, "icon-chevron-circle-right");
 							domClass.add(node, "icon-chevron-circle-left");
 						})
@@ -615,7 +613,7 @@ define("p3/widget/GridContainer", [
 						return d['feature_id'];
 					});
 					// console.log("OPEN MSA VIEWER");
-					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 
 				},
 				false

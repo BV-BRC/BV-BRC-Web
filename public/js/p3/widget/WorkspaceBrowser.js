@@ -987,7 +987,7 @@ define([
 				var d = new Dialog({
 					content: m,
 					title: "Error Loading Workspace",
-					style: "width: 250px !important;",
+					style: "width: 250px !important;"
 				});
 				d.show();
 			}));
