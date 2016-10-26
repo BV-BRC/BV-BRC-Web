@@ -1,22 +1,22 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/query",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/dom-attr",
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
 	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip"
 
-], function(declare, BorderContainer, on,
-			domClass, ContentPane, domConstruct,
+], function(declare, BorderContainer, on, query,
+			domClass, ContentPane, domConstruct, domAttr,
 			WorkspaceExplorerView, Topic, ItemDetailPanel,
 			ActionBar, Deferred, WorkspaceManager, lang,
 			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
 			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog){
 	return declare([BorderContainer], {
-		"baseClass": "WorkspaceBrowser",
-		"disabled": false,
-		"path": "/",
+		baseClass: "WorkspaceBrowser",
+		disabled: false,
+		path: "/",
 		gutters: false,
 		navigableTypes: ["parentfolder", "folder", "genome_group", "feature_group", "job_result", "experiment_group", "experiment", "unspecified", "contigs", "reads", "model"],
 		design: "sidebar",
@@ -30,7 +30,7 @@ define([
 				splitter: false,
 				region: "right",
 				layoutPriority: 2,
-				style: "width:48px;text-align:center;"
+				style: "width: 57px; text-align: center;"
 			});
 
 			this.browserHeader = new ContainerActionBar({
@@ -41,9 +41,8 @@ define([
 			});
 
 			var self = this;
-
-			this.actionPanel.addAction("ToggleItemDetail", "fa icon-info-circle fa-2x", {
-				label: "DETAIL",
+			this.actionPanel.addAction("ToggleItemDetail", "fa icon-chevron-circle-right fa-2x", {
+				label: "HIDE",
 				persistent: true,
 				validTypes: ["*"],
 				tooltip: "Toggle Selection Detail"
@@ -56,6 +55,21 @@ define([
 					self.addChild(self.itemDetailPanel);
 				}
 			}, true);
+
+			// show / hide item detail panel button
+			var hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
+			on(hideBtn, "click",  function(e) {
+				var icon = query('.fa', hideBtn)[0],
+					text = query('.ActionButtonText', hideBtn)[0];
+
+				domClass.toggle(icon, "icon-chevron-circle-right");
+				domClass.toggle(icon, "icon-chevron-circle-left");
+
+				if (domClass.contains(icon, "icon-chevron-circle-left"))
+					domAttr.set(text, "textContent", "SHOW");
+				else
+					domAttr.set(text, "textContent", "HIDE");
+			})
 
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
@@ -246,7 +260,7 @@ define([
 			}, true);
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
-				label: "DOWNLOAD",
+				label: "DWNLD",
 				multiple: false,
 				validTypes: WorkspaceManager.downloadTypes,
 				tooltip: "Download"
@@ -785,7 +799,7 @@ define([
 
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
-				style: "width:300px",
+				style: "width: 300px",
 				splitter: true,
 				layoutPriority: 1
 			})

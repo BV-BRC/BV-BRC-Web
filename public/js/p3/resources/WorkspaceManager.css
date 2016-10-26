@@ -253,7 +253,7 @@ th.dgrid-cell.wsItemType {
 	font-size: 1.1em;
 	display: inline-block;
 	text-align: center;
-	margin:1px;
+    margin: 1px 2px 1px 1px;
 	cursor: pointer;
 	width: 50px;
 	border-radius: 4px;

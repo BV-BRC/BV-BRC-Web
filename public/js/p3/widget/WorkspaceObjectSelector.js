@@ -232,7 +232,7 @@ define([
 					deselectOnRefresh: true,
 					types: this.type ? (["folder"].concat(this.type)) : false,
 					columns: {
-						"type": {
+						type: {
 							label: "",
 							get: function(item){
 								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
@@ -244,7 +244,7 @@ define([
 							formatter: formatter.wsItemType,
 							unhidable: true
 						},
-						"name": editor({
+						name: editor({
 							label: "Name",
 							field: "name",
 							className: "wsItemName",
