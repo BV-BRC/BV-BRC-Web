@@ -906,14 +906,11 @@ define([
 
 						if(newPanel.on){
 							newPanel.on("select", lang.hitch(this, function(evt){
-								// console.log("Selected: ", evt);
 								var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-									// console.log("rownum: ", rownum);
-									// console.log("Row: ", evt.grid.row(rownum).data);
+									//console.log("Row: ", evt.grid.row(rownum).data);
 									return evt.grid.row(rownum).data;
 								}));
-								// console.log("selection: ", sel);
-								// console.log("this.activePanel: ", newPanel);
+
 								if(hideTimer){
 									clearTimeout(hideTimer);
 								}

@@ -17,7 +17,7 @@ define([
 			registry, editor, formatter, FilteringSelect){
 
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
-		"baseClass": "WorkspaceObjectSelector",
+		baseClass: "WorkspaceObjectSelector",
 		templateString: Template,
 		workspace: "",
 		selection: "",
@@ -171,7 +171,7 @@ define([
 					style: {
 						width: "500px",
 						height: "400px",
-						"margin": "0",
+						margin: "0",
 						padding: "0px"
 					}
 				});

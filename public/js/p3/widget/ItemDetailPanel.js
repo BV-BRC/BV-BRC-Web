@@ -51,7 +51,6 @@ define([
 			}));
 
 			this.watch("selection", lang.hitch(this, function(prop, oldVal, selection){
-				// console.log("ItemDetailPanel set selection: ", selection);
 
 				if(!selection || selection.length < 1){
 					// console.log("no selection set");
@@ -74,7 +73,6 @@ define([
 			}));
 
 			this.watch("item", lang.hitch(this, function(prop, oldVal, item){
-				// console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon, currentIcon)
 				// console.log("Container Widget: ", this.containerWidget);
 				if(item.type){
@@ -222,9 +220,14 @@ define([
 			this.inherited(arguments);
 		},
 
-		saveType: function(val){
-			// console.log("onSaveType: ", val, this.item);
-			WorkspaceManager.updateMetadata(this.item.path, false, val);
+		saveType: function(val, val2){
+			// only update meta if value has changed
+			if (this.item.type == val) return;
+
+			WorkspaceManager.updateMetadata(this.item.path, false, val)
+				.then(function(meta) {
+					this.item = WorkspaceManager.metaListToObj(meta);
+				});
 		}
 	});
 });
