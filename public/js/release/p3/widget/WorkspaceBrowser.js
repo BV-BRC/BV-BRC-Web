@@ -1,24 +1,24 @@
 require({cache:{
 'url:p3/widget/templates/IDMapping.html':"<div>\t\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t</tbody>\n\t</table>\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"3\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td><td rel=\"DIP\">DIP</td></tr>\n\t\t<tr><td rel=\"DisProt\">DisProt</td><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td><td rel=\"EchoBase\">EchoBASE</td></tr>\n\t\t<tr><td rel='EcoGene'>EcoGene</td><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td><td rel=\"GenoList\">GenoList</td></tr>\n\t\t<tr><td rel=\"GenomeReviews\">GenomeReviews</td><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td><td rel=\"Leproma\">Leproma</td></tr>\n\t\t<tr><td rel=\"MEROPS\">MEROPS</td><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td><td rel=\"PDB\">PDB</td></tr>\n\t\t<tr><td rel=\"PeroxiBase\">PeroxiBase</td><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td><td rel=\"Reactome\">Reactome</td></tr>\n\t\t<tr><td rel=\"RefSeq_NT\">RefSeq_NT</td><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td></tr>\n\t\t<tr><td rel=\"UniRef100\">UniRef100</td><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td><td rel=\"World-2DPAGE\">World-2DPAGE</td></tr>\n\t\t<tr><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n"}});
 define("p3/widget/WorkspaceBrowser", [
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/query",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/dom-attr",
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
 	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip"
 
-], function(declare, BorderContainer, on,
-			domClass, ContentPane, domConstruct,
+], function(declare, BorderContainer, on, query,
+			domClass, ContentPane, domConstruct, domAttr,
 			WorkspaceExplorerView, Topic, ItemDetailPanel,
 			ActionBar, Deferred, WorkspaceManager, lang,
 			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
 			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog){
 	return declare([BorderContainer], {
-		"baseClass": "WorkspaceBrowser",
-		"disabled": false,
-		"path": "/",
+		baseClass: "WorkspaceBrowser",
+		disabled: false,
+		path: "/",
 		gutters: false,
 		navigableTypes: ["parentfolder", "folder", "genome_group", "feature_group", "job_result", "experiment_group", "experiment", "unspecified", "contigs", "reads", "model"],
 		design: "sidebar",
@@ -32,7 +32,7 @@ define("p3/widget/WorkspaceBrowser", [
 				splitter: false,
 				region: "right",
 				layoutPriority: 2,
-				style: "width:48px;text-align:center;"
+				style: "width: 57px; text-align: center;"
 			});
 
 			this.browserHeader = new ContainerActionBar({
@@ -43,9 +43,8 @@ define("p3/widget/WorkspaceBrowser", [
 			});
 
 			var self = this;
-
-			this.actionPanel.addAction("ToggleItemDetail", "fa icon-info-circle fa-2x", {
-				label: "DETAIL",
+			this.actionPanel.addAction("ToggleItemDetail", "fa icon-chevron-circle-right fa-2x", {
+				label: "HIDE",
 				persistent: true,
 				validTypes: ["*"],
 				tooltip: "Toggle Selection Detail"
@@ -58,6 +57,21 @@ define("p3/widget/WorkspaceBrowser", [
 					self.addChild(self.itemDetailPanel);
 				}
 			}, true);
+
+			// show / hide item detail panel button
+			var hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
+			on(hideBtn, "click",  function(e) {
+				var icon = query('.fa', hideBtn)[0],
+					text = query('.ActionButtonText', hideBtn)[0];
+
+				domClass.toggle(icon, "icon-chevron-circle-right");
+				domClass.toggle(icon, "icon-chevron-circle-left");
+
+				if (domClass.contains(icon, "icon-chevron-circle-left"))
+					domAttr.set(text, "textContent", "SHOW");
+				else
+					domAttr.set(text, "textContent", "HIDE");
+			})
 
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
@@ -248,7 +262,7 @@ define("p3/widget/WorkspaceBrowser", [
 			}, true);
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
-				label: "DOWNLOAD",
+				label: "DWNLD",
 				multiple: false,
 				validTypes: WorkspaceManager.downloadTypes,
 				tooltip: "Download"
@@ -388,12 +402,10 @@ define("p3/widget/WorkspaceBrowser", [
 				label: "VIEW",
 				multiple: false,
 				validTypes: ["model"],
-				tooltip: "View Model @ Modelseed"
+				tooltip: "View Model @ ModelSEED.org"
 			}, function(selection){
-				// console.log("View Model: ", selection[0]);
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
-				//window.location=url;
 				window.open(url, "_blank");
 			}, true);
 
@@ -787,7 +799,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
-				style: "width:300px",
+				style: "width: 300px",
 				splitter: true,
 				layoutPriority: 1
 			})
@@ -896,14 +908,11 @@ define("p3/widget/WorkspaceBrowser", [
 
 						if(newPanel.on){
 							newPanel.on("select", lang.hitch(this, function(evt){
-								// console.log("Selected: ", evt);
 								var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-									// console.log("rownum: ", rownum);
-									// console.log("Row: ", evt.grid.row(rownum).data);
+									//console.log("Row: ", evt.grid.row(rownum).data);
 									return evt.grid.row(rownum).data;
 								}));
-								// console.log("selection: ", sel);
-								// console.log("this.activePanel: ", newPanel);
+
 								if(hideTimer){
 									clearTimeout(hideTimer);
 								}

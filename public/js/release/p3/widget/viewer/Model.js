@@ -8,9 +8,9 @@ define("p3/widget/viewer/Model", [
 			Grid, formatter, WorkspaceManager, lang,
 			domAttr){
 	return declare([BorderContainer], {
-		"baseClass": "Model",
-		"disabled": false,
-		"query": null,
+		baseClass: "Model",
+		disabled: false,
+		query: null,
 		data: null,
 		containerType: "model",
 		_setDataAttr: function(data){
@@ -28,14 +28,7 @@ define("p3/widget/viewer/Model", [
 				return;
 			}
 			if(this.data){
-				var output = ['<div><div style="width:370px;"><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">'];
-				output.push("Metabolic Model - " + this.data.name + '</span></h3></div>');
-				/*
-				output.push('<div>'+
-					'<div>View in:</div> <a href="http://modelseed.theseed.org/#/model'+this.data.path+this.data.name+'?login=patric" target="_blank">'+
-					'<img src="/js/p3/resources/images/modelseed-logo.png" height="25"></a>'+
-				'</div>')
-				*/
+				var output = ['<h3 class="section-title-plain close2x">Metabolic Model - ' + this.data.name +'</h3>']
 
 				output.push(this.metaTable());
 
@@ -65,46 +58,39 @@ define("p3/widget/viewer/Model", [
 								return downloads;
 							})
 					}).then(function(dls){
-					// add download table
-					output.push('<h3>Downloads</h3>');
-					var table = ['<table class="basic stripe far2x"><thead><tr><th>File</th><th>Size</th></thead>'];
-					for(var i in dls){
-						var dl = dls[i];
-						table.push('<tr>' +
-							'<td><a href="' + dl.url + '"><i class="fa icon-download"><i> ' + dl.name + '</a></td>' +
-							'<td>' + dl.size + '</td>' +
-							'<tr>');
-					}
-					table.push('</table>');
+						// add download table
+						output.push('<br><h3 class="section-title-plain close2x">Downloads</h3>');
+						var table = ['<table class="p3basic"><thead><tr><th>File</th><th>Size</th></thead>'];
+						for(var i in dls){
+							var dl = dls[i];
+							table.push(
+								'<tr>' +
+									'<td><a href="' + dl.url + '"><i class="fa icon-download"></i> ' + dl.name + '</a></td>' +
+									'<td>' + dl.size + '</td>' +
+								'<tr>');
+						}
+						table.push('</table>');
 
-					output = output.concat(table);
-					self.viewer.set("content", output.join(""));
-				})
+						output = output.concat(table);
+						self.viewer.set("content", output.join(""));
+					})
 			}
 		},
 
 		metaTable: function(){
 			var m = this.data.autoMeta;
 
-			var table = [{label: 'Organism', value: m.name},
+			var table = [
+				{label: 'Organism', value: m.name},
 				{label: 'File Name', value: m.id},
 				{label: 'Reactions', value: m.num_reactions},
 				{label: 'Compounds', value: m.num_compounds},
 				{label: 'Genes', value: m.num_genes},
 				{label: 'Biomasses', value: m.num_biomasses},
-				{label: 'Source', value: m.source}];
+				{label: 'Source', value: m.source}
+			];
 
-			return this.keyValueTable(table);
-		},
-
-		keyValueTable: function(spec){
-			var table = ['<table class="basic stripe far2x" id="data-table"><tbody>'];
-			for(var i = 0; i < spec.length; i++){
-				var row = spec[i];
-				table.push('<tr><td><b>' + row.label + '</b></td><td>' + row.value + '</td></tr>');
-			}
-			table.push("</tbody></table>");
-			return table.join("");
+			return formatter.keyValueTable(table);
 		},
 
 		startup: function(){
