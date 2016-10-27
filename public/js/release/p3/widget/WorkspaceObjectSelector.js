@@ -19,7 +19,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 			registry, editor, formatter, FilteringSelect){
 
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
-		"baseClass": "WorkspaceObjectSelector",
+		baseClass: "WorkspaceObjectSelector",
 		templateString: Template,
 		workspace: "",
 		selection: "",
@@ -173,7 +173,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 					style: {
 						width: "500px",
 						height: "400px",
-						"margin": "0",
+						margin: "0",
 						padding: "0px"
 					}
 				});
@@ -208,7 +208,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 					_self.dialog.hide();
 				});
 				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
 
 				on(selectionPane.domNode, "i:click", function(evt){
 					// console.log("Click: ", evt);
@@ -234,7 +234,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 					deselectOnRefresh: true,
 					types: this.type ? (["folder"].concat(this.type)) : false,
 					columns: {
-						"type": {
+						type: {
 							label: "",
 							get: function(item){
 								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
@@ -246,7 +246,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 							formatter: formatter.wsItemType,
 							unhidable: true
 						},
-						"name": editor({
+						name: editor({
 							label: "Name",
 							field: "name",
 							className: "wsItemName",

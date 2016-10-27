@@ -154,7 +154,7 @@
 }
 
 .patric .dgrid-row-odd {
-    background: #efefef;
+    background: #f5f5f5;
 }
 
 .patric .dgrid-selected{
@@ -177,11 +177,6 @@
 
 .TaxonTreeGrid .dgrid-cell.field-taxon_rank {
     width: 90px;
-}
-
-.blast_form_wrapper {
-    width: 700px;
-    margin: 0 auto 10px auto;
 }
 
 .blast_form {

@@ -227,7 +227,7 @@ define([
 				"dataType": "genome_sequence",
 				pk: "sequence_id",
 				tableData: true,
-				otherData: ["dna+fasta", "protein+fasta"]
+				otherData: ["dna+fasta"]
 			},
 			"feature_data": {
 				"label": "Features",

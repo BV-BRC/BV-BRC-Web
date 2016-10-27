@@ -1,178 +1,218 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div style="width: 700px;margin:auto;">
-    <div class="apptitle" id="apptitle">
-                <h3>RNA-Seq Analysis</h3>
-                <p>Align reads, assemble transcripts, measure/test expression.</p>
-    </div>
-	<div style="width:700px; margin:auto" class="formFieldsContainer">
-		<div style="display: none;">
-			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
-		</div>
-		<div style="display: none;">
-			<input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true" data-dojo-attach-point="numCondWidget" data-dojo-props="constraints:{min:1,max:1000},"/>
-		</div>
-		<table class="assemblyblocks" style="width:100%">
-		<tr>
-		<td>
-            <div id="pipelineBox" class="appbox appshadow"> 
-                <div style="width:85%;display:inline-block;">
-                    <label class="appboxlabel">Parameters</label>
-                    <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa"></i>
-                    </div>
-                </div>
-                <div class="approw">
-                    <label for="recipe" class="paramlabel">Strategy</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                    <option value="Rockhopper">Rockhopper</option>
-                    <option value="RNA-Rocket">Tuxedo</option>
-                    <option value="Host">Host HISAT2</option>
-                    </select>
-                </div>
-                <div class="approw">
-                    <div class="appField">
-                        <label>Target Genome</label><br>
-                        <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
-                    </div> 
-                </div>
-                <div class="approw">
-                    <label for="output_path" class="paramlabel">Output Folder</label><br>
-                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-                </div>
-                <div class="approw">
-                    <label class="paramlabel">Output Name</label><br>
-                    <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-                </div>
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>RNA-Seq Analysis</h3>
+            <p>Align reads, assemble transcripts, measure/test expression.</p>
+        </div>
+        <div class="formFieldsContainer">
+            <div style="display: none;">
+                <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
+                       data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
+            </div>
+            <div style="display: none;">
+                <input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true"
+                       data-dojo-attach-point="numCondWidget" data-dojo-props="constraints:{min:1,max:1000},"/>
+            </div>
+            <table class="assemblyblocks" style="width:100%">
+                <tr>
+                    <td>
+                        <div id="pipelineBox" class="appBox appShadow">
+                            <div style="width:85%;display:inline-block;">
+                                <label class="appBoxLabel">Parameters</label>
+                                <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
+                                    <i class="fa icon-info-circle fa"></i>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Strategy</label><br>
+                                <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe"
+                                        style="width:300px" required="true"
+                                        data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                                    <option value="Rockhopper">Rockhopper</option>
+                                    <option value="RNA-Rocket">Tuxedo</option>
+                                    <option value="Host">Host HISAT2</option>
+                                </select>
+                            </div>
+                            <div class="appRow">
+                                <div class="appField">
+                                    <label>Target Genome</label><br>
+                                    <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                                         data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight=200
+                                         style="width:100%" required="true"
+                                         data-dojo-attach-point="genome_nameWidget"></div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Output Folder</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                                     data-dojo-attach-point="output_path" style="width:300px" required="true"
+                                     data-dojo-props="type:['folder'],multi:false"
+                                     data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Output Name</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                                     data-dojo-attach-point="output_file" style="width:300px" required="true"
+                                     data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+                            </div>
 
-            </div>
-        </td>
-        <td>
-            <div id="conditionbox" class="appbox appshadow" style="min-height: 217px; height:auto; width:330px">
-                <div class="headerrow">
-                    <label class="appboxlabel">Groups/Conditions</label>
-                    <div name="groupinfo" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-info-circle fa"></i>
-                    </div><br>
-                </div>
-                <div class="approw">
-                    <!--<div class="mblSwRoundShape1" style="margin-bottom:10px" data-dojo-attach-point="exp_design" data-dojo-attach-event="stateChanged:onDesignToggle" data-dojo-props="value:'off'" style="font-size: 13px; width: 80px;" data-dojo-type="dojox/mobile/Switch"></div>-->
-                    <div style="margin-left:10px" data-dojo-attach-point="group_switch" class="onoffswitch">
-                        <input type="checkbox" value="off" name="onoffswitch" class="onoffswitch-checkbox" data-dojo-attach-point="exp_design">
-                        <label class="onoffswitch-label" for="myonoffswitch">
-                            <span class="onoffswitch-inner"></span>
-                            <span class="onoffswitch-switch"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="approw" style="width:270px; padding-left:10px; padding-right:40px;" data-dojo-attach-point="advrow">
-                    <div style="width:85%;display:inline-block;">
-                        <div data-dojo-type="dijit/form/ValidationTextBox" name="condition" data-dojo-attach-point="condition" required="false" data-dojo-props="disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'"></div>
-                    </div>
-                    <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddCondition" class="fa icon-plus-circle fa-lg"></i></div>
-                </div>
-                <div class="approw" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable disabled" frame="box" data-dojo-attach-point="condTable" style='margin:0 0 0 10px; width:90%;'>
-                    <tbody data-dojo-attach-point="condTableBody">
-                            
-                    </tbody>
-                </table>
-                </div>
-            </div>
-            <!-- <div data-dojo-attach-point="block_condition" data-dojo-type="dojox.widget.Standby" data-dojo-props="opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'"></div> -->
-        </td>
-        </tr>
-        <tr>
-        <td>
-            <div id="pairedBox" class="appbox appshadow">
-                <div class="headerrow">
-                    <div style="width:85%;display:inline-block;">
-                        <label class="appboxlabel"> Paired read library</label>
-                        <div name="pairinfo" class="infobox iconbox infobutton dialoginfo">
-                            <i class="fa icon-info-circle fa"></i>
                         </div>
-                    </div>
-                    <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
-                </div>
-                <div class="approw">
-                    <label class="paramlabel" for="libdat_file1pair">Read File 1</label><br>
-                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
-                </div>
-                <div class="approw">
-                    <div data-dojo-attach-point="read2block">
-                        <label class="paramlabel" for="libdat_file2pair">Read File 2</label><br>
-                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
-                    </div>
-                </div>
-                <div class="approw">
-                    <label class="paramlabel">Condition</label><br>
-                    <select data-dojo-type="dijit/form/FilteringSelect" name="condition_paired" data-dojo-attach-point="condition_paired" style="width:300px" required="false" data-dojo-props="disabled: true,labelType:'html', searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
-                    </select>
-                </div>
+                    </td>
+                    <td>
+                        <div id="conditionbox" class="appBox appShadow"
+                             style="min-height: 217px; height:auto; width:330px">
+                            <div class="headerrow">
+                                <label class="appBoxLabel">Groups/Conditions</label>
+                                <div name="groupinfo" class="infobox iconbox infobutton tooltipinfo">
+                                    <i class="fa icon-info-circle fa"></i>
+                                </div>
+                                <br>
+                            </div>
+                            <div class="appRow">
+                                <!--<div class="mblSwRoundShape1" style="margin-bottom:10px" data-dojo-attach-point="exp_design" data-dojo-attach-event="stateChanged:onDesignToggle" data-dojo-props="value:'off'" style="font-size: 13px; width: 80px;" data-dojo-type="dojox/mobile/Switch"></div>-->
+                                <div style="margin-left:10px" data-dojo-attach-point="group_switch" class="onoffswitch">
+                                    <input type="checkbox" value="off" name="onoffswitch" class="onoffswitch-checkbox"
+                                           data-dojo-attach-point="exp_design">
+                                    <label class="onoffswitch-label">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="appRow" style="width:270px; padding-left:10px; padding-right:40px;"
+                                 data-dojo-attach-point="advrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="condition"
+                                         data-dojo-attach-point="condition" required="false"
+                                         data-dojo-props="disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'"></div>
+                                </div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddCondition"
+                                        class="fa icon-plus-circle fa-lg"></i></div>
+                            </div>
+                            <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+                                <table class="librarytable disabled" frame="box" data-dojo-attach-point="condTable"
+                                       style='margin:0 0 0 10px; width:90%;'>
+                                    <tbody data-dojo-attach-point="condTableBody">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- <div data-dojo-attach-point="block_condition" data-dojo-type="dojox.widget.Standby" data-dojo-props="opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'"></div> -->
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="pairedBox" class="appBox appShadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appBoxLabel"> Paired read library</label>
+                                    <div name="pairinfo" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa"></i>
+                                    </div>
+                                </div>
+                                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddPair"
+                                                                                class="fa icon-arrow-circle-o-right fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Read File 1</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair"
+                                     data-dojo-attach-point="read1" style="width:300px" required="false"
+                                     data-dojo-props="type:['reads'],multi:false"></div>
+                            </div>
+                            <div class="appRow">
+                                <div data-dojo-attach-point="read2block">
+                                    <label class="paramlabel">Read File 2</label><br>
+                                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair"
+                                         data-dojo-attach-point="read2" style="width:300px" required="false"
+                                         data-dojo-props="type:['reads'],multi:false"></div>
+                                </div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Condition</label><br>
+                                <select data-dojo-type="dijit/form/FilteringSelect" name="condition_paired"
+                                        data-dojo-attach-point="condition_paired" style="width:300px" required="false"
+                                        data-dojo-props="disabled: true,labelType:'html', searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="appBox appShadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appBoxLabel">Single read library</label>
+                                </div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddSingle"
+                                        class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Read File</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile"
+                                     data-dojo-attach-point="read" style="width:300px" required="false"
+                                     data-dojo-props="type:['reads'],multi:false"></div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Condition</label><br>
+                                <select data-dojo-type="dijit/form/FilteringSelect" name="condition_single"
+                                        data-dojo-attach-point="condition_single" style="width:300px" required="false"
+                                        data-dojo-props="labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
+                                </select>
+                            </div>
+                        </div>
+
+                    </td>
+                    <td>
+                        <div class="appBox appShadow" style="min-height: 320px; height:auto; width:330px">
+                            <div class="headerrow">
+                                <label class="appBoxLabel">Selected libraries</label>
+                                <div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
+                                    <i class="fa icon-info-circle fa"></i>
+                                </div>
+                                <br>
+                                <div class="appsublabel">Place read files here using the arrow buttons.</div>
+                            </div>
+                            <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+                                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
+                                       style='margin:0 0 0 10px; width:90%;'>
+                                    <tbody data-dojo-attach-point="libsTableBody">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+
+        </div>
+        <div class="appSubmissionArea">
+            <div style="width:400px; margin:auto" class="workingMessage messageContainer">
+                Submitting RNA-Seq job
             </div>
 
-            <div class="appbox appshadow">
-                <div class="headerrow">
-                    <div style="width:85%;display:inline-block;">
-                        <label class="appboxlabel">Single read library</label>
-                    </div>
-                    <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
-                </div>
-                <div class="approw">
-                    <label class="paramlabel" for="singleread">Read File</label><br>
-                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
-                </div>
-                <div class="approw">
-                    <label class="paramlabel">Condition</label><br>
-                    <select data-dojo-type="dijit/form/FilteringSelect" name="condition_single" data-dojo-attach-point="condition_single" style="width:300px" required="false" data-dojo-props="labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
-                    </select>
-                </div>
+            <div style="width:400px; margin:auto" class="submittedMessage messageContainer">
+                RNA-Seq job has been queued.
             </div>
 
-		</td>
-		<td>
-            <div class="appbox appshadow" style="min-height: 320px; height:auto; width:330px">
-                <div class="headerrow">
-                    <label class="appboxlabel">Selected libraries</label>
-                    <div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-info-circle fa"></i>
-                    </div><br>
-                    <div class="appsublabel">Place read files here using the arrow buttons.</div>
-                </div>
-                <div class="approw" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style='margin:0 0 0 10px; width:90%;'>
-                    <tbody data-dojo-attach-point="libsTableBody">
-                            
-                    </tbody>
-                </table>
-                </div>
+            <div style="width:400px; margin:auto" class="errorMessage messageContainer">
+                <div style="font-weight:900;font-size:1.1em;">Error Submitting Assembly Job</div>
+                <p data-dojo-attach-point="errorMessage">Error</p>
             </div>
-		</td>
-		</tr>
-		</table>
-		
-		
-	</div>
-	<div class="appSubmissionArea">
-		<div style="width:400px; margin:auto" class="workingMessage messageContainer">
-			Submitting RNA-Seq job
-		</div>
 
-		<div style="width:400px; margin:auto" class="submittedMessage messageContainer">
-			RNA-Seq job has been queued.
-		</div>
-
-		<div style="width:400px; margin:auto" class="errorMessage messageContainer">
-			<div style="font-weight:900;font-size:1.1em;">Error Submitting Assembly Job</div>
-			<p data-dojo-attach-point="errorMessage">Error</p>
-		</div>
-		
-		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-		</div>
-	</div>
-	
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                     data-dojo-type="dijit/form/Button">Cancel
+                </div>
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+            </div>
+        </div>
+    </div>
 </form>
 

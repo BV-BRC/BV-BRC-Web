@@ -3,13 +3,13 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin", "FileSaver"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, saveAs){
 
 	var legend = [
 		'<div>',
@@ -240,6 +240,7 @@ define([
 
 			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
 				headers: {
@@ -248,6 +249,8 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -267,6 +270,7 @@ define([
 
 			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
@@ -277,6 +281,8 @@ define([
 				},
 				data: query
 			}).then(lang.hitch(this, function(features){
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
 				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
 				var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -486,11 +492,13 @@ define([
 			on(downloadHM.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var DELIMITER;
+				var DELIMITER, ext;
 				if(rel === 'text/csv'){
 					DELIMITER = ',';
+					ext = 'csv';
 				}else{
 					DELIMITER = '\t';
+					ext = 'txt';
 				}
 
 				var colIndexes = [];
@@ -517,8 +525,8 @@ define([
 						data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
 					}
 				});
-				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
-				// refer http://jsfiddle.net/a856P/51/ for further implementation
+
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'ProteinFamilies.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){
