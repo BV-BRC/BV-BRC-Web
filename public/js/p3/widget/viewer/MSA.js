@@ -461,9 +461,9 @@ define([
 			console.log("doAlignment()");
 			this.set('loading', true);
 			if(this.state && this.state.search){
-				var q = this.state.search;
+				var q = this.state.search+ "&limit("+this.maxSequences+")";
 
-				console.log("RUN MSA Against: ", this.state.search)
+				console.log("RUN MSA Against: ", q)
 				return when(window.App.api.data("multipleSequenceAlignment", [q]), lang.hitch(this, function(res){
 					console.log("MSA Results: ", res);
 					this.set('loading', false);
