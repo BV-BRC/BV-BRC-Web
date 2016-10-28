@@ -13,7 +13,7 @@ define([
 			MainGridContainer, FilterGrid, HeatmapContainer){
 
 	return declare([BorderContainer], {
-		id: "PFContainer",
+		// id: "PFContainer",
 		tooltip: 'The "Protein Families" tab contains a list of Protein Families for genomes associated with the current view',
 
 		gutters: false,
