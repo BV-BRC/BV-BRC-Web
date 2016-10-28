@@ -75,7 +75,7 @@ define([
 
 			data.forEach(function(gene){
 
-				var pass = false;
+				var skip = true;
 				var up_r = 0, down_r = 0, total_samples = 0;
 
 				// comparisons
@@ -84,24 +84,24 @@ define([
 					var index = gfs[comparisonId].getIndex();
 					var status = gfs[comparisonId].getStatus();
 					var comparison = gene.samples[comparisonId];
-					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.dist, parseInt(gene.dist.substr(index * 2, 2), 16));
+					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.sample_binary, parseInt(gene.sample_binary.substr(index * 1, 1), 16));
 
 					var expression = gene.sample_binary.substr(index, 1);
 					if(expression === '1'){
 						if(status != 2){
-							pass = self._thresholdFilter(comparison, tgState, status);
-							if(!pass){
+							skip = !self._thresholdFilter(comparison, tgState, status);
+							if(skip){
 								break;
 							}
 						}else{
 							// status == 2, don't care
-							if(!pass){
-								pass = self._thresholdFilter(comparison, tgState, status)
+							if(skip){
+								skip = !self._thresholdFilter(comparison, tgState, status)
 							}
 						}
 					}else{
 						if(status != 2){
-							pass = false;
+							skip = true;
 							break;
 						}
 					}
@@ -120,25 +120,24 @@ define([
 					}
 				}
 
+				if(!skip && tgState.keyword !== ''){
+					skip = !keywordRegex.some(function(needle){
+						return needle && (gene.product.toLowerCase().indexOf(needle) >= 0
+							|| gene.patric_id.toLowerCase().indexOf(needle) >= 0
+							|| gene.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
+					});
+				}
+
 				gene.up = up_r;
 				gene.down = down_r;
 				gene.sample_size = total_samples;
 
-				if(pass){
+				if(!skip){
 					newData.push(gene);
 				}
 			});
 
-			if(tgState.keyword !== ''){
-				newData = newData.filter(function(d){
-					return keywordRegex.some(function(needle){
-						return needle && (d.product.toLowerCase().indexOf(needle) >= 0
-							|| d.patric_id.toLowerCase().indexOf(needle) >= 0
-							|| d.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
-					})
-				});
-			}
-
+			// console.log("after conditionFilter: ", newData.length);
 			// console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
@@ -306,13 +305,22 @@ define([
 					},
 					data: query + "&select(eid,pid,expname,expmean,timepoint,mutant,strain,condition)&limit(99999)"
 				}), function(results){
+					var comparisons;
 					if(pbComparisons.length > 0){
-						return results.filter(function(d){
+						comparisons = results.filter(function(d){
 							return pbComparisons.indexOf(d.pid) >= 0;
 						})
 					}else{
-						return results;
+						comparisons = results;
 					}
+					comparisons = comparisons.map(function(d){
+						if(typeof d.pid == "number"){
+							d.pid = d.pid.toString();
+						}
+						return d;
+					});
+					// console.log("comparisons: ", comparisons);
+					return comparisons;
 				});
 			}else{
 				pbRequest.resolve([]);
@@ -320,7 +328,7 @@ define([
 
 			this._loadingDeferred = when(All([wsRequest, pbRequest]), function(results){
 
-				console.log("get all results:", results);
+				// console.log("get all results:", results);
 
 				var wsComparisons = [].concat.apply([], results[0]);
 				var pbComparisons = [].concat.apply([], results[1]);
