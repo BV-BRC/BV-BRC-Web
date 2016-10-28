@@ -504,7 +504,7 @@ define([
 				})
 		},
 
-		metaListToObj: function(list) {
+		metaListToObj: function(list){
 			return {
 				id: list[4],
 				path: list[2] + list[0],

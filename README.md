@@ -3,7 +3,18 @@
 
 ## Requirements
 
-node   (4.6.1+)
+node   (6.x lts)
+```
+# installing node 6.x lts using homebrew on macOS
+brew tap homebrew/versions
+brew install homebrew/versions/node6-lts
+
+# centos
+curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
+yum -y install nodejs
+
+# for more detail https://nodejs.org/en/download/
+```
 
 redis  (3.2+) http://redis.io/
 
@@ -40,7 +51,11 @@ redis-server
 npm start
 ```
 
+<<<<<<< HEAD
+Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.  
+=======
 Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.
+>>>>>>> patric_master
 
 
 ## Contributing
@@ -90,4 +105,3 @@ git push
 ```
 
 Note: `version` is where the build is deployed and what is displayed in the UI.
-
