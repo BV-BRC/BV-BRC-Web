@@ -554,7 +554,7 @@ define([
 						gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
 					}
 					var order = geneOrderMap[gene.feature_id];
-					cols[order] = createColumn(order, gene.feature_id, gene.product + " - " + gene.patric_id.replace("|", ""), gene.dist, meta);
+					cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
 				}
 			});
 
