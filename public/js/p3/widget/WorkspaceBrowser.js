@@ -58,14 +58,14 @@ define([
 
 			// show / hide item detail panel button
 			var hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
-			on(hideBtn, "click",  function(e) {
+			on(hideBtn, "click", function(e){
 				var icon = query('.fa', hideBtn)[0],
 					text = query('.ActionButtonText', hideBtn)[0];
 
 				domClass.toggle(icon, "icon-chevron-circle-right");
 				domClass.toggle(icon, "icon-chevron-circle-left");
 
-				if (domClass.contains(icon, "icon-chevron-circle-left"))
+				if(domClass.contains(icon, "icon-chevron-circle-left"))
 					domAttr.set(text, "textContent", "SHOW");
 				else
 					domAttr.set(text, "textContent", "HIDE");
