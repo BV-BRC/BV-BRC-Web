@@ -158,6 +158,7 @@ define([
 						self.currentData = value;
 						if(typeof(self.flashDom.refreshData) == "function"){
 							self.flashDom.refreshData();
+							Topic.publish("TranscriptomicsGene", "hideLoadingMask");
 						}
 						break;
 					default:
@@ -564,6 +565,8 @@ define([
 				return;
 			}
 
+			Topic.publish("TranscriptomicsGene", "showLoadingMask");
+
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
@@ -579,6 +582,8 @@ define([
 				// re-draw heatmap
 				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 			}), function(err){
+
+				Topic.publish("TranscriptomicsGene", "hideLoadingMask");
 
 				new Dialog({
 					title: err.status || ' ',

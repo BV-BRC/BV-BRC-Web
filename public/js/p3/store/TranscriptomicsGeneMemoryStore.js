@@ -17,6 +17,7 @@ define([
 		significantGenes: 'Y',
 		colorScheme: 'rgb',
 		maxIntensity: 0,
+		keyword: '',
 		upFold: 0,
 		downFold: 0,
 		upZscore: 0,
@@ -69,7 +70,9 @@ define([
 			var newData = [];
 			var gfs = tgState.comparisonFilterStatus;
 
-			var tsStart = window.performance.now();
+			// var tsStart = window.performance.now();
+			var keywordRegex = tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+
 			data.forEach(function(gene){
 
 				var pass = false;
@@ -125,7 +128,18 @@ define([
 					newData.push(gene);
 				}
 			});
-			console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
+
+			if(tgState.keyword !== ''){
+				newData = newData.filter(function(d){
+					return keywordRegex.some(function(needle){
+						return needle && (d.product.toLowerCase().indexOf(needle) >= 0
+							|| d.patric_id.toLowerCase().indexOf(needle) >= 0
+							|| d.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
+					})
+				});
+			}
+
+			// console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
 			self.set("refresh");
