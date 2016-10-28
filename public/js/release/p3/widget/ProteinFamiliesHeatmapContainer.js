@@ -667,8 +667,8 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				Topic.publish("ProteinFamilies", "hideLoadingMask");
 
 				new Dialog({
-					title: err.status,
-					content: err.text
+					title: err.status || 'Error',
+					content: err.text || err
 				}).show();
 			});
 		}

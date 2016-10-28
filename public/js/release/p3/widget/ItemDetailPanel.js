@@ -153,7 +153,7 @@ define("p3/widget/ItemDetailPanel", [
 								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "underline");
 
 								domConstruct.place(' <i class="fa icon-caret-down" style="text-decoration: none;"></i>',
-									 _self[key + "Node"].domNode)
+									_self[key + "Node"].domNode)
 
 								var type_options = [];
 								Object.keys(this.changeableTypes).forEach(function(change_type){
@@ -224,10 +224,10 @@ define("p3/widget/ItemDetailPanel", [
 
 		saveType: function(val, val2){
 			// only update meta if value has changed
-			if (this.item.type == val) return;
+			if(this.item.type == val) return;
 
 			WorkspaceManager.updateMetadata(this.item.path, false, val)
-				.then(function(meta) {
+				.then(function(meta){
 					this.item = WorkspaceManager.metaListToObj(meta);
 				});
 		}

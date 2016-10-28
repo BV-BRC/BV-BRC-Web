@@ -2,19 +2,21 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
+	"dojox/widget/Standby",
 	"./ActionBar", "./ContainerActionBar",
 	"./TranscriptomicsGeneGridContainer", "./TranscriptomicsGeneFilterGrid", "./TranscriptomicsGeneHeatmapContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
+			Standby,
 			ActionBar, ContainerActionBar,
 			MainGridContainer, FilterGrid, HeatmapContainer){
 
 	return declare([BorderContainer], {
-		id: "TGContainer",
 		gutters: false,
 		state: null,
 		tgState: null,
+		loadingMask: null,
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			var self = this;
@@ -26,14 +28,32 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 				switch(key){
 					case "updateTgState":
 						self.tgState = value;
+						self.updateFilterPanel(value);
+						break;
+					case "showLoadingMask":
+						self.loadingMask.show();
+						break;
+					case "hideLoadingMask":
+						self.loadingMask.hide();
 						break;
 					default:
 						break;
 				}
 			}));
 		},
+		postCreate: function(){
+			this.loadingMask = new Standby({
+				target: this.id,
+				image: "/public/js/p3/resources/images/spin.svg",
+				color: "#efefef"
+			});
+			this.addChild(this.loadingMask);
+			this.loadingMask.startup();
+
+			this.loadingMask.show(); // this widget is opened by new window/tab
+		},
 		onSetState: function(attr, oldVal, state){
-			// console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			// console.log("TranscriptomicsGeneContainer set STATE. state: ", state);
 			if(this.mainGridContainer){
 				this.mainGridContainer.set('state', state);
 			}
@@ -93,6 +113,12 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 			this.inherited(arguments);
 			this._firstView = true;
 		},
+		updateFilterPanel: function(tgState){
+
+			this.ta_keyword.set('value', tgState['keyword']);
+			this.filter_log_ratio.set('value', tgState['upFold'] || 0);
+			this.filter_z_score.set('value', tgState['upZscore'] || 0);
+		},
 		_buildFilterPanel: function(){
 
 			var filterPanel = new ContentPane({
@@ -131,7 +157,14 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 			// domConstruct.place(select_genome_filter.domNode, otherFilterPanel.containerNode, "last");
 			// domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
-			var select_log_ratio = new Select({
+			var ta_keyword = this.ta_keyword = new TextArea({
+				style: "width:272px; min-height:75px; margin-bottom: 10px"
+			});
+			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords or locus tags"});
+			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
+			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
+
+			var select_log_ratio = this.filter_log_ratio = new Select({
 				name: "selectLogRatio",
 				options: [{value: 0, label: "0"}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
 					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
@@ -144,7 +177,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 			domConstruct.place(select_log_ratio.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
-			var select_z_score = new Select({
+			var select_z_score = this.filter_z_score = new Select({
 				name: "selectZScore",
 				options: [{value: 0, label: "0"}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
 					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
@@ -158,6 +191,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
 			var defaultFilterValue = {
+				keyword: '',
 				upFold: 0,
 				downFold: 0,
 				upZscore: 0,
@@ -169,6 +203,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 				onClick: lang.hitch(this, function(){
 
 					var filter = {};
+					filter.keyword = ta_keyword.get('value');
 
 					var lr = parseFloat(select_log_ratio.get('value'));
 					var zs = parseFloat(select_z_score.get('value'));

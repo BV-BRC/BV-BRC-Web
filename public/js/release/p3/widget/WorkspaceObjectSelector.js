@@ -88,8 +88,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 			if(this.currentPathNode){
 				this.currentPathNode.innerHTML = "Folder: " + val;
 			}
-            this.cancelRefresh();
-            this.refreshWorkspaceItems();
+			this.cancelRefresh();
+			this.refreshWorkspaceItems();
 		},
 		_setTypeAttr: function(type){
 			if(!(type instanceof Array)){
@@ -99,8 +99,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 			if(this.grid){
 				this.grid.set('types', (["folder"].concat(this.type)));
 			}
-            this.cancelRefresh();
-            this.refreshWorkspaceItems();
+			this.cancelRefresh();
+			this.refreshWorkspaceItems();
 		},
 		_setValueAttr: function(value, refresh){
 			this.value = value;
@@ -357,11 +357,11 @@ define("p3/widget/WorkspaceObjectSelector", [
 			this.dialog.show();
 		},
 
-        cancelRefresh: function(){
-            if(this._refreshing){
-                delete this._refreshing;
-            }
-        },
+		cancelRefresh: function(){
+			if(this._refreshing){
+				delete this._refreshing;
+			}
+		},
 
 		refreshWorkspaceItems: function(){
 			if(this._refreshing){
@@ -371,7 +371,9 @@ define("p3/widget/WorkspaceObjectSelector", [
 				delete this._refreshing;
 
 				// sort by most recent
-				items.sort(function(a,b) { return b.timestamp - a.timestamp; });
+				items.sort(function(a, b){
+					return b.timestamp - a.timestamp;
+				});
 
 				var store = new Memory({data: items, idProperty: "path"});
 

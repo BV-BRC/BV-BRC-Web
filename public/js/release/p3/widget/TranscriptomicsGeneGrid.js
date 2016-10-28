@@ -43,6 +43,7 @@ define("p3/widget/TranscriptomicsGeneGrid", [
 
 				switch(key){
 					case "updateMainGridOrder":
+						this.set("sort", []);
 						this.store.arrange(value);
 						this.refresh();
 						break;
