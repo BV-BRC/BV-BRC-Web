@@ -51,7 +51,11 @@ redis-server
 npm start
 ```
 
+<<<<<<< HEAD
 Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.  
+=======
+Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.
+>>>>>>> patric_master
 
 
 ## Contributing

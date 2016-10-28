@@ -9401,7 +9401,7 @@ color:#fff;font-weight:600;background:#34698e;
 	overflow: auto;
 }
 .ItemTypeIcon {
-	width:64px; 
+	width:64px;
 	height: 64px;
 	margin:auto;
 	border: 1px solid gray;
@@ -9515,7 +9515,7 @@ th.dgrid-cell.wsItemType {
 	font-size: 1.1em;
 	display: inline-block;
 	text-align: center;
-	margin:1px;
+    margin: 1px 2px 1px 1px;
 	cursor: pointer;
 	width: 50px;
 	border-radius: 4px;
@@ -9536,7 +9536,7 @@ th.dgrid-cell.wsItemType {
 	vertical-align: bottom;
 	bottom: 2px;
 }
-.wsActionContainer { 
+.wsActionContainer {
 	float: right;
 }
 .ActionButtonWrapper .ActionButton.fa {
@@ -9648,11 +9648,10 @@ th.dgrid-cell.wsItemType {
 }
 .dataItemSelection {
 	font-size: .85em;
-	
 }
 .tip {
 	border: 2px dotted #aaa;
-	margin-top: 10px;	
+	margin-top: 10px;
 	vertical-align: top;
 	border-radius: 4px;
 	background: #fff;
@@ -9665,9 +9664,9 @@ th.dgrid-cell.wsItemType {
 	margin:4px;
 }
 .tipHeader > span {
-	cursor: default; 	
+	cursor: default;
     position: relative;
-    bottom: 4px;	
+    bottom: 4px;
 	font-size: 1em;
 	font-weight: 600;
 	margin: 4px;
@@ -10479,7 +10478,7 @@ div.appsublabel {
     font-weight: 600;
 }
 .patric .dgrid-row-odd {
-    background: #efefef;
+    background: #f5f5f5;
 }
 .patric .dgrid-selected{
     background: #bfd6eb;
@@ -11701,7 +11700,7 @@ table.p3basic td, th {
 table.striped tr:nth-child(odd) td,
 table.striped tr:nth-child(odd) th,
 table tr.even td {
-    background: #efefef;
+    background: #f5f5f5;
 }
 .claro .dijitDialog {
     perspective: 2000px;
@@ -12112,6 +12111,12 @@ table {
     box-shadow: none;
     padding-left: 0;
     margin-top: 12px;
+}
+.section-title-plain {
+    color: #666;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    font-size: 1.5em;
+    margin-right: 10px;
 }
 .menuHeader {
     padding-left: 4px;

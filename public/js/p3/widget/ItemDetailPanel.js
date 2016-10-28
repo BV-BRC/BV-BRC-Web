@@ -8,9 +8,9 @@ define([
 			Template, lang, formatter, domStyle,
 			WorkspaceManager, domConstruct, query, DataItemFormatter){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
-		"baseClass": "ItemDetailPanel",
-		"disabled": false,
-		"changeableTypes": {
+		baseClass: "ItemDetailPanel",
+		disabled: false,
+		changeableTypes: {
 			unspecified: {label: "unspecified", value: "unspecified"},
 			contigs: {label: "contigs", value: "contigs"},
 			reads: {label: "reads", value: "reads"},
@@ -24,7 +24,7 @@ define([
 
 		property_aliases: {
 			document_type: "type",
-			"organism_name": "name"
+			organism_name: "name"
 		},
 		_setContainerWidgetAttr: function(val){
 			// console.log("Set Container Widget: ", val);
@@ -51,7 +51,6 @@ define([
 			}));
 
 			this.watch("selection", lang.hitch(this, function(prop, oldVal, selection){
-				// console.log("ItemDetailPanel set selection: ", selection);
 
 				if(!selection || selection.length < 1){
 					// console.log("no selection set");
@@ -74,7 +73,6 @@ define([
 			}));
 
 			this.watch("item", lang.hitch(this, function(prop, oldVal, item){
-				// console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon, currentIcon)
 				// console.log("Container Widget: ", this.containerWidget);
 				if(item.type){
@@ -87,7 +85,7 @@ define([
 							domClass.add(_self.typeIcon, "fa icon-folder fa-2x")
 							currentIcon = "fa icon-folder fa-2x";
 							break;
-						//case "contigs": 
+						//case "contigs":
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
 						//	currentIcon="fa icon-folder fa-3x";
 						//	break;
@@ -146,9 +144,15 @@ define([
 							_self[key + "Node"].set('value', val);
 							_self[key + "Node"].set('displayedValue', val);
 							_self[key + "Node"].cancel();
+
 							if(this.changeableTypes.hasOwnProperty(val)){
+								// build change type dropdown
 								_self[key + "Node"].set('disabled', false);
 								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "underline");
+
+								domConstruct.place(' <i class="fa icon-caret-down" style="text-decoration: none;"></i>',
+									 _self[key + "Node"].domNode)
+
 								var type_options = [];
 								Object.keys(this.changeableTypes).forEach(function(change_type){
 									type_options.push(this.changeableTypes[change_type]);
@@ -216,9 +220,14 @@ define([
 			this.inherited(arguments);
 		},
 
-		saveType: function(val){
-			// console.log("onSaveType: ", val, this.item);
-			WorkspaceManager.updateMetadata(this.item.path, false, val);
+		saveType: function(val, val2){
+			// only update meta if value has changed
+			if (this.item.type == val) return;
+
+			WorkspaceManager.updateMetadata(this.item.path, false, val)
+				.then(function(meta) {
+					this.item = WorkspaceManager.metaListToObj(meta);
+				});
 		}
 	});
 });

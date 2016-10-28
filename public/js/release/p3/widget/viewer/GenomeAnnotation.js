@@ -75,7 +75,7 @@ define("p3/widget/viewer/GenomeAnnotation", [
 		},
 		refresh: function(){
 			if(this.data){
-				var jobHeader = '<div><div style="width:370px;" ><h3 style="color:#888;font-size:1.3em;font-weight:normal;" class="normal-case close2x"><span style="background:white" class="wrap">';
+				var jobHeader = '<div><h3 class="section-title-plain close2x">';
 				if(this.data.autoMeta && this.data.autoMeta.app){
 					jobHeader = jobHeader + this._appLabel + " ";
 				}
@@ -106,12 +106,14 @@ define("p3/widget/viewer/GenomeAnnotation", [
 
 				var result_output = [];
 				if(this._resultObjects){
-					result_output.push('<div style="display:inline-block;" ><h3 style="color:#888;font-size:1.3em;font-weight:normal;" class="normal-case close2x"><span class="wrap">Result Files</span></h3>');
+					result_output.push('<div><h3 class="section-title-plain close2x">Downloads</h3>');
 					result_output.push('<table class="p3basic striped far2x"><tbody>');
 					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>File size</th>')
 					var header_row = result_output.length - 1;
 					result_output.push('</tr>');
 					this._resultObjects.forEach(function(obj){
+						if (obj.name === "load_files") return;
+
 						result_output.push('<tr class="alt">');
 						result_output.push('<th scope="row"><i class="fa icon-download fa" rel="' + obj.path + "/" + obj.name + '" /></th>');
 						result_output.push('<td class="last">' + obj.name + "</td>");

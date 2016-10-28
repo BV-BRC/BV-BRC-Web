@@ -16643,8 +16643,9 @@ define([
 		},
 		updateMetadata: function(path, userMeta, type){
 			var data = [path, userMeta || {}, type || undefined];
-			return Deferred.when(this.api("Workspace.update_metadata", [{objects: [data]}]), function(){
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects: [data]}]), function(res){
 				Topic.publish("/refreshWorkspace", {});
+				return res[0][0];
 			});
 		},
 

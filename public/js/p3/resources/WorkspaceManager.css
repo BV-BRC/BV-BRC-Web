@@ -118,7 +118,7 @@ color:#fff;font-weight:600;background:#34698e;
 	overflow: auto;
 }
 .ItemTypeIcon {
-	width:64px; 
+	width:64px;
 	height: 64px;
 	margin:auto;
 	border: 1px solid gray;
@@ -253,7 +253,7 @@ th.dgrid-cell.wsItemType {
 	font-size: 1.1em;
 	display: inline-block;
 	text-align: center;
-	margin:1px;
+    margin: 1px 2px 1px 1px;
 	cursor: pointer;
 	width: 50px;
 	border-radius: 4px;
@@ -277,7 +277,7 @@ th.dgrid-cell.wsItemType {
 	bottom: 2px;
 }
 
-.wsActionContainer { 
+.wsActionContainer {
 	float: right;
 }
 
@@ -413,12 +413,11 @@ th.dgrid-cell.wsItemType {
 
 .dataItemSelection {
 	font-size: .85em;
-	
 }
 
 .tip {
 	border: 2px dotted #aaa;
-	margin-top: 10px;	
+	margin-top: 10px;
 	vertical-align: top;
 	border-radius: 4px;
 	background: #fff;
@@ -433,9 +432,9 @@ th.dgrid-cell.wsItemType {
 }
 
 .tipHeader > span {
-	cursor: default; 	
+	cursor: default;
     position: relative;
-    bottom: 4px;	
+    bottom: 4px;
 	font-size: 1em;
 	font-weight: 600;
 	margin: 4px;

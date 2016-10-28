@@ -1,7 +1,7 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 	<div >
-		<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'"></div>
+		<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'My Folder'"></div>
 	</div>
 		<div class="workingMessage messageContainer">
 			Creating new workspace ...
@@ -11,10 +11,10 @@
 			<div style="font-weight:900;font-size:1.1em;">Error Creating Folder:</div>
 			<p data-dojo-attach-point="errorMessage">Error</p>
 		</div>
-		
+
 		<div style="margin:4px;margin-top:8px;text-align:right;">
 			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
 			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Create Folder</div>
-		</div>	
+		</div>
 </form>
 
