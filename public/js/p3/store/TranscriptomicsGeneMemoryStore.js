@@ -8,7 +8,7 @@ define([
 			Memory, QueryResults,
 			ArrangeableMemoryStore, WorkspaceManager){
 
-	var tgState = {
+	var tgStateDefault = {
 		heatmapAxis: '',
 		comparisonIds: [],
 		comparisonFilterStatus: {},
@@ -29,7 +29,8 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "feature_id",
 		state: null,
-		tgState: tgState,
+		state_search: null,
+		tgState: null,
 
 		constructor: function(options){
 			this._loaded = false;
@@ -227,6 +228,22 @@ define([
 					def.resolve(true);
 				}), 0);
 				return def.promise;
+			}
+
+			// check state.search to reset tgState
+			// console.log(this.state.search, ",", this.state_search, ", resetting?", (this.state.search !== this.state_search));
+			if(this.state.search !== this.state_search){
+				this._loaded = false;
+				this.tgState = lang.mixin(this.tgState, {}, tgStateDefault);
+				this.tgState.comparisonFilterStatus = {};
+				delete this.tgState.wsExpIds;
+				delete this.tgState.wsComaprisons;
+				delete this.tgState.query;
+				delete this.tgState.pbExpIds;
+				delete this.tgState.pbComparisons;
+				this._filtered = undefined;
+				delete this._loadingDeferred;
+				this.state_search = this.state.search;
 			}
 
 			var params = this.state.search.split('&');
