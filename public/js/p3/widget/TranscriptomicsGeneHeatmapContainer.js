@@ -546,6 +546,45 @@ define([
 			}
 			return originalAxis;
 		},
+		// override exportCurrentData in order to cluster on read value instead of heatmap value
+		exportCurrentData: function(isTransposed){
+			// compose heatmap raw data in tab delimited format
+			// this de-transpose (if it is transposed) so that cluster algorithm can be applied to a specific data type
+
+			var cols, rows, id_field_name, data_field_name, tablePass = [], header = [''], readValues = [];
+
+			if(isTransposed){
+				cols = this.currentData.rows;
+				rows = this.currentData.columns;
+				id_field_name = 'rowID';
+				data_field_name = 'colID';
+			}else{
+				cols = this.currentData.columns;
+				rows = this.currentData.rows;
+				id_field_name = 'colID';
+				data_field_name = 'rowID';
+			}
+
+			cols.forEach(function(col, colIdx){
+				header.push(col[id_field_name]);
+				readValues[colIdx] = col.meta.labels.split('|');
+			});
+
+			tablePass.push(header.join('\t'));
+
+			for(var i = 0, iLen = rows.length; i < iLen; i++){
+				var r = [];
+				r.push(rows[i][data_field_name]);
+
+				for(var j = 0, jLen = cols.length; j < jLen; j++){
+					r.push(readValues[j][i] || 0);
+				}
+
+				tablePass.push(r.join('\t'));
+			}
+
+			return tablePass.join('\n');
+		},
 		cluster: function(param){
 
 			// console.log("cluster is called", param);
