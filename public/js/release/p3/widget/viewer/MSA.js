@@ -6,7 +6,7 @@ define("p3/widget/viewer/MSA", [
 	"../ActionBar", "../FilterContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
 	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup",
-    "dijit/Dialog", "../ItemDetailPanel", "dojo/query", "FileSaver"
+	"dijit/Dialog", "../ItemDetailPanel", "dojo/query", "FileSaver"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
@@ -14,113 +14,110 @@ define("p3/widget/viewer/MSA", [
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
 			MenuItem, TooltipDialog, popup,
-            SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs){
+			SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs){
 
-        var schemes = [{
-            name: "Zappo", id: "zappo"
-        },
-        {
-            name: "Taylor",
-            id: "taylor"
-        },
-        {
-            name: "Hydrophobicity",
-            id: "hydro"
-        },
-        {
-            name: "Lesk",
-            id: "lesk"
-        },
-        {
-            name: "Cinema",
-            id: "cinema"
-        },
-        {
-            name: "MAE",
-            id: "mae"
-        },
-        {
-            name: "Clustal",
-            id: "clustal"
-        },
-        {
-            name: "Clustal2",
-            id: "clustal2"
-        },
-        {
-            name: "Turn",
-            id: "turn"
-        },
-        {
-            name: "Strand",
-            id: "strand"
-        },
-        {
-            name: "Buried",
-            id: "buried"
-        },
-        {
-            name: "Helix",
-            id: "helix"
-        },
-        {
-            name: "Nucleotide",
-            id: "nucleotide"
-        },
-        {
-            name: "Purine",
-            id: "purine"
-        },
-        {
-            name: "PID",
-            id: "pid"
-        },
-        {
-            name: "No color",
-            id: "foo"
-        }];
+	var schemes = [{
+		name: "Zappo", id: "zappo"
+	},
+		{
+			name: "Taylor",
+			id: "taylor"
+		},
+		{
+			name: "Hydrophobicity",
+			id: "hydro"
+		},
+		{
+			name: "Lesk",
+			id: "lesk"
+		},
+		{
+			name: "Cinema",
+			id: "cinema"
+		},
+		{
+			name: "MAE",
+			id: "mae"
+		},
+		{
+			name: "Clustal",
+			id: "clustal"
+		},
+		{
+			name: "Clustal2",
+			id: "clustal2"
+		},
+		{
+			name: "Turn",
+			id: "turn"
+		},
+		{
+			name: "Strand",
+			id: "strand"
+		},
+		{
+			name: "Buried",
+			id: "buried"
+		},
+		{
+			name: "Helix",
+			id: "helix"
+		},
+		{
+			name: "Nucleotide",
+			id: "nucleotide"
+		},
+		{
+			name: "Purine",
+			id: "purine"
+		},
+		{
+			name: "PID",
+			id: "pid"
+		},
+		{
+			name: "No color",
+			id: "foo"
+		}];
 
-        //var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
-        //noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
-        //m.addView("menu", defMenu);
+	//var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
+	//noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
+	//m.addView("menu", defMenu);
 
-        //this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
-        var colorMenuDivs = [];
+	//this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
+	var colorMenuDivs = [];
 
-        schemes.forEach(lang.hitch(this, function(scheme){
-            colorMenuDivs.push('<div class="wsActionTooltip"  rel="'+scheme.id+'">'+scheme.name+'</div>');
-        }));
+	schemes.forEach(lang.hitch(this, function(scheme){
+		colorMenuDivs.push('<div class="wsActionTooltip"  rel="' + scheme.id + '">' + scheme.name + '</div>');
+	}));
 
-        var colorMenu = new TooltipDialog({
-            content: colorMenuDivs.join(""),
-            onMouseLeave:function(){
-                popup.close(colorMenu);
-            }
-        });
+	var colorMenu = new TooltipDialog({
+		content: colorMenuDivs.join(""),
+		onMouseLeave: function(){
+			popup.close(colorMenu);
+		}
+	});
 
+	var infoMenu = new TooltipDialog({
+		content: "<div> Create groups and download sequences by making a selection in the tree on the left.</div>",
+		onMouseLeave: function(){
+			popup.close(infoMenu);
+		}
+	});
 
-        var infoMenu = new TooltipDialog({
-            content: "<div> Create groups and download sequences by making a selection in the tree on the left.</div>",
-            onMouseLeave:function(){
-                popup.close(infoMenu);
-            }
-        });
-		
+	var idMenu = new TooltipDialog({
+		content: "",
+		onMouseLeave: function(){
+			popup.close(idMenu);
+		}
+	});
 
-        var idMenu = new TooltipDialog({
-            content: "",
-            onMouseLeave:function(){
-                popup.close(idMenu);
-            }
-        });
-
-
-        var snapMenu = new TooltipDialog({
-            content: "",
-            onMouseLeave:function(){
-                popup.close(snapMenu);
-            }
-        });
+	var snapMenu = new TooltipDialog({
+		content: "",
+		onMouseLeave: function(){
+			popup.close(snapMenu);
+		}
+	});
 
 	return declare([Base], {
 		"baseClass": "Phylogeny",
@@ -129,12 +126,12 @@ define("p3/widget/viewer/MSA", [
 		"loading": false,
 		data: null,
 		dataMap: {},
-		dataStats: {"_formatterType":"msa_details"},
+		dataStats: {"_formatterType": "msa_details"},
 		tree: null,
 		phylogram: false,
 		maxSequences: 500,
-        numSequences: 0,
-        selection: null,
+		numSequences: 0,
+		selection: null,
 		onSetLoading: function(attr, oldVal, loading){
 			if(loading){
 				this.contentPane.set("content", "<div>Performing Multiple Sequence Alignment. Please Wait...</div>");
@@ -158,7 +155,7 @@ define("p3/widget/viewer/MSA", [
 				console.log("Check Res: ", res.response.numFound)
 				if(res && res.response && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
 					console.log("  Amount OK")
-                    this.numSequences = res.response.numFound;
+					this.numSequences = res.response.numFound;
 					def.resolve(res.response.numFound);
 					return;
 				}
@@ -192,56 +189,56 @@ define("p3/widget/viewer/MSA", [
 			this.render();
 		},
 
-        onSelection: function(){
+		onSelection: function(){
 
-            var cur = this.selection.map(lang.hitch(this, function(selected){
-                return this.dataMap[selected.id];
-            }));
-            this.selectionActionBar._setSelectionAttr(cur);
-        },
+			var cur = this.selection.map(lang.hitch(this, function(selected){
+				return this.dataMap[selected.id];
+			}));
+			this.selectionActionBar._setSelectionAttr(cur);
+		},
 
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
-            this.alt_labels={"genome_name":{},"patric_id":{}};
-            this.dataStats["idType"]=null;
-            this.dataStats["numFeatures"]=0;
-            this.dataStats["numOrganisms"]=0;
-            this.dataStats["minLength"]=1000000;
-            this.dataStats["maxLength"]=0;
-            this.dataStats["genomeIDs"]={};
+			this.alt_labels = {"genome_name": {}, "patric_id": {}};
+			this.dataStats["idType"] = null;
+			this.dataStats["numFeatures"] = 0;
+			this.dataStats["numOrganisms"] = 0;
+			this.dataStats["minLength"] = 1000000;
+			this.dataStats["maxLength"] = 0;
+			this.dataStats["genomeIDs"] = {};
 			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
 					var match;
 					var headerInfo = regex.exec(line);
-                    var record ={sequence:[]};
+					var record = {sequence: []};
 					if(!(headerInfo[1] in this.dataMap)){
 						geneID = headerInfo[1];
 						clustal.push(geneID + "\t");
-                        this.dataStats["numFeatures"]+=1;
-                        if (geneID.startsWith("fig|")){
-                            record["patric_id"]=geneID;
-                            if (this.dataStats["idType"] == null){
-                                this.dataStats["idType"]="patric_id";
-                            }
+						this.dataStats["numFeatures"] += 1;
+						if(geneID.startsWith("fig|")){
+							record["patric_id"] = geneID;
+							if(this.dataStats["idType"] == null){
+								this.dataStats["idType"] = "patric_id";
+							}
 
-                        }
-                        else {
-                            record["feature_id"]=geneID;
-                            if (this.dataStats["idType"] == null){
-                                this.dataStats["idType"]="feature_id";
-                            }
-                        }
-                        record["genome_name"]=this.data.map[headerInfo[2]];
-                        record["genome_id"]=headerInfo[2];
-                        if (!(headerInfo[2] in this.dataStats["genomeIDs"])){
-                            this.dataStats["genomeIDs"][headerInfo[2]]=1;
-                            this.dataStats["numOrganisms"] += 1;
-                        }
+						}
+						else{
+							record["feature_id"] = geneID;
+							if(this.dataStats["idType"] == null){
+								this.dataStats["idType"] = "feature_id";
+							}
+						}
+						record["genome_name"] = this.data.map[headerInfo[2]];
+						record["genome_id"] = headerInfo[2];
+						if(!(headerInfo[2] in this.dataStats["genomeIDs"])){
+							this.dataStats["genomeIDs"][headerInfo[2]] = 1;
+							this.dataStats["numOrganisms"] += 1;
+						}
 						this.dataMap[geneID] = record;
-                        this.alt_labels["genome_name"][geneID]=this.data.map[geneID]["genome_name"];
-                        this.alt_labels["patric_id"][geneID]=this.data.map[geneID]["patric_id"];
+						this.alt_labels["genome_name"][geneID] = this.data.map[geneID]["genome_name"];
+						this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
 					}
 				}
 				else if(line.trim() != "" && geneID in this.dataMap){
@@ -252,24 +249,21 @@ define("p3/widget/viewer/MSA", [
 					geneID = null;
 				}
 			}, this);
-            Object.keys(this.data.map).forEach(lang.hitch(this, function(geneID){
-                if (this.data.map[geneID].aa_length > this.dataStats["maxLength"]){
-                    this.dataStats["maxLength"]=this.data.map[geneID].aa_length;
-                }
-                if (this.data.map[geneID].aa_length < this.dataStats["minLength"]){
-                    this.dataStats["minLength"]=this.data.map[geneID].aa_length;
-                }
-            }));
+			Object.keys(this.data.map).forEach(lang.hitch(this, function(geneID){
+				if(this.data.map[geneID].aa_length > this.dataStats["maxLength"]){
+					this.dataStats["maxLength"] = this.data.map[geneID].aa_length;
+				}
+				if(this.data.map[geneID].aa_length < this.dataStats["minLength"]){
+					this.dataStats["minLength"] = this.data.map[geneID].aa_length;
+				}
+			}));
 			this.dataStats.clustal = clustal.join("\n");
-                    
+
 		},
 
 		createViewerData: function(){
 			results = {};
 		},
-
-
-
 
 		render: function(){
 			this.contentPane.set("content", "");
@@ -321,7 +315,7 @@ define("p3/widget/viewer/MSA", [
 				menuFontsize: "12px",
 				autoResize: true,
 				labelNameLength: 150,
-				alignmentHeight: 14.04*this.numSequences,
+				alignmentHeight: 14.04 * this.numSequences,
 				//alignmentWidth: msa_models.seqs[0].seq.length*15.1,
 				residueFont: "12",
 				rowHeight: 14.04
@@ -330,22 +324,21 @@ define("p3/widget/viewer/MSA", [
 			// init msa
 			var m = new msa.msa(opts);
 
-			this.tree = new d3Tree({selectionTarget:this});
+			this.tree = new d3Tree({selectionTarget: this});
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
 			this.tree.setTree(this.data.tree);
 			//this.tree.setTree(this.data.tree);
-            
-            var idMenuDivs=[];
-            this.tree.addLabels(this.alt_labels["genome_name"], "Organism Names");
-            idMenuDivs.push('<div class="wsActionTooltip" rel="'+"Organism Names"+'">'+"Organism Names"+'</div>');
-            this.tree.addLabels(this.alt_labels["patric_id"], "PATRIC ID");
-            idMenuDivs.push('<div class="wsActionTooltip" rel="'+"PATRIC ID"+'">'+"PATRIC ID"+'</div>');
-            idMenu.set("content",idMenuDivs.join(""));
 
+			var idMenuDivs = [];
+			this.tree.addLabels(this.alt_labels["genome_name"], "Organism Names");
+			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Organism Names" + '">' + "Organism Names" + '</div>');
+			this.tree.addLabels(this.alt_labels["patric_id"], "PATRIC ID");
+			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "PATRIC ID" + '">' + "PATRIC ID" + '</div>');
+			idMenu.set("content", idMenuDivs.join(""));
 
-            this.tree.startup();
-            this.tree.selectLabels("Organism Names");
-            this.tree.update();
+			this.tree.startup();
+			this.tree.selectLabels("Organism Names");
+			this.tree.update();
 
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
@@ -354,70 +347,65 @@ define("p3/widget/viewer/MSA", [
 			menuOpts.msa = m;
 			var defMenu = new msa.menu.defaultmenu(menuOpts);
 
+			on(colorMenu.domNode, "click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				var sel = colorMenu.selection;
+				delete colorMenu.selection;
+				var idType;
 
+				var ids = sel.map(function(d, idx){
+					if(!idType){
+						if(d['feature_id']){
+							idType = "feature_id";
+						}else if(d['patric_id']){
+							idType = "patric_id"
+						}else if(d['alt_locus_tag']){
+							idType = "alt_locus_tag";
+						}
+						// console.log("SET ID TYPE TO: ", idType)
+					}
 
-            on(colorMenu.domNode, "click", function(evt){
-                var rel = evt.target.attributes.rel.value;
-                var sel = colorMenu.selection;
-                delete colorMenu.selection;
-                var idType;
+					return d[idType];
+				});
+				m.g.colorscheme.set("scheme", rel)
+				popup.close(colorMenu);
+			});
 
-                var ids = sel.map(function(d, idx){
-                    if(!idType){
-                        if(d['feature_id']){
-                            idType = "feature_id";
-                        }else if(d['patric_id']){
-                            idType = "patric_id"
-                        }else if(d['alt_locus_tag']){
-                            idType = "alt_locus_tag";
-                        }
-                        // console.log("SET ID TYPE TO: ", idType)
-                    }
+			on(idMenu.domNode, "click", lang.hitch(this, function(evt){
+				var rel = evt.target.attributes.rel.value;
+				var sel = idMenu.selection;
+				delete idMenu.selection;
 
-                    return d[idType];
-                });
-                m.g.colorscheme.set("scheme", rel)
-                popup.close(colorMenu);
-            });
+				this.tree.selectLabels(rel);
+				popup.close(idMenu);
+			}));
 
-
-            on(idMenu.domNode, "click", lang.hitch(this, function(evt){
-                var rel = evt.target.attributes.rel.value;
-                var sel = idMenu.selection;
-                delete idMenu.selection;
-
-			    this.tree.selectLabels(rel);
-                popup.close(idMenu);
-            }));
-
-
-            on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
-                var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value: null;
-                var sel = snapMenu.selection;
-                delete snapMenu.selection;
-                if (rel == "msa"){ 
-                    msa.utils.export.saveAsImg(m,"patric_msa.png");
-                }
-                else if (rel == "msa-txt"){
-                    saveAs(new Blob([this.dataStats.clustal]), "msa_patric.txt");
-                }
-                else if (rel == "tree-svg"){
-                    saveAs(new Blob([query("svg")[0].outerHTML]), "msa_tree.svg");
-                }
-                else if (rel == "tree-newick"){
-                    saveAs(new Blob([this.data.tree]), "msa_tree.nwk");
-                }
-                popup.close(snapMenu);
-            }));
-
+			on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
+				var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
+				var sel = snapMenu.selection;
+				delete snapMenu.selection;
+				if(rel == "msa"){
+					msa.utils.export.saveAsImg(m, "patric_msa.png");
+				}
+				else if(rel == "msa-txt"){
+					saveAs(new Blob([this.dataStats.clustal]), "msa_patric.txt");
+				}
+				else if(rel == "tree-svg"){
+					saveAs(new Blob([query("svg")[0].outerHTML]), "msa_tree.svg");
+				}
+				else if(rel == "tree-newick"){
+					saveAs(new Blob([this.data.tree]), "msa_tree.nwk");
+				}
+				popup.close(snapMenu);
+			}));
 
 			//var groupButton = new DropDownButton({
 			//	name: "groupButton",
 			//	label: "Add Group",
 			//	dropDown: groupMenu
 			//}, idMenuDom).startup();
-			
-            //this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
+
+			//this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
 			m.render();
 			//var msaDiv2=document.getElementsByClassName("biojs_msa_seqblock")[0];
 			//var ctx = msaDiv2.getContext("2d");
@@ -461,7 +449,7 @@ define("p3/widget/viewer/MSA", [
 			console.log("doAlignment()");
 			this.set('loading', true);
 			if(this.state && this.state.search){
-				var q = this.state.search+ "&limit("+this.maxSequences+")";
+				var q = this.state.search + "&limit(" + this.maxSequences + ")";
 
 				console.log("RUN MSA Against: ", q)
 				return when(window.App.api.data("multipleSequenceAlignment", [q]), lang.hitch(this, function(res){
@@ -473,7 +461,7 @@ define("p3/widget/viewer/MSA", [
 
 		},
 		postCreate: function(){
-            this.inherited(arguments);
+			this.inherited(arguments);
 			this.contentPane = new ContentPane({"region": "center"});
 			this.addChild(this.contentPane)
 			this.selectionActionBar = new ActionBar({
@@ -491,60 +479,59 @@ define("p3/widget/viewer/MSA", [
 			});
 			this.addChild(this.selectionActionBar);
 			//this.addChild(this.itemDetailPanel);
-            this.itemDetailPanel.startup();
-            this.setupActions();
+			this.itemDetailPanel.startup();
+			this.setupActions();
 		},
 
-
 		selectionActions: [
-            [
-                "ToggleItemDetail",
-                "fa icon-chevron-circle-left fa-2x",
-                {
-                        label: "DETAILS",
-                        persistent: true,
-                        validTypes: ["*"],
-                        tooltip: "Toggle Details Pane"
-                },
-                function(selection,container,button){
-                        // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+			[
+				"ToggleItemDetail",
+				"fa icon-chevron-circle-left fa-2x",
+				{
+					label: "DETAILS",
+					persistent: true,
+					validTypes: ["*"],
+					tooltip: "Toggle Details Pane"
+				},
+				function(selection, container, button){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
-                        var children = this.getChildren();
-                        // console.log("Children: ", children);
-                        if(children.some(function(child){
-                                        return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
-                                }, this)){
-                                // console.log("Remove Item Detail Panel");
-                                this.removeChild(this.itemDetailPanel);
-                                console.log("Button Node: ", button)
+					var children = this.getChildren();
+					// console.log("Children: ", children);
+					if(children.some(function(child){
+							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
+						}, this)){
+						// console.log("Remove Item Detail Panel");
+						this.removeChild(this.itemDetailPanel);
+						console.log("Button Node: ", button)
 
-                                query(".ActionButtonText",button).forEach(function(node){
-                                        node.innerHTML="DETAILS";
-                                })
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "DETAILS";
+						})
 
-                                query(".ActionButton",button).forEach(function(node){
-                                        console.log("ActionButtonNode: ",node)
-                                        domClass.remove(node, "icon-chevron-circle-right");
-                                        domClass.add(node, "icon-chevron-circle-left");
-                                })
-                        }
-                        else{
-                                // console.log("Re-add child: ", this.itemDetailPanel);
-                                this.addChild(this.itemDetailPanel);
+						query(".ActionButton", button).forEach(function(node){
+							console.log("ActionButtonNode: ", node)
+							domClass.remove(node, "icon-chevron-circle-right");
+							domClass.add(node, "icon-chevron-circle-left");
+						})
+					}
+					else{
+						// console.log("Re-add child: ", this.itemDetailPanel);
+						this.addChild(this.itemDetailPanel);
 
-                                query(".ActionButtonText",button).forEach(function(node){
-                                        node.innerHTML="HIDE";
-                                })
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "HIDE";
+						})
 
-                                query(".ActionButton",button).forEach(function(node){
-                                        console.log("ActionButtonNode: ",node)
-                                        domClass.remove(node, "icon-chevron-circle-left");
-                                        domClass.add(node, "icon-chevron-circle-right");
-                                })
-                        }
-                },
-                true
-            ],
+						query(".ActionButton", button).forEach(function(node){
+							console.log("ActionButtonNode: ", node)
+							domClass.remove(node, "icon-chevron-circle-left");
+							domClass.add(node, "icon-chevron-circle-right");
+						})
+					}
+				},
+				true
+			],
 			[
 				"ColorSelection",
 				"fa icon-paint-brush fa-2x",
@@ -552,10 +539,10 @@ define("p3/widget/viewer/MSA", [
 					label: "COLORS",
 					persistent: true,
 					validTypes: ["*"],
-                    validContainerTypes:["*"],
+					validContainerTypes: ["*"],
 					tooltip: "Selection Color",
-                    tooltipDialog: colorMenu,
-                    ignoreDataType: true
+					tooltipDialog: colorMenu,
+					ignoreDataType: true
 				},
 				function(selection){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
@@ -577,10 +564,10 @@ define("p3/widget/viewer/MSA", [
 					label: "ID TYPE",
 					persistent: true,
 					validTypes: ["*"],
-                    validContainerTypes:["*"],
+					validContainerTypes: ["*"],
 					tooltip: "Set ID Type",
-                    tooltipDialog: idMenu,
-                    ignoreDataType: true
+					tooltipDialog: idMenu,
+					ignoreDataType: true
 				},
 				function(selection){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
@@ -595,7 +582,7 @@ define("p3/widget/viewer/MSA", [
 				},
 				true
 			],
-            [
+			[
 				"AddGroup",
 				"fa icon-object-group fa-2x",
 				{
@@ -604,7 +591,7 @@ define("p3/widget/viewer/MSA", [
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-                    validContainerTypes:["*"]
+					validContainerTypes: ["*"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
@@ -618,8 +605,8 @@ define("p3/widget/viewer/MSA", [
 					var stg = new SelectionToGroup({
 						selection: selection,
 						type: type,
-                        inputType: "feature_data",
-                        idType: this.dataStats.idType, 
+						inputType: "feature_data",
+						idType: this.dataStats.idType,
 						path: null //set by type
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -641,49 +628,48 @@ define("p3/widget/viewer/MSA", [
 					label: "DWNLD",
 					persistent: true,
 					validTypes: ["*"],
-                    validContainerTypes:["*"],
+					validContainerTypes: ["*"],
 					tooltip: "Save an image",
-                    tooltipDialog: snapMenu,
-                    ignoreDataType: true
+					tooltipDialog: snapMenu,
+					ignoreDataType: true
 				},
 				function(selection){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
-                    var snapMenuDivs=[];
-                    snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
-                    /*var encodedTree = window.btoa(unescape(encodeURIComponent(Query("svg")[0].outerHTML)));
+					var snapMenuDivs = [];
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
+					/*var encodedTree = window.btoa(unescape(encodeURIComponent(Query("svg")[0].outerHTML)));
 
-                    var e = domConstruct.create("a", {
-                        download: "MSATree.svg",
-                        href: "data:image/svg+xml;base64,\n" + encodedTree,
-                        style: {"text-decoration": "none", color: "black"},
-                        innerHTML: "Tree svg",
-                        alt: "ExportedMSATree.svg"
-                    });
+					var e = domConstruct.create("a", {
+						download: "MSATree.svg",
+						href: "data:image/svg+xml;base64,\n" + encodedTree,
+						style: {"text-decoration": "none", color: "black"},
+						innerHTML: "Tree svg",
+						alt: "ExportedMSATree.svg"
+					});
 
-                    var clustalData = window.btoa(this.dataMap.clustal);
-                    var clustalLink =domConstruct.create("a", {
-                        download: "msa_patric.txt",
-                        href: "data:text/plain;base64,\n" + clustalData,
-                        style: {"text-decoration": "none", color: "black"},
-                        innerHTML: "MSA txt",
-                        alt: "export_msa.txt"
-                    });
+					var clustalData = window.btoa(this.dataMap.clustal);
+					var clustalLink =domConstruct.create("a", {
+						download: "msa_patric.txt",
+						href: "data:text/plain;base64,\n" + clustalData,
+						style: {"text-decoration": "none", color: "black"},
+						innerHTML: "MSA txt",
+						alt: "export_msa.txt"
+					});
 
-                    var treeData = window.btoa(this.data.tree);
-                    var newickLink =domConstruct.create("a", {
-                        download: "tree_newick.txt",
-                        href: "data:text/plain;base64,\n" + treeData,
-                        style: {"text-decoration": "none", color: "black"},
-                        innerHTML: "Tree newick",
-                        alt: "tree_newick.txt"
-                    });*/
-                    snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">'+"MSA txt"+'</div>');
-                    snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">'+"Tree svg"+'</div>');
-                    snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">'+"Tree newick"+'</div>');
+					var treeData = window.btoa(this.data.tree);
+					var newickLink =domConstruct.create("a", {
+						download: "tree_newick.txt",
+						href: "data:text/plain;base64,\n" + treeData,
+						style: {"text-decoration": "none", color: "black"},
+						innerHTML: "Tree newick",
+						alt: "tree_newick.txt"
+					});*/
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">' + "MSA txt" + '</div>');
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + "Tree svg" + '</div>');
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + "Tree newick" + '</div>');
 
-
-                    snapMenu.set("content",snapMenuDivs.join(""));
+					snapMenu.set("content", snapMenuDivs.join(""));
 					snapMenu.selection = selection;
 					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
@@ -694,7 +680,7 @@ define("p3/widget/viewer/MSA", [
 				},
 				true
 			]
-        ],
+		],
 
 		setupActions: function(){
 			if(this.containerActionBar){
@@ -717,8 +703,6 @@ define("p3/widget/viewer/MSA", [
 			this.watch("loading", lang.hitch(this, "onSetLoading"));
 			this.watch("data", lang.hitch(this, "onSetData"));
 			this.watch("selection", lang.hitch(this, "onSelection"));
-
-
 
 			this.inherited(arguments);
 		}

@@ -17,6 +17,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 		significantGenes: 'Y',
 		colorScheme: 'rgb',
 		maxIntensity: 0,
+		keyword: '',
 		upFold: 0,
 		downFold: 0,
 		upZscore: 0,
@@ -69,10 +70,12 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			var newData = [];
 			var gfs = tgState.comparisonFilterStatus;
 
-			var tsStart = window.performance.now();
+			// var tsStart = window.performance.now();
+			var keywordRegex = tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+
 			data.forEach(function(gene){
 
-				var pass = false;
+				var skip = true;
 				var up_r = 0, down_r = 0, total_samples = 0;
 
 				// comparisons
@@ -81,24 +84,24 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					var index = gfs[comparisonId].getIndex();
 					var status = gfs[comparisonId].getStatus();
 					var comparison = gene.samples[comparisonId];
-					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.dist, parseInt(gene.dist.substr(index * 2, 2), 16));
+					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.sample_binary, parseInt(gene.sample_binary.substr(index * 1, 1), 16));
 
 					var expression = gene.sample_binary.substr(index, 1);
 					if(expression === '1'){
 						if(status != 2){
-							pass = self._thresholdFilter(comparison, tgState, status);
-							if(!pass){
+							skip = !self._thresholdFilter(comparison, tgState, status);
+							if(skip){
 								break;
 							}
 						}else{
 							// status == 2, don't care
-							if(!pass){
-								pass = self._thresholdFilter(comparison, tgState, status)
+							if(skip){
+								skip = !self._thresholdFilter(comparison, tgState, status)
 							}
 						}
 					}else{
 						if(status != 2){
-							pass = false;
+							skip = true;
 							break;
 						}
 					}
@@ -117,15 +120,25 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					}
 				}
 
+				if(!skip && tgState.keyword !== ''){
+					skip = !keywordRegex.some(function(needle){
+						return needle && (gene.product.toLowerCase().indexOf(needle) >= 0
+							|| gene.patric_id.toLowerCase().indexOf(needle) >= 0
+							|| gene.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
+					});
+				}
+
 				gene.up = up_r;
 				gene.down = down_r;
 				gene.sample_size = total_samples;
 
-				if(pass){
+				if(!skip){
 					newData.push(gene);
 				}
 			});
-			console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
+
+			// console.log("after conditionFilter: ", newData.length);
+			// console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
 			self.set("refresh");
@@ -217,26 +230,32 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			}
 
 			var params = this.state.search.split('&');
-			var wsExperiments = params.filter(function(s){ return s.match(/wsExpId=.*/) });
-			var wsComparisons = params.filter(function(s){ return s.match(/wsComparisonId=.*/) });
+			var wsExperiments = params.filter(function(s){
+				return s.match(/wsExpId=.*/)
+			});
+			var wsComparisons = params.filter(function(s){
+				return s.match(/wsComparisonId=.*/)
+			});
 			var wsExpIds, wsComparisonIds;
 			if(wsExperiments.length > 0){
-				wsExpIds = wsExperiments[0].replace('wsExpId=','').split(',');
+				wsExpIds = wsExperiments[0].replace('wsExpId=', '').split(',');
 			}
 			if(wsComparisons.length > 0){
-				wsComparisonIds = wsComparisons[0].replace('wsComparisonId=','').split(',');
+				wsComparisonIds = wsComparisons[0].replace('wsComparisonId=', '').split(',');
 			}
 
 			// console.log(this.state.search, "wsExpIds: ", wsExpIds, "wsComparisonIds: ", wsComparisonIds);
 
-			if(wsExpIds){
+			var wsRequest = new Deferred();
 
-				var wsRequest = when(WorkspaceManager.getObjects(wsExpIds, true), function(data){
+			if(wsExpIds){
+				wsRequest = when(WorkspaceManager.getObjects(wsExpIds, true), function(data){
 
 					var fileList = data.map(function(obj){
 						var files = {};
 						obj.autoMeta.output_files.forEach(function(arr){
-							var d = arr[0];
+							// console.log(typeof arr, arr);
+							var d = (arr instanceof Array) ? arr[0] : arr;
 							var file = d.substr(d.lastIndexOf('/') + 1);
 							var type = file.split('.')[0];
 							files[type] = d;
@@ -248,7 +267,8 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					var comparisonFiles = fileList.map(function(obj){
 						return obj.files.sample;
 					});
-					var comparisonsReq = when(WorkspaceManager.getObjects(comparisonFiles, false), function(results){
+
+					return when(WorkspaceManager.getObjects(comparisonFiles, false), function(results){
 						return results.map(function(d){
 							if(!wsComparisonIds){
 								return JSON.parse(d.data)['sample'];
@@ -260,390 +280,105 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 							}
 						});
 					});
-					var expressionFiles = fileList.map(function(obj){
-						return obj.files.expression;
-					});
-					var expressionsReq = when(WorkspaceManager.getObjects(expressionFiles, false), function(results){
-						return results.map(function(d){
-							if(!wsComparisonIds){
-								return JSON.parse(d.data)['expression']
-							}else{
-								return JSON.parse(d.data)['expression'].filter(function(e){
-									return wsComparisonIds.indexOf(e.pid) >= 0;
-								})
-							}
-						});
-					});
-
-					return when(All([comparisonsReq, expressionsReq]), function(results){
-						var comparisons = [].concat.apply([], results[0]);
-						var expressions = [].concat.apply([], results[1]);
-
-						return {comparisons: comparisons, expressions: expressions};
-					});
 				});
-
-				this._loadingDeferred = when(wsRequest, function(response){
-
-					// console.log(response);
-
-					var comparisons = response.comparisons;
-					var expressions = response.expressions;
-
-					var comparisonIdList = comparisons.map(function(d){
-						return d.pid;
-					});
-
-					_self.tgState.comparisonIds = comparisonIdList;
-					comparisons.forEach(function(comparison, idx){
-						var cfs = new FilterStatus();
-						cfs.init(idx, comparison.expname);
-						_self.tgState.comparisonFilterStatus[comparison.pid.toString()] = cfs;
-					});
-					Topic.publish("TranscriptomicsGene", "updateTgState", _self.tgState);
-					Topic.publish("TranscriptomicsGene", "updateFilterGrid", comparisons);
-
-					// copied from public case //
-					var p3FeatureIdSet = {};
-					var p2FeatureIdSet = {};
-
-					expressions.forEach(function(expression){
-						if(expression.hasOwnProperty('feature_id')){
-							if(!p3FeatureIdSet.hasOwnProperty(expression.feature_id)){
-								p3FeatureIdSet[expression.feature_id] = true;
-							}
-						}else if(expression.hasOwnProperty('na_feature_id')){
-							if(!p2FeatureIdSet.hasOwnProperty(expression.na_feature_id)){
-								p2FeatureIdSet[expression.na_feature_id] = true;
-							}
-						}
-					});
-
-					var p3FeatureIdList = Object.keys(p3FeatureIdSet);
-					var p2FeatureIdList = Object.keys(p2FeatureIdSet);
-
-					// console.log("p3FeatureIdList:", p3FeatureIdList.length, "p2FeatureIdList:", p2FeatureIdList.length);
-
-					return when(request.post(_self.apiServer + '/genome_feature/', {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/json",
-							'Content-Type': "application/solrquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-						},
-						data: {
-							q: (p3FeatureIdList.length > 0) ? 'feature_id:(' + p3FeatureIdList.join(' OR ') + ')' : ''
-							+ (p3FeatureIdList.length > 0 && p2FeatureIdList.length > 0) ? ' OR ' : ''
-							+ (p2FeatureIdList.length > 0) ? 'p2_feature_id:(' + p2FeatureIdList.join(' OR ') + ')' : '',
-							fl: 'feature_id,p2_feature_id,strand,product,accession,start,end,patric_id,alt_locus_tag,genome_name,gene',
-
-							rows: (p3FeatureIdList.length + p2FeatureIdList.length)
-						}
-					}), function(features){
-						// var features = response.response.docs;
-						// console.warn("features: ", features);
-
-						var expressionHash = {};
-
-						window.performance.mark('mark_start_stat1');
-
-						expressions.forEach(function(expression){
-							var featureId;
-							if(expression.hasOwnProperty("feature_id")){
-								featureId = expression.feature_id;
-							}else if(expression.hasOwnProperty("na_feature_id")){
-								featureId = expression.na_feature_id;
-							}
-
-							if(!expressionHash.hasOwnProperty(featureId)){
-
-								var expr = {samples: {}};
-								(expression.hasOwnProperty('feature_id')) ? expr.feature_id = expression.feature_id : '';
-								(expression.hasOwnProperty('na_feature_id')) ? expr.p2_feature_id = expression.na_feature_id : '';
-								(expression.hasOwnProperty('refseq_locus_tag')) ? expr.refseq_locus_tag = expression.refseq_locus_tag : expression.exp_locus_tag;
-								var log_ratio = expression.log_ratio, z_score = expression.z_score;
-								expr.samples[expression.pid.toString()] = {
-									log_ratio: log_ratio || '',
-									z_score: z_score || ''
-								};
-								expr.up = (log_ratio != null && Number(log_ratio) > 0) ? 1 : 0;
-								expr.down = (log_ratio != null && Number(log_ratio) < 0) ? 1 : 0;
-
-								expressionHash[featureId] = expr;
-							}else{
-								expr = expressionHash[featureId];
-								if(!expr.samples.hasOwnProperty(expression.pid.toString())){
-									log_ratio = expression.log_ratio;
-									z_score = expression.z_score;
-									expr.samples[expression.pid.toString()] = {
-										log_ratio: log_ratio || '',
-										z_score: z_score || ''
-									};
-									(log_ratio != null && Number(log_ratio) > 0) ? expr.up++ : '';
-									(log_ratio != null && Number(log_ratio) < 0) ? expr.down++ : '';
-
-									expressionHash[featureId] = expr;
-								}
-							}
-						});
-						window.performance.mark('mark_end_stat1');
-						window.performance.measure('measure_transcriptomics_stat1', 'mark_start_stat1', 'mark_end_stat1');
-
-						window.performance.mark('mark_start_stat2');
-						var data = [];
-						features.forEach(function(feature){
-
-							var expr;
-							if(expressionHash.hasOwnProperty(feature.feature_id)){
-								expr = expressionHash[feature.feature_id];
-							}else if(expressionHash.hasOwnProperty(feature.p2_feature_id)){
-								expr = expressionHash[feature.p2_feature_id];
-							}
-							// build expr object
-							var count = 0;
-							expr.sample_binary = comparisonIdList.map(function(comparisonId){
-								if(expr.samples.hasOwnProperty(comparisonId) && expr.samples[comparisonId].log_ratio !== ''){
-									count++;
-									return "1";
-								}else{
-									return "0";
-								}
-							}).join('');
-							expr.sample_size = count;
-
-							var datum = lang.mixin(lang.clone(feature), expr);
-							data.push(datum);
-						});
-
-						window.performance.mark('mark_end_stat2');
-						window.performance.measure('measure_transcriptomics_stat2', 'mark_start_stat2', 'mark_end_stat2');
-
-						// var measures = window.performance.getEntriesByType('measure');
-						// for(var i = 0, len = measures.length; i < len; ++i){
-						// 	console.log(measures[i].name + ' took ', measures[i].duration, ' ms');
-						// }
-
-						_self.setData(data);
-						_self._loaded = true;
-						return true;
-					}, function(err){
-						console.error("Error in TranscriptomicsGeneStore: ", err)
-					});
-					// end of copy //
-				});
-
-				return this._loadingDeferred;
+			}else{
+				wsRequest.resolve([]);
 			}
 
-			var query = this.state.search;
+			var query = this.state.search.replace(/&wsExpId=.*/, '');
 
-			this._loadingDeferred = when(request.post(this.apiServer + '/transcriptomics_sample/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/json",
-					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
-				},
-				data: query + "&select(pid,expname,expmean,timepoint,mutant,strain,condition)&limit(99999)"
-			}), function(response){
-				// console.warn(response);
+			var pbRequest = new Deferred();
+			var pbExperiments = params.filter(function(s){
+				return s.match(/eid,\(.*\)/)
+			});
+			var pbComparisons = params.filter(function(s){
+				return s.match(/pid,\(.*\)/)
+			});
+			if(pbExperiments.length > 0){
+				pbRequest = when(request.post(this.apiServer + '/transcriptomics_sample/', {
+					handleAs: 'json',
+					headers: {
+						'Accept': "application/json",
+						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': (window.App.authorizationToken || "")
+					},
+					data: query + "&select(eid,pid,expname,expmean,timepoint,mutant,strain,condition)&limit(99999)"
+				}), function(results){
+					var comparisons;
+					if(pbComparisons.length > 0){
+						comparisons = results.filter(function(d){
+							return pbComparisons.indexOf(d.pid) >= 0;
+						})
+					}else{
+						comparisons = results;
+					}
+					comparisons = comparisons.map(function(d){
+						if(typeof d.pid == "number"){
+							d.pid = d.pid.toString();
+						}
+						return d;
+					});
+					// console.log("comparisons: ", comparisons);
+					return comparisons;
+				});
+			}else{
+				pbRequest.resolve([]);
+			}
 
-				if(response.length === 0){
-					// data is not available
-					_self.setData([]);
-					_self._loaded = true;
-					return true;
-				}
+			this._loadingDeferred = when(All([wsRequest, pbRequest]), function(results){
+
+				// console.log("get all results:", results);
+
+				var wsComparisons = [].concat.apply([], results[0]);
+				var pbComparisons = [].concat.apply([], results[1]);
+				var allComparisons = [].concat.apply(wsComparisons, pbComparisons);
 
 				var comparisonIdList = [];
-				var comparisons = response.map(function(comparison){
-					var strPId = comparison.pid.toString();
-					comparison.pid = strPId;
-					comparisonIdList.push(strPId);
-					return comparison;
-				});
+				if(wsComparisons.length){
+					comparisonIdList = [].concat.apply(comparisonIdList, wsComparisons.map(function(d){
+						return d.pid
+					}));
+					_self.tgState.wsExpIds = wsExpIds; // extra reference
+					_self.tgState.wsComaprisons = wsComparisons; // extra reference
+				}
+
+				if(pbComparisons.length){
+					comparisonIdList = [].concat.apply(comparisonIdList, pbComparisons.map(function(d){
+						return d.pid
+					}));
+					var pbExpIds = {};
+					pbComparisons.forEach(function(d){
+						if(!pbExpIds.hasOwnProperty(d.eid)){
+							pbExpIds[d.eid] = true;
+						}
+					});
+					_self.tgState.query = query;
+					_self.tgState.pbExpIds = Object.keys(pbExpIds);
+					_self.tgState.pbComparisons = pbComparisons;
+				}
+
 				_self.tgState.comparisonIds = comparisonIdList;
-				comparisons.forEach(function(comparison, idx){
+				allComparisons.forEach(function(comparison, idx){
 					var cfs = new FilterStatus();
 					cfs.init(idx, comparison.expname);
 					_self.tgState.comparisonFilterStatus[comparison.pid.toString()] = cfs;
 				});
+
 				Topic.publish("TranscriptomicsGene", "updateTgState", _self.tgState);
-				Topic.publish("TranscriptomicsGene", "updateFilterGrid", comparisons);
+				Topic.publish("TranscriptomicsGene", "updateFilterGrid", allComparisons);
 
-				// console.warn("Comparisons:", comparisonIdList);
-
-				// sub query - genome distribution
-				return when(request.post(_self.apiServer + '/transcriptomics_gene/', {
-					handleAs: 'json',
-					headers: {
-						'Accept': "application/solr+json",
-						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-					},
-					data: query + "&select(pid,refseq_locus_tag,feature_id,log_ratio,z_score)&limit(1)"
-				}), function(response){
-					// var expressions = response.response.docs;
-					var numFound = response.response.numFound;
-					var start = response.response.start;
-
-					var steps = Math.ceil(numFound / 25000);
-					var allRequests = [];
-					for(var i = 0; i < steps; i++){
-						var deferred = when(request.post(_self.apiServer + '/transcriptomics_gene/', {
-							handleAs: 'json',
-							headers: {
-								'Accept': "application/json",
-								'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-								'X-Requested-With': null,
-								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-							},
-							data: query + "&select(pid,refseq_locus_tag,feature_id,log_ratio,z_score)&limit(25000," + start + ")"
-						}));
-						allRequests.push(deferred);
-						start += 25000;
-					}
-
-					return when(All(allRequests), function(response){
-						var expressions = [];
-						response.forEach(function(data){
-							expressions = expressions.concat(data);
-						});
-
-						// console.warn("Expressions:", expressions);
-
-						var p3FeatureIdSet = {};
-						var p2FeatureIdSet = {}; // maybe when I read from workspace
-
-						expressions.forEach(function(expression){
-							if(expression.hasOwnProperty("feature_id")){
-								if(!p3FeatureIdSet.hasOwnProperty(expression.feature_id)){
-									p3FeatureIdSet[expression.feature_id] = true;
-								}else if(expression.hasOwnProperty("na_feature_id")){
-									if(!p2FeatureIdSet.hasOwnProperty(expression.na_feature_id)){
-										p2FeatureIdSet[expression.na_feature_id] = true;
-									}
-								}
-							}
-						});
-
-						var p3FeatureIdList = Object.keys(p3FeatureIdSet);
-						var p2FeatureIdList = Object.keys(p2FeatureIdSet);
-
-						// console.log("p3FeatureIdList:", p3FeatureIdList, "p2FeatureIdList:", p2FeatureIdList);
-
-						return when(request.post(_self.apiServer + '/genome_feature/', {
-							handleAs: 'json',
-							headers: {
-								'Accept': "application/json",
-								'Content-Type': "application/solrquery+x-www-form-urlencoded",
-								'X-Requested-With': null,
-								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-							},
-							data: {
-								q: (p3FeatureIdList.length > 0) ? 'feature_id:(' + p3FeatureIdList.join(' OR ') + ')' : ''
-								+ (p3FeatureIdList.length > 0 && p2FeatureIdList.length > 0) ? ' OR ' : ''
-								+ (p2FeatureIdList.length > 0) ? 'p2_feature_id:(' + p2FeatureIdList.join(' OR ') + ')' : '',
-								fl: 'feature_id,p2_feature_id,strand,product,accession,start,end,patric_id,alt_locus_tag,genome_name,gene',
-
-								rows: (p3FeatureIdList.length + p2FeatureIdList.length)
-							}
-						}), function(features){
-							// var features = response.response.docs;
-							// console.warn("features: ", features);
-
-							var expressionHash = {};
-
-							window.performance.mark('mark_start_stat1');
-
-							expressions.forEach(function(expression){
-								var featureId;
-								if(expression.hasOwnProperty("feature_id")){
-									featureId = expression.feature_id;
-								}else if(expression.hasOwnProperty("na_feature_id")){
-									featureId = expression.na_feature_id;
-								}
-
-								if(!expressionHash.hasOwnProperty(featureId)){
-
-									var expr = {samples: {}};
-									(expression.hasOwnProperty('feature_id')) ? expr.feature_id = expression.feature_id : '';
-									(expression.hasOwnProperty('na_feature_id')) ? expr.p2_feature_id = expression.na_feature_id : '';
-									(expression.hasOwnProperty('refseq_locus_tag')) ? expr.refseq_locus_tag = expression.refseq_locus_tag : expression.exp_locus_tag;
-									var log_ratio = expression.log_ratio, z_score = expression.z_score;
-									expr.samples[expression.pid.toString()] = {
-										log_ratio: log_ratio || '',
-										z_score: z_score || ''
-									};
-									expr.up = (log_ratio != null && Number(log_ratio) > 0) ? 1 : 0;
-									expr.down = (log_ratio != null && Number(log_ratio) < 0) ? 1 : 0;
-
-									expressionHash[featureId] = expr;
-								}else{
-									expr = expressionHash[featureId];
-									if(!expr.samples.hasOwnProperty(expression.pid.toString())){
-										log_ratio = expression.log_ratio;
-										z_score = expression.z_score;
-										expr.samples[expression.pid.toString()] = {
-											log_ratio: log_ratio || '',
-											z_score: z_score || ''
-										};
-										(log_ratio != null && Number(log_ratio) > 0) ? expr.up++ : '';
-										(log_ratio != null && Number(log_ratio) < 0) ? expr.down++ : '';
-
-										expressionHash[featureId] = expr;
-									}
-								}
-							});
-							window.performance.mark('mark_end_stat1');
-							window.performance.measure('measure_transcriptomics_stat1', 'mark_start_stat1', 'mark_end_stat1');
-
-							window.performance.mark('mark_start_stat2');
-							var data = [];
-							features.forEach(function(feature){
-
-								var expr;
-								if(expressionHash.hasOwnProperty(feature.feature_id)){
-									expr = expressionHash[feature.feature_id];
-								}else if(expressionHash.hasOwnProperty(feature.p2_feature_id)){
-									expr = expressionHash[feature.p2_feature_id];
-								}
-								// build expr object
-								var count = 0;
-								expr.sample_binary = comparisonIdList.map(function(comparisonId){
-									if(expr.samples.hasOwnProperty(comparisonId) && expr.samples[comparisonId].log_ratio !== ''){
-										count++;
-										return "1";
-									}else{
-										return "0";
-									}
-								}).join('');
-								expr.sample_size = count;
-
-								var datum = lang.mixin(lang.clone(feature), expr);
-								data.push(datum);
-							});
-
-							window.performance.mark('mark_end_stat2');
-							window.performance.measure('measure_transcriptomics_stat2', 'mark_start_stat2', 'mark_end_stat2');
-
-							// var measures = window.performance.getEntriesByType('measure');
-							// for(var i = 0, len = measures.length; i < len; ++i){
-							// 	console.log(measures[i].name + ' took ', measures[i].duration, ' ms');
-							// }
-
-							_self.setData(data);
-							_self._loaded = true;
-							return true;
-						}, function(err){
-							console.error("Error in TranscriptomicsGeneStore: ", err)
-						});
-					});
-				});
+				var opts = {
+					token: window.App.authorizationToken || ""
+				};
+				console.log(_self.tgState);
+				return when(window.App.api.data("transcriptomicsGene", [_self.tgState, opts]), lang.hitch(this, function(data){
+					_self.setData(data);
+					_self._loaded = true;
+					Topic.publish("TranscriptomicsGene", "hideLoadingMask");
+				}));
 			});
+
 			return this._loadingDeferred;
 		},
 
@@ -819,7 +554,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 						gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
 					}
 					var order = geneOrderMap[gene.feature_id];
-					cols[order] = createColumn(order, gene.feature_id, gene.product + " - " + gene.patric_id.replace("|", ""), gene.dist, meta);
+					cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
 				}
 			});
 
