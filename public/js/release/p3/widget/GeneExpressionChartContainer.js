@@ -40,7 +40,8 @@ define("p3/widget/GeneExpressionChartContainer", [
 						self.store.reload();
 						// for log ratio
 						when(self.processData("log_ratio"), function(chartData){
-								console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							if(chartData[0].length<10) {	
 								self.lgchart.addAxis("x", {
 									title: "Log Ratio",
 									titleOrientation: "away",
@@ -50,23 +51,38 @@ define("p3/widget/GeneExpressionChartContainer", [
 									microTicks: false,
 									labels: chartData[0]
 								});
-								
-								self.lgchart.updateSeries("Comparisons", chartData[1]);
-								self.lgchart.render();
-								console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
-							});
+							} else {
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									labels: chartData[0]								
+								});
+							}
+							
+							self.lgchart.updateSeries("Comparisons", chartData[1]);
+							self.lgchart.render();
+							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+						});
 
 						when(self.processData("z_score"), function(chartData){
 							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							self.zchart.addAxis("x", {
-								title: "Z-score",
-								titleOrientation: "away",
-								majorLabels: true,
-								minorTicks: false,
-								minorLabels: false,
-								microTicks: false,
-								labels: chartData[0]
-							});
+							if(chartData[0].length<10) {	
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+							} else {
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									labels: chartData[0]
+								});														
+							}
 							self.zchart.updateSeries("Comparisons", chartData[1]);
 							self.zchart.render();
 							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
@@ -78,15 +94,23 @@ define("p3/widget/GeneExpressionChartContainer", [
 						self.store.reload();
 						when(self.processData("log_ratio"), function(chartData){
 							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							self.lgchart.addAxis("x", {
-								title: "Log Ratio",
-								titleOrientation: "away",
-								majorLabels: true,
-								minorTicks: false,
-								minorLabels: false,
-								microTicks: false,
-								labels: chartData[0]
-							});
+							if(chartData[0].length<10) {	
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+							} else {
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									labels: chartData[0]								
+								});
+							}
 							self.lgchart.updateSeries("Comparisons", chartData[1]);
 							self.lgchart.render();
 							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
@@ -95,15 +119,23 @@ define("p3/widget/GeneExpressionChartContainer", [
 						// for z_score 
 						when(self.processData("z_score"), function(chartData){
 							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							self.zchart.addAxis("x", {
-								title: "Z-score",
-								titleOrientation: "away",
-								majorLabels: true,
-								minorTicks: false,
-								minorLabels: false,
-								microTicks: false,
-								labels: chartData[0]
-							});
+							if(chartData[0].length<10) {	
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+							} else {
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									labels: chartData[0]
+								});														
+							}
 							self.zchart.updateSeries("Comparisons", chartData[1]);
 							self.zchart.render();
 							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
@@ -190,7 +222,7 @@ define("p3/widget/GeneExpressionChartContainer", [
 
 			// chart for log_ratio
 			this.lgchart = new Chart2D(cp1.domNode);
-			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			console.log("GeneExpressionChartContainer after chart = new Chart2D, cp1.domNode", cp1.domNode);
 			this.lgchart.setTheme(Theme);
 
 			// Add the only/default plot
@@ -209,15 +241,23 @@ define("p3/widget/GeneExpressionChartContainer", [
 			when(this.processData("log_ratio"), function(chartData){ 
 				console.log("ChartData: ", chartData);
 				// Add axes
-				self.lgchart.addAxis("x", {
-					title: "Log Ratio",
-					titleOrientation: "away",
-					majorLabels: true,
-					minorTicks: false,
-					minorLabels: false,
-					microTicks: false,
-					labels: chartData[0]
-				});
+				if(chartData[0].length<10) {	
+					self.lgchart.addAxis("x", {
+						title: "Log Ratio",
+						titleOrientation: "away",
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: chartData[0]
+					});
+				} else {
+					self.lgchart.addAxis("x", {
+						title: "Log Ratio",
+						titleOrientation: "away",
+						labels: chartData[0]								
+					});
+				}
 				self.lgchart.addAxis("y", {title: "Comparisons", min: 0, vertical: true, fixLower: "major", fixUpper: "major" });
 
 				self.lgchart.addSeries("Comparisons",chartData[1]);
@@ -246,15 +286,23 @@ define("p3/widget/GeneExpressionChartContainer", [
 			when(this.processData("z_score"), function(chartData){ 
 				console.log("ChartData: ", chartData);
 				// Add axes
-				self.zchart.addAxis("x", {
-					title: "Z-score",
-					titleOrientation: "away",
-					majorLabels: true,
-					minorTicks: false,
-					minorLabels: false,
-					microTicks: false,
-					labels: chartData[0]
-				});
+				if(chartData[0].length<10) {	
+					self.zchart.addAxis("x", {
+						title: "Z-score",
+						titleOrientation: "away",
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: chartData[0]
+					});
+				} else {
+					self.zchart.addAxis("x", {
+						title: "Z-score",
+						titleOrientation: "away",
+						labels: chartData[0]
+					});														
+				}
 				self.zchart.addAxis("y", {title: "Comparisons", min: 0, vertical: true, fixLower: "major", fixUpper: "major" });
 
 				self.zchart.addSeries("Comparisons",chartData[1]);

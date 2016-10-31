@@ -228,10 +228,10 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 					zscoreArray = _self.processResult(response.facet_counts.facet_ranges.z_score.counts, response.facet_counts.facet_ranges.z_score.before, response.facet_counts.facet_ranges.z_score.after);
 				}
 				else {
-					logRatioArray.push({category: "-2.0", count: 0});
-					logRatioArray.push({category: "2.0", count: 0});
-					zscoreArray.push({category: "-2.0", count: 0});
-					zscoreArray.push({category: "2.0", count: 0});
+					logRatioArray.push({category: "<" + df, count: 0});
+					logRatioArray.push({category: ">" + uf, count: 0});
+					zscoreArray.push({category: "<" + dz, count: 0});
+					zscoreArray.push({category: ">" + uz, count: 0});
 				}
 				
 				data.push(logRatioArray);
@@ -249,11 +249,17 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 			console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
 			var newRes = [];
 			var i=0;
-			if (res.length == 0) {
-				newRes.push({category: "-2.0", count: before});
-				newRes.push({category: "2.0", count: after});			
+			if(before >0) {
+				newRes.push({category: "<-2.0", count: before});
 			}
 			while(i<res.length) {
+				newRes.push({category: res[i], count: res[i+1]});				
+				i=i+2;
+			}
+			if(after >0) {
+				newRes.push({category: ">=2.0", count: after});
+			}
+/*			while(i<res.length) {
 				if (i===0 &&res[i] === "-2.0") {								
 					newRes.push({category: "-2.0", count: res[i+1]+before});
 					if (res.length == 2) {
@@ -285,6 +291,7 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 				
 				i=i+2;
 			}
+*/			
 			return newRes;
 		}
 		
