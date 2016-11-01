@@ -74,6 +74,12 @@ define([
 			// var tsStart = window.performance.now();
 			var keywordRegex = tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
 
+			if(tgState.significantGenes == 'N'){
+				self.setData(data);
+				self.set("refresh");
+				return;
+			}
+
 			data.forEach(function(gene){
 
 				var skip = true;
