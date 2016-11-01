@@ -15,42 +15,8 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var _self = this;
-
-		var rel = evt.target.attributes.rel.value;
-		var dataType = _self.dataModel;
-		var currentQuery = _self.grid.get('query');
-
-		// console.log("DownloadQuery: ", currentQuery);
-		var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-
-		var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
-		if(baseUrl.charAt(-1) !== "/"){
-			baseUrl = baseUrl + "/";
-		}
-		baseUrl = baseUrl + dataType + "/?";
-
-		if(window.App.authorizationToken){
-			baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-		}
-
-		baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-		var form = domConstruct.create("form", {
-			style: "display: none;",
-			id: "downloadForm",
-			enctype: 'application/x-www-form-urlencoded',
-			name: "downloadForm",
-			method: "post",
-			action: baseUrl
-		}, _self.domNode);
-		domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
-		form.submit();
-
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
+		gridCtor: Grid,
 		containerType: "transcriptomics_experiment_data",
 		facetFields: ["organism", "strain", "mutant", "condition", "timeseries"],
 		maxGenomeCount: 5000,
@@ -74,13 +40,24 @@ define([
 				function(){
 					var _self = this;
 
-					if(!_self.grid){
+					var grid, dataType, sort;
+					if(_self.tabContainer.selectedChildWidget.title == 'Experiments'){
+						grid = _self.experimentsGrid;
+						dataType = "transcriptomics_experiment";
+						sort = "&sort(+eid)";
+					}else{
+						grid = _self.comparisonsGrid;
+						dataType = "transcriptomics_sample";
+						sort = "&sort(+pid)";
+					}
+
+					if(!grid){
 						console.log("Grid Not Defined");
 						return;
 					}
 
 					// console.log("_self.grid: ", _self.grid);
-					var totalRows = _self.grid.totalRows;
+					var totalRows = grid.totalRows;
 					// console.log("TOTAL ROWS: ", totalRows);
 					if(totalRows > _self.maxDownloadSize){
 						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
@@ -89,11 +66,8 @@ define([
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType = _self.dataModel;
-							var currentQuery = _self.grid.get('query');
-
-							// console.log("DownloadQuery: ", currentQuery);
-							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+							var currentQuery = "in(eid,(" + _self.eids.join(",") + "))";
+							var query = currentQuery + sort + "&limit(10000)";
 
 							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
 							if(baseUrl.charAt(-1) !== "/"){
@@ -106,6 +80,7 @@ define([
 							}
 
 							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							// console.log(baseUrl, query);
 							var form = domConstruct.create("form", {
 								style: "display: none;",
 								id: "downloadForm",
@@ -126,16 +101,13 @@ define([
 					}
 
 					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
+						popup: this.filterPanel._actions.DownloadTable.options.tooltipDialog,
+						around: this.filterPanel._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
 				true
 			]
-		]),
-
-		gridCtor: Grid
-
+		])
 	});
 });
