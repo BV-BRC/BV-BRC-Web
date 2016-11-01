@@ -13,6 +13,7 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
+		pfState: null,
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
@@ -38,6 +39,9 @@ define([
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
+					case "updatePfState":
+						this.pfState = value;
+						break;
 					case "updateMainGridOrder":
 						this.set("sort", []);
 						this.store.arrange(value);
@@ -50,19 +54,19 @@ define([
 		},
 		startup: function(){
 			var _self = this;
-/*
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
-				var row = _self.row(evt);
-				//console.log("dblclick row:", row);
-				on.emit(_self.domNode, "ItemDblClick", {
-					item_path: row.data.path,
-					item: row.data,
-					bubbles: true,
-					cancelable: true
-				});
-				// console.log('after emit');
-			});
-*/
+			/*
+						this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+							var row = _self.row(evt);
+							//console.log("dblclick row:", row);
+							on.emit(_self.domNode, "ItemDblClick", {
+								item_path: row.data.path,
+								item: row.data,
+								bubbles: true,
+								cancelable: true
+							});
+							// console.log('after emit');
+						});
+			*/
 
 			this.on("dgrid-sort", function(evt){
 				_self.store.query("", {sort: evt.sort});
@@ -80,19 +84,19 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
-/*
-			this.on("dgrid-deselect", function(evt){
-				//console.log("dgrid-deselect");
-				var newEvt = {
-					rows: evt.rows,
-					selected: evt.grid.selection,
-					grid: _self,
-					bubbles: true,
-					cancelable: true
-				};
-				on.emit(_self.domNode, "deselect", newEvt);
-			});
-*/
+			/*
+						this.on("dgrid-deselect", function(evt){
+							//console.log("dgrid-deselect");
+							var newEvt = {
+								rows: evt.rows,
+								selected: evt.grid.selection,
+								grid: _self,
+								bubbles: true,
+								cancelable: true
+							};
+							on.emit(_self.domNode, "deselect", newEvt);
+						});
+			*/
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
@@ -125,6 +129,19 @@ define([
 			this.inherited(arguments);
 			// console.log("_setSort", sort);
 			this.store.sort = sort;
+
+			if(sort.length > 0){
+				var newIds = [];
+				var idProperty = this.store.idProperty;
+				this.store.query({}, {sort: sort}).forEach(function(row){
+					newIds.push(row[idProperty]);
+				});
+				// console.log("update column order: ", newIds);
+				this.pfState.clusterColumnOrder = newIds;
+
+				Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
+			}
 		},
 		createStore: function(server, token, state){
 
