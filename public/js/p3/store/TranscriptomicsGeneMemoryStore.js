@@ -129,6 +129,10 @@ define([
 					});
 				}
 
+				if(!skip && tgState.filterGenome !== ''){
+					skip = (gene.genome_id !== tgState.filterGenome)
+				}
+
 				gene.up = up_r;
 				gene.down = down_r;
 				gene.sample_size = total_samples;
@@ -388,15 +392,40 @@ define([
 				var opts = {
 					token: window.App.authorizationToken || ""
 				};
-				console.log(_self.tgState);
+				// console.log(_self.tgState);
 				return when(window.App.api.data("transcriptomicsGene", [_self.tgState, opts]), lang.hitch(this, function(data){
 					_self.setData(data);
 					_self._loaded = true;
+					_self._buildGenomeFilter(data);
 					Topic.publish("TranscriptomicsGene", "hideLoadingMask");
 				}));
 			});
 
 			return this._loadingDeferred;
+		},
+
+		_buildGenomeFilter: function(data){
+			if(data.length == 0){
+				return;
+			}
+			// console.log("_buildGenomeFilter", data.length);
+
+			var genomeNameMap = {}, genomeCountMap = {};
+			data.forEach(function(d){
+				if(!genomeCountMap.hasOwnProperty(d.genome_id)){
+					genomeNameMap[d.genome_id] = d.genome_name;
+					genomeCountMap[d.genome_id] = 1;
+				}else{
+					genomeCountMap[d.genome_id]++;
+				}
+			});
+
+			var genomes = Object.keys(genomeCountMap).map(function(k){
+				return {value: k, label: genomeNameMap[k] + " (" + genomeCountMap[k] + ")"}
+			});
+
+			// console.log(genomes);
+			Topic.publish("TranscriptomicsGene", "updateGenomeFilter", genomes);
 		},
 
 		getHeatmapData: function(tgState){
