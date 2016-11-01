@@ -525,9 +525,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			});
 			showSelect.on('change', lang.hitch(self, function(yesOrNo){
 				self.tgState.significantGenes = yesOrNo;
-				// Topic.publish("TranscriptomicsGene", "applyConditionFilter", self.tgState);
-				// Topic.publish("TranscriptomicsGene", "updateTgState", self.tgState);
-				Topic.publish("TranscriptomicsGene", "requestHeatmapData", self.tgState);
+				Topic.publish("TranscriptomicsGene", "applyConditionFilter", self.tgState);
 				popup.close();
 			}));
 

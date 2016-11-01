@@ -256,6 +256,24 @@ define("p3/widget/DownloadTooltipDialog", [
 				"label": "Gene Expression",
 				tableData: true
 			},
+			"transcriptomics_gene_data": {
+				dataType: "genome_feature",
+				pk: "feature_id",
+				"label": "Features",
+				tableData: true
+			},
+			"transcriptomics_experiment_data": {
+				dataType: "transcriptomics_experiment",
+				pk: "eid",
+				"label": "Experiments",
+				tableData: true
+			},
+			"transcriptomics_sample_data": {
+				dataType: "transcriptomics_sample",
+				pk: "pid",
+				"label": "Comparisons",
+				tableData: true
+			},
 			"default": {
 				"label": "Items",
 				tableData: true

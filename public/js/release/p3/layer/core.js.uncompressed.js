@@ -77054,6 +77054,24 @@ define([
 				"label": "Gene Expression",
 				tableData: true
 			},
+			"transcriptomics_gene_data": {
+				dataType: "genome_feature",
+				pk: "feature_id",
+				"label": "Features",
+				tableData: true
+			},
+			"transcriptomics_experiment_data": {
+				dataType: "transcriptomics_experiment",
+				pk: "eid",
+				"label": "Experiments",
+				tableData: true
+			},
+			"transcriptomics_sample_data": {
+				dataType: "transcriptomics_sample",
+				pk: "pid",
+				"label": "Comparisons",
+				tableData: true
+			},
 			"default": {
 				"label": "Items",
 				tableData: true
@@ -90121,7 +90139,7 @@ define([
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				},
-				postData: query,
+				data: query,
 				handleAs: "json"
 			}).then(lang.hitch(this, function(eids){
 				// console.log("eids: ", eids);
@@ -90341,42 +90359,8 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var _self = this;
-
-		var rel = evt.target.attributes.rel.value;
-		var dataType = _self.dataModel;
-		var currentQuery = _self.grid.get('query');
-
-		// console.log("DownloadQuery: ", currentQuery);
-		var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-
-		var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
-		if(baseUrl.charAt(-1) !== "/"){
-			baseUrl = baseUrl + "/";
-		}
-		baseUrl = baseUrl + dataType + "/?";
-
-		if(window.App.authorizationToken){
-			baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-		}
-
-		baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-		var form = domConstruct.create("form", {
-			style: "display: none;",
-			id: "downloadForm",
-			enctype: 'application/x-www-form-urlencoded',
-			name: "downloadForm",
-			method: "post",
-			action: baseUrl
-		}, _self.domNode);
-		domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
-		form.submit();
-
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
+		gridCtor: Grid,
 		containerType: "transcriptomics_experiment_data",
 		facetFields: ["organism", "strain", "mutant", "condition", "timeseries"],
 		maxGenomeCount: 5000,
@@ -90400,13 +90384,24 @@ define([
 				function(){
 					var _self = this;
 
-					if(!_self.grid){
+					var grid, dataType, sort;
+					if(_self.tabContainer.selectedChildWidget.title == 'Experiments'){
+						grid = _self.experimentsGrid;
+						dataType = "transcriptomics_experiment";
+						sort = "&sort(+eid)";
+					}else{
+						grid = _self.comparisonsGrid;
+						dataType = "transcriptomics_sample";
+						sort = "&sort(+pid)";
+					}
+
+					if(!grid){
 						console.log("Grid Not Defined");
 						return;
 					}
 
 					// console.log("_self.grid: ", _self.grid);
-					var totalRows = _self.grid.totalRows;
+					var totalRows = grid.totalRows;
 					// console.log("TOTAL ROWS: ", totalRows);
 					if(totalRows > _self.maxDownloadSize){
 						downloadTT.set('content', "This table exceeds the maximum download size of " + _self.maxDownloadSize);
@@ -90415,11 +90410,8 @@ define([
 
 						on(downloadTT.domNode, "div:click", function(evt){
 							var rel = evt.target.attributes.rel.value;
-							var dataType = _self.dataModel;
-							var currentQuery = _self.grid.get('query');
-
-							// console.log("DownloadQuery: ", currentQuery);
-							var query = currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+							var currentQuery = "in(eid,(" + _self.eids.join(",") + "))";
+							var query = currentQuery + sort + "&limit(10000)";
 
 							var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "");
 							if(baseUrl.charAt(-1) !== "/"){
@@ -90432,6 +90424,7 @@ define([
 							}
 
 							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+							// console.log(baseUrl, query);
 							var form = domConstruct.create("form", {
 								style: "display: none;",
 								id: "downloadForm",
@@ -90452,17 +90445,14 @@ define([
 					}
 
 					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
+						popup: this.filterPanel._actions.DownloadTable.options.tooltipDialog,
+						around: this.filterPanel._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
 				true
 			]
-		]),
-
-		gridCtor: Grid
-
+		])
 	});
 });
 
@@ -90566,41 +90556,12 @@ define([
 'p3/widget/TranscriptomicsComparisonGridContainer':function(){
 define([
 	"dojo/_base/declare", "./GridContainer",
-	"./TranscriptomicsComparisonGrid", "dijit/popup",
-	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"./TranscriptomicsComparisonGrid"
 ], function(declare, GridContainer,
-			Grid, popup,
-			TooltipDialog, FacetFilterPanel,
-			lang, on){
-
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT = new TooltipDialog({
-		content: dfc, onMouseLeave: function(){
-			popup.close(downloadTT);
-		}
-	});
-
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
+			Grid){
 
 	return declare([GridContainer], {
+		gridCtor: Grid,
 		containerType: "transcriptomics_sample_data",
 		facetFields: [],
 		maxGenomeCount: 5000,
@@ -90609,51 +90570,7 @@ define([
 		},
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"DownloadTable",
-				"fa icon-download fa-2x",
-				{
-					label: "DOWNLOAD",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Download Table",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
-						orient: ["below"]
-					});
-				},
-				true
-			]
-		]),
-/*		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-		]),
-*/		
-		gridCtor: Grid
-
+		])
 	});
 });
 

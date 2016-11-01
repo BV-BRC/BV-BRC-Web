@@ -35,7 +35,7 @@ define("p3/widget/TranscriptomicsContainer", [
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				},
-				postData: query,
+				data: query,
 				handleAs: "json"
 			}).then(lang.hitch(this, function(eids){
 				// console.log("eids: ", eids);
