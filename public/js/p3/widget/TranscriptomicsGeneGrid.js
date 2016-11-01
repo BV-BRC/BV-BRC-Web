@@ -58,19 +58,7 @@ define([
 		},
 		startup: function(){
 			var _self = this;
-			/*
-						this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
-							var row = _self.row(evt);
-							//console.log("dblclick row:", row);
-							on.emit(_self.domNode, "ItemDblClick", {
-								item_path: row.data.path,
-								item: row.data,
-								bubbles: true,
-								cancelable: true
-							});
-							// console.log('after emit');
-						});
-			*/
+
 			this.on("dgrid-sort", function(evt){
 				_self.store.query("", {sort: evt.sort});
 			});
@@ -86,19 +74,7 @@ define([
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			/*
-						this.on("dgrid-deselect", function(evt){
-							//console.log("dgrid-deselect");
-							var newEvt = {
-								rows: evt.rows,
-								selected: evt.grid.selection,
-								grid: _self,
-								bubbles: true,
-								cancelable: true
-							};
-							on.emit(_self.domNode, "deselect", newEvt);
-						});
-			*/
+
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
