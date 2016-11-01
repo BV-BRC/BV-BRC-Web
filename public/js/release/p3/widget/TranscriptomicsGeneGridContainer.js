@@ -41,7 +41,7 @@ define("p3/widget/TranscriptomicsGeneGridContainer", [
 				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
 			}else{
-				console.log("No Grid Yet (TranscriptomicsGeneGridContainer)");
+				// console.log("No Grid Yet (TranscriptomicsGeneGridContainer)");
 			}
 
 			this._set("state", state);

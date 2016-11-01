@@ -10780,7 +10780,7 @@ div.appsublabel {
     pointer-events: none;
 }
 .home {
-	font-size: 12px;
+    font-size: 12px;
 }
 .home .section-title-b {
     background: #c3c3c3;
@@ -10805,43 +10805,45 @@ div.appsublabel {
     padding: 5px 5px 5px 0;
 }
 .homeBottomSection {
-	background: #fff;
-	margin-top: 0;
-	padding:4px;
+    background: #fff;
+    margin-top: 0;
+    padding: 4px;
 }
 .home h2 {
-	font-size: 20px;
+    font-size: 20px;
 }
 .home h4 {
     font-size: 14px;
     line-height: 16px;
 }
 .home figure {
-	display: block;
-	margin: 0;
-	padding: 0;
-	vertical-align: top;
+    display: block;
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
 }
 .home ul {
-	margin: 0;
-}
-.dlp-hp ul li {
-    display: inline-table;
+    margin: 0;
 }
 .tools h4 {
-	margin-top: 20px;
+    margin-top: 20px;
 }
 .tools h4:first-child {
-	margin-top: 4px;
+    margin-top: 4px;
 }
 .tools ul li {
-	width: 310px;
-	vertical-align: top;
-	text-align: left;
+    width: 310px;
+    vertical-align: top;
+    text-align: left;
 }
 .dlp-hp ul li {
-    vertical-align: bottom;
+    display: inline-block;
     width: 103px;
+    line-height: 1.2;
+    margin: 5px 0;
+}
+.dlp-hp ul li.last figcaption {
+    font-size: 11px;
 }
 .home .no-decoration {
     padding-left: 0;
@@ -10852,20 +10854,14 @@ div.appsublabel {
     margin-left: 0;
     list-style: none;
 }
-.dlp-hp li {
-    line-height: 1.2;
-    margin: 5px 0;
-}
 .home figure img {
     border: 0;
-    
     display: block;
     margin-left: auto;
     margin-right: auto;
 }
 .home .two-thirds-col > .column .two-col {
     overflow: hidden;
-    
 }
 .home .column .two-col .column {
     display: inline;
@@ -10874,8 +10870,8 @@ div.appsublabel {
     width: 311px;
 }
 .column.last {
-	display: inline;
-	    float: left;
+    display: inline;
+    float: left;
     margin-right: 0;
     width: 311px;
 }

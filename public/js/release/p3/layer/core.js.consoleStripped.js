@@ -112431,10 +112431,10 @@ define([
 'p3/widget/GeneExpressionContainer':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/request", "dojo/when", "dojo/_base/Deferred",
-	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup"
+	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup"
 ], function(declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
 			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
@@ -112465,8 +112465,17 @@ define([
 			}));
 		},
 		onSetState: function(attr, oldVal, state){
-			 0 && console.log("GeneExpressionGridContainer onSetState set state: ", state);
-			if (!state){ return; }
+			//  0 && console.log("GeneExpressionGridContainer onSetState set state: ", state);
+			if(!state){
+				return;
+			}
+			if(state && !state.feature){
+				return;
+			}
+
+			state.search = "eq(feature_id," + state.feature.feature_id + ")";
+			this._buildPanels(state);
+
 			if(this.GeneExpressionGridContainer){
 				this.GeneExpressionGridContainer.set('state', state);
 			}
@@ -112493,8 +112502,16 @@ define([
 				return;
 			}
 
-			self = this;
-			var q = this.state.search;			
+			this.watch("state", lang.hitch(this, "onSetState"));
+			// moved to _buildPanels()
+
+			this.inherited(arguments);
+			// 0 && console.log("new GeneExpressionGridContainer arguments: ", arguments);
+			this._firstView = true;
+		},
+		_buildPanels: function(state){
+			var self = this;
+			var q = this.state.search;
 			xhr.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
 				data: q,
 				headers: {
@@ -112505,20 +112522,20 @@ define([
 				},
 				handleAs: "json"
 			}).then(function(res){
-				 0 && console.log("*********************In chechData: res:", res);
+				//  0 && console.log("*********************In chechData: res:", res);
 				//var def = new Deferred();
 				//setTimeout(function(){
 				//  def.resolve(res);
 				//}, 2000);
 				// 0 && console.log("*********************In chechData: res:", res);
-				 0 && console.log("*********************In chechData: res.response.numFound:", res.response.numFound);
-				if (res && res.response.numFound == 0) {
+				//  0 && console.log("*********************In chechData: res.response.numFound:", res.response.numFound);
+				if(res && res.response.numFound == 0){
 					var messagePane = new ContentPane({
-							region: "top",
-							content:"<p>No data found</p>"
+						region: "top",
+						content: "<p>No data found</p>"
 					});
 					self.addChild(messagePane);
-				} else {
+				}else{
 					var filterPanel = self._buildFilterPanel();
 					 0 && console.log("GeneExpressionGridContainer onFirstView: this", self);
 					 0 && console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
@@ -112547,7 +112564,10 @@ define([
 					 0 && console.log("Before creating GeneExpressionChartContainer", self);
 
 					var chartContainer1 = new GeneExpressionChartContainer({
-						region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: self.id + "_chartContainer1",
+						region: "leading",
+						style: "height: 350px; width: 500px;",
+						doLayout: false,
+						id: self.id + "_chartContainer1",
 						//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
 						title: "Chart",
 						content: "Gene Expression Chart",
@@ -112558,7 +112578,10 @@ define([
 					chartContainer1.startup();
 
 					var chartContainer2 = new GeneExpressionMetadataChartContainer({
-						region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: self.id + "_chartContainer2",
+						region: "leading",
+						style: "height: 350px; width: 500px;",
+						doLayout: false,
+						id: self.id + "_chartContainer2",
 						//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
 						title: "Chart",
 						content: "Gene Expression Metadata Chart",
@@ -112570,7 +112593,7 @@ define([
 
 					// 0 && console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
 
-					// for data grid			
+					// for data grid
 					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 						title: "Table",
 						content: "Gene Expression Table"
@@ -112578,7 +112601,7 @@ define([
 
 					 0 && console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 
-					self.watch("state", lang.hitch(self, "onSetState"));
+					// self.watch("state", lang.hitch(self, "onSetState"));
 
 					self.addChild(tabController);
 					self.addChild(filterPanel);
@@ -112588,24 +112611,21 @@ define([
 					bc.addChild(chartContainer2);
 					self.tabContainer.addChild(self.GeneExpressionGridContainer);
 					self.addChild(self.tabContainer);
-			
-					Topic.subscribe(self.id+"_TabContainer-selectChild", lang.hitch(self,function(page){
+
+					Topic.subscribe(self.id + "_TabContainer-selectChild", lang.hitch(self, function(page){
 						page.set('state', self.state)
 						page.set('visible', true);
-					}));				
+					}));
 				}
-				
+
 			}, function(err){
-					var messagePane = new ContentPane({
-							region: "top",
-							content:"<p>No data found</p>"
-					});
-					self.addChild(messagePane);
+				var messagePane = new ContentPane({
+					region: "top",
+					content: "<p>No data found</p>"
+				});
+				self.addChild(messagePane);
 			});
-			
-			self.inherited(arguments);
-			// 0 && console.log("new GeneExpressionGridContainer arguments: ", arguments);
-			self._firstView = true;
+
 		},
 
 		_buildFilterPanel: function(){
@@ -112624,64 +112644,67 @@ define([
 				}
 			});
 
-			var _self=this;
+			var _self = this;
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				 0 && console.log("REL: ", rel);
 				var dataType = "transcriptomics_gene";
-				
+
 				var uf = _self.tgState.upFold, df = _self.tgState.downFold;
 				var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
-				var keyword= _self.tgState.keyword;
+				var keyword = _self.tgState.keyword;
 				var range = "";
-				if (keyword && keyword.length >0)
-				{
+				if(keyword && keyword.length > 0){
 					range += "&keyword(" + encodeURIComponent(keyword) + ")";
 				}
-			
-				if (uf>0 && df<0)
-				{
-					range += "&or(gt(log_ratio,"  + uf + "),lt(log_ratio,"  + df+ "))";			
+
+				if(uf > 0 && df < 0){
+					range += "&or(gt(log_ratio," + uf + "),lt(log_ratio," + df + "))";
 				}
-				else if (uf>0) {
-					range += "&gt(log_ratio,"  + uf + ")";
+				else if(uf > 0){
+					range += "&gt(log_ratio," + uf + ")";
 				}
-				else if (df<0) {
-					range += "&lt(log_ratio,"  + df+ ")";
+				else if(df < 0){
+					range += "&lt(log_ratio," + df + ")";
 				}
-				if (uz>0 && dz<0)
-				{
-					range += "&or(gt(z_score,"  + uz + "),lt(z_score,"  + dz+ "))";			
+				if(uz > 0 && dz < 0){
+					range += "&or(gt(z_score," + uz + "),lt(z_score," + dz + "))";
 				}
-				else if (uz>0) {
-					range += "&gt(z_score,"  + uz+ ")";
+				else if(uz > 0){
+					range += "&gt(z_score," + uz + ")";
 				}
-				else if (dz<0) {
-					range += "&lt(z_score,"  + dz+ ")";
+				else if(dz < 0){
+					range += "&lt(z_score," + dz + ")";
 				}
 				var query = _self.state.search + range + "&sort(+pid)&limit(25000)";
 
 				//var query = 	"eq(FOO,bar)";
-				 0 && console.log("DownloadQuery: ", dataType, query);				
-						
-				var baseUrl = window.App.dataServiceURL; 
+				 0 && console.log("DownloadQuery: ", dataType, query);
+
+				var baseUrl = window.App.dataServiceURL;
 				if(baseUrl.charAt(-1) !== "/"){
-					 baseUrl = baseUrl + "/";
+					baseUrl = baseUrl + "/";
 				}
 				baseUrl = baseUrl + dataType + "/?";
 
-				if (window.App.authorizationToken){
+				if(window.App.authorizationToken){
 					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 				}
-	
+
 				baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
 				 0 && console.log("DownloadQuery: baseUrl", baseUrl);
 
-				var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
-				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
-				form.submit();		
-		
-				
+				var form = domConstruct.create("form", {
+					style: "display: none;",
+					id: "downloadForm",
+					enctype: 'application/x-www-form-urlencoded',
+					name: "downloadForm",
+					method: "post",
+					action: baseUrl
+				}, _self.domNode);
+				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
+				form.submit();
+
 				popup.close(downloadTT);
 			});
 
@@ -112693,13 +112716,13 @@ define([
 			var b = domConstruct.create("div", {"class": "fa icon-download fa-2x"}, wrapper);
 			var t = domConstruct.create("div", {innerHTML: "DOWNLOAD", "class": "ActionButtonText"}, wrapper)
 			on(wrapper, "div:click", function(evt){
-					popup.open({
-						popup: downloadTT,
-						around: wrapper,
-						orient: ["below"]
-					});
+				popup.open({
+					popup: downloadTT,
+					around: wrapper,
+					orient: ["below"]
+				});
 			});
-			
+
 			domConstruct.place(wrapper, otherFilterPanel.containerNode, "last");
 
 			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
@@ -112712,7 +112735,6 @@ define([
 			//domConstruct.place(keyword_label, otherFilterPanel.containerNode, "last");
 			domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, "last");
 
-
 			var select_log_ratio = new Select({
 				name: "selectGeneLogRatio",
 				id: "selectGeneLogRatio",
@@ -112722,7 +112744,10 @@ define([
 				],
 				style: "width: 80px; margin: 5px 0"
 			});
-			var label_select_log_ratio = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Log Ratio|: "});
+			var label_select_log_ratio = domConstruct.create("label", {
+				style: "margin-left: 10px;",
+				innerHTML: " |Log Ratio|: "
+			});
 			domConstruct.place(label_select_log_ratio, otherFilterPanel.containerNode, "last");
 			domConstruct.place(select_log_ratio.domNode, otherFilterPanel.containerNode, "last");
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
@@ -112730,13 +112755,16 @@ define([
 			var select_z_score = new Select({
 				name: "selectGeneZScore",
 				id: "selectGeneZScore",
-				options: [{value: 0, label: "0", selected: true }, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
+				options: [{value: 0, label: "0", selected: true}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
 					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
 					{value: 3, label: "3"}
 				],
 				style: "width: 80px; margin: 5px 0"
 			});
-			var label_select_z_score = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Z-score|: "});
+			var label_select_z_score = domConstruct.create("label", {
+				style: "margin-left: 10px;",
+				innerHTML: " |Z-score|: "
+			});
 			domConstruct.place(label_select_z_score, otherFilterPanel.containerNode, "last");
 			domConstruct.place(select_z_score.domNode, otherFilterPanel.containerNode, "last");
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
@@ -112776,7 +112804,7 @@ define([
 					 0 && console.log("submit btn clicked: filter", filter);
 
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
-					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);					
+					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);
 					 0 && console.log("submit btn clicked: this.tgState", this.tgState);
 				})
 			});
@@ -112821,7 +112849,7 @@ define([
 						keyword: ""
 					};
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
-					Topic.publish("GeneExpression", "updateTgState", this.tgState);					
+					Topic.publish("GeneExpression", "updateTgState", this.tgState);
 
 					//keyword_textbox.reset();
 					//select_log_ratio.reset();
@@ -113494,7 +113522,8 @@ define([
 						self.store.reload();
 						// for log ratio
 						when(self.processData("log_ratio"), function(chartData){
-								 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							if(chartData[0].length<10) {	
 								self.lgchart.addAxis("x", {
 									title: "Log Ratio",
 									titleOrientation: "away",
@@ -113504,23 +113533,38 @@ define([
 									microTicks: false,
 									labels: chartData[0]
 								});
-								
-								self.lgchart.updateSeries("Comparisons", chartData[1]);
-								self.lgchart.render();
-								 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
-							});
+							} else {
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									labels: chartData[0]								
+								});
+							}
+							
+							self.lgchart.updateSeries("Comparisons", chartData[1]);
+							self.lgchart.render();
+							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+						});
 
 						when(self.processData("z_score"), function(chartData){
 							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							self.zchart.addAxis("x", {
-								title: "Z-score",
-								titleOrientation: "away",
-								majorLabels: true,
-								minorTicks: false,
-								minorLabels: false,
-								microTicks: false,
-								labels: chartData[0]
-							});
+							if(chartData[0].length<10) {	
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+							} else {
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									labels: chartData[0]
+								});														
+							}
 							self.zchart.updateSeries("Comparisons", chartData[1]);
 							self.zchart.render();
 							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
@@ -113532,15 +113576,23 @@ define([
 						self.store.reload();
 						when(self.processData("log_ratio"), function(chartData){
 							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							self.lgchart.addAxis("x", {
-								title: "Log Ratio",
-								titleOrientation: "away",
-								majorLabels: true,
-								minorTicks: false,
-								minorLabels: false,
-								microTicks: false,
-								labels: chartData[0]
-							});
+							if(chartData[0].length<10) {	
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+							} else {
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									labels: chartData[0]								
+								});
+							}
 							self.lgchart.updateSeries("Comparisons", chartData[1]);
 							self.lgchart.render();
 							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
@@ -113549,15 +113601,23 @@ define([
 						// for z_score 
 						when(self.processData("z_score"), function(chartData){
 							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							self.zchart.addAxis("x", {
-								title: "Z-score",
-								titleOrientation: "away",
-								majorLabels: true,
-								minorTicks: false,
-								minorLabels: false,
-								microTicks: false,
-								labels: chartData[0]
-							});
+							if(chartData[0].length<10) {	
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+							} else {
+								self.zchart.addAxis("x", {
+									title: "Z-score",
+									titleOrientation: "away",
+									labels: chartData[0]
+								});														
+							}
 							self.zchart.updateSeries("Comparisons", chartData[1]);
 							self.zchart.render();
 							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
@@ -113644,7 +113704,7 @@ define([
 
 			// chart for log_ratio
 			this.lgchart = new Chart2D(cp1.domNode);
-			 0 && console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			 0 && console.log("GeneExpressionChartContainer after chart = new Chart2D, cp1.domNode", cp1.domNode);
 			this.lgchart.setTheme(Theme);
 
 			// Add the only/default plot
@@ -113663,15 +113723,23 @@ define([
 			when(this.processData("log_ratio"), function(chartData){ 
 				 0 && console.log("ChartData: ", chartData);
 				// Add axes
-				self.lgchart.addAxis("x", {
-					title: "Log Ratio",
-					titleOrientation: "away",
-					majorLabels: true,
-					minorTicks: false,
-					minorLabels: false,
-					microTicks: false,
-					labels: chartData[0]
-				});
+				if(chartData[0].length<10) {	
+					self.lgchart.addAxis("x", {
+						title: "Log Ratio",
+						titleOrientation: "away",
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: chartData[0]
+					});
+				} else {
+					self.lgchart.addAxis("x", {
+						title: "Log Ratio",
+						titleOrientation: "away",
+						labels: chartData[0]								
+					});
+				}
 				self.lgchart.addAxis("y", {title: "Comparisons", min: 0, vertical: true, fixLower: "major", fixUpper: "major" });
 
 				self.lgchart.addSeries("Comparisons",chartData[1]);
@@ -113700,15 +113768,23 @@ define([
 			when(this.processData("z_score"), function(chartData){ 
 				 0 && console.log("ChartData: ", chartData);
 				// Add axes
-				self.zchart.addAxis("x", {
-					title: "Z-score",
-					titleOrientation: "away",
-					majorLabels: true,
-					minorTicks: false,
-					minorLabels: false,
-					microTicks: false,
-					labels: chartData[0]
-				});
+				if(chartData[0].length<10) {	
+					self.zchart.addAxis("x", {
+						title: "Z-score",
+						titleOrientation: "away",
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: chartData[0]
+					});
+				} else {
+					self.zchart.addAxis("x", {
+						title: "Z-score",
+						titleOrientation: "away",
+						labels: chartData[0]
+					});														
+				}
 				self.zchart.addAxis("y", {title: "Comparisons", min: 0, vertical: true, fixLower: "major", fixUpper: "major" });
 
 				self.zchart.addSeries("Comparisons",chartData[1]);
@@ -114062,10 +114138,10 @@ define([
 					zscoreArray = _self.processResult(response.facet_counts.facet_ranges.z_score.counts, response.facet_counts.facet_ranges.z_score.before, response.facet_counts.facet_ranges.z_score.after);
 				}
 				else {
-					logRatioArray.push({category: "-2.0", count: 0});
-					logRatioArray.push({category: "2.0", count: 0});
-					zscoreArray.push({category: "-2.0", count: 0});
-					zscoreArray.push({category: "2.0", count: 0});
+					logRatioArray.push({category: "<" + df, count: 0});
+					logRatioArray.push({category: ">" + uf, count: 0});
+					zscoreArray.push({category: "<" + dz, count: 0});
+					zscoreArray.push({category: ">" + uz, count: 0});
 				}
 				
 				data.push(logRatioArray);
@@ -114083,11 +114159,17 @@ define([
 			 0 && console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
 			var newRes = [];
 			var i=0;
-			if (res.length == 0) {
-				newRes.push({category: "-2.0", count: before});
-				newRes.push({category: "2.0", count: after});			
+			if(before >0) {
+				newRes.push({category: "<-2.0", count: before});
 			}
 			while(i<res.length) {
+				newRes.push({category: res[i], count: res[i+1]});				
+				i=i+2;
+			}
+			if(after >0) {
+				newRes.push({category: ">=2.0", count: after});
+			}
+/*			while(i<res.length) {
 				if (i===0 &&res[i] === "-2.0") {								
 					newRes.push({category: "-2.0", count: res[i+1]+before});
 					if (res.length == 2) {
@@ -114119,6 +114201,7 @@ define([
 				
 				i=i+2;
 			}
+*/			
 			return newRes;
 		}
 		
