@@ -1,5 +1,32 @@
 {
-	"production": false,
-    "dataServiceURL": "",
-    "enableDevTools": true
+	"production": true,
+	"redis": {
+		"host": "",
+		"port": 6379,
+		"db": 1,
+		"prefix": "",
+		"pass": ""
+	},
+	"accountURL": "",
+	"authorizationURL": "",
+	"cookieSecret": "",
+	"cookeiKey": "",
+	"cookieDomain": "",
+	"dataServiceURL": "/api",
+	"workspaceServiceURL": "",
+	"appServiceURL": "",
+	"appLabel": "",
+	"gaID": "",
+	"newrelic_license_key": "",
+	"enableDevAuth": false,
+	"enableDevTools": false,
+	"email": {
+		"localSendmail": false,
+		"defaultFrom": "PATRIC <do-not-reply@patricbrc.org>",
+		"defaultSender": "PATRIC <do-not-reply@patricbrc.org>",
+		"host": "",
+		"port": 25,
+		"username": "",
+		"password": ""
+	}
 }
