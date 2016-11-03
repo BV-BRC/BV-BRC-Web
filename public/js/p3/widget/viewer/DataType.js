@@ -37,12 +37,133 @@ define([
 		"<span class='label'>Order by</span>",
 		"<ul class='sort'>",
 		"<li class='label active'>Genus</li>",
-		"</ul>",
-		"<ul class='sort'>",
 		"<li class='functional'>Functional</li>",
 		"<li class='hypothetical'>Hypothetical</li>",
+		"<li class='core' style='display: none;'>Core</li>",
+		"<li class='accessory' style='display: none'>Accessory</li>",
 		"</ul>"
 	].join("\n");
+
+	var proteinfamilyLegend = {"fvh": ["Functional", "Hypothetical"], "cva": ["Core", "Accessory"]};
+
+	var proteinFamiliesChart = declare([StackedBarChart], {
+		sort: function(){
+			var self = this;
+			var sortCriteria = domQuery(".chart-wrapper .sort .active")[0].className.split(" ")[0];
+
+			if(sortCriteria === this.currentSort){
+				this.ascendSort = !this.ascendSort;
+			}else{
+				this.currentSort = sortCriteria;
+			}
+
+			switch(this.currentSort){
+				case "label":
+					this.bars.sort(function(a, b){
+						var orderCode = 0;
+						if(a.label < b.label){
+							orderCode = -1;
+						}else if(a.label > b.label){
+							orderCode = 1;
+						}
+
+						if(!self.ascendSort){
+							orderCode = orderCode * -1;
+						}
+						return orderCode;
+					});
+					break;
+				case "functional":
+				case "core":
+					this.bars.sort(function(a, b){
+						var aValue = self.barHeight(a[self.dataSet][0], a.total);
+						var bValue = self.barHeight(b[self.dataSet][0], b.total);
+
+						var orderCode = aValue - bValue;
+						if(!self.ascendSort){
+							orderCode = orderCode * -1;
+						}
+						return orderCode;
+					});
+					break;
+				case "hypothetical":
+				case "accessory":
+					this.bars.sort(function(a, b){
+						var aValue = self.barHeight(a[self.dataSet][1], a.total);
+						var bValue = self.barHeight(b[self.dataSet][1], b.total);
+
+						var orderCode = aValue - bValue;
+						if(!self.ascendSort){
+							orderCode = orderCode * -1;
+						}
+						return orderCode;
+					});
+					break;
+				default:
+					break;
+			}
+			for(var index = 0; index < this.seriesSize; index++){
+				this.bars.select(lang.replace('rect.block-{0}', [index]))
+					.transition().duration(600)
+					.delay(function(d, i){
+						return 10 * i
+					})
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					});
+			}
+
+			this.bars.select("text").transition().duration(600)
+				.delay(function(d, i){
+					return 10 * i
+				})
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
+					var y = Math.round(self.canvasHeight - 11);
+					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
+				})
+		},
+		renderNav: function(html){
+			this.inherited(arguments);
+			var self = this;
+			var dataToggle = domQuery(".chart-wrapper nav .dataset li");
+
+			if(dataToggle !== null){
+				dataToggle.on('click', function(evt){
+					dataToggle.removeClass("active");
+					var target = evt.srcElement || evt.target;
+
+					self.changeDataSet(target.className);
+					domClass.add(target, "active");
+
+					self.scale(function(){
+						return self.sort();
+					});
+				})
+			}
+		},
+		dataSet: "fvh",
+		changeDataSet: function(d){
+			this.dataSet = d;
+			if(d === "fvh"){
+				this.renderLegend("Legend: ", proteinfamilyLegend[d]);
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.functional")[0], "display", "inline");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.hypothetical")[0], "display", "inline");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.core")[0], "display", "none");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.accessory")[0], "display", "none");
+
+			}else if(d === "cva"){
+				this.renderLegend("Legend: ", proteinfamilyLegend[d]);
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.functional")[0], "display", "none");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.hypothetical")[0], "display", "none");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.core")[0], "display", "inline");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.accessory")[0], "display", "inline");
+			}
+		}
+	});
 
 	var attributeTemplate = [
 		"<a class='left right-align-text attribute-line' href='{attr.link}'>",
@@ -909,26 +1030,25 @@ define([
 
 		_renderProteinFamiliesDistribution: function(data){
 
-			var legend = ["Functional", "Hypothetical"];
-
 			var processed = data.map(function(datum, i){
 				return {
 					"index": i,
 					"label": datum.pathogen,
 					"genomes": datum.genomes,
 					"total": parseInt(datum.total),
-					"tooltip": function(d, idx){
-						return lang.replace('Genus: {0}<br/>Data: {1}<br/>Count: {2}', [d.label, legend[idx], d.dist[idx]]);
+					"tooltip": function(d, idx, dataSet){
+						return lang.replace('Genus: {0}<br/>Data: {1}<br/>Count: {2}', [d.label, legend[dataSet][idx], d[dataSet][idx]]);
 					},
-					"dist": [parseInt(datum.functional), parseInt(datum.hypothetical)]
+					"cva": [parseInt(datum.core), parseInt(datum.accessory)],
+					"fvh": [parseInt(datum.functional), parseInt(datum.hypothetical)]
 				};
 			});
 
 			var targetNode = domQuery("#dlp-proteinfamilies-dist-genera")[0];
-			var pfChart = new StackedBarChart();
+			var pfChart = new proteinFamiliesChart();
 			pfChart.init(targetNode);
 			pfChart.renderNav(proteinfamilyNavBarHtml);
-			pfChart.renderLegend("Legend: ", legend);
+			pfChart.renderLegend("Legend: ", proteinfamilyLegend["fvh"]);
 			pfChart.render(processed);
 		},
 
