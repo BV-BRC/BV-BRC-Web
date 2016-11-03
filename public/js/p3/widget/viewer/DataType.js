@@ -996,7 +996,7 @@ define([
 				link.addEventListener('click', function(evt){
 					var target = evt.target || evt.srcElement;
 					var link = target.dataset.genomeHref;
-					Topic.publish('/navigate', {href: link});
+					Topic.publish('/navigate', {href: link, target: "blank"});
 				});
 				link.addEventListener('mouseover', function(evt){
 					var target = evt.target || evt.srcElement;
