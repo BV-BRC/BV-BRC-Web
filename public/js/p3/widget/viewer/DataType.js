@@ -218,7 +218,7 @@ define([
 			var popularListUl = ["<ul class='no-decoration genome-list tab-headers third'>"];
 
 			popularList.forEach(function(genome, idx){
-				popularListUl.push(lang.replace("<li><a data-genome-href='{0}' class='genome-link' href='#genome-tab{1}'>{2}</a><div class='arrow'></div></li>", [genome.link, (idx + 1), genome.popularName]));
+				popularListUl.push(lang.replace("<li><a data-genome-href='{0}' class='genome-link' href='#genome-tab{1}'>{2}</a><div class=''></div></li>", [genome.link, (idx + 1), genome.popularName]));
 			});
 			popularListUl.push("</ul>");
 
