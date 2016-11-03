@@ -53,7 +53,7 @@ define([
 				return;
 			}
 
-			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView){
+			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && !this.tabContainer.selectedChildWidget.state){
 				this.tabContainer.selectedChildWidget.set('state', state);
 			}
 
@@ -128,7 +128,7 @@ define([
 			this.pathwaysGrid = new PathwaysGridContainer({
 				title: "Pathways",
 				type: "pathway",
-				state: this.state,
+				// state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
