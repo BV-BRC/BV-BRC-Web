@@ -52,18 +52,13 @@ define([
 			}
 
 			var self = this;
-			console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
+			//console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
 			//this.loadData();
 			Topic.subscribe("GeneExpression", function(){
 				console.log("GeneExpressionChartMemoryStore received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "applyConditionFilter":
-						self.tgState = value;
-						//self.reload();
-						//Topic.publish("GeneExpression", "updateTgState", self.tgState);
-						break;
 					case "updateTgState":
 						self.tgState = value;
 						//self.reload();
@@ -105,9 +100,10 @@ define([
 			return pass;
 		},
 		
-		reload: function(){
-			console.log("In MemoryStore reload ... ");
+		reload: function(curr_tgState){
+			//console.log("In MemoryStore reload ... ");
 			var self = this;
+			self.tgState = curr_tgState;
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -115,7 +111,7 @@ define([
 		},
 
 		query: function(query, opts){
-			console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
+			//console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
 			query = query || {};
 			if(this._loaded){
 				return this.inherited(arguments);
@@ -155,7 +151,7 @@ define([
 			var _self = this;
 
 			if(!this.state || this.state.search == null){
-				console.log("No State, use empty data set for initial store");
+				//console.log("No State, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -169,7 +165,7 @@ define([
 				return def.promise;
 			}
 			//console.log("In MemoryStore loadData(): state:", this.state);
-			console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
+			//console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
 
 			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
 			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
@@ -207,7 +203,7 @@ define([
 			var q = this.state.search + range;
 			
 			console.log("In MemoryStore query: q:", q);
-			console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+			//console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
 
 			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
 						data: q,

@@ -38,133 +38,36 @@ define([
 		},
 
 		constructor: function(options){
+			this.watch("state", lang.hitch(this, "onSetState"));
 			this._loaded = false;
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
 
 			var self = this;
+			console.log("********GeneExpressionMemoryStore before subscribe this:", this.tgState);
 
 			Topic.subscribe("GeneExpression", function(){
 				console.log("GeneExpressionMemoryStore received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "applyConditionFilter":
+					case "updateTgState":
 						self.tgState = value;
 						//self.conditionFilter(value);
-						self.reload();
-						Topic.publish("GeneExpression", "updateTgState", self.tgState);
+						self.reload(value);
 						break;
 					default:
 						break;
 				}
 			});
+			console.log("********GeneExpressionMemoryStore self.tgState:", self.tgState);
 		},
-		
-		conditionFilter: function(tgState){
-			var self = this;
-			if(self._filtered == undefined){ // first time
-				self._filtered = true;
-				self._original = this.query("", {});
-			}
-			var data = self._original;
-			var newData = [];
-			var gfs = tgState.comparisonFilterStatus;
-			
-			console.log("In MemoryStore conditionFilter ... ", tgState, ",", self._original); 
-
-			var tsStart = window.performance.now();
-			data.forEach(function(gene){
-
-				var pass = false;
-				var up_r = 0, down_r = 0, total_samples = 0;
-
-				// comparisons
-				for(var i = 0, len = tgState.comparisonIds.length; i < len; i++){
-					var comparisonId = tgState.comparisonIds[i];
-					var index = gfs[comparisonId].getIndex();
-					var status = gfs[comparisonId].getStatus();
-					var comparison = gene.samples[comparisonId];
-					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.dist, parseInt(gene.dist.substr(index * 2, 2), 16));
-
-					var expression = gene.sample_binary.substr(index, 1);
-					if(expression === '1'){
-						if(status != 2){
-							pass = self._thresholdFilter(comparison, tgState, status);
-							if(!pass){
-								break;
-							}
-						}else{
-							// status == 2, don't care
-							if(!pass){
-								pass = self._thresholdFilter(comparison, tgState, status)
-							}
-						}
-					}else{
-						if(status != 2){
-							pass = false;
-							break;
-						}
-					}
-
-					if(comparison){
-						var value = parseFloat(comparison.log_ratio);
-						if(!isNaN(value)){
-							if(value > tgState.upFold){
-								up_r++;
-							}
-							if(value < tgState.downFold){
-								down_r++;
-							}
-							total_samples++;
-						}
-					}
-				}
-
-				gene.up = up_r;
-				gene.down = down_r;
-				gene.sample_size = total_samples;
-
-				if(pass){
-					newData.push(gene);
-				}
-			});
-			console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
-
-			self.setData(newData);
-			self.set("refresh");
-		},
-		
-		_thresholdFilter: function(comparison, tgState, filterStatus){
-			var uf = tgState.upFold, df = tgState.downFold;
-			var uz = tgState.upZscore, dz = tgState.downZscore;
-			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
-			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
-			if(!comparison) return false;
-
-			var pass = false;
-			switch(filterStatus){
-				case 2: // don't care (' ')
-					pass = (dz === uz && df === uf)
-						|| ((z >= uz || z <= dz) && (l >= uf || l <= df));
-					break;
-				case 0: // up-regulated (1)
-					pass = ((uz != 0 ? z >= uz : true) && l >= uf);
-					break;
-				case 1: // down-regulated (0)
-					pass = ((dz != 0 ? z <= dz : true) && l <= df);
-					break;
-				default:
-					break;
-			}
-			console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
-			return pass;
-		},
-		
-		reload: function(){
+				
+		reload: function(curr_tgState){
 			console.log("In MemoryStore reload ... ");
 			var self = this;
+			self.tgState = curr_tgState;
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -278,16 +181,6 @@ define([
 						handleAs: "json"
 				}), function(response){
 				console.log("In MemoryStore loadData(): response.response:", response.response);
-
-				var comparisonIdList = [];
-				var comparisons = response.response.docs.map(function(comparison){
-					var strPId = comparison.pid.toString();
-					comparison.pid = strPId;
-					comparisonIdList.push(strPId);
-					return comparison;
-				});
-				_self.tgState.comparisonIds = comparisonIdList;
-				console.log("In MemoryStore loadData(): comparisonIds:", comparisonIdList);
 
 				_self.setData(response.response.docs);
 				_self._loaded = true;

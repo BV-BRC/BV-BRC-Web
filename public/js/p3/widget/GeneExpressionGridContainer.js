@@ -24,11 +24,19 @@ define([
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
-
+	
+	var tgState = {
+		keyword: "",
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
 	return declare([GridContainer], {
 		gridCtor: GeneExpressionGrid,
 		containerType: "gene_expression_data",
 		facetFields: [],
+		tgState: tgState,
 		enableFilterPanel: false,
 		constructor: function(){
 			var self = this;
