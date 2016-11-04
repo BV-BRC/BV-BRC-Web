@@ -775,7 +775,7 @@ define([
 
 			// add rect bar
 			bars.append("rect").attr("class", function(d, i){
-				return "bar-" + i;
+				return "bar bar-" + i;
 			}).attr("height", function(d){
 				var val;
 				val = d.reported || d.value;
@@ -811,6 +811,7 @@ define([
 			});
 			// add text
 			bars.append("text")
+			.attr("class", "label")
 			.attr("x", function(d, i){
 				return (i * xScale(1)) + xScale(.5);
 			}).attr("y", function(d){
@@ -858,6 +859,10 @@ define([
 					return (i * xScale(1)) + xScale(.1) + 7;
 				})
 				.attr("y", 178)
+				.on("click", function(d){
+					var url = "/view/Taxonomy/2#view_tab=genomes&filter=eq(isolation_country," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				})
 				.on("mouseover", function(d){
 					tooltipLayer.transition()
 						.duration(200)
