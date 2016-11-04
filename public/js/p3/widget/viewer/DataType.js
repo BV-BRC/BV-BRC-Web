@@ -1364,6 +1364,7 @@ define([
 
 			this.viewer = new ContentPane({
 				region: "center",
+				style: "padding:0",
 				content: ""
 			});
 
