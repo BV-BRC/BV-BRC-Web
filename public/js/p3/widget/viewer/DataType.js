@@ -37,12 +37,133 @@ define([
 		"<span class='label'>Order by</span>",
 		"<ul class='sort'>",
 		"<li class='label active'>Genus</li>",
-		"</ul>",
-		"<ul class='sort'>",
 		"<li class='functional'>Functional</li>",
 		"<li class='hypothetical'>Hypothetical</li>",
+		"<li class='core' style='display: none;'>Core</li>",
+		"<li class='accessory' style='display: none'>Accessory</li>",
 		"</ul>"
 	].join("\n");
+
+	var proteinfamilyLegend = {"fvh": ["Functional", "Hypothetical"], "cva": ["Core", "Accessory"]};
+
+	var proteinFamiliesChart = declare([StackedBarChart], {
+		sort: function(){
+			var self = this;
+			var sortCriteria = domQuery(".chart-wrapper .sort .active")[0].className.split(" ")[0];
+
+			if(sortCriteria === this.currentSort){
+				this.ascendSort = !this.ascendSort;
+			}else{
+				this.currentSort = sortCriteria;
+			}
+
+			switch(this.currentSort){
+				case "label":
+					this.bars.sort(function(a, b){
+						var orderCode = 0;
+						if(a.label < b.label){
+							orderCode = -1;
+						}else if(a.label > b.label){
+							orderCode = 1;
+						}
+
+						if(!self.ascendSort){
+							orderCode = orderCode * -1;
+						}
+						return orderCode;
+					});
+					break;
+				case "functional":
+				case "core":
+					this.bars.sort(function(a, b){
+						var aValue = self.barHeight(a[self.dataSet][0], a.total);
+						var bValue = self.barHeight(b[self.dataSet][0], b.total);
+
+						var orderCode = aValue - bValue;
+						if(!self.ascendSort){
+							orderCode = orderCode * -1;
+						}
+						return orderCode;
+					});
+					break;
+				case "hypothetical":
+				case "accessory":
+					this.bars.sort(function(a, b){
+						var aValue = self.barHeight(a[self.dataSet][1], a.total);
+						var bValue = self.barHeight(b[self.dataSet][1], b.total);
+
+						var orderCode = aValue - bValue;
+						if(!self.ascendSort){
+							orderCode = orderCode * -1;
+						}
+						return orderCode;
+					});
+					break;
+				default:
+					break;
+			}
+			for(var index = 0; index < this.seriesSize; index++){
+				this.bars.select(lang.replace('rect.block-{0}', [index]))
+					.transition().duration(600)
+					.delay(function(d, i){
+						return 10 * i
+					})
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					});
+			}
+
+			this.bars.select("text").transition().duration(600)
+				.delay(function(d, i){
+					return 10 * i
+				})
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
+					var y = Math.round(self.canvasHeight - 11);
+					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
+				})
+		},
+		renderNav: function(html){
+			this.inherited(arguments);
+			var self = this;
+			var dataToggle = domQuery(".chart-wrapper nav .dataset li");
+
+			if(dataToggle !== null){
+				dataToggle.on('click', function(evt){
+					dataToggle.removeClass("active");
+					var target = evt.srcElement || evt.target;
+
+					self.changeDataSet(target.className);
+					domClass.add(target, "active");
+
+					self.scale(function(){
+						return self.sort();
+					});
+				})
+			}
+		},
+		dataSet: "fvh",
+		changeDataSet: function(d){
+			this.dataSet = d;
+			if(d === "fvh"){
+				this.renderLegend("Legend: ", proteinfamilyLegend[d]);
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.functional")[0], "display", "inline");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.hypothetical")[0], "display", "inline");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.core")[0], "display", "none");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.accessory")[0], "display", "none");
+
+			}else if(d === "cva"){
+				this.renderLegend("Legend: ", proteinfamilyLegend[d]);
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.functional")[0], "display", "none");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.hypothetical")[0], "display", "none");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.core")[0], "display", "inline");
+				domStyle.set(domQuery(".chart-wrapper nav .sort li.accessory")[0], "display", "inline");
+			}
+		}
+	});
 
 	var attributeTemplate = [
 		"<a class='left right-align-text attribute-line' href='{attr.link}'>",
@@ -55,6 +176,52 @@ define([
 	var tooltipLayer = d3.select("body").append("div")
 		.attr("class", "tooltip")
 		.style("opacity", 0);
+
+	var convertCountryNameToAlpha2Code = function(name){
+		// have top 10 countries for now.
+		// use i18n-iso-countries module later
+		var code;
+
+		switch(name){
+			case "United States":
+			case "USA":
+				code = "us";
+				break;
+			case "United Kingdom":
+				code = "gb";
+				break;
+			case "Thailand":
+				code = "th";
+				break;
+			case "Netherlands":
+				code = "nl";
+				break;
+			case "China":
+				code = "cn";
+				break;
+			case "Canada":
+				code = "ca";
+				break;
+			case "Russia":
+			case "Russian Federation":
+				code = "ru";
+				break;
+			case "India":
+				code = "in";
+				break;
+			case "Germany":
+				code = "de";
+				break;
+			case "Australia":
+				code = "au";
+				break;
+			default:
+				code = "us";
+				break;
+		}
+
+		return code;
+	};
 
 	return declare([ViewerBase], {
 
@@ -97,7 +264,7 @@ define([
 			var popularListUl = ["<ul class='no-decoration genome-list tab-headers third'>"];
 
 			popularList.forEach(function(genome, idx){
-				popularListUl.push(lang.replace("<li><a data-genome-href='{0}' class='genome-link' href='#genome-tab{1}'>{2}</a><div class='arrow'></div></li>", [genome.link, (idx + 1), genome.popularName]));
+				popularListUl.push(lang.replace("<li><a data-genome-href='{0}' class='genome-link' href='#genome-tab{1}'>{2}</a><div class=''></div></li>", [genome.link, (idx + 1), genome.popularName]));
 			});
 			popularListUl.push("</ul>");
 
@@ -596,29 +763,29 @@ define([
 				.attr("height", 266)
 				.attr("transform", "translate(0,22)");
 
-			var chartheight = 266; //this.drawtarget.canvas_size.height;
-			var chartwidth = 288; //this.drawtarget.canvas_size.width;
+			var chartHeight = 266; //this.drawtarget.canvas_size.height;
+			var chartWidth = 288; //this.drawtarget.canvas_size.width;
 			var upperBound = d3.max(data, function(d){
 				return d.reported || d.value;
 			});
-			var yScale = d3.scale.linear().range([0, chartheight]).domain([0, upperBound]);
-			var xScale = d3.scale.linear().range([0, chartwidth]).domain([0, data.length]);
+			var yScale = d3.scale.linear().range([0, chartHeight]).domain([0, upperBound]);
+			var xScale = d3.scale.linear().range([0, chartWidth]).domain([0, data.length]);
 			var bars = canvas.selectAll("g.bar").data(data);
-			bars.enter().append("g").attr("class", function(d){
-				return "bar " + d['m_label'];
-			});
+			bars.enter().append("g");
+
 			// add rect bar
 			bars.append("rect").attr("class", function(d, i){
-				return "bar-" + i;
+				return "bar bar-" + i;
 			}).attr("height", function(d){
 				var val;
 				val = d.reported || d.value;
 				return yScale(val);
-			}).attr("width", Math.floor(xScale(.8))).attr("x", function(d, i){
+			}).attr("width", Math.floor(xScale(.8)))
+			.attr("x", function(d, i){
 				return (i * xScale(1)) + xScale(.1);
 			}).attr("y", function(d){
 				var val = d.reported || d.value;
-				return chartheight - yScale(val);
+				return chartHeight - yScale(val);
 			}).on("click", function(d){
 				var url = "/view/Taxonomy/2#view_tab=genomes&filter=";
 
@@ -634,7 +801,7 @@ define([
 					.duration(200)
 					.style("opacity", .95);
 
-				tooltipLayer.html(d.label)
+				tooltipLayer.html(d.label + " (" + d.value + ")")
 					.style("left", d3.event.pageX + "px")
 					.style("top", d3.event.pageY + "px");
 			}).on("mouseout", function(){
@@ -643,15 +810,20 @@ define([
 					.style("opacity", 0);
 			});
 			// add text
-			bars.append("text").attr("class", function(d, i){
-				return "label label-" + i;
-			}).attr("x", function(d, i){
+			bars.append("text")
+			.attr("class", "label")
+			.attr("x", function(d, i){
 				return (i * xScale(1)) + xScale(.5);
 			}).attr("y", function(d){
 				var val = d.reported || d.value;
-				return chartheight - yScale(val) - 6;
-			}).attr("text-anchor", "middle").text(function(d){
-				return d.value;
+				return chartHeight - yScale(val) - 6;
+			}).attr("text-anchor", "middle")
+			.text(function(d){
+				if(target === "dlp-genomes-chart-tab1"){
+					return d.label.split(",")[0];
+				}else{
+					return d.value;
+				}
 			}).on("click", function(d){
 				var url = "/view/Taxonomy/2#view_tab=genomes&filter=";
 
@@ -666,7 +838,7 @@ define([
 					.duration(200)
 					.style("opacity", .95);
 
-				tooltipLayer.html(d.label)
+				tooltipLayer.html(d.label + " (" + d.value + ")")
 					.style("left", d3.event.pageX + "px")
 					.style("top", d3.event.pageY + "px");
 			}).on("mouseout", function(){
@@ -674,55 +846,38 @@ define([
 					.duration(500)
 					.style("opacity", 0);
 			});
-			// add icon
-			/*			bars.select(function(d) {
-							if (d.icon != null) {
-								return this;
-							} else {
-								return null;
-							}
-						}).append("image").attr("xlink:href", function(d) {
-							return d.icon;
-						}).attr("class", "icon").attr("preserveAspectRatio", "xMinYMax").attr("height", function(d, i) {
-							var val;
-							val = d.reported || d.value;
-							return yScale(val);
-						}).attr("width", Math.floor(xScale(.7))).attr("x", function(d, i) {
-							//return (i * xScale(1)) + xScale(.1);
-							return (i * xScale(1)) + xScale(.1) + 3;
-						}).attr("y", function(d, i) {
-							var val;
-							val = d.reported || d.value;
-							//return chartheight - yScale(val);
-							return chartheight - yScale(val) + 3;
-						}).on("click", function(d, i) {
-							var meta;
-							meta = {
-								"clickTarget": this,
-								"chartTarget": self.p.target
-							};
-							if (self.p.clickHandler != null) {
-								return self.p.clickHandler(d, i, meta);
-							}
-						}).on("mouseover", function(d, i) {
-							var meta;
-							meta = {
-								"clickTarget": this,
-								"chartTarget": self.p.target
-							};
-							if (self.p.mouseoverHandler != null) {
-								return self.p.mouseoverHandler(d, i, meta);
-							}
-						}).on("mouseout", function(d, i) {
-							var meta;
-							meta = {
-								"clickTarget": this,
-								"chartTarget": self.p.target
-							};
-							if (self.p.mouseoutHandler != null) {
-								return self.p.mouseoutHandler(d, i, meta);
-							}
-						});*/
+
+			// add flag for isolation country tab
+			if(target === "dlp-genomes-chart-tab2"){
+				bars.append("image")
+					.attr("xlink:href", function(d){
+						return "/public/js/flag-icon-css/flags/1x1/" + convertCountryNameToAlpha2Code(d.label) + ".svg";
+					})
+					.attr("height", 32)
+					.attr("width", 32)
+				.attr("x", function(d, i){
+					return (i * xScale(1)) + xScale(.1) + 7;
+				})
+				.attr("y", 178)
+				.on("click", function(d){
+					var url = "/view/Taxonomy/2#view_tab=genomes&filter=eq(isolation_country," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				})
+				.on("mouseover", function(d){
+					tooltipLayer.transition()
+						.duration(200)
+						.style("opacity", .95);
+
+					tooltipLayer.html(d.label + " (" + d.value + ")")
+						.style("left", d3.event.pageX + "px")
+						.style("top", d3.event.pageY + "px");
+				}).on("mouseout", function(){
+					tooltipLayer.transition()
+						.duration(500)
+						.style("opacity", 0);
+				});
+			}
+
 			// add sawtooth
 			bars.select(function(d){
 				if((d.reported != null) && d.reported !== d.value){
@@ -733,7 +888,7 @@ define([
 			}).append("path").attr("d", breakstr).attr("class", "sawtooth").attr("transform", function(d, i){
 				var scaleFactor, xpos, ypos;
 				xpos = (i * xScale(1)) + xScale(.1);
-				ypos = chartheight - yScale(d.reported / 2) - 14;
+				ypos = chartHeight - yScale(d.reported / 2) - 14;
 				scaleFactor = xScale(.8) / 54;
 				return "translate(" + xpos + "," + ypos + ") scale(" + scaleFactor + ")";
 			});
@@ -875,7 +1030,7 @@ define([
 				link.addEventListener('click', function(evt){
 					var target = evt.target || evt.srcElement;
 					var link = target.dataset.genomeHref;
-					Topic.publish('/navigate', {href: link});
+					Topic.publish('/navigate', {href: link, target: "blank"});
 				});
 				link.addEventListener('mouseover', function(evt){
 					var target = evt.target || evt.srcElement;
@@ -909,26 +1064,25 @@ define([
 
 		_renderProteinFamiliesDistribution: function(data){
 
-			var legend = ["Functional", "Hypothetical"];
-
 			var processed = data.map(function(datum, i){
 				return {
 					"index": i,
 					"label": datum.pathogen,
 					"genomes": datum.genomes,
 					"total": parseInt(datum.total),
-					"tooltip": function(d, idx){
-						return lang.replace('Genus: {0}<br/>Data: {1}<br/>Count: {2}', [d.label, legend[idx], d.dist[idx]]);
+					"tooltip": function(d, idx, dataSet){
+						return lang.replace('Genus: {0}<br/>Data: {1}<br/>Count: {2}', [d.label, legend[dataSet][idx], d[dataSet][idx]]);
 					},
-					"dist": [parseInt(datum.functional), parseInt(datum.hypothetical)]
+					"cva": [parseInt(datum.core), parseInt(datum.accessory)],
+					"fvh": [parseInt(datum.functional), parseInt(datum.hypothetical)]
 				};
 			});
 
 			var targetNode = domQuery("#dlp-proteinfamilies-dist-genera")[0];
-			var pfChart = new StackedBarChart();
+			var pfChart = new proteinFamiliesChart();
 			pfChart.init(targetNode);
 			pfChart.renderNav(proteinfamilyNavBarHtml);
-			pfChart.renderLegend("Legend: ", legend);
+			pfChart.renderLegend("Legend: ", proteinfamilyLegend["fvh"]);
 			pfChart.render(processed);
 		},
 
@@ -1210,6 +1364,7 @@ define([
 
 			this.viewer = new ContentPane({
 				region: "center",
+				style: "padding:0",
 				content: ""
 			});
 

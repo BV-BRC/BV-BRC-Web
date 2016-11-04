@@ -12,6 +12,7 @@ define([
 		data: null,
 		templateString: Template,
 		minBarWidth: 25,
+		dataSet: "dist",
 
 		init: function(target, className, margin){
 			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
@@ -110,7 +111,7 @@ define([
 				.attr("class", "y axis");
 
 			this.seriesSize = this.data.map(function(d){
-				return d['dist'].length
+				return d[self.dataSet].length
 			})
 				.reduce(function(a, b){
 					return Math.max(a, b)
@@ -124,8 +125,8 @@ define([
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
 					.attr("y", function(d){
-						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(self.canvasHeight - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
+						var ancestorHeight = self.barHeight(d3.sum(d[self.dataSet].slice(0, index)), d.total);
+						return Math.round(self.canvasHeight - self.barHeight(d[self.dataSet][index], d.total) - ancestorHeight);
 					})
 					.attr("x", function(d, i){
 						return self.barPosition(i)
@@ -134,7 +135,7 @@ define([
 						return self.barWidth()
 					})
 					.attr("height", function(d){
-						return Math.round(self.barHeight(d['dist'][index], d.total))
+						return Math.round(self.barHeight(d[self.dataSet][index], d.total))
 					})
 					.on("click", function(d){
 						if(d.link){
@@ -156,6 +157,7 @@ define([
 						// console.log(d);
 
 						arguments[1] = index;
+						arguments[2] = self.dataSet;
 						var content = (d.tooltip) ? d.tooltip.apply(this, arguments) : lang.replace('{label} ({count})', d);
 
 						self.tooltipLayer.html(content)
@@ -267,8 +269,8 @@ define([
 					.transition().duration(600)
 					.attr("y", function(d, i){
 						if(data[i] != undefined){
-							var ancestorHeight = self.barHeight(d3.sum(data[i]['dist'].slice(0, index)), data[i].total);
-							return Math.round(self.canvasHeight - self.barHeight(data[i]['dist'][index], data[i].total) - ancestorHeight);
+							var ancestorHeight = self.barHeight(d3.sum(data[i][self.dataSet].slice(0, index)), data[i].total);
+							return Math.round(self.canvasHeight - self.barHeight(data[i][self.dataSet][index], data[i].total) - ancestorHeight);
 						}else{
 							return 0;
 						}
@@ -280,7 +282,7 @@ define([
 						return self.barWidth();
 					})
 					.attr("height", function(d, i){
-						return (data[i] != undefined) ? Math.round(self.barHeight(data[i]['dist'][index], data[i].total)) : 0;
+						return (data[i] != undefined) ? Math.round(self.barHeight(data[i][self.dataSet][index], data[i].total)) : 0;
 					});
 			});
 
@@ -359,11 +361,11 @@ define([
 				self.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
 					.attr("y", function(d){
-						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(self.canvasHeight - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
+						var ancestorHeight = self.barHeight(d3.sum(d[self.dataSet].slice(0, index)), d.total);
+						return Math.round(self.canvasHeight - self.barHeight(d[self.dataSet][index], d.total) - ancestorHeight);
 					})
 					.attr("height", function(d){
-						return Math.round(self.barHeight(d['dist'][index], d.total))
+						return Math.round(self.barHeight(d[self.dataSet][index], d.total))
 					});
 			});
 		},
@@ -394,8 +396,8 @@ define([
 				});
 			}else if(this.currentSort === "value"){
 				this.bars.sort(function(a, b){
-					var aValue = self.barHeight(a['dist'][0], a.total);
-					var bValue = self.barHeight(b['dist'][0], b.total);
+					var aValue = self.barHeight(a[self.dataSet][0], a.total);
+					var bValue = self.barHeight(b[self.dataSet][0], b.total);
 
 					var orderCode = aValue - bValue;
 					if(!self.ascendSort){

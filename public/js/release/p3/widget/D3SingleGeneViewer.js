@@ -131,7 +131,7 @@ define("p3/widget/D3SingleGeneViewer", [
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						content.push("Product: " + d.product);
 						content.push("Feature type: " + d.feature_type);
-						content.push("Location: " + d.start + "..." + d.end + " (" + d.strand + ")");
+						content.push("Location: " + d.start + "..." + d.end + " (" + d.na_length + " bp, "  + d.strand + ")");
 
 						self.tooltipLayer.html(content.join("<br/>"))
 							.style("left", d3.event.pageX + "px")

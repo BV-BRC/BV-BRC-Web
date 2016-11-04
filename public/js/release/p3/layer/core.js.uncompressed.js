@@ -151,6 +151,7 @@ define([
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
+				newState.style = "padding:0";
 				newState.value = _self.dataAPI + "/content/" + path;
 				newState.set = "href";
 				newState.requireAuth = false;
@@ -78576,7 +78577,7 @@ define([
 				return;
 			}
 
-			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView){
+			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && !this.tabContainer.selectedChildWidget.state){
 				this.tabContainer.selectedChildWidget.set('state', state);
 			}
 
@@ -78651,7 +78652,7 @@ define([
 			this.pathwaysGrid = new PathwaysGridContainer({
 				title: "Pathways",
 				type: "pathway",
-				state: this.state,
+				// state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
@@ -112305,7 +112306,7 @@ define([
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						content.push("Product: " + d.product);
 						content.push("Feature type: " + d.feature_type);
-						content.push("Location: " + d.start + "..." + d.end + " (" + d.strand + ")");
+						content.push("Location: " + d.start + "..." + d.end + " (" + d.na_length + " bp, "  + d.strand + ")");
 
 						self.tooltipLayer.html(content.join("<br/>"))
 							.style("left", d3.event.pageX + "px")
