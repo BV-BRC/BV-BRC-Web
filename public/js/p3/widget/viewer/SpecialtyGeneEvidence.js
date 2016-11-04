@@ -87,76 +87,96 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(feature){
 				console.log("feature result ", feature);
-				this.totalCountNode.innerHTML = "Specialty Genes > Virulence Factor > PATRIC_VF > " + '<a title="View feature page" href="/view/Feature/' + feature[0].feature_id + '" >' + this.source_id + '</a>';
-			}));
+				if (feature && feature.length==0) {
+					this.totalCountNode.innerHTML = "Specialty Genes > "  + this.source_id + '</a>';	
+					var messagePane = new ContentPane({
+						title: "Result",
+						region: "top",
+						content: "<p>No PATRIC curation data found</p>"
+					});
+					this.viewer.addChild(messagePane);
+					return;				
+				}
+				var feature_id =feature[0].feature_id;
+				this.totalCountNode.innerHTML = "Specialty Genes > Virulence Factor > PATRIC_VF > " + '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+				var q = "?and(eq(source_id,"+this.source_id+"),eq(source,PATRIC_VF))&limit(25000)"; 
+				//var q = "?and(eq(source_id,"+"Rv3375"+ "),eq(source,PATRIC_VF))";
 			
-			var q = "?and(eq(source_id,"+this.source_id+"),eq(source,PATRIC_VF))&limit(25000)"; 
-			//var q = "?and(eq(source_id,"+"Rv3375"+ "),eq(source,PATRIC_VF))";
-			
-			console.log("query evidence, q=", q);
-			xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_ref", q), {
-				headers: {
-					accept: "application/json",
-					'X-Requested-With': null,
-					'Authorization': (window.App.authorizationToken || "")
-				},
-				handleAs: "json"
-			}).then(lang.hitch(this, function(reference){
-				console.log("reference result ", reference);
-				this.set("reference", reference);
-				this.state.reference = reference;
-	
-				var node = domConstruct.create("div", {style: "width: 50%"}, this.viewer.containerNode);
-				domConstruct.place(DataItemFormatter(reference[0], "spgene_ref_data", {}), node, "first");
-				
-				// retrieve homologs
-				xhr.get(PathJoin(this.apiServiceUrl, "sp_gene", q), {
+				console.log("query evidence, q=", q);
+				xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_ref", q), {
 					headers: {
 						accept: "application/json",
 						'X-Requested-With': null,
 						'Authorization': (window.App.authorizationToken || "")
 					},
 					handleAs: "json"
-				}).then(lang.hitch(this, function(homolog){
-					console.log("homolog result ", homolog);
-					var count = homolog.length;
-					var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
-					var link = '<a title="View homologs" href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(source_id,' + this.source_id + '))" >' + count + '</a>';
-					var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Homologs: </b>" + link + "</p>"}, this.viewer.containerNode);
-
-					console.log("query evidence, q=", q);
-					xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_evidence", q), {
+				}).then(lang.hitch(this, function(reference){
+					console.log("reference result ", reference);
+					this.set("reference", reference);
+					this.state.reference = reference;
+					if(reference && reference.length==0){
+						var messagePane = new ContentPane({
+							title: "Result",
+							region: "top",
+							content: "<p>No PATRIC curation data found</p>"
+						});
+						this.viewer.addChild(messagePane);
+						this.totalCountNode.innerHTML= "Specialty Genes > " + '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+						return;				
+					}
+					var node = domConstruct.create("div", {style: "width: 50%"}, this.viewer.containerNode);
+					domConstruct.place(DataItemFormatter(reference[0], "spgene_ref_data", {}), node, "first");
+				
+					// retrieve homologs
+					xhr.get(PathJoin(this.apiServiceUrl, "sp_gene", q), {
 						headers: {
 							accept: "application/json",
 							'X-Requested-With': null,
 							'Authorization': (window.App.authorizationToken || "")
 						},
 						handleAs: "json"
-					}).then(lang.hitch(this, function(evidence){
-						console.log("evidence result ", evidence);
+					}).then(lang.hitch(this, function(homolog){
+						console.log("homolog result ", homolog);
+						var count = homolog.length;
 						var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
-						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Evidence:</b></p></br>"}, this.viewer.containerNode);
-						var evidencenode = domConstruct.create("div", {id:"evid", style: "width: 100%"}, this.viewer.containerNode);				
-						var grid = new Grid({
-							columns: {
-								specific_organism: 'Organism',
-								specific_host: 'Host',
-								classification: 'Classification',
-								pmid: 'PubMed',
-								assertion: 'Assertion'
-							}
-						}, 'evid');
-						grid.renderArray(evidence);
-						grid.resize();
+						var link = '<a title="View homologs" href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(source_id,' + this.source_id + '))" >' + count + '</a>';
+						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Homologs: </b>" + link + "</p>"}, this.viewer.containerNode);
 
-						this.set("evidence", evidence);
-						// console.log('Experiment : ', experiment);
-						this.state.evidence = evidence;
-						this.setActivePanelState();
+						console.log("query evidence, q=", q);
+						xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_evidence", q), {
+							headers: {
+								accept: "application/json",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							handleAs: "json"
+						}).then(lang.hitch(this, function(evidence){
+							console.log("evidence result ", evidence);
+							var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
+							var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Evidence:</b></p></br>"}, this.viewer.containerNode);
+							var evidencenode = domConstruct.create("div", {id:"evid", style: "width: 100%"}, this.viewer.containerNode);				
+							var grid = new Grid({
+								columns: {
+									specific_organism: 'Organism',
+									specific_host: 'Host',
+									classification: 'Classification',
+									pmid: 'PubMed',
+									assertion: 'Assertion'
+								}
+							}, 'evid');
+							grid.renderArray(evidence);
+							grid.resize();
+
+							this.set("evidence", evidence);
+							// console.log('Experiment : ', experiment);
+							this.state.evidence = evidence;
+							this.setActivePanelState();
+						}));
 					}));
-				}));
 					
-			}));
+				}));
+			}));		
+
 		}
 	});
 });

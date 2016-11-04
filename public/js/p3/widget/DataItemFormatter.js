@@ -313,6 +313,7 @@ define([
 								sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + obj.source + '</a>';
 								break;
 							case "TTD":
+								sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + obj.source + '</a>'; 
 								break;
 							default:
 								break;
@@ -339,6 +340,14 @@ define([
 								break;
 							case "ARDB":
 								sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "DrugBank":
+								var padding = "BE0000000";
+								var id = padding.substring(0, padding.length-obj.source_id.length) + obj.source_id;
+								sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "TTD":
+								sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
 								break;
 							default:
 								break;
@@ -1191,7 +1200,7 @@ define([
 			}
 		}
 	}
-
+	
 	return function(item, type, options){
 
 		var new_type;
