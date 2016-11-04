@@ -326,7 +326,8 @@ define([
 						var sourcelink = obj.source_id;
 						switch(obj.source){
 							case "PATRIC_VF":
-								break; 
+								sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + obj.source_id  + '" target="_blank">' + obj.source_id + '</a>';
+								break;
 							case "Victors": 
 								sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
 								break;
