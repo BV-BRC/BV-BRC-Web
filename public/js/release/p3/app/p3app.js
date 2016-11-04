@@ -149,6 +149,7 @@ define("p3/app/p3app", [
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
+				newState.style = "padding:0";
 				newState.value = _self.dataAPI + "/content/" + path;
 				newState.set = "href";
 				newState.requireAuth = false;

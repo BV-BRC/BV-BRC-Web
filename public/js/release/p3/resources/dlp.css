@@ -233,18 +233,18 @@
 .dlp .genome-data span {
   line-height: 21px;
 }
-.dlp .genome-data .genome-data-icon.feature {
+.patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.feature {
   background-image: url("/patric/images/icon-popular-feature.png");
   position: inherit;
   background-color: inherit;
 }
-.dlp .genome-data .genome-data-icon.experiment {
+.patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.experiment {
   background-image: url("/patric/images/icon-popular-experiment.png");
 }
-.dlp .genome-data .genome-data-icon.pathway {
+.patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.pathway {
   background-image: url("/patric/images/icon-popular-pathway.png");
 }
-.dlp .genome-data .genome-data-icon.proteinfamily {
+.patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.proteinfamily {
   background-image: url("/patric/images/icon-popular-proteinfamily.png");
 }
 .patric .dlp .axis path {
@@ -368,14 +368,15 @@
   height: 232px;
 }
 #dlp-genomes-chart .top-5 .label {
-  font-size: 18px;
+  font-size: 1.1em;
   color: #555555;
   fill: #555555;
-}
-#dlp-genomes-chart .top-5 .label.label-0 {
-  font-size: 150%;
+  cursor: pointer;
 }
 #dlp-genomes-chart .top-5 .bar {
+  cursor: pointer;
+}
+#dlp-genomes-chart .top-5 g image {
   cursor: pointer;
 }
 #dlp-genomes-chart .bar-0 {
