@@ -177,6 +177,52 @@ define([
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
+	var convertCountryNameToAlpha2Code = function(name){
+		// have top 10 countries for now.
+		// use i18n-iso-countries module later
+		var code;
+
+		switch(name){
+			case "United States":
+			case "USA":
+				code = "us";
+				break;
+			case "United Kingdom":
+				code = "gb";
+				break;
+			case "Thailand":
+				code = "th";
+				break;
+			case "Netherlands":
+				code = "nl";
+				break;
+			case "China":
+				code = "cn";
+				break;
+			case "Canada":
+				code = "ca";
+				break;
+			case "Russia":
+			case "Russian Federation":
+				code = "ru";
+				break;
+			case "India":
+				code = "in";
+				break;
+			case "Germany":
+				code = "de";
+				break;
+			case "Australia":
+				code = "au";
+				break;
+			default:
+				code = "us";
+				break;
+		}
+
+		return code;
+	};
+
 	return declare([ViewerBase], {
 
 		onSetState: function(attr, oldVal, state){
@@ -717,17 +763,16 @@ define([
 				.attr("height", 266)
 				.attr("transform", "translate(0,22)");
 
-			var chartheight = 266; //this.drawtarget.canvas_size.height;
-			var chartwidth = 288; //this.drawtarget.canvas_size.width;
+			var chartHeight = 266; //this.drawtarget.canvas_size.height;
+			var chartWidth = 288; //this.drawtarget.canvas_size.width;
 			var upperBound = d3.max(data, function(d){
 				return d.reported || d.value;
 			});
-			var yScale = d3.scale.linear().range([0, chartheight]).domain([0, upperBound]);
-			var xScale = d3.scale.linear().range([0, chartwidth]).domain([0, data.length]);
+			var yScale = d3.scale.linear().range([0, chartHeight]).domain([0, upperBound]);
+			var xScale = d3.scale.linear().range([0, chartWidth]).domain([0, data.length]);
 			var bars = canvas.selectAll("g.bar").data(data);
-			bars.enter().append("g").attr("class", function(d){
-				return "bar " + d['m_label'];
-			});
+			bars.enter().append("g");
+
 			// add rect bar
 			bars.append("rect").attr("class", function(d, i){
 				return "bar-" + i;
@@ -735,11 +780,12 @@ define([
 				var val;
 				val = d.reported || d.value;
 				return yScale(val);
-			}).attr("width", Math.floor(xScale(.8))).attr("x", function(d, i){
+			}).attr("width", Math.floor(xScale(.8)))
+			.attr("x", function(d, i){
 				return (i * xScale(1)) + xScale(.1);
 			}).attr("y", function(d){
 				var val = d.reported || d.value;
-				return chartheight - yScale(val);
+				return chartHeight - yScale(val);
 			}).on("click", function(d){
 				var url = "/view/Taxonomy/2#view_tab=genomes&filter=";
 
@@ -755,7 +801,7 @@ define([
 					.duration(200)
 					.style("opacity", .95);
 
-				tooltipLayer.html(d.label)
+				tooltipLayer.html(d.label + " (" + d.value + ")")
 					.style("left", d3.event.pageX + "px")
 					.style("top", d3.event.pageY + "px");
 			}).on("mouseout", function(){
@@ -764,15 +810,19 @@ define([
 					.style("opacity", 0);
 			});
 			// add text
-			bars.append("text").attr("class", function(d, i){
-				return "label label-" + i;
-			}).attr("x", function(d, i){
+			bars.append("text")
+			.attr("x", function(d, i){
 				return (i * xScale(1)) + xScale(.5);
 			}).attr("y", function(d){
 				var val = d.reported || d.value;
-				return chartheight - yScale(val) - 6;
-			}).attr("text-anchor", "middle").text(function(d){
-				return d.value;
+				return chartHeight - yScale(val) - 6;
+			}).attr("text-anchor", "middle")
+			.text(function(d){
+				if(target === "dlp-genomes-chart-tab1"){
+					return d.label.split(",")[0];
+				}else{
+					return d.value;
+				}
 			}).on("click", function(d){
 				var url = "/view/Taxonomy/2#view_tab=genomes&filter=";
 
@@ -787,7 +837,7 @@ define([
 					.duration(200)
 					.style("opacity", .95);
 
-				tooltipLayer.html(d.label)
+				tooltipLayer.html(d.label + " (" + d.value + ")")
 					.style("left", d3.event.pageX + "px")
 					.style("top", d3.event.pageY + "px");
 			}).on("mouseout", function(){
@@ -795,55 +845,34 @@ define([
 					.duration(500)
 					.style("opacity", 0);
 			});
-			// add icon
-			/*			bars.select(function(d) {
-							if (d.icon != null) {
-								return this;
-							} else {
-								return null;
-							}
-						}).append("image").attr("xlink:href", function(d) {
-							return d.icon;
-						}).attr("class", "icon").attr("preserveAspectRatio", "xMinYMax").attr("height", function(d, i) {
-							var val;
-							val = d.reported || d.value;
-							return yScale(val);
-						}).attr("width", Math.floor(xScale(.7))).attr("x", function(d, i) {
-							//return (i * xScale(1)) + xScale(.1);
-							return (i * xScale(1)) + xScale(.1) + 3;
-						}).attr("y", function(d, i) {
-							var val;
-							val = d.reported || d.value;
-							//return chartheight - yScale(val);
-							return chartheight - yScale(val) + 3;
-						}).on("click", function(d, i) {
-							var meta;
-							meta = {
-								"clickTarget": this,
-								"chartTarget": self.p.target
-							};
-							if (self.p.clickHandler != null) {
-								return self.p.clickHandler(d, i, meta);
-							}
-						}).on("mouseover", function(d, i) {
-							var meta;
-							meta = {
-								"clickTarget": this,
-								"chartTarget": self.p.target
-							};
-							if (self.p.mouseoverHandler != null) {
-								return self.p.mouseoverHandler(d, i, meta);
-							}
-						}).on("mouseout", function(d, i) {
-							var meta;
-							meta = {
-								"clickTarget": this,
-								"chartTarget": self.p.target
-							};
-							if (self.p.mouseoutHandler != null) {
-								return self.p.mouseoutHandler(d, i, meta);
-							}
-						});*/
+
+			// add flag for isolation country tab
+			if(target === "dlp-genomes-chart-tab2"){
+				bars.append("image")
+					.attr("xlink:href", function(d){
+						return "/public/js/flag-icon-css/flags/1x1/" + convertCountryNameToAlpha2Code(d.label) + ".svg";
+					})
+					.attr("height", 32)
+					.attr("width", 32)
+				.attr("x", function(d, i){
+					return (i * xScale(1)) + xScale(.1) + 7;
+				})
+				.attr("y", 178)
+				.on("mouseover", function(d){
+					tooltipLayer.transition()
+						.duration(200)
+						.style("opacity", .95);
+
+					tooltipLayer.html(d.label + " (" + d.value + ")")
+						.style("left", d3.event.pageX + "px")
+						.style("top", d3.event.pageY + "px");
+				}).on("mouseout", function(){
+					tooltipLayer.transition()
+						.duration(500)
+						.style("opacity", 0);
+				});
+			}
+
 			// add sawtooth
 			bars.select(function(d){
 				if((d.reported != null) && d.reported !== d.value){
@@ -854,7 +883,7 @@ define([
 			}).append("path").attr("d", breakstr).attr("class", "sawtooth").attr("transform", function(d, i){
 				var scaleFactor, xpos, ypos;
 				xpos = (i * xScale(1)) + xScale(.1);
-				ypos = chartheight - yScale(d.reported / 2) - 14;
+				ypos = chartHeight - yScale(d.reported / 2) - 14;
 				scaleFactor = xScale(.8) / 54;
 				return "translate(" + xpos + "," + ypos + ") scale(" + scaleFactor + ")";
 			});
