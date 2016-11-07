@@ -155,7 +155,9 @@ define([
 		updateFilterPanel: function(pfState){
 			// console.log("update filter panel selections", pfState);
 
+			this.family_type_selector._onChangeActive = false;
 			this.family_type_selector.set('value', pfState['familyType']);
+			this.family_type_selector._onChangeActive = true;
 			this.ta_keyword.set('value', pfState['keyword']);
 			this.rb_perfect_match.reset();
 			this.rb_non_perfect_match.reset();
