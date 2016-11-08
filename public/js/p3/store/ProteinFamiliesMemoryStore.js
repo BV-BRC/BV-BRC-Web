@@ -58,7 +58,7 @@ define([
 			}
 
 			if(state && state.hashParams && state.hashParams.params){
-				var params = JSON.parse(state.hashParams.params);
+				var params = JSON.parse(decodeURIComponent(state.hashParams.params));
 
 				params.family_type ? this.pfState.familyType = params.family_type : {};
 				// params.keyword ? pfState.keyword = params.keyword : {};
