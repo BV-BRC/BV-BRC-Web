@@ -35,7 +35,7 @@ define([
 				// console.log("Genome ID Already Set");
 				return;
 			}
-			var state = this.state = this.state || {};
+
 			this.genome_id = this.state.genome_id = id;
 			this.state.genome_ids = [id];
 
@@ -72,15 +72,12 @@ define([
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;
+				case "proteinFamilies":
+					// do not set state, the container is built by setVisible already
+					break;
 				default:
 					if(activeQueryState){
 						// console.log("Using Default ActiveQueryState: ", activeQueryState);
-						if(active == "proteinFamilies"){
-							// activeQueryState.search = "";
-							if(activeTab._firstView){
-								Topic.publish("ProteinFamilies", "showMainGrid");
-							}
-						}
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.log("Missing Active Query State for: ", active)
@@ -124,26 +121,10 @@ define([
 		},
 
 		_setGenomeAttr: function(genome){
-			var state = this.state || {};
-
 			this.state.genome = genome;
 
-			// this.viewHeader.set("content", this.buildHeaderContent(genome));
-
-			// this.queryNode.innerHTML = this.buildHeaderContent(genome);
 			this.buildHeaderContent(genome);
 			domConstruct.empty(this.totalCountNode);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// var activeTab = this[active];
-
-			// switch(active){
-			// 	case "phylogeny":
-			// 	case "overview":
-			// 		activeTab.set("state", state);
-			// 		break;
-			// 	default:
-			// 		break;
-			// }
 
 			this._set("genome", genome);
 			this.setActivePanelState();
@@ -190,6 +171,19 @@ define([
 
 				if(this[state.hashParams.view_tab]){
 					var vt = this[state.hashParams.view_tab];
+
+					if(state.hashParams.view_tab === "proteinFamilies"){
+						// state.hashParams = lang.mixin({}, state.hashParams, {
+						// 	params: JSON.stringify({"family_type": "plfam"})
+						// });
+
+						this.proteinFamilies.state = lang.mixin({}, state, {
+							hashParams: lang.mixin({}, state.hashParams, {
+								params: JSON.stringify({"family_type": "plfam"})
+							})
+						});
+					}
+
 					vt.set("visible", true);
 					this.viewer.selectChild(vt);
 				}else{

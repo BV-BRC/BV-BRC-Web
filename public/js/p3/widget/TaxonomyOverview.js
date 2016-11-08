@@ -10,8 +10,6 @@ define([
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
 			ExternalItemFormatter){
 
-	var searchName = null;
-
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "TaxonomyOverview",
 		disabled: false,
@@ -20,6 +18,7 @@ define([
 		genome: null,
 		state: null,
 		genome_ids: null,
+		searchName: null,
 
 		_setStateAttr: function(state){
 			this._set("state", state);
@@ -27,8 +26,6 @@ define([
 			if(state.taxonomy){
 				this.set("taxonomy", state.taxonomy);
 			}
-
-			searchName = this.genome.taxon_name;
 
 			// widgets called by genome ids
 			var sumWidgets = ["apmSummaryWidget"];
@@ -59,6 +56,7 @@ define([
 
 		"_setTaxonomyAttr": function(genome){
 			this.genome = genome;
+			this.searchName = this.genome.taxon_name;
 			this.createSummary(genome);
 			// this.getWikiDescription(genome);
 		},
@@ -66,7 +64,7 @@ define([
 		"createSummary": function(genome){
 			domConstruct.empty(this.taxonomySummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {}), this.taxonomySummaryNode, "first");
-			if(searchName != genome.taxon_name){
+			if(this.searchName != genome.taxon_name){
 				domConstruct.empty(this.pubmedSummaryNode);
 				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 			}
@@ -83,7 +81,7 @@ define([
 
 			var taxonName = genome.taxon_name.split(" ").join("+");
 
-			if(searchName != genome.taxon_name){
+			if(this.searchName != genome.taxon_name){
 
 				// when(xhr.get(wikiApiUrl + token + origin, {
 				// 	handleAs: 'json',
@@ -93,15 +91,15 @@ define([
 				// 	}
 				// }), function(data){
 				// 	console.log(data);
-					when(xhr.get(wikiApiUrl + query + taxonName + origin, {
-						handleAs: 'json',
-						headers: {
-							'X-Requested-With': null,
-							'Accept': 'application/json'
-						}
-					}), function(response){
-						console.log("response: ", response);
-					});
+				when(xhr.get(wikiApiUrl + query + taxonName + origin, {
+					handleAs: 'json',
+					headers: {
+						'X-Requested-With': null,
+						'Accept': 'application/json'
+					}
+				}), function(response){
+					console.log("response: ", response);
+				});
 				// })
 			}
 		},
