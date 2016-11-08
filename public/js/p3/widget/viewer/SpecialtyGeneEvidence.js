@@ -98,7 +98,12 @@ define([
 					return;				
 				}
 				var feature_id =feature[0].feature_id;
-				this.totalCountNode.innerHTML = "Specialty Genes > Virulence Factor > PATRIC_VF > " + '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+				var spgenelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=false">Specialty Genes</a>';
+				var vflink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=eq(property,%22Virulence%20Factor%22)">Virulence Factors</a>';
+				var patricVFlink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(property,%22Virulence%20Factor%22),eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))">PATRIC_VF</a>';
+				var genelink = '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+
+				this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
 				var q = "?and(eq(source_id,"+this.source_id+"),eq(source,PATRIC_VF))&limit(25000)"; 
 				//var q = "?and(eq(source_id,"+"Rv3375"+ "),eq(source,PATRIC_VF))";
 			
@@ -137,10 +142,19 @@ define([
 						handleAs: "json"
 					}).then(lang.hitch(this, function(homolog){
 						console.log("homolog result ", homolog);
+
+						var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
+						var featureOverview = '<a href="/view/Feature/' + feature_id + '#view_tab=overview">Feature_Overview</a>';
+						var featureBrowser = '<a href="/view/Feature/' + feature_id + '#view_tab=genomeBrowser">Genome_Browser</a>';
+						var featureTranscriptomics = '<a href="/view/Feature/' + feature_id + '#view_tab=transcriptomics">Transcriptomics</a>';
+						var featureCogene = '<a href="/view/Feature/' + feature_id + '#view_tab=correlatedGenes">Correlated_Genes</a>';
+						var featurelinks = featureOverview + "&nbsp;&nbsp;" + featureBrowser + "&nbsp;&nbsp;" + featureTranscriptomics + "&nbsp;&nbsp;" + featureCogene;
+						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>View this feature in: </b>&nbsp;&nbsp;" + featurelinks + "</p>"}, this.viewer.containerNode);
+
 						var count = homolog.length;
 						var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
 						var link = '<a title="View homologs" href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(source_id,' + this.source_id + '))" >' + count + '</a>';
-						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Homologs: </b>" + link + "</p>"}, this.viewer.containerNode);
+						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Homologs: </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + link + "</p>"}, this.viewer.containerNode);
 
 						console.log("query evidence, q=", q);
 						xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_evidence", q), {

@@ -447,6 +447,7 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
+					//console.log("ViewSpgeneEvidence, sel.feature_id", sel.feature_id);
 					Topic.publish("/navigate", {
 						href: "/view/SpecialtyGeneEvidence/" + sel.source_id,
 						target: "blank"
