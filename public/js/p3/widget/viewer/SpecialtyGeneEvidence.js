@@ -103,7 +103,7 @@ define([
 				var patricVFlink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(property,%22Virulence%20Factor%22),eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))">PATRIC_VF</a>';
 				var genelink = '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
 
-				this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
+				//this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
 				var q = "?and(eq(source_id,"+this.source_id+"),eq(source,PATRIC_VF))&limit(25000)"; 
 				//var q = "?and(eq(source_id,"+"Rv3375"+ "),eq(source,PATRIC_VF))";
 			
@@ -166,6 +166,7 @@ define([
 							handleAs: "json"
 						}).then(lang.hitch(this, function(evidence){
 							console.log("evidence result ", evidence);
+							this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
 							var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
 							var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Evidence:</b></p></br>"}, this.viewer.containerNode);
 							var evidencenode = domConstruct.create("div", {id:"evid", style: "width: 100%"}, this.viewer.containerNode);				
