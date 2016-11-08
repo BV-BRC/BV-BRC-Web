@@ -37372,10 +37372,73 @@ define([
 				text: 'property'
 			}, {
 				name: 'Source',
-				text: 'source'
+				text: 'source',
+				link: function(obj) {
+						var sourcelink = obj.source;
+						switch(obj.source){
+							case "PATRIC_VF":
+								sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))" target="_blank">' + obj.source + '</a>';
+								break; 
+							case "Victors": 
+								sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + obj.source + '</a>';
+								break;
+							case "VFDB":
+								sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + obj.source + '</a>';
+								break;
+							case "Human":
+								sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + obj.source + '</a>';
+								break;
+							case "ARDB":
+								sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + obj.source + '</a>';
+								break;
+							case "CARD":
+								sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + obj.source + '</a>';
+								break;
+							case "DrugBank":
+								sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + obj.source + '</a>';
+								break;
+							case "TTD":
+								sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + obj.source + '</a>'; 
+								break;
+							default:
+								break;
+						}
+						return sourcelink;
+					}				
 			}, {
 				name: 'Source ID',
-				text: 'source_id'
+				text: 'source_id',
+				link: function(obj) {
+						var sourcelink = obj.source_id;
+						switch(obj.source){
+							case "PATRIC_VF":
+								sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + obj.source_id  + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "Victors": 
+								sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "VFDB":
+								sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "Human":
+								sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "ARDB":
+								sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "DrugBank":
+								var padding = "BE0000000";
+								var id = padding.substring(0, padding.length-obj.source_id.length) + obj.source_id;
+								sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "TTD":
+								sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							default:
+								break;
+						}
+						return sourcelink;
+					}
 			}, {
 				name: 'Organism',
 				text: 'organism'
@@ -37431,6 +37494,50 @@ define([
 			return div;
 		},
 
+		"spgene_ref_data": function(item, options){
+			options = options || {};
+
+			var columns = [{
+				name: 'Property',
+				text: 'property'
+			}, {
+				name: 'Source',
+				text: 'source'
+			}, {
+				name: 'Source ID',
+				text: 'source_id'
+			}, {
+				name: 'Organism',
+				text: 'organism'
+			}, {
+				name: 'Product',
+				text: 'product'
+			}, {
+				name: 'Gene Name',
+				text: 'gene_name'
+			}, {
+				name: 'Gene ID',
+				text: 'gene_id',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+			}, {
+				name: 'gi',
+				text: 'gi',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
+			}, {
+				name: 'Function',
+				text: 'function'
+			}, {
+				name: 'PubMed',
+				text: 'pmid',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
+			}];
+
+			var div = domConstruct.create("div");
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},			
+			
 		"taxonomy_data": function(item, options){
 			options = options || {};
 
@@ -38178,7 +38285,7 @@ define([
 			}
 		}
 	}
-
+	
 	return function(item, type, options){
 
 		var new_type;
@@ -74627,9 +74734,7 @@ define([
 					});
 				},
 				false
-			],
-
-			[
+			], [
 				"ViewSpgeneItem",
 				"MultiButton fa icon-selection-Feature fa-2x",
 				{
@@ -74659,6 +74764,26 @@ define([
 				},
 				false
 			], [
+				"ViewSpgeneEvidence",
+				"MultiButton fa icon-selection-Feature fa-2x",
+				{
+					label: "VF EVID",
+					validTypes: ["*"],
+					multiple: false,
+					validContainerTypes: ["spgene_data"],
+					tooltip: "View Specialty Gene Evidence"
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {
+						href: "/view/SpecialtyGeneEvidence/" + sel.source_id,
+						target: "blank"
+					});
+					//  0 && console.log("View SP GENE: ", sel)
+					//Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
+				},
+				false
+			], [
 				"ViewGenomeItemFromGenome",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{
@@ -74682,7 +74807,10 @@ define([
 					var sel = selection[0];
 					//  0 && console.log("sel: ", sel)
 					//  0 && console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					Topic.publish("/navigate", {
+						href: "/view/Genome/" + sel.genome_id,
+						target: "blank"
+					});
 				},
 				false
 			],
@@ -79492,25 +79620,24 @@ define([
 		maxGenomeCount: 500,
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
-			var self = this;
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				//  0 && console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "showMainGrid":
-						self.tabContainer.selectChild(self.mainGridContainer);
+						this.tabContainer.selectChild(this.mainGridContainer);
 						break;
 					case "updatePfState":
-						self.pfState = value;
-						self.updateFilterPanel(value);
+						this.pfState = value;
+						this.updateFilterPanel(value);
 						break;
 					case "showLoadingMask":
-						self.loadingMask.show();
+						this.loadingMask.show();
 						break;
 					case "hideLoadingMask":
-						self.loadingMask.hide();
+						this.loadingMask.hide();
 						break;
 					default:
 						break;
@@ -79624,7 +79751,9 @@ define([
 		updateFilterPanel: function(pfState){
 			//  0 && console.log("update filter panel selections", pfState);
 
+			this.family_type_selector._onChangeActive = false;
 			this.family_type_selector.set('value', pfState['familyType']);
+			this.family_type_selector._onChangeActive = true;
 			this.ta_keyword.set('value', pfState['keyword']);
 			this.rb_perfect_match.reset();
 			this.rb_non_perfect_match.reset();
@@ -79673,9 +79802,15 @@ define([
 					value: "figfam", label: "FIGFam"
 				}]
 			});
-			cbType.on("change", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
-			});
+			cbType.on("change", lang.hitch(this, function(value){
+				// Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
+				this.pfState = lang.mixin({}, this.pfState, {
+					familyType: value
+				});
+				//  0 && console.log(this.pfState);
+				// Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState)
+				Topic.publish("ProteinFamilies", "setFamilyType", this.pfState);
+			}));
 			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
 
 			filterPanel.addChild(familyTypePanel);
@@ -80914,13 +81049,13 @@ define([
 		maxGenomeCount: 500,
 		showAutoFilterMessage: false,
 		constructor: function(){
-			var self = this;
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updatePfState":
-						self.pfState = value;
+						this.pfState = value;
 						break;
 					default:
 						break;
@@ -80941,7 +81076,7 @@ define([
 			//  0 && console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				//  0 && console.log("   call set state on this.grid: ", this.grid);
-				Topic.publish("ProteinFamilies", "showLoadingMask");
+				// Topic.publish("ProteinFamilies", "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
 				//  0 && console.log("No Grid Yet (ProteinFamiliesGridContainer)");
@@ -81258,11 +81393,11 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"./ArrangeableMemoryStore", "./HeatmapDataTypes"
+	"../util/arraysEqual", "./ArrangeableMemoryStore", "./HeatmapDataTypes"
 ], function(declare, lang, Deferred,
 			request, when, Stateful, Topic,
 			Memory, QueryResults,
-			ArrangeableMemoryStore){
+			arraysEqual, ArrangeableMemoryStore){
 
 	var pfStateDefault = {
 		familyType: 'pgfam', // default
@@ -81278,23 +81413,37 @@ define([
 		min_genome_count: null,
 		max_genome_count: null
 	};
-	var pfState = {};
 
 	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
+		genome_ids: null,
+		is_first_load: true,
 		pfState: null,
 
 		onSetState: function(attr, oldVal, state){
+			if(!state){
+				return;
+			}
+
 			//  0 && console.warn("onSetState", state, state.genome_ids);
-			// TODO: not just state contains genome_ids, but check when it changes to reset pfState
-			// TODO: change to relies on this.pfState, not the global pfState.
+			if(this.is_first_load){
+				this.genome_ids = state.genome_ids; //copy elements
+				this.is_first_load = false;
+			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
+				//  0 && console.log("do not duplicate");
+				this._loaded = true;
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				return;
+			}
+			//  0 && console.log(this.genome_ids.length, state.genome_ids.length, arraysEqual(this.genome_ids, state.genome_ids));
+
 			if(state && state.genome_ids){
 				this._loaded = false;
-				this.pfState = pfState = lang.mixin(this.pfState, {}, pfStateDefault);
-				pfState.genomeFilterStatus = {}; // lang.mixin does not override deeply
+				this.pfState = lang.mixin({}, this.pfState, pfStateDefault);
+				this.pfState.genomeFilterStatus = {}; // lang.mixin does not override deeply
 				this._filtered = undefined; // reset flag prevent to read stored _original
 				delete this._loadingDeferred;
 			}
@@ -81302,7 +81451,7 @@ define([
 			if(state && state.hashParams && state.hashParams.params){
 				var params = JSON.parse(state.hashParams.params);
 
-				params.family_type ? pfState.familyType = params.family_type : {};
+				params.family_type ? this.pfState.familyType = params.family_type : {};
 				// params.keyword ? pfState.keyword = params.keyword : {};
 			}
 		},
@@ -81313,37 +81462,37 @@ define([
 				this.apiServer = options.apiServer;
 			}
 
-			var self = this;
-
-			Topic.subscribe("ProteinFamilies", function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				//  0 && console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "setFamilyType":
 						Topic.publish("ProteinFamilies", "showLoadingMask");
-						self.pfState.familyType = value;
-						self.reload();
-						Topic.publish("ProteinFamilies", "showMainGrid");
+						this.pfState = value;
+						if(arraysEqual(this.genome_ids, this.pfState.genomeIds)){
+							this.reload();
+							Topic.publish("ProteinFamilies", "showMainGrid");
+						}
 						break;
 					case "anchorByGenome":
-						self.anchorByGenome(value);
+						this.anchorByGenome(value);
 						break;
 					case "applyConditionFilter":
-						self.pfState = value;
-						self.conditionFilter(value);
-						self.currentData = self.getHeatmapData(self.pfState);
-						Topic.publish("ProteinFamilies", "updatePfState", self.pfState);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						this.pfState = value;
+						this.conditionFilter(value);
+						this.currentData = this.getHeatmapData(this.pfState);
+						Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", this.currentData);
 						break;
 					case "requestHeatmapData":
-						self.currentData = self.getHeatmapData(value);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						this.currentData = this.getHeatmapData(value);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", this.currentData);
 						break;
 					default:
 						break;
 				}
-			});
+			}));
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
@@ -81483,6 +81632,8 @@ define([
 				}), 0);
 				return def.promise;
 			}
+
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
 				handleAs: 'json',
@@ -81742,8 +81893,7 @@ define([
 			var self = this;
 			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
 
-				var pfState = this.pfState;
-				var isTransposed = pfState.heatmapAxis === 'Transposed';
+				var isTransposed = this.pfState.heatmapAxis === 'Transposed';
 
 				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
 				if(isTransposed){
@@ -81765,17 +81915,35 @@ define([
 				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
 
 				// clusterRow/ColumnOrder assumes corrected axises
-				pfState.clusterColumnOrder = adjustedFamilyOrder;
+				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
 
 				// update main grid
 				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
-				self.currentData = this.getHeatmapData(pfState);
+				self.currentData = this.getHeatmapData(this.pfState);
 				Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 			}));
 		}
 	});
+});
+},
+'p3/util/arraysEqual':function(){
+define([], function(){
+
+	return function(/* array */ a, /* array */ b){
+		if(!a || !a.length || !b || !b.length){
+			return false;
+		}
+
+		if(a.length !== b.length){
+			return false;
+		}
+
+		return a.every(function(e){
+			return (b.indexOf(e) > -1)
+		})
+	}
 });
 },
 'p3/store/ArrangeableMemoryStore':function(){
@@ -83459,23 +83627,22 @@ define([
 		constructor: function(){
 			this.dialog = new Dialog({});
 
-			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				//  0 && console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updatePfState":
-						self.pfState = value;
+						this.pfState = value;
 						break;
 					case "refreshHeatmap":
-						Topic.publish("ProteinFamilies", "requestHeatmapData", self.pfState);
+						Topic.publish("ProteinFamilies", "requestHeatmapData", this.pfState);
 						break;
 					case "updateHeatmapData":
-						self.currentData = value;
-						if(typeof(self.flashDom.refreshData) == "function"){
-							self.flashDom.refreshData();
+						this.currentData = value;
+						if(typeof(this.flashDom.refreshData) == "function"){
+							this.flashDom.refreshData();
 							Topic.publish("ProteinFamilies", "hideLoadingMask");
 						}
 						break;
@@ -94194,8 +94361,6 @@ define([
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
 			ExternalItemFormatter){
 
-	var searchName = null;
-
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "TaxonomyOverview",
 		disabled: false,
@@ -94204,6 +94369,7 @@ define([
 		genome: null,
 		state: null,
 		genome_ids: null,
+		searchName: null,
 
 		_setStateAttr: function(state){
 			this._set("state", state);
@@ -94211,8 +94377,6 @@ define([
 			if(state.taxonomy){
 				this.set("taxonomy", state.taxonomy);
 			}
-
-			searchName = this.genome.taxon_name;
 
 			// widgets called by genome ids
 			var sumWidgets = ["apmSummaryWidget"];
@@ -94243,6 +94407,7 @@ define([
 
 		"_setTaxonomyAttr": function(genome){
 			this.genome = genome;
+			this.searchName = this.genome.taxon_name;
 			this.createSummary(genome);
 			// this.getWikiDescription(genome);
 		},
@@ -94250,7 +94415,7 @@ define([
 		"createSummary": function(genome){
 			domConstruct.empty(this.taxonomySummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {}), this.taxonomySummaryNode, "first");
-			if(searchName != genome.taxon_name){
+			if(this.searchName != genome.taxon_name){
 				domConstruct.empty(this.pubmedSummaryNode);
 				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 			}
@@ -94267,7 +94432,7 @@ define([
 
 			var taxonName = genome.taxon_name.split(" ").join("+");
 
-			if(searchName != genome.taxon_name){
+			if(this.searchName != genome.taxon_name){
 
 				// when(xhr.get(wikiApiUrl + token + origin, {
 				// 	handleAs: 'json',
@@ -94277,15 +94442,15 @@ define([
 				// 	}
 				// }), function(data){
 				// 	 0 && console.log(data);
-					when(xhr.get(wikiApiUrl + query + taxonName + origin, {
-						handleAs: 'json',
-						headers: {
-							'X-Requested-With': null,
-							'Accept': 'application/json'
-						}
-					}), function(response){
-						 0 && console.log("response: ", response);
-					});
+				when(xhr.get(wikiApiUrl + query + taxonName + origin, {
+					handleAs: 'json',
+					headers: {
+						'X-Requested-With': null,
+						'Accept': 'application/json'
+					}
+				}), function(response){
+					 0 && console.log("response: ", response);
+				});
 				// })
 			}
 		},
@@ -94342,7 +94507,7 @@ define([
 				//  0 && console.log("Genome ID Already Set");
 				return;
 			}
-			var state = this.state = this.state || {};
+
 			this.genome_id = this.state.genome_id = id;
 			this.state.genome_ids = [id];
 
@@ -94379,15 +94544,12 @@ define([
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;
+				case "proteinFamilies":
+					// do not set state, the container is built by setVisible already
+					break;
 				default:
 					if(activeQueryState){
 						//  0 && console.log("Using Default ActiveQueryState: ", activeQueryState);
-						if(active == "proteinFamilies"){
-							// activeQueryState.search = "";
-							if(activeTab._firstView){
-								Topic.publish("ProteinFamilies", "showMainGrid");
-							}
-						}
 						activeTab.set("state", activeQueryState);
 					}else{
 						 0 && console.log("Missing Active Query State for: ", active)
@@ -94431,26 +94593,10 @@ define([
 		},
 
 		_setGenomeAttr: function(genome){
-			var state = this.state || {};
-
 			this.state.genome = genome;
 
-			// this.viewHeader.set("content", this.buildHeaderContent(genome));
-
-			// this.queryNode.innerHTML = this.buildHeaderContent(genome);
 			this.buildHeaderContent(genome);
 			domConstruct.empty(this.totalCountNode);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// var activeTab = this[active];
-
-			// switch(active){
-			// 	case "phylogeny":
-			// 	case "overview":
-			// 		activeTab.set("state", state);
-			// 		break;
-			// 	default:
-			// 		break;
-			// }
 
 			this._set("genome", genome);
 			this.setActivePanelState();
@@ -94497,6 +94643,19 @@ define([
 
 				if(this[state.hashParams.view_tab]){
 					var vt = this[state.hashParams.view_tab];
+
+					if(state.hashParams.view_tab === "proteinFamilies"){
+						// state.hashParams = lang.mixin({}, state.hashParams, {
+						// 	params: JSON.stringify({"family_type": "plfam"})
+						// });
+
+						this.proteinFamilies.state = lang.mixin({}, state, {
+							hashParams: lang.mixin({}, state.hashParams, {
+								params: JSON.stringify({"family_type": "plfam"})
+							})
+						});
+					}
+
 					vt.set("visible", true);
 					this.viewer.selectChild(vt);
 				}else{
@@ -111860,6 +112019,7 @@ define([
 				}, this.externalLinkNode);
 			}
 		},
+				
 		_setSpecialPropertiesAttr: function(data){
 			domClass.remove(this.specialPropertiesNode.parentNode, "hidden");
 
@@ -111868,8 +112028,77 @@ define([
 					columns: [
 						{label: "Evidence", field: "evidence"},
 						{label: "Property", field: "property"},
-						{label: "Source", field: "source"},
-						{label: "Source ID", field: "source_id"},
+						{label: "Source", field: "source",
+							renderCell: function(obj, val, node){
+								if(val){
+									var source = val;
+									switch(source){
+										case "PATRIC_VF":
+											sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(evidence,Literature))" target="_blank">' + source + '</a>';
+											break; 
+										case "Victors": 
+											sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + source + '</a>';
+											break;
+										case "VFDB":
+											sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + source + '</a>';
+											break;
+										case "Human":
+											sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + source + '</a>';
+											break;
+										case "ARDB":
+											sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + source + '</a>';
+											break;
+										case "CARD":
+											sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + source + '</a>';
+											break;
+										case "DrugBank":
+											sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + source + '</a>';
+											break;
+										case "TTD":
+											sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + source + '</a>'; 
+											break;
+										default:
+											break;
+									}
+									node.innerHTML = sourcelink;
+								}
+							}										
+						},
+						{label: "Source ID", field: "source_id",
+							renderCell: function(obj, val, node){
+								if(val){
+									var source_id = val;
+									switch(obj.source){
+										case "PATRIC_VF":
+											sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + source_id  + '" target="_blank">' + source_id + '</a>';
+											break;
+										case "Victors": 
+											sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + source_id + '" target="_blank">' + source_id + '</a>';
+											break;
+										case "VFDB":
+											sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + source_id + '" target="_blank">' + source_id + '</a>';
+											break;
+										case "Human":
+											sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + source_id + '" target="_blank">' + source_id + '</a>';
+											break;
+										case "ARDB":
+											sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + source_id + '" target="_blank">' + source_id + '</a>';
+											break;
+										case "DrugBank":
+											var padding = "BE0000000";
+											var id = padding.substring(0, padding.length-source_id.length) + source_id;
+											sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + source_id + '</a>';
+											break;
+										case "TTD":
+											sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + source_id + '" target="_blank">' + source_id + '</a>';
+											break;
+										default:
+											break;
+									}
+									node.innerHTML = sourcelink;
+								}
+							}																
+						},
 						{label: "Organism", field: "organism"},
 						{label: "PubMed", field: "pmid",
 							renderCell: function(obj, val, node){
@@ -112358,7 +112587,7 @@ define([
 		tooltip: 'The "Transcriptomics" tab shows gene expression data available for the current gene',
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
-			var self = this;
+/*			var self = this;
 
 			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
 				 0 && console.log("GeneExpression:", arguments);
@@ -112372,7 +112601,7 @@ define([
 						break;
 				}
 			}));
-		},
+*/		},
 		onSetState: function(attr, oldVal, state){
 			//  0 && console.log("GeneExpressionGridContainer onSetState set state: ", state);
 			if(!state){
@@ -112470,7 +112699,7 @@ define([
 						style: "height: 350px;"
 					});
 
-					 0 && console.log("Before creating GeneExpressionChartContainer", self);
+					// 0 && console.log("Before creating GeneExpressionChartContainer", self);
 
 					var chartContainer1 = new GeneExpressionChartContainer({
 						region: "leading",
@@ -112505,9 +112734,10 @@ define([
 					// for data grid
 					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 						title: "Table",
-						content: "Gene Expression Table"
+						content: "Gene Expression Table",
+						tgtate: self.tgState
 					});
-
+					self.GeneExpressionGridContainer.startup();
 					 0 && console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 
 					// self.watch("state", lang.hitch(self, "onSetState"));
@@ -112713,7 +112943,7 @@ define([
 					 0 && console.log("submit btn clicked: filter", filter);
 
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
-					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);
+					Topic.publish("GeneExpression", "updateTgState", this.tgState);
 					 0 && console.log("submit btn clicked: this.tgState", this.tgState);
 				})
 			});
@@ -112800,11 +113030,19 @@ define([
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
-
+	
+	var tgState = {
+		keyword: "",
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
 	return declare([GridContainer], {
 		gridCtor: GeneExpressionGrid,
 		containerType: "gene_expression_data",
 		facetFields: [],
+		tgState: tgState,
 		enableFilterPanel: false,
 		constructor: function(){
 			var self = this;
@@ -112970,6 +113208,7 @@ define([
 		constructor: function(options){
 			 0 && console.log("GeneExpressionGrid constructor Ctor: ", options);
 			 0 && console.log("GeneExpressionGrid constructor this.store: ", this.store);
+			 0 && console.log("GeneExpressionGrid constructor case updateTgState: this.tgState: ", this.tgState);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
@@ -112982,18 +113221,11 @@ define([
 
 				switch(key){
 					case "updateTgState":
-						// 0 && console.log("GeneExpressionGrid constructor case updateTgState: this.store: ", this.store);
+						 0 && console.log("GeneExpressionGrid constructor case updateTgState: this.store: ", this.store);
 						//this.store.arrange(value);
 						this.store.tgState = value;
-						this.store.reload();
+						this.store.reload(value);
 						//this.refresh();
-						break;
-					case "applyConditionFilter":
-						// 0 && console.log("GeneExpressionGrid constructor case applyConditionFilter: this.store: ", this.store);
-						//this.store.arrange(value);
-						//self.tgState = value;
-						this.store.tgState = value;
-						this.store.reload();
 						break;
 					default:
 						break;
@@ -113128,133 +113360,36 @@ define([
 		},
 
 		constructor: function(options){
+			this.watch("state", lang.hitch(this, "onSetState"));
 			this._loaded = false;
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
 
 			var self = this;
+			 0 && console.log("********GeneExpressionMemoryStore before subscribe this:", this.tgState);
 
 			Topic.subscribe("GeneExpression", function(){
 				 0 && console.log("GeneExpressionMemoryStore received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "applyConditionFilter":
+					case "updateTgState":
 						self.tgState = value;
 						//self.conditionFilter(value);
-						self.reload();
-						Topic.publish("GeneExpression", "updateTgState", self.tgState);
+						self.reload(value);
 						break;
 					default:
 						break;
 				}
 			});
+			 0 && console.log("********GeneExpressionMemoryStore self.tgState:", self.tgState);
 		},
-		
-		conditionFilter: function(tgState){
-			var self = this;
-			if(self._filtered == undefined){ // first time
-				self._filtered = true;
-				self._original = this.query("", {});
-			}
-			var data = self._original;
-			var newData = [];
-			var gfs = tgState.comparisonFilterStatus;
-			
-			 0 && console.log("In MemoryStore conditionFilter ... ", tgState, ",", self._original); 
-
-			var tsStart = window.performance.now();
-			data.forEach(function(gene){
-
-				var pass = false;
-				var up_r = 0, down_r = 0, total_samples = 0;
-
-				// comparisons
-				for(var i = 0, len = tgState.comparisonIds.length; i < len; i++){
-					var comparisonId = tgState.comparisonIds[i];
-					var index = gfs[comparisonId].getIndex();
-					var status = gfs[comparisonId].getStatus();
-					var comparison = gene.samples[comparisonId];
-					//  0 && console.log(gene, gene.feature_id, comparisonId, index, status, gene.dist, parseInt(gene.dist.substr(index * 2, 2), 16));
-
-					var expression = gene.sample_binary.substr(index, 1);
-					if(expression === '1'){
-						if(status != 2){
-							pass = self._thresholdFilter(comparison, tgState, status);
-							if(!pass){
-								break;
-							}
-						}else{
-							// status == 2, don't care
-							if(!pass){
-								pass = self._thresholdFilter(comparison, tgState, status)
-							}
-						}
-					}else{
-						if(status != 2){
-							pass = false;
-							break;
-						}
-					}
-
-					if(comparison){
-						var value = parseFloat(comparison.log_ratio);
-						if(!isNaN(value)){
-							if(value > tgState.upFold){
-								up_r++;
-							}
-							if(value < tgState.downFold){
-								down_r++;
-							}
-							total_samples++;
-						}
-					}
-				}
-
-				gene.up = up_r;
-				gene.down = down_r;
-				gene.sample_size = total_samples;
-
-				if(pass){
-					newData.push(gene);
-				}
-			});
-			 0 && console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
-
-			self.setData(newData);
-			self.set("refresh");
-		},
-		
-		_thresholdFilter: function(comparison, tgState, filterStatus){
-			var uf = tgState.upFold, df = tgState.downFold;
-			var uz = tgState.upZscore, dz = tgState.downZscore;
-			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
-			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
-			if(!comparison) return false;
-
-			var pass = false;
-			switch(filterStatus){
-				case 2: // don't care (' ')
-					pass = (dz === uz && df === uf)
-						|| ((z >= uz || z <= dz) && (l >= uf || l <= df));
-					break;
-				case 0: // up-regulated (1)
-					pass = ((uz != 0 ? z >= uz : true) && l >= uf);
-					break;
-				case 1: // down-regulated (0)
-					pass = ((dz != 0 ? z <= dz : true) && l <= df);
-					break;
-				default:
-					break;
-			}
-			 0 && console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
-			return pass;
-		},
-		
-		reload: function(){
+				
+		reload: function(curr_tgState){
 			 0 && console.log("In MemoryStore reload ... ");
 			var self = this;
+			self.tgState = curr_tgState;
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -113369,16 +113504,6 @@ define([
 				}), function(response){
 				 0 && console.log("In MemoryStore loadData(): response.response:", response.response);
 
-				var comparisonIdList = [];
-				var comparisons = response.response.docs.map(function(comparison){
-					var strPId = comparison.pid.toString();
-					comparison.pid = strPId;
-					comparisonIdList.push(strPId);
-					return comparison;
-				});
-				_self.tgState.comparisonIds = comparisonIdList;
-				 0 && console.log("In MemoryStore loadData(): comparisonIds:", comparisonIdList);
-
 				_self.setData(response.response.docs);
 				_self._loaded = true;
 				return;
@@ -113418,73 +113543,20 @@ define([
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			var self = this;
-			 0 && console.log("GeneExpressionChartContainer Constructor: this", this);
-			 0 && console.log("GeneExpressionChartContainer Constructor: state", this.state);
+			// 0 && console.log("GeneExpressionChartContainer Constructor: this", this);
+			// 0 && console.log("GeneExpressionChartContainer Constructor: state", this.state);
 
 			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
-				 0 && console.log("GeneExpressionChartContainer subscribe GeneExpression:", arguments);
+				// 0 && console.log("GeneExpressionChartContainer subscribe GeneExpression:", arguments);
 				var key = arguments[0], value = arguments[1];
 
-				switch(key){
-					case "applyConditionFilter":
-						self.tgState = value;
-						self.store.reload();
-						// for log ratio
-						when(self.processData("log_ratio"), function(chartData){
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							if(chartData[0].length<10) {	
-								self.lgchart.addAxis("x", {
-									title: "Log Ratio",
-									titleOrientation: "away",
-									majorLabels: true,
-									minorTicks: false,
-									minorLabels: false,
-									microTicks: false,
-									labels: chartData[0]
-								});
-							} else {
-								self.lgchart.addAxis("x", {
-									title: "Log Ratio",
-									titleOrientation: "away",
-									labels: chartData[0]								
-								});
-							}
-							
-							self.lgchart.updateSeries("Comparisons", chartData[1]);
-							self.lgchart.render();
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
-						});
-
-						when(self.processData("z_score"), function(chartData){
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							if(chartData[0].length<10) {	
-								self.zchart.addAxis("x", {
-									title: "Z-score",
-									titleOrientation: "away",
-									majorLabels: true,
-									minorTicks: false,
-									minorLabels: false,
-									microTicks: false,
-									labels: chartData[0]
-								});
-							} else {
-								self.zchart.addAxis("x", {
-									title: "Z-score",
-									titleOrientation: "away",
-									labels: chartData[0]
-								});														
-							}
-							self.zchart.updateSeries("Comparisons", chartData[1]);
-							self.zchart.render();
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
-						});
-						break;
-						
+				switch(key){						
 					case "updateTgState":
 						self.tgState = value;
-						self.store.reload();
+						tgState = value;
+						self.store.reload(self.tgState);
 						when(self.processData("log_ratio"), function(chartData){
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							 0 && console.log("GeneExpressionChartContainer updateTgState: chartData", chartData);
 							if(chartData[0].length<10) {	
 								self.lgchart.addAxis("x", {
 									title: "Log Ratio",
@@ -113504,12 +113576,12 @@ define([
 							}
 							self.lgchart.updateSeries("Comparisons", chartData[1]);
 							self.lgchart.render();
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+							// 0 && console.log("GeneExpressionChartContainer updateTgState reload store:", self.store.data);
 						});
 
 						// for z_score 
 						when(self.processData("z_score"), function(chartData){
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							 0 && console.log("GeneExpressionChartContainer updateTgState: chartData", chartData);
 							if(chartData[0].length<10) {	
 								self.zchart.addAxis("x", {
 									title: "Z-score",
@@ -113529,7 +113601,7 @@ define([
 							}
 							self.zchart.updateSeries("Comparisons", chartData[1]);
 							self.zchart.render();
-							 0 && console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+							// 0 && console.log("GeneExpressionChartContainer updateTgState reload store:", self.store.data);
 						});
 						break;
 					default:
@@ -113538,7 +113610,7 @@ define([
 			}));
 		},
 		onSetState: function(attr, oldVal, state){
-			 0 && console.log("GeneExpressionChartContainer onSetState set state: ", state);
+			// 0 && console.log("GeneExpressionChartContainer onSetState set state: ", state);
 			this._set('state', state);
 		},
 /*
@@ -113562,7 +113634,7 @@ define([
 			}
 			var self = this;
 			this._set("state", state);
-			 0 && console.log("In GeneExpressionChartContainer _setStateAttr: state", state);
+			// 0 && console.log("In GeneExpressionChartContainer _setStateAttr: state", state);
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state, "log_ratio"));
 			}else{
@@ -113571,7 +113643,7 @@ define([
 				this.refresh();
 			}
 
-			 0 && console.log("GeneExpressionChartContainer this._set: ", this.state);
+			// 0 && console.log("GeneExpressionChartContainer this._set: ", this.state);
 		},
 		
 		startup: function(){
@@ -113597,7 +113669,7 @@ define([
 			chartTabContainer1.addChild(cp2);
 			this.addChild(chartTabContainer1);
 
-			 0 && console.log("###Before GeneExpressionChartContainer startup() Create Store: store=", this.store);		
+			// 0 && console.log("###Before GeneExpressionChartContainer startup() Create Store: store=", this.store);		
 
 			aspect.before(this, 'renderArray', function(results){
 				 0 && console.log("GeneExpressionChartContainer aspect.before: results=", results);
@@ -113608,12 +113680,12 @@ define([
 
 			this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, this.state, "log_ratio"));
 
-			 0 && console.log("###After GeneExpressionChartContainer startup() Create Store: store=", this.store); 
-			 0 && console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
+			// 0 && console.log("###After GeneExpressionChartContainer startup() Create Store: store=", this.store); 
+			// 0 && console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
 
 			// chart for log_ratio
 			this.lgchart = new Chart2D(cp1.domNode);
-			 0 && console.log("GeneExpressionChartContainer after chart = new Chart2D, cp1.domNode", cp1.domNode);
+			// 0 && console.log("GeneExpressionChartContainer after chart = new Chart2D, cp1.domNode", cp1.domNode);
 			this.lgchart.setTheme(Theme);
 
 			// Add the only/default plot
@@ -113653,7 +113725,7 @@ define([
 
 				self.lgchart.addSeries("Comparisons",chartData[1]);
 				self.lgchart.render();
-				 0 && console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				// 0 && console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
 			});
 
 			// chart for z_score
@@ -113698,7 +113770,7 @@ define([
 
 				self.zchart.addSeries("Comparisons",chartData[1]);
 				self.zchart.render();
-				 0 && console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				// 0 && console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
 			});
 			
 			this.watch("state", lang.hitch(this, "onSetState"));
@@ -113741,13 +113813,13 @@ define([
 				
 				if (filter_type === "z_score") {
 					myData = data[1];
-					 0 && console.log("GeneExpressionChartContainer processData: z_score, myData ", filter_type, myData);
+					// 0 && console.log("GeneExpressionChartContainer processData: z_score, myData ", filter_type, myData);
 				}
 				else {
 					myData = data[0];
-					 0 && console.log("GeneExpressionChartContainer processData: log_ratio, myData ", filter_type, myData);
+					// 0 && console.log("GeneExpressionChartContainer processData: log_ratio, myData ", filter_type, myData);
 				}
-				 0 && console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
+				// 0 && console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
 
 				if(!myData){
 					 0 && console.log("INVALID Chart DATA", data);
@@ -113871,18 +113943,13 @@ define([
 			}
 
 			var self = this;
-			 0 && console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
+			// 0 && console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
 			//this.loadData();
 			Topic.subscribe("GeneExpression", function(){
 				 0 && console.log("GeneExpressionChartMemoryStore received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "applyConditionFilter":
-						self.tgState = value;
-						//self.reload();
-						//Topic.publish("GeneExpression", "updateTgState", self.tgState);
-						break;
 					case "updateTgState":
 						self.tgState = value;
 						//self.reload();
@@ -113920,13 +113987,16 @@ define([
 				default:
 					break;
 			}
-			 0 && console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
+			// 0 && console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
 			return pass;
 		},
 		
-		reload: function(){
+		reload: function(curr_tgState){
 			 0 && console.log("In MemoryStore reload ... ");
 			var self = this;
+			self.tgState = curr_tgState;
+			// 0 && console.log("In MemoryStore loadData(): self.tgState:", self.tgState, "tgState=", tgState);
+
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -113934,7 +114004,7 @@ define([
 		},
 
 		query: function(query, opts){
-			 0 && console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
+			// 0 && console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
 			query = query || {};
 			if(this._loaded){
 				return this.inherited(arguments);
@@ -113987,9 +114057,9 @@ define([
 				}), 0);
 				return def.promise;
 			}
-			// 0 && console.log("In MemoryStore loadData(): state:", this.state);
-			 0 && console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
-
+			// 0 && console.log("In MemoryStore loadData(): state:", this.state, "_self.tgState:", _self.tgState);
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
 			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
 			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
 			var keyword= _self.tgState.keyword;
@@ -114026,7 +114096,7 @@ define([
 			var q = this.state.search + range;
 			
 			 0 && console.log("In MemoryStore query: q:", q);
-			 0 && console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+			// 0 && console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
 
 			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
 						data: q,
@@ -114056,7 +114126,7 @@ define([
 				data.push(logRatioArray);
 				data.push(zscoreArray);
 				_self.setData(data);		
-				 0 && console.log("!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:", _self.data);
+				// 0 && console.log("!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:", _self.data);
 				_self._loaded = true;
 				//return;
 			});
@@ -114065,7 +114135,7 @@ define([
 		
 		processResult: function(res, before, after)
 		{
-			 0 && console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
+			// 0 && console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
 			var newRes = [];
 			var i=0;
 			if(before >0) {
@@ -114303,10 +114373,10 @@ define([
 				//  0 && console.log("GeneExpressionMetadataChartContainer subscribe GeneExpression:", arguments);
 				var key = arguments[0], value = arguments[1];
 
-				if(key === "applyConditionFilter" || key === "updateTgState") {
+				if(key === "updateTgState") {
 					self.tgState = value;
-					self.store.reload();
-
+					self.store.reload(self.tgState);
+					tgState = value;
 					//  0 && console.log("GeneExpressionMetadataChartContainer Constructor: key=, tgState=", key, self.tgState);
 
 					// for strain
@@ -114682,7 +114752,7 @@ define([
 		showStrainPieChart: function(){
 			//  0 && console.log("showPieChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			//var pschartNode = domConstruct.create("div",{style: "height: 300px; width: 500px;"}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
 			var pschartNode = domConstruct.create("div",{}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
 			this.pschart = new Chart2D(pschartNode);
@@ -114712,7 +114782,7 @@ define([
 		showMutantPieChart: function(){
 			//  0 && console.log("showPieChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var pmchartNode = domConstruct.create("div",{}); domConstruct.place(pmchartNode, this.cp2.containerNode, "last");
 			this.pmchart = new Chart2D(pmchartNode);
 			this.pmchart.addPlot("default", {
@@ -114740,7 +114810,7 @@ define([
 		showConditionPieChart: function(){
 			//  0 && console.log("showPieChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var pcchartNode = domConstruct.create("div",{}); domConstruct.place(pcchartNode, this.cp3.containerNode, "last");
 			this.pcchart = new Chart2D(pcchartNode);
 			this.pcchart.addPlot("default", {
@@ -114767,7 +114837,7 @@ define([
 		showStrainBarChart: function(){
 			//  0 && console.log("showBarChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var bschartNode = domConstruct.create("div",{}); domConstruct.place(bschartNode, this.cp1.containerNode, "last");
 			// chart for log_ratio
 			this.bschart = new Chart2D(bschartNode);
@@ -114809,7 +114879,7 @@ define([
 		showMutantBarChart: function(){
 			//  0 && console.log("showBarChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var bmchartNode = domConstruct.create("div",{}); domConstruct.place(bmchartNode, this.cp2.containerNode, "last");
 			// chart for log_ratio
 			this.bmchart = new Chart2D(bmchartNode);
@@ -114851,7 +114921,7 @@ define([
 		showConditionBarChart: function(){
 			//  0 && console.log("showBarChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var bcchartNode = domConstruct.create("div",{}); domConstruct.place(bcchartNode, this.cp3.containerNode, "last");
 			this.bcchart = new Chart2D(bcchartNode);
 			//  0 && console.log("GeneExpressionChartContainer after chart = new Chart2D");
@@ -115007,18 +115077,13 @@ define([
 			}
 
 			var self = this;
-			 0 && console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
+			// 0 && console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
 			//this.loadData();
 			Topic.subscribe("GeneExpression", function(){
 				 0 && console.log("GeneExpressionChartMemoryStore received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "applyConditionFilter":
-						self.tgState = value;
-						//self.reload();
-						//Topic.publish("GeneExpression", "updateTgState", self.tgState);
-						break;
 					case "updateTgState":
 						self.tgState = value;
 						//self.reload();
@@ -115060,9 +115125,10 @@ define([
 			return pass;
 		},
 		
-		reload: function(){
-			 0 && console.log("In MemoryStore reload ... ");
+		reload: function(curr_tgState){
+			// 0 && console.log("In MemoryStore reload ... ");
 			var self = this;
+			self.tgState = curr_tgState;
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -115070,7 +115136,7 @@ define([
 		},
 
 		query: function(query, opts){
-			 0 && console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
+			// 0 && console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
 			query = query || {};
 			if(this._loaded){
 				return this.inherited(arguments);
@@ -115110,7 +115176,7 @@ define([
 			var _self = this;
 
 			if(!this.state || this.state.search == null){
-				 0 && console.log("No State, use empty data set for initial store");
+				// 0 && console.log("No State, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -115124,7 +115190,7 @@ define([
 				return def.promise;
 			}
 			// 0 && console.log("In MemoryStore loadData(): state:", this.state);
-			 0 && console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
+			// 0 && console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
 
 			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
 			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
@@ -115162,7 +115228,7 @@ define([
 			var q = this.state.search + range;
 			
 			 0 && console.log("In MemoryStore query: q:", q);
-			 0 && console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+			// 0 && console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
 
 			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
 						data: q,

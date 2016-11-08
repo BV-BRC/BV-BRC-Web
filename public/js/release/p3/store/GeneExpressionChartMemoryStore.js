@@ -52,18 +52,13 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 			}
 
 			var self = this;
-			console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
+			//console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
 			//this.loadData();
 			Topic.subscribe("GeneExpression", function(){
 				console.log("GeneExpressionChartMemoryStore received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "applyConditionFilter":
-						self.tgState = value;
-						//self.reload();
-						//Topic.publish("GeneExpression", "updateTgState", self.tgState);
-						break;
 					case "updateTgState":
 						self.tgState = value;
 						//self.reload();
@@ -101,13 +96,16 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 				default:
 					break;
 			}
-			console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
+			//console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
 			return pass;
 		},
 		
-		reload: function(){
+		reload: function(curr_tgState){
 			console.log("In MemoryStore reload ... ");
 			var self = this;
+			self.tgState = curr_tgState;
+			//console.log("In MemoryStore loadData(): self.tgState:", self.tgState, "tgState=", tgState);
+
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -115,7 +113,7 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 		},
 
 		query: function(query, opts){
-			console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
+			//console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
 			query = query || {};
 			if(this._loaded){
 				return this.inherited(arguments);
@@ -168,9 +166,9 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 				}), 0);
 				return def.promise;
 			}
-			//console.log("In MemoryStore loadData(): state:", this.state);
-			console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
-
+			//console.log("In MemoryStore loadData(): state:", this.state, "_self.tgState:", _self.tgState);
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
 			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
 			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
 			var keyword= _self.tgState.keyword;
@@ -207,7 +205,7 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 			var q = this.state.search + range;
 			
 			console.log("In MemoryStore query: q:", q);
-			console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+			//console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
 
 			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
 						data: q,
@@ -237,7 +235,7 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 				data.push(logRatioArray);
 				data.push(zscoreArray);
 				_self.setData(data);		
-				console.log("!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:", _self.data);
+				//console.log("!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:", _self.data);
 				_self._loaded = true;
 				//return;
 			});
@@ -246,7 +244,7 @@ define("p3/store/GeneExpressionChartMemoryStore", [
 		
 		processResult: function(res, before, after)
 		{
-			console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
+			//console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
 			var newRes = [];
 			var i=0;
 			if(before >0) {

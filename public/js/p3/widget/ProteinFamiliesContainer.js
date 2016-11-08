@@ -23,25 +23,24 @@ define([
 		maxGenomeCount: 500,
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
-			var self = this;
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "showMainGrid":
-						self.tabContainer.selectChild(self.mainGridContainer);
+						this.tabContainer.selectChild(this.mainGridContainer);
 						break;
 					case "updatePfState":
-						self.pfState = value;
-						self.updateFilterPanel(value);
+						this.pfState = value;
+						this.updateFilterPanel(value);
 						break;
 					case "showLoadingMask":
-						self.loadingMask.show();
+						this.loadingMask.show();
 						break;
 					case "hideLoadingMask":
-						self.loadingMask.hide();
+						this.loadingMask.hide();
 						break;
 					default:
 						break;
@@ -155,7 +154,9 @@ define([
 		updateFilterPanel: function(pfState){
 			// console.log("update filter panel selections", pfState);
 
+			this.family_type_selector._onChangeActive = false;
 			this.family_type_selector.set('value', pfState['familyType']);
+			this.family_type_selector._onChangeActive = true;
 			this.ta_keyword.set('value', pfState['keyword']);
 			this.rb_perfect_match.reset();
 			this.rb_non_perfect_match.reset();
@@ -204,9 +205,15 @@ define([
 					value: "figfam", label: "FIGFam"
 				}]
 			});
-			cbType.on("change", function(){
-				Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
-			});
+			cbType.on("change", lang.hitch(this, function(value){
+				// Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
+				this.pfState = lang.mixin({}, this.pfState, {
+					familyType: value
+				});
+				// console.log(this.pfState);
+				// Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState)
+				Topic.publish("ProteinFamilies", "setFamilyType", this.pfState);
+			}));
 			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
 
 			filterPanel.addChild(familyTypePanel);
