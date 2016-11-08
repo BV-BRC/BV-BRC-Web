@@ -287,10 +287,73 @@ define("p3/widget/DataItemFormatter", [
 				text: 'property'
 			}, {
 				name: 'Source',
-				text: 'source'
+				text: 'source',
+				link: function(obj) {
+						var sourcelink = obj.source;
+						switch(obj.source){
+							case "PATRIC_VF":
+								sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))" target="_blank">' + obj.source + '</a>';
+								break; 
+							case "Victors": 
+								sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + obj.source + '</a>';
+								break;
+							case "VFDB":
+								sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + obj.source + '</a>';
+								break;
+							case "Human":
+								sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + obj.source + '</a>';
+								break;
+							case "ARDB":
+								sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + obj.source + '</a>';
+								break;
+							case "CARD":
+								sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + obj.source + '</a>';
+								break;
+							case "DrugBank":
+								sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + obj.source + '</a>';
+								break;
+							case "TTD":
+								sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + obj.source + '</a>'; 
+								break;
+							default:
+								break;
+						}
+						return sourcelink;
+					}				
 			}, {
 				name: 'Source ID',
-				text: 'source_id'
+				text: 'source_id',
+				link: function(obj) {
+						var sourcelink = obj.source_id;
+						switch(obj.source){
+							case "PATRIC_VF":
+								sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + obj.source_id  + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "Victors": 
+								sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "VFDB":
+								sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "Human":
+								sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "ARDB":
+								sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "DrugBank":
+								var padding = "BE0000000";
+								var id = padding.substring(0, padding.length-obj.source_id.length) + obj.source_id;
+								sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							case "TTD":
+								sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+								break;
+							default:
+								break;
+						}
+						return sourcelink;
+					}
 			}, {
 				name: 'Organism',
 				text: 'organism'
@@ -346,6 +409,50 @@ define("p3/widget/DataItemFormatter", [
 			return div;
 		},
 
+		"spgene_ref_data": function(item, options){
+			options = options || {};
+
+			var columns = [{
+				name: 'Property',
+				text: 'property'
+			}, {
+				name: 'Source',
+				text: 'source'
+			}, {
+				name: 'Source ID',
+				text: 'source_id'
+			}, {
+				name: 'Organism',
+				text: 'organism'
+			}, {
+				name: 'Product',
+				text: 'product'
+			}, {
+				name: 'Gene Name',
+				text: 'gene_name'
+			}, {
+				name: 'Gene ID',
+				text: 'gene_id',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+			}, {
+				name: 'gi',
+				text: 'gi',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
+			}, {
+				name: 'Function',
+				text: 'function'
+			}, {
+				name: 'PubMed',
+				text: 'pmid',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
+			}];
+
+			var div = domConstruct.create("div");
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},			
+			
 		"taxonomy_data": function(item, options){
 			options = options || {};
 
@@ -1093,7 +1200,7 @@ define("p3/widget/DataItemFormatter", [
 			}
 		}
 	}
-
+	
 	return function(item, type, options){
 
 		var new_type;

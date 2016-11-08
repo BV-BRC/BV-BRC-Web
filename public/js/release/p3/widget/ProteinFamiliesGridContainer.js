@@ -37,13 +37,13 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		maxGenomeCount: 500,
 		showAutoFilterMessage: false,
 		constructor: function(){
-			var self = this;
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updatePfState":
-						self.pfState = value;
+						this.pfState = value;
 						break;
 					default:
 						break;
@@ -64,7 +64,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 			// console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
-				Topic.publish("ProteinFamilies", "showLoadingMask");
+				// Topic.publish("ProteinFamilies", "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
 				// console.log("No Grid Yet (ProteinFamiliesGridContainer)");

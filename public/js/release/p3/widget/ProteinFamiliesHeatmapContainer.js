@@ -168,23 +168,22 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 		constructor: function(){
 			this.dialog = new Dialog({});
 
-			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updatePfState":
-						self.pfState = value;
+						this.pfState = value;
 						break;
 					case "refreshHeatmap":
-						Topic.publish("ProteinFamilies", "requestHeatmapData", self.pfState);
+						Topic.publish("ProteinFamilies", "requestHeatmapData", this.pfState);
 						break;
 					case "updateHeatmapData":
-						self.currentData = value;
-						if(typeof(self.flashDom.refreshData) == "function"){
-							self.flashDom.refreshData();
+						this.currentData = value;
+						if(typeof(this.flashDom.refreshData) == "function"){
+							this.flashDom.refreshData();
 							Topic.publish("ProteinFamilies", "hideLoadingMask");
 						}
 						break;

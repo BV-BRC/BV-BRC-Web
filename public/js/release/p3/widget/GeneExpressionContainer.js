@@ -18,7 +18,7 @@ define("p3/widget/GeneExpressionContainer", [
 		tooltip: 'The "Transcriptomics" tab shows gene expression data available for the current gene',
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
-			var self = this;
+/*			var self = this;
 
 			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
 				console.log("GeneExpression:", arguments);
@@ -32,7 +32,7 @@ define("p3/widget/GeneExpressionContainer", [
 						break;
 				}
 			}));
-		},
+*/		},
 		onSetState: function(attr, oldVal, state){
 			// console.log("GeneExpressionGridContainer onSetState set state: ", state);
 			if(!state){
@@ -130,7 +130,7 @@ define("p3/widget/GeneExpressionContainer", [
 						style: "height: 350px;"
 					});
 
-					console.log("Before creating GeneExpressionChartContainer", self);
+					//console.log("Before creating GeneExpressionChartContainer", self);
 
 					var chartContainer1 = new GeneExpressionChartContainer({
 						region: "leading",
@@ -165,9 +165,10 @@ define("p3/widget/GeneExpressionContainer", [
 					// for data grid
 					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 						title: "Table",
-						content: "Gene Expression Table"
+						content: "Gene Expression Table",
+						tgtate: self.tgState
 					});
-
+					self.GeneExpressionGridContainer.startup();
 					console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 
 					// self.watch("state", lang.hitch(self, "onSetState"));
@@ -373,7 +374,7 @@ define("p3/widget/GeneExpressionContainer", [
 					console.log("submit btn clicked: filter", filter);
 
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
-					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);
+					Topic.publish("GeneExpression", "updateTgState", this.tgState);
 					console.log("submit btn clicked: this.tgState", this.tgState);
 				})
 			});

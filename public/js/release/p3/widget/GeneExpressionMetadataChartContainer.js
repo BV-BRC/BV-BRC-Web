@@ -36,10 +36,10 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 				// console.log("GeneExpressionMetadataChartContainer subscribe GeneExpression:", arguments);
 				var key = arguments[0], value = arguments[1];
 
-				if(key === "applyConditionFilter" || key === "updateTgState") {
+				if(key === "updateTgState") {
 					self.tgState = value;
-					self.store.reload();
-
+					self.store.reload(self.tgState);
+					tgState = value;
 					// console.log("GeneExpressionMetadataChartContainer Constructor: key=, tgState=", key, self.tgState);
 
 					// for strain
@@ -415,7 +415,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 		showStrainPieChart: function(){
 			// console.log("showPieChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			//var pschartNode = domConstruct.create("div",{style: "height: 300px; width: 500px;"}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
 			var pschartNode = domConstruct.create("div",{}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
 			this.pschart = new Chart2D(pschartNode);
@@ -445,7 +445,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 		showMutantPieChart: function(){
 			// console.log("showPieChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var pmchartNode = domConstruct.create("div",{}); domConstruct.place(pmchartNode, this.cp2.containerNode, "last");
 			this.pmchart = new Chart2D(pmchartNode);
 			this.pmchart.addPlot("default", {
@@ -473,7 +473,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 		showConditionPieChart: function(){
 			// console.log("showPieChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var pcchartNode = domConstruct.create("div",{}); domConstruct.place(pcchartNode, this.cp3.containerNode, "last");
 			this.pcchart = new Chart2D(pcchartNode);
 			this.pcchart.addPlot("default", {
@@ -500,7 +500,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 		showStrainBarChart: function(){
 			// console.log("showBarChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var bschartNode = domConstruct.create("div",{}); domConstruct.place(bschartNode, this.cp1.containerNode, "last");
 			// chart for log_ratio
 			this.bschart = new Chart2D(bschartNode);
@@ -542,7 +542,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 		showMutantBarChart: function(){
 			// console.log("showBarChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var bmchartNode = domConstruct.create("div",{}); domConstruct.place(bmchartNode, this.cp2.containerNode, "last");
 			// chart for log_ratio
 			this.bmchart = new Chart2D(bmchartNode);
@@ -584,7 +584,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 		showConditionBarChart: function(){
 			// console.log("showBarChart");
 			var self=this;
-			self.store.reload();
+			self.store.reload(self.tgState);
 			var bcchartNode = domConstruct.create("div",{}); domConstruct.place(bcchartNode, this.cp3.containerNode, "last");
 			this.bcchart = new Chart2D(bcchartNode);
 			// console.log("GeneExpressionChartContainer after chart = new Chart2D");
