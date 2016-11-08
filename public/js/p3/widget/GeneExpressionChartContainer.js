@@ -27,73 +27,20 @@ define([
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			var self = this;
-			console.log("GeneExpressionChartContainer Constructor: this", this);
-			console.log("GeneExpressionChartContainer Constructor: state", this.state);
+			//console.log("GeneExpressionChartContainer Constructor: this", this);
+			//console.log("GeneExpressionChartContainer Constructor: state", this.state);
 
 			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
-				console.log("GeneExpressionChartContainer subscribe GeneExpression:", arguments);
+				//console.log("GeneExpressionChartContainer subscribe GeneExpression:", arguments);
 				var key = arguments[0], value = arguments[1];
 
-				switch(key){
-					case "applyConditionFilter":
-						self.tgState = value;
-						self.store.reload();
-						// for log ratio
-						when(self.processData("log_ratio"), function(chartData){
-							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							if(chartData[0].length<10) {	
-								self.lgchart.addAxis("x", {
-									title: "Log Ratio",
-									titleOrientation: "away",
-									majorLabels: true,
-									minorTicks: false,
-									minorLabels: false,
-									microTicks: false,
-									labels: chartData[0]
-								});
-							} else {
-								self.lgchart.addAxis("x", {
-									title: "Log Ratio",
-									titleOrientation: "away",
-									labels: chartData[0]								
-								});
-							}
-							
-							self.lgchart.updateSeries("Comparisons", chartData[1]);
-							self.lgchart.render();
-							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
-						});
-
-						when(self.processData("z_score"), function(chartData){
-							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
-							if(chartData[0].length<10) {	
-								self.zchart.addAxis("x", {
-									title: "Z-score",
-									titleOrientation: "away",
-									majorLabels: true,
-									minorTicks: false,
-									minorLabels: false,
-									microTicks: false,
-									labels: chartData[0]
-								});
-							} else {
-								self.zchart.addAxis("x", {
-									title: "Z-score",
-									titleOrientation: "away",
-									labels: chartData[0]
-								});														
-							}
-							self.zchart.updateSeries("Comparisons", chartData[1]);
-							self.zchart.render();
-							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
-						});
-						break;
-						
+				switch(key){						
 					case "updateTgState":
 						self.tgState = value;
-						self.store.reload();
+						tgState = value;
+						self.store.reload(self.tgState);
 						when(self.processData("log_ratio"), function(chartData){
-							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							console.log("GeneExpressionChartContainer updateTgState: chartData", chartData);
 							if(chartData[0].length<10) {	
 								self.lgchart.addAxis("x", {
 									title: "Log Ratio",
@@ -113,12 +60,12 @@ define([
 							}
 							self.lgchart.updateSeries("Comparisons", chartData[1]);
 							self.lgchart.render();
-							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+							//console.log("GeneExpressionChartContainer updateTgState reload store:", self.store.data);
 						});
 
 						// for z_score 
 						when(self.processData("z_score"), function(chartData){
-							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							console.log("GeneExpressionChartContainer updateTgState: chartData", chartData);
 							if(chartData[0].length<10) {	
 								self.zchart.addAxis("x", {
 									title: "Z-score",
@@ -138,7 +85,7 @@ define([
 							}
 							self.zchart.updateSeries("Comparisons", chartData[1]);
 							self.zchart.render();
-							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+							//console.log("GeneExpressionChartContainer updateTgState reload store:", self.store.data);
 						});
 						break;
 					default:
@@ -147,7 +94,7 @@ define([
 			}));
 		},
 		onSetState: function(attr, oldVal, state){
-			console.log("GeneExpressionChartContainer onSetState set state: ", state);
+			//console.log("GeneExpressionChartContainer onSetState set state: ", state);
 			this._set('state', state);
 		},
 /*
@@ -171,7 +118,7 @@ define([
 			}
 			var self = this;
 			this._set("state", state);
-			console.log("In GeneExpressionChartContainer _setStateAttr: state", state);
+			//console.log("In GeneExpressionChartContainer _setStateAttr: state", state);
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state, "log_ratio"));
 			}else{
@@ -180,7 +127,7 @@ define([
 				this.refresh();
 			}
 
-			console.log("GeneExpressionChartContainer this._set: ", this.state);
+			//console.log("GeneExpressionChartContainer this._set: ", this.state);
 		},
 		
 		startup: function(){
@@ -206,7 +153,7 @@ define([
 			chartTabContainer1.addChild(cp2);
 			this.addChild(chartTabContainer1);
 
-			console.log("###Before GeneExpressionChartContainer startup() Create Store: store=", this.store);		
+			//console.log("###Before GeneExpressionChartContainer startup() Create Store: store=", this.store);		
 
 			aspect.before(this, 'renderArray', function(results){
 				console.log("GeneExpressionChartContainer aspect.before: results=", results);
@@ -217,12 +164,12 @@ define([
 
 			this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, this.state, "log_ratio"));
 
-			console.log("###After GeneExpressionChartContainer startup() Create Store: store=", this.store); 
-			console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
+			//console.log("###After GeneExpressionChartContainer startup() Create Store: store=", this.store); 
+			//console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
 
 			// chart for log_ratio
 			this.lgchart = new Chart2D(cp1.domNode);
-			console.log("GeneExpressionChartContainer after chart = new Chart2D, cp1.domNode", cp1.domNode);
+			//console.log("GeneExpressionChartContainer after chart = new Chart2D, cp1.domNode", cp1.domNode);
 			this.lgchart.setTheme(Theme);
 
 			// Add the only/default plot
@@ -262,7 +209,7 @@ define([
 
 				self.lgchart.addSeries("Comparisons",chartData[1]);
 				self.lgchart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				//console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
 			});
 
 			// chart for z_score
@@ -307,7 +254,7 @@ define([
 
 				self.zchart.addSeries("Comparisons",chartData[1]);
 				self.zchart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				//console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
 			});
 			
 			this.watch("state", lang.hitch(this, "onSetState"));
@@ -350,13 +297,13 @@ define([
 				
 				if (filter_type === "z_score") {
 					myData = data[1];
-					console.log("GeneExpressionChartContainer processData: z_score, myData ", filter_type, myData);
+					//console.log("GeneExpressionChartContainer processData: z_score, myData ", filter_type, myData);
 				}
 				else {
 					myData = data[0];
-					console.log("GeneExpressionChartContainer processData: log_ratio, myData ", filter_type, myData);
+					//console.log("GeneExpressionChartContainer processData: log_ratio, myData ", filter_type, myData);
 				}
-				console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
+				//console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
 
 				if(!myData){
 					console.log("INVALID Chart DATA", data);

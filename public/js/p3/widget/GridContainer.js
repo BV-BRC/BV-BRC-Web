@@ -406,9 +406,7 @@ define([
 					});
 				},
 				false
-			],
-
-			[
+			], [
 				"ViewSpgeneItem",
 				"MultiButton fa icon-selection-Feature fa-2x",
 				{
@@ -438,6 +436,26 @@ define([
 				},
 				false
 			], [
+				"ViewSpgeneEvidence",
+				"MultiButton fa icon-selection-Feature fa-2x",
+				{
+					label: "VF EVID",
+					validTypes: ["*"],
+					multiple: false,
+					validContainerTypes: ["spgene_data"],
+					tooltip: "View Specialty Gene Evidence"
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {
+						href: "/view/SpecialtyGeneEvidence/" + sel.source_id,
+						target: "blank"
+					});
+					// console.log("View SP GENE: ", sel)
+					//Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
+				},
+				false
+			], [
 				"ViewGenomeItemFromGenome",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{
@@ -461,7 +479,10 @@ define([
 					var sel = selection[0];
 					// console.log("sel: ", sel)
 					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					Topic.publish("/navigate", {
+						href: "/view/Genome/" + sel.genome_id,
+						target: "blank"
+					});
 				},
 				false
 			],

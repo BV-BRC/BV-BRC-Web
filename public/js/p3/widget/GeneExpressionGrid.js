@@ -37,6 +37,7 @@ define([
 		constructor: function(options){
 			console.log("GeneExpressionGrid constructor Ctor: ", options);
 			console.log("GeneExpressionGrid constructor this.store: ", this.store);
+			console.log("GeneExpressionGrid constructor case updateTgState: this.tgState: ", this.tgState);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
@@ -49,18 +50,11 @@ define([
 
 				switch(key){
 					case "updateTgState":
-						//console.log("GeneExpressionGrid constructor case updateTgState: this.store: ", this.store);
+						console.log("GeneExpressionGrid constructor case updateTgState: this.store: ", this.store);
 						//this.store.arrange(value);
 						this.store.tgState = value;
-						this.store.reload();
+						this.store.reload(value);
 						//this.refresh();
-						break;
-					case "applyConditionFilter":
-						//console.log("GeneExpressionGrid constructor case applyConditionFilter: this.store: ", this.store);
-						//this.store.arrange(value);
-						//self.tgState = value;
-						this.store.tgState = value;
-						this.store.reload();
 						break;
 					default:
 						break;
