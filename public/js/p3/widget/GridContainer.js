@@ -1189,7 +1189,7 @@ define([
 			if(this.store){
 				o.store = this.store
 			}
-			this.grid = new this.gridCtor(o);
+			this.grid = new this.gridCtor(o, this);
 
 			if(this.enableFilterPanel){
 				// console.log("Create FilterPanel: ", this.state);

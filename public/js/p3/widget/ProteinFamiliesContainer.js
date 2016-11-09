@@ -22,9 +22,11 @@ define([
 		loadingMask: null,
 		maxGenomeCount: 500,
 		apiServer: window.App.dataServiceURL,
-		constructor: function(){
+		constructor: function(options){
+			// console.log(options);
+			this.topicId = "ProteinFamilies_" + options.id.split('_proteinFamilies')[0];
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -132,11 +134,13 @@ define([
 				title: "Table",
 				content: "Protein Families Table",
 				state: this.state,
+				topicId: this.topicId,
 				apiServer: this.apiServer
 			});
 
 			this.heatmapContainer = new HeatmapContainer({
 				title: "Heatmap",
+				topicId: this.topicId,
 				content: "Heatmap"
 			});
 
@@ -206,13 +210,11 @@ define([
 				}]
 			});
 			cbType.on("change", lang.hitch(this, function(value){
-				// Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
+
 				this.pfState = lang.mixin({}, this.pfState, {
 					familyType: value
 				});
-				// console.log(this.pfState);
-				// Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState)
-				Topic.publish("ProteinFamilies", "setFamilyType", this.pfState);
+				Topic.publish(this.topicId, "setFamilyType", this.pfState);
 			}));
 			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
 
@@ -227,6 +229,7 @@ define([
 			// genome list grid
 			var filterGrid = new FilterGrid({
 				"class": "pfFilterGrid",
+				topicId: this.topicId,
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
@@ -338,7 +341,7 @@ define([
 					// reset store
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue);
 					// console.log(this.pfState);
-					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+					Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_reset.domNode, otherFilterPanel.containerNode, "last");
@@ -372,7 +375,7 @@ define([
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
 					// console.log(this.pfState);
-					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+					Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
