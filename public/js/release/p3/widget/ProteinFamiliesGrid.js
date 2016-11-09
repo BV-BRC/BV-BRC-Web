@@ -28,13 +28,14 @@ define("p3/widget/ProteinFamiliesGrid", [
 			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.toInteger},
 			aa_length_std: {label: 'Std Dev', field: 'aa_length_std', formatter: formatter.toInteger}
 		},
-		constructor: function(options){
-			//console.log("ProteinFamiliesGrid Ctor: ", options);
+		constructor: function(options, parent){
+			// console.log("ProteinFamiliesGrid Ctor: ", options, parent);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			this.topicId = parent.topicId;
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -91,6 +92,17 @@ define("p3/widget/ProteinFamiliesGrid", [
 		_setState: function(state){
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+				// console.log("_setState", state);
+				// var store = ProteinFamiliesMemoryStore.getInstance();
+				// store.init({
+				// 	token: window.App.authorizationToken,
+				// 	apiServer: this.apiServer || window.App.dataServiceURL,
+				// 	state: state
+				// });
+				// store.watch('refresh', lang.hitch(this, "refresh"));
+				// // this.store = store;
+				// console.log(store);
+				// this.set('store', store);
 			}else{
 				// console.log("ProteinFamiliesGrid _setState()");
 				this.store.set('state', state);
@@ -102,6 +114,9 @@ define("p3/widget/ProteinFamiliesGrid", [
 		_setSort: function(sort){
 			this.inherited(arguments);
 			// console.log("_setSort", sort);
+			// if(!this.store){
+			// 	return;
+			// }
 			this.store.sort = sort;
 
 			if(sort.length > 0){
@@ -113,8 +128,8 @@ define("p3/widget/ProteinFamiliesGrid", [
 				// console.log("update column order: ", newIds);
 				this.pfState.clusterColumnOrder = newIds;
 
-				Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 			}
 		},
 		createStore: function(server, token, state){
@@ -122,11 +137,13 @@ define("p3/widget/ProteinFamiliesGrid", [
 			var store = new Store({
 				token: window.App.authorizationToken,
 				apiServer: this.apiServer || window.App.dataServiceURL,
+				topicId: this.topicId,
 				state: state || this.state
 			});
 			store.watch('refresh', lang.hitch(this, "refresh"));
 
 			return store;
+			// return null; // block store creation in PageGrid.startup()
 		}
 	});
 });

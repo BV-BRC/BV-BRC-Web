@@ -38635,7 +38635,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			// console.log("setSelection", sel, sel.length);
+			//console.log("setSelection sel", sel[0], sel.length);
 			this.selection = sel;
 
 //			return;
@@ -38661,7 +38661,7 @@ define([
 				selectionTypes[type] = true;
 			});
 			//console.log("selectionTypes: ", selectionTypes);
-
+			//console.log("_actions: ", this._actions);
 			if(sel.length > 1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
 //				//console.log("isMultiTyped: ", multiTypedSelection);	
@@ -38684,7 +38684,11 @@ define([
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
-				//console.log("validTypes for action : ",an, validTypes);
+				//console.log("validTypes for action : ",an, " validTypes=", validTypes);
+				//console.log("validTypes sel[0].source : ",sel[0].source);
+				if (sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
+					return false;
+				}
 
 				if(act.options.min && (sel.length < act.options.min )){
 					return false;
@@ -74775,6 +74779,7 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
+					//console.log("ViewSpgeneEvidence, sel.feature_id", sel.feature_id);
 					Topic.publish("/navigate", {
 						href: "/view/SpecialtyGeneEvidence/" + sel.source_id,
 						target: "blank"
@@ -75517,7 +75522,7 @@ define([
 			if(this.store){
 				o.store = this.store
 			}
-			this.grid = new this.gridCtor(o);
+			this.grid = new this.gridCtor(o, this);
 
 			if(this.enableFilterPanel){
 				// console.log("Create FilterPanel: ", this.state);
@@ -79619,9 +79624,11 @@ define([
 		loadingMask: null,
 		maxGenomeCount: 500,
 		apiServer: window.App.dataServiceURL,
-		constructor: function(){
+		constructor: function(options){
+			// console.log(options);
+			this.topicId = "ProteinFamilies_" + options.id.split('_proteinFamilies')[0];
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -79729,11 +79736,13 @@ define([
 				title: "Table",
 				content: "Protein Families Table",
 				state: this.state,
+				topicId: this.topicId,
 				apiServer: this.apiServer
 			});
 
 			this.heatmapContainer = new HeatmapContainer({
 				title: "Heatmap",
+				topicId: this.topicId,
 				content: "Heatmap"
 			});
 
@@ -79803,13 +79812,11 @@ define([
 				}]
 			});
 			cbType.on("change", lang.hitch(this, function(value){
-				// Topic.publish("ProteinFamilies", "setFamilyType", this.get('value'));
+
 				this.pfState = lang.mixin({}, this.pfState, {
 					familyType: value
 				});
-				// console.log(this.pfState);
-				// Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState)
-				Topic.publish("ProteinFamilies", "setFamilyType", this.pfState);
+				Topic.publish(this.topicId, "setFamilyType", this.pfState);
 			}));
 			domConstruct.place(cbType.domNode, familyTypePanel.containerNode, "last");
 
@@ -79824,6 +79831,7 @@ define([
 			// genome list grid
 			var filterGrid = new FilterGrid({
 				"class": "pfFilterGrid",
+				topicId: this.topicId,
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
@@ -79935,7 +79943,7 @@ define([
 					// reset store
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue);
 					// console.log(this.pfState);
-					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+					Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_reset.domNode, otherFilterPanel.containerNode, "last");
@@ -79969,7 +79977,7 @@ define([
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
 					// console.log(this.pfState);
-					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+					Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
@@ -81048,9 +81056,11 @@ define([
 		enableFilterPanel: false,
 		maxGenomeCount: 500,
 		showAutoFilterMessage: false,
-		constructor: function(){
+		constructor: function(options){
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			this.topicId = options.topicId;
+
+			Topic.subscribe(this.topicId , lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
@@ -81076,7 +81086,7 @@ define([
 			// console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
-				// Topic.publish("ProteinFamilies", "showLoadingMask");
+				Topic.publish(this.topicId, "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
 				// console.log("No Grid Yet (ProteinFamiliesGridContainer)");
@@ -81284,13 +81294,14 @@ define([
 			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.toInteger},
 			aa_length_std: {label: 'Std Dev', field: 'aa_length_std', formatter: formatter.toInteger}
 		},
-		constructor: function(options){
-			//console.log("ProteinFamiliesGrid Ctor: ", options);
+		constructor: function(options, parent){
+			// console.log("ProteinFamiliesGrid Ctor: ", options, parent);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			this.topicId = parent.topicId;
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -81347,6 +81358,17 @@ define([
 		_setState: function(state){
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+				// console.log("_setState", state);
+				// var store = ProteinFamiliesMemoryStore.getInstance();
+				// store.init({
+				// 	token: window.App.authorizationToken,
+				// 	apiServer: this.apiServer || window.App.dataServiceURL,
+				// 	state: state
+				// });
+				// store.watch('refresh', lang.hitch(this, "refresh"));
+				// // this.store = store;
+				// console.log(store);
+				// this.set('store', store);
 			}else{
 				// console.log("ProteinFamiliesGrid _setState()");
 				this.store.set('state', state);
@@ -81358,6 +81380,9 @@ define([
 		_setSort: function(sort){
 			this.inherited(arguments);
 			// console.log("_setSort", sort);
+			// if(!this.store){
+			// 	return;
+			// }
 			this.store.sort = sort;
 
 			if(sort.length > 0){
@@ -81369,8 +81394,8 @@ define([
 				// console.log("update column order: ", newIds);
 				this.pfState.clusterColumnOrder = newIds;
 
-				Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 			}
 		},
 		createStore: function(server, token, state){
@@ -81378,11 +81403,13 @@ define([
 			var store = new Store({
 				token: window.App.authorizationToken,
 				apiServer: this.apiServer || window.App.dataServiceURL,
+				topicId: this.topicId,
 				state: state || this.state
 			});
 			store.watch('refresh', lang.hitch(this, "refresh"));
 
 			return store;
+			// return null; // block store creation in PageGrid.startup()
 		}
 	});
 });
@@ -81428,7 +81455,7 @@ define([
 				return;
 			}
 
-			// console.warn("onSetState", state, state.genome_ids);
+			console.warn("onSetState", state, state.genome_ids);
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
@@ -81449,7 +81476,7 @@ define([
 			}
 
 			if(state && state.hashParams && state.hashParams.params){
-				var params = JSON.parse(state.hashParams.params);
+				var params = JSON.parse(decodeURIComponent(state.hashParams.params));
 
 				params.family_type ? this.pfState.familyType = params.family_type : {};
 				// params.keyword ? pfState.keyword = params.keyword : {};
@@ -81462,17 +81489,20 @@ define([
 				this.apiServer = options.apiServer;
 			}
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			this.topicId = options.topicId;
+			console.log("pfs store created.", this.topicId);
+
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "setFamilyType":
-						Topic.publish("ProteinFamilies", "showLoadingMask");
+						Topic.publish(this.topicId, "showLoadingMask");
 						this.pfState = value;
 						if(arraysEqual(this.genome_ids, this.pfState.genomeIds)){
 							this.reload();
-							Topic.publish("ProteinFamilies", "showMainGrid");
+							Topic.publish(this.topicId, "showMainGrid");
 						}
 						break;
 					case "anchorByGenome":
@@ -81480,14 +81510,15 @@ define([
 						break;
 					case "applyConditionFilter":
 						this.pfState = value;
-						this.conditionFilter(value);
-						this.currentData = this.getHeatmapData(this.pfState);
-						Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", this.currentData);
+						this.conditionFilter();
+						this.currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updatePfState", this.pfState);
+						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 						break;
 					case "requestHeatmapData":
-						this.currentData = this.getHeatmapData(value);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", this.currentData);
+						this.pfState = value;
+						this.currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 						break;
 					default:
 						break;
@@ -81496,18 +81527,18 @@ define([
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
-		conditionFilter: function(pfState){
+		conditionFilter: function(){
 			var self = this;
-			if(self._filtered == undefined){ // first time
-				self._filtered = true;
-				self._original = this.query("", {});
+			if(this._filtered == undefined){ // first time
+				this._filtered = true;
+				this._original = this.query("", {});
 			}
-			var data = self._original;
+			var data = this._original;
 			var newData = [];
-			var gfs = pfState.genomeFilterStatus;
+			var gfs = this.pfState.genomeFilterStatus;
 
 			// var tsStart = window.performance.now();
-			var keywordRegex = pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+			var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
 
 			data.forEach(function(family){
 
@@ -81527,32 +81558,32 @@ define([
 				});
 
 				// keyword search
-				if(pfState.keyword !== ''){
+				if(self.pfState.keyword !== ''){
 					skip = !keywordRegex.some(function(needle){
 						return needle && (family.description.toLowerCase().indexOf(needle) >= 0 || family.family_id.toLowerCase().indexOf(needle) >= 0);
 					});
 				}
 
 				// perfect family
-				if(pfState.perfectFamMatch === 'Y'){
+				if(self.pfState.perfectFamMatch === 'Y'){
 					family.feature_count !== family.genome_count ? skip = true : {};
-				}else if(pfState.perfectFamMatch === 'N'){
+				}else if(self.pfState.perfectFamMatch === 'N'){
 					family.feature_count === family.genome_count ? skip = true : {};
 				}
 
 				// num proteins per family
-				if(pfState.min_member_count){
+				if(self.pfState.min_member_count){
 					family.feature_count < pfState.min_member_count ? skip = true : {};
 				}
-				if(pfState.max_member_count){
+				if(self.pfState.max_member_count){
 					family.feature_count > pfState.max_member_count ? skip = true : {};
 				}
 
 				// num genomes per family
-				if(pfState.min_genome_count){
+				if(self.pfState.min_genome_count){
 					family.genome_count < pfState.min_genome_count ? skip = true : {};
 				}
-				if(pfState.max_genome_count){
+				if(self.pfState.max_genome_count){
 					family.genome_count > pfState.max_genome_count ? skip = true : {};
 				}
 
@@ -81562,8 +81593,8 @@ define([
 			});
 			// console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
 
-			self.setData(newData);
-			self.set("refresh");
+			this.setData(newData);
+			this.set("refresh");
 		},
 		reload: function(){
 			var self = this;
@@ -81633,7 +81664,7 @@ define([
 				return def.promise;
 			}
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
 				handleAs: 'json',
@@ -81658,24 +81689,24 @@ define([
 				});
 				_self.pfState.genomeIds = Object.keys(_self.pfState.genomeFilterStatus);
 				// publish pfState & update filter panel
-				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
-				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
+				Topic.publish(_self.topicId, "updatePfState", _self.pfState);
+				Topic.publish(_self.topicId, "updateFilterGrid", genomes);
 
 				// _self.pfState, _self.token
 				var opts = {
 					token: window.App.authorizationToken || ""
 				};
-				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(this, function(data){
-					_self.setData(data);
-					_self._loaded = true;
-					Topic.publish("ProteinFamilies", "hideLoadingMask");
+				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(_self, function(data){
+					this.setData(data);
+					this._loaded = true;
+					Topic.publish(this.topicId, "hideLoadingMask");
 				}));
 
 			});
 			return this._loadingDeferred;
 		},
 
-		getHeatmapData: function(pfState){
+		getHeatmapData: function(){
 
 			var rows = [];
 			var cols = [];
@@ -81683,12 +81714,12 @@ define([
 			var keeps = []; // global and will be referenced inside createColumn function
 			var colorStop = [];
 
-			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
 			// var start = window.performance.now();
 
 			// assumes axises are corrected
-			var familyOrder = pfState.clusterColumnOrder;
-			var genomeOrder = pfState.clusterRowOrder;
+			var familyOrder = this.pfState.clusterColumnOrder;
+			var genomeOrder = this.pfState.clusterRowOrder;
 
 			var createColumn = function(order, colId, label, distribution, meta){
 				// this reads global variable keeps, and update global variable maxIntensity
@@ -81712,18 +81743,19 @@ define([
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
 			var genomeOrderChangeMap = [];
+			var thisGFS = this.pfState.genomeFilterStatus;
 
 			if(genomeOrder !== [] && genomeOrder.length > 0){
-				pfState.genomeIds = genomeOrder;
+				this.pfState.genomeIds = genomeOrder;
 				genomeOrder.forEach(function(genomeId, idx){
 					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
-					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
-					pfState.genomeFilterStatus[genomeId].setIndex(idx);
+					genomeOrderChangeMap.push(thisGFS[genomeId].getIndex()); // keep the original position
+					thisGFS[genomeId].setIndex(idx);
 				});
 			}
 
-			pfState.genomeIds.forEach(function(genomeId, idx){
-				var gfs = pfState.genomeFilterStatus[genomeId];
+			this.pfState.genomeIds.forEach(function(genomeId, idx){
+				var gfs = thisGFS[genomeId];
 				if(gfs.getStatus() != '1'){
 					keeps.push(2 * gfs.getIndex());
 					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
@@ -81888,7 +81920,7 @@ define([
 
 		anchorByGenome: function(genomeId){
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
 			var self = this;
 			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
@@ -81918,11 +81950,11 @@ define([
 				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
 
 				// update main grid
-				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
+				Topic.publish(this.topicId, "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
 				self.currentData = this.getHeatmapData(this.pfState);
-				Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+				Topic.publish(this.topicId, "updateHeatmapData", self.currentData);
 			}));
 		}
 	});
@@ -82305,8 +82337,9 @@ define([
 			if(options && options.state){
 				this.state = options.state;
 			}
+			this.topicId = options.topicId;
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesFilterGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -82330,7 +82363,7 @@ define([
 			}));
 		},
 		startup: function(){
-			var _self = this;
+
 			var options = ['present', 'absent', 'mixed'];
 			var toggleSelection = function(element, value){
 				element.checked = value;
@@ -82338,13 +82371,14 @@ define([
 				element.setAttribute("aria-checked", value);
 			};
 
-			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
-				var cell = _self.cell(evt);
+			this.on(".dgrid-cell:click", lang.hitch(this, function(evt){
+				var cell = this.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
+				var _self = this;
 
-				var conditionIds = _self.pfState.genomeIds;
-				var conditionStatus = _self.pfState.genomeFilterStatus;
+				var conditionIds = this.pfState.genomeIds;
+				var conditionStatus = this.pfState.genomeFilterStatus;
 
 				if(!cell.element.input) return;
 
@@ -82406,14 +82440,14 @@ define([
 				});
 
 				this.pfState.genomeFilterStatus = conditionStatus;
-				Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+				Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 			}));
 
-			aspect.before(_self, 'renderArray', function(results){
-				Deferred.when(results.total, function(x){
-					_self.set("totalRows", x);
-				});
-			});
+			aspect.before(this, 'renderArray', lang.hitch(this, function(results){
+				Deferred.when(results.total, lang.hitch(this, function(x){
+					this.set("totalRows", x);
+				}));
+			}));
 
 			// this.inherited(arguments);
 			this._started = true;
@@ -82438,8 +82472,8 @@ define([
 			this.pfState.clusterRowOrder = newIds;
 			// console.log("new order", this.pfState.clusterRowOrder);
 
-			Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-			Topic.publish("ProteinFamilies", "refreshHeatmap");
+			Topic.publish(this.topicId, "updatePfState", this.pfState);
+			Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 		},
 		state: null,
 		postCreate: function(){
@@ -83624,11 +83658,12 @@ define([
 				true
 			]
 		],
-		constructor: function(){
+		constructor: function(options){
 			this.dialog = new Dialog({});
 
+			this.topicId = options.topicId;
 			// subscribe
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -83637,13 +83672,13 @@ define([
 						this.pfState = value;
 						break;
 					case "refreshHeatmap":
-						Topic.publish("ProteinFamilies", "requestHeatmapData", this.pfState);
+						Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 						break;
 					case "updateHeatmapData":
 						this.currentData = value;
 						if(typeof(this.flashDom.refreshData) == "function"){
 							this.flashDom.refreshData();
-							Topic.publish("ProteinFamilies", "hideLoadingMask");
+							Topic.publish(this.topicId, "hideLoadingMask");
 						}
 						break;
 					default:
@@ -83685,7 +83720,7 @@ define([
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -83698,7 +83733,7 @@ define([
 
 			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
 				headers: {
@@ -83707,7 +83742,7 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
@@ -83728,7 +83763,7 @@ define([
 
 			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
@@ -83739,7 +83774,7 @@ define([
 				},
 				data: query
 			}).then(lang.hitch(this, function(features){
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
 				var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
@@ -83913,12 +83948,12 @@ define([
 				name: "anchor",
 				options: options
 			});
-			anchor.on('change', function(genomeId){
+			anchor.on('change', lang.hitch(this, function(genomeId){
 				if(genomeId !== ''){
-					Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
+					Topic.publish(this.topicId, "anchorByGenome", genomeId);
 					popup.close(self.tooltip_anchoring);
 				}
-			});
+			}));
 
 			return anchor;
 		},
@@ -84090,8 +84125,8 @@ define([
 			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
-			var pfState = this.pfState;
-			var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+			var isTransposed = this.pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
 			console.log("clustering data set size: ", data.length);
@@ -84104,25 +84139,26 @@ define([
 				return;
 			}
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
-				pfState.clusterRowOrder = res.rows;
-				pfState.clusterColumnOrder = res.columns;
+				this.pfState.clusterRowOrder = res.rows;
+				this.pfState.clusterColumnOrder = res.columns;
 
-				Topic.publish("ProteinFamilies", "updatePfState", pfState);
-				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
-				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "updateFilterGridOrder", res.rows);
+				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				// updateMainGridOrder -> ProteinFamiliesGrid._setSort already calls this;
+				// Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				new Dialog({
 					title: err.status || 'Error',
@@ -94651,7 +94687,7 @@ define([
 
 						this.proteinFamilies.state = lang.mixin({}, state, {
 							hashParams: lang.mixin({}, state.hashParams, {
-								params: JSON.stringify({"family_type": "plfam"})
+								params: encodeURIComponent(JSON.stringify({"family_type": "plfam"}))
 							})
 						});
 					}
@@ -112032,6 +112068,7 @@ define([
 							renderCell: function(obj, val, node){
 								if(val){
 									var source = val;
+									var sourcelink = val;
 									switch(source){
 										case "PATRIC_VF":
 											sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(evidence,Literature))" target="_blank">' + source + '</a>';
@@ -112068,6 +112105,7 @@ define([
 							renderCell: function(obj, val, node){
 								if(val){
 									var source_id = val;
+									var sourcelink = val;
 									switch(obj.source){
 										case "PATRIC_VF":
 											sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + source_id  + '" target="_blank">' + source_id + '</a>';

@@ -126,6 +126,7 @@ define("p3/widget/FeatureOverview", [
 							renderCell: function(obj, val, node){
 								if(val){
 									var source = val;
+									var sourcelink = val;
 									switch(source){
 										case "PATRIC_VF":
 											sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(evidence,Literature))" target="_blank">' + source + '</a>';
@@ -162,6 +163,7 @@ define("p3/widget/FeatureOverview", [
 							renderCell: function(obj, val, node){
 								if(val){
 									var source_id = val;
+									var sourcelink = val;
 									switch(obj.source){
 										case "PATRIC_VF":
 											sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + source_id  + '" target="_blank">' + source_id + '</a>';

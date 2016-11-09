@@ -179,7 +179,7 @@ define("p3/widget/viewer/Genome", [
 
 						this.proteinFamilies.state = lang.mixin({}, state, {
 							hashParams: lang.mixin({}, state.hashParams, {
-								params: JSON.stringify({"family_type": "plfam"})
+								params: encodeURIComponent(JSON.stringify({"family_type": "plfam"}))
 							})
 						});
 					}

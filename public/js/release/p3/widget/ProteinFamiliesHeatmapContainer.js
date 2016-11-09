@@ -165,11 +165,12 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				true
 			]
 		],
-		constructor: function(){
+		constructor: function(options){
 			this.dialog = new Dialog({});
 
+			this.topicId = options.topicId;
 			// subscribe
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -178,13 +179,13 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 						this.pfState = value;
 						break;
 					case "refreshHeatmap":
-						Topic.publish("ProteinFamilies", "requestHeatmapData", this.pfState);
+						Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 						break;
 					case "updateHeatmapData":
 						this.currentData = value;
 						if(typeof(this.flashDom.refreshData) == "function"){
 							this.flashDom.refreshData();
-							Topic.publish("ProteinFamilies", "hideLoadingMask");
+							Topic.publish(this.topicId, "hideLoadingMask");
 						}
 						break;
 					default:
@@ -226,7 +227,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -239,7 +240,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
 				headers: {
@@ -248,7 +249,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
@@ -269,7 +270,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
@@ -280,7 +281,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				},
 				data: query
 			}).then(lang.hitch(this, function(features){
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
 				var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
@@ -454,12 +455,12 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				name: "anchor",
 				options: options
 			});
-			anchor.on('change', function(genomeId){
+			anchor.on('change', lang.hitch(this, function(genomeId){
 				if(genomeId !== ''){
-					Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
+					Topic.publish(this.topicId, "anchorByGenome", genomeId);
 					popup.close(self.tooltip_anchoring);
 				}
-			});
+			}));
 
 			return anchor;
 		},
@@ -631,8 +632,8 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
-			var pfState = this.pfState;
-			var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+			var isTransposed = this.pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
 			console.log("clustering data set size: ", data.length);
@@ -645,25 +646,26 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				return;
 			}
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
-				pfState.clusterRowOrder = res.rows;
-				pfState.clusterColumnOrder = res.columns;
+				this.pfState.clusterRowOrder = res.rows;
+				this.pfState.clusterColumnOrder = res.columns;
 
-				Topic.publish("ProteinFamilies", "updatePfState", pfState);
-				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
-				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "updateFilterGridOrder", res.rows);
+				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				// updateMainGridOrder -> ProteinFamiliesGrid._setSort already calls this;
+				// Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				new Dialog({
 					title: err.status || 'Error',
