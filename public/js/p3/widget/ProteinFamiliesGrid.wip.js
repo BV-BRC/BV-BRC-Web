@@ -2,23 +2,24 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
+	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/store/Memory", "./GridSelector"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			BorderContainer, ContentPane,
-			Grid, formatter, Store){
+			Grid, formatter, Store, MemStore, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
-		store: null,
-		pfState: null,
+		store: new MemStore({idProperty: "family_id"}),
+		isLoaded: false,
+		allowSelectAll: false,
 		dataModel: "genome_feature",
-		primaryKey: "feature_id",
+		primaryKey: "family_id",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({label: ' ', unhidable: true}),
 			family_id: {label: 'ID', field: 'family_id'},
 			feature_count: {label: 'Proteins', field: 'feature_count'},
 			genome_count: {label: 'Genomes', field: 'genome_count'},
@@ -28,21 +29,17 @@ define([
 			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.toInteger},
 			aa_length_std: {label: 'Std Dev', field: 'aa_length_std', formatter: formatter.toInteger}
 		},
-		constructor: function(options, parent){
-			// console.log("ProteinFamiliesGrid Ctor: ", options, parent);
+		constructor: function(options){
+			//console.log("ProteinFamiliesGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
 
-			this.topicId = parent.topicId;
-			Topic.subscribe(this.topicId, lang.hitch(this, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
 				// console.log("ProteinFamiliesGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "updatePfState":
-						this.pfState = value;
-						break;
 					case "updateMainGridOrder":
 						this.set("sort", []);
 						this.store.arrange(value);
@@ -55,6 +52,19 @@ define([
 		},
 		startup: function(){
 			var _self = this;
+/*
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				//console.log("dblclick row:", row);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				// console.log('after emit');
+			});
+*/
 
 			this.on("dgrid-sort", function(evt){
 				_self.store.query("", {sort: evt.sort});
@@ -72,6 +82,19 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
+/*
+			this.on("dgrid-deselect", function(evt){
+				//console.log("dgrid-deselect");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+			});
+*/
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
@@ -90,19 +113,9 @@ define([
 			this.apiServer = server;
 		},
 		_setState: function(state){
-			if(!this.store){
+			if(!this.isLoaded){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-				// console.log("_setState", state);
-				// var store = ProteinFamiliesMemoryStore.getInstance();
-				// store.init({
-				// 	token: window.App.authorizationToken,
-				// 	apiServer: this.apiServer || window.App.dataServiceURL,
-				// 	state: state
-				// });
-				// store.watch('refresh', lang.hitch(this, "refresh"));
-				// // this.store = store;
-				// console.log(store);
-				// this.set('store', store);
+				this.isLoaded = true;
 			}else{
 				// console.log("ProteinFamiliesGrid _setState()");
 				this.store.set('state', state);
@@ -114,36 +127,18 @@ define([
 		_setSort: function(sort){
 			this.inherited(arguments);
 			// console.log("_setSort", sort);
-			// if(!this.store){
-			// 	return;
-			// }
 			this.store.sort = sort;
-
-			if(sort.length > 0){
-				var newIds = [];
-				var idProperty = this.store.idProperty;
-				this.store.query({}, {sort: sort}).forEach(function(row){
-					newIds.push(row[idProperty]);
-				});
-				// console.log("update column order: ", newIds);
-				this.pfState.clusterColumnOrder = newIds;
-
-				Topic.publish(this.topicId, "updatePfState", this.pfState);
-				Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
-			}
 		},
 		createStore: function(server, token, state){
 
 			var store = new Store({
 				token: window.App.authorizationToken,
 				apiServer: this.apiServer || window.App.dataServiceURL,
-				topicId: this.topicId,
 				state: state || this.state
 			});
 			store.watch('refresh', lang.hitch(this, "refresh"));
 
 			return store;
-			// return null; // block store creation in PageGrid.startup()
 		}
 	});
 });
