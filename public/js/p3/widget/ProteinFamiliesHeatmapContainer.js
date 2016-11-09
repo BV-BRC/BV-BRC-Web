@@ -68,16 +68,7 @@ define([
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				function(){
-					// flip internal flag
-					if(this.pfState.heatmapAxis === ""){
-						this.pfState.heatmapAxis = "Transposed";
-					}else{
-						this.pfState.heatmapAxis = "";
-					}
-
-					Topic.publish("ProteinFamilies", "refreshHeatmap");
-				},
+				"flipAxis",
 				true
 			],
 			[
@@ -626,6 +617,16 @@ define([
 				originalAxis.rowIds = rowIds;
 			}
 			return originalAxis;
+		},
+		flipAxis: function(){
+			// flip internal flag
+			if(this.pfState.heatmapAxis === ""){
+				this.pfState.heatmapAxis = "Transposed";
+			}else{
+				this.pfState.heatmapAxis = "";
+			}
+
+			Topic.publish(this.topicId, "refreshHeatmap");
 		},
 		cluster: function(param){
 

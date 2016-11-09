@@ -44,7 +44,7 @@ define([
 			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
 				// console.log("do not duplicate");
 				this._loaded = true;
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 				return;
 			}
 			// console.log(this.genome_ids.length, state.genome_ids.length, arraysEqual(this.genome_ids, state.genome_ids));
