@@ -37,7 +37,7 @@ define([
 				return;
 			}
 
-			console.warn("onSetState", state, state.genome_ids);
+			console.warn("onSetState", state.genome_ids);
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
