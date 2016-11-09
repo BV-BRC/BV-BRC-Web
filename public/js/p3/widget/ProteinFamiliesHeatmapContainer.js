@@ -661,8 +661,7 @@ define([
 				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				// updateMainGridOrder -> ProteinFamiliesGrid._setSort already calls this;
-				// Topic.publish(this.topicId, "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
 				Topic.publish(this.topicId, "hideLoadingMask");
