@@ -11,14 +11,16 @@ define([
 		containerType: "transcriptomics_gene_data",
 		facetFields: [],
 		enableFilterPanel: false,
-		constructor: function(){
-			var self = this;
-			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
+		constructor: function(options){
+
+			this.topicId = options.topicId;
+
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updateTgState":
-						self.tgState = value;
+						this.tgState = value;
 						break;
 					default:
 						break;

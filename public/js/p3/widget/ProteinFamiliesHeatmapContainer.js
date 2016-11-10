@@ -660,6 +660,7 @@ define([
 				Topic.publish(this.topicId, "updatePfState", this.pfState);
 				Topic.publish(this.topicId, "updateFilterGridOrder", res.rows);
 				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updateClusterColumnOrder", res.columns);
 
 				// re-draw heatmap
 				Topic.publish(this.topicId, "refreshHeatmap");

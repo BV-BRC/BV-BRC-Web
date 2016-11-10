@@ -32,11 +32,13 @@ define([
 			up_reg: {label: 'Up', field: 'up'},
 			down_reg: {label: 'Down', field: 'down'}
 		},
-		constructor: function(options){
+		constructor: function(options, parent){
 			//console.log("ProteinFamiliesGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+
+			this.topicId = parent.topicId;
 
 			Topic.subscribe("TranscriptomicsGene", lang.hitch(this, function(){
 				// console.log("TranscriptomicsGeneGrid:", arguments);
@@ -47,7 +49,7 @@ define([
 						this.tgState = value;
 						break;
 					case "updateMainGridOrder":
-						this.set("sort", []);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -114,8 +116,8 @@ define([
 				// console.log("update column order: ", newIds);
 				this.tgState.clusterColumnOrder = newIds;
 
-				Topic.publish("TranscriptomicsGene", "updateTgState", this.tgState);
-				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
+				Topic.publish(this.topicId, "updateTgState", this.tgState);
+				Topic.publish(this.topicId, "requestHeatmapData", this.tgState);
 			}
 		},
 		createStore: function(server, token, state){
@@ -123,6 +125,7 @@ define([
 			var store = new Store({
 				token: window.App.authorizationToken,
 				apiServer: this.apiServer || window.App.dataServiceURL,
+				topicId: this.topicId,
 				state: state || this.state
 			});
 			store.watch('refresh', lang.hitch(this, "refresh"));
