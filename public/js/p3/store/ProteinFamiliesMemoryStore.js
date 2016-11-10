@@ -90,7 +90,7 @@ define([
 					case "anchorByGenome":
 						this.anchorByGenome(value);
 						break;
-					case "updateMainGridOrder":
+					case "updateClusterColumnOrder":
 						this._clustered = value;
 						break;
 					case "applyConditionFilter":
