@@ -21,16 +21,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				function(){
-					// flip internal flag
-					if(this.tgState.heatmapAxis === ""){
-						this.tgState.heatmapAxis = "Transposed";
-					}else{
-						this.tgState.heatmapAxis = "";
-					}
-
-					Topic.publish("TranscriptomicsGene", "refreshHeatmap");
-				},
+				"flipAxis",
 				true
 			],
 			[
@@ -139,26 +130,26 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 				true
 			]
 		],
-		constructor: function(){
+		constructor: function(options){
 			this.dialog = new Dialog({});
 
-			var self = this;
+			this.topicId = options.topicId;
 			// subscribe
-			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updateTgState":
-						self.tgState = value;
+						this.tgState = value;
 						break;
 					case "refreshHeatmap":
-						Topic.publish("TranscriptomicsGene", "requestHeatmapData", self.tgState);
+						Topic.publish(this.topicId, "requestHeatmapData", this.tgState);
 						break;
 					case "updateHeatmapData":
-						self.currentData = value;
-						if(typeof(self.flashDom.refreshData) == "function"){
-							self.flashDom.refreshData();
-							Topic.publish("TranscriptomicsGene", "hideLoadingMask");
+						this.currentData = value;
+						if(typeof(this.flashDom.refreshData) == "function"){
+							this.flashDom.refreshData();
+							Topic.publish(this.topicId, "hideLoadingMask");
 						}
 						break;
 					default:
@@ -200,7 +191,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -517,15 +508,15 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			return colorSelect;
 		},
 		_buildPanelShowSignificant: function(){
-			var self = this;
+
 			var showSelect = new Select({
 				name: "showSignificant",
 				options: [{value: 'Y', label: 'Significant Genes'},
 					{value: 'N', label: 'All Genes'}]
 			});
-			showSelect.on('change', lang.hitch(self, function(yesOrNo){
-				self.tgState.significantGenes = yesOrNo;
-				Topic.publish("TranscriptomicsGene", "applyConditionFilter", self.tgState);
+			showSelect.on('change', lang.hitch(this, function(yesOrNo){
+				this.tgState.significantGenes = yesOrNo;
+				Topic.publish(this.topicId, "applyConditionFilter", this.tgState);
 				popup.close();
 			}));
 
@@ -583,13 +574,23 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 
 			return tablePass.join('\n');
 		},
+		flipAxis: function(){
+			// flip internal flag
+			if(this.tgState.heatmapAxis === ""){
+				this.tgState.heatmapAxis = "Transposed";
+			}else{
+				this.tgState.heatmapAxis = "";
+			}
+
+			Topic.publish(this.topicId, "refreshHeatmap");
+		},
 		cluster: function(param){
 
 			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
-			var tgState = this.tgState;
-			var isTransposed = tgState.heatmapAxis === 'Transposed';
+
+			var isTransposed = this.tgState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
 			// console.log("clustering data set size: ", data.length);
@@ -602,28 +603,29 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 				return;
 			}
 
-			Topic.publish("TranscriptomicsGene", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
-				tgState.clusterRowOrder = res.rows;
-				tgState.clusterColumnOrder = res.columns;
+				this.tgState.clusterRowOrder = res.rows;
+				this.tgState.clusterColumnOrder = res.columns;
 
-				Topic.publish("TranscriptomicsGene", "updateTgState", tgState);
-				Topic.publish("TranscriptomicsGene", "updateFilterGridOrder", res.rows);
-				Topic.publish("TranscriptomicsGene", "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updateTgState", this.tgState);
+				Topic.publish(this.topicId, "updateFilterGridOrder", res.rows);
+				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updateClusterColumnOrder", res.columns);
 
 				// re-draw heatmap
-				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
-				Topic.publish("TranscriptomicsGene", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 
 				new Dialog({
-					title: err.status || ' ',
+					title: err.status || 'Error',
 					content: err.text || err
 				}).show();
 			});
