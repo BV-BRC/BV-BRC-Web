@@ -44,7 +44,7 @@ define([
 						this.pfState = value;
 						break;
 					case "updateMainGridOrder":
-						this.set("sort", []);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;

@@ -37,14 +37,14 @@ define([
 				return;
 			}
 
-			console.warn("onSetState", state, state.genome_ids);
+			console.warn("onSetState", state.genome_ids);
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
 			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
 				// console.log("do not duplicate");
 				this._loaded = true;
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 				return;
 			}
 			// console.log(this.genome_ids.length, state.genome_ids.length, arraysEqual(this.genome_ids, state.genome_ids));

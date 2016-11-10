@@ -75,7 +75,7 @@ define([
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
-						this.set('sort', [{}]);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
