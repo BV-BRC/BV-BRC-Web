@@ -180,6 +180,10 @@ define([
 
 				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
 
+				if (doc.patric_id){
+					out.push("&nbsp;|&nbsp;" + doc.patric_id);					
+				}
+
 				if (doc.refseq_locus_tag){
 					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);					
 				}
