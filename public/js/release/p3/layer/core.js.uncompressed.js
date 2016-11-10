@@ -59416,7 +59416,7 @@ define([
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
 						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
 					}
 
@@ -81310,7 +81310,7 @@ define([
 						this.pfState = value;
 						break;
 					case "updateMainGridOrder":
-						this.set("sort", []);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -81455,14 +81455,14 @@ define([
 				return;
 			}
 
-			console.warn("onSetState", state, state.genome_ids);
+			console.warn("onSetState", state.genome_ids);
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
 			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
 				// console.log("do not duplicate");
 				this._loaded = true;
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 				return;
 			}
 			// console.log(this.genome_ids.length, state.genome_ids.length, arraysEqual(this.genome_ids, state.genome_ids));
@@ -82353,7 +82353,7 @@ define([
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
-						this.set('sort', [{}]);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -83561,16 +83561,7 @@ define([
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				function(){
-					// flip internal flag
-					if(this.pfState.heatmapAxis === ""){
-						this.pfState.heatmapAxis = "Transposed";
-					}else{
-						this.pfState.heatmapAxis = "";
-					}
-
-					Topic.publish("ProteinFamilies", "refreshHeatmap");
-				},
+				"flipAxis",
 				true
 			],
 			[
@@ -84120,6 +84111,16 @@ define([
 			}
 			return originalAxis;
 		},
+		flipAxis: function(){
+			// flip internal flag
+			if(this.pfState.heatmapAxis === ""){
+				this.pfState.heatmapAxis = "Transposed";
+			}else{
+				this.pfState.heatmapAxis = "";
+			}
+
+			Topic.publish(this.topicId, "refreshHeatmap");
+		},
 		cluster: function(param){
 
 			// console.log("cluster is called", param);
@@ -84154,8 +84155,7 @@ define([
 				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				// updateMainGridOrder -> ProteinFamiliesGrid._setSort already calls this;
-				// Topic.publish(this.topicId, "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
 				Topic.publish(this.topicId, "hideLoadingMask");
@@ -92055,8 +92055,13 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
-						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+						// console.log(this.setActivePanelState.caller, this.setActivePanelState.caller === this.onSetGenomeIds, this.setActivePanelState.caller === this.onSetState);
+						if(this.setActivePanelState.caller === this.onSetGenomeIds || this.setActivePanelState.caller === this.onSetState){
+							if(activeTab._firstView){
+								Topic.publish(activeTab.topicId, "showMainGrid");
+							}
+						}else{
+							activeQueryState = null;
 						}
 					}
 
@@ -95078,6 +95083,23 @@ define([
 
 			return navbox;
 		},
+
+        regularizeReferenceName: function( refname ) {
+
+            if( this.config.exactReferenceSequenceNames )
+                return refname;
+
+            refname = refname.toLowerCase()
+                            .replace(/^chro?m?(osome)?/,'chr')
+                            .replace(/^co?n?ti?g/,'ctg')
+                            .replace(/^scaff?o?l?d?/,'scaffold')
+                            .replace(/^([a-z]*)0+/,'$1')
+                            .replace(/^(\d+)$/, 'chr$1' )
+                            .replace(/^accn\|/,'');
+
+            return refname;
+        },
+
 		initView: function(){
 			var thisObj = this;
 			return this._milestoneFunction('initView', function(deferred){
@@ -95622,11 +95644,12 @@ define([
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
+                //plugins: ["HideTrackLabels"],
 				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["PATRICGenes","RefSeqGenes"].join(","),
-				alwaysOnTracks: ["PATRICGenes","RefSeqGenes"].join(","),
+				forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+				alwaysOnTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -95636,7 +95659,7 @@ define([
 				updateBrowserURL: false,
 				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
 				suppressUsageStatistics: true,
-				refSeqSelectorMaxSize: 100
+				refSeqSelectorMaxSize: 2000
 				// "trackSelector": {
 				// 	"type": "Faceted",
 				// 	"displayColumns": [
