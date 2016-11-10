@@ -155,18 +155,18 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 				// num proteins per family
 				if(self.pfState.min_member_count){
-					family.feature_count < pfState.min_member_count ? skip = true : {};
+					family.feature_count < self.pfState.min_member_count ? skip = true : {};
 				}
 				if(self.pfState.max_member_count){
-					family.feature_count > pfState.max_member_count ? skip = true : {};
+					family.feature_count > self.pfState.max_member_count ? skip = true : {};
 				}
 
 				// num genomes per family
 				if(self.pfState.min_genome_count){
-					family.genome_count < pfState.min_genome_count ? skip = true : {};
+					family.genome_count < self.pfState.min_genome_count ? skip = true : {};
 				}
 				if(self.pfState.max_genome_count){
-					family.genome_count > pfState.max_genome_count ? skip = true : {};
+					family.genome_count > self.pfState.max_genome_count ? skip = true : {};
 				}
 
 				if(!skip){
