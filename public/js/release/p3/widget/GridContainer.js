@@ -449,6 +449,7 @@ define("p3/widget/GridContainer", [
 				},
 				function(selection){
 					var sel = selection[0];
+					//console.log("ViewSpgeneEvidence, sel.feature_id", sel.feature_id);
 					Topic.publish("/navigate", {
 						href: "/view/SpecialtyGeneEvidence/" + sel.source_id,
 						target: "blank"
@@ -1191,7 +1192,7 @@ define("p3/widget/GridContainer", [
 			if(this.store){
 				o.store = this.store
 			}
-			this.grid = new this.gridCtor(o);
+			this.grid = new this.gridCtor(o, this);
 
 			if(this.enableFilterPanel){
 				// console.log("Create FilterPanel: ", this.state);
