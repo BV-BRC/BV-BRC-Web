@@ -38686,7 +38686,7 @@ define([
 				var validTypes = act.options.validTypes || [];
 				// 0 && console.log("validTypes for action : ",an, " validTypes=", validTypes);
 				// 0 && console.log("validTypes sel[0].source : ",sel[0].source);
-				if (sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
+				if (sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
 					return false;
 				}
 
@@ -75320,7 +75320,7 @@ define([
 					requireAuth: true,
 					max: 10000,
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data"]
 				},
 				function(selection, containerWidget){
 					//  0 && console.log("Add Items to Group", selection);
@@ -75334,7 +75334,7 @@ define([
 
 					if(containerWidget.containerType == "genome_data"){
 						type = "genome_group";
-					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data"){
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data"){
 						type = "feature_group";
 					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
 						type = "experiment_group";
@@ -112750,9 +112750,12 @@ define([
 					});
 					self.addChild(messagePane);
 				}else{
+
+					//self.watch("state", lang.hitch(self, "onSetState"));
+
 					var filterPanel = self._buildFilterPanel();
-					 0 && console.log("GeneExpressionGridContainer onFirstView: this", self);
-					 0 && console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
+					// 0 && console.log("GeneExpressionGridContainer onFirstView: this", self);
+					// 0 && console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
 					self.tabContainer = new StackContainer({region: "center", id: self.id + "_TabContainer"});
 					var tabController = new TabController({
 						containerId: self.id + "_TabContainer",
@@ -112811,13 +112814,12 @@ define([
 					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 						title: "Table",
 						content: "Gene Expression Table",
+						visible: true,
+						//state: self.state,
 						tgtate: self.tgState
 					});
 					self.GeneExpressionGridContainer.startup();
-					 0 && console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
-
-					// self.watch("state", lang.hitch(self, "onSetState"));
-
+					// 0 && console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 					self.addChild(tabController);
 					self.addChild(filterPanel);
 					self.tabContainer.addChild(bc1);
@@ -113146,7 +113148,7 @@ define([
 				return;
 			}
 			var self = this;
-			 0 && console.log("GeneExpressionGridContainer _setStateAttr: state", state);
+			// 0 && console.log("GeneExpressionGridContainer _setStateAttr: state", state);
 			// 0 && console.log("GeneExpressionGridContainer _setStateAttr: this.state", this.state);
 			if(this.grid){
 				 0 && console.log("   call set state on this.grid: ", this.grid);
@@ -113168,7 +113170,7 @@ define([
 			}
 			this.inherited(arguments);
 			this._set("state", this.get("state"));
-			//  0 && console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
+		 	// 0 && console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([

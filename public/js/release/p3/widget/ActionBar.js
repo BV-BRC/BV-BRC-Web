@@ -79,7 +79,7 @@ define("p3/widget/ActionBar", [
 				var validTypes = act.options.validTypes || [];
 				//console.log("validTypes for action : ",an, " validTypes=", validTypes);
 				//console.log("validTypes sel[0].source : ",sel[0].source);
-				if (sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
+				if (sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
 					return false;
 				}
 
