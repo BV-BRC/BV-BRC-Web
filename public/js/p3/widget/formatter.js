@@ -119,7 +119,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		else if (target.match(/MEROPS/i)) { // M50.005
 			link = "http://merops.sanger.ac.uk/cgi-bin/pepsum?id=";
 		}
-		else if (target.match(/PATRIC/i)) { // 17788255
+		else if (target.match(/PATRIC$/i)) { // 17788255
 			link = "Feature?cType=feature&cId=";
 		}
 		else if (target.match(/OrthoDB/i)) { // EOG689HR1
@@ -140,49 +140,49 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		else if (target.match(/Reactome/i)) { // REACT_116125
 			link = "http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=";
 		}
-		else if (target.match(/VFDB/i)) {
+		else if (target.match(/VFDB$/i)) {
 			link = "http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID="; // VFG1817
 		}
 		else if (target.match(/VFDB_HOME/i)) {
 			link = "http://www.mgc.ac.cn/VFs/";
 		}
-		else if (target.match(/Victors/i)) {
+		else if (target.match(/Victors$/i)) {
 			link = "http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id="; // 220
 		}
 		else if (target.match(/Victors_HOME/i)) {
 			link = "http://www.phidias.us/victors/";
 		}
-		else if (target.match(/PATRIC_VF/i)) {
-			link = "SpecialtyGeneEvidence?source=PATRIC_VF&sourceId="; // Rv3875
+		else if (target.match(/PATRIC_VF$/)) {
+			link = "/view/SpecialtyGeneEvidence/"; // Rv3875
 		}
-		else if (target.match(/PATRIC_VF_HOME/i)) {
-			link = "SpecialtyGeneSource?source=PATRIC_VF&kw=";
+		else if (target.match(/PATRIC_VF_HOME/)) {
+			link = "/view/SpecialtyGeneList/?and(eq(source,PATRIC_VF),eq(evidence,Literature))";
 		}
-		else if (target.match(/ARDB/i)) {
+		else if (target.match(/ARDB$/i)) {
 			link = "//ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term="; // AAL09826
 		}
 		else if (target.match(/ARDB_HOME/i)) {
 			link = "//ardb.cbcb.umd.edu/";
 		}
-		else if (target.match(/CARD/i)) {
+		else if (target.match(/CARD$/i)) {
 			link = ""; //TODO: need to add
 		}
 		else if (target.match(/CARD_HOME/i)) {
 			link = "http://arpcard.mcmaster.ca";
 		}
-		else if (target.match(/DrugBank/i)) {
-			link = "http://v3.drugbank.ca/molecules/"; // 1
+		else if (target.match(/DrugBank$/i)) {
+			link = "http://www.drugbank.ca/molecules/"; // 1
 		}
 		else if (target.match(/DrugBank_HOME/i)) {
-			link = "http://v3.drugbank.ca";
+			link = "http://www.drugbank.ca";
 		}
-		else if (target.match(/TTD/i)) {
+		else if (target.match(/TTD$/i)) {
 			link = "http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID="; // TTDS00427
 		}
 		else if (target.match(/TTD_HOME/i)) {
-			link = "http://bidd.nus.edu.sg/group/TTD/ttd.asp";
+			link = "http://bidd.nus.edu.sg/group/cjttd/";
 		}
-		else if (target.match(/Human/i)) {
+		else if (target.match(/Human$/i)) {
 			link = "//www.ncbi.nlm.nih.gov/protein/"; // NP_001005484.1
 		}
 		else if (target.match(/Human_HOME/i)) {
