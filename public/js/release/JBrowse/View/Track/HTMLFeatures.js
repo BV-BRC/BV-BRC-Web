@@ -77,8 +77,12 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         this.showLabels = this.config.style.showLabels;
 
         this._setupEventHandlers();
+        
+        // hook point
+        if (typeof this.extendedInit === 'function')
+            this.extendedInit();
     },
-
+    
     /**
      * Returns object holding the default configuration for HTML-based feature tracks.
      * @private
@@ -188,7 +192,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                     }
                 }
 
-                var logScale =   histData.stats ? ((histData.stats.mean / histData.stats.max) < .01)
+                var logScale =   histData.stats ? ((histData.stats.mean / histData.stats.max) < 0.01)
                                                 : false;
                 var pxPerCount = histData.stats ? ( 100 / (logScale ? Math.log(histData.stats.max) : histData.stats.max) )
                                                 : 2;
@@ -241,7 +245,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
     },
 
     updateFeatureArrowPositions: function( coords ) {
-        if( ! 'x' in coords )
+        if( ! ('x' in coords) )
             return;
 
     var viewmin = this.browser.view.minVisible();
@@ -282,12 +286,14 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                             featDivChildren = featDiv.childNodes;
                             for( var j = 0; j<featDivChildren.length; j++ ) {
                                 arrowhead = featDivChildren[j];
-                                if( arrowhead && arrowhead.className && arrowhead.className.indexOf( minusArrowClass ) >= 0 ) {
-                                    arrowhead.style.left =
-                                        ( fmin < viewmin ? block.bpToX( viewmin ) - block.bpToX( displayStart )
-                                                         : -this.minusArrowWidth
-                                        ) + 'px';
-                                };
+                                if (typeof arrowhead.className === 'string') {
+                                    if( arrowhead && arrowhead.className && arrowhead.className.indexOf( minusArrowClass ) >= 0 ) {
+                                        arrowhead.style.left =
+                                            ( fmin < viewmin ? block.bpToX( viewmin ) - block.bpToX( displayStart )
+                                                             : -this.minusArrowWidth
+                                            ) + 'px';
+                                    };
+                                }
                             }
                         }
                         // plus strand
@@ -296,11 +302,13 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                             featDivChildren = featDiv.childNodes;
                             for( var j = 0; j<featDivChildren.length; j++ ) {
                                 arrowhead = featDivChildren[j];
-                                if( arrowhead && arrowhead.className && arrowhead.className.indexOf( plusArrowClass ) >= 0 ) {
-                                    arrowhead.style.right =  
-                                        ( fmax > viewmax ? block.bpToX( displayEnd ) - block.bpToX( viewmax-2 )
-                                                         : -this.plusArrowWidth
-                                        ) + 'px';
+                                if (typeof arrowhead.className === 'string') {
+                                    if( arrowhead && arrowhead.className && arrowhead.className.indexOf( plusArrowClass ) >= 0 ) {
+                                        arrowhead.style.right =
+                                            ( fmax > viewmax ? block.bpToX( displayEnd ) - block.bpToX( viewmax-2 )
+                                                             : -this.plusArrowWidth
+                                            ) + 'px';
+                                    }
                                 }
                             }
                         }
@@ -309,7 +317,8 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
     },
 
     updateFeatureLabelPositions: function( coords ) {
-        if( ! 'x' in coords )
+        var showLabels=this.browser._showLabels;
+        if( ! ('x' in coords) )
             return;
 
         array.forEach( this.blocks, function( block, blockIndex ) {
@@ -320,7 +329,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             // width
             if( ! block || ! this.label )
                 return;
-            var viewLeft = 100 * ( (this.label.offsetLeft+this.label.offsetWidth) - block.domNode.offsetLeft ) / block.domNode.offsetWidth + 2;
+            var viewLeft = 100 * ( (this.label.offsetLeft+(showLabels?this.label.offsetWidth:0)) - block.domNode.offsetLeft ) / block.domNode.offsetWidth + 2;
 
             // if the view start is unknown, or is to the
             // left of this block, we don't have to worry
@@ -421,7 +430,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             return;
         }
         var maxval = this.height/dims.pxPerCount;
-        maxval = dims.logScale ? log(maxval) : maxval;
+        maxval = dims.logScale ? Math.log(maxval) : maxval;
 
         // if we have a scale, and it has the same characteristics
         // (including pixel height), don't redraw it.
@@ -594,6 +603,8 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         var containerStart = args.containerStart;
         var containerEnd = args.containerEnd;
         var finishCallback = args.finishCallback;
+        var browser = this.browser;
+        
 
         this.scale = scale;
 
@@ -616,8 +627,17 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                 /* feature render, adding to block, centering refactored into addFeatureToBlock() */
                 // var filter = this.browser.view.featureFilter;
                 if( this.filterFeature( feature ) )  {
-                    this.addFeatureToBlock( feature, uniqueId, block, scale, labelScale, descriptionScale,
-                                            containerStart, containerEnd );
+                    
+                    //todo: adapt filterFeature instead of renderFeature
+                    
+                    // hook point
+                    var render = 1;
+                    if (typeof this.renderFilter === 'function')
+                        render = this.renderFilter(feature);
+                    
+                    if (render === 1) {
+                        this.addFeatureToBlock( feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd );
+                    }
                }
             }
         });
@@ -630,7 +650,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                                 function ( args ) {
                                     curTrack.heightUpdate(curTrack._getLayout(scale).getTotalHeight(),
                                                           blockIndex);
-                                    if ( args && args.maskingSpans ) { 
+                                    if ( args && args.maskingSpans ) {
                                         //note: spans have to be inverted
                                         var invSpan = [];
                                         invSpan[0] = { start: leftBase };
@@ -648,7 +668,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                                             invSpan.splice(i,1); }
                                         if (invSpan[0].end <= invSpan[0].start) {
                                             invSpan.splice(0,1); }
-                                        curTrack.maskBySpans( invSpan, args.maskingSpans ); 
+                                        curTrack.maskBySpans( invSpan, args.maskingSpans );
                                     }
                                     finishCallback();
                                 },
@@ -659,7 +679,17 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                                 }
                               );
     },
-
+    /**
+     * template for renderFilter
+     * This hook allows filtering of features to render.
+     * @param {type} feature
+     * @returns true if render feature, false if not
+     */
+/*
+    renderFilter: function(feature) {
+        return 1;
+    },
+*/
     /**
      *  Creates feature div, adds to block, and centers subfeatures.
      *  Overridable by subclasses that need more control over the substructure.
@@ -731,7 +761,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                 var makeDiv = function ( start, end, parentDiv, masked, voidClass ) {
                     // make a coverage div
                     var coverageNode = dojo.create('div');
-                    var s = parentDiv.featureEdges 
+                    var s = parentDiv.featureEdges
                             ? parentDiv.featureEdges.s
                             : parentDiv.subfeatureEdges.s;
                     var e = parentDiv.featureEdges
@@ -996,6 +1026,10 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
 
         block.featureNodes[uniqueId] = featDiv;
 
+	// hook point
+	if (typeof this.featureHook1 === 'function')
+		this.featureHook1(feature,featDiv);
+
         // record whether this feature protrudes beyond the left and/or right side of the block
         if( layoutStart < block.startBase ) {
             if( ! block.leftOverlaps ) block.leftOverlaps = [];
@@ -1050,7 +1084,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             + " width:" + featwidth + "%;"
             + (this.config.style.featureCss ? this.config.style.featureCss : "");
 
-        // Store the containerStart/End so we can resolve the truncation 
+        // Store the containerStart/End so we can resolve the truncation
         // when we are updating static elements
         featDiv._containerStart=containerStart;
         featDiv._containerEnd=containerEnd;

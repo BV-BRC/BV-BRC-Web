@@ -20,6 +20,7 @@ return declare( Store,
 
     constructor: function( args ) {
         this.globalStats = {};
+        this.storeTimeout = args.storeTimeout || 500;
     },
 
     _evalConf: function( confVal, confKey ) {
@@ -114,7 +115,7 @@ return declare( Store,
 
         var variance = sumSquares - sum*sum/n;
         if (n > 1) {
-	    variance /= n-1;
+            variance /= n-1;
         }
         return variance < 0 ? 0 : Math.sqrt(variance);
     },
@@ -182,6 +183,9 @@ return declare( Store,
                           },
                           errorCallback
                         );
+    },
+    saveStore: function() {
+        console.log('unimplemented');
     }
 });
 });
