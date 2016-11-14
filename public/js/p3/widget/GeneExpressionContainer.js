@@ -105,9 +105,12 @@ define([
 					});
 					self.addChild(messagePane);
 				}else{
+
+					//self.watch("state", lang.hitch(self, "onSetState"));
+
 					var filterPanel = self._buildFilterPanel();
-					console.log("GeneExpressionGridContainer onFirstView: this", self);
-					console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
+					//console.log("GeneExpressionGridContainer onFirstView: this", self);
+					//console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
 					self.tabContainer = new StackContainer({region: "center", id: self.id + "_TabContainer"});
 					var tabController = new TabController({
 						containerId: self.id + "_TabContainer",
@@ -166,13 +169,12 @@ define([
 					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 						title: "Table",
 						content: "Gene Expression Table",
+						visible: true,
+						//state: self.state,
 						tgtate: self.tgState
 					});
 					self.GeneExpressionGridContainer.startup();
-					console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
-
-					// self.watch("state", lang.hitch(self, "onSetState"));
-
+					//console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 					self.addChild(tabController);
 					self.addChild(filterPanel);
 					self.tabContainer.addChild(bc1);

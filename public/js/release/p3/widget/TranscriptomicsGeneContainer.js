@@ -18,26 +18,28 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 		tgState: null,
 		loadingMask: null,
 		apiServer: window.App.dataServiceURL,
-		constructor: function(){
-			var self = this;
+		constructor: function(options){
+			// console.log(options);
 
-			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
+			this.topicId = "TranscriptomicsGene_" + options.id.split('_TranscriptomicsGene')[0];
+
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("TranscriptomicsGeneContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "updateTgState":
-						self.tgState = value;
-						self.updateFilterPanel(value);
+						this.tgState = value;
+						this.updateFilterPanel(value);
 						break;
 					case "showLoadingMask":
-						self.loadingMask.show();
+						this.loadingMask.show();
 						break;
 					case "hideLoadingMask":
-						self.loadingMask.hide();
+						this.loadingMask.hide();
 						break;
 					case "updateGenomeFilter":
-						self.updateGenomeFilter(value);
+						this.updateGenomeFilter(value);
 						break;
 					default:
 						break;
@@ -97,11 +99,13 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 				title: "Table",
 				content: "Transcriptomics Gene Table",
 				state: this.state,
+				topicId: this.topicId,
 				apiServer: this.apiServer
 			});
 
 			this.heatmapContainer = new HeatmapContainer({
 				title: "Heatmap",
+				topicId: this.topicId,
 				content: "Heatmap"
 			});
 
@@ -141,6 +145,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 			// genome list grid
 			var filterGrid = new FilterGrid({
 				"class": "tgFilterGrid",
+				topicId: this.topicId,
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
@@ -195,7 +200,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 
 			var defaultFilterValue = {
 				keyword: '',
-				filterGenome: '',
+				filterGenome: null,
 				upFold: 0,
 				downFold: 0,
 				upZscore: 0,
@@ -219,7 +224,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
 					// console.log("filter tgState", this.tgState);
 
-					Topic.publish("TranscriptomicsGene", "applyConditionFilter", this.tgState);
+					Topic.publish(this.topicId, "applyConditionFilter", this.tgState);
 				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");

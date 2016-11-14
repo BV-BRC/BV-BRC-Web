@@ -37,14 +37,14 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				return;
 			}
 
-			// console.warn("onSetState", state, state.genome_ids);
+			console.warn("onSetState", state.genome_ids);
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
 			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
 				// console.log("do not duplicate");
 				this._loaded = true;
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 				return;
 			}
 			// console.log(this.genome_ids.length, state.genome_ids.length, arraysEqual(this.genome_ids, state.genome_ids));
@@ -58,7 +58,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			}
 
 			if(state && state.hashParams && state.hashParams.params){
-				var params = JSON.parse(state.hashParams.params);
+				var params = JSON.parse(decodeURIComponent(state.hashParams.params));
 
 				params.family_type ? this.pfState.familyType = params.family_type : {};
 				// params.keyword ? pfState.keyword = params.keyword : {};
@@ -71,32 +71,39 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				this.apiServer = options.apiServer;
 			}
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			this.topicId = options.topicId;
+			console.log("pfs store created.", this.topicId);
+
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "setFamilyType":
-						Topic.publish("ProteinFamilies", "showLoadingMask");
+						Topic.publish(this.topicId, "showLoadingMask");
 						this.pfState = value;
 						if(arraysEqual(this.genome_ids, this.pfState.genomeIds)){
 							this.reload();
-							Topic.publish("ProteinFamilies", "showMainGrid");
+							Topic.publish(this.topicId, "showMainGrid");
 						}
 						break;
 					case "anchorByGenome":
 						this.anchorByGenome(value);
 						break;
+					case "updateClusterColumnOrder":
+						this._clustered = value;
+						break;
 					case "applyConditionFilter":
 						this.pfState = value;
-						this.conditionFilter(value);
-						this.currentData = this.getHeatmapData(this.pfState);
-						Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", this.currentData);
+						this.conditionFilter();
+						this.currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updatePfState", this.pfState);
+						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 						break;
 					case "requestHeatmapData":
-						this.currentData = this.getHeatmapData(value);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", this.currentData);
+						this.pfState = value;
+						this.currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 						break;
 					default:
 						break;
@@ -105,18 +112,25 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
-		conditionFilter: function(pfState){
-			var self = this;
-			if(self._filtered == undefined){ // first time
-				self._filtered = true;
-				self._original = this.query("", {});
+		conditionFilter: function(){
+
+			if(this._filtered == undefined){ // first time
+				this._filtered = true;
+				this._original = this.query("", {});
 			}
-			var data = self._original;
+			var data = this._original;
 			var newData = [];
-			var gfs = pfState.genomeFilterStatus;
+			var gfs = this.pfState.genomeFilterStatus;
+			var columnOrderMap;
+			if(this._clustered){
+				columnOrderMap = {};
+				this._clustered.forEach(function(colId, idx){
+					columnOrderMap[colId] = idx;
+				});
+			}
 
 			// var tsStart = window.performance.now();
-			var keywordRegex = pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+			var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
 
 			data.forEach(function(family){
 
@@ -136,56 +150,67 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				});
 
 				// keyword search
-				if(pfState.keyword !== ''){
+				if(this.pfState.keyword !== ''){
 					skip = !keywordRegex.some(function(needle){
 						return needle && (family.description.toLowerCase().indexOf(needle) >= 0 || family.family_id.toLowerCase().indexOf(needle) >= 0);
 					});
 				}
 
 				// perfect family
-				if(pfState.perfectFamMatch === 'Y'){
+				if(this.pfState.perfectFamMatch === 'Y'){
 					family.feature_count !== family.genome_count ? skip = true : {};
-				}else if(pfState.perfectFamMatch === 'N'){
+				}else if(this.pfState.perfectFamMatch === 'N'){
 					family.feature_count === family.genome_count ? skip = true : {};
 				}
 
 				// num proteins per family
-				if(pfState.min_member_count){
-					family.feature_count < pfState.min_member_count ? skip = true : {};
+				if(this.pfState.min_member_count){
+					family.feature_count < this.pfState.min_member_count ? skip = true : {};
 				}
-				if(pfState.max_member_count){
-					family.feature_count > pfState.max_member_count ? skip = true : {};
+				if(this.pfState.max_member_count){
+					family.feature_count > this.pfState.max_member_count ? skip = true : {};
 				}
 
 				// num genomes per family
-				if(pfState.min_genome_count){
-					family.genome_count < pfState.min_genome_count ? skip = true : {};
+				if(this.pfState.min_genome_count){
+					family.genome_count < this.pfState.min_genome_count ? skip = true : {};
 				}
-				if(pfState.max_genome_count){
-					family.genome_count > pfState.max_genome_count ? skip = true : {};
+				if(this.pfState.max_genome_count){
+					family.genome_count > this.pfState.max_genome_count ? skip = true : {};
 				}
 
 				if(!skip){
-					newData.push(family);
+					if(columnOrderMap){
+						if(columnOrderMap[family.family_id] >= 0){
+							newData.push(family);
+						}
+					}else{
+						newData.push(family);
+					}
 				}
-			});
+			}, this);
+			// console.log("after all filtering", newData.length);
 			// console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
 
-			self.setData(newData);
-			self.set("refresh");
-		},
-		reload: function(){
-			var self = this;
-
-			if(!self._loadingDeferred.isResolved()){
-				self._loadingDeferred.cancel('reloaded');
-				// console.log(self._loadingDeferred.isResolved(), self._loadingDeferred.isCanceled(), self._loadingDeferred.isRejected());
+			if(columnOrderMap){
+				this.pfState.clusterColumnOrder = newData.map(function(f){
+					return f.family_id;
+				});
 			}
 
-			delete self._loadingDeferred;
-			self._loaded = false;
-			self.loadData();
-			self.set("refresh");
+			this.setData(newData);
+			this.set("refresh");
+		},
+		reload: function(){
+
+			if(!this._loadingDeferred.isResolved()){
+				this._loadingDeferred.cancel('reloaded');
+			}
+
+			delete this._loadingDeferred;
+			this._loaded = false;
+			this.loadData();
+			this.set("refresh");
 		},
 
 		query: function(query, opts){
@@ -194,15 +219,14 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				return this.inherited(arguments);
 			}
 			else{
-				var _self = this;
 				var results;
-				var qr = QueryResults(when(this.loadData(), function(){
-					results = _self.query(query, opts);
+				var qr = QueryResults(when(this.loadData(), lang.hitch(this, function(){
+					results = this.query(query, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
 					});
 					return results;
-				}));
+				})));
 
 				return qr;
 			}
@@ -212,10 +236,9 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			if(this._loaded){
 				return this.inherited(arguments);
 			}else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
+				return when(this.loadData(), lang.hitch(this, function(){
+					return this.get(id, options)
+				}))
 			}
 		},
 
@@ -223,8 +246,6 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
-
-			var _self = this;
 
 			// console.warn(this.state.genome_ids, !this.state.genome_ids);
 			if(!this.state || !this.state.genome_ids){
@@ -234,7 +255,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(_self, function(){
+				setTimeout(lang.hitch(this, function(){
 					this.setData([]);
 					this._loaded = true;
 					// def.resolve(true);
@@ -242,49 +263,48 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				return def.promise;
 			}
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
-			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
+			this._loadingDeferred = when(request.post(this.apiServer + '/genome/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				data: {
-					q: "genome_id:(" + _self.state.genome_ids.join(" OR ") + ")",
-					rows: _self.state.genome_ids.length,
+					q: "genome_id:(" + this.state.genome_ids.join(" OR ") + ")",
+					rows: this.state.genome_ids.length,
 					sort: "genome_name asc"
 				}
-			}), function(genomes){
+			}), lang.hitch(this, function(genomes){
 
 				genomes.forEach(function(genome, idx){
 					var gfs = new FilterStatus();
 					gfs.init(idx, genome.genome_name);
-					_self.pfState.genomeFilterStatus[genome.genome_id] = gfs;
-					// _self.pfState.genomeIds.push(genome.genome_id);
-				});
-				_self.pfState.genomeIds = Object.keys(_self.pfState.genomeFilterStatus);
-				// publish pfState & update filter panel
-				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
-				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
+					this.pfState.genomeFilterStatus[genome.genome_id] = gfs;
+				}, this);
 
-				// _self.pfState, _self.token
+				this.pfState.genomeIds = Object.keys(this.pfState.genomeFilterStatus);
+				// publish pfState & update filter panel
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "updateFilterGrid", genomes);
+
 				var opts = {
 					token: window.App.authorizationToken || ""
 				};
-				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(this, function(data){
-					_self.setData(data);
-					_self._loaded = true;
-					Topic.publish("ProteinFamilies", "hideLoadingMask");
+				return when(window.App.api.data("proteinFamily", [this.pfState, opts]), lang.hitch(this, function(data){
+					this.setData(data);
+					this._loaded = true;
+					Topic.publish(this.topicId, "hideLoadingMask");
 				}));
 
-			});
+			}));
 			return this._loadingDeferred;
 		},
 
-		getHeatmapData: function(pfState){
+		getHeatmapData: function(){
 
 			var rows = [];
 			var cols = [];
@@ -292,12 +312,12 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			var keeps = []; // global and will be referenced inside createColumn function
 			var colorStop = [];
 
-			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
 			// var start = window.performance.now();
 
 			// assumes axises are corrected
-			var familyOrder = pfState.clusterColumnOrder;
-			var genomeOrder = pfState.clusterRowOrder;
+			var familyOrder = this.pfState.clusterColumnOrder;
+			var genomeOrder = this.pfState.clusterRowOrder;
 
 			var createColumn = function(order, colId, label, distribution, meta){
 				// this reads global variable keeps, and update global variable maxIntensity
@@ -321,18 +341,19 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
 			var genomeOrderChangeMap = [];
+			var thisGFS = this.pfState.genomeFilterStatus;
 
 			if(genomeOrder !== [] && genomeOrder.length > 0){
-				pfState.genomeIds = genomeOrder;
+				this.pfState.genomeIds = genomeOrder;
 				genomeOrder.forEach(function(genomeId, idx){
 					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
-					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
-					pfState.genomeFilterStatus[genomeId].setIndex(idx);
+					genomeOrderChangeMap.push(thisGFS[genomeId].getIndex()); // keep the original position
+					thisGFS[genomeId].setIndex(idx);
 				});
 			}
 
-			pfState.genomeIds.forEach(function(genomeId, idx){
-				var gfs = pfState.genomeFilterStatus[genomeId];
+			this.pfState.genomeIds.forEach(function(genomeId, idx){
+				var gfs = thisGFS[genomeId];
 				if(gfs.getStatus() != '1'){
 					keeps.push(2 * gfs.getIndex());
 					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
@@ -445,16 +466,15 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 		getSyntenyOrder: function(genomeId){
 
-			var _self = this;
 			var familyIdName = this.pfState.familyType + '_id';
 
-			return when(request.post(_self.apiServer + '/genome_feature/', {
+			return when(request.post(this.apiServer + '/genome_feature/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				data: {
 					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
@@ -497,10 +517,9 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 		anchorByGenome: function(genomeId){
 
-			Topic.publish("ProteinFamilies", "showLoadingMask");
+			Topic.publish(this.topicId, "showLoadingMask");
 
-			var self = this;
-			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
+			when(this.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
 
 				var isTransposed = this.pfState.heatmapAxis === 'Transposed';
 
@@ -525,13 +544,14 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 				// clusterRow/ColumnOrder assumes corrected axises
 				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
+				this._clustered = lang.clone(adjustedFamilyOrder);
 
 				// update main grid
-				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
+				Topic.publish(this.topicId, "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
-				self.currentData = this.getHeatmapData(this.pfState);
-				Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+				this.currentData = this.getHeatmapData();
+				Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 			}));
 		}
 	});

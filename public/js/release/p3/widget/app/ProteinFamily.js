@@ -181,13 +181,13 @@ define("p3/widget/app/ProteinFamily", [
 				// }
 
 				if(this.addedList.length === 1 && this.addedList[0]['type'] === 'genome_group'){
-					Topic.publish("/navigate", {href: "/view/GenomeGroup" + this.addedList[0]['path'] + "#view_tab=proteinFamilies&params=" + JSON.stringify(params)});
+					Topic.publish("/navigate", {href: "/view/GenomeGroup" + this.addedList[0]['path'] + "#view_tab=proteinFamilies&params=" + encodeURIComponent(JSON.stringify(params))});
 				}else{
 					var genomeList = [];
 					this.addedList.forEach(function(rec){
 						genomeList.push(rec.genome_ids);
 					});
-					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genomeList + "))#view_tab=proteinFamilies&params=" + JSON.stringify(params)});
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genomeList + "))#view_tab=proteinFamilies&params=" + encodeURIComponent(JSON.stringify(params))});
 				}
 			}else{
 				console.error("Form is incomplete");

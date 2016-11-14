@@ -59,8 +59,9 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 			if(options && options.state){
 				this.state = options.state;
 			}
+			this.topicId = options.topicId;
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("ProteinFamiliesFilterGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
@@ -74,7 +75,7 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
-						this.set('sort', [{}]);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -84,7 +85,7 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 			}));
 		},
 		startup: function(){
-			var _self = this;
+
 			var options = ['present', 'absent', 'mixed'];
 			var toggleSelection = function(element, value){
 				element.checked = value;
@@ -92,13 +93,13 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 				element.setAttribute("aria-checked", value);
 			};
 
-			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
-				var cell = _self.cell(evt);
+			this.on(".dgrid-cell:click", lang.hitch(this, function(evt){
+				var cell = this.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
 
-				var conditionIds = _self.pfState.genomeIds;
-				var conditionStatus = _self.pfState.genomeFilterStatus;
+				var conditionIds = this.pfState.genomeIds;
+				var conditionStatus = this.pfState.genomeFilterStatus;
 
 				if(!cell.element.input) return;
 
@@ -108,37 +109,37 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 
 					// deselect other radio in the same row
 					options.forEach(function(el){
-						if(el != colId && _self.cell(rowId, el).element.input.checked){
-							toggleSelection(_self.cell(rowId, el).element.input, false);
+						if(el != colId && this.cell(rowId, el).element.input.checked){
+							toggleSelection(this.cell(rowId, el).element.input, false);
 						}
 						// updated selected box
 						if(el === colId){
-							toggleSelection(_self.cell(rowId, el).element.input, true);
+							toggleSelection(this.cell(rowId, el).element.input, true);
 						}
-					});
+					}, this);
 
 					// check whether entire rows are selected & mark as needed
 					options.forEach(function(el){
 						var allSelected = true;
 						conditionIds.forEach(function(conditionId){
-							if(_self.cell(conditionId, el).element.input.checked == false){
+							if(this.cell(conditionId, el).element.input.checked == false){
 								allSelected = false;
 							}
-						});
+						}, this);
 						toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, allSelected);
-					});
+					}, this);
 
 				}else{
 					// if header is clicked, reset the selections & update
 					conditionIds.forEach(function(conditionId){
 						options.forEach(function(el){
 							if(el === colId){
-								toggleSelection(_self.cell(conditionId, el).element.input, true);
+								toggleSelection(this.cell(conditionId, el).element.input, true);
 							}else{
-								toggleSelection(_self.cell(conditionId, el).element.input, false);
+								toggleSelection(this.cell(conditionId, el).element.input, false);
 							}
-						});
-					});
+						}, this);
+					}, this);
 
 					// deselect other radio in the header
 					options.forEach(function(el){
@@ -151,23 +152,23 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 				// update filter
 				Object.keys(conditionStatus).forEach(function(conditionId){
 					var status = options.findIndex(function(el){
-						if(_self.cell(conditionId, el).element.input.checked){
+						if(this.cell(conditionId, el).element.input.checked){
 							return el;
 						}
-					});
+					}, this);
 
 					conditionStatus[conditionId].setStatus(status);
-				});
+				}, this);
 
 				this.pfState.genomeFilterStatus = conditionStatus;
-				Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+				Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 			}));
 
-			aspect.before(_self, 'renderArray', function(results){
-				Deferred.when(results.total, function(x){
-					_self.set("totalRows", x);
-				});
-			});
+			aspect.before(this, 'renderArray', lang.hitch(this, function(results){
+				Deferred.when(results.total, lang.hitch(this, function(x){
+					this.set("totalRows", x);
+				}));
+			}));
 
 			// this.inherited(arguments);
 			this._started = true;
@@ -192,8 +193,8 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 			this.pfState.clusterRowOrder = newIds;
 			// console.log("new order", this.pfState.clusterRowOrder);
 
-			Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-			Topic.publish("ProteinFamilies", "refreshHeatmap");
+			Topic.publish(this.topicId, "updatePfState", this.pfState);
+			Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 		},
 		state: null,
 		postCreate: function(){

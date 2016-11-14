@@ -28,7 +28,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			// console.log("setSelection", sel, sel.length);
+			//console.log("setSelection sel", sel[0], sel.length);
 			this.selection = sel;
 
 //			return;
@@ -54,7 +54,7 @@ define([
 				selectionTypes[type] = true;
 			});
 			//console.log("selectionTypes: ", selectionTypes);
-
+			//console.log("_actions: ", this._actions);
 			if(sel.length > 1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
 //				//console.log("isMultiTyped: ", multiTypedSelection);	
@@ -77,7 +77,11 @@ define([
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
-				//console.log("validTypes for action : ",an, validTypes);
+				//console.log("validTypes for action : ",an, " validTypes=", validTypes);
+				//console.log("validTypes sel[0].source : ",sel[0].source);
+				if (sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
+					return false;
+				}
 
 				if(act.options.min && (sel.length < act.options.min )){
 					return false;

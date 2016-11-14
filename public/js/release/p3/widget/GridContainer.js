@@ -449,6 +449,7 @@ define("p3/widget/GridContainer", [
 				},
 				function(selection){
 					var sel = selection[0];
+					//console.log("ViewSpgeneEvidence, sel.feature_id", sel.feature_id);
 					Topic.publish("/navigate", {
 						href: "/view/SpecialtyGeneEvidence/" + sel.source_id,
 						target: "blank"
@@ -989,7 +990,7 @@ define("p3/widget/GridContainer", [
 					requireAuth: true,
 					max: 10000,
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
@@ -1003,7 +1004,7 @@ define("p3/widget/GridContainer", [
 
 					if(containerWidget.containerType == "genome_data"){
 						type = "genome_group";
-					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data"){
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data"){
 						type = "feature_group";
 					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
 						type = "experiment_group";
@@ -1191,7 +1192,7 @@ define("p3/widget/GridContainer", [
 			if(this.store){
 				o.store = this.store
 			}
-			this.grid = new this.gridCtor(o);
+			this.grid = new this.gridCtor(o, this);
 
 			if(this.enableFilterPanel){
 				// console.log("Create FilterPanel: ", this.state);

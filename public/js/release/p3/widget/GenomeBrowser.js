@@ -297,6 +297,23 @@ define("p3/widget/GenomeBrowser", [
 
 			return navbox;
 		},
+
+        regularizeReferenceName: function( refname ) {
+
+            if( this.config.exactReferenceSequenceNames )
+                return refname;
+
+            refname = refname.toLowerCase()
+                            .replace(/^chro?m?(osome)?/,'chr')
+                            .replace(/^co?n?ti?g/,'ctg')
+                            .replace(/^scaff?o?l?d?/,'scaffold')
+                            .replace(/^([a-z]*)0+/,'$1')
+                            .replace(/^(\d+)$/, 'chr$1' )
+                            .replace(/^accn\|/,'');
+
+            return refname;
+        },
+
 		initView: function(){
 			var thisObj = this;
 			return this._milestoneFunction('initView', function(deferred){
@@ -841,11 +858,12 @@ define("p3/widget/GenomeBrowser", [
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
+                //plugins: ["HideTrackLabels"],
 				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["PATRICGenes","RefSeqGenes"].join(","),
-				alwaysOnTracks: ["PATRICGenes","RefSeqGenes"].join(","),
+				forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+				alwaysOnTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -855,7 +873,7 @@ define("p3/widget/GenomeBrowser", [
 				updateBrowserURL: false,
 				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
 				suppressUsageStatistics: true,
-				refSeqSelectorMaxSize: 100
+				refSeqSelectorMaxSize: 2000
 				// "trackSelector": {
 				// 	"type": "Faceted",
 				// 	"displayColumns": [
