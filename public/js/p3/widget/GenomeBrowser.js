@@ -17,7 +17,9 @@ define([
 	"JBrowse/Util",
 	'JBrowse/View/InfoDialog',
 	'JBrowse/View/FileDialog',
-	'JBrowse/GenomeView'
+	'JBrowse/GenomeView',
+    './DataItemFormatter',
+    'dijit/Dialog'
 ], function(declare, WidgetBase, JBrowser,
 			domConstruct, lang, domGeometry,
 			domStyle, array,
@@ -36,8 +38,18 @@ define([
 			Util,
 			InfoDialog,
 			FileDialog,
-			GenomeView){
+			GenomeView,DataItemFormatter,
+            Dialog){
+    window.featureDialogContent=function(feature){
+        var content = DataItemFormatter(feature.data,"feature_data",{linkTitle:true});
+        if (!window.featureDialog){
+            window.featureDialog = new Dialog({title: "Feature Summary"});
+        }
 
+        window.featureDialog.set("content", content);
+        window.featureDialog.show();
+
+    };
 	var Browser = declare([JBrowser], {
 		tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 		makeFullViewLink: function(){
@@ -862,8 +874,10 @@ define([
 				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
-				alwaysOnTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+				//defaultTracks: ["SequenceTrack"].join(","),
+                forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+                highResoutionMode: "auto",
+				//alwaysOnTracks: [,"PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,

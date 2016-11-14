@@ -3,6 +3,14 @@ define( "JBrowse/CodonTable", ['dojo/_base/declare'],
 
 return declare(null, {
 
+defaultStarts: [
+    'ATG'
+],
+defaultStops: [
+    'TAA',
+    'TAG',
+    'TGA'
+],
 defaultCodonTable: {
 
     "TCA" : "S",
@@ -72,10 +80,10 @@ defaultCodonTable: {
 },
 
 generateCodonTable:function(table) {
-    /** 
-    *  take CodonTable above and generate larger codon table that includes 
+    /**
+    *  take CodonTable above and generate larger codon table that includes
     *  all permutations of upper and lower case nucleotides
-    */  
+    */
     var tempCodonTable = { };
     for (var codon in table) {
         // looping through codon table, make sure not hitting generic properties...
