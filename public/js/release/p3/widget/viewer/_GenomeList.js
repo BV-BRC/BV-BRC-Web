@@ -216,7 +216,7 @@ define("p3/widget/viewer/_GenomeList", [
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
 						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
 					}
 

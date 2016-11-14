@@ -169,7 +169,7 @@ define("p3/widget/viewer/SpecialtyGeneEvidence", [
 							this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
 							var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
 							var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Evidence:</b></p></br>"}, this.viewer.containerNode);
-							var evidencenode = domConstruct.create("div", {id:"evid", style: "width: 100%"}, this.viewer.containerNode);				
+							var evidencenode = domConstruct.create("div", {id:"evid", style: "margin-left: 10px; margin-right: 10px;"}, this.viewer.containerNode);				
 							var grid = new Grid({
 								columns: {
 									specific_organism: 'Organism',

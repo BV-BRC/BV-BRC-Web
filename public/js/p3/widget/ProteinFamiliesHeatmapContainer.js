@@ -68,16 +68,7 @@ define([
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				function(){
-					// flip internal flag
-					if(this.pfState.heatmapAxis === ""){
-						this.pfState.heatmapAxis = "Transposed";
-					}else{
-						this.pfState.heatmapAxis = "";
-					}
-
-					Topic.publish("ProteinFamilies", "refreshHeatmap");
-				},
+				"flipAxis",
 				true
 			],
 			[
@@ -627,6 +618,16 @@ define([
 			}
 			return originalAxis;
 		},
+		flipAxis: function(){
+			// flip internal flag
+			if(this.pfState.heatmapAxis === ""){
+				this.pfState.heatmapAxis = "Transposed";
+			}else{
+				this.pfState.heatmapAxis = "";
+			}
+
+			Topic.publish(this.topicId, "refreshHeatmap");
+		},
 		cluster: function(param){
 
 			// console.log("cluster is called", param);
@@ -659,10 +660,10 @@ define([
 				Topic.publish(this.topicId, "updatePfState", this.pfState);
 				Topic.publish(this.topicId, "updateFilterGridOrder", res.rows);
 				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updateClusterColumnOrder", res.columns);
 
 				// re-draw heatmap
-				// updateMainGridOrder -> ProteinFamiliesGrid._setSort already calls this;
-				// Topic.publish(this.topicId, "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
 				Topic.publish(this.topicId, "hideLoadingMask");

@@ -38686,7 +38686,7 @@ define([
 				var validTypes = act.options.validTypes || [];
 				// 0 && console.log("validTypes for action : ",an, " validTypes=", validTypes);
 				// 0 && console.log("validTypes sel[0].source : ",sel[0].source);
-				if (sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
+				if (sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
 					return false;
 				}
 
@@ -59416,7 +59416,7 @@ define([
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
 						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
 					}
 
@@ -75320,7 +75320,7 @@ define([
 					requireAuth: true,
 					max: 10000,
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data"]
 				},
 				function(selection, containerWidget){
 					//  0 && console.log("Add Items to Group", selection);
@@ -75334,7 +75334,7 @@ define([
 
 					if(containerWidget.containerType == "genome_data"){
 						type = "genome_group";
-					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data"){
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data"){
 						type = "feature_group";
 					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
 						type = "experiment_group";
@@ -81310,7 +81310,7 @@ define([
 						this.pfState = value;
 						break;
 					case "updateMainGridOrder":
-						this.set("sort", []);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -81455,14 +81455,14 @@ define([
 				return;
 			}
 
-			 0 && console.warn("onSetState", state, state.genome_ids);
+			 0 && console.warn("onSetState", state.genome_ids);
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
 			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
 				//  0 && console.log("do not duplicate");
 				this._loaded = true;
-				Topic.publish("ProteinFamilies", "hideLoadingMask");
+				Topic.publish(this.topicId, "hideLoadingMask");
 				return;
 			}
 			//  0 && console.log(this.genome_ids.length, state.genome_ids.length, arraysEqual(this.genome_ids, state.genome_ids));
@@ -81508,6 +81508,9 @@ define([
 					case "anchorByGenome":
 						this.anchorByGenome(value);
 						break;
+					case "updateClusterColumnOrder":
+						this._clustered = value;
+						break;
 					case "applyConditionFilter":
 						this.pfState = value;
 						this.conditionFilter();
@@ -81528,7 +81531,7 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 		conditionFilter: function(){
-			var self = this;
+
 			if(this._filtered == undefined){ // first time
 				this._filtered = true;
 				this._original = this.query("", {});
@@ -81536,6 +81539,13 @@ define([
 			var data = this._original;
 			var newData = [];
 			var gfs = this.pfState.genomeFilterStatus;
+			var columnOrderMap;
+			if(this._clustered){
+				columnOrderMap = {};
+				this._clustered.forEach(function(colId, idx){
+					columnOrderMap[colId] = idx;
+				});
+			}
 
 			// var tsStart = window.performance.now();
 			var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
@@ -81558,56 +81568,67 @@ define([
 				});
 
 				// keyword search
-				if(self.pfState.keyword !== ''){
+				if(this.pfState.keyword !== ''){
 					skip = !keywordRegex.some(function(needle){
 						return needle && (family.description.toLowerCase().indexOf(needle) >= 0 || family.family_id.toLowerCase().indexOf(needle) >= 0);
 					});
 				}
 
 				// perfect family
-				if(self.pfState.perfectFamMatch === 'Y'){
+				if(this.pfState.perfectFamMatch === 'Y'){
 					family.feature_count !== family.genome_count ? skip = true : {};
-				}else if(self.pfState.perfectFamMatch === 'N'){
+				}else if(this.pfState.perfectFamMatch === 'N'){
 					family.feature_count === family.genome_count ? skip = true : {};
 				}
 
 				// num proteins per family
-				if(self.pfState.min_member_count){
-					family.feature_count < pfState.min_member_count ? skip = true : {};
+				if(this.pfState.min_member_count){
+					family.feature_count < this.pfState.min_member_count ? skip = true : {};
 				}
-				if(self.pfState.max_member_count){
-					family.feature_count > pfState.max_member_count ? skip = true : {};
+				if(this.pfState.max_member_count){
+					family.feature_count > this.pfState.max_member_count ? skip = true : {};
 				}
 
 				// num genomes per family
-				if(self.pfState.min_genome_count){
-					family.genome_count < pfState.min_genome_count ? skip = true : {};
+				if(this.pfState.min_genome_count){
+					family.genome_count < this.pfState.min_genome_count ? skip = true : {};
 				}
-				if(self.pfState.max_genome_count){
-					family.genome_count > pfState.max_genome_count ? skip = true : {};
+				if(this.pfState.max_genome_count){
+					family.genome_count > this.pfState.max_genome_count ? skip = true : {};
 				}
 
 				if(!skip){
-					newData.push(family);
+					if(columnOrderMap){
+						if(columnOrderMap[family.family_id] >= 0){
+							newData.push(family);
+						}
+					}else{
+						newData.push(family);
+					}
 				}
-			});
+			}, this);
+			//  0 && console.log("after all filtering", newData.length);
 			//  0 && console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
+
+			if(columnOrderMap){
+				this.pfState.clusterColumnOrder = newData.map(function(f){
+					return f.family_id;
+				});
+			}
 
 			this.setData(newData);
 			this.set("refresh");
 		},
 		reload: function(){
-			var self = this;
 
-			if(!self._loadingDeferred.isResolved()){
-				self._loadingDeferred.cancel('reloaded');
-				//  0 && console.log(self._loadingDeferred.isResolved(), self._loadingDeferred.isCanceled(), self._loadingDeferred.isRejected());
+			if(!this._loadingDeferred.isResolved()){
+				this._loadingDeferred.cancel('reloaded');
 			}
 
-			delete self._loadingDeferred;
-			self._loaded = false;
-			self.loadData();
-			self.set("refresh");
+			delete this._loadingDeferred;
+			this._loaded = false;
+			this.loadData();
+			this.set("refresh");
 		},
 
 		query: function(query, opts){
@@ -81616,15 +81637,14 @@ define([
 				return this.inherited(arguments);
 			}
 			else{
-				var _self = this;
 				var results;
-				var qr = QueryResults(when(this.loadData(), function(){
-					results = _self.query(query, opts);
+				var qr = QueryResults(when(this.loadData(), lang.hitch(this, function(){
+					results = this.query(query, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
 					});
 					return results;
-				}));
+				})));
 
 				return qr;
 			}
@@ -81634,10 +81654,9 @@ define([
 			if(this._loaded){
 				return this.inherited(arguments);
 			}else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
+				return when(this.loadData(), lang.hitch(this, function(){
+					return this.get(id, options)
+				}))
 			}
 		},
 
@@ -81645,8 +81664,6 @@ define([
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
-
-			var _self = this;
 
 			//  0 && console.warn(this.state.genome_ids, !this.state.genome_ids);
 			if(!this.state || !this.state.genome_ids){
@@ -81656,7 +81673,7 @@ define([
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(_self, function(){
+				setTimeout(lang.hitch(this, function(){
 					this.setData([]);
 					this._loaded = true;
 					// def.resolve(true);
@@ -81666,43 +81683,42 @@ define([
 
 			Topic.publish(this.topicId, "showLoadingMask");
 
-			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
+			this._loadingDeferred = when(request.post(this.apiServer + '/genome/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				data: {
-					q: "genome_id:(" + _self.state.genome_ids.join(" OR ") + ")",
-					rows: _self.state.genome_ids.length,
+					q: "genome_id:(" + this.state.genome_ids.join(" OR ") + ")",
+					rows: this.state.genome_ids.length,
 					sort: "genome_name asc"
 				}
-			}), function(genomes){
+			}), lang.hitch(this, function(genomes){
 
 				genomes.forEach(function(genome, idx){
 					var gfs = new FilterStatus();
 					gfs.init(idx, genome.genome_name);
-					_self.pfState.genomeFilterStatus[genome.genome_id] = gfs;
-					// _self.pfState.genomeIds.push(genome.genome_id);
-				});
-				_self.pfState.genomeIds = Object.keys(_self.pfState.genomeFilterStatus);
-				// publish pfState & update filter panel
-				Topic.publish(_self.topicId, "updatePfState", _self.pfState);
-				Topic.publish(_self.topicId, "updateFilterGrid", genomes);
+					this.pfState.genomeFilterStatus[genome.genome_id] = gfs;
+				}, this);
 
-				// _self.pfState, _self.token
+				this.pfState.genomeIds = Object.keys(this.pfState.genomeFilterStatus);
+				// publish pfState & update filter panel
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "updateFilterGrid", genomes);
+
 				var opts = {
 					token: window.App.authorizationToken || ""
 				};
-				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(_self, function(data){
+				return when(window.App.api.data("proteinFamily", [this.pfState, opts]), lang.hitch(this, function(data){
 					this.setData(data);
 					this._loaded = true;
 					Topic.publish(this.topicId, "hideLoadingMask");
 				}));
 
-			});
+			}));
 			return this._loadingDeferred;
 		},
 
@@ -81868,16 +81884,15 @@ define([
 
 		getSyntenyOrder: function(genomeId){
 
-			var _self = this;
 			var familyIdName = this.pfState.familyType + '_id';
 
-			return when(request.post(_self.apiServer + '/genome_feature/', {
+			return when(request.post(this.apiServer + '/genome_feature/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				data: {
 					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
@@ -81922,8 +81937,7 @@ define([
 
 			Topic.publish(this.topicId, "showLoadingMask");
 
-			var self = this;
-			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
+			when(this.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
 
 				var isTransposed = this.pfState.heatmapAxis === 'Transposed';
 
@@ -81948,13 +81962,14 @@ define([
 
 				// clusterRow/ColumnOrder assumes corrected axises
 				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
+				this._clustered = lang.clone(adjustedFamilyOrder);
 
 				// update main grid
 				Topic.publish(this.topicId, "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
-				self.currentData = this.getHeatmapData(this.pfState);
-				Topic.publish(this.topicId, "updateHeatmapData", self.currentData);
+				this.currentData = this.getHeatmapData();
+				Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 			}));
 		}
 	});
@@ -82353,7 +82368,7 @@ define([
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
-						this.set('sort', [{}]);
+						this.updateSortArrow([]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -82375,7 +82390,6 @@ define([
 				var cell = this.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
-				var _self = this;
 
 				var conditionIds = this.pfState.genomeIds;
 				var conditionStatus = this.pfState.genomeFilterStatus;
@@ -82388,37 +82402,37 @@ define([
 
 					// deselect other radio in the same row
 					options.forEach(function(el){
-						if(el != colId && _self.cell(rowId, el).element.input.checked){
-							toggleSelection(_self.cell(rowId, el).element.input, false);
+						if(el != colId && this.cell(rowId, el).element.input.checked){
+							toggleSelection(this.cell(rowId, el).element.input, false);
 						}
 						// updated selected box
 						if(el === colId){
-							toggleSelection(_self.cell(rowId, el).element.input, true);
+							toggleSelection(this.cell(rowId, el).element.input, true);
 						}
-					});
+					}, this);
 
 					// check whether entire rows are selected & mark as needed
 					options.forEach(function(el){
 						var allSelected = true;
 						conditionIds.forEach(function(conditionId){
-							if(_self.cell(conditionId, el).element.input.checked == false){
+							if(this.cell(conditionId, el).element.input.checked == false){
 								allSelected = false;
 							}
-						});
+						}, this);
 						toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, allSelected);
-					});
+					}, this);
 
 				}else{
 					// if header is clicked, reset the selections & update
 					conditionIds.forEach(function(conditionId){
 						options.forEach(function(el){
 							if(el === colId){
-								toggleSelection(_self.cell(conditionId, el).element.input, true);
+								toggleSelection(this.cell(conditionId, el).element.input, true);
 							}else{
-								toggleSelection(_self.cell(conditionId, el).element.input, false);
+								toggleSelection(this.cell(conditionId, el).element.input, false);
 							}
-						});
-					});
+						}, this);
+					}, this);
 
 					// deselect other radio in the header
 					options.forEach(function(el){
@@ -82431,13 +82445,13 @@ define([
 				// update filter
 				Object.keys(conditionStatus).forEach(function(conditionId){
 					var status = options.findIndex(function(el){
-						if(_self.cell(conditionId, el).element.input.checked){
+						if(this.cell(conditionId, el).element.input.checked){
 							return el;
 						}
-					});
+					}, this);
 
 					conditionStatus[conditionId].setStatus(status);
-				});
+				}, this);
 
 				this.pfState.genomeFilterStatus = conditionStatus;
 				Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
@@ -83561,16 +83575,7 @@ define([
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				function(){
-					// flip internal flag
-					if(this.pfState.heatmapAxis === ""){
-						this.pfState.heatmapAxis = "Transposed";
-					}else{
-						this.pfState.heatmapAxis = "";
-					}
-
-					Topic.publish("ProteinFamilies", "refreshHeatmap");
-				},
+				"flipAxis",
 				true
 			],
 			[
@@ -84120,6 +84125,16 @@ define([
 			}
 			return originalAxis;
 		},
+		flipAxis: function(){
+			// flip internal flag
+			if(this.pfState.heatmapAxis === ""){
+				this.pfState.heatmapAxis = "Transposed";
+			}else{
+				this.pfState.heatmapAxis = "";
+			}
+
+			Topic.publish(this.topicId, "refreshHeatmap");
+		},
 		cluster: function(param){
 
 			//  0 && console.log("cluster is called", param);
@@ -84152,10 +84167,10 @@ define([
 				Topic.publish(this.topicId, "updatePfState", this.pfState);
 				Topic.publish(this.topicId, "updateFilterGridOrder", res.rows);
 				Topic.publish(this.topicId, "updateMainGridOrder", res.columns);
+				Topic.publish(this.topicId, "updateClusterColumnOrder", res.columns);
 
 				// re-draw heatmap
-				// updateMainGridOrder -> ProteinFamiliesGrid._setSort already calls this;
-				// Topic.publish(this.topicId, "refreshHeatmap");
+				Topic.publish(this.topicId, "refreshHeatmap");
 			}), function(err){
 
 				Topic.publish(this.topicId, "hideLoadingMask");
@@ -92055,8 +92070,13 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
-						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+						//  0 && console.log(this.setActivePanelState.caller, this.setActivePanelState.caller === this.onSetGenomeIds, this.setActivePanelState.caller === this.onSetState);
+						if(this.setActivePanelState.caller === this.onSetGenomeIds || this.setActivePanelState.caller === this.onSetState){
+							if(activeTab._firstView){
+								Topic.publish(activeTab.topicId, "showMainGrid");
+							}
+						}else{
+							activeQueryState = null;
 						}
 					}
 
@@ -95078,6 +95098,23 @@ define([
 
 			return navbox;
 		},
+
+        regularizeReferenceName: function( refname ) {
+
+            if( this.config.exactReferenceSequenceNames )
+                return refname;
+
+            refname = refname.toLowerCase()
+                            .replace(/^chro?m?(osome)?/,'chr')
+                            .replace(/^co?n?ti?g/,'ctg')
+                            .replace(/^scaff?o?l?d?/,'scaffold')
+                            .replace(/^([a-z]*)0+/,'$1')
+                            .replace(/^(\d+)$/, 'chr$1' )
+                            .replace(/^accn\|/,'');
+
+            return refname;
+        },
+
 		initView: function(){
 			var thisObj = this;
 			return this._milestoneFunction('initView', function(deferred){
@@ -95622,11 +95659,12 @@ define([
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
+                //plugins: ["HideTrackLabels"],
 				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["PATRICGenes","RefSeqGenes"].join(","),
-				alwaysOnTracks: ["PATRICGenes","RefSeqGenes"].join(","),
+				forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+				alwaysOnTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -95636,7 +95674,7 @@ define([
 				updateBrowserURL: false,
 				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
 				suppressUsageStatistics: true,
-				refSeqSelectorMaxSize: 100
+				refSeqSelectorMaxSize: 2000
 				// "trackSelector": {
 				// 	"type": "Faceted",
 				// 	"displayColumns": [
@@ -112712,9 +112750,12 @@ define([
 					});
 					self.addChild(messagePane);
 				}else{
+
+					//self.watch("state", lang.hitch(self, "onSetState"));
+
 					var filterPanel = self._buildFilterPanel();
-					 0 && console.log("GeneExpressionGridContainer onFirstView: this", self);
-					 0 && console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
+					// 0 && console.log("GeneExpressionGridContainer onFirstView: this", self);
+					// 0 && console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
 					self.tabContainer = new StackContainer({region: "center", id: self.id + "_TabContainer"});
 					var tabController = new TabController({
 						containerId: self.id + "_TabContainer",
@@ -112773,13 +112814,12 @@ define([
 					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 						title: "Table",
 						content: "Gene Expression Table",
+						visible: true,
+						//state: self.state,
 						tgtate: self.tgState
 					});
 					self.GeneExpressionGridContainer.startup();
-					 0 && console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
-
-					// self.watch("state", lang.hitch(self, "onSetState"));
-
+					// 0 && console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 					self.addChild(tabController);
 					self.addChild(filterPanel);
 					self.tabContainer.addChild(bc1);
@@ -113108,7 +113148,7 @@ define([
 				return;
 			}
 			var self = this;
-			 0 && console.log("GeneExpressionGridContainer _setStateAttr: state", state);
+			// 0 && console.log("GeneExpressionGridContainer _setStateAttr: state", state);
 			// 0 && console.log("GeneExpressionGridContainer _setStateAttr: this.state", this.state);
 			if(this.grid){
 				 0 && console.log("   call set state on this.grid: ", this.grid);
@@ -113130,7 +113170,7 @@ define([
 			}
 			this.inherited(arguments);
 			this._set("state", this.get("state"));
-			//  0 && console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
+		 	// 0 && console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([

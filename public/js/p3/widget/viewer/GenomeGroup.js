@@ -66,7 +66,7 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
 					}
 

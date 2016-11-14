@@ -260,8 +260,13 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
-						if(activeTab._firstView){
-							Topic.publish("ProteinFamilies", "showMainGrid");
+						// console.log(this.setActivePanelState.caller, this.setActivePanelState.caller === this.onSetGenomeIds, this.setActivePanelState.caller === this.onSetState);
+						if(this.setActivePanelState.caller === this.onSetGenomeIds || this.setActivePanelState.caller === this.onSetState){
+							if(activeTab._firstView){
+								Topic.publish(activeTab.topicId, "showMainGrid");
+							}
+						}else{
+							activeQueryState = null;
 						}
 					}
 

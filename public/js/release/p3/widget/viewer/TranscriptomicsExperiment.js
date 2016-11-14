@@ -36,6 +36,7 @@ define("p3/widget/viewer/TranscriptomicsExperiment", [
 
 			this.viewer = new TranscriptomicsGeneContainer({
 				region: "center",
+				id: this.id + "_TranscriptomicsGene",
 				state: this.state
 			});
 
