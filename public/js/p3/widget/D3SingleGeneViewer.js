@@ -79,17 +79,17 @@ define([
 					.append("polyline")
 					.attr("points", function(d){
 						// console.log(d);
-						var start, middle, end, length;
+						var start, middle, end;
+						var length = self.x_scale(d.na_length);
+						var arrowHeadWidth = Math.min(length / 2, 12);
 
 						if(d.strand == '+'){
 							start = self.x_scale(d.start - data.firstStartPosition);
-							length = self.x_scale(d.na_length);
-							middle = start + length - 12;
+							middle = start + length - arrowHeadWidth;
 							end = start + length;
 						}else{
 							start = self.x_scale(d.end - data.firstStartPosition);
-							length = self.x_scale(d.na_length);
-							middle = start - length + 12;
+							middle = start - length + arrowHeadWidth;
 							end = start - length;
 						}
 
