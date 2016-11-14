@@ -876,6 +876,7 @@ define([
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
 				//defaultTracks: ["SequenceTrack"].join(","),
                 forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+                highResoutionMode: "auto",
 				//alwaysOnTracks: [,"PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
