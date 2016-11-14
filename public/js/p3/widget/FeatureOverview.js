@@ -158,6 +158,7 @@ define([
 											var url = formatter.getExternalLinks(obj.source) + val;
 											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
+
 										case "CARD":
 											sourceLink = val;
 											break;
