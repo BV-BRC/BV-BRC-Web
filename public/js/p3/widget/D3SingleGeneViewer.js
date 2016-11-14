@@ -28,7 +28,7 @@ define([
 			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
-			var pinStart = data.pinStart;
+			var pin = data.pin;
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
@@ -121,7 +121,7 @@ define([
 						return pos.join(" ");
 					})
 					.attr("fill", function(d){
-						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+						return (d.feature_id === pin) ? '#E53935' : '#1976D2';
 					})
 					.on("click", function(d){
 						var url = "/view/Feature/" + d.feature_id + "#view_tab=overview";

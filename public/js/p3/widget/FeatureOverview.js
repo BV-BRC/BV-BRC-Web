@@ -429,7 +429,7 @@ define([
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
 					features: data,
-					pinStart: this.feature.start
+					pin: this.feature.feature_id
 				});
 			}));
 
