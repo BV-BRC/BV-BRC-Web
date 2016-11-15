@@ -1,0 +1,451 @@
+.WorkspaceController,
+.WorkspaceGlobalController {
+	padding: 4px;
+}
+
+.WorkspaceController {
+	background:#ddd;
+	border-top: #227194;
+}
+
+.BrowserHeader {
+	padding:0px;
+	vertical-align:bottom;
+}
+
+a.HelpLink {
+  color: #09456f;
+}
+a.HelpLink:visited {
+  color: #09456f;
+}
+a.HelpLink:focus {
+  color: #09456f;
+}
+a.HelpLink:hover {
+  color: #34698e;
+  text-decoration: underline;
+}
+a.HelpLink:active {
+  color: #09456f;
+}
+
+.wsBreadCrumb {
+	font-size:1.2em;
+	margin:2px;
+	margin-left: 4px;
+	font-weight: 600;
+	padding:2px;
+	color: #134d75;
+}
+.wsActionTooltip {
+	padding: 2px;
+}
+
+.wsActionTooltip:hover{
+	background:#d2d2d2;
+	cursor: pointer;
+}
+
+.idMappingTable td:hover{
+background:#d2d2d2;
+cursor: pointer;
+}
+
+.idMappingHeader{
+color:#fff;font-weight:600;background:#34698e;
+}
+
+.patric .BrowserHeader A,
+.patric .wsBreadCrumb A {
+	color: #123d75;
+	font-size:1.0em;
+	font-weight: 600;
+	vertical-align: bottom;
+}
+
+.UploadComplete {
+	color: green;
+	border: 1px solid green;
+}
+
+.UploadingButton {
+	display: inline-block;
+	margin: 2px;
+	margin-right: 4px;
+	padding:2px;
+	border: 1px solid gray;
+}
+
+.TypeContainer {
+	display: inline-block;
+	width: 80;
+	font-size:.65em;
+	border:1px solid gray;
+	padding:4px;
+}
+
+.ItemDetailAttribute{
+	display: inline-block;
+}
+.ItemDetailAttributeValue{
+	font-style: italic;
+	display: inline-block;
+	font-weight:500;
+}
+.ItemDetailHeaderTable{
+	width:100%;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+.ItemDetailHeader{
+	font-size:1.5em;font-weight:900;
+	margin-left:20px;
+}
+
+.claro .ItemDetailPanel {
+	background:#eee;
+	color:#333;
+	padding:4px;
+	margin-left: -1px;
+	border-left: 0px solid #888;
+	border-top: 2px solid #76a72d; /*#34698e;*/
+	/*box-shadow:0px 0px 1px;*/
+	overflow: auto;
+}
+.ItemTypeIcon {
+	width:64px; 
+	height: 64px;
+	margin:auto;
+	border: 1px solid gray;
+}
+
+.TypeContainer > DIV {
+	text-align: center;
+}
+
+.WorkspaceExplorerView .dgrid-row {
+	font-size: 1.2em;
+	cursor: pointer;
+}
+
+.dgrid-cell.wsItemType,
+.wsItemType {
+	width: 32px;
+	text-align: center;
+}
+
+.WorkspaceExplorerView .dgrid-cell {
+	border: 0px;
+}
+.wsItemName {
+/*	width: 450px;*/
+	white-space: nowrap;
+}
+
+th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreationTime, th.dgrid-cell.wsItemOwnerId {
+	border-right: 1px solid #C0C0C0;
+}
+th.dgrid-cell.wsItemType {
+	border-right: 0px;
+	padding-left:0px;
+}
+.dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
+	padding-left:10px;
+}
+
+.wsItemOwnerId {
+	width: 90px;
+}
+
+.wsItemSize {
+	width: 150px;
+}
+
+.wsItemCreationTime {
+	width: 150px;
+}
+.JobStatusButton,
+.UploadStatusButton {
+	position: relative;
+	padding:1px;
+	margin:2px;
+	border-radius:3px;
+	background: #333;
+	color:#333;
+	font-size: 1.1em;
+}
+
+.JobStatusButton {
+	cursor: pointer;
+}
+/*div.JobStatusButton a {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        text-decoration: none;
+        z-index: 10; 
+        background-color: #FFF;
+        opacity: 0;
+        filter: alpha(opacity=1);
+    }
+*/
+
+
+.JobStatusButton > A:first-child,
+.JobStatusButton > SPAN:first-child {
+	color:#fff;margin:2px;padding:2px
+}
+
+.UploadStatusArea > SPAN {
+	color:#fff;margin:2px;padding:2px;margin-left:0px;padding-left:0px;
+}
+.UploadStatusArea{
+	cursor: pointer;
+	display:inline-block;
+}
+.UploadStatusUpload{
+	display:inline-block;
+	margin:2px;padding:2px;margin-right:0px;padding-right:0px;	
+}
+
+.UploadStatusUpload .fa {
+	color: #ddd;
+}
+
+.JobStatusCount,
+.UploadStatusCount {
+	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
+
+}
+.JobsComplete,
+.UploadingComplete{
+	color: blue;
+	margin:0px;
+}
+
+.JobsRunning,
+.UploadingProgress,
+.UploadingActive{
+	color: green;
+	margin:0px;
+}
+
+.JobsRunning::before,
+.JobsQueued::before,
+.JobsSuspended::before,
+.UploadingActive::before{
+	content:"\00b7";
+	color: #333;
+}
+
+.UploadingProgress::before{
+	content:"\00b7";
+	color: #333;
+}
+
+.JobsQueued {
+	color: orange;
+	margin: 0px;
+}
+
+.JobsSuspended {
+	color: red;
+	margin:0px;
+}
+
+.ActionButtonWrapper {
+	font-size: 1.1em;
+	display: inline-block;
+	text-align: center;
+	margin:1px;
+	cursor: pointer;
+	width: 44px;
+	border-radius: 4px;
+	border: 1px solid #76a72d;
+}
+
+.ActionButtonContainer {
+	float: left;
+	font-size:.85em;
+	padding-top:0px;
+	margin-top: 4px;
+	vertical-align: bottom;
+	bottom: 2px;
+}
+
+.ActionButtonWrapper .ActionButton.fa {
+	margin:0px;
+	color: #fff;
+	margin: 5px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+
+}
+
+.GeneExpFilterPanel .ActionButtonWrapper:hover,
+.GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
+.BrowserHeader .ActionButtonWrapper:hover,
+.BrowserHeader .ActionButtonWrapper .ActionButton {
+	color: #34698e;
+}
+
+.ActionButton.fa.ActiveActionButton {
+    color: #abd6ff;
+}
+
+.ActionButtonText {
+	font-size: .1em;
+	color: #fff;
+	margin: 0px;
+	text-align:center;
+	white-space: normal;
+	overflow: hidden;
+}
+
+<<<<<<< HEAD
+
+.claro .dijitTooltipBelow.dijitTooltipABRight .dijitTooltipConnector {
+  /* above or below tooltip, but the arrow appears on the right,
+		and the right edges of target and tooltip are aligned rather than the left.
+		Override above rules for .dijitTooltipBelow, .dijitTooltipAbove */
+
+  left: auto;
+  right: 3px;
+}
+
+=======
+.GeneExpFilterPanel .ActionButtonText,
+>>>>>>> 2a252790fc97a1e3d6a6aa81d3ef8ef95c5618ec
+.BrowserHeader .ActionButtonText {
+	color: #34698e;
+}
+
+.GeneExpFilterPanel .ActionButtonWrapper:hover {
+	border: 1px solid #34698e;
+	color: #345698e;	
+}
+
+.ActionButtonWrapper:hover {
+	border: 1px solid #fff;
+	border-radius: 4px;
+	color: #fff;
+}
+
+.BrowserHeader .ActionButtonWrapper:hover {
+	border: 1px solid #34698e;
+	color: #345698e;	
+}
+
+.BrowserHeader .ActionButtonWrapper {
+        margin-top: -3px;
+        margin-left: 2px;
+	color: #345698e;
+	border: 1px solid #fff;
+	width: 58px;
+	vertical-align: bottom;
+}
+
+.GeneExpFilterPanel .ActionButtonWrapper {
+    margin-top: -3px;
+    margin-left: 2px;
+    margin-right: 20px;
+	width: 58px;
+	border: 1px solid #fff;
+	color: #34698e;
+	vertical-align: bottom;
+}
+.GeneExpFilterPanel .ActionButtonWrapper .fa {
+	color: #34698e;
+}
+.GeneExpFilterPanel .ActionButtonWrapper .ActionButton.fa {
+	color: #fff;
+}
+
+.dataItemSelection,
+.workspaceItemSelection,
+.multipleItemSelection,
+.singleItemSelection,
+.noItemSelection {
+	display: block;
+}
+
+.multipleItemSelection,
+.noItemSelection {
+	text-align: center;
+}
+
+
+.dataItem .singleItemSelection .workspaceItemSelection,
+.workspaceItem .singleItemSelection .dataItemSelection,
+.multipleSelection .noItemSelection,
+.multipleSelection .singleItemSelection,
+.singleSelection .noItemSelection,
+.singleSelection .multipleItemSelection,
+.noSelection .singleItemSelection,
+.noSelection .multipleItemSelection {
+	display: none;
+}
+
+.resultContentSection{
+	display:block;
+}
+
+.job_result .resultContentSection{
+	display:none;
+}
+.file .resultContentSection{
+	display:none;
+}
+.containerContentSection {
+	display: none;
+}
+
+.folder .containerContentSection.folder {
+	display: block;
+}
+
+.dataItemSelection {
+	font-size: .85em;
+	
+}
+
+.tip {
+	border: 2px dotted #aaa;
+	margin-top: 10px;	
+	vertical-align: top;
+	border-radius: 4px;
+	background: #fff;
+	text-align: left;
+	padding-left:4px;
+	padding-top:4px;
+	padding-bottom:4px
+}
+
+.tip > p {
+	margin:4px;
+}
+
+.tipHeader > span {
+	font-size: 1em;
+	font-weight: 600;
+	margin: 4px;
+}
+.tipHeader {
+	font-size: 1.5em;
+	font-weight: 600;
+	background: #efefef;
+	vertical-align: top;
+	color: #333;
+	margin: 0px;
+	padding: 4px;
+	float:left;
+	height:22px;
+	border-radius:5px;
+	border:#d3d3d3 1px solid;
+	display:inline-block;
+	margin-right:4px;
+}

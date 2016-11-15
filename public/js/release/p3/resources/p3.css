@@ -10344,7 +10344,7 @@ div.appsublabel {
     width: 10%;
 }
 .patric .sgViewerWidget {
-    height: 76px;
+    
 }
 .patric .sgViewerWidget .chart g polyline {
     cursor: pointer;
@@ -10357,7 +10357,7 @@ div.appsublabel {
         border-right: 1px solid #bbb;
 }
 .patric .dgrid-cell.field-Selection-Checkboxes {
-    width: 21px;
+    width: 2%;
 }
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
@@ -11962,10 +11962,35 @@ div.overview {
 .navbox {
     font-size: .85em;
 }
-.navbox .fa {
+.navbox.dijitInputInner {
+    font-size: 11px;
+    font-family: inherit;
+}
+.navbox #hidetitles-btn{
+    height: 14px;
+}
+#navbox.dijitButton{
+    height: 14px;
+}
+.navbox.fa {
     vertical-align: middle;
     margin: 4px 4px 4px 10px;
     color: #444;
+}
+#navbox.claro.dijitButtonText {
+    padding: 0 0.3em;
+    text-align: center;
+}
+#navbox.navbox {
+    font-size: .85em;
+}
+#navbox.navbox .fa {
+    vertical-align: middle;
+    margin: 4px 4px 4px 10px;
+    color: #444;
+}
+#navbox.navbox .fa-2x{
+    font-size: 2em;
 }
 #faceted_tracksel .faceted_tracksel_on_off.tab {
     top: 170px;

@@ -24,7 +24,7 @@ define([
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
-	
+
 	var tgState = {
 		keyword: "",
 		upFold: 0,
@@ -64,7 +64,7 @@ define([
 				return;
 			}
 			var self = this;
-			console.log("GeneExpressionGridContainer _setStateAttr: state", state);
+			//console.log("GeneExpressionGridContainer _setStateAttr: state", state);
 			//console.log("GeneExpressionGridContainer _setStateAttr: this.state", this.state);
 			if(this.grid){
 				console.log("   call set state on this.grid: ", this.grid);
@@ -86,7 +86,7 @@ define([
 			}
 			this.inherited(arguments);
 			this._set("state", this.get("state"));
-			// console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
+			//console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([

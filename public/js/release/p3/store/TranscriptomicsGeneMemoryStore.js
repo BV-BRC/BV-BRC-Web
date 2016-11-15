@@ -18,6 +18,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 		colorScheme: 'rgb',
 		maxIntensity: 0,
 		keyword: '',
+		filterGenome: null, // this should not "", since it means no filter
 		upFold: 0,
 		downFold: 0,
 		upZscore: 0,
@@ -38,47 +39,53 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				this.apiServer = options.apiServer;
 			}
 
-			var self = this;
+			this.topicId = options.topicId;
+			// console.log("tg store created.", this.topicId);
 
-			Topic.subscribe("TranscriptomicsGene", function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
+					case "updateClusterColumnOrder":
+						this._clustered = value;
+						break;
 					case "applyConditionFilter":
-						self.tgState = value;
-						self.conditionFilter(value);
-						self.currentData = self.getHeatmapData(self.tgState);
-						Topic.publish("TranscriptomicsGene", "updateTgState", self.tgState);
-						Topic.publish("TranscriptomicsGene", "updateHeatmapData", self.currentData);
+						this.tgState = value;
+						this.conditionFilter();
+						this.currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updateTgState", this.tgState);
+						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 						break;
 					case "requestHeatmapData":
-						self.currentData = self.getHeatmapData(value);
-						Topic.publish("TranscriptomicsGene", "updateHeatmapData", self.currentData);
+						this.tgState = value;
+						this.currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
 						break;
 					default:
 						break;
 				}
-			});
+			}));
 		},
-		conditionFilter: function(tgState){
-			var self = this;
-			if(self._filtered == undefined){ // first time
-				self._filtered = true;
-				self._original = this.query("", {});
+		conditionFilter: function(){
+
+			if(this._filtered == undefined){ // first time
+				this._filtered = true;
+				this._original = this.query("", {});
 			}
-			var data = self._original;
+			var data = this._original;
 			var newData = [];
-			var gfs = tgState.comparisonFilterStatus;
+			var gfs = this.tgState.comparisonFilterStatus;
+			var columnOrderMap;
+			if(this._clustered){
+				columnOrderMap = {};
+				this._clustered.forEach(function(colId, idx){
+					columnOrderMap[colId] = idx;
+				});
+			}
 
 			// var tsStart = window.performance.now();
-			var keywordRegex = tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
-
-			if(tgState.significantGenes == 'N'){
-				self.setData(data);
-				self.set("refresh");
-				return;
-			}
+			var keywordRegex = this.tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
 
 			data.forEach(function(gene){
 
@@ -86,24 +93,24 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				var up_r = 0, down_r = 0, total_samples = 0;
 
 				// comparisons
-				for(var i = 0, len = tgState.comparisonIds.length; i < len; i++){
-					var comparisonId = tgState.comparisonIds[i];
+				for(var i = 0, len = this.tgState.comparisonIds.length; i < len; i++){
+					var comparisonId = this.tgState.comparisonIds[i];
 					var index = gfs[comparisonId].getIndex();
 					var status = gfs[comparisonId].getStatus();
 					var comparison = gene.samples[comparisonId];
 					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.sample_binary, parseInt(gene.sample_binary.substr(index * 1, 1), 16));
 
 					var expression = gene.sample_binary.substr(index, 1);
-					if(expression === '1'){
+					if(expression == '1'){
 						if(status != 2){
-							skip = !self._thresholdFilter(comparison, tgState, status);
+							skip = !this._thresholdFilter(comparison, this.tgState, status);
 							if(skip){
 								break;
 							}
 						}else{
 							// status == 2, don't care
 							if(skip){
-								skip = !self._thresholdFilter(comparison, tgState, status)
+								skip = !this._thresholdFilter(comparison, this.tgState, status)
 							}
 						}
 					}else{
@@ -112,47 +119,63 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 							break;
 						}
 					}
+					// console.log(gene.feature_id, comparisonId, expression, status, skip);
 
 					if(comparison){
 						var value = parseFloat(comparison.log_ratio);
 						if(!isNaN(value)){
-							if(value > tgState.upFold){
+							if(value > this.tgState.upFold){
 								up_r++;
 							}
-							if(value < tgState.downFold){
+							if(value < this.tgState.downFold){
 								down_r++;
 							}
 							total_samples++;
 						}
 					}
 				}
+				// console.log("after comparison filter", gene.patric_id, skip);
 
-				if(!skip && tgState.keyword !== ''){
+				if(!skip && this.tgState.keyword !== ''){
 					skip = !keywordRegex.some(function(needle){
 						return needle && (gene.product.toLowerCase().indexOf(needle) >= 0
 							|| gene.patric_id.toLowerCase().indexOf(needle) >= 0
 							|| gene.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
 					});
 				}
+				// console.log("after keyword filter", this.tgState.keyword !== '', skip);
 
-				if(!skip && tgState.filterGenome !== ''){
-					skip = (gene.genome_id !== tgState.filterGenome)
+				if(!skip && this.tgState.filterGenome !== null){
+					skip = (gene.genome_id !== this.tgState.filterGenome && this.tgState.filterGenome !== "")
 				}
+				// console.log("after genome filter", this.tgState.filterGenome !== '', skip);
 
 				gene.up = up_r;
 				gene.down = down_r;
 				gene.sample_size = total_samples;
 
 				if(!skip){
-					newData.push(gene);
+					if(columnOrderMap){
+						if(columnOrderMap[gene.feature_id] >= 0){
+							newData.push(gene);
+						}
+					}else{
+						newData.push(gene);
+					}
 				}
-			});
+			}, this);
 
 			// console.log("after conditionFilter: ", newData.length);
 			// console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
 
-			self.setData(newData);
-			self.set("refresh");
+			if(columnOrderMap){
+				this.tgState.clusterColumnOrder = newData.map(function(g){
+					return g.feature_id;
+				});
+			}
+
+			this.setData(newData);
+			this.set("refresh");
 		},
 		_thresholdFilter: function(comparison, tgState, filterStatus){
 			var uf = tgState.upFold, df = tgState.downFold;
@@ -180,11 +203,10 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			return pass;
 		},
 		reload: function(){
-			var self = this;
-			delete self._loadingDeferred;
-			self._loaded = false;
-			self.loadData();
-			self.set("refresh");
+			delete this._loadingDeferred;
+			this._loaded = false;
+			this.loadData();
+			this.set("refresh");
 		},
 
 		query: function(query, opts){
@@ -193,15 +215,14 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				return this.inherited(arguments);
 			}
 			else{
-				var _self = this;
 				var results;
-				var qr = QueryResults(when(this.loadData(), function(){
-					results = _self.query(query, opts);
+				var qr = QueryResults(when(this.loadData(), lang.hitch(this, function(){
+					results = this.query(query, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
 					});
 					return results;
-				}));
+				})));
 
 				return qr;
 			}
@@ -211,10 +232,9 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			if(this._loaded){
 				return this.inherited(arguments);
 			}else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
+				return when(this.loadData(), lang.hitch(this, function(){
+					return this.get(id, options)
+				}))
 			}
 		},
 
@@ -223,8 +243,6 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				return this._loadingDeferred;
 			}
 
-			var _self = this;
-
 			if(!this.state || this.state.search == null){
 				// console.log("No State, use empty data set for initial store");
 
@@ -232,9 +250,9 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(_self, function(){
-					_self.setData([]);
-					_self._loaded = true;
+				setTimeout(lang.hitch(this, function(){
+					this.setData([]);
+					this._loaded = true;
 					def.resolve(true);
 				}), 0);
 				return def.promise;
@@ -353,7 +371,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				pbRequest.resolve([]);
 			}
 
-			this._loadingDeferred = when(All([wsRequest, pbRequest]), function(results){
+			this._loadingDeferred = when(All([wsRequest, pbRequest]), lang.hitch(this, function(results){
 
 				// console.log("get all results:", results);
 
@@ -366,8 +384,8 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					comparisonIdList = [].concat.apply(comparisonIdList, wsComparisons.map(function(d){
 						return d.pid
 					}));
-					_self.tgState.wsExpIds = wsExpIds; // extra reference
-					_self.tgState.wsComaprisons = wsComparisons; // extra reference
+					this.tgState.wsExpIds = wsExpIds; // extra reference
+					this.tgState.wsComaprisons = wsComparisons; // extra reference
 				}
 
 				if(pbComparisons.length){
@@ -380,32 +398,32 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 							pbExpIds[d.eid] = true;
 						}
 					});
-					_self.tgState.query = query;
-					_self.tgState.pbExpIds = Object.keys(pbExpIds);
-					_self.tgState.pbComparisons = pbComparisons;
+					this.tgState.query = query;
+					this.tgState.pbExpIds = Object.keys(pbExpIds);
+					this.tgState.pbComparisons = pbComparisons;
 				}
 
-				_self.tgState.comparisonIds = comparisonIdList;
+				this.tgState.comparisonIds = comparisonIdList;
 				allComparisons.forEach(function(comparison, idx){
 					var cfs = new FilterStatus();
 					cfs.init(idx, comparison.expname);
-					_self.tgState.comparisonFilterStatus[comparison.pid.toString()] = cfs;
-				});
+					this.tgState.comparisonFilterStatus[comparison.pid.toString()] = cfs;
+				}, this);
 
-				Topic.publish("TranscriptomicsGene", "updateTgState", _self.tgState);
-				Topic.publish("TranscriptomicsGene", "updateFilterGrid", allComparisons);
+				Topic.publish(this.topicId, "updateTgState", this.tgState);
+				Topic.publish(this.topicId, "updateFilterGrid", allComparisons);
 
 				var opts = {
 					token: window.App.authorizationToken || ""
 				};
-				// console.log(_self.tgState);
-				return when(window.App.api.data("transcriptomicsGene", [_self.tgState, opts]), lang.hitch(this, function(data){
-					_self.setData(data);
-					_self._loaded = true;
-					_self._buildGenomeFilter(data);
-					Topic.publish("TranscriptomicsGene", "hideLoadingMask");
+
+				return when(window.App.api.data("transcriptomicsGene", [this.tgState, opts]), lang.hitch(this, function(data){
+					this.setData(data);
+					this._loaded = true;
+					this._buildGenomeFilter(data);
+					Topic.publish(this.topicId, "hideLoadingMask");
 				}));
-			});
+			}));
 
 			return this._loadingDeferred;
 		},
@@ -431,22 +449,22 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			});
 
 			// console.log(genomes);
-			Topic.publish("TranscriptomicsGene", "updateGenomeFilter", genomes);
+			Topic.publish(this.topicId, "updateGenomeFilter", genomes);
 		},
 
-		getHeatmapData: function(tgState){
-			var self = this;
+		getHeatmapData: function(){
+
 			var rows = [];
 			var cols = [];
 			var maxIntensity = 0; // global and will be modified inside createColumn function
 			var keeps = []; // global and will be referenced inside createColumn function
 
-			var isTransposed = (tgState.heatmapAxis === 'Transposed');
+			var isTransposed = (this.tgState.heatmapAxis === 'Transposed');
 			// var start = window.performance.now();
 
 			// assumes axises are corrected
-			var geneOrder = tgState.clusterColumnOrder;
-			var comparisonOrder = tgState.clusterRowOrder;
+			var geneOrder = this.tgState.clusterColumnOrder;
+			var comparisonOrder = this.tgState.clusterRowOrder;
 
 			var createColumn = function(order, colId, label, distribution, meta){
 				var filtered = [], isEven = (order % 2) === 0;
@@ -469,17 +487,18 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			// rows - comparisons
 			// if comparison order is changed, then needs to or-organize distribution in columns.
 			var comparisonOrderChangeMap = [];
+			var thisGFS = this.tgState.comparisonFilterStatus;
 
 			if(comparisonOrder !== [] && comparisonOrder.length > 0){
-				tgState.comparisonIds = comparisonOrder;
+				this.tgState.comparisonIds = comparisonOrder;
 				comparisonOrder.forEach(function(comparisonId, idx){
-					comparisonOrderChangeMap.push(tgState.comparisonFilterStatus[comparisonId].getIndex()); // keep the original position
-					tgState.comparisonFilterStatus[comparisonId].setIndex(idx);
+					comparisonOrderChangeMap.push(thisGFS[comparisonId].getIndex()); // keep the original position
+					thisGFS[comparisonId].setIndex(idx);
 				});
 			}
 
-			tgState.comparisonIds.forEach(function(comparisonId, idx){
-				var gfs = tgState.comparisonFilterStatus[comparisonId];
+			this.tgState.comparisonIds.forEach(function(comparisonId, idx){
+				var gfs = thisGFS[comparisonId];
 				// if(gfs.getStatus() != '1'){
 				keeps.push(2 * gfs.getIndex());
 				var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
@@ -496,6 +515,10 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				opts.sort = this.sort;
 			}
 			var data = this.query("", opts);
+
+			if(this.tgState.significantGenes == 'N'){
+				data = this._original; // if show all genes, then bypass filter conditions
+			}
 
 			var geneOrderMap = {};
 			if(geneOrder !== [] && geneOrder.length > 0){
@@ -518,20 +541,20 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				var dist = [];
 				var labels = [];
 				// gene.samples.forEach(function(sample, idx){
-				tgState.comparisonIds.forEach(function(comparisonId, idx){
+				this.tgState.comparisonIds.forEach(function(comparisonId, idx){
 					var comparison = gene.samples[comparisonId];
 					var all_genes_flag = false;
-					var status = tgState.comparisonFilterStatus[comparisonId].getStatus();
+					var status = this.tgState.comparisonFilterStatus[comparisonId].getStatus();
 					var expression = gene.sample_binary.substr(idx, 1);
 					// console.log(comparisonId, filterStatus, expression);
 
-					if(tgState.significantGenes === 'N'){
+					if(this.tgState.significantGenes === 'N'){
 						if(expression === '1'){
-							if(self._thresholdFilter(comparison, tgState, status)){
+							if(this._thresholdFilter(comparison, this.tgState, status)){
 								push_flag = true;
 								all_genes_flag = false;
 							}else{
-								if(tgState.significantGenes === 'N'){
+								if(this.tgState.significantGenes === 'N'){
 									push_flag = true;
 									all_genes_flag = true;
 								}
@@ -540,7 +563,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 							if(status != 2){
 								push_flag = false;
 							}else{
-								if(tgState.significantGenes === 'N'){
+								if(this.tgState.significantGenes === 'N'){
 									all_genes_flag = true;
 								}
 							}
@@ -562,8 +585,8 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 							val = "0B";
 						}else{
 							// skip checking threshold
-							// console.log("threshold: ", self._thresholdFilter(comparison, tgState, filterStatus));
-							if(!self._thresholdFilter(comparison, tgState, status)){
+							// console.log("threshold: ", this._thresholdFilter(comparison, this.tgState, filterStatus));
+							if(!this._thresholdFilter(comparison, this.tgState, status)){
 								val = "0B";
 							}else{
 								if(lr < 0 && lr >= -1){
@@ -597,7 +620,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 						dist[idx] = "0B";
 						labels[idx] = "0";
 					}
-				});
+				}, this);
 				gene.dist = dist.join("");
 				meta.labels = labels.join("|");
 
@@ -608,10 +631,10 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					var order = geneOrderMap[gene.feature_id];
 					cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
 				}
-			});
+			}, this);
 
-			tgState.maxIntensity = maxIntensity; // store for later use
-			var colorStop = getColorStops(tgState.colorScheme, maxIntensity);
+			this.tgState.maxIntensity = maxIntensity; // store for later use
+			var colorStop = getColorStops(this.tgState.colorScheme, maxIntensity);
 
 			// console.warn(rows, cols, colorStop);
 

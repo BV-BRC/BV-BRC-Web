@@ -36,6 +36,7 @@ define([
 
 			this.viewer = new TranscriptomicsGeneContainer({
 				region: "center",
+				id: this.id + "_TranscriptomicsGene",
 				state: this.state
 			});
 
