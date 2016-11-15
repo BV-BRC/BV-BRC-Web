@@ -246,7 +246,7 @@ define([
 						'X-Requested-With': null,
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
-					data: 'q=pathway_id:' + pmState.pathway_id + ' AND map_type:enzyme AND ec_number:(' + ecNumbers.join(' OR ') + ')&fl=ec_number,ec_description,map_location'
+					data: 'q=pathway_id:' + pmState.pathway_id + ' AND map_type:enzyme AND ec_number:(' + ecNumbers.join(' OR ') + ')&fl=ec_number,ec_description,map_location&rows=25000'
 				}), function(response){
 
 					var ref = {};
@@ -349,7 +349,7 @@ define([
 							'X-Requested-With': null,
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
-						data: 'q=pathway_id:' + pathwayId + ' AND feature_id:(' + idValueStr + ')&fl=ec_number'
+						data: 'q=pathway_id:' + pathwayId + ' AND feature_id:(' + idValueStr + ')&fl=ec_number&rows=25000'
 					}), function(response){
 
 						var ecNumbers = response.map(function(row){
