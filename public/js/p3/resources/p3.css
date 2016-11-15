@@ -6,7 +6,7 @@
 @import url("../../dojox/widget/Toaster/Toaster.css");
 /* CSS for JBrowse */
 @import url("./jbrowse/genome.css");
-@import url("Footer.css");
+/*@import url("Footer.css");*/
 @import url("Header.css");
 @import url("Carousel.css");
 @import url("Drawer.css");
