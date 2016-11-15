@@ -10344,7 +10344,7 @@ div.appsublabel {
     width: 10%;
 }
 .patric .sgViewerWidget {
-    height: 76px;
+    
 }
 .patric .sgViewerWidget .chart g polyline {
     cursor: pointer;
@@ -10357,7 +10357,7 @@ div.appsublabel {
         border-right: 1px solid #bbb;
 }
 .patric .dgrid-cell.field-Selection-Checkboxes {
-    width: 21px;
+    width: 2%;
 }
 .patric .dgrid-cell.field-genome_id {
     width: 8%;

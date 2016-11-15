@@ -1,11 +1,11 @@
 define("p3/widget/ActionBar", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./Button", "dojo/dom-construct",
-	"dijit/Tooltip", "dojo/dom","dojo/_base/event", "dojo/mouse",
+	"dijit/Tooltip", "dojo/dom", "dojo/_base/event", "dojo/mouse",
 	"dojo/topic"
 ], function(declare, WidgetBase, on,
 			domClass, Button, domConstruct,
-			Tooltip, dom, Event,mouse,Topic){
+			Tooltip, dom, Event, mouse, Topic){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
 		constructor: function(){
@@ -34,7 +34,9 @@ define("p3/widget/ActionBar", [
 //			return;
 			var valid;
 			var selectionTypes = {};
-			sel.filter(function(x){ return !!x; }).forEach(function(s){
+			sel.filter(function(x){
+				return !!x;
+			}).forEach(function(s){
 				var type = s.document_type || s.type;
 				//console.log("Checking s: ", type, s);
 				if(!type){
@@ -79,7 +81,7 @@ define("p3/widget/ActionBar", [
 				var validTypes = act.options.validTypes || [];
 				//console.log("validTypes for action : ",an, " validTypes=", validTypes);
 				//console.log("validTypes sel[0].source : ",sel[0].source);
-				if (sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence") {
+				if(sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence"){
 					return false;
 				}
 
@@ -158,32 +160,31 @@ define("p3/widget/ActionBar", [
 					var rel = target.attributes.rel.value;
 					if(_self._actions[rel]){
 						// console.log("actionButton: ", _self._actions[rel]);
-						if (_self._actions[rel].options && _self._actions[rel].options.requireAuth && (!window.App.user || !window.App.user.id)){
+						if(_self._actions[rel].options && _self._actions[rel].options.requireAuth && (!window.App.user || !window.App.user.id)){
 							Topic.publish("/login");
 							return;
 						}
 
-						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget,_self._actions[rel].button]);
+						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget, _self._actions[rel].button]);
 					}
 				}
-				domClass.remove(target,"depressed");
+				domClass.remove(target, "depressed");
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:mousedown", function(evt){
 				var t = evt.target;
-				if (!domClass.contains(evt.target,"ActionButtonWrapper")){
-					t=evt.target.parentNode;
+				if(!domClass.contains(evt.target, "ActionButtonWrapper")){
+					t = evt.target.parentNode;
 				}
-				domClass.add(t,"depressed");
+				domClass.add(t, "depressed");
 			});
-
 
 			on(this.domNode, ".ActionButtonWrapper:mouseout", function(evt){
 				var t = evt.target;
-				if (!domClass.contains(evt.target,"ActionButtonWrapper")){
-					t=evt.target.parentNode;
+				if(!domClass.contains(evt.target, "ActionButtonWrapper")){
+					t = evt.target.parentNode;
 				}
-				domClass.remove(t,"depressed");
+				domClass.remove(t, "depressed");
 			});
 
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
@@ -205,27 +206,27 @@ define("p3/widget/ActionBar", [
 				var t = domConstruct.create("div", {innerHTML: opts.label, "class": "ActionButtonText"}, wrapper);
 			}
 
-			if (opts && opts.pressAndHold && typeof opts.pressAndHold=="function"){
-				var _self=this;
+			if(opts && opts.pressAndHold && typeof opts.pressAndHold == "function"){
+				var _self = this;
 				var timer;
-				on(wrapper,"mousedown", function(evt){
+				on(wrapper, "mousedown", function(evt){
 					// console.log("Handle Press MouseDownAction");
 
-					var cancelClick=false;
-	
+					var cancelClick = false;
+
 					timer = setTimeout(function(){
-						cancelClick=true;
+						cancelClick = true;
 						// console.log("Selection in ActionBar: ", _self.selection, _self);
-						opts.pressAndHold(_self.get("selection"),wrapper,opts,evt);
+						opts.pressAndHold(_self.get("selection"), wrapper, opts, evt);
 					}, 800)
 
 					on.once(wrapper, "click", function(clickEvt){
 						// console.log("Cancel Click: ", cancelClick)
-						if (timer){
+						if(timer){
 							clearTimeout(timer);
 						}
 
-						if (cancelClick){
+						if(cancelClick){
 							Event.stop(clickEvt)
 						}
 					});
