@@ -2,10 +2,12 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/topic", "dojo/when", "dojo/request", "dojo/dom-construct",
 	"dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
+	"./ContainerActionBar", "FileSaver",
 	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin", "./SelectionToGroup"
 ], function(declare, lang,
 			on, Topic, when, request, domConstruct,
 			popup, TooltipDialog, Dialog,
+			ContainerActionBar, saveAs,
 			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup){
 
 	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
@@ -26,6 +28,14 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel});
 	});
 
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
 	var downloadSelectionTT = new DownloadTooltipDialog({});
 	downloadSelectionTT.startup();
 
@@ -33,7 +43,6 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		gridCtor: ProteinFamiliesGrid,
 		containerType: "proteinfamily_data",
 		facetFields: [],
-		enableFilterPanel: false,
 		maxGenomeCount: 500,
 		showAutoFilterMessage: false,
 		constructor: function(options){
@@ -74,7 +83,19 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 
 			this._set("state", state);
 		},
-/*
+		createFilterPanel: function(opts){
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: lang.mixin({}, this.state),
+				enableAnchorButton: false,
+				currentContainerWidget: this
+			});
+		},
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -87,6 +108,33 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 					tooltipDialog: downloadTT
 				},
 				function(){
+
+					downloadTT.set("content", dfc);
+
+					on(downloadTT.domNode, "div:click", lang.hitch(this, function(evt){
+						var rel = evt.target.attributes.rel.value;
+						var DELIMITER, ext;
+						if(rel === 'text/csv'){
+							DELIMITER = ',';
+							ext = 'csv';
+						}else{
+							DELIMITER = '\t';
+							ext = 'txt';
+						}
+
+						var data  = this.grid.store.query("", {sort: this.grid.store.sort});
+
+						var headers = ["Family ID", "Proteins", "Genomes", "Description", "Min AA Length", "Max AA Length", "Mean", "Std Dev"];
+						var content = [];
+						data.forEach(function(row){
+							content.push([row.family_id, row.feature_count, row.genome_count, '"' + row.description + '"', row.aa_length_min, row.aa_length_max, row.aa_length_mean, row.aa_length_std].join(DELIMITER));
+						})
+
+						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'ProteinFamilies.' + ext);
+
+						popup.close(downloadTT);
+					}));
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -96,7 +144,6 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 				true
 			]
 		]),
-*/
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"DownloadSelection",

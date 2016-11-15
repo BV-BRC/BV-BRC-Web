@@ -24,7 +24,7 @@ define("p3/widget/GeneExpressionGridContainer", [
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
-	
+
 	var tgState = {
 		keyword: "",
 		upFold: 0,
@@ -86,7 +86,7 @@ define("p3/widget/GeneExpressionGridContainer", [
 			}
 			this.inherited(arguments);
 			this._set("state", this.get("state"));
-		 	//console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
+			//console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
