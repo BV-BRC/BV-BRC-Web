@@ -14,8 +14,7 @@ define([
 
 			this.canvas = d3.select(".chart")
 				.insert("svg", ":first-child")
-				.attr("preserveAspectRatio", "xMidYMid meet")
-				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
+				.attr("preserveAspectRatio", "xMidYMid meet");
 
 			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
@@ -29,13 +28,14 @@ define([
 			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
-			var pinStart = data.pinStart;
+			var pin = data.pin;
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
 			// allocate groups
 			var groups = [];
 			var overlapPadding = 100;
+			var canvasHeight;
 			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
@@ -65,6 +65,13 @@ define([
 			// console.log(data);
 			// console.log(groups);
 
+			if(groups.length > 2){
+				canvasHeight = 35 * groups.length;
+			} else {
+				canvasHeight = 70;
+			}
+			self.canvas.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " " + canvasHeight);
+
 			groups.forEach(function(g, gIdx){
 				// console.log(gIdx, g);
 
@@ -79,17 +86,17 @@ define([
 					.append("polyline")
 					.attr("points", function(d){
 						// console.log(d);
-						var start, middle, end, length;
+						var start, middle, end;
+						var length = self.x_scale(d.na_length);
+						var arrowHeadWidth = Math.min(length / 2, 12);
 
 						if(d.strand == '+'){
 							start = self.x_scale(d.start - data.firstStartPosition);
-							length = self.x_scale(d.na_length);
-							middle = start + length - 12;
+							middle = start + length - arrowHeadWidth;
 							end = start + length;
 						}else{
 							start = self.x_scale(d.end - data.firstStartPosition);
-							length = self.x_scale(d.na_length);
-							middle = start - length + 12;
+							middle = start - length + arrowHeadWidth;
 							end = start - length;
 						}
 
@@ -114,7 +121,7 @@ define([
 						return pos.join(" ");
 					})
 					.attr("fill", function(d){
-						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+						return (d.feature_id === pin) ? '#E53935' : '#1976D2';
 					})
 					.on("click", function(d){
 						var url = "/view/Feature/" + d.feature_id + "#view_tab=overview";
@@ -129,7 +136,7 @@ define([
 						(d.patric_id) ? content.push('PATRIC ID: ' + d.patric_id) : {};
 						(d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
-						content.push("Product: " + d.product);
+						(d.product) ? content.push("Product: " + d.product) : {};
 						content.push("Feature type: " + d.feature_type);
 						content.push("Location: " + d.start + "..." + d.end + " (" + d.na_length + " bp, "  + d.strand + ")");
 

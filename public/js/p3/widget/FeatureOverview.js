@@ -111,7 +111,7 @@ define([
 				}, this.externalLinkNode);
 			}
 		},
-				
+
 		_setSpecialPropertiesAttr: function(data){
 			domClass.remove(this.specialPropertiesNode.parentNode, "hidden");
 
@@ -123,75 +123,57 @@ define([
 						{label: "Source", field: "source",
 							renderCell: function(obj, val, node){
 								if(val){
-									var source = val;
-									var sourcelink = val;
-									switch(source){
+									var sourceLink;
+									switch(val){
 										case "PATRIC_VF":
-											sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(evidence,Literature))" target="_blank">' + source + '</a>';
-											break; 
-										case "Victors": 
-											sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + source + '</a>';
-											break;
+										case "Victors":
 										case "VFDB":
-											sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + source + '</a>';
-											break;
 										case "Human":
-											sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + source + '</a>';
-											break;
 										case "ARDB":
-											sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + source + '</a>';
-											break;
 										case "CARD":
-											sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + source + '</a>';
-											break;
 										case "DrugBank":
-											sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + source + '</a>';
-											break;
 										case "TTD":
-											sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + source + '</a>'; 
+											var url = formatter.getExternalLinks(val + "_HOME");
+											// console.log(val + "_HOME", url);
+											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
 										default:
 											break;
 									}
-									node.innerHTML = sourcelink;
+									node.innerHTML = sourceLink;
 								}
-							}										
+							}
 						},
 						{label: "Source ID", field: "source_id",
 							renderCell: function(obj, val, node){
 								if(val){
-									var source_id = val;
-									var sourcelink = val;
+									var sourceLink;
 									switch(obj.source){
 										case "PATRIC_VF":
-											sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + source_id  + '" target="_blank">' + source_id + '</a>';
-											break;
-										case "Victors": 
-											sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + source_id + '" target="_blank">' + source_id + '</a>';
-											break;
+										case "Victors":
 										case "VFDB":
-											sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + source_id + '" target="_blank">' + source_id + '</a>';
-											break;
 										case "Human":
-											sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + source_id + '" target="_blank">' + source_id + '</a>';
-											break;
 										case "ARDB":
-											sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + source_id + '" target="_blank">' + source_id + '</a>';
+										case "TTD":
+											var url = formatter.getExternalLinks(obj.source) + val;
+											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
+											break;
+
+										case "CARD":
+											sourceLink = val;
 											break;
 										case "DrugBank":
 											var padding = "BE0000000";
-											var id = padding.substring(0, padding.length-source_id.length) + source_id;
-											sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + source_id + '</a>';
-											break;
-										case "TTD":
-											sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + source_id + '" target="_blank">' + source_id + '</a>';
+											var paddedId = padding.substring(0, padding.length - val.length) + val;
+											var url = formatter.getExternalLinks(obj.source) + paddedId;
+											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
 										default:
 											break;
 									}
-									node.innerHTML = sourcelink;
+									node.innerHTML = sourceLink;
 								}
-							}																
+							}
 						},
 						{label: "Organism", field: "organism"},
 						{label: "PubMed", field: "pmid",
@@ -447,7 +429,7 @@ define([
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
 					features: data,
-					pinStart: this.feature.start
+					pin: this.feature.feature_id
 				});
 			}));
 
