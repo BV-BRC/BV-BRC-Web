@@ -17,6 +17,10 @@ define([
 		'<div class="kegg-map-legend-color-box blue"></div><div class="kegg-map-legend-label">Selected</div><div class="clear"></div>' +
 		'<div class="kegg-map-legend-color-box red"></div><div class="kegg-map-legend-label">Selected from EC table</div><div class="clear"></div>';
 
+	var legendTooltip = new TooltipDialog({
+		content: legend
+	});
+
 	// refer http://stackoverflow.com/questions/6150289/how-to-convert-image-into-base64-string-using-javascript
 	// source code from https://gist.github.com/HaNdTriX/7704632
 	// modified callback caller to return img size.
@@ -63,14 +67,14 @@ define([
 			[
 				"Legend",
 				"fa icon-bars fa-2x",
-				{label: "Legend", multiple: false, validTypes: ["*"]},
+				{
+					label: "Legend",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Show Legend",
+					tooltipDialog: legendTooltip
+				},
 				function(){
-					if(this.containerActionBar._actions.Legend.options.tooltipDialog == null){
-						this.tooltip_legend = new TooltipDialog({
-							content: legend
-						});
-						this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
-					}
 
 					if(this.isPopupOpen){
 						this.isPopupOpen = false;
@@ -83,6 +87,19 @@ define([
 							orient: ["below"]
 						});
 						this.isPopupOpen = true;
+						this.legend_btn_close = false;
+					}
+
+					// close when mouseout on the legend button.
+					if(!this.legend_btn_listen){
+						if(!this.legend_btn_close){
+							on(this.containerActionBar._actions.Legend.button, "mouseout", lang.hitch(this, function(evt){
+								this.isPopupOpen = false;
+								popup.close();
+							}));
+							this.legend_btn_close = true;
+						}
+						this.legend_btn_listen = true;
 					}
 				},
 				true
