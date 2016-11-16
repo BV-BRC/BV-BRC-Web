@@ -140,7 +140,6 @@ return declare("dojo.store.Memory", base, {
 		//	...or find all items where "even" is true:
 		//
 		//	|	var results = store.query({ even: true });
-		console.log("Do MemoryStore query: ", query, options);
 		return QueryResults(this.queryEngine(query, options)(this.data));
 	},
 	setData: function(data){
