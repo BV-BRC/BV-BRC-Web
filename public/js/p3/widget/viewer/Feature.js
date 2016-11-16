@@ -150,8 +150,8 @@ define([
 				var out = visibleIndexes.map(function(idx){
 						return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
 					});
-
-				this.queryNode.innerHTML = out.join(" &raquo; ");
+				this.queryNode.innerHTML = out.join(" &raquo; ") + " &raquo; " + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', {feature: feature});
+				//this.queryNode.innerHTML = out.join(" &raquo; ");
 			}));
 
 			var content = [];

@@ -430,7 +430,7 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 
 			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
-
+				// console.log("UpdateFilterCategory: ", evt);
 				if(evt.category == "keywords"){
 					if(evt.value && (evt.value.charAt(0) == '"')){
 						this._filterKeywords = [evt.value]
@@ -480,6 +480,9 @@ define([
 					}, this);
 				}
 
+				// console.log("fkws: ", fkws);
+
+
 				if(fkws.length < 1){
 					fkws = false;
 				}else if(fkws.length == 1){
@@ -500,15 +503,27 @@ define([
 					if(fkws){
 						// console.log("Build Filter with Keywords")
 						// console.log("Filter: ","and("+ this._filter[cats[0]] + "," + fkws + ")")
-						filter = "and(" + this._filter[cats[0]] + "," + fkws + ")"
+						filter = "and(" + this._filter[cats[0]] + "," + fkws + ")";
 					}else{
-						filter = this._filter[cats[0]];
+						if (this._filter[cats[0]] instanceof Array){
+							filter = "or(" + this._filter[cats[0]].join(",") + ")";
+						}else{
+							filter = this._filter[cats[0]];
+						}
 					}
 				}else{
 					// console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
 					var inner = cats.map(function(c){
-						return this._filter[c]
+						// console.log(" Returning _filter[c]:", c,  this._filter[c])
+						if (this._filter[c] instanceof Array){
+							return "or(" + this._filter[c].join(",") + ")"
+						}else{
+							return this._filter[c]
+						}
 					}, this).join(",");
+
+					// console.log("inner: ", inner);
+
 					if(this._filterKeywords){
 						filter = "and(" + inner + "," + fkws + ")"
 					}else{

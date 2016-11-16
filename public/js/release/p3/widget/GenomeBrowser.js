@@ -17,7 +17,9 @@ define("p3/widget/GenomeBrowser", [
 	"JBrowse/Util",
 	'JBrowse/View/InfoDialog',
 	'JBrowse/View/FileDialog',
-	'JBrowse/GenomeView'
+	'JBrowse/GenomeView',
+    './DataItemFormatter',
+    'dijit/Dialog'
 ], function(declare, WidgetBase, JBrowser,
 			domConstruct, lang, domGeometry,
 			domStyle, array,
@@ -36,8 +38,18 @@ define("p3/widget/GenomeBrowser", [
 			Util,
 			InfoDialog,
 			FileDialog,
-			GenomeView){
+			GenomeView,DataItemFormatter,
+            Dialog){
+    window.featureDialogContent=function(feature){
+        var content = DataItemFormatter(feature.data,"feature_data",{linkTitle:true});
+        if (!window.featureDialog){
+            window.featureDialog = new Dialog({title: "Feature Summary"});
+        }
 
+        window.featureDialog.set("content", content);
+        window.featureDialog.show();
+
+    };
 	var Browser = declare([JBrowser], {
 		tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 		makeFullViewLink: function(){
@@ -48,6 +60,7 @@ define("p3/widget/GenomeBrowser", [
 			var thisB = this;
 			var navbox = dojo.create('div', {
 				"class": "navbox",
+                "id": "navbox",
 				style: {'text-align': 'center', "position": "relative"}
 			}, parent);
 
@@ -298,21 +311,21 @@ define("p3/widget/GenomeBrowser", [
 			return navbox;
 		},
 
-        regularizeReferenceName: function( refname ) {
+		regularizeReferenceName: function(refname){
 
-            if( this.config.exactReferenceSequenceNames )
-                return refname;
+			if(this.config.exactReferenceSequenceNames)
+				return refname;
 
-            refname = refname.toLowerCase()
-                            .replace(/^chro?m?(osome)?/,'chr')
-                            .replace(/^co?n?ti?g/,'ctg')
-                            .replace(/^scaff?o?l?d?/,'scaffold')
-                            .replace(/^([a-z]*)0+/,'$1')
-                            .replace(/^(\d+)$/, 'chr$1' )
-                            .replace(/^accn\|/,'');
+			refname = refname.toLowerCase()
+				.replace(/^chro?m?(osome)?/, 'chr')
+				.replace(/^co?n?ti?g/, 'ctg')
+				.replace(/^scaff?o?l?d?/, 'scaffold')
+				.replace(/^([a-z]*)0+/, '$1')
+				.replace(/^(\d+)$/, 'chr$1')
+				.replace(/^accn\|/, '');
 
-            return refname;
-        },
+			return refname;
+		},
 
 		initView: function(){
 			var thisObj = this;
@@ -557,24 +570,23 @@ define("p3/widget/GenomeBrowser", [
 			});
 		},
 
-
-		_initialLocation: function() {
-		    var oldLocMap = dojo.fromJson( this.cookie('location') ) || {};
-		    if( this.config.location ) {
-		        return this.config.location;
-		    } else if( this.refSeq && this.refSeq.name && oldLocMap[this.refSeq.name] ) {
-		        return oldLocMap[this.refSeq.name].l || oldLocMap[this.refSeq.name];
-		    } else if( this.config.defaultLocation ){
-		        return this.config.defaultLocation;
-		    } else if (this.refSeq){
-		        return Util.assembleLocString({
-		                                          ref:   this.refSeq.name,
-		                                          start: 0.4 * ( this.refSeq.start + this.refSeq.end ),
-		                                          end:   0.6 * ( this.refSeq.start + this.refSeq.end )
-		                                      });
-		    }else{
-		    	console.error("Problem Establishing JBrowse _initialLocation")
-		    }
+		_initialLocation: function(){
+			var oldLocMap = dojo.fromJson(this.cookie('location')) || {};
+			if(this.config.location){
+				return this.config.location;
+			}else if(this.refSeq && this.refSeq.name && oldLocMap[this.refSeq.name]){
+				return oldLocMap[this.refSeq.name].l || oldLocMap[this.refSeq.name];
+			}else if(this.config.defaultLocation){
+				return this.config.defaultLocation;
+			}else if(this.refSeq){
+				return Util.assembleLocString({
+					ref: this.refSeq.name,
+					start: 0.4 * ( this.refSeq.start + this.refSeq.end ),
+					end: 0.6 * ( this.refSeq.start + this.refSeq.end )
+				});
+			}else{
+				console.error("Problem Establishing JBrowse _initialLocation")
+			}
 		},
 		makeGlobalMenu: function(menuName){
 			var items = ( this._globalMenuItems || {} )[menuName] || [];
@@ -640,21 +652,21 @@ define("p3/widget/GenomeBrowser", [
 
 				console.log("refSeqs url: ", this.config.refSeqs.url)
 				request(this.config.refSeqs.url, {handleAs: 'text'})
-					.then(lang.hitch(this,function(o){
-                            var refseqConfig = dojo.fromJson(o);
-                            if (refseqConfig.length > 0 && !("defaultLocation" in this.config)){
-                                var initSize = Math.min(100000,refseqConfig[0]["length"]);
-                                this.config["defaultLocation"]=refseqConfig[0]["accn"]+":1.."+initSize.toString();
-                            }
+					.then(lang.hitch(this, function(o){
+							var refseqConfig = dojo.fromJson(o);
+							if(refseqConfig.length > 0 && !("defaultLocation" in this.config)){
+								var initSize = Math.min(100000, refseqConfig[0]["length"]);
+								this.config["defaultLocation"] = refseqConfig[0]["accn"] + ":1.." + initSize.toString();
+							}
 
-                            refseqConfig.forEach(function(seq){
-                                if(seq["seqChunkSize"] > 20000){
-                                    seq["seqChunkSize"] = 20000;
-                                }
-                            });
+							refseqConfig.forEach(function(seq){
+								if(seq["seqChunkSize"] > 20000){
+									seq["seqChunkSize"] = 20000;
+								}
+							});
 
 							console.log(" call addREfseqs fromJson: ", o);
-							if (refseqConfig && refseqConfig.length>0){
+							if(refseqConfig && refseqConfig.length > 0){
 								console.log(" call addREfseqs fromJson: ", o);
 								thisB.addRefseqs(refseqConfig);
 								//thisB.addRefseqs(dojo.fromJson(o));
@@ -818,38 +830,37 @@ define("p3/widget/GenomeBrowser", [
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeBrowser onSetState: ", state, state.genome_id, state.genome_ids)
 
-            //hack for now
-            if(state && state.hashParams){
-                Object.keys(state.hashParams).forEach(function(attr){
-                    state.hashParams[attr]=decodeURIComponent(state.hashParams[attr]);
-                });
-            }
+			//hack for now
+			if(state && state.hashParams){
+				Object.keys(state.hashParams).forEach(function(attr){
+					state.hashParams[attr] = decodeURIComponent(state.hashParams[attr]);
+				});
+			}
 
-            if (!state){
-            	return;
-            }
+			if(!state){
+				return;
+			}
 
-            var location;
-            if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + Math.max(0,parseInt(state.feature.start)-3000) + ".." + (parseInt(state.feature.end)+3000);
-                state.hashParams.highlight = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
-            }
+			var location;
+			if(state.feature){
+				state.hashParams.loc = state.feature.accession + ":" + Math.max(0, parseInt(state.feature.start) - 3000) + ".." + (parseInt(state.feature.end) + 3000);
+				state.hashParams.highlight = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
+			}
 
-            var dataRoot;
+			var dataRoot;
 
+			if(state.feature && state.feature.genome_id){
+				dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
+			}else if(state.genome_id){
+				dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_id;
+			}else if(state.genome_ids && state.genome_ids[0]){
+				dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_ids[0];
+			}else{
+				console.log("No genome ID Supplied for Genome Browser");
+				return;
+			}
 
-            if (state.feature && state.feature.genome_id){
-            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
-            }else if (state.genome_id){
-            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_id;
-            }else if (state.genome_ids && state.genome_ids[0]){
-            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_ids[0];
-            }else{
-            	console.log("No genome ID Supplied for Genome Browser");
-            	return;
-            }
-
-            // console.log("JBROWSE LOC: ", state.hashParams.loc);
+			// console.log("JBROWSE LOC: ", state.hashParams.loc);
 
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
@@ -858,13 +869,16 @@ define("p3/widget/GenomeBrowser", [
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
-                //plugins: ["HideTrackLabels"],
-				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken)?("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)):""),
+				//plugins: ["HideTrackLabels"],
+				refSeqs: "{dataRoot}/refseqs" + ((window.App.authorizationToken) ? ("?http_authorization=" + encodeURIComponent(window.App.authorizationToken)) : ""),
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
-				alwaysOnTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+				//defaultTracks: ["SequenceTrack"].join(","),
+                forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+                highResoutionMode: "auto",
+				//alwaysOnTracks: [,"PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
+                plugins: [ 'HideTrackLabels'],
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
 				show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined')) ? state.hashParams.show_overview : true,
