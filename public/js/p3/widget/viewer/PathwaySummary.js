@@ -1,14 +1,15 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/dom-construct", "dojo/topic",
-	"dijit/layout/ContentPane",
+	"dijit/layout/ContentPane", "dojox/widget/Standby",
 	"./Base", "../PathwaySummaryGridContainer"
 ], function(declare, lang, domConstruct, Topic,
-			ContentPane,
+			ContentPane, Standby,
 			ViewerBase, GridContainer){
 	return declare([ViewerBase], {
 		"disabled": false,
 		"query": null,
 		apiServiceUrl: window.App.dataAPI,
+		loadingMask: null,
 
 		onSetState: function(attr, oldVal, state){
 			// console.log("PathwaySummary onSetState", state);
@@ -43,6 +44,12 @@ define([
 					case "updateHeader":
 						this.totalCountNode.innerHTML = lang.replace('Out of {summary.total} genes selected, {summary.found} genes found in {summary.pathways} pathways', {summary: value});
 						break;
+					case "showLoadingMask":
+						this.loadingMask.show();
+						break;
+					case "hideLoadingMask":
+						this.loadingMask.hide();
+						break;
 					default:
 						break;
 				}
@@ -53,6 +60,14 @@ define([
 			if(!this.state){
 				this.state = {};
 			}
+
+			this.loadingMask = new Standby({
+				target: this.id,
+				image: "/public/js/p3/resources/images/spin.svg",
+				color: "#efefef"
+			});
+			this.addChild(this.loadingMask);
+			this.loadingMask.startup();
 
 			this.inherited(arguments);
 
