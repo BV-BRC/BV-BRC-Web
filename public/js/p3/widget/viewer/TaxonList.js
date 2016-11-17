@@ -14,7 +14,7 @@ define([
 		"query": null,
 		paramsMap: "query",
 		defaultTab: "taxons",
-		total_taxons: 0,
+		total_taxons: null,
 		perspectiveLabel: "Taxon List View",
 		perspectiveIconClass: "icon-selection-Taxonomy",
 		warningContent: 'Your query returned too many results for detailed analysis.',
@@ -33,7 +33,7 @@ define([
 
 			var url = PathJoin(this.apiServiceUrl, "taxonomy", "?" + (this.query) + "&gt(genomes,1)" + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
 
-			// console.log("url: ", url);
+			 console.log("taxonomy query url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -42,15 +42,13 @@ define([
 				},
 				handleAs: "json"
 			}).then(function(res){
-				// console.log(" URL: ", url);
-				// console.log("Get GenomeList Res: ", res);
-				if(res && res.response && res.response.docs){
+
+				if(res && res.response && res.response.docs && (res.response.docs.length>0)){
 					var features = res.response.docs;
-					if(features){
-						_self._set("total_taxons", res.response.numFound);
-					}
+					_self.set("total_taxons", features?res.response.numFound:0);
+			
 				}else{
-					console.warn("Invalid Response for: ", url);
+					_self.set("total_taxons", 0);
 				}
 			}, function(err){
 				console.error("Error Retreiving Genomes: ", err);
@@ -113,9 +111,8 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-
-			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.watch("total_taxons", lang.hitch(this, "onSetTotalTaxons"));
+			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.taxons = new TaxonGridContainer({
 				title: "Taxons",
 				id: this.viewer.id + "_" + "taxons",
@@ -125,8 +122,9 @@ define([
 			this.viewer.addChild(this.taxons);
 		},
 		onSetTotalTaxons: function(attr, oldVal, newVal){
-			// console.log("ON SET TOTAL TAXONS: ", newVal);
-			this.totalCountNode.innerHTML = " ( " + newVal + " Taxons) ";
+			console.log("ON SET TOTAL TAXONS: ", newVal);
+
+			this.totalCountNode.innerHTML = " ( " + newVal +  " Taxa ) ";
 		},
 		hideWarning: function(){
 			if(this.warningPanel){
