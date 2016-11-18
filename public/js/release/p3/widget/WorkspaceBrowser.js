@@ -20,7 +20,7 @@ define("p3/widget/WorkspaceBrowser", [
 		disabled: false,
 		path: "/",
 		gutters: false,
-		navigableTypes: ["parentfolder", "folder", "genome_group", "feature_group", "job_result", "experiment_group", "experiment", "unspecified", "contigs", "reads", "model"],
+		navigableTypes: ["parentfolder", "folder", "job_result", "experiment_group", "experiment", "unspecified", "contigs", "reads", "model"],
 		design: "sidebar",
 		splitter: false,
 		startup: function(){

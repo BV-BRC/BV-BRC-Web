@@ -15,11 +15,11 @@ define("p3/widget/GeneExpressionGrid", [
 		store: null,
 		state: null,
 		dataModel: "gene_expression_data",
-		primaryKey: "pid",
+		primaryKey: "id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			//"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({}),
 			pid: {label: "pid", field: "pid", hidden: true},
 			feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true},
