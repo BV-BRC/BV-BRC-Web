@@ -351,13 +351,13 @@ define([
 				sortable: false
 			},
 			date_inserted: {
-				label: 'Index Date',
+				label: 'Date Inserted',
 				field: 'date_inserted',
 				hidden: true,
 				formatter: formatter.dateOnly
 			},
 			date_modified: {
-				label: 'Last Index Date',
+				label: 'Date Modified',
 				field: 'date_modified',
 				hidden: true,
 				formatter: formatter.dateOnly
