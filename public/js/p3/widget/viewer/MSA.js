@@ -291,6 +291,11 @@ define([
 				seqs: msa.io.clustal.parse(this.dataStats.clustal)
 			};
 
+            var rearrangeSeqs={};
+            msa_models.seqs.forEach(lang.hitch(this, function(s){
+                rearrangeSeqs[s.name]=s;
+            }));
+
 			var opts = {};
 			// set your custom properties
 			// @see: https://github.com/greenify/biojs-vis-msa/tree/master/src/g
@@ -321,8 +326,6 @@ define([
 				rowHeight: 14.04
 			};
 
-			// init msa
-			var m = new msa.msa(opts);
 
 			this.tree = new d3Tree({selectionTarget: this});
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
@@ -340,6 +343,16 @@ define([
 			this.tree.selectLabels("Organism Names");
 			this.tree.update();
 
+            for Object.keys(this.rearrangeSeqs).forEach(lang.hitch(this,function(fid){
+                this.rearrangeSeqs[fid]["py"]=this.tree.idToHeight[fid];
+            }));
+            this.msa_models.seqs.sort(function(a, b) {
+                return a.py - b.py;
+            });
+
+
+			// init msa
+			var m = new msa.msa(opts);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
