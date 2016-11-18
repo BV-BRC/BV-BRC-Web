@@ -36,6 +36,7 @@ define([
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
 			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: true},
+			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
 			annotation: {label: "Annotation", field: "annotation", hidden: true},
 			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
@@ -43,12 +44,11 @@ define([
 			end: {label: "End", field: "end", hidden: true},
 			na_length: {label: "Length (NT)", field: "na_length", hidden: true},
 			strand: {label: "Strand", field: "strand", hidden: true},
-			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
 			figfam: {label: "FIGfam ID", field: "figfam_id", hidden: true},
 			plfam: {label: "PATRIC Local family", field: "plfam_id"},
 			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
+			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
 			aa_length: {label: "Length (AA)", field: "aa_length", hidden: true},
-			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
 		_setQuery: function(query){

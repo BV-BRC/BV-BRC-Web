@@ -26,6 +26,7 @@ define([
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
 			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: true},
 			source_id: {label: "Source ID", field: "source_id", hidden: false},
+			source_org: {label: "Source Organism", field: "organism", hidden: true},
 			gene: {label: "Gene", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
 			"function": {label: "Function", field: "function", hidden: true},
