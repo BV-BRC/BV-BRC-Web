@@ -343,12 +343,13 @@ define([
 			this.tree.selectLabels("Organism Names");
 			this.tree.update();
 
-            for Object.keys(this.rearrangeSeqs).forEach(lang.hitch(this,function(fid){
-                this.rearrangeSeqs[fid]["py"]=this.tree.idToHeight[fid];
+            Object.keys(rearrangeSeqs).forEach(lang.hitch(this,function(fid){
+                rearrangeSeqs[fid]["py"]=this.tree.idToHeight[fid];
             }));
-            this.msa_models.seqs.sort(function(a, b) {
+            msa_models.seqs.sort(function(a, b) {
                 return a.py - b.py;
             });
+
 
 
 			// init msa
