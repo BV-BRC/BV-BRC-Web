@@ -431,6 +431,7 @@ define("p3/widget/FeatureOverview", [
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
 					features: data,
+					accession: this.feature.accession,
 					pin: this.feature.feature_id
 				});
 			}));

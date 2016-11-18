@@ -25,17 +25,19 @@ define("p3/widget/D3SingleGeneViewer", [
 			}
 		},
 		render: function(data){
-			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
 			var pin = data.pin;
 
-			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
+			var canvasHeight, canvasWidth = this.nodeWidth - 10;
+			var trackHeight = 29;
+
+			var x_scale = d3.scale.linear().range([0, canvasWidth]).domain([0, totalRange]);
 
 			// allocate groups
 			var groups = [];
 			var overlapPadding = 100;
-			var canvasHeight;
+
 			groups.push({m: [], max: 0});
 
 			data['features'].forEach(function(d){
@@ -65,19 +67,44 @@ define("p3/widget/D3SingleGeneViewer", [
 			// console.log(data);
 			// console.log(groups);
 
-			if(groups.length > 2){
-				canvasHeight = 35 * groups.length;
-			} else {
-				canvasHeight = 70;
-			}
-			self.canvas.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " " + canvasHeight);
+			canvasHeight = 20 + trackHeight * (groups.length + 1);
+
+			// add 10px padding for viewBox
+			this.canvas.attr("viewBox", "-10 0 " + (this.nodeWidth + 10) + " " + canvasHeight);
+
+			this.canvas.append("g")
+				.attr("transform", "translate(0, 20)")
+				.attr("class", "track")
+				.append("polyline")
+				.attr("points", function(){
+					return lang.replace("0 -3 0 3 0 0 {0} 0 {0} 3 {0} -3", [canvasWidth])
+				})
+				.attr("fill", "none")
+				.attr("stroke", "black");
+
+			this.canvas.select("g.track")
+				.append("text")
+				.text(data.firstStartPosition)
+				.attr("x", 0)
+				.attr("y", -7);
+
+			this.canvas.select("g.track")
+				.append("text")
+				.text(data.lastEndPosition)
+				.attr("x", (canvasWidth) - ("" + data.lastEndPosition).length * 7)
+				.attr("y", -7);
+
+			this.canvas.select("g.track")
+				.append("text")
+				.text(data.accession)
+				.attr("x", (canvasWidth/2) - (data.accession.length * 7)/2)
+				.attr("y", -7);
 
 			groups.forEach(function(g, gIdx){
-				// console.log(gIdx, g);
 
-				self.canvas.append("g")
+				this.canvas.append("g")
 					.attr("transform", function(){
-						return "translate(0, " + (30 + gIdx * 30) + ")";
+						return "translate(0, " + (20 + (gIdx + 1) * trackHeight) + ")";
 					})
 					.attr("class", "g" + gIdx)
 					.selectAll("g")
@@ -87,36 +114,36 @@ define("p3/widget/D3SingleGeneViewer", [
 					.attr("points", function(d){
 						// console.log(d);
 						var start, middle, end;
-						var length = self.x_scale(d.na_length);
-						var arrowHeadWidth = Math.min(length / 2, 12);
+						var length = x_scale(d.na_length);
+						var arrowHeadWidth = Math.min(length / 2, 8);
 
 						if(d.strand == '+'){
-							start = self.x_scale(d.start - data.firstStartPosition);
+							start = x_scale(d.start - data.firstStartPosition);
 							middle = start + length - arrowHeadWidth;
 							end = start + length;
 						}else{
-							start = self.x_scale(d.end - data.firstStartPosition);
+							start = x_scale(d.end - data.firstStartPosition);
 							middle = start - length + arrowHeadWidth;
 							end = start - length;
 						}
 
 						var pos = [];
 						pos.push(start);
-						pos.push(-6);
+						pos.push(-4);
 						pos.push(start);
-						pos.push(6);
+						pos.push(4);
 						pos.push(middle);
-						pos.push(6);
+						pos.push(4);
 						pos.push(middle);
-						pos.push(11);
+						pos.push(7);
 						pos.push(end);
 						pos.push(0);
 						pos.push(middle);
-						pos.push(-11);
+						pos.push(-7);
 						pos.push(middle);
-						pos.push(-6);
+						pos.push(-4);
 						pos.push(start);
-						pos.push(-6);
+						pos.push(-4);
 
 						return pos.join(" ");
 					})
@@ -127,8 +154,8 @@ define("p3/widget/D3SingleGeneViewer", [
 						var url = "/view/Feature/" + d.feature_id + "#view_tab=overview";
 						Topic.publish("/navigate", {href: url});
 					})
-					.on("mouseover", function(d){
-						self.tooltipLayer.transition()
+					.on("mouseover", lang.hitch(this, function(d){
+						this.tooltipLayer.transition()
 							.duration(200)
 							.style("opacity", .95);
 
@@ -138,19 +165,19 @@ define("p3/widget/D3SingleGeneViewer", [
 						(d.gene) ? content.push('Gene: ' + d.gene) : {};
 						(d.product) ? content.push("Product: " + d.product) : {};
 						content.push("Feature type: " + d.feature_type);
-						content.push("Location: " + d.start + "..." + d.end + " (" + d.na_length + " bp, "  + d.strand + ")");
+						content.push("Location: " + d.start + "..." + d.end + " (" + d.na_length + " bp, " + d.strand + ")");
 
-						self.tooltipLayer.html(content.join("<br/>"))
+						this.tooltipLayer.html(content.join("<br/>"))
 							.style("left", d3.event.pageX + "px")
 							.style("top", d3.event.pageY + "px")
-					})
-					.on("mouseout", function(){
-						self.tooltipLayer.transition()
+					}))
+					.on("mouseout", lang.hitch(this, function(){
+						this.tooltipLayer.transition()
 							.duration(500)
 							.style("opacity", 0)
-					});
+					}));
 
-				self.canvas.select("g.g" + gIdx)
+				this.canvas.select("g.g" + gIdx)
 					.selectAll("text")
 					.data(g.m)
 					.enter()
@@ -160,11 +187,10 @@ define("p3/widget/D3SingleGeneViewer", [
 					})
 					.attr("y", -9)
 					.attr("x", function(d){
-						// console.log(self.x_scale(d.start - data.firstStartPosition + d.na_length / 2));
-						return self.x_scale(d.start - data.firstStartPosition + d.na_length / 2) - 15;
+						return x_scale(d.start - data.firstStartPosition + d.na_length / 2) - 15;
 					});
 
-			});
+			}, this);
 		}
 	});
 });
