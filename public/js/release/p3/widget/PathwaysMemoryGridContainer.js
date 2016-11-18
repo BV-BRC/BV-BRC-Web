@@ -1,12 +1,12 @@
 define("p3/widget/PathwaysMemoryGridContainer", [
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog", "./FilterContainerActionBar",
+	"dijit/TooltipDialog", "./FilterContainerActionBar", "FileSaver",
 	"dojo/_base/lang", "dojo/dom-construct", "./PerspectiveToolTip"
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,
-			TooltipDialog, ContainerActionBar,
+			TooltipDialog, ContainerActionBar, saveAs,
 			lang, domConstruct, PerspectiveToolTipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
@@ -16,24 +16,36 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 		}
 	});
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
+	on(downloadTT.domNode, "div:click", lang.hitch(function(evt){
 		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		var data = downloadTT.get("data");
+		var headers = downloadTT.get("headers");
+		// console.log(data, headers);
+
+		var DELIMITER, ext;
+		if(rel === 'text/csv'){
+			DELIMITER = ',';
+			ext = 'csv';
+		}else{
+			DELIMITER = '\t';
+			ext = 'txt';
+		}
+
+		var content = data.map(function(d){
+			return d.join(DELIMITER);
+		});
+
+		saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'Pathways.' + ext);
+
 		popup.close(downloadTT);
-	});
+	}));
 
 	return declare([GridContainer], {
 		gridCtor: PathwaysGrid,
@@ -122,7 +134,59 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 				}
 			}));
 		},
+		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"DownloadTable",
+				"fa icon-download fa-2x",
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(){
 
+					downloadTT.set("content", dfc);
+
+					var data = this.grid.store.query("", {});
+					var headers, content = [];
+
+					switch(this.type){
+						case "pathway":
+							headers = ["Pathway ID", "Pathway Name", "Pathway Class", "Annotation", "Unique Genome Count", "Unique Gene Count", "Unique EC Count", "EC Conservation", "Gene Conservation"];
+							data.forEach(function(row){
+								content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.genome_count, row.gene_count, row.ec_count, row.ec_cons, row.gene_cons]);
+							});
+							break;
+						case "ec_number":
+							headers = ["Pathway ID", "Pathway Name", "Pathway Class", "Annotation", "EC Number", "Description", "Genome Count", "Unique Gene Count"];
+							data.forEach(function(row){
+								content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.ec_number, JSON.stringify(row.ec_description), row.genome_count, row.gene_count]);
+							});
+							break;
+						case "gene":
+							headers = ["Genome Name", "Accession", "PATRIC ID", "Refseq Locus Tag", "Alt Locus Tag", "Gene", "Product", "Annotation", "Pathway Name", "EC Description"];
+							data.forEach(function(row){
+								content.push([row.genome_name, row.accession, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, JSON.stringify(row.product), row.annotation, JSON.stringify(row.pathway_name), JSON.stringify(row.ec_description)]);
+							});
+							break;
+						default:
+							break;
+					}
+
+					downloadTT.set("data", content);
+					downloadTT.set("headers", headers);
+
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				true
+			]
+		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFeatureItem",

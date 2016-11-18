@@ -24,6 +24,11 @@ define("p3/widget/GenomeGrid", [
 				field: 'public',
 				hidden: true
 			},
+			reference_genome: {
+				label: 'Reference',
+				field: 'reference_genome',
+				hidden: true
+			},
 			genome_name: {
 				label: 'Genome Name',
 				field: 'genome_name'

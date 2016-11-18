@@ -169,7 +169,7 @@ define([
 		},
 
 		formatgenome_feature: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score",'">Genome Features&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score",'">Genomic Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
@@ -179,6 +179,10 @@ define([
 				out.push("<div class='resultInfo'>" + doc.genome_name +  "</div>");
 
 				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
+
+				if (doc.patric_id){
+					out.push("&nbsp;|&nbsp;" + doc.patric_id);					
+				}
 
 				if (doc.refseq_locus_tag){
 					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);					
