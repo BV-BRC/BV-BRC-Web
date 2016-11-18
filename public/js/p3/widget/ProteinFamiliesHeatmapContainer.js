@@ -133,12 +133,12 @@ define([
 				function(){
 
 					// dialog for anchoring
-					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
+					// if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
 						this.tooltip_anchoring = new TooltipDialog({
 							content: this._buildPanelAnchoring()
 						});
 						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
-					}
+					// }
 
 					if(this.isPopupOpen){
 						this.isPopupOpen = false;
