@@ -109,7 +109,11 @@ define("p3/widget/DownloadTooltipDialog", [
 				var io = [];
 
 				keys.forEach(function(key){
-					io.push('"' + obj[key] + '"');
+					if (obj[key] instanceof Array){
+						io.push(obj[key].join(";"));
+					}else{
+						io.push(obj[key]);
+					}
 				})
 
 				out.push(io.join(","));
@@ -132,7 +136,11 @@ define("p3/widget/DownloadTooltipDialog", [
 				var io = [];
 
 				keys.forEach(function(key){
-					io.push('"' + obj[key] + '"');
+					if (obj[key] instanceof Array){
+						io.push(obj[key].join(";"));
+					}else{
+						io.push(obj[key]);
+					}
 				})
 
 				out.push(io.join("\t"));
@@ -252,7 +260,7 @@ define("p3/widget/DownloadTooltipDialog", [
 			},
 			"gene_expression_data": {
 				dataType: "transcriptomics_gene",
-				pk: "pid",
+				pk: "id",
 				"label": "Gene Expression",
 				tableData: true
 			},
