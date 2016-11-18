@@ -164,7 +164,7 @@ define("p3/widget/DataItemFormatter", [
 			section['Summary'] = [{
 				name: 'RefSeq Locus Tag',
 				text: 'refseq_locus_tag',
-				link: 'http://www.ncbi.nlm.nih.gov/gene/?term=',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
 				mini: true
 			},{
 				name: 'Gene Symbol',
