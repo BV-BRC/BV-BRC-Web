@@ -1,18 +1,14 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/request", "dojo/on", "dojo/store/Memory",
-	"dojo/query", "dojo/dom-class", "dojo/dom-construct",
+	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
-	"dojox/widget/Standby",
-	"../GridContainer", "../Grid", "../GridSelector", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
+	"../viewer/Blast", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
-			xhr, on, Memory,
-			query, domClass, domConstruct,
+			on, query, domClass, domConstruct,
 			WidgetBase, Templated, WidgetsInTemplate,
 			Template, FormMixin,
-			Standby,
-			GridContainer, Grid, selector, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
+			BlastResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
 	var NA = "nucleotide", AA = "protein";
 
@@ -100,7 +96,12 @@ define([
 				this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
 			}));
 
-			this.buildResultContainer();
+			this.result = new BlastResultContainer({
+				id: this.id + "_blastResult",
+				style: "min-height: 500px; visibility:hidden;"
+			});
+			this.result.placeAt(query(".blast_result")[0]);
+			this.result.startup();
 		},
 		toggleAdvanced: function(flag){
 			if(flag){
@@ -152,12 +153,15 @@ define([
 			var evalue = this.evalue.get('value');
 			var max_hits = parseInt(this.max_hits.get('value'));
 			var def = new Deferred();
+			var resultType;
 
 			if(useDatabase){
 				if(!sequence){
 					this.sequence_message.innerHTML = "Sequence is empty";
 					return;
 				}
+
+				resultType = database.split(".")[1] == "fna" ? "genome_sequence" : "genome_feature";
 
 				var q = {
 					method: "HomologyService.blast_fasta_to_database",
@@ -168,6 +172,7 @@ define([
 				// blast against genomes/groups/taxon
 				var genomeIds = [];
 				var search_for = this.search_for.get('value');
+				resultType = search_for == "contigs" ? "genome_sequence" : "genome_feature";
 
 				switch(database){
 					case "selGenome":
@@ -232,7 +237,7 @@ define([
 			}
 
 			//
-			_self.loadingMask.show();
+			_self.result.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
 			domClass.add(query(".blast_form")[0], "hidden");
 			domClass.add(query(".blast_error")[0], "hidden");
@@ -244,74 +249,7 @@ define([
 			// return;
 
 			def.promise.then(function(q){
-
-				var q = lang.mixin(q, {
-					version: "1.1",
-					id: String(Math.random()).slice(2)
-				});
-
-				// console.log(q);
-
-				xhr.post("https://p3.theseed.org/services/homology_service", {
-					headers: {
-						'Authorization': (window.App.authorizationToken || ""),
-						"Accept": "application/json"
-					},
-					handleAs: "json",
-					data: JSON.stringify(q)
-				}).then(function(res){
-
-					if((res['result'][0][0].report.results.search.hits).length == 0){
-						_self.buildNoResultMessage();
-						return;
-					}
-
-					// console.log(res);
-					var resultIds = Object.keys(res['result'][1]);
-					var resultIdType = resultIds[0].split('|')[0] === "fig" ? "genome_feature" : "genome_sequence";
-
-					var resultIdField = resultIdType === "genome_feature" ? "patric_id" : "sequence_id";
-					var fl;
-					if(resultIdType == "genome_sequence"){
-						resultIds = resultIds.map(function(d){
-							return d.replace('accn|', '');
-						});
-						fl = "genome_id,genome_name,taxon_id,sequence_id,accession"
-					}else{
-						fl = "feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,gi,taxon_id,accession,start,end,strand,location,na_length,na_sequence,aa_length,aa_sequence"
-					}
-
-					xhr.post(window.App.dataAPI + resultIdType + '/', {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/json",
-							'Content-Type': "application/solrquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': (window.App.authorizationToken || "")
-						},
-						data: {
-							q: resultIdField + ":(" + resultIds.join(' OR ') + ")",
-							rows: 25000,
-							fl: fl
-						}
-					}).then(function(keys){
-
-						var keyMap = {};
-						keys.forEach(function(f){
-							keyMap[f[resultIdField]] = f;
-						});
-
-						res['result'][3] = keyMap;
-
-						// console.log(JSON.stringify(res));
-						var data = _self.formatJSONResult(res, resultIdType);
-						// console.log(data);
-						_self.updateResult(data, resultIdType);
-					});
-
-				}, function(err){
-					_self.buildErrorMessage(err);
-				})
+				_self.result.set('state', {query: q, resultType: resultType});
 			});
 
 		},
@@ -339,210 +277,6 @@ define([
 			domClass.add(query(".blast_message")[0], "hidden");
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
-		},
-
-		buildResultContainer: function(){
-
-			var self = this;
-
-			// TODO: need to change container type and primary id based on the database (and search_for)
-
-			// build store
-			this.result_store = new (declare([Memory]))({
-				data: [],
-				idProperty: "feature_id",
-				queryOptions: {
-					sort: [{attribute: "pident", descending: true}]
-				}
-			});
-
-			// build grid
-			var BLASTGrid = declare([Grid], {
-				region: "center",
-				selectionModel: "extended",
-				dataModel: "genome_feature",
-				store: this.result_store,
-				columns: {
-					"Selection Checkboxes": selector({label: '', sortable: false, unhidable: true}),
-					expand: {
-						label: '', field: '', sortable: false, unhidable: true, renderCell: function(obj, val, node){
-							node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>';
-						}
-					},
-					product: {label: 'Product', field: "function"},
-					genome: {label: 'Genome', field: "genome_name"},
-					identity: {
-						label: 'Identity', field: "pident", formatter: function(val){
-							return val + '%'
-						}
-					},
-					q_coverage: {
-						label: 'Query cover', field: "query_coverage", formatter: function(val){
-							return val + '%'
-						}
-					},
-					s_coverage: {
-						label: 'Subject cover', field: "subject_coverage", formatter: function(val){
-							return val + '%'
-						}
-					},
-					length: {label: 'Length', field: "length"},
-					score: {label: 'Score', field: 'bitscore'},
-					evalue: {label: 'E value', field: 'evalue'}
-				},
-				renderRow: function(obj){
-					var div = domConstruct.create('div', {className: 'collapsed'});
-					div.appendChild(Grid.prototype.renderRow.apply(this, arguments));
-					var subDiv = domConstruct.create('div', {className: 'detail'}, div);
-					subDiv.appendChild(self.buildDetailView(obj.detail));
-					return div;
-				},
-				startup: function(){
-					var self = this;
-
-					this.on(".dgrid-cell div.dgrid-expando-icon:click", function(evt){
-
-						var node = self.row(evt).element;
-						var target = evt.target || evt.srcElement;
-						var collapsed = domClass.contains(node, 'collapsed');
-						// console.log(evt, node);
-
-						domClass.toggle(node, 'collapsed', !collapsed);
-						domClass.toggle(target, 'ui-icon-triangle-1-e', !collapsed);
-						domClass.toggle(target, 'ui-icon-triangle-1-se', collapsed);
-					});
-
-					this.on("dgrid-select", function(evt){
-						var newEvt = {
-							rows: evt.rows,
-							selected: evt.grid.selection,
-							grid: self,
-							bubbles: true,
-							cancelable: true
-						};
-						on.emit(self.domNode, "select", newEvt);
-					});
-
-					this.on("dgrid-deselect", function(evt){
-						var newEvt = {
-							rows: evt.rows,
-							selected: evt.grid.selection,
-							grid: self,
-							bubbles: true,
-							cancelable: true
-						};
-						on.emit(self.domNode, "deselect", newEvt);
-					});
-
-					this.inherited(arguments);
-				}
-			});
-
-			var BLASTGridContainer = declare([GridContainer], {
-				gridCtor: BLASTGrid,
-				containerType: "feature_data",
-				enableFilterPanel: false,
-				visible: true,
-				buildQuery: function(){
-					// console.log("buildQuery");
-					return {};
-				},
-				updateContainerType: function(type){
-					this.containerType = type;
-					this.selectionActionBar.set('currentContainerWidget', this);
-				}
-			});
-
-			this.result_grid = new BLASTGridContainer({
-				style: "min-height: 500px; visibility:hidden;"
-			}).placeAt(query(".blast_result")[0]);
-			this.result_grid.startup();
-
-			this.loadingMask = new Standby({
-				target: this.id,
-				image: "/public/js/p3/resources/images/spin.svg",
-				color: "#efefef"
-			});
-			this.result_grid.addChild(this.loadingMask);
-			this.loadingMask.startup();
-
-			// console.log(this.result_grid);
-		},
-
-		updateResult(data, type){
-			if(type === 'genome_feature'){
-				this.result_store.idProperty = 'feature_id';
-				this.result_grid.updateContainerType("feature_data");
-			}else{
-				this.result_store.idProperty = 'sequence_id';
-				this.result_grid.updateContainerType("sequence_data");
-			}
-			this.result_store.setData(data);
-			this.result_grid.grid.refresh();
-			this.loadingMask.hide();
-		},
-
-		formatEvalue: function(evalue){
-			if(evalue.toString().includes('e')){
-				var val = evalue.toString().split('e');
-				return parseInt(val[0]) + 'e' + val[1];
-			}else if(evalue !== 0){
-				return evalue.toFixed(4);
-			}else{
-				return evalue;
-			}
-		},
-
-		formatJSONResult: function(json, type){
-			// console.log(json);
-
-			var report = json['result'][0][0].report;
-			var search = report.results.search;
-			var hits = search.hits;
-			var query_id = search.query_id;
-			var query_length = search.query_len;
-			var metadata = json['result'][1];
-			var identical = json['result'][2] || {};
-			var features = json['result'][3] || {};
-
-			var entries = [];
-			hits.forEach(function(hit){
-				var target_id = hit.description[0].id;
-				var entry = {
-					"qseqid": query_id,
-					"sseqid": target_id,
-					"pident": Math.round(hit.hsps[0].identity / hit.hsps[0].align_len * 100),
-					"query_coverage": Math.round((Math.abs(hit.hsps[0].query_to - hit.hsps[0].query_from) + 1) / query_length * 100),
-					"subject_coverage": Math.round((Math.abs(hit.hsps[0].hit_to - hit.hsps[0].hit_from) + 1) / hit.len * 100),
-					"length": hit.len,
-					"evalue": this.formatEvalue(hit.hsps[0]['evalue']),
-					"bitscore": Math.round(hit.hsps[0]['bit_score']),
-					"genome_id": metadata[target_id].genome_id,
-					"genome_name": metadata[target_id].genome_name,
-					"function": metadata[target_id].function,
-					"detail": {
-						"match_count": metadata[target_id].match_count || 0,
-						"matches": identical[target_id] || [],
-						"hsps": hit.hsps,
-						"query_len": query_length,
-						"subject_len": hit.len
-					}
-				};
-				if(type === "genome_feature"){
-					entry["feature_id"] = features[target_id].feature_id;
-					entry = lang.mixin(entry, features[target_id]);
-				}else{
-					target_id = target_id.replace("accn|", "");
-					if(features.hasOwnProperty(target_id)){
-						entry["genome_id"] = features[target_id].genome_id;
-						entry = lang.mixin(entry, features[target_id]);
-					}else{
-						console.log("missing id: ", target_id);
-					}
-				}
-				entries.push(entry);
-			}, this);
-			return entries;
 		},
 
 		onSuggestNameChange: function(){
@@ -749,79 +483,6 @@ define([
 			}
 
 			this.validate();
-		},
-
-		buildDetailView: function(detail){
-			var outputDiv = [];
-
-			detail.hsps.forEach(function(hsp){
-				var output = [];
-				var qSeqArr = hsp['qseq'].match(/.{1,60}/g);
-				var hSeqArr = hsp['hseq'].match(/.{1,60}/g);
-				var mlArr = hsp['midline'].match(/.{1,60}/g);
-
-				// header
-				output.push([
-					'Query length: ' + detail.query_len,
-					'Subject length: ' + detail.subject_len
-				].join('    '));
-				output.push([
-					'Score: ' + Math.round(hsp.bit_score) + ' bits(' + hsp.score + ')',
-					'Expect: ' + this.formatEvalue(hsp.evalue),
-					hsp.hit_strand ? 'Strand: ' + hsp.query_strand + '/' + hsp.hit_strand : ''
-				].join('    '));
-				output.push([
-					'Identities: ' + hsp.identity + '/' + hsp.align_len + '(' + Math.round(hsp.identity / hsp.align_len * 100) + '%)',
-					hsp.positive ? 'Positives: ' + hsp.positive + '/' + hsp.align_len + '(' + Math.round(hsp.positive / hsp.align_len * 100) + '%)' : '',
-					'Gaps: ' + hsp.gaps + '/' + hsp.align_len + '(' + Math.round(hsp.gaps / hsp.align_len * 100) + '%)',
-					(hsp.query_frame || hsp.hit_frame) ? ('Frame: ' + (hsp.query_frame ? hsp.query_frame : '')
-					+ ((hsp.query_frame && hsp.hit_frame) ? '/' : '')
-					+ (hsp.hit_frame ? hsp.hit_frame : '')) : ''
-				].join('    '));
-				output.push('\n');
-
-				var query_pos = hsp.query_from;
-				var hit_pos = hsp.hit_from;
-				for(var i = 0, n = qSeqArr.length; i < n; i++){
-					var query_from = String('        ' + query_pos).slice(-8);
-					var hit_from = String('        ' + hit_pos).slice(-8);
-
-					var query_to, hit_to;
-					if(hsp.query_strand == undefined || hsp.query_strand === 'Plus'){
-						query_to = query_pos + qSeqArr[i].match(/[A-Z]/gi).length - 1;
-						query_pos = query_to + 1;
-					}else{
-						query_to = query_pos - qSeqArr[i].match(/[A-Z]/gi).length + 1;
-						query_pos = query_to - 1;
-					}
-					if(hsp.hit_strand == undefined || hsp.hit_strand === 'Plus'){
-						hit_to = hit_pos + hSeqArr[i].match(/[A-Z]/gi).length - 1;
-						hit_pos = hit_to + 1;
-					}else{
-						hit_to = hit_pos - hSeqArr[i].match(/[A-Z]/gi).length + 1;
-						hit_pos = hit_to - 1;
-					}
-
-					output.push(['Query', query_from, qSeqArr[i], query_to].join('  '));
-					output.push(['     ', '        ', mlArr[i], '    '].join('  '));
-					output.push(['Sbjct', hit_from, hSeqArr[i], hit_to].join('  '));
-					output.push('\n');
-				}
-				outputDiv.push('<pre>' + output.join('\n') + '</pre>');
-			}, this);
-
-			return domConstruct.toDom('<div class="align">' + outputDiv.join('<br/>') + '</div>');
-		},
-
-		test_result_features: function(){
-			var r = '{"result":[[{"report":{"params":{"filter":"L;m;","gap_extend":0,"gap_open":0,"sc_match":1,"sc_mismatch":-2,"expect":10},"program":"blastn","reference":"Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb Miller (2000), A greedy algorithm for aligning DNA sequences, J Comput Biol 2000; 7(1-2):203-14.","version":"BLASTN 2.3.0+","search_target":{"db":"/tmp/jQOG0oo9Tp"},"results":{"search":{"stat":{"kappa":0.46,"entropy":0.85,"lambda":1.28,"eff_space":76986597324,"hsp_len":26,"db_num":328432,"db_len":290541420},"query_len":299,"hits":[{"len":1119,"description":[{"title":"fig|83332.12.peg.1009|Rv0906|VBIMycTub87468_1009|   Outer membrane protein romA   [Mycobacterium tuberculosis H37Rv | 83332.12]","accession":"312432","id":"fig|83332.12.peg.1009"}],"num":1,"hsps":[{"hit_to":240,"num":1,"query_from":57,"identity":240,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","query_to":299,"align_len":243,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","bit_score":429.543,"query_strand":"Plus","evalue":3.81139e-119,"hit_from":1,"gaps":3,"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","hit_strand":"Plus","score":232}]},{"hsps":[{"align_len":243,"bit_score":429.543,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","query_strand":"Plus","hit_from":1,"gaps":3,"evalue":3.81139e-119,"hit_strand":"Plus","score":232,"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","num":1,"hit_to":240,"query_from":57,"identity":240,"query_to":299,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA"}],"len":1119,"description":[{"title":"fig|233413.5.peg.1011|Mb0930|VBIMycBov88188_1011|   Outer membrane protein romA   [Mycobacterium bovis AF2122/97 | 233413.5]","id":"fig|233413.5.peg.1011","accession":"132773"}],"num":2}],"query_masking":[{"from":18,"to":33}],"query_id":"Query_1"}}}}],{"fig|83332.12.peg.1009":{"function":"Outer membrane protein romA","alt_locus_tag":"VBIMycTub87468_1009","genome_id":"83332.12","locus_tag":"Rv0906","genome_name":"Mycobacterium tuberculosis H37Rv"},"fig|233413.5.peg.1011":{"function":"Outer membrane protein romA","genome_id":"233413.5","alt_locus_tag":"VBIMycBov88188_1011","locus_tag":"Mb0930","genome_name":"Mycobacterium bovis AF2122/97"}},null,{"fig|83332.12.peg.1009":{"location":"1008944..1010062","gene_id":885150,"accession":"NC_000962","start":1008944,"feature_id":"PATRIC.83332.12.NC_000962.CDS.1008944.1010062.fwd","sequence_id":"NC_000962","annotation":"PATRIC","product":"Outer membrane protein romA","genome_id":"83332.12","figfam_id":"FIG01371060","uniprotkb_accession":["I6XWJ0","P64759"],"gi":15608046,"p2_feature_id":18150533,"pos_group":"NC_000962:1010062:+","alt_locus_tag":"VBIMycTub87468_1009","na_length":1119,"strand":"+","refseq_locus_tag":"Rv0906","segments":["1008944..1010062"],"feature_type":"CDS","taxon_id":83332,"protein_id":"NP_215421.1","aa_length":372,"patric_id":"fig|83332.12.peg.1009","end":1010062,"genome_name":"Mycobacterium tuberculosis H37Rv","public":true,"owner":"PATRIC","date_inserted":"2014-10-20T23:55:03.806Z","date_modified":"2014-10-27T07:44:09.673Z","na_sequence":"atggtgcgccgagcgctacgactggcggccggcaccgcctcgctggccgccggcacgtggctgttgcgtgcgctgcacggcacgccggccgcgctcggtgccgacgcggcgtcgatcagggctgtgtcggagcaatcgccgaactatcgtgacggcgccttcgtcaacctggatcccgcgtcgatgttcaccctggatcgcgaggagcttcggctcatcgtgtgggagttagtggccagacacagtgcgagccggccggcggcgccgatcccgttggcctcgccgaatatctaccggggtgacgccagccggctcgccgtcagctggttcggtcactcgacggcgctgctggaaatcgacggctaccgggtgcttaccgatccggtgtggagcgatcggtgctcaccgtccgacgtcgtcggcccccagcgcctgcatccgccgccggtgcaactggcagctctcccggccgtcgacgccgtggtcatcagccacgaccactacgaccatctcgatatcgacaccgtggttgcgctggtcggcatgcaacgggccccgttccttgtgccgctcggggtcggcgcccaccttcggtcgtggggtgttccgcaggatcgcattgttgagctcgactggaaccagagcgctcaggtcgatgagctcaccgtggtctgcgtgccggcacggcacttctcgggacggttcctgagccgcaacaccacactgtgggcctcgtgggcgtttgttgggccgaaccatcgcgcctacttcggcggtgataccggatacaccaagagcttcacccagatcggcgcggaccacggaccgttcgacctgaccctgctgcccatcggggcctacaacacggcgtggccggacatccacatgaaccccgaggaggcggtccgggcgcacctggacgtcaccgattcgggctcgggaatgctggtgccggtgcactggggcaccttccggctggccccccatccgtggggcgagccggtcgagcggctgctcgcggcggctgaacccgagcacgtcacggtagccgtgccgctacccggtcagcgggtcgacccgaccgggcccatgagattgcacccatggtggcggctgtaa","aa_sequence_md5":"78bc6158e03f08557fc918cd8634140d","aa_sequence":"MVRRALRLAAGTASLAAGTWLLRALHGTPAALGADAASIRAVSEQSPNYRDGAFVNLDPASMFTLDREELRLIVWELVARHSASRPAAPIPLASPNIYRGDASRLAVSWFGHSTALLEIDGYRVLTDPVWSDRCSPSDVVGPQRLHPPPVQLAALPAVDAVVISHDHYDHLDIDTVVALVGMQRAPFLVPLGVGAHLRSWGVPQDRIVELDWNQSAQVDELTVVCVPARHFSGRFLSRNTTLWASWAFVGPNHRAYFGGDTGYTKSFTQIGADHGPFDLTLLPIGAYNTAWPDIHMNPEEAVRAHLDVTDSGSGMLVPVHWGTFRLAPHPWGEPVERLLAAAEPEHVTVAVPLPGQRVDPTGPMRLHPWWRL","pgfam_id":"PGF_00028347","plfam_id":"PLF_1763_00000156"},"fig|233413.5.peg.1011":{"location":"1009409..1010527","gene_id":1092857,"accession":"NC_002945","start":1009409,"feature_id":"PATRIC.233413.5.NC_002945.CDS.1009409.1010527.fwd","sequence_id":"NC_002945","annotation":"PATRIC","product":"Outer membrane protein romA","genome_id":"233413.5","figfam_id":"FIG01371060","uniprotkb_accession":["P64760"],"gi":31792094,"p2_feature_id":18003706,"pos_group":"NC_002945:1010527:+","alt_locus_tag":"VBIMycBov88188_1011","na_length":1119,"strand":"+","refseq_locus_tag":"Mb0930","segments":["1009409..1010527"],"feature_type":"CDS","taxon_id":233413,"protein_id":"NP_854587.1","aa_length":372,"patric_id":"fig|233413.5.peg.1011","end":1010527,"genome_name":"Mycobacterium bovis AF2122/97","public":true,"owner":"PATRIC","date_inserted":"2014-10-20T20:19:41.13Z","date_modified":"2014-10-27T06:55:37.908Z","na_sequence":"atggtgcgccgagcgctacgactggcggccggcaccgcctcgctggccgccggcacgtggctgttgcgtgcgctgcacggcacgccggccgcgctcggtgccgacgcggcgtcgatcagggctgtgtcggagcaatcgccgaactatcgtgacggcgccttcgtcaacctggatcccgcgtcgatgttcaccctggatcgcgaggagcttcggctcatcgtgtgggagttagtggccagacacagtgcgagccggccggcggcgccgatcccgttggcctcgccgaatatctaccggggtgacgccagccggctcgccgtcagctggttcggtcactcgacggcgctgctggaaatcgacggctaccgggtgcttaccgatccggtgtggagcgatcggtgctcaccgtccgacgtcgtcggcccccagcgcctgcatccgccgccggtgcaactggcagctctcccggccgtcgacgccgtggtcatcagccacgaccactacgaccatctcgatatcgacaccgtggttgcgctggtcggcatgcaacgggccccgttccttgtgccgctcggggtcggcgcccaccttcggtcgtggggtgttccgcaggatcgcattgttgagctcgactggaaccagagcgctcaggtcgatgagctcaccgtggtctgcgtgccggcacggcacttctcgggacggttcctgagccgcaacaccacactgtgggcctcgtgggcgtttgttgggccgaaccatcgcgcctacttcggtggtgataccggatacaccaagagcttcacccagatcggcgcggaccacggaccgttcgacctgaccctgctgcccatcggggcctacaacacggcgtggccggacatccacatgaaccccgaggaggcggtccgggcgcacctggacgtcaccgattcgggctcgggaatgctggtgccggtgcactggggcaccttccggctggccccccatccgtggggcgagccggtcgagcggctactcgcggcggctgaacccgagcacgtcacggtagccgtgccgctacccggtcagcgggtcgacccgaccgggcccatgagattgcacccatggtggcggctgtaa","aa_sequence_md5":"78bc6158e03f08557fc918cd8634140d","aa_sequence":"MVRRALRLAAGTASLAAGTWLLRALHGTPAALGADAASIRAVSEQSPNYRDGAFVNLDPASMFTLDREELRLIVWELVARHSASRPAAPIPLASPNIYRGDASRLAVSWFGHSTALLEIDGYRVLTDPVWSDRCSPSDVVGPQRLHPPPVQLAALPAVDAVVISHDHYDHLDIDTVVALVGMQRAPFLVPLGVGAHLRSWGVPQDRIVELDWNQSAQVDELTVVCVPARHFSGRFLSRNTTLWASWAFVGPNHRAYFGGDTGYTKSFTQIGADHGPFDLTLLPIGAYNTAWPDIHMNPEEAVRAHLDVTDSGSGMLVPVHWGTFRLAPHPWGEPVERLLAAAEPEHVTVAVPLPGQRVDPTGPMRLHPWWRL","pgfam_id":"PGF_00028347","plfam_id":"PLF_1763_00000156"}}],"version":"1.1","id":"9067495661058316"}';
-
-			return JSON.parse(r);
-		},
-
-		test_result_contigs: function(){
-			var r = '{"result":[[{"report":{"results":{"search":{"query_masking":[{"from":18,"to":33}],"query_id":"Query_1","stat":{"db_len":336225811,"db_num":184,"hsp_len":26,"eff_space":91788340371,"lambda":1.28,"entropy":0.85,"kappa":0.46},"query_len":299,"hits":[{"hsps":[{"hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","score":232,"hit_strand":"Plus","evalue":4.54418e-119,"gaps":3,"hit_from":1008944,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","bit_score":429.543,"align_len":243,"query_strand":"Plus","identity":240,"query_to":299,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","query_from":57,"hit_to":1009183,"num":1}],"len":4411532,"description":[{"title":"accn|NC_000962   Mycobacterium tuberculosis H37Rv, complete genome.   [Mycobacterium tuberculosis H37Rv | 83332.12]","accession":"177","id":"accn|NC_000962"}],"num":1},{"len":4345492,"description":[{"title":"accn|NC_002945   Mycobacterium bovis AF2122/97, complete genome.   [Mycobacterium bovis AF2122/97 | 233413.5]","id":"accn|NC_002945","accession":"91"}],"num":2,"hsps":[{"num":1,"hit_to":1009648,"query_from":57,"query_to":299,"qseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGGACTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGGAGCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCGATCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA","identity":240,"query_strand":"Plus","align_len":243,"bit_score":429.543,"midline":"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||","gaps":3,"hit_from":1009409,"evalue":4.54418e-119,"score":232,"hit_strand":"Plus","hseq":"ATGGTGCGCCGAGCGCTACGACTGGCGGCCGGCACCGCCTCGCTGGCCGCCGGCACGTGG-CTGTTGCGTGCGCTGCACGGCACGCCGGCCGCGCTCGGTGCCGACGCGGCGTCGATCAGG-GCTGTGTCGGAGCAATCGCCGAACTATCGTGACGGCGCCTTCGTCAACCTGGATCCCGCG-TCGATGTTCACCCTGGATCGCGAGGAGCTTCGGCTCATCGTGTGGGAGTTAGTGGCCAGA"}]}]}},"search_target":{"db":"/tmp/6jvELydBA_"},"version":"BLASTN 2.3.0+","reference":"Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb Miller (2000), A greedy algorithm for aligning DNA sequences, J Comput Biol 2000; 7(1-2):203-14.","program":"blastn","params":{"filter":"L;m;","gap_extend":0,"sc_match":1,"gap_open":0,"sc_mismatch":-2,"expect":10}}}],{"accn|NC_002945":{"function":"Mycobacterium bovis AF2122/97, complete genome.","genome_id":"233413.5","genome_name":"Mycobacterium bovis AF2122/97"},"accn|NC_000962":{"function":"Mycobacterium tuberculosis H37Rv, complete genome.","genome_id":"83332.12","genome_name":"Mycobacterium tuberculosis H37Rv"}},null,{"NC_002945":{"accession":"NC_002945","sequence_id":"NC_002945","taxon_id":233413,"genome_id":"233413.5","genome_name":"Mycobacterium bovis AF2122/97"},"NC_000962":{"accession":"NC_000962","sequence_id":"NC_000962","taxon_id":83332,"genome_id":"83332.12","genome_name":"Mycobacterium tuberculosis H37Rv"}}],"id":"20166393994618526","version":"1.1"}';
-			return JSON.parse(r);
 		}
 	});
 });
