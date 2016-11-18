@@ -19,7 +19,8 @@ define("p3/widget/GenomeBrowser", [
 	'JBrowse/View/FileDialog',
 	'JBrowse/GenomeView',
     './DataItemFormatter',
-    'dijit/Dialog'
+    'dijit/Dialog',
+    'dojo/keys'
 ], function(declare, WidgetBase, JBrowser,
 			domConstruct, lang, domGeometry,
 			domStyle, array,
@@ -39,7 +40,7 @@ define("p3/widget/GenomeBrowser", [
 			InfoDialog,
 			FileDialog,
 			GenomeView,DataItemFormatter,
-            Dialog){
+            Dialog, keys){
     window.featureDialogContent=function(feature){
         var content = DataItemFormatter(feature.data,"feature_data",{linkTitle:true});
         if (!window.featureDialog){
@@ -327,6 +328,44 @@ define("p3/widget/GenomeBrowser", [
 			return refname;
 		},
 
+        /**
+        * Return a string URL that encodes the complete viewing state of the
+        * browser.  Currently just data dir, visible tracks, and visible
+        * region.
+        * @param {Object} overrides optional key-value object containing
+        *                           components of the query string to override
+        */
+        makeCurrentViewURL: function( overrides ) {
+            var t = typeof this.config.shareURL;
+
+            if( t == 'function' ) {
+                return this.config.shareURL.call( this, this );
+            }
+            else if( t == 'string' ) {
+                return this.config.shareURL;
+            }
+
+            return "".concat(
+                window.location.protocol,
+                "//",
+                window.location.host,
+                window.location.pathname,
+                "#",
+                dojo.objectToQuery(
+                    dojo.mixin(
+                        dojo.mixin( {}, (this.config.queryParams||{}) ),
+                        dojo.mixin(
+                            {
+                                loc:    this.view.visibleRegionLocString(),
+                                tracks: this.view.visibleTrackNames().join(','),
+                                highlight: (this.getHighlight()||'').toString()
+                            },
+                            overrides || {}
+                        )
+                    )
+                )
+            );
+        },
 		initView: function(){
 			var thisObj = this;
 			return this._milestoneFunction('initView', function(deferred){
@@ -874,7 +913,7 @@ define("p3/widget/GenomeBrowser", [
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
 				//defaultTracks: ["SequenceTrack"].join(","),
-                forceTracks: ["ReferenceSequence","PATRICGenes","RefSeqGenes"].join(","),
+                forceTracks: ["refseqs","PATRICGenes","RefSeqGenes"].join(","),
                 highResoutionMode: "auto",
 				//alwaysOnTracks: [,"PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
@@ -884,7 +923,7 @@ define("p3/widget/GenomeBrowser", [
 				show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined')) ? state.hashParams.show_overview : true,
 				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined')) ? state.hashParams.show_menu : true,
 				stores: {url: {type: "JBrowse/Store/SeqFeature/FromConfig", features: []}},
-				updateBrowserURL: false,
+				updateBrowserURL: true,
 				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
 				suppressUsageStatistics: true,
 				refSeqSelectorMaxSize: 2000
