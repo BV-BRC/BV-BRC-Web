@@ -82,6 +82,9 @@ define([
 				on.emit(self.domNode, "deselect", newEvt);
 			});
 
+			aspect.before(this, 'refresh', function(){
+				this.clearSelection();
+			}, this);
 			this.inherited(arguments);
 		},
 
