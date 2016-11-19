@@ -1,10 +1,9 @@
 {
   "name": "p3-web",
-  "version": "3.2.53",
+  "version": "3.2.54",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
-    "//postinstall": "cd ./node_modules/msa && npm install --unsafe-perm && cd ../msa-tnt && npm install --unsafe-perm"
   },
   "dependencies": {
     "body-parser": "~1.8.1",

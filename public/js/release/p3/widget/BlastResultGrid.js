@@ -82,7 +82,24 @@ define("p3/widget/BlastResultGrid", [
 				on.emit(self.domNode, "deselect", newEvt);
 			});
 
+			aspect.before(this, 'refresh', function(){
+				this.clearSelection();
+			}, this);
 			this.inherited(arguments);
+		},
+
+		_selectAll: function(){
+
+			var def = new Deferred();
+			this._unloadedData = {};
+
+			var data = this.store.data.map(function(obj){
+				this._unloadedData[obj[this.primaryKey]] = obj;
+				return obj[this.primaryKey];
+			}, this);
+			def.resolve(data);
+
+			return def.promise;
 		},
 
 		formatEvalue: function(evalue){
