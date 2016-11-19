@@ -119,7 +119,7 @@ define([
 						return d.replace('accn|', '');
 					});
 					query.q = "accession:(" + resultIds.join(' OR ') + ")";
-					query.fl = "genome_id,genome_name,taxon_id,sequence_id,accession"
+					query.fl = "genome_id,genome_name,taxon_id,sequence_id,accession,description"
 				}else{
 					// resultIdField = "patric_id";
 
