@@ -191,12 +191,6 @@
     width: 20px;
 }
 
-.blast_result .dgrid-column-product {
-    width: 30%;
-}
-.blast_result .dgrid-column-genome {
-    width: 20%;
-}
 .blast_result .dgrid-column-identity,
 .blast_result .dgrid-column-q_coverage,
 .blast_result .dgrid-column-s_coverage,

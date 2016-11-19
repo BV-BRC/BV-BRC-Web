@@ -113,14 +113,30 @@ define([
 
 				// console.log(res);
 				var resultIds = Object.keys(res['result'][1]);
-				var fl;
+				var query = {rows: 25000};
 				if(this.type == "genome_sequence"){
 					resultIds = resultIds.map(function(d){
 						return d.replace('accn|', '');
 					});
-					fl = "genome_id,genome_name,taxon_id,sequence_id,accession"
+					query.q = "accession:(" + resultIds.join(' OR ') + ")";
+					query.fl = "genome_id,genome_name,taxon_id,sequence_id,accession,description"
 				}else{
-					fl = "feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,gi,taxon_id,accession,start,end,strand,location,na_length,na_sequence,aa_length,aa_sequence"
+					// resultIdField = "patric_id";
+
+					var patric_ids = [];
+					var gis = [];
+					resultIds.forEach(function(id){
+						if(id.indexOf("gi|") > -1){
+							gis.push(id.split("|")[1]);
+						}else{
+							patric_ids.push(id);
+						}
+					});
+
+					query.q = (patric_ids.length > 0) ? "patric_id:(" + patric_ids.join(' OR ') + ")" : {};
+					(gis.length > 0 && patric_ids.length > 0) ? query.q += " OR " : {};
+					(gis.length > 0) ? query.q += "(gi:(" + gis.join(' OR ') + ") AND annotation:RefSeq)" : {};
+					query.fl = "feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,gi,taxon_id,accession,start,end,strand,location,na_length,na_sequence,aa_length,aa_sequence"
 				}
 
 				return when(request.post(window.App.dataAPI + this.type + '/', {
@@ -131,16 +147,20 @@ define([
 						'X-Requested-With': null,
 						'Authorization': (window.App.authorizationToken || "")
 					},
-					data: {
-						q: this.idProperty + ":(" + resultIds.join(' OR ') + ")",
-						rows: 25000,
-						fl: fl
-					}
+					data: query
 				}), lang.hitch(this, function(keys){
 
 					var keyMap = {};
 					keys.forEach(function(f){
-						keyMap[f[this.idProperty]] = f;
+						if(this.type == "genome_sequence"){
+							keyMap[f["accession"]] = f;
+						}else{
+							if(f.annotation == "RefSeq"){
+								keyMap[f["gi"]] = f;
+							}else{
+								keyMap[f["patric_id"]] = f;
+							}
+						}
 					}, this);
 
 					res['result'][3] = keyMap;
@@ -220,8 +240,16 @@ define([
 					}
 				};
 				if(this.type === "genome_feature"){
-					entry["feature_id"] = features[target_id].feature_id;
-					entry = lang.mixin(entry, features[target_id]);
+					if(features.hasOwnProperty(target_id)){
+						entry["feature_id"] = features[target_id].feature_id;
+						entry = lang.mixin(entry, features[target_id]);
+					}else if(target_id.indexOf("gi|") > -1){
+						var gi = target_id.split("|")[1];
+						entry["feature_id"] = features[gi].feature_id;
+						entry = lang.mixin(entry, features[gi]);
+					}else{
+						console.warn("missing patric_id in header", target_id);
+					}
 				}else{
 					target_id = target_id.replace("accn|", "");
 					if(features.hasOwnProperty(target_id)){
