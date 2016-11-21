@@ -17,30 +17,35 @@ define([
 			value: "blastn",
 			label: "blastn - search a nucleotide database using a nucleotide query",
 			validDatabase: ['.fna', '.ffn', '.frn', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["contigs", "features"],
 			validQuery: [NA]
 		},
 		{
 			value: "blastp",
 			label: "blastp - search protein database using a protein query",
 			validDatabase: ['faa', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["features"],
 			validQuery: [AA]
 		},
 		{
 			value: "blastx",
 			label: "blastx - search protein database using a translated nucleotide query",
 			validDatabase: ['faa', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["features"],
 			validQuery: [NA]
 		},
 		{
 			value: "tblastn",
 			label: "tblastn - search translated nucleotide database using a protein query",
 			validDatabase: ['fna', 'ffn', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["contigs", "features"],
 			validQuery: [AA]
 		},
 		{
 			value: "tblastx",
 			label: "tblastx - search translated nucleotide database using a translated nucleotide query",
 			validDatabase: ['fna', 'ffn', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["contigs", "features"],
 			validQuery: [NA]
 		}
 	];
@@ -60,6 +65,11 @@ define([
 		{value: "selGenome", label: "Search within selected genomes"},
 		{value: "selGroup", label: "Search within selected genome group"},
 		{value: "selTaxon", label: "Search within selected taxon"}
+	];
+
+	var SearchForDefs = [
+		{value: "contigs", label: "Genomic sequences (contigs)"},
+		{value: "features", label: "Genomic features (genes, proteins or RNAs)"}
 	];
 
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
@@ -430,6 +440,17 @@ define([
 			this.database.addOption(DatabaseDefs.filter(function(d){
 				return validDatabaseTypes.some(function(t){
 					return (d.value).match(t);
+				})
+			}));
+
+			var validSearchForTypes = ProgramDefs.find(function(p){
+				return p.value === val;
+			}).validSearchFor;
+			// console.log(validSearchForTypes);
+			this.search_for.removeOption(SearchForDefs);
+			this.search_for.addOption(SearchForDefs.filter(function(s){
+				return validSearchForTypes.some(function(t){
+					return (s.value).match(t);
 				})
 			}));
 
