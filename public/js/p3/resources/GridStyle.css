@@ -181,16 +181,22 @@
 }
 
 .blast_result {
-    height: 500px;
+    height: 700px;
 }
 
 .blast_result .dgrid-column-expand {
     width: 20px;
 }
 
+.blast_result .dgrid-column-product {
+    width: 20%;
+}
+
 .blast_result .dgrid-column-identity,
 .blast_result .dgrid-column-q_coverage,
 .blast_result .dgrid-column-s_coverage,
+.blast_result .dgrid-column-na_length,
+.blast_result .dgrid-column-aa_length,
 .blast_result .dgrid-column-length,
 .blast_result .dgrid-column-score,
 .blast_result .dgrid-column-evalue {

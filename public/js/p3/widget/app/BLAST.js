@@ -17,30 +17,35 @@ define([
 			value: "blastn",
 			label: "blastn - search a nucleotide database using a nucleotide query",
 			validDatabase: ['.fna', '.ffn', '.frn', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["contigs", "features"],
 			validQuery: [NA]
 		},
 		{
 			value: "blastp",
 			label: "blastp - search protein database using a protein query",
 			validDatabase: ['faa', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["features"],
 			validQuery: [AA]
 		},
 		{
 			value: "blastx",
 			label: "blastx - search protein database using a translated nucleotide query",
 			validDatabase: ['faa', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["features"],
 			validQuery: [NA]
 		},
 		{
 			value: "tblastn",
 			label: "tblastn - search translated nucleotide database using a protein query",
 			validDatabase: ['fna', 'ffn', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["contigs", "features"],
 			validQuery: [AA]
 		},
 		{
 			value: "tblastx",
 			label: "tblastx - search translated nucleotide database using a translated nucleotide query",
 			validDatabase: ['fna', 'ffn', 'selGenome', 'selGroup', 'selTaxon'],
+			validSearchFor: ["contigs", "features"],
 			validQuery: [NA]
 		}
 	];
@@ -60,6 +65,11 @@ define([
 		{value: "selGenome", label: "Search within selected genomes"},
 		{value: "selGroup", label: "Search within selected genome group"},
 		{value: "selTaxon", label: "Search within selected taxon"}
+	];
+
+	var SearchForDefs = [
+		{value: "contigs", label: "Genomic sequences (contigs)"},
+		{value: "features", label: "Genomic features (genes, proteins or RNAs)"}
 	];
 
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
@@ -98,7 +108,7 @@ define([
 
 			this.result = new BlastResultContainer({
 				id: this.id + "_blastResult",
-				style: "min-height: 500px; visibility:hidden;"
+				style: "min-height: 700px; visibility:hidden;"
 			});
 			this.result.placeAt(query(".blast_result")[0]);
 			this.result.startup();
@@ -240,13 +250,9 @@ define([
 			_self.result.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
 			domClass.add(query(".blast_form")[0], "hidden");
+			domClass.add(query(".appSubmissionArea")[0], "hidden");
 			domClass.add(query(".blast_error")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "visible");
-
-			// var data = this.formatJSONResult(this.test_result_features(), "genome_feature");
-			// var data = this.formatJSONResult(this.test_result_contigs(), "genome_sequence");
-			// this.updateResult(data, "genome_sequence");
-			// return;
 
 			def.promise.then(function(q){
 				_self.result.set('state', {query: q, resultType: resultType});
@@ -256,6 +262,7 @@ define([
 
 		resubmit: function(){
 			domClass.remove(query(".blast_form")[0], "hidden");
+			domClass.remove(query(".appSubmissionArea")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "hidden");
 		},
 
@@ -430,6 +437,17 @@ define([
 			this.database.addOption(DatabaseDefs.filter(function(d){
 				return validDatabaseTypes.some(function(t){
 					return (d.value).match(t);
+				})
+			}));
+
+			var validSearchForTypes = ProgramDefs.find(function(p){
+				return p.value === val;
+			}).validSearchFor;
+			// console.log(validSearchForTypes);
+			this.search_for.removeOption(SearchForDefs);
+			this.search_for.addOption(SearchForDefs.filter(function(s){
+				return validSearchForTypes.some(function(t){
+					return (s.value).match(t);
 				})
 			}));
 
