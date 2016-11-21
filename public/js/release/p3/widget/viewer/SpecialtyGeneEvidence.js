@@ -17,7 +17,7 @@ define("p3/widget/viewer/SpecialtyGeneEvidence", [
 		"source_id": null,
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Specialty Gene Evidence View",
-		perspectiveIconClass: "icon-selection-Feature",
+		perspectiveIconClass: "icon-selection-VirulenceFactor",
 		//defaultTab: "Overview",
 
 		_setStateAttr: function(state){

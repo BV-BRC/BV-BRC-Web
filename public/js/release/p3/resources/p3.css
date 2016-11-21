@@ -5097,11 +5097,11 @@ table {  font-size:100%; }
 }
 @font-face {
   font-family: 'icomoon';
-  src:  url("icomoon/fonts/icomoon.eot?rbz8pf");
-  src:  url("icomoon/fonts/icomoon.eot?rbz8pf#iefix") format('embedded-opentype'),
-    url("icomoon/fonts/icomoon.ttf?rbz8pf") format('truetype'),
-    url("icomoon/fonts/icomoon.woff?rbz8pf") format('woff'),
-    url("icomoon/fonts/icomoon.svg?rbz8pf#icomoon") format('svg');
+  src:  url("icomoon/fonts/icomoon.eot?gbngr7");
+  src:  url("icomoon/fonts/icomoon.eot?gbngr7#iefix") format('embedded-opentype'),
+    url("icomoon/fonts/icomoon.ttf?gbngr7") format('truetype'),
+    url("icomoon/fonts/icomoon.woff?gbngr7") format('woff'),
+    url("icomoon/fonts/icomoon.svg?gbngr7#icomoon") format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -5118,687 +5118,550 @@ table {  font-size:100%; }
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.icon-alignment:before {
+.icon-selection-SequenceList:before {
   content: "\e900";
 }
-.icon-anchor:before {
+.icon-selection-Sequence:before {
   content: "\e901";
 }
-.icon-apply-perspective-filter-orig:before {
+.icon-selection-VirulenceFactor:before {
   content: "\e902";
 }
-.icon-apply-perspective-filter .path1:before {
+.icon-copy:before {
   content: "\e903";
+}
+.icon-file-archive-o:before {
+  content: "\e904";
+}
+.icon-file-audio-o:before {
+  content: "\e905";
+}
+.icon-file-code-o:before {
+  content: "\e906";
+}
+.icon-file-excel-o:before {
+  content: "\e907";
+}
+.icon-file-image-o:before {
+  content: "\e908";
+}
+.icon-file-movie-o:before {
+  content: "\e909";
+}
+.icon-file-o:before {
+  content: "\e90a";
+}
+.icon-file-pdf-o:before {
+  content: "\e90b";
+}
+.icon-file-powerpoint-o:before {
+  content: "\e90c";
+}
+.icon-file-text-o:before {
+  content: "\e90d";
+}
+.icon-file-text:before {
+  content: "\e90e";
+}
+.icon-file-word-o:before {
+  content: "\e90f";
+}
+.icon-folder-o:before {
+  content: "\e910";
+}
+.icon-group2:before {
+  content: "\e911";
+}
+.icon-user-plus:before {
+  content: "\e912";
+}
+.icon-apply-perspective-filter-orig:before {
+  content: "\e913";
+}
+.icon-apply-perspective-filter .path1:before {
+  content: "\e914";
   color: rgb(35, 31, 32);
 }
 .icon-apply-perspective-filter .path2:before {
-  content: "\e904";
+  content: "\e915";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
 .icon-apply-perspective-filter .path3:before {
-  content: "\e905";
+  content: "\e916";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
 .icon-apply-perspective-filter .path4:before {
-  content: "\e906";
+  content: "\e917";
   margin-left: -1.0439453125em;
   color: rgb(35, 31, 32);
 }
 .icon-apply-perspective-filter .path5:before {
-  content: "\e907";
+  content: "\e918";
   margin-left: -1.0439453125em;
   color: rgb(1, 1, 1);
 }
-.icon-arrow-circle-o-down:before {
-  content: "\e908";
-}
-.icon-arrow-circle-o-left:before {
-  content: "\e909";
-}
-.icon-arrow-circle-o-right:before {
-  content: "\e90a";
-}
-.icon-arrow-circle-o-up:before {
-  content: "\e90b";
-}
-.icon-arrow-down:before {
-  content: "\e90c";
-}
-.icon-arrow-left:before {
-  content: "\e90d";
-}
-.icon-arrow-right:before {
-  content: "\e90e";
-}
-.icon-arrow-up:before {
-  content: "\e90f";
-}
-.icon-bar-chart:before {
-  content: "\e910";
-}
-.icon-bars:before {
-  content: "\e911";
-}
-.icon-camera:before {
-  content: "\e912";
-}
-.icon-cancel-circle:before {
-  content: "\e913";
-}
-.icon-caret-down:before {
-  content: "\e914";
-}
-.icon-caret-left:before {
-  content: "\e915";
-}
-.icon-caret-right:before {
-  content: "\e916";
-}
-.icon-caret-up:before {
-  content: "\e917";
-}
-.icon-check-square-o:before {
-  content: "\e918";
-}
-.icon-check:before {
+.icon-cluster:before {
   content: "\e919";
 }
-.icon-chevron-circle-down:before {
+.icon-filter:before {
   content: "\e91a";
 }
-.icon-chevron-circle-left:before {
+.icon-selection-Experiment:before {
   content: "\e91b";
 }
-.icon-chevron-circle-right:before {
+.icon-selection-ExperimentList:before {
   content: "\e91c";
 }
-.icon-chevron-circle-up:before {
+.icon-selection-Feature:before {
   content: "\e91d";
 }
-.icon-chevron-down:before {
+.icon-selection-FeatureGroup:before {
   content: "\e91e";
 }
-.icon-chevron-left:before {
+.icon-selection-FeatureList:before {
   content: "\e91f";
 }
-.icon-chevron-right:before {
+.icon-selection-Filter:before {
   content: "\e920";
 }
-.icon-chevron-up:before {
+.icon-selection-Genome:before {
   content: "\e921";
 }
-.icon-circle:before {
+.icon-selection-GenomeGroup:before {
   content: "\e922";
 }
-.icon-cluster:before {
+.icon-selection-GenomeList:before {
   content: "\e923";
 }
-.icon-cog:before {
+.icon-selection-TaxonList:before {
   content: "\e924";
 }
-.icon-contigs:before {
+.icon-selection-Taxonomy:before {
   content: "\e925";
 }
-.icon-copy:before {
+.icon-question-circle-o:before {
   content: "\e926";
 }
-.icon-delicious:before {
+.icon-user:before {
   content: "\e927";
 }
-.icon-download:before {
+.icon-alignment:before {
   content: "\e928";
 }
-.icon-exchange:before {
+.icon-anchor:before {
   content: "\e929";
 }
-.icon-experiments:before {
+.icon-arrow-circle-o-down:before {
   content: "\e92a";
 }
-.icon-eye-slash:before {
+.icon-arrow-circle-o-left:before {
   content: "\e92b";
 }
-.icon-eye:before {
+.icon-arrow-circle-o-right:before {
   content: "\e92c";
 }
-.icon-fasta:before {
+.icon-arrow-circle-o-up:before {
   content: "\e92d";
 }
-.icon-file-archive-o:before {
+.icon-arrow-down:before {
   content: "\e92e";
 }
-.icon-file-audio-o:before {
+.icon-arrow-left:before {
   content: "\e92f";
 }
-.icon-file-code-o:before {
+.icon-arrow-right:before {
   content: "\e930";
 }
-.icon-file-excel-o:before {
+.icon-arrow-up:before {
   content: "\e931";
 }
-.icon-file-image-o:before {
+.icon-bar-chart:before {
   content: "\e932";
 }
-.icon-file-movie-o:before {
+.icon-bars:before {
   content: "\e933";
 }
-.icon-file-o:before {
+.icon-camera:before {
   content: "\e934";
 }
-.icon-file-pdf-o:before {
+.icon-cancel-circle:before {
   content: "\e935";
 }
-.icon-file-powerpoint-o:before {
+.icon-caret-down:before {
   content: "\e936";
 }
-.icon-file-text-o:before {
+.icon-caret-left:before {
   content: "\e937";
 }
-.icon-file-text:before {
+.icon-caret-right:before {
   content: "\e938";
 }
-.icon-file-word-o:before {
+.icon-caret-up:before {
   content: "\e939";
 }
-.icon-filter:before {
+.icon-check-square-o:before {
   content: "\e93a";
 }
-.icon-flag-checkered:before {
+.icon-check:before {
   content: "\e93b";
 }
-.icon-folder-o:before {
+.icon-chevron-circle-down:before {
   content: "\e93c";
 }
-.icon-folder-open:before {
+.icon-chevron-circle-left:before {
   content: "\e93d";
 }
-.icon-folder-plus:before {
+.icon-chevron-circle-right:before {
   content: "\e93e";
 }
-.icon-folder:before {
+.icon-chevron-circle-up:before {
   content: "\e93f";
 }
-.icon-genome-browser:before {
+.icon-chevron-down:before {
   content: "\e940";
 }
-.icon-genome-features-cds:before {
+.icon-chevron-left:before {
   content: "\e941";
 }
-.icon-genome-features:before {
+.icon-chevron-right:before {
   content: "\e942";
 }
-.icon-genome-group .path1:before {
+.icon-chevron-up:before {
   content: "\e943";
+}
+.icon-circle:before {
+  content: "\e944";
+}
+.icon-cog:before {
+  content: "\e945";
+}
+.icon-contigs:before {
+  content: "\e946";
+}
+.icon-delicious:before {
+  content: "\e947";
+}
+.icon-download:before {
+  content: "\e948";
+}
+.icon-exchange:before {
+  content: "\e949";
+}
+.icon-experiments:before {
+  content: "\e94a";
+}
+.icon-eye-slash:before {
+  content: "\e94b";
+}
+.icon-eye:before {
+  content: "\e94c";
+}
+.icon-fasta:before {
+  content: "\e94d";
+}
+.icon-flag-checkered:before {
+  content: "\e94e";
+}
+.icon-folder-open:before {
+  content: "\e94f";
+}
+.icon-folder-plus:before {
+  content: "\e950";
+}
+.icon-folder:before {
+  content: "\e951";
+}
+.icon-genome-browser:before {
+  content: "\e952";
+}
+.icon-genome-features-cds:before {
+  content: "\e953";
+}
+.icon-genome-features:before {
+  content: "\e954";
+}
+.icon-genome-group .path1:before {
+  content: "\e955";
   color: rgb(1, 1, 1);
 }
 .icon-genome-group .path2:before {
-  content: "\e944";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path3:before {
-  content: "\e945";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path4:before {
-  content: "\e946";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path5:before {
-  content: "\e947";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path6:before {
-  content: "\e948";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path7:before {
-  content: "\e949";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path8:before {
-  content: "\e94a";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path9:before {
-  content: "\e94b";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path10:before {
-  content: "\e94c";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path11:before {
-  content: "\e94d";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path12:before {
-  content: "\e94e";
-  margin-left: -1em;
-  color: rgb(1, 1, 1);
-}
-.icon-genome-group .path13:before {
-  content: "\e94f";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path14:before {
-  content: "\e950";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path15:before {
-  content: "\e951";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path16:before {
-  content: "\e952";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path17:before {
-  content: "\e953";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path18:before {
-  content: "\e954";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path19:before {
-  content: "\e955";
-  margin-left: -1em;
-  color: rgb(255, 255, 255);
-}
-.icon-genome-group .path20:before {
   content: "\e956";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path21:before {
+.icon-genome-group .path3:before {
   content: "\e957";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path22:before {
+.icon-genome-group .path4:before {
   content: "\e958";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path23:before {
+.icon-genome-group .path5:before {
   content: "\e959";
   margin-left: -1em;
-  color: rgb(1, 1, 1);
+  color: rgb(255, 255, 255);
 }
-.icon-genome-group .path24:before {
+.icon-genome-group .path6:before {
   content: "\e95a";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path25:before {
+.icon-genome-group .path7:before {
   content: "\e95b";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path26:before {
+.icon-genome-group .path8:before {
   content: "\e95c";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path27:before {
+.icon-genome-group .path9:before {
   content: "\e95d";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path28:before {
+.icon-genome-group .path10:before {
   content: "\e95e";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path29:before {
+.icon-genome-group .path11:before {
   content: "\e95f";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path30:before {
+.icon-genome-group .path12:before {
   content: "\e960";
   margin-left: -1em;
-  color: rgb(255, 255, 255);
+  color: rgb(1, 1, 1);
 }
-.icon-genome-group .path31:before {
+.icon-genome-group .path13:before {
   content: "\e961";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path32:before {
+.icon-genome-group .path14:before {
   content: "\e962";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome-group .path33:before {
+.icon-genome-group .path15:before {
   content: "\e963";
   margin-left: -1em;
   color: rgb(255, 255, 255);
 }
-.icon-genome:before {
+.icon-genome-group .path16:before {
   content: "\e964";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-git-pull-request:before {
+.icon-genome-group .path17:before {
   content: "\e965";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-group:before {
+.icon-genome-group .path18:before {
   content: "\e966";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-group2:before {
+.icon-genome-group .path19:before {
   content: "\e967";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-info-circle:before {
+.icon-genome-group .path20:before {
   content: "\e968";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-info:before {
+.icon-genome-group .path21:before {
   content: "\e969";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-level-down:before {
+.icon-genome-group .path22:before {
   content: "\e96a";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-level-up:before {
+.icon-genome-group .path23:before {
   content: "\e96b";
+  margin-left: -1em;
+  color: rgb(1, 1, 1);
 }
-.icon-lightbulb-o:before {
+.icon-genome-group .path24:before {
   content: "\e96c";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-list-unordered:before {
+.icon-genome-group .path25:before {
   content: "\e96d";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-lock:before {
+.icon-genome-group .path26:before {
   content: "\e96e";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-long-arrow-left:before {
+.icon-genome-group .path27:before {
   content: "\e96f";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-long-arrow-right:before {
+.icon-genome-group .path28:before {
   content: "\e970";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-map-o:before {
+.icon-genome-group .path29:before {
   content: "\e971";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-map:before {
+.icon-genome-group .path30:before {
   content: "\e972";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-object-group:before {
+.icon-genome-group .path31:before {
   content: "\e973";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-object-ungroup:before {
+.icon-genome-group .path32:before {
   content: "\e974";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-paint-brush:before {
+.icon-genome-group .path33:before {
   content: "\e975";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
 }
-.icon-pencil-square:before {
+.icon-genome:before {
   content: "\e976";
 }
-.icon-perspective-Feature:before {
+.icon-git-pull-request:before {
   content: "\e977";
 }
-.icon-perspective-FeatureList:before {
+.icon-group:before {
   content: "\e978";
 }
-.icon-perspective-Genome:before {
+.icon-info-circle:before {
   content: "\e979";
 }
-.icon-perspective-GenomeGroup:before {
+.icon-info:before {
   content: "\e97a";
 }
-.icon-perspective-GenomeList:before {
+.icon-level-down:before {
   content: "\e97b";
 }
-.icon-perspective-TaxonList:before {
+.icon-level-up:before {
   content: "\e97c";
 }
-.icon-perspective-Taxonomy:before {
+.icon-lightbulb-o:before {
   content: "\e97d";
 }
-.icon-pie-chart:before {
+.icon-list-unordered:before {
   content: "\e97e";
 }
-.icon-plus-circle:before {
+.icon-lock:before {
   content: "\e97f";
 }
-.icon-print:before {
+.icon-long-arrow-left:before {
   content: "\e980";
 }
-.icon-question-circle-o:before {
+.icon-long-arrow-right:before {
   content: "\e981";
 }
-.icon-random:before {
+.icon-map-o:before {
   content: "\e982";
 }
-.icon-repeat:before {
+.icon-map:before {
   content: "\e983";
 }
-.icon-rotate-left:before {
+.icon-object-group:before {
   content: "\e984";
 }
-.icon-search-minus:before {
+.icon-object-ungroup:before {
   content: "\e985";
 }
-.icon-search-plus:before {
+.icon-paint-brush:before {
   content: "\e986";
 }
-.icon-selection-Experiment:before {
+.icon-pencil-square:before {
   content: "\e987";
 }
-.icon-selection-ExperimentList:before {
+.icon-pie-chart:before {
   content: "\e988";
 }
-.icon-selection-Feature:before {
+.icon-plus-circle:before {
   content: "\e989";
 }
-.icon-selection-FeatureGroup:before {
+.icon-print:before {
   content: "\e98a";
 }
-.icon-selection-FeatureList:before {
+.icon-random:before {
   content: "\e98b";
 }
-.icon-selection-Filter:before {
+.icon-repeat:before {
   content: "\e98c";
 }
-.icon-selection-Genome-Alt-2:before {
+.icon-rotate-left:before {
   content: "\e98d";
 }
-.icon-selection-Genome-Alt .path1:before {
+.icon-search-minus:before {
   content: "\e98e";
-  color: rgb(35, 31, 32);
 }
-.icon-selection-Genome-Alt .path2:before {
+.icon-search-plus:before {
   content: "\e98f";
-  margin-left: -1.0439453125em;
-  color: rgb(35, 31, 32);
-}
-.icon-selection-Genome-Alt .path3:before {
-  content: "\e990";
-  margin-left: -1.0439453125em;
-  color: rgb(35, 31, 32);
-}
-.icon-selection-Genome-Alt .path4:before {
-  content: "\e991";
-  margin-left: -1.0439453125em;
-  color: rgb(35, 31, 32);
-}
-.icon-selection-Genome-Alt .path5:before {
-  content: "\e992";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path6:before {
-  content: "\e993";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path7:before {
-  content: "\e994";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path8:before {
-  content: "\e995";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path9:before {
-  content: "\e996";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path10:before {
-  content: "\e997";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path11:before {
-  content: "\e998";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path12:before {
-  content: "\e999";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path13:before {
-  content: "\e99a";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome-Alt .path14:before {
-  content: "\e99b";
-  margin-left: -1.0439453125em;
-  color: rgb(1, 1, 1);
-}
-.icon-selection-Genome:before {
-  content: "\e99c";
-}
-.icon-selection-GenomeGroup:before {
-  content: "\e99d";
-}
-.icon-selection-GenomeList:before {
-  content: "\e99e";
-}
-.icon-selection-TaxonList:before {
-  content: "\e99f";
-}
-.icon-selection-Taxonomy:before {
-  content: "\e9a0";
 }
 .icon-split:before {
-  content: "\e9a1";
+  content: "\e990";
 }
 .icon-square-o:before {
-  content: "\e9a2";
+  content: "\e991";
 }
 .icon-square:before {
-  content: "\e9a3";
+  content: "\e992";
 }
 .icon-table:before {
-  content: "\e9a4";
-}
-.icon-target-ApplyFilter .path1:before {
-  content: "\e9a5";
-  color: rgb(35, 31, 32);
-}
-.icon-target-ApplyFilter .path2:before {
-  content: "\e9a6";
-  margin-left: -0.986328125em;
-  color: rgb(35, 31, 32);
-}
-.icon-target-ApplyFilter .path3:before {
-  content: "\e9a7";
-  margin-left: -0.986328125em;
-  color: rgb(35, 31, 32);
-}
-.icon-target-ApplyFilter .path4:before {
-  content: "\e9a8";
-  margin-left: -0.986328125em;
-  color: rgb(35, 31, 32);
-}
-.icon-target-ApplyFilter .path5:before {
-  content: "\e9a9";
-  margin-left: -0.986328125em;
-  color: rgb(35, 31, 32);
-}
-.icon-target-ApplyFilter .path6:before {
-  content: "\e9aa";
-  margin-left: -0.986328125em;
-  color: rgb(1, 1, 1);
-}
-.icon-target-Feature:before {
-  content: "\e9ab";
-}
-.icon-target-FeatureGroup:before {
-  content: "\e9ac";
-}
-.icon-target-FeatureList:before {
-  content: "\e9ad";
-}
-.icon-target-Genome:before {
-  content: "\e9ae";
-}
-.icon-target-GenomeGroup:before {
-  content: "\e9af";
-}
-.icon-target-GenomeList:before {
-  content: "\e9b0";
-}
-.icon-target-TaxonList:before {
-  content: "\e9b1";
-}
-.icon-target-Taxonomy:before {
-  content: "\e9b2";
+  content: "\e993";
 }
 .icon-tasks:before {
-  content: "\e9b3";
+  content: "\e994";
 }
 .icon-taxonomy:before {
-  content: "\e9b4";
+  content: "\e995";
 }
 .icon-th-list:before {
-  content: "\e9b5";
+  content: "\e996";
 }
 .icon-trash:before {
-  content: "\e9b6";
+  content: "\e997";
 }
 .icon-unlock-alt:before {
-  content: "\e9b7";
+  content: "\e998";
 }
 .icon-unlock:before {
-  content: "\e9b8";
+  content: "\e999";
 }
 .icon-upload:before {
-  content: "\e9b9";
-}
-.icon-user-plus:before {
-  content: "\e9ba";
-}
-.icon-user:before {
-  content: "\e9bb";
+  content: "\e99a";
 }
 .icon-venn_circles:before {
-  content: "\e9bc";
+  content: "\e99b";
 }
 .icon-x:before {
-  content: "\e9bd";
+  content: "\e99c";
 }
 .fa-lg {
   font-size: 1.33333333em;
@@ -10497,14 +10360,19 @@ div.appsublabel {
     margin-top: 10px;
 }
 .blast_result {
-    height: 500px;
+    height: 700px;
 }
 .blast_result .dgrid-column-expand {
     width: 20px;
 }
+.blast_result .dgrid-column-product {
+    width: 20%;
+}
 .blast_result .dgrid-column-identity,
 .blast_result .dgrid-column-q_coverage,
 .blast_result .dgrid-column-s_coverage,
+.blast_result .dgrid-column-na_length,
+.blast_result .dgrid-column-aa_length,
 .blast_result .dgrid-column-length,
 .blast_result .dgrid-column-score,
 .blast_result .dgrid-column-evalue {
