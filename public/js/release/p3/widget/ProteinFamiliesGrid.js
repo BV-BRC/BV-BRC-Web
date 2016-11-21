@@ -1,11 +1,11 @@
 define("p3/widget/ProteinFamiliesGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "./GridSelector",
 	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
-			BorderContainer, ContentPane,
+			BorderContainer, ContentPane, selector,
 			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
@@ -18,7 +18,7 @@ define("p3/widget/ProteinFamiliesGrid", [
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			family_id: {label: 'ID', field: 'family_id'},
 			feature_count: {label: 'Proteins', field: 'feature_count'},
 			genome_count: {label: 'Genomes', field: 'genome_count'},
@@ -131,6 +131,15 @@ define("p3/widget/ProteinFamiliesGrid", [
 				Topic.publish(this.topicId, "updatePfState", this.pfState);
 				Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
 			}
+		},
+		_selectAll: function(){
+
+			this._unloadedData = {};
+
+			return Deferred.when(this.store.data.map(function(d){
+				this._unloadedData[d['family_id']] = d;
+				return d['family_id'];
+			}, this));
 		},
 		createStore: function(server, token, state){
 

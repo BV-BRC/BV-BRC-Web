@@ -481,7 +481,9 @@ body.patric.claro .dijitTabDisabled {
 }
 
 .dgrid .dgrid-selector {
-    width: 20px;
+    width: 3%;
+    min-width: 18px;
+    max-width: 20px;
     padding: 0;
     margin: 0;
     text-align: center;

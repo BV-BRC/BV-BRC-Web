@@ -1,11 +1,11 @@
 define("p3/widget/TranscriptomicsGeneGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "./GridSelector",
 	"./PageGrid", "./formatter", "../store/TranscriptomicsGeneMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
-			BorderContainer, ContentPane,
+			BorderContainer, ContentPane, selector,
 			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
@@ -18,7 +18,7 @@ define("p3/widget/TranscriptomicsGeneGrid", [
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			genome_name: {label: 'Genome', field: 'genome_name'},
 			patric_id: {label: 'PATRIC ID', field: 'patric_id'},
 			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag'},
@@ -119,6 +119,15 @@ define("p3/widget/TranscriptomicsGeneGrid", [
 				Topic.publish(this.topicId, "updateTgState", this.tgState);
 				Topic.publish(this.topicId, "requestHeatmapData", this.tgState);
 			}
+		},
+		_selectAll: function(){
+
+			this._unloadedData = {};
+
+			return Deferred.when(this.store.data.map(function(d){
+				this._unloadedData[d[this.primaryKey]] = d;
+				return d[this.primaryKey];
+			}, this));
 		},
 		createStore: function(server, token, state){
 

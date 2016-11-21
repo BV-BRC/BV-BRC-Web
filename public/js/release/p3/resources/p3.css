@@ -10356,9 +10356,6 @@ div.appsublabel {
         display: table-cell; 
         border-right: 1px solid #bbb;
 }
-.patric .dgrid-cell.field-Selection-Checkboxes {
-    width: 2%;
-}
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
@@ -10505,12 +10502,6 @@ div.appsublabel {
 .blast_result .dgrid-column-expand {
     width: 20px;
 }
-.blast_result .dgrid-column-product {
-    width: 30%;
-}
-.blast_result .dgrid-column-genome {
-    width: 20%;
-}
 .blast_result .dgrid-column-identity,
 .blast_result .dgrid-column-q_coverage,
 .blast_result .dgrid-column-s_coverage,
@@ -10527,8 +10518,8 @@ div.appsublabel {
     background: #fff;
 }
 .blast_result .detail .align {
-    width: 670px;
-    padding: 20px;
+    width: 710px;
+    padding: 10px 20px;
 }
 .blast_result .detail .align pre {
     font-size: 100%;
@@ -11925,7 +11916,9 @@ body.patric.claro .dijitTabDisabled {
     color: black;
 }
 .dgrid .dgrid-selector {
-    width: 20px;
+    width: 3%;
+    min-width: 18px;
+    max-width: 20px;
     padding: 0;
     margin: 0;
     text-align: center;

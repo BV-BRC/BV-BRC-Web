@@ -8,9 +8,6 @@
 }
 
 /*  */
-.patric .dgrid-cell.field-Selection-Checkboxes {
-    width: 2%;
-}
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
@@ -191,12 +188,6 @@
     width: 20px;
 }
 
-.blast_result .dgrid-column-product {
-    width: 30%;
-}
-.blast_result .dgrid-column-genome {
-    width: 20%;
-}
 .blast_result .dgrid-column-identity,
 .blast_result .dgrid-column-q_coverage,
 .blast_result .dgrid-column-s_coverage,
@@ -216,8 +207,8 @@
 }
 
 .blast_result .detail .align {
-    width: 670px;
-    padding: 20px;
+    width: 710px;
+    padding: 10px 20px;
 }
 .blast_result .detail .align pre {
     font-size: 100%;
