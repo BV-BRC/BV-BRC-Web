@@ -437,7 +437,7 @@ define([
 				false
 			], [
 				"ViewSpgeneEvidence",
-				"MultiButton fa icon-selection-Feature fa-2x",
+				"MultiButton fa icon-selection-VirulenceFactor fa-2x",
 				{
 					label: "VF EVID",
 					validTypes: ["*"],
