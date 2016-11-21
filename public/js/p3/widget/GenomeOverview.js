@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
-	"dojo/dom-class", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
+	"dojo/dom-class", "dojo/query", "dojo/dom-style", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
 	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
 	"./ExternalItemFormatter", "./AdvancedDownload"
 
 ], function(declare, lang, on, xhr, Topic,
-			domClass, Template, domConstruct,
+			domClass, domQuery, domStyle, Template, domConstruct,
 			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
 			ExternalItemFormatter, AdvancedDownload){
@@ -41,8 +41,15 @@ define([
 				if(this[w]){
 					this[w].set('query', "eq(genome_id," + this.genome.genome_id + ")")
 				}
-			}, this)
+			}, this);
 
+			// display/hide download button per public status
+			if(genome.public){
+				domStyle.set(domQuery("div.ActionButtonWrapper.btnDownloadGenome")[0], "display", "inline-block");
+			}else{
+				// private, hide button
+				domStyle.set(domQuery("div.ActionButtonWrapper.btnDownloadGenome")[0], "display", "none");
+			}
 		},
 
 		"createSummary": function(genome){
