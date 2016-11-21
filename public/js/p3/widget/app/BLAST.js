@@ -108,7 +108,7 @@ define([
 
 			this.result = new BlastResultContainer({
 				id: this.id + "_blastResult",
-				style: "min-height: 500px; visibility:hidden;"
+				style: "min-height: 700px; visibility:hidden;"
 			});
 			this.result.placeAt(query(".blast_result")[0]);
 			this.result.startup();
@@ -250,13 +250,9 @@ define([
 			_self.result.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
 			domClass.add(query(".blast_form")[0], "hidden");
+			domClass.add(query(".appSubmissionArea")[0], "hidden");
 			domClass.add(query(".blast_error")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "visible");
-
-			// var data = this.formatJSONResult(this.test_result_features(), "genome_feature");
-			// var data = this.formatJSONResult(this.test_result_contigs(), "genome_sequence");
-			// this.updateResult(data, "genome_sequence");
-			// return;
 
 			def.promise.then(function(q){
 				_self.result.set('state', {query: q, resultType: resultType});
@@ -266,6 +262,7 @@ define([
 
 		resubmit: function(){
 			domClass.remove(query(".blast_form")[0], "hidden");
+			domClass.remove(query(".appSubmissionArea")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "hidden");
 		},
 
