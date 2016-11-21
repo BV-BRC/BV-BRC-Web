@@ -44,7 +44,7 @@ define([
 			}, this);
 
 			// display/hide download button per public status
-			if(genome.public){
+			if(genome['public']){
 				domStyle.set(domQuery("div.ActionButtonWrapper.btnDownloadGenome")[0], "display", "inline-block");
 			}else{
 				// private, hide button
