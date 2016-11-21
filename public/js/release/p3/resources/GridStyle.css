@@ -6,9 +6,6 @@
         display: table-cell; 
         border-right: 1px solid #bbb;
 }
-.patric .dgrid-cell.field-Selection-Checkboxes {
-    width: 2%;
-}
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
@@ -171,8 +168,8 @@
     background: #fff;
 }
 .blast_result .detail .align {
-    width: 670px;
-    padding: 20px;
+    width: 710px;
+    padding: 10px 20px;
 }
 .blast_result .detail .align pre {
     font-size: 100%;
