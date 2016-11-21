@@ -39,7 +39,7 @@ define([
 				"GenomeBrowser",
 				"fa icon-genome-browser fa-2x",
 				{
-					label: "GBrws",
+					label: "Browser",
 					multiple: false,
 					validTypes: ["*"],
 					validContainerTypes: ["sequence_data"],
