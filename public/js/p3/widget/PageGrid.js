@@ -20,6 +20,11 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
         upType = hasPointer ? hasPointer + (hasMSPointer ? "Up" : "up") : "mouseup";
 
 
+        function byId(id){
+                return document.getElementById(id);
+        }
+
+
 	return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer,DijitRegistry, Selection], {
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
@@ -58,6 +63,48 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 			selfAccept: false,
 			copyOnly: true
 		},
+
+                row: function(target){
+                        // summary:
+                        //              Get the row object by id, object, node, or event
+                        var id;
+
+                        if(target instanceof this._Row){ return target; } // no-op; already a row
+
+                        if(target.target && target.target.nodeType){
+                                // event
+                                target = target.target;
+                        }
+                        if(target.nodeType){
+                                var object;
+                                do{
+                                        var rowId = target.id;
+                                        if((object = this._rowIdToObject[rowId])){
+                                                return new this._Row(rowId.substring(this.id.length + 5), object, target);
+                                        }
+                                        target = target.parentNode;
+                                }while(target && target != this.domNode);
+                                return;
+                        }
+                        if(typeof target == "object"){
+                                // assume target represents a store item
+                                if (this.store) {
+                                        console.log("Target Object: ", target);
+                                        console.log(" Store: ", this.store);
+                                        id = this.store.getIdentity(target);
+                                }else{
+                                        console.log("target: ", target, " this: ", this);
+                                        id = target;
+                                        target = this._rowIdToObject[this.id + "-row-" + target[this.idProperty]];
+                                }
+                        }else{
+                                // assume target is a row ID
+                                id = target;
+                                target = this._rowIdToObject[this.id + "-row-" + id];
+                        }
+                        return new this._Row(id, target, byId(this.id + "-row-" + id));
+                },
+
 		_setApiServer: function(server, token){
 			//console.log("_setapiServerAttr: ", server);
 			this.apiServer = server;

@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane","./GridSelector",
 	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
-			BorderContainer, ContentPane,
+			BorderContainer, ContentPane,selector,
 			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
@@ -18,7 +18,7 @@ define([
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({}),
 			family_id: {label: 'ID', field: 'family_id'},
 			feature_count: {label: 'Proteins', field: 'feature_count'},
 			genome_count: {label: 'Genomes', field: 'genome_count'},

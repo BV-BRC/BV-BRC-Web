@@ -13,21 +13,21 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 	var legend = [
 		'<div>',
-			'<h5>HeatMap Cells</h5>',
-			'<p>Cell color represents the number of proteins <br/> from a specific genome in a given protein family.</p>',
-			'<br>',
-				'<span class="heatmap-legend-entry black"></span>',
-				'<span class="heatmap-legend-label">0</span>',
-				'<div class="clear"></div>',
-				'<span class="heatmap-legend-entry yellow"></span>',
-				'<span class="heatmap-legend-label">1</span>',
-				'<div class="clear"></div>',
-				'<span class="heatmap-legend-entry orange"></span>',
-				'<span class="heatmap-legend-label">2</span>',
-				'<div class="clear"></div>',
-				'<span class="heatmap-legend-entry red"></span>',
-				'<span class="heatmap-legend-label">3+</span>',
-				'<div class="clear"></div>',
+		'<h5>HeatMap Cells</h5>',
+		'<p>Cell color represents the number of proteins <br/> from a specific genome in a given protein family.</p>',
+		'<br>',
+		'<span class="heatmap-legend-entry black"></span>',
+		'<span class="heatmap-legend-label">0</span>',
+		'<div class="clear"></div>',
+		'<span class="heatmap-legend-entry yellow"></span>',
+		'<span class="heatmap-legend-label">1</span>',
+		'<div class="clear"></div>',
+		'<span class="heatmap-legend-entry orange"></span>',
+		'<span class="heatmap-legend-label">2</span>',
+		'<div class="clear"></div>',
+		'<span class="heatmap-legend-entry red"></span>',
+		'<span class="heatmap-legend-label">3+</span>',
+		'<div class="clear"></div>',
 		'</div>'
 	].join("\n");
 
@@ -52,7 +52,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 					if(this.isPopupOpen){
 						this.isPopupOpen = false;
 						popup.close();
-					}else {
+					}else{
 						popup.open({
 							parent: this,
 							popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
@@ -133,12 +133,12 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				function(){
 
 					// dialog for anchoring
-					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
-						this.tooltip_anchoring = new TooltipDialog({
-							content: this._buildPanelAnchoring()
-						});
-						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
-					}
+					// if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
+					this.tooltip_anchoring = new TooltipDialog({
+						content: this._buildPanelAnchoring()
+					});
+					this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
+					// }
 
 					if(this.isPopupOpen){
 						this.isPopupOpen = false;
@@ -432,14 +432,23 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 			var self = this;
 			var pfState = self.pfState;
-			var options = [{value:'', label:'Select a genome'}];
+			var options = [{value: '', label: 'Select a genome'}];
 			options = options.concat(pfState.genomeIds.map(function(genomeId){
 				return {
 					value: genomeId,
 					label: pfState.genomeFilterStatus[genomeId].getLabel()
 				};
 			}).sort(function(a, b){
-				return a.label - b.label;
+				// return a.label - b.label;
+				if(a.label < b.label){
+					return -1;
+				}
+				else if(a.label > b.label){
+					return 1;
+				}
+				else{
+					return 0;
+				}
 			}));
 
 			var anchor = new Select({
@@ -557,8 +566,13 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
-				var query = "?in(feature_id,(" + features.map(function(d){ return d.feature_id; }) + "))";
-				Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
+				var query = "?in(feature_id,(" + features.map(function(d){
+						return d.feature_id;
+					}) + "))";
+				Topic.publish("/navigate", {
+					href: "/view/FeatureList/" + query + "#view_tab=features",
+					target: "blank"
+				});
 
 				_self.dialog.hide();
 			});

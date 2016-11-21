@@ -16,7 +16,7 @@ define([
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
-			this.watch("state", lang.hitch(this,"onSetState"));
+			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
 		clear: function(){
@@ -55,8 +55,10 @@ define([
 			}
 		},
 
-		onSetState: function(attr,oldState,state){
-			if (!state || !state.feature_ids || state.feature_ids.length<1){ return;}
+		onSetState: function(attr, oldState, state){
+			if(!state || !state.feature_ids || state.feature_ids.length < 1){
+				return;
+			}
 			this.clear();
 		},
 
@@ -82,15 +84,15 @@ define([
 				return def.promise;
 			}
 
+			Topic.publish("PathwaySummary", "showLoadingMask");
 
-			var postData =  {
+			var postData = {
 				q: "feature_id:(" + _self.state.feature_ids.join(" OR ") + ")",
 				fl: "pathway_id,pathway_name,feature_id,genome_id",
 				rows: 25000,
 				facet: true,
 				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
 			};
-
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/pathway/', {
 				handleAs: 'json',
@@ -212,7 +214,7 @@ define([
 
 					_self.setData(data);
 					_self._loaded = true;
-					// Topic.publish("ProteinFamilies", "hideLoadingMask");
+					Topic.publish("PathwaySummary", "hideLoadingMask");
 					return true;
 				}, function(err){
 					console.error("Error in ProteinFamiliesStore: ", err)

@@ -248,7 +248,7 @@ define("p3/widget/GeneExpressionContainer", [
 				else if(dz < 0){
 					range += "&lt(z_score," + dz + ")";
 				}
-				var query = _self.state.search + range + "&sort(+pid)&limit(25000)";
+				var query = _self.state.search + range + "&sort(+id)&limit(25000)";
 
 				//var query = 	"eq(FOO,bar)";
 				console.log("DownloadQuery: ", dataType, query);
@@ -264,7 +264,9 @@ define("p3/widget/GeneExpressionContainer", [
 				}
 
 				baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
-				console.log("DownloadQuery: baseUrl", baseUrl);
+				console.log("DownloadQuery: ", query, " baseUrl:", baseUrl);
+
+
 
 				var form = domConstruct.create("form", {
 					style: "display: none;",

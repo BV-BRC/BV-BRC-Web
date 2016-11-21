@@ -8,7 +8,7 @@ define("p3/widget/AMRPanelSummary", [
 			SummaryWidget){
 
 	return declare([SummaryWidget], {
-		templateString: '<div class="SummaryWidget"><div class="tableNode" data-dojo-attach-point="tableNode"></div></div>',
+		templateString: '<div class="SummaryWidget"><div class="loadingNode" data-dojo-attach-point="loadingNode">Loading...</div><div class="tableNode" data-dojo-attach-point="tableNode"></div></div>',
 		dataModel: "genome_amr",
 		query: "",
 		view: "table",
