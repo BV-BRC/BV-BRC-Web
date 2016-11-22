@@ -1,16 +1,88 @@
 define([
 	"dojo/_base/declare", "dojo/parser",
-	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr",
-	"dijit/registry", "dojo/request", "dijit/layout/ContentPane",
+	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr","dojo/dom-style",
+	"dijit/registry", "dojo/request", "dijit/layout/ContentPane","dojo/_base/fx",
 	"dojo/_base/Deferred","dojo/query","dojo/NodeList-dom",
 	"dojo/ready", "dojo/parser", "rql/query", "dojo/_base/lang",
-	"p3/router", "dijit/Dialog", "dojo/dom-construct"
+	"p3/router", "dijit/Dialog", "dojo/dom-construct","dojo/window"
 ], function(declare, parser,
-			Topic, on, dom, domClass, domAttr,
-			Registry, xhr, ContentPane,
+			Topic, on, dom, domClass, domAttr,domStyle,
+			Registry, xhr, ContentPane,fx,
 			Deferred,query,nodeListDom,
 			Ready, Parser, rql, lang,
-			Router, Dialog, domConstruct){
+			Router, Dialog, domConstruct, winUtils){
+
+	var NMDialog = declare([Dialog], {
+		show: function(){
+                                   // summary:
+                        //              Display the dialog
+                        // returns: dojo/promise/Promise
+                        //              Promise object that resolves when the display animation is complete
+
+                        if(this.open){
+                                return resolvedDeferred.promise;
+                        }
+
+                        if(!this._started){
+                                this.startup();
+                        }
+
+                        // first time we show the dialog, there's some initialization stuff to do
+                        if(!this._alreadyInitialized){
+                                this._setup();
+                                this._alreadyInitialized = true;
+                        }
+
+                        if(this._fadeOutDeferred){
+                                // There's a hide() operation in progress, so cancel it, but still call DialogLevelManager.hide()
+                                // as though the hide() completed, in preparation for the DialogLevelManager.show() call below.
+                                this._fadeOutDeferred.cancel();
+
+                        }
+
+                        // Recenter Dialog if user scrolls browser.  Connecting to document doesn't work on IE, need to use window.
+                        // Be sure that event object doesn't get passed to resize() method, because it's expecting an optional
+                        // {w: ..., h:...} arg.
+                        var win = winUtils.get(this.ownerDocument);
+                        this._modalconnects.push(on(win, "scroll", lang.hitch(this, "resize", null)));
+
+                        this._modalconnects.push(on(this.domNode, "keydown", lang.hitch(this, "_onKey")));
+
+                        domStyle.set(this.domNode, {
+                                opacity: 0,
+                                display: ""
+                        });
+
+                        this._set("open", true);
+                        this._onShow(); // lazy load trigger
+
+                        this.resize();
+                        this._position();
+
+                        // fade-in Animation object, setup below
+                        var fadeIn;
+
+                        this._fadeInDeferred = new Deferred(lang.hitch(this, function(){
+                                fadeIn.stop();
+                                delete this._fadeInDeferred;
+                        }));
+
+                        // If delay is 0, code below will delete this._fadeInDeferred instantly, so grab promise while we can.
+                        var promise = this._fadeInDeferred.promise;
+
+                        fadeIn = fx.fadeIn({
+                                node: this.domNode,
+                                duration: this.duration,
+                                onEnd: lang.hitch(this, function(){
+            	                        this._fadeInDeferred.resolve(true);
+                                        delete this._fadeInDeferred;
+                                })
+                        }).play();
+
+                        return promise;
+		}
+	})
+
 	return declare(null, {
 		panels: {},
 		constructor: function(opts){
@@ -124,6 +196,54 @@ define([
 					})
 					w.startup();
 					_self.dialog.show();
+				});
+
+				// console.log("Open Dialog", type);
+			});
+
+
+			on(document, ".NonmodalDialogButton:click", function(evt){
+				// console.log("DialogButton Click", evt);
+				evt.preventDefault();
+				evt.stopPropagation();
+				var params = {};
+
+				var rel = evt.target.attributes.rel.value;
+				var parts = rel.split(":");
+				console.log("Pars: ", parts);
+				var type = parts[0];
+				params = parts.slice(1).join(":");
+
+				if (params.charAt(0)=="{"){
+					params = JSON.parse(params);
+				}
+
+				var panel = _self.panels[type];
+				if (!panel){
+					throw error("Ivalid Panel: " + type);
+					return;
+				}
+
+				if (panel.requireAuth && (!_self.user || !_self.user.id)){
+					Topic.publish("/login");
+					return;
+				}
+				console.log("W Params: ", params, "W type: ", type);;
+				var w = _self.loadPanel(type, params);
+				Deferred.when(w, function(w){
+					if(!_self.dialog){
+						_self.nmDialog = new NMDialog({parseOnLoad: false, title: w.title});
+					}else{
+						_self.nmDialog.set('title', w.title);
+					}
+					_self.nmDialog.set('content', '');
+					domConstruct.place(w.domNode, _self.nmDialog.containerNode);
+					w.on("ContentReady", function(){
+						_self.nmDialog.resize();
+						_self.nmDialog._position();
+					})
+					w.startup();
+					_self.nmDialog.show();
 				});
 
 				// console.log("Open Dialog", type);
