@@ -711,6 +711,13 @@ define([
 								//thisB.addRefseqs(dojo.fromJson(o));
 								console.log("After Add RefSeqs fromJson")
 							}
+
+
+                            Object.keys(this.config.stores).forEach(dojo.hitch(this, function(storeName){
+                                if(this.config.stores[storeName]["label"]=="refseqs"){
+                                    this.config.stores["refseqs"]=this.config.stores[storeName];
+                                }
+                            }));
 							deferred.resolve({success: true});
 						}),
 						function(e){
