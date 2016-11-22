@@ -238,7 +238,16 @@ define([
 						}
 						this.dataMap[geneID] = record;
 						this.alt_labels["genome_name"][geneID] = this.data.map[geneID]["genome_name"];
-						this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
+                        if("patric_id" in this.data.map[geneID]){
+						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
+                        }
+                        else if("refseq_locus_tag" in this.data.map[geneID]){
+						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["refseq_locus_tag"];
+                        }
+                        else{
+						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["feature_id"];
+                        }
+
 					}
 				}
 				else if(line.trim() != "" && geneID in this.dataMap){
