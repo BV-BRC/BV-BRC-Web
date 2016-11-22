@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"./PageGrid", "./formatter", "../store/IDMappingMemoryStore"
+	"./PageGrid", "./formatter", "../store/IDMappingMemoryStore", "./GridSelector"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
-			Grid, formatter, Store){
+			Grid, formatter, Store, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -15,8 +15,9 @@ define([
 		primaryKey: "idx",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
+        allowSelectAll: false,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({}),
 			genome_name: {label: 'Genome Name', field: 'genome_name'},
 			genome_id: {label: 'Genome ID', field: 'genome_id', hidden: true},
 			accession: {label: 'Accession', field: 'accession', hidden: true},
@@ -48,6 +49,20 @@ define([
 			this.queryOptions = {
 				sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
 			};
+		},
+
+
+		_selectAll: function(){
+
+			this._rows = [];
+            var _self=this;
+            _self._unloadedData = {}
+			return Deferred.when(this.store.data.map(function(d,idx){
+                _self._unloadedData[idx] = d;
+                d.idx=idx;
+
+				return idx;
+			}, this));
 		},
 
 		startup: function(){
