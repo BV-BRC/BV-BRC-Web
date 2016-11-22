@@ -90,8 +90,13 @@ define([
 
 				var rel = evt.target.attributes.rel.value;
 				var parts = rel.split(":");
+				console.log("Pars: ", parts);
 				var type = parts[0];
-				params = parts[1];
+				params = parts.slice(1).join(":");
+
+				if (params.charAt(0)=="{"){
+					params = JSON.parse(params);
+				}
 
 				var panel = _self.panels[type];
 				if (!panel){
@@ -103,7 +108,7 @@ define([
 					Topic.publish("/login");
 					return;
 				}
-
+				console.log("W Params: ", params, "W type: ", type);;
 				var w = _self.loadPanel(type, params);
 				Deferred.when(w, function(w){
 					if(!_self.dialog){
@@ -113,8 +118,12 @@ define([
 					}
 					_self.dialog.set('content', '');
 					domConstruct.place(w.domNode, _self.dialog.containerNode);
-					_self.dialog.show();
+					w.on("ContentReady", function(){
+						_self.dialog.resize();
+						_self.dialog._position();
+					})
 					w.startup();
+					_self.dialog.show();
 				});
 
 				// console.log("Open Dialog", type);
@@ -248,7 +257,7 @@ define([
 		},
 		loadPanel: function(id, params, callback){
 			var def = new Deferred();
-			// console.log("Load Panel", id, params);
+			console.log("Load Panel", id, params);
 			var p = this.panels[id];
 			if(!p.params){
 				p.params = {};
@@ -256,6 +265,7 @@ define([
 
 			p.params.title = p.params.title || p.title;
 			p.params.closable = true;
+
 			if(p.ctor && typeof p.ctor == "function"){
 				var w = new p.ctor(p.params);
 				def.resolve(w);
@@ -270,12 +280,13 @@ define([
 					var prop;
 					var ctor = arguments[arguments.length - 1];
 					var w = new ctor(p.params);
-					if(params && p.dataParam){
-						w.set(p.dataParam, params);
-					}else if(typeof params == "object"){
+
+					if(typeof params == "object"){
 						for(prop in params){
 							w.set(prop, params[prop]);
 						}
+					}else if (params && p.dataParam){
+						w.set(p.dataParam, params);
 					}
 					if(p.wrap){
 						var cp = new ContentPane({title: p.params.title || p.title, closable: true});
