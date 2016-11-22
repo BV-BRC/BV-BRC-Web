@@ -15,7 +15,7 @@ define([
 		primaryKey: "idx",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
-        allowSelectAll: false,
+        //allowSelectAll: false,
 		columns: {
 			"Selection Checkboxes": selector({}),
 			genome_name: {label: 'Genome Name', field: 'genome_name'},
@@ -54,14 +54,11 @@ define([
 
 		_selectAll: function(){
 
-			this._rows = [];
-            var _self=this;
-            _self._unloadedData = {}
-			return Deferred.when(this.store.data.map(function(d,idx){
-                _self._unloadedData[idx] = d;
-                d.idx=idx;
+			this._unloadedData = {};
 
-				return idx;
+			return Deferred.when(this.store.data.map(function(d){
+				this._unloadedData[d[this.primaryKey]] = d;
+				return d[this.primaryKey];
 			}, this));
 		},
 
