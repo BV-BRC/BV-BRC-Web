@@ -179,9 +179,19 @@ define([
 				this.buildErrorMessage(err);
 			}));
 
-			/* test
-			this._loadingDeferred = when('a', lang.hitch(this, function(r){
-				// var data = this.formatJSONResult(this.test_result_features(), "genome_feature");
+			/* load feature level test data
+			this._loadingDeferred = when('', lang.hitch(this, function(){
+				var data = this.formatJSONResult(this.test_result_features(), "genome_feature");
+
+				this.setData(data);
+				this._loaded = true;
+
+				Topic.publish(this.topicId, "hideLoadingMask");
+			}));
+			*/
+
+			/* load contig level test data
+			this._loadingDeferred = when('', lang.hitch(this, function(){
 				var data = this.formatJSONResult(this.test_result_contigs(), "genome_sequence");
 
 				this.setData(data);

@@ -105,13 +105,15 @@ define([
 					genome: {label: 'Genome', field: "genome_name"},
 					genome_id: {label: 'Genome ID', field: 'genome_id', hidden: true},
 					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
-					refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true},
+					refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag'},
 					gene: {label: 'Gene', field: 'gene'},
 					product: {label: 'Product', field: "function"},
+					na_length: {label: 'Length (NT)', field: "na_length"},
+					aa_length: {label: 'Length (AA)', field: "aa_length"},
+					length: {label: 'ALN Length', field: "length"},
 					identity: {label: 'Identity (%)', field: "pident"},
 					q_coverage: {label: 'Query cover (%)', field: "query_coverage"},
 					s_coverage: {label: 'Subject cover (%', field: "subject_coverage"},
-					length: {label: 'Length', field: "length"},
 					score: {label: 'Score', field: 'bitscore'},
 					evalue: {label: 'E value', field: 'evalue'}
 				}

@@ -19,7 +19,8 @@ define([
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			//"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			pid: {label: "pid", field: "pid", hidden: true},
 			feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true},
@@ -75,6 +76,16 @@ define([
 				this.refresh();
 			}
 			//console.log("GeneExpressionGrid _setState: store=", this.store);		
+		},
+		_selectAll: function(){
+
+			this._unloadedData = {};
+
+			return Deferred.when(this.store.data.map(function(d){
+				//console.log("In _selectAll, d=", d);
+				this._unloadedData[d['pid']] = d;
+				return d['pid'];
+			}, this));
 		},
 		startup: function(){
 			var _self = this;
