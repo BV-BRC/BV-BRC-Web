@@ -158,6 +158,25 @@ define([
 				_self.navigate(newState);
 			});
 
+			Router.register("\/help(\/.*)", function(params, oldPath, newPath, state){
+				// console.log("Upload URL Callback", params.newPath);
+				var newState = {href: params.newPath}
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
+				}
+
+				var path = params.params[0] || "/";
+				newState.widgetClass = "dijit/layout/ContentPane";
+				newState.style = "padding:0";
+				newState.value = /*_self.dataAPI +*/ "/public/help/" + path;
+				newState.set = "href";
+				newState.requireAuth = false;
+				newState.pageTitle = 'PATRIC';
+				// console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+
 			Router.register("\/workspace(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}

@@ -24,7 +24,7 @@ var contentViewer = require("./routes/content");
 var apps = require('./routes/apps');
 var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
-
+var help = require('./routes/help');
 var app = express();
 
 // view engine setup
@@ -141,6 +141,7 @@ app.use("/view", viewers);
 app.use("/search", search);
 app.use("/app", apps);
 app.use("/job", jobs);
+app.use("/help", help);
 app.use("/uploads", uploads);
 app.use('/users', users);
 app.get("/login",
