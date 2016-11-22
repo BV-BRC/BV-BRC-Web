@@ -7,7 +7,7 @@ define([
 
         return declare([ContentPane], {
 		helpId: "",
-		baseUrl: "/public/help/",
+		baseUrl: "/public/help",
 		style: "width: 640px; overflow: auto;",
 		section: null,
 

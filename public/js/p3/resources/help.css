@@ -1,0 +1,40 @@
+.HelpContent {
+	padding: 4px;
+}
+
+.HelpContent H2,
+.HelpContent H3,
+.HelpContent H4,
+.HelpContent H5 {
+	font-weight: 600;	
+	margin: 2px;
+	margin-bottom: 4px;
+	margin-top: 4px;
+}
+
+
+
+.HelpContent H1 {
+	font-size: 2em;
+	margin: 8px;
+}
+
+.HelpContent H2 {
+	font-size: 1.5em;
+	border-bottom: 1px solid #333;
+}
+
+.HelpContent H3 {
+	font-size: 1.3em;
+}
+
+.HelpContent H4 {
+	font-size: 1.1em;
+}
+.HelpContent H5 {
+	font-size: 1em;
+}
+
+.HelpContent SECTION {
+	padding: 4px;
+}
