@@ -40,7 +40,7 @@ define([
 
 			this.topicId = parent.topicId;
 
-			Topic.subscribe("TranscriptomicsGene", lang.hitch(this, function(){
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
 				// console.log("TranscriptomicsGeneGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
