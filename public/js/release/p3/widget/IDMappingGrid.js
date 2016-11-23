@@ -15,6 +15,7 @@ define("p3/widget/IDMappingGrid", [
 		primaryKey: "idx",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
+        //allowSelectAll: false,
 		columns: {
 			"Selection Checkboxes": selector({}),
 			genome_name: {label: 'Genome Name', field: 'genome_name'},
@@ -53,10 +54,11 @@ define("p3/widget/IDMappingGrid", [
 
 		_selectAll: function(){
 
-			this._rows = [];
+			this._unloadedData = {};
 
 			return Deferred.when(this.store.data.map(function(d){
-				return d;
+				this._unloadedData[d[this.primaryKey]] = d;
+				return d[this.primaryKey];
 			}, this));
 		},
 
