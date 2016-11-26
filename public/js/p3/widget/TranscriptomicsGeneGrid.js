@@ -108,13 +108,9 @@ define([
 			this.store.sort = sort;
 
 			if(sort.length > 0){
-				var newIds = [];
-				var idProperty = this.store.idProperty;
-				this.store.query({}, {sort: sort}).forEach(function(row){
-					newIds.push(row[idProperty]);
-				});
-				// console.log("update column order: ", newIds);
-				this.tgState.clusterColumnOrder = newIds;
+				this.tgState.columnSort = sort;
+				this.tgState.clusterColumnOrder = [];
+				// console.log("new order", this.tgState.columnSort);
 
 				Topic.publish(this.topicId, "updateTgState", this.tgState);
 				Topic.publish(this.topicId, "requestHeatmapData", this.tgState);
