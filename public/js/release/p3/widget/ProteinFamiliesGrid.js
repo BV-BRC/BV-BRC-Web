@@ -113,20 +113,11 @@ define("p3/widget/ProteinFamiliesGrid", [
 		},
 		_setSort: function(sort){
 			this.inherited(arguments);
-			// console.log("_setSort", sort);
-			// if(!this.store){
-			// 	return;
-			// }
 			this.store.sort = sort;
 
 			if(sort.length > 0){
-				var newIds = [];
-				var idProperty = this.store.idProperty;
-				this.store.query({}, {sort: sort}).forEach(function(row){
-					newIds.push(row[idProperty]);
-				});
-				// console.log("update column order: ", newIds);
-				this.pfState.clusterColumnOrder = newIds;
+				this.pfState.columnSort = sort;
+				this.pfState.clusterColumnOrder = [];
 
 				Topic.publish(this.topicId, "updatePfState", this.pfState);
 				Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
