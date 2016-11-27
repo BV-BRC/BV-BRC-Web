@@ -41,7 +41,7 @@ define([
 			if(this.is_first_load){
 				this.genome_ids = state.genome_ids; //copy elements
 				this.is_first_load = false;
-			}else if (arraysEqual(state.genome_ids, this.genome_ids)){
+			}else if(arraysEqual(state.genome_ids, this.genome_ids)){
 				// console.log("do not duplicate");
 				this._loaded = true;
 				Topic.publish(this.topicId, "hideLoadingMask");
@@ -90,9 +90,6 @@ define([
 					case "anchorByGenome":
 						this.anchorByGenome(value);
 						break;
-					case "updateClusterColumnOrder":
-						this._clustered = value;
-						break;
 					case "applyConditionFilter":
 						this.pfState = value;
 						this.conditionFilter();
@@ -121,13 +118,6 @@ define([
 			var data = this._original;
 			var newData = [];
 			var gfs = this.pfState.genomeFilterStatus;
-			var columnOrderMap;
-			if(this._clustered){
-				columnOrderMap = {};
-				this._clustered.forEach(function(colId, idx){
-					columnOrderMap[colId] = idx;
-				});
-			}
 
 			// var tsStart = window.performance.now();
 			var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
@@ -180,23 +170,11 @@ define([
 				}
 
 				if(!skip){
-					if(columnOrderMap){
-						if(columnOrderMap[family.family_id] >= 0){
-							newData.push(family);
-						}
-					}else{
-						newData.push(family);
-					}
+					newData.push(family);
 				}
 			}, this);
 			// console.log("after all filtering", newData.length);
 			// console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
-
-			if(columnOrderMap){
-				this.pfState.clusterColumnOrder = newData.map(function(f){
-					return f.family_id;
-				});
-			}
 
 			this.setData(newData);
 			this.set("refresh");
@@ -340,14 +318,11 @@ define([
 
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
-			var genomeOrderChangeMap = [];
 			var thisGFS = this.pfState.genomeFilterStatus;
 
 			if(genomeOrder !== [] && genomeOrder.length > 0){
 				this.pfState.genomeIds = genomeOrder;
 				genomeOrder.forEach(function(genomeId, idx){
-					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
-					genomeOrderChangeMap.push(thisGFS[genomeId].getIndex()); // keep the original position
 					thisGFS[genomeId].setIndex(idx);
 				});
 			}
@@ -367,8 +342,8 @@ define([
 			// cols - families
 			// console.warn(this);
 			var opts = {};
-			if(this.sort.length > 0){
-				opts.sort = this.sort;
+			if(this.pfState.columnSort && this.pfState.columnSort.length > 0){
+				opts.sort = this.pfState.columnSort;
 			}
 			var data = this.query("", opts);
 
@@ -383,16 +358,16 @@ define([
 				})
 			}
 
-			data.forEach(function(family){
+			data.filter(function(f){
+				return f !== undefined;
+			}).forEach(function(family){
 				var meta = {
 					'instances': family.feature_count,
 					'members': family.genome_count,
 					'min': family.aa_length_min,
 					'max': family.aa_length_max
 				};
-				if(genomeOrderChangeMap.length > 0){
-					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
-				}
+
 				var order = familyOrderMap[family.family_id];
 				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
 			});
@@ -521,32 +496,28 @@ define([
 
 			when(this.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
 
-				var isTransposed = this.pfState.heatmapAxis === 'Transposed';
+				var highlightedInAnchor = [], highlightedOutAnchor = [], leftOver = [];
+				var idx = this.pfState.genomeFilterStatus[genomeId].getIndex();
+				this.query('', {}).forEach(function(d){
 
-				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
-				if(isTransposed){
-					currentFamilyOrder = this.currentData.rows.map(function(row){
-						return row.rowID;
-					});
-				}else{
-					currentFamilyOrder = this.currentData.columns.map(function(col){
-						return col.colID;
-					});
-				}
-
-				currentFamilyOrder.forEach(function(id){
-					if(!newFamilyOrderSet.hasOwnProperty(id)){
-						leftOver.push(id);
+					if(d.genomes.substr(2 * idx, 2) !== '00'){
+						if(newFamilyOrderSet.hasOwnProperty(d.family_id)){
+							highlightedInAnchor.push(d.family_id);
+						}else{
+							highlightedOutAnchor.push(d.family_id);
+						}
+					}else{
+						leftOver.push(d.family_id);
 					}
 				});
 
-				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
+				var adjustedFamilyOrder = highlightedInAnchor.concat(highlightedOutAnchor, leftOver);
 
 				// clusterRow/ColumnOrder assumes corrected axises
 				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
-				this._clustered = lang.clone(adjustedFamilyOrder);
 
 				// update main grid
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
 				Topic.publish(this.topicId, "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
