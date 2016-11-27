@@ -455,7 +455,7 @@ define([
 					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
 					fl: familyIdName,
 					sort: 'accession asc,start asc',
-					rows: 1000000
+					rows: 25000
 				}
 			}), function(res){
 
@@ -496,22 +496,17 @@ define([
 
 			when(this.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
 
-				var highlightedInAnchor = [], highlightedOutAnchor = [], leftOver = [];
-				var idx = this.pfState.genomeFilterStatus[genomeId].getIndex();
+				var highlighted = [], leftOver = [];
 				this.query('', {}).forEach(function(d){
 
-					if(d.genomes.substr(2 * idx, 2) !== '00'){
-						if(newFamilyOrderSet.hasOwnProperty(d.family_id)){
-							highlightedInAnchor.push(d.family_id);
-						}else{
-							highlightedOutAnchor.push(d.family_id);
-						}
+					if(newFamilyOrderSet.hasOwnProperty(d.family_id)){
+						highlighted[newFamilyOrderSet[d.family_id]] = d.family_id;
 					}else{
 						leftOver.push(d.family_id);
 					}
 				});
 
-				var adjustedFamilyOrder = highlightedInAnchor.concat(highlightedOutAnchor, leftOver);
+				var adjustedFamilyOrder = highlighted.concat(leftOver);
 
 				// clusterRow/ColumnOrder assumes corrected axises
 				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
