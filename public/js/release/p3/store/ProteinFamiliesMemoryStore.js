@@ -319,10 +319,12 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
 			var thisGFS = this.pfState.genomeFilterStatus;
-
+			// this is needed only for protein family since transcriptomics re-generate dist on the fly
+			var genomeOrderChangeMap = [];
 			if(genomeOrder !== [] && genomeOrder.length > 0){
 				this.pfState.genomeIds = genomeOrder;
 				genomeOrder.forEach(function(genomeId, idx){
+					genomeOrderChangeMap.push(thisGFS[genomeId].getIndex());
 					thisGFS[genomeId].setIndex(idx);
 				});
 			}
@@ -367,6 +369,9 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 					'min': family.aa_length_min,
 					'max': family.aa_length_max
 				};
+				if(genomeOrderChangeMap.length > 0){
+					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+				}
 
 				var order = familyOrderMap[family.family_id];
 				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
@@ -455,7 +460,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
 					fl: familyIdName,
 					sort: 'accession asc,start asc',
-					rows: 1000000
+					rows: 25000
 				}
 			}), function(res){
 
@@ -496,22 +501,17 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 			when(this.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
 
-				var highlightedInAnchor = [], highlightedOutAnchor = [], leftOver = [];
-				var idx = this.pfState.genomeFilterStatus[genomeId].getIndex();
+				var highlighted = [], leftOver = [];
 				this.query('', {}).forEach(function(d){
 
-					if(d.genomes.substr(2 * idx, 2) !== '00'){
-						if(newFamilyOrderSet.hasOwnProperty(d.family_id)){
-							highlightedInAnchor.push(d.family_id);
-						}else{
-							highlightedOutAnchor.push(d.family_id);
-						}
+					if(newFamilyOrderSet.hasOwnProperty(d.family_id)){
+						highlighted[newFamilyOrderSet[d.family_id]] = d.family_id;
 					}else{
 						leftOver.push(d.family_id);
 					}
 				});
 
-				var adjustedFamilyOrder = highlightedInAnchor.concat(highlightedOutAnchor, leftOver);
+				var adjustedFamilyOrder = highlighted.concat(leftOver);
 
 				// clusterRow/ColumnOrder assumes corrected axises
 				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
