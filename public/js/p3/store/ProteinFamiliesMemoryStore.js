@@ -319,10 +319,12 @@ define([
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
 			var thisGFS = this.pfState.genomeFilterStatus;
-
+			// this is needed only for protein family since transcriptomics re-generate dist on the fly
+			var genomeOrderChangeMap = [];
 			if(genomeOrder !== [] && genomeOrder.length > 0){
 				this.pfState.genomeIds = genomeOrder;
 				genomeOrder.forEach(function(genomeId, idx){
+					genomeOrderChangeMap.push(thisGFS[genomeId].getIndex());
 					thisGFS[genomeId].setIndex(idx);
 				});
 			}
@@ -367,6 +369,9 @@ define([
 					'min': family.aa_length_min,
 					'max': family.aa_length_max
 				};
+				if(genomeOrderChangeMap.length > 0){
+					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+				}
 
 				var order = familyOrderMap[family.family_id];
 				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
