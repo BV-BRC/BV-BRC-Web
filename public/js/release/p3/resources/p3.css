@@ -5841,6 +5841,100 @@ table {  font-size:100%; }
 	margin: 0px;
 	font:0.75em;
 }
+.dojoxDialog {
+	position: absolute;
+	z-index: 999;
+	outline:0;
+}
+.dojoxDialog .closeText {
+	display:none;
+	
+	position:absolute;
+}
+.dojoxDialogFixed div.dojoxDialogTitleBar {
+	cursor:default; 
+}
+.dojoxDialogWrapper {
+	left: 0;
+	top: 0;
+}
+.dojoxDialog {
+	background: #fff;
+	-webkit-box-shadow: 0px 5px 10px #adadad;
+	-moz-border-radius:9pt;
+	-webkit-border-radius:8pt;
+	border:1px solid #b7b7b7;
+	padding:1.5em 3px 3px 3px;
+}
+.dojoxDialogFocused {
+	border:1px solid #ccc;
+}
+.dojoxDialog .dojoxDialogPaneContent {
+	border:none;
+	padding:0;
+}
+.dojoxDialogTitleBar {
+	
+	cursor:move;
+	top:0;
+	left:0;
+	right:0;
+	background:#ededed;
+	height:1.5em;
+	outline:0; 
+	-moz-border-radius-topleft:8pt;
+	-moz-border-radius-topright:8pt;
+	-webkik-border-radius-topleft:7pt;
+	-webkit-border-radius-topright:7pt;
+}
+.dj_webkit .dojoxDialogTitleBar {
+	border:1px solid #ccc;
+}
+.dojoxDialogNoTitle .dojoxDialogTitleBar {
+	display:none;
+}
+.dojoxDialogContent {
+	
+	padding: 3px;
+	margin-top:1.2em;
+}
+.dojoxDialogTitle {
+	font-weight: bold;
+	padding: 8px 12px 8px 12px;
+	outline:0;
+	border-bottom:#b7b7b7;
+}
+div.dojoxDialogNoTitle {
+	padding-top:9px;
+}
+.dojoxDialogCloseIcon, .dojoxDialogCloseIconHover {
+	background : url("../../dojox/widget/Dialog/images/dialogCloseButton.png") no-repeat top right;
+	position: absolute;
+	vertical-align: middle;
+	left: -19px;
+	top: -19px;
+	height: 29px;
+	width: 29px;
+	cursor: pointer;
+	z-index: 999;
+}
+.dj_ie6 .dojoxDialogCloseIcon {
+	background-image: url("../../dojox/widget/Dialog/images/dialogCloseButton.gif");
+}
+.dojoxDialog div.dijitDialogCloseIconHover,
+.dojoxDialog div.dijitDialogCloseIconActive {
+    background-position:0 0;
+}
+.dojoxDialog .dijitDialogCloseIconHover {
+    background-image: url("../../dojox/widget/Dialog/images/dialogCloseButton.png");
+}
+.dj_ie6 .dojoxDialog .dijitDialogCloseIconHover {
+    background-image: url("../../dojox/widget/Dialog/images/dialogCloseButton.gif");
+}
+.dojoxDialogNoTitle .dojoxDialogCloseIcon {
+	top: -15px;
+	left: -15px;
+}
 .tundra .dijitDialogTitleBar {
     padding-right: 25px;
 }
@@ -11404,6 +11498,38 @@ div.appsublabel {
 #dlp-transcriptomics-top-conditions .chart {
   width: 410px;
   height: 140px;
+}
+.HelpContent {
+	padding: 4px;
+}
+.HelpContent H2,
+.HelpContent H3,
+.HelpContent H4,
+.HelpContent H5 {
+	font-weight: 600;	
+	margin: 2px;
+	margin-bottom: 4px;
+	margin-top: 4px;
+}
+.HelpContent H1 {
+	font-size: 2em;
+	margin: 8px;
+}
+.HelpContent H2 {
+	font-size: 1.5em;
+	border-bottom: 1px solid #333;
+}
+.HelpContent H3 {
+	font-size: 1.3em;
+}
+.HelpContent H4 {
+	font-size: 1.1em;
+}
+.HelpContent H5 {
+	font-size: 1em;
+}
+.HelpContent SECTION {
+	padding: 4px;
 }
 .bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure,
 footer, header, menu, nav, section, summary, blockquote, q, th, td, caption, table,

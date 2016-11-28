@@ -316,6 +316,7 @@ define([
 
 			var defaultFilterValue = {
 				keyword: '',
+				clusterColumnOrder: [],
 				perfectFamMatch: 'A',
 				min_member_count: null,
 				max_member_count: null,

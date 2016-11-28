@@ -47,9 +47,6 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "updateClusterColumnOrder":
-						this._clustered = value;
-						break;
 					case "applyConditionFilter":
 						this.tgState = value;
 						this.conditionFilter();
@@ -76,13 +73,6 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			var data = this._original;
 			var newData = [];
 			var gfs = this.tgState.comparisonFilterStatus;
-			var columnOrderMap;
-			if(this._clustered){
-				columnOrderMap = {};
-				this._clustered.forEach(function(colId, idx){
-					columnOrderMap[colId] = idx;
-				});
-			}
 
 			// var tsStart = window.performance.now();
 			var keywordRegex = this.tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
@@ -123,15 +113,14 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 
 					if(comparison){
 						var value = parseFloat(comparison.log_ratio);
-						if(!isNaN(value)){
-							if(value > this.tgState.upFold){
-								up_r++;
-							}
-							if(value < this.tgState.downFold){
-								down_r++;
-							}
-							total_samples++;
+
+						if(value > this.tgState.upFold){
+							up_r++;
 						}
+						if(value < this.tgState.downFold){
+							down_r++;
+						}
+						total_samples++;
 					}
 				}
 				// console.log("after comparison filter", gene.patric_id, skip);
@@ -140,6 +129,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					skip = !keywordRegex.some(function(needle){
 						return needle && (gene.product.toLowerCase().indexOf(needle) >= 0
 							|| gene.patric_id.toLowerCase().indexOf(needle) >= 0
+							|| gene.alt_locus_tag.toLowerCase().indexOf(needle) >= 0
 							|| gene.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
 					});
 				}
@@ -155,24 +145,12 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				gene.sample_size = total_samples;
 
 				if(!skip){
-					if(columnOrderMap){
-						if(columnOrderMap[gene.feature_id] >= 0){
-							newData.push(gene);
-						}
-					}else{
-						newData.push(gene);
-					}
+					newData.push(gene);
 				}
 			}, this);
 
 			// console.log("after conditionFilter: ", newData.length);
 			// console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
-
-			if(columnOrderMap){
-				this.tgState.clusterColumnOrder = newData.map(function(g){
-					return g.feature_id;
-				});
-			}
 
 			this.setData(newData);
 			this.set("refresh");
@@ -463,6 +441,8 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			// var start = window.performance.now();
 
 			// assumes axises are corrected
+			// use clusterColumnOrder only for clustering and use tgState.columnSort for sorting.
+			// clusterRowOrder will be used for both clustering and filter condition sorting.
 			var geneOrder = this.tgState.clusterColumnOrder;
 			var comparisonOrder = this.tgState.clusterRowOrder;
 
@@ -486,13 +466,11 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 
 			// rows - comparisons
 			// if comparison order is changed, then needs to or-organize distribution in columns.
-			var comparisonOrderChangeMap = [];
 			var thisGFS = this.tgState.comparisonFilterStatus;
 
 			if(comparisonOrder !== [] && comparisonOrder.length > 0){
 				this.tgState.comparisonIds = comparisonOrder;
 				comparisonOrder.forEach(function(comparisonId, idx){
-					comparisonOrderChangeMap.push(thisGFS[comparisonId].getIndex()); // keep the original position
 					thisGFS[comparisonId].setIndex(idx);
 				});
 			}
@@ -511,8 +489,8 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			// cols - genes
 			//console.warn(this);
 			var opts = {};
-			if(this.sort && this.sort.length > 0){
-				opts.sort = this.sort;
+			if(this.tgState.columnSort && this.tgState.columnSort.length > 0){
+				opts.sort = this.tgState.columnSort;
 			}
 			var data = this.query("", opts);
 
@@ -625,9 +603,6 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				meta.labels = labels.join("|");
 
 				if(push_flag){
-					if(comparisonOrderChangeMap.length > 0){
-						gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
-					}
 					var order = geneOrderMap[gene.feature_id];
 					cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
 				}
