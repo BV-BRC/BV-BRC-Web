@@ -307,7 +307,7 @@ define([
             query_obj[id_type]=query_id;
             var toRemove=this.libraryStore.query(query_obj);
             toRemove.forEach(function(obj){
-                domConstruct.destroy(obj.row);
+                domConstruct.destroy(obj._row);
                 this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
                 if (this.addedLibs.counter < this.startingRows){
                     var ntr = this.libsTable.insertRow(-1);
@@ -315,7 +315,7 @@ define([
                     var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
                     var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
                 }
-                obj.handle.remove();
+                obj._handle.remove();
                 this.libraryStore.remove(obj._id);
             },this);
         },
