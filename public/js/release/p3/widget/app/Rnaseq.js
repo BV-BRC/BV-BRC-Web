@@ -53,7 +53,7 @@ define("p3/widget/app/Rnaseq", [
 			this.color_counter = 0;
 			this.shape_counter = 0;
 			this.conditionStore = new Memory({data: []});
-			this.libraryStore = new Memory({data: []});
+			this.libraryStore = new Memory({data: [],idProperty:"id"});
 			this.libraryID = 0;
 		},
 
@@ -196,6 +196,8 @@ define("p3/widget/app/Rnaseq", [
 			req = typeof req !== 'undefined' ? req : true;
 			var success = 1;
 			var prevalidate_ids = ["read1", "read2", "read", "output_path", "condition", "condition_single", "condition_paired"];
+            target["id"]=this.makeLibraryID(target.type);
+            var duplicate = target.id in this.libraryStore.index;
 			Object.keys(input_pts).forEach(function(attachname){
 				var cur_value = null;
 				var incomplete = 0;
@@ -225,7 +227,7 @@ define("p3/widget/app/Rnaseq", [
 					cur_value = cur_value.trim();
 				}
 				//set validation state for widgets since they are non-blocking presubmission fields
-				if(req && (!cur_value || incomplete)){
+				if(req && (duplicate || !cur_value || incomplete)){
 					if(prevalidate){
 						if(this[attachname].searchBox){
 							this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
@@ -262,30 +264,60 @@ define("p3/widget/app/Rnaseq", [
 			var label = item.condition + " " + item.icon;
 			return label;
 		},
-		makePairName: function(libRecord){
-			var fn = this.read1.searchBox.get("displayedValue");
-			var fn2 = this.read2.searchBox.get("displayedValue");
-			var maxName = 14;
-			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + "..." + fn.substr((fn.length - (maxName / 2)) + 2);
-			}
-			if(fn2.length > maxName){
-				fn2 = fn2.substr(0, (maxName / 2) - 2) + "..." + fn2.substr((fn2.length - (maxName / 2)) + 2);
-			}
-			return "P(" + fn + ", " + fn2 + ")";
+		makeLibraryName:function(mode){
+            if(mode == "paired"){
+                var fn =this.read1.searchBox.get("displayedValue");
+                var fn2 =this.read2.searchBox.get("displayedValue");
+                var maxName=14;
+                if(fn.length > maxName){
+                    fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
+                }
+                if(fn2.length > maxName){
+                    fn2=fn2.substr(0,(maxName/2)-2)+"..."+fn2.substr((fn2.length-(maxName/2))+2);
+                }
+                return "P("+fn+", "+fn2+")";
+            }
+            else {
+
+                var fn =this.read.searchBox.get("displayedValue");
+                            maxName=24
+                if(fn.length > maxName){
+                    fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
+                }
+                return "S("+fn+")";
+            }
 		},
+        makeLibraryID:function(mode){
+            if(mode == "paired"){
+                var fn =this.read1.searchBox.get("value");
+                var fn2 =this.read2.searchBox.get("value");
+                return fn+fn2;
+            }
+            else{
+                var fn =this.read.searchBox.get("value");
+                return fn;
+            }
+        },
+		
+        onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
+            var toDestroy = [];
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+                toDestroy.push(lrec["id"]);
+		    }));
+            //because its removing rows cells from array needs separate loop
+            toDestroy.forEach(lang.hitch(this,function(id){
+                this.destroyLibRow(query_id=id, "id");
+            }));
+        },
 
 		makeConditionName: function(){
 			return this.condition.get("displayedValue");
 		},
-		makeSingleName: function(libRecord){
-			var fn = this.read.searchBox.get("displayedValue");
-			maxName = 24
-			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + "..." + fn.substr((fn.length - (maxName / 2)) + 2);
-			}
-			return "S(" + fn + ")";
-		},
+
+
 
 		//counter is a widget for requirements checking
 		increaseRows: function(targetTable, counter, counterWidget){
@@ -386,18 +418,15 @@ define("p3/widget/app/Rnaseq", [
 
 		onAddSingle: function(){
 			console.log("Create New Row", domConstruct);
-			this.libraryID += 1;
-			var lrec = {};
+			var lrec = {type:"single"};
 			var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
 			var chkPassed = this.ingestAttachPoints(toIngest, lrec);
 			if(chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				lrec["id"] = this.libraryID;
 				lrec["row"] = tr;
-				lrec["type"] = "single";
 				var td = domConstruct.create('td', {"class": "textcol singledata", innerHTML: ""}, tr);
 				//td.libRecord=lrec;
-				td.innerHTML = "<div class='libraryrow'>" + this.makeSingleName() + "</div>";
+				td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("single") + "</div>";
 				var advPairInfo = [];
 				if(lrec["condition"]){
 					advPairInfo.push("Condition:" + lrec["condition"]);
@@ -474,8 +503,7 @@ define("p3/widget/app/Rnaseq", [
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
-			this.libraryID += 1;
-			var lrec = {};
+			var lrec = {type:"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest = this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
@@ -484,12 +512,10 @@ define("p3/widget/app/Rnaseq", [
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if(chkPassed && lrec.read1 != lrec.read2){
 				var tr = this.libsTable.insertRow(0);
-				lrec["id"] = this.libraryID;
 				lrec["row"] = tr;
-				lrec["type"] = "paired";
 				var td = domConstruct.create('td', {"class": "textcol pairdata", innerHTML: ""}, tr);
 				td.libRecord = lrec;
-				td.innerHTML = "<div class='libraryrow'>" + this.makePairName() + "</div>";
+				td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("paired") + "</div>";
 				var advPairInfo = [];
 				if(lrec["condition"]){
 					advPairInfo.push("Condition:" + lrec["condition"]);

@@ -49,7 +49,7 @@ define("p3/widget/app/Variation", [
             this.colors=["blue","green","red","purple","orange"];
             this.color_counter=0;
             this.shape_counter=0;
-            this.libraryStore=new Memory({data:[]});
+            this.libraryStore= new Memory({data: [],idProperty:"_id"});
             this.libraryID=0;
 		},
 
@@ -98,10 +98,10 @@ define("p3/widget/app/Variation", [
 			}
 			var submit_values={};
 			var values = this.inherited(arguments);
-			var pairedList = this.libraryStore.query({"type":"paired"});
+			var pairedList = this.libraryStore.query({"_type":"paired"});
             var pairedAttrs=["read1","read2"];
             var singleAttrs=["read"];
-			var singleList = this.libraryStore.query({"type":"single"});
+			var singleList = this.libraryStore.query({"_type":"single"});
             var condLibs=[];
 			var pairedLibs =[];
 			var singleLibs=[];
@@ -147,6 +147,11 @@ define("p3/widget/app/Variation", [
             req = typeof req !== 'undefined' ? req : true;
 			var success=1;
             var prevalidate_ids=["read1","read2","read","output_path","condition","condition_single","condition_paired"];
+            var duplicate=false;
+            if(target._type){
+                target["_id"]=this.makeLibraryID(target._type);
+                duplicate = target._id in this.libraryStore.index;
+            }
 			Object.keys(input_pts).forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
@@ -176,7 +181,7 @@ define("p3/widget/app/Variation", [
 					cur_value=cur_value.trim();
 				}
                 //set validation state for widgets since they are non-blocking presubmission fields
-				if(req && (!cur_value || incomplete)){
+				if(req && (duplicate || !cur_value || incomplete)){
 					if(prevalidate){
                         if(this[attachname].searchBox){
 						    this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
@@ -213,31 +218,62 @@ define("p3/widget/app/Variation", [
             var label=item.condition+" "+item.icon;
             return label;
         },
-		makePairName:function(libRecord){
-			var fn =this.read1.searchBox.get("displayedValue");
-			var fn2 =this.read2.searchBox.get("displayedValue");
-			var maxName=14;
-			if(fn.length > maxName){
-				fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
-			}
-			if(fn2.length > maxName){
-				fn2=fn2.substr(0,(maxName/2)-2)+"..."+fn2.substr((fn2.length-(maxName/2))+2);
-			}
-			return "P("+fn+", "+fn2+")";
+		makeLibraryName:function(mode){
+            if(mode == "paired"){
+                var fn =this.read1.searchBox.get("displayedValue");
+                var fn2 =this.read2.searchBox.get("displayedValue");
+                var maxName=14;
+                if(fn.length > maxName){
+                    fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
+                }
+                if(fn2.length > maxName){
+                    fn2=fn2.substr(0,(maxName/2)-2)+"..."+fn2.substr((fn2.length-(maxName/2))+2);
+                }
+                return "P("+fn+", "+fn2+")";
+            }
+            else {
+
+                var fn =this.read.searchBox.get("displayedValue");
+                            maxName=24
+                if(fn.length > maxName){
+                    fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
+                }
+                return "S("+fn+")";
+            }
 		},
+        makeLibraryID:function(mode){
+            if(mode == "paired"){
+                var fn =this.read1.searchBox.get("value");
+                var fn2 =this.read2.searchBox.get("value");
+                return fn+fn2;
+            }
+            else{
+                var fn =this.read.searchBox.get("value");
+                return fn;
+            }
+        },
+
+
+
+
+		onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
+            var toDestroy = [];
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+                toDestroy.push(lrec["_id"]);
+		    }));
+            //because its removing rows cells from array needs separate loop
+            toDestroy.forEach(lang.hitch(this,function(id){
+                this.destroyLibRow(query_id=id, "_id");
+            }));
+        },
 
 
         makeConditionName:function(){
             return this.condition.get("displayedValue");
         },
-		makeSingleName:function(libRecord){
-			var fn =this.read.searchBox.get("displayedValue");
-                        maxName=24
-			if(fn.length > maxName){
-				fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
-			}
-			return "S("+fn+")";
-		},
 
         //counter is a widget for requirements checking
 		increaseRows: function(targetTable, counter, counterWidget){
@@ -256,31 +292,14 @@ define("p3/widget/app/Variation", [
 
 		onAddSingle: function(){
 			console.log("Create New Row", domConstruct);
-            this.libraryID+=1;
-			var lrec={};
+			var lrec={"_type":"single"};
 			var toIngest= this.singleToAttachPt;
 			var chkPassed=this.ingestAttachPoints(toIngest, lrec);
 			if (chkPassed){
-				var tr = this.libsTable.insertRow(0);
-                lrec["id"]=this.libraryID;
-                lrec["row"]=tr;
-                lrec["type"]="single";
-				var td = domConstruct.create('td', {"class":"textcol singledata", innerHTML:""},tr);
-				//td.libRecord=lrec;
-				td.innerHTML="<div class='libraryrow'>"+this.makeSingleName()+"</div>";
-				var advPairInfo= [];
-                lrec["design"]=false;
-                var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
-				var td2 = domConstruct.create("td", {"class":"iconcol", innerHTML: "<i class='fa icon-x fa-1x' />"},tr);
-				if(this.addedLibs.counter < this.startingRows){
-					this.libsTable.deleteRow(-1);
-				}
-				var handle = on(td2, "click", lang.hitch(this,function(evt){
-                    this.destroyLibRow(query_id=lrec["id"], "id")
-				}));
-                lrec["handle"]=handle;
-                this.libraryStore.put(lrec);
-				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                infoLabels = {
+                    "read":{"label":"Read File","value":1}
+                };
+                this.addLibraryRow(lrec, infoLabels, "singledata");
 			}
 		},
 
@@ -290,7 +309,7 @@ define("p3/widget/app/Variation", [
             query_obj[id_type]=query_id;
             var toRemove=this.libraryStore.query(query_obj);
             toRemove.forEach(function(obj){
-                domConstruct.destroy(obj.row);
+                domConstruct.destroy(obj._row);
                 this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
                 if (this.addedLibs.counter < this.startingRows){
                     var ntr = this.libsTable.insertRow(-1);
@@ -298,8 +317,8 @@ define("p3/widget/app/Variation", [
                     var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
                     var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
                 }
-                obj.handle.remove();
-                this.libraryStore.remove(obj.id);
+                obj._handle.remove();
+                this.libraryStore.remove(obj._id);
             },this);
         },
 
@@ -309,8 +328,7 @@ define("p3/widget/app/Variation", [
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
-            this.libraryID+=1;
-			var lrec={};
+			var lrec={"_type":"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest= this.pairToAttachPt1;
@@ -318,29 +336,71 @@ define("p3/widget/app/Variation", [
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed && lrec.read1 != lrec.read2){
-				var tr = this.libsTable.insertRow(0);
-                lrec["id"]=this.libraryID;
-                lrec["row"]=tr;
-                lrec["type"]="paired";
-				var td = domConstruct.create('td', {"class":"textcol pairdata", innerHTML:""},tr);
-				td.libRecord=lrec;
-				td.innerHTML="<div class='libraryrow'>"+this.makePairName()+"</div>";
-				var advPairInfo= [];
-                lrec["design"]=false;
-                var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
-				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa icon-x fa-1x' />"},tr);
-				if(this.addedLibs.counter < this.startingRows){
-					this.libsTable.deleteRow(-1);
-				}
-				var handle = on(td2, "click", lang.hitch(this,function(evt){
-                    this.destroyLibRow(query_id=lrec["id"], id_type="id")
-				}));
-                lrec["handle"]=handle;
-                this.libraryStore.put(lrec);
-				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                infoLabels = {
+                    "read1":{"label":"Read1","value":1},
+                    "read2":{"label":"Read2","value":1}
+                };
+                this.addLibraryRow(lrec, infoLabels, "pairdata");
 			}
-		}
+		},
 
+
+        addLibraryRow: function(lrec, infoLabels, mode){
+            var tr = this.libsTable.insertRow(0);
+            lrec["_row"]=tr;
+            var td = domConstruct.create('td', {"class": "textcol "+mode, "libID": this.libCreated, innerHTML: ""}, tr);
+            var advInfo = [];
+            if(mode=="pairdata"){
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("paired") + "</div>";
+                advInfo.push("Paired Library");
+            }
+            else{
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("single") + "</div>";
+                advInfo.push("Single Library");
+            }
+            //fill out the html of the info mouse over
+            Object.keys(infoLabels).forEach(lang.hitch(this,function(key){
+                if (lrec[key] && lrec[key]!="false"){
+                    if(infoLabels[key].value){
+                        advInfo.push(infoLabels[key].label+":"+lrec[key]);
+                    }
+                    else{
+                        advInfo.push(infoLabels[key].label);
+                    }
+                }
+            }));
+            if(advInfo.length){
+                var tdinfo = domConstruct.create("td", {innerHTML: "<i class='fa icon-info fa-1' />"}, tr);
+                var ihandle = new TooltipDialog({
+                    content: advInfo.join("</br>"),
+                    onMouseLeave: function(){
+                        popup.close(ihandle);
+                    }
+                });
+                on(tdinfo, 'mouseover', function(){
+                    popup.open({
+                        popup: ihandle,
+                        around: tdinfo
+                    });
+                });
+                on(tdinfo, 'mouseout', function(){
+                    popup.close(ihandle);
+                });
+            }
+            else{
+                var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
+            }
+            var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
+            if(this.addedLibs.counter < this.startingRows){
+                this.libsTable.deleteRow(-1);
+            }
+            var handle = on(td2, "click", lang.hitch(this, function(evt){
+                this.destroyLibRow(query_id=lrec["_id"], "_id");
+            }));
+            this.libraryStore.put(lrec);
+            lrec["_handle"]=handle;
+			this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+        }
 	});
 });
 

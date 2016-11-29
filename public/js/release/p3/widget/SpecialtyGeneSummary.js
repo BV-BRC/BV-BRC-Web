@@ -13,43 +13,33 @@ define("p3/widget/SpecialtyGeneSummary", [
 			Chart2D, Theme, MoveSlice, ChartTooltip,
 			Bars, SummaryWidget){
 
-	var sourcePropertyMap = {
-		"PATRIC_VF": "Virulence Factor",
-		"Victors": "Virulence Factor",
-		"VFDB": "Virulence Factor",
-		"DrugBank": "Drug Target",
-		"TTD": "Drug Target",
-		"Human": "Human Homolog",
-		"CARD": "Antibiotic Resistance",
-		"ARDB": "Antibiotic Resistance"
-	};
-
 	return declare([SummaryWidget], {
 		dataModel: "sp_gene",
 		query: "",
 		view: "table",
-		baseQuery: "&limit(1)&facet((field,source),(mincount,1))&json(nl,map)",
+		baseQuery: "&limit(1)&facet((field,property_source),(mincount,1))&json(nl,map)",
 		columns: [
 			{label: " ", field: "category"},
 			{label: "Source", field: "source_x"},
 			{label: "Genes", field: "y", renderCell: function(obj, val, node){
-				node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=eq(source,' + obj.source_x + ')" target="_blank">' + val + "</a>";
+				node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=and(eq(property,' + encodeURIComponent('"' + obj.category + '"') + '),eq(source,' + encodeURIComponent('"' + obj.source_x + '"') + '))" target="_blank">' + val + '</a>';
 			}}
 		],
 		processData: function(res){
 			var chartLabels = this._chartLabels = [];
 
-			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source){
+			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.property_source){
 				console.error("INVALID SUMMARY DATA");
 				return;
 			}
-			var d = res.facet_counts.facet_fields.source; // now key-value pair
+			var d = res.facet_counts.facet_fields.property_source; // now key-value pair
 
 			var data = this._tableData = [];
 			Object.keys(d).forEach(function(key, idx){
 				chartLabels.push({text: key, value: idx + 1});
-				var cat = sourcePropertyMap[key];
-				data.push({category: cat, source_x: key, y: d[key]});
+				var [cat, source] = key.split(': ');
+
+				data.push({category: cat, source_x: source, y: d[key], property_source: key});
 			});
 
 			this.set('data', data);
@@ -82,7 +72,7 @@ define("p3/widget/SpecialtyGeneSummary", [
 				new ChartTooltip(this.chart, "default", {
 					text: function(o){
 						var d = o.run.data[o.index];
-						return d.source + " (" + d.y + ")"
+						return d.property_source + " (" + d.y + ")"
 					}
 				});
 

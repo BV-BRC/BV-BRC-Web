@@ -97,7 +97,7 @@ define("p3/store/BlastResultMemoryStore", [
 			});
 
 			this._loadingDeferred = when(request.post(
-				"https://p3.theseed.org/services/homology_service", {
+				window.App.homologyServiceURL, {
 					headers: {
 						'Authorization': (window.App.authorizationToken || ""),
 						"Accept": "application/json"
