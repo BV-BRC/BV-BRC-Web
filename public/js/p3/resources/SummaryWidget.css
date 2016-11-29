@@ -105,7 +105,7 @@
 }
 .patric .apmSummaryWidget.SummaryWidget .chartNode,
 .patric .apmSummaryWidget.SummaryWidget .tableNode {
-    min-height: 225px;
+    min-height: 245px;
 }
 
 /* genome metadata summary widget at taxon overview */
