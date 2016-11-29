@@ -92,6 +92,7 @@ app.use(function(req, res, next){
 		workspaceServiceURL: config.get("workspaceServiceURL"),
 		appServiceURL: config.get("appServiceURL"),
 		dataServiceURL: config.get("dataServiceURL"),
+		homologyServiceURL: config.get("homologyServiceURL"),
 		enableDevTools: config.get("enableDevTools"),
 		accountURL: config.get("accountURL"),
 		appLabel: config.get("appLabel"),

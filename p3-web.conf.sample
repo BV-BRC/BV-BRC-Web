@@ -15,6 +15,7 @@
 	"dataServiceURL": "/api",
 	"workspaceServiceURL": "",
 	"appServiceURL": "",
+	"homologyServiceURL": "",
 	"appLabel": "",
 	"gaID": "",
 	"newrelic_license_key": "",
