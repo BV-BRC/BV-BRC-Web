@@ -47,7 +47,7 @@ define([
             this.colors=["blue","green","red","purple","orange"];
             this.color_counter=0;
             this.shape_counter=0;
-            this.libraryStore= new Memory({data: [],idProperty:"id"});
+            this.libraryStore= new Memory({data: [],idProperty:"_id"});
             this.libraryID=0;
 		},
 
@@ -96,10 +96,10 @@ define([
 			}
 			var submit_values={};
 			var values = this.inherited(arguments);
-			var pairedList = this.libraryStore.query({"type":"paired"});
+			var pairedList = this.libraryStore.query({"_type":"paired"});
             var pairedAttrs=["read1","read2"];
             var singleAttrs=["read"];
-			var singleList = this.libraryStore.query({"type":"single"});
+			var singleList = this.libraryStore.query({"_type":"single"});
             var condLibs=[];
 			var pairedLibs =[];
 			var singleLibs=[];
@@ -145,8 +145,11 @@ define([
             req = typeof req !== 'undefined' ? req : true;
 			var success=1;
             var prevalidate_ids=["read1","read2","read","output_path","condition","condition_single","condition_paired"];
-            target["id"]=this.makeLibraryID(target.type);
-            var duplicate = target.id in this.libraryStore.index;
+            var duplicate=false;
+            if(target._type){
+                target["_id"]=this.makeLibraryID(target._type);
+                duplicate = target._id in this.libraryStore.index;
+            }
 			Object.keys(input_pts).forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
@@ -257,11 +260,11 @@ define([
 			domClass.remove(this.domNode, "Submitted");
             var toDestroy = [];
             this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
-                toDestroy.push(lrec["id"]);
+                toDestroy.push(lrec["_id"]);
 		    }));
             //because its removing rows cells from array needs separate loop
             toDestroy.forEach(lang.hitch(this,function(id){
-                this.destroyLibRow(query_id=id, "id");
+                this.destroyLibRow(query_id=id, "_id");
             }));
         },
 
@@ -287,28 +290,14 @@ define([
 
 		onAddSingle: function(){
 			console.log("Create New Row", domConstruct);
-			var lrec={"type":"single"};
+			var lrec={"_type":"single"};
 			var toIngest= this.singleToAttachPt;
 			var chkPassed=this.ingestAttachPoints(toIngest, lrec);
 			if (chkPassed){
-				var tr = this.libsTable.insertRow(0);
-                lrec["row"]=tr;
-				var td = domConstruct.create('td', {"class":"textcol singledata", innerHTML:""},tr);
-				//td.libRecord=lrec;
-				td.innerHTML="<div class='libraryrow'>"+this.makeLibraryName("single")+"</div>";
-				var advPairInfo= [];
-                lrec["design"]=false;
-                var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
-				var td2 = domConstruct.create("td", {"class":"iconcol", innerHTML: "<i class='fa icon-x fa-1x' />"},tr);
-				if(this.addedLibs.counter < this.startingRows){
-					this.libsTable.deleteRow(-1);
-				}
-				var handle = on(td2, "click", lang.hitch(this,function(evt){
-                    this.destroyLibRow(query_id=lrec["id"], "id")
-				}));
-                lrec["handle"]=handle;
-                this.libraryStore.put(lrec);
-				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                infoLabels = {
+                    "read":{"label":"Read File","value":1}
+                };
+                this.addLibraryRow(lrec, infoLabels, "singledata");
 			}
 		},
 
@@ -327,7 +316,7 @@ define([
                     var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
                 }
                 obj.handle.remove();
-                this.libraryStore.remove(obj.id);
+                this.libraryStore.remove(obj._id);
             },this);
         },
 
@@ -337,7 +326,7 @@ define([
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
-			var lrec={"type":"paired"};
+			var lrec={"_type":"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest= this.pairToAttachPt1;
@@ -345,27 +334,71 @@ define([
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed && lrec.read1 != lrec.read2){
-				var tr = this.libsTable.insertRow(0);
-                lrec["row"]=tr;
-				var td = domConstruct.create('td', {"class":"textcol pairdata", innerHTML:""},tr);
-				td.libRecord=lrec;
-				td.innerHTML="<div class='libraryrow'>"+this.makeLibraryName("paired")+"</div>";
-				var advPairInfo= [];
-                lrec["design"]=false;
-                var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
-				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa icon-x fa-1x' />"},tr);
-				if(this.addedLibs.counter < this.startingRows){
-					this.libsTable.deleteRow(-1);
-				}
-				var handle = on(td2, "click", lang.hitch(this,function(evt){
-                    this.destroyLibRow(query_id=lrec["id"], id_type="id")
-				}));
-                lrec["handle"]=handle;
-                this.libraryStore.put(lrec);
-				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                infoLabels = {
+                    "read1":{"label":"Read1","value":1},
+                    "read2":{"label":"Read2","value":1}
+                };
+                this.addLibraryRow(lrec, infoLabels, "pairdata");
 			}
-		}
+		},
 
+
+        addLibraryRow: function(lrec, infoLabels, mode){
+            var tr = this.libsTable.insertRow(0);
+            lrec["_row"]=tr;
+            var td = domConstruct.create('td', {"class": "textcol "+mode, "libID": this.libCreated, innerHTML: ""}, tr);
+            var advInfo = [];
+            if(mode=="pairdata"){
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("paired") + "</div>";
+                advInfo.push("Paired Library");
+            }
+            else{
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("single") + "</div>";
+                advInfo.push("Single Library");
+            }
+            //fill out the html of the info mouse over
+            Object.keys(infoLabels).forEach(lang.hitch(this,function(key){
+                if (lrec[key] && lrec[key]!="false"){
+                    if(infoLabels[key].value){
+                        advInfo.push(infoLabels[key].label+":"+lrec[key]);
+                    }
+                    else{
+                        advInfo.push(infoLabels[key].label);
+                    }
+                }
+            }));
+            if(advInfo.length){
+                var tdinfo = domConstruct.create("td", {innerHTML: "<i class='fa icon-info fa-1' />"}, tr);
+                var ihandle = new TooltipDialog({
+                    content: advInfo.join("</br>"),
+                    onMouseLeave: function(){
+                        popup.close(ihandle);
+                    }
+                });
+                on(tdinfo, 'mouseover', function(){
+                    popup.open({
+                        popup: ihandle,
+                        around: tdinfo
+                    });
+                });
+                on(tdinfo, 'mouseout', function(){
+                    popup.close(ihandle);
+                });
+            }
+            else{
+                var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
+            }
+            var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
+            if(this.addedLibs.counter < this.startingRows){
+                this.libsTable.deleteRow(-1);
+            }
+            var handle = on(td2, "click", lang.hitch(this, function(evt){
+                this.destroyLibRow(query_id=lrec["_id"], "_id");
+            }));
+            this.libraryStore.put(lrec);
+            lrec["_handle"]=handle;
+			this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+        }
 	});
 });
 
