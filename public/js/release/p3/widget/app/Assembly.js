@@ -5,12 +5,15 @@ define("p3/widget/app/Assembly", [
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html", "./AppBase", "dojo/dom-construct",
 	"dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "dojo/domReady!", "dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog", "dojo/NodeList-traverse", "../../WorkspaceManager"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", 
+    "dijit/TooltipDialog", "dojo/NodeList-traverse", "../../WorkspaceManager",
+    "dojo/store/Memory"
 ], function(declare, WidgetBase, on,
 			domClass,
 			Template, AppBase, domConstruct,
 			Deferred, aspect, lang, domReady, NumberTextBox,
-			query, dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager){
+			query, dom, popup, Tooltip, Dialog, TooltipDialog,
+            children, WorkspaceManager, Memory){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
 		pageTitle: "Genome Assembly Service",
@@ -20,11 +23,10 @@ define("p3/widget/app/Assembly", [
 		defaultPath: "",
 		startingRows: 8,
         libCreated: 0,
-        libRecords: {},
 
 		constructor: function(){
 
-			this.addedLibs = 0;
+			this.addedLibs={counter:0};
 			this.addedPairs = 0;
 			this.pairToAttachPt1 = ["read1", "read2"];
 			this.pairToAttachPt2 = ["read1"];
@@ -32,6 +34,7 @@ define("p3/widget/app/Assembly", [
 			this.paramToAttachPt = ["recipe", "output_path", "output_file", "reference_assembly"];
 			this.singleToAttachPt = ["single_end_libs"];
             this.advSingleToAttachPt = ["single_platform"];
+            this.libraryStore= new Memory({data: [],idProperty:"_id"});
 		},
 
 		startup: function(){
@@ -139,25 +142,43 @@ define("p3/widget/app/Assembly", [
 			if(values.hasOwnProperty("min_contig_cov") && values["min_contig_cov"]){
 				assembly_values["min_contig_cov"] = values["min_contig_cov"];
 			}
-			var pairedList = query(".pairdata");
-			var singleList = query(".singledata");
+			var pairedList = this.libraryStore.query({"_type":"paired"});
+			var singleList = this.libraryStore.query({"_type":"single"});
 			var pairedLibs = [];
 			var singleLibs = [];
-			this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
+			this.ingestAttachPoints(this.paramToAttachPt, assembly_values, true);
 			//for (var k in values) {
 			//	if(!k.startsWith("libdat_")){
 			//		assembly_values[k]=values[k];
 			//	}
 			//}
-			pairedList.forEach(lang.hitch(this, function(item){
-				pairedLibs.push(this.libRecords[item.getAttribute("libID")]);
-			}));
+			this.pairToAttachPt1 = ["read1", "read2"];
+			this.pairToAttachPt2 = ["read1"];
+			this.advPairToAttachPt = ["interleaved", "insert_size_mean", "insert_size_stdev", "read_orientation_outward","paired_platform"];
+			this.paramToAttachPt = ["recipe", "output_path", "output_file", "reference_assembly"];
+			this.singleToAttachPt = ["single_end_libs"];
+            this.advSingleToAttachPt = ["single_platform"];
+            pairedLibs = pairedList.map(function(lrec){
+                var rrec ={};
+                Object.keys(lrec).forEach(lang.hitch(this, function(attr){
+                    if(!attr.startsWith("_")){
+                        rrec[attr]=lrec[attr];
+                    }
+                }));
+                return rrec;
+            });
 			if(pairedLibs.length){
 				assembly_values["paired_end_libs"] = pairedLibs;
 			}
-			singleList.forEach(lang.hitch(this, function(item){
-				singleLibs.push(this.libRecords[item.getAttribute("libID")]);
-			}));
+            singleLibs = singleList.map(function(lrec){
+                var rrec ={};
+                Object.keys(lrec).forEach(lang.hitch(this, function(attr){
+                    if(!attr.startsWith("_")){
+                        rrec[attr]=lrec[attr];
+                    }
+                }));
+                return rrec;
+            });
 			if(singleLibs.length){
 				assembly_values["single_end_libs"] = singleLibs;
 			}
@@ -167,6 +188,11 @@ define("p3/widget/app/Assembly", [
 		ingestAttachPoints: function(input_pts, target, req){
 			req = typeof req !== 'undefined' ? req : true;
 			var success = 1;
+            var duplicate =false;
+            if (target._type){
+                target["_id"]=this.makeLibraryID(target._type);
+                duplicate = target._id in this.libraryStore.index;
+            }
 			input_pts.forEach(function(attachname){
 				var cur_value = null;
 				var incomplete = 0;
@@ -202,7 +228,7 @@ define("p3/widget/app/Assembly", [
 				else{
 					target[alias] = cur_value;
 				}
-				if(req && (!target[alias] || incomplete)){
+				if(req && (duplicate || !target[alias] || incomplete)){
 					if(browser_select){
 						this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
 						this[attachname].searchBox._set("state", "Error");
@@ -225,45 +251,76 @@ define("p3/widget/app/Assembly", [
 			}, this);
 			return (success);
 		},
-		makePairName: function(_self){
-			var fn = _self.read1.searchBox.get("displayedValue");
-			var fn2 = _self.read2.searchBox.get("displayedValue");
-			var maxName = 12;
-			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + "..." + fn.substr((fn.length - (maxName / 2)) + 2);
-			}
-			if(fn2.length > maxName){
-				fn2 = fn2.substr(0, (maxName / 2) - 2) + "..." + fn2.substr((fn2.length - (maxName / 2)) + 2);
-			}
-			if(_self.interleaved.turnedOn){
-				return "P(" + fn + ")";
-			}
-			else{
-				return "P(" + fn + ", " + fn2 + ")";
-			}
+
+		makeLibraryName:function(mode){
+            if(mode == "paired"){
+                var fn =this.read1.searchBox.get("displayedValue");
+                var fn2 =this.read2.searchBox.get("displayedValue");
+                var maxName=14;
+                if(fn.length > maxName){
+                    fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
+                }
+                if(fn2.length > maxName){
+                    fn2=fn2.substr(0,(maxName/2)-2)+"..."+fn2.substr((fn2.length-(maxName/2))+2);
+                }
+                return "P("+fn+", "+fn2+")";
+            }
+            else {
+
+                var fn =this.single_end_libs.searchBox.get("displayedValue");;
+                            maxName=24
+                if(fn.length > maxName){
+                    fn=fn.substr(0,(maxName/2)-2)+"..."+fn.substr((fn.length-(maxName/2))+2);
+                }
+                return "S("+fn+")";
+            }
+		},
+        makeLibraryID:function(mode){
+            if(mode == "paired"){
+                var fn =this.read1.searchBox.get("value");
+                var fn2 =this.read2.searchBox.get("value");
+                return fn+fn2;
+            }
+            else{
+                var fn = this.single_end_libs.searchBox.get("value");
+                return fn;
+            }
+        },
+		
+        onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
+            var toDestroy = [];
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+                toDestroy.push(lrec["_id"]);
+		    }));
+            //because its removing rows cells from array needs separate loop
+            toDestroy.forEach(lang.hitch(this,function(id){
+                this.destroyLibRow(query_id=id, "_id");
+            }));
+        },
+
+
+        //counter is a widget for requirements checking
+		increaseRows: function(targetTable, counter, counterWidget){
+			counter.counter= counter.counter+1;
+            if (typeof counterWidget != "undefined"){
+			    counterWidget.set('value',Number(counter.counter));
+            }
+		},
+		decreaseRows: function(targetTable, counter, counterWidget){
+			counter.counter = counter.counter-1;
+            if (typeof counterWidget != "undefined"){
+			    counterWidget.set('value',Number(counter.counter));
+            }
 		},
 
-		makeSingleName: function(_self){
-			var fn = _self.single_end_libs.searchBox.get("displayedValue");
-			maxName = 24
-			if(fn.length > maxName){
-				fn = fn.substr(0, (maxName / 2) - 2) + ".." + fn.substr((fn.length - (maxName / 2)) + 2);
-			}
-			return "S(" + fn + ")";
-		},
 
-		increaseLib: function(){
-			this.addedLibs = this.addedLibs + 1;
-			this.numlibs.set('value', Number(this.addedLibs));
-            this.libCreated+=1;
-		},
-		decreaseLib: function(){
-			this.addedLibs = this.addedLibs - 1;
-			this.numlibs.set('value', Number(this.addedLibs));
-		},
+
 		onAddSingle: function(){
 			console.log("Create New Row", domConstruct);
-			var lrec = {};
+			var lrec = {_type:"single"};
 			var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
 			this.ingestAttachPoints(this.advSingleToAttachPt, lrec, false)
 			if(chkPassed){
@@ -271,14 +328,32 @@ define("p3/widget/app/Assembly", [
                     "platform":{"label":"Platform","value":1},
                     "read":{"label":"Read File","value":1}
                 };
-                this.libRecords[this.libCreated]=lrec;
-                this.addLibraryRow(lrec, infoLabels, this.makeSingleName, "singledata");
+                this.addLibraryRow(lrec, infoLabels, "singledata");
 			}
 		},
+        
+        destroyLibRow:function(query_id, id_type){
+            console.log("Delete Rows");
+            var query_obj={};
+            query_obj[id_type]=query_id;
+            var toRemove=this.libraryStore.query(query_obj);
+            toRemove.forEach(function(obj){
+                domConstruct.destroy(obj._row);
+                this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                if (this.addedLibs.counter < this.startingRows){
+                    var ntr = this.libsTable.insertRow(-1);
+                    var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+                    var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+                    var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+                }
+                obj._handle.remove();
+                this.libraryStore.remove(obj._id);
+            },this);
+        },
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
-			var lrec = {};
+			var lrec = {_type:"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
 			var pairToIngest = this.interleaved.turnedOn ? this.pairToAttachPt2 : this.pairToAttachPt1;
@@ -295,20 +370,21 @@ define("p3/widget/app/Assembly", [
                     "insert_size_stdev":{"label":"Std. Insert Size","value":1},
                     "read_orientation_outward":{"label":"Mate Paired","value":0}
                 };
-                this.libRecords[this.libCreated]=lrec;
-                this.addLibraryRow(lrec, infoLabels, this.makePairName, "pairdata");
+                this.addLibraryRow(lrec, infoLabels, "pairdata");
             }
 		},
 
-        addLibraryRow: function(lrec, infoLabels, nameFunc, mode){
+        addLibraryRow: function(lrec, infoLabels, mode){
             var tr = this.libsTable.insertRow(0);
+            lrec["_row"]=tr;
             var td = domConstruct.create('td', {"class": "textcol "+mode, "libID": this.libCreated, innerHTML: ""}, tr);
-            td.innerHTML = "<div class='libraryrow'>" + nameFunc(this) + "</div>";
             var advInfo = [];
             if(mode=="pairdata"){
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("paired") + "</div>";
                 advInfo.push("Paired Library");
             }
             else{
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName("single") + "</div>";
                 advInfo.push("Single Library");
             }
             //fill out the html of the info mouse over
@@ -344,24 +420,15 @@ define("p3/widget/app/Assembly", [
                 var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
             }
             var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
-            if(this.addedLibs < this.startingRows){
+            if(this.addedLibs.counter < this.startingRows){
                 this.libsTable.deleteRow(-1);
             }
             var handle = on(td2, "click", lang.hitch(this, function(evt){
-                console.log("Delete Row");
-                domConstruct.destroy(tr);
-                this.decreaseLib();
-                if(this.addedLibs < this.startingRows){
-                    //					var ntr =  domConstr.create("tr",{});
-                    //					domConstr.place("ntr",this.libsTableBody,"last");
-                    var ntr = this.libsTable.insertRow(-1);
-                    var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyyrow'></div>"}, ntr);
-                    var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
-                    var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
-                }
-                handle.remove();
+                this.destroyLibRow(query_id=lrec["_id"], "_id");
             }));
-            this.increaseLib();
+            this.libraryStore.put(lrec);
+            lrec["_handle"]=handle;
+			this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
         }
 	});
 });

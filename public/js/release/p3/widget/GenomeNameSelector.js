@@ -42,7 +42,13 @@ define("p3/widget/GenomeNameSelector", [
 			this.store.query = lang.hitch(this.store, function(query, options){
 				console.log("query: ", query);
 				console.log("Store Headers: ", _self.store.headers);
-				var q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
+				var q = "";
+                if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
+                    q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
+                }
+                else{
+                    return [];
+                }
 				if(_self.queryFilter){
 					q += _self.queryFilter
 				}
