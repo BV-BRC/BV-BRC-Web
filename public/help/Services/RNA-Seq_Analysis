@@ -1,0 +1,40 @@
+<div class="HelpContent">
+    <div class="FullHelp">
+        <section name="Overview">
+             <h2>Overview</h2>
+             <p>The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data. The service provides three recipes for processing RNA-Seq data: 1) <a href="http://www.genomebiology.com/2015/16/1/1/abstract">Rockhopper</a>, based on the popular Rockhopper tool for processing prokaryotic RNA-Seq data; 2) Tuxedo, based on the <a href="http://www.nature.com/nprot/journal/v7/n3/full/nprot.2012.016.html">tuxedo suite of tools</a> (i.e., Bowtie, Cufflinks, Cuffdiff); and 3) and HISAT2 for host (human, etc.) reference genomes. The service provides SAM/BAM output for alignment, tab delimited files profiling expression levels, and differential expression test results between conditions. A tutorial for using the RNA-Seq Analysis Service is available <a href="https://www.beta.patricbrc.org/public/pdfs/Submitting%20an%20RNA-seq%20job.pdf  ">here</a>.</p>
+        </section>
+    
+        <p>The RNA-Seq Service can be accessed from the Services Menu at the top of the PATRIC website page and via  the PATRIC Command Line Interface (CLI).</p>
+        <p><em>NOTE: You must be logged into the PATRIC Workspace to use the RNA-Seq Service.</em></p>
+
+        <section name="Parameters">
+            <h2>Parameters</h2>
+            <h3>Strategy</h3>
+            <p>This parameter governs the software used to align, assemble, quantify, and compare reads from different samples.</p>
+            <p><b>Rockhopper</b></br>Runs the <a href="http://nar.oxfordjournals.org/content/41/14/e140">Rockhopper software</a> designed for RNA-Seq on prokarytoic organisms. With this strategy selected, Rockhopper will handle all steps (alignment, assembly, quanitification, and differential expression testing).</p>
+            <p><b>Tuxedo</b></br>Runs the <a href="http://www.nature.com/nprot/journal/v7/n3/abs/nprot.2012.016.html">tuxedo strategy</a> using Bowtie2, Cufflinks, and CuffDiff to align, assemble, and compare samples respectively. This is a similar strategy as used by <a href="http://bioinformatics.oxfordjournals.org/content/31/9/1496">RNA-Rocket</a>.</p>
+            <p><b>Host HISAT2</b></br>Runs HISAT2 for alignment against the selected host and then uses the remainder of the <a href="http://www.nature.com/nprot/journal/v7/n3/abs/nprot.2012.016.html">tuxedo strategy</a> using Cufflinks, and CuffDiff to assemble, and compare samples respectively.</p>
+            <h3>Output Folder</h3>
+            <p>The workspace folder where results will be placed.</p>
+            <h3>Output Name</h3>
+            <p>Name used to uniquely identify results.</p>
+        </section>
+
+        <section name="Groups_Conditions">
+            <h2>Groups/Conditions</h2>
+            <p>Turning on Groups/Conditions also turns on differential expression analysis. In this panel the user has the ability to specify conditions that can be assigned to read libraries. When this option is enabled each read libary moved to the "Selected libraries" panel must have a group designation. Read libraries assigned to different groups will be compared for differential expression in all vs. all fashion. Two or more read libraries marked with the same group will be regarded as replicates.</p>
+        </section>
+
+        <section name="Paired_read_library">
+            <h2>Paired read library</h2>
+            <p><b>Read File 1 & 2</b></br>Many paired read libraries are given as file pairs, with each file containing half of each read pair. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair, the selection of which file is READ 1 and which is READ 2 does not matter.</p>
+            <p><b>Condition</b></br>The group/condition specified will be used to determine contrasts in the differential expression portion of the analysis. Each group will be compared to every other group in all vs. all fashion. Reads assigned to the same group will be used as replicates.</p>
+        </section>
+
+        <section name="Selected_libraries">
+            <h2>Selected libraries</h2>
+            <p>Read files placed here will contribute to a single RNA-Seq analysis. If the Groups/Conditions option is turned on, read files placed into this table under the same group will be considered replicates.</p>
+        </section>
+    </div>    
+</div>
