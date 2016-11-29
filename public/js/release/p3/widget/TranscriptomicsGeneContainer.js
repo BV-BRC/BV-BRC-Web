@@ -201,6 +201,7 @@ define("p3/widget/TranscriptomicsGeneContainer", [
 			var defaultFilterValue = {
 				keyword: '',
 				filterGenome: null,
+				clusterColumnOrder: [],
 				upFold: 0,
 				downFold: 0,
 				upZscore: 0,

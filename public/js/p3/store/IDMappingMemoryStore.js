@@ -114,9 +114,11 @@ define([
 
 						summary.found = data.length;
 						Topic.publish("IDMapping", "updateHeader", summary);
-
+                        var idx =0;
 						data.forEach(function(d){
-							d['target'] = d[toId]
+							d['target'] = d[toId];
+                            d['idx'] = idx;
+                            idx+=1;
 						});
 
 						_self.setData(data);

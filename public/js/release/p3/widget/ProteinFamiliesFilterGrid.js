@@ -75,7 +75,8 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
-						this.updateSortArrow([]);
+						// this.updateSortArrow([]);
+						this.set('sort', []);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -183,18 +184,20 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 		},
 		_setSort: function(sort){
 			this.inherited(arguments);
+			this.store.sort = sort;
 
-			// console.log("old order", this.pfState.genomeIds);
-			var newIds = [];
-			var idProperty = this.store.idProperty;
-			this.store.query({}, {sort: sort}).forEach(function(condition){
-				newIds.push(condition[idProperty]);
-			});
-			this.pfState.clusterRowOrder = newIds;
-			// console.log("new order", this.pfState.clusterRowOrder);
+			if(sort.length > 0){
+				var newIds = [];
+				var idProperty = this.store.idProperty;
+				this.store.query({}, {sort: sort}).forEach(function(condition){
+					newIds.push(condition[idProperty]);
+				});
+				this.pfState.clusterRowOrder = newIds;
+				// console.log("new order", this.pfState.clusterRowOrder);
 
-			Topic.publish(this.topicId, "updatePfState", this.pfState);
-			Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
+				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "requestHeatmapData", this.pfState);
+			}
 		},
 		state: null,
 		postCreate: function(){

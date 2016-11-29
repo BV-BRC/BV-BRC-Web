@@ -1,0 +1,141 @@
+<div class="HelpContent">
+    <h1>Genome Assembly</h1>
+    <div class="FullHelp">
+        <section name="Overview">
+            <h2>Overview</h2>
+            <p>The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly, i.e., assembly with the smallest number of contigs and the longest average contig length. Several assembly workflows or “recipes” are available that have been tuned to fit certain data types or desired analysis criteria such as throughput or rigor. Once the assembly process has started by clicking the Assemble button, the genome is queued as a “job” for the Assembly Service to process, and will increment the count in the Jobs information box on the bottom right of the page. Once the assembly job has successfully completed, the output file will appear in the workspace, available for use in the PATRIC comparative tools and downloaded if desired. A tutorial for using the Assembly Service is available <a href="https://www.beta.patricbrc.org/public/pdfs/Assembling%20a%20genome%20in%20PATRIC-beta.pdf">here</a>.</p>
+        </section>
+
+        <p>The Genome Annotation Service can be accessed from the Services Menu at the top of the PATRIC website page. RASTtk also accommodates the batch submission of genomes and the ability to customize annotation protocols for batch submissions, available via the PATRIC Command Line Interface (CLI).</p>
+        <p><em>NOTE: You must be logged into the PATRIC Workspace to use the Genome Annotation Service.</em></p>
+
+        <section name="Paired_Reads">
+            <h2>Paired read library</h2>
+            <!--<p>Paired-end sequencing has advantages over the use of single reads. Paired-end reads give added structure to the genome assembly problem which can be useful when dealing with ambiguous or low complexity regions.</p>-->
+            <p>Read File 1 & 2</br>
+            Many paired read libraries are given as file pairs, with each file containing half of each read pair. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair, the selection of which file is READ 1 and which is READ 2 does not matter.</p>
+            <h2>Advanced Parameters</h2>
+            <h3>File 1 Interleaved</h3>
+            Some paired libraries are available in a single file where each read in a pair occurs in succession. To specify such a file set this parameter to 'True'.</p>
+            <h3>Mean Insert Size</h3>
+            This refers to the mean insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
+            <h3>Std. Insert Size</h3>
+            This refers to the standard deviation of the insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
+            <h3>Mate Paired</h3>
+            Defines the orientation of read pairs. Setting Mate Paired to true indicates that the sequencing direction of the two reads in each pair is outward facing.</p>
+            <h3>Platform</h3>
+            The sequencing platform used for each library.</br>
+            “infer”: Infer sequencing platform from read files; “illumina”: Illumina short reads; “pacbio”: PacBio long reads; “nanopore”: MinION long reads
+        </section>
+
+        <section name="Selected_Libraries">
+            <h2>Selected libraries</h2>
+            Read files placed in this box will contribute to a single assembly.
+        </section>
+
+        <section name="Parameters">
+            <h2>Parameters</h2>
+            <h3>Benchmark Contigs</h3>
+            <p>This parameter can be used to specify a FASTA contigs file to evaluate the assembly against.</p>
+            <h3>Output Folder</h3>
+            <p>The workspace folder where results will be placed.</p>
+            <h3>Output Name</h3>
+            <p>Name used to uniquely identify results.</p>
+            <h3>Assembly Strategy</h3>
+            <h4>auto</h4>
+            <p>&nbsp;&nbsp;For short reads:</p>
+            <ol>
+            <li>Runs BayesHammer on reads</li>
+            <li>Assembles with Velvet, IDBA and SPAdes</li>
+            <li>Sorts assemblies by ARAST quality score</li>
+            </ol>
+            <p>&nbsp;&nbsp;For long reads (PacBio or Nanopore):</p>
+            <ol>
+            <li>Assembles with MiniASM</li>
+            </ol>
+            <h4>fast</h4>
+            <ol>
+            <li>Assembles with MEGAHIT and Velvet.</li>
+            <li>Results are sorted by ARAST quality score.</li>
+            </ol>
+            <h4>full_spades</h4>
+            <ol>
+            <li>Runs BayesHammer on reads</li>
+            <li>Assembles with SPAdes.</li>
+            </ol>
+            <h4>kiki</h4>
+            <ol>
+            <li>Runs the Kiki assembler</li>
+            </ol>
+            <h4>miseq</h4>
+            <ol>
+            <li>Runs Velvet with hash length 35.</li>
+            <li>Runs BayesHammer on reads and assembles with SPAdes with k up to 99.</li>
+            <li>Results are sorted by ARAST quality score.</li>
+            <li>Works for Illumina MiSeq reads.</li>
+            </ol>
+            <h4>plasmid</h4>
+            <ol>
+            <li>Runs BayesHammer on reads and assembles with plasmidSPAdes.</li>
+            </ol>
+            <h4>smart</h4>
+            <p>&nbsp;&nbsp;For short reads:</p>
+            <ol>
+            <li>Runs BayesHammer on reads, Kmergenie to choose hash-length for Velvet</li>
+            <li>Assembles with Velvet, IDBA and SPAdes</li>
+            <li>Sorts assemblies by ALE score</li>
+            <li>Merges the two best assemblies with GAM-NGS</li>
+            </ol>
+            <p>&nbsp;&nbsp;For long reads (PacBio or Nanopore):</p>
+            <ol>
+            <li>Assembles with MiniASM</li>
+            </ol>
+        </section>
+        <section name="Advanced_Arguments">
+            <h2>Advanced Pipeline Arguments<h2>
+            <h3>Minimal output contig length</h3>
+            Filter out short contigs in final assembly
+            <h3>Minimal output contig coverage</h3>
+            Filter out contigs with low read depth in final assembly
+            <h3>Assembly Pipeline</h3>
+
+            The pipeline parameter is an advanced way to customize the
+            assembly workflow by mixing and matching a variety of
+            modules. Each modules works at one of the three stages of the
+            pipeline: preprocessing, assembly, and post-processing. In
+            general, you can compose a pipeline by concating one or more
+            preprocessing modules, one assembler, and optionally one
+            postprocessor.
+            
+            </br>
+            <h4>Example 1:</h4>
+            <pre>   tagdust velvet</pre>
+            This pipeline will simply run tagdust to remove adapter
+            sequences in the reads and then assemble them with velvet.
+            Note: quotes should not be used around the two modules as
+            they have special meaning in pipeline syntax.
+            
+            </br>
+            <h4>Example 2:</h4>
+            <pre>   a6</pre>
+            You can also invoke an assembler that we have not included in
+            our curated strategies. In this case, A6 is an assembler with
+            its built-in preprocessing and postprocessing steps.
+
+            </br>
+            <h4>Example 3:</h4>
+            <pre>   "tagdust none" "megahit velvet" sspace</pre>
+            You can use quotes to specify alternative modules you would
+            like to try at each step. This example will launch
+            a cartesian combination of four parallel pipelines:
+            tagdust+megahit+sspace, tagdust+velvet+sspace, megahit+sspace, velvet+sspace.
+
+            </br>
+            <h4>Note:</h4>
+            The pipeline parameter overrides the assembly strategy parameter.
+            Not all modules combine well.
+
+            <h4><a href="ftp://ftp.patricbrc.org/workshop/arast/arast_modules.txt" target="_blank">List of modules supported</a></h4>
+        </section>
+    </div>    
+</div>
