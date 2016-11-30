@@ -920,7 +920,7 @@ define([
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				"location": (state && state.hashParams) ? state.hashParams.loc : undefined,
 				//defaultTracks: ["SequenceTrack"].join(","),
-                defaultTracks: (state && state.hashParams && (typeof state.hashParams.tracks != 'undefined')) ? typeof state.hashParams.tracks == "string" ? [state.hashParams.tracks] : state.hashParams.tracks : ["refseqs","PATRICGenes","RefSeqGenes"].join(","),
+                forceTracks: (state && state.hashParams && (typeof state.hashParams.tracks != 'undefined')) ? state.hashParams.tracks instanceof Array ? state.hashParams.tracks.join(",") : state.hashParams.tracks : ["refseqs","PATRICGenes","RefSeqGenes"].join(","),
                 highResoutionMode: "auto",
 				//alwaysOnTracks: [,"PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
