@@ -137,6 +137,16 @@ iframe  {
     display: none;
 }
 
+ol {
+  list-style-type: decimal; 
+  padding: 0 0 0 30px;
+  margin: 0 0 17px 0;
+}
+
+ol li {
+  list-style: decimal;
+}
+
 TD.HomeServiceLink {
 	border-spacing: 0 0;
 	border-collapse: separate;
