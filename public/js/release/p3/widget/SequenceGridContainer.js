@@ -2,11 +2,12 @@ define("p3/widget/SequenceGridContainer", [
 	"dojo/_base/declare", "./GridContainer",
 	"./SequenceGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on", "dojo/dom-construct"
+	"dojo/_base/lang", "dojo/on", "dojo/dom-construct",
+    "dojo/topic"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on, domConstruct){
+			lang, on, domConstruct,Topic){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
@@ -92,7 +93,30 @@ define("p3/widget/SequenceGridContainer", [
 				"left"
 			]
 		]),
-		// selectionActions: [GridContainer.prototype.selectionActions[0]],
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"GenomeBrowser",
+				"fa icon-genome-browser fa-2x",
+				{
+					label: "Browser",
+					multiple: false,
+					validTypes: ["*"],
+					validContainerTypes: ["sequence_data"],
+					tooltip: "View in Genome Browser"
+				},
+				function(selection){
+
+					var target = selection[0];
+
+					var hash = lang.replace("#view_tab=browser&loc={0}:{1}..{2}&tracks=refseqs,PATRICGenes,RefSeqGenes", [target.accession, 0, 10000]);
+
+					Topic.publish("/navigate", {
+						href: "/view/Genome/" + target.genome_id + hash
+					});
+				},
+				false
+			]
+        ]),
 		gridCtor: Grid
 	});
 });

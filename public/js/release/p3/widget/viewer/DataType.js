@@ -298,6 +298,9 @@ define("p3/widget/viewer/DataType", [
 					var target = evt.target || evt.srcElement;
 					var link = target.dataset.genomeHref;
 
+					if(event.preventDefault) event.preventDefault();
+					else event.returnValue = false;
+
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){
@@ -1194,6 +1197,10 @@ define("p3/widget/viewer/DataType", [
 				link.addEventListener('click', function(evt){
 					var target = evt.target || evt.srcElement;
 					var link = target.dataset.genomeHref;
+
+					if(event.preventDefault) event.preventDefault();
+					else event.returnValue = false;
+
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){

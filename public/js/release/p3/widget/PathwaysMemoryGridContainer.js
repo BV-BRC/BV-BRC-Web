@@ -27,6 +27,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 		var rel = evt.target.attributes.rel.value;
 		var data = downloadTT.get("data");
 		var headers = downloadTT.get("headers");
+		var filename = downloadTT.get("filename");
 		// console.log(data, headers);
 
 		var DELIMITER, ext;
@@ -42,7 +43,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 			return d.join(DELIMITER);
 		});
 
-		saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'Pathways.' + ext);
+		saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), filename + '.' + ext);
 
 		popup.close(downloadTT);
 	}));
@@ -150,7 +151,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 					downloadTT.set("content", dfc);
 
 					var data = this.grid.store.query("", {});
-					var headers, content = [];
+					var headers, content = [], filename;
 
 					switch(this.type){
 						case "pathway":
@@ -158,18 +159,21 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 							data.forEach(function(row){
 								content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.genome_count, row.gene_count, row.ec_count, row.ec_cons, row.gene_cons]);
 							});
+							filename = "PATRIC_pathways";
 							break;
 						case "ec_number":
 							headers = ["Pathway ID", "Pathway Name", "Pathway Class", "Annotation", "EC Number", "Description", "Genome Count", "Unique Gene Count"];
 							data.forEach(function(row){
 								content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.ec_number, JSON.stringify(row.ec_description), row.genome_count, row.gene_count]);
 							});
+							filename = "PATRIC_pathways_ecnumbers";
 							break;
 						case "gene":
 							headers = ["Genome Name", "Accession", "PATRIC ID", "Refseq Locus Tag", "Alt Locus Tag", "Gene", "Product", "Annotation", "Pathway Name", "EC Description"];
 							data.forEach(function(row){
 								content.push([row.genome_name, row.accession, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, JSON.stringify(row.product), row.annotation, JSON.stringify(row.pathway_name), JSON.stringify(row.ec_description)]);
 							});
+							filename = "PATRIC_pathways_genes";
 							break;
 						default:
 							break;
@@ -177,6 +181,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 
 					downloadTT.set("data", content);
 					downloadTT.set("headers", headers);
+					downloadTT.set("filename", filename);
 
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
