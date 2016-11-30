@@ -107,7 +107,10 @@ define([
 				}), lang.hitch(this, function(res){
 
 				if((res['result'][0][0].report.results.search.hits).length == 0){
-					this.buildNoResultMessage();
+					this.setData([]);
+					this._loaded = true;
+					Topic.publish("BLAST_UI", "showNoResultMessage");
+					Topic.publish(this.topicId, "hideLoadingMask");
 					return;
 				}
 
@@ -120,7 +123,7 @@ define([
 					});
 					query.q = "accession:(" + resultIds.join(' OR ') + ")";
 					query.fl = "genome_id,genome_name,taxon_id,sequence_id,accession,description"
-				}else{
+				}else if(this.type == "genome_feature"){
 					// resultIdField = "patric_id";
 
 					var patric_ids = [];
@@ -137,6 +140,16 @@ define([
 					(gis.length > 0 && patric_ids.length > 0) ? query.q += " OR " : {};
 					(gis.length > 0) ? query.q += "(gi:(" + gis.join(' OR ') + ") AND annotation:RefSeq)" : {};
 					query.fl = "feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,gi,taxon_id,accession,start,end,strand,location,na_length,na_sequence,aa_length,aa_sequence"
+				}else if (this.type == "specialty_genes"){
+
+					var data = this.formatJSONResult(res);
+
+					return when('', lang.hitch(this, function(){
+						this.setData(data);
+						this._loaded = true;
+
+						Topic.publish(this.topicId, "hideLoadingMask");
+					}));
 				}
 
 				return when(request.post(window.App.dataAPI + this.type + '/', {
@@ -176,7 +189,10 @@ define([
 				}));
 
 			}), lang.hitch(this, function(err){
-				this.buildErrorMessage(err);
+				this.setData([]);
+				this._loaded = true;
+				Topic.publish("BLAST_UI", "showErrorMessage", err);
+				Topic.publish(this.topicId, "hideLoadingMask");
 			}));
 
 			/* load feature level test data
@@ -260,11 +276,21 @@ define([
 					}else{
 						console.warn("missing patric_id in header", target_id);
 					}
-				}else{
+				}else if(this.type === "genome_sequence"){
 					target_id = target_id.replace("accn|", "");
 					if(features.hasOwnProperty(target_id)){
 						entry["genome_id"] = features[target_id].genome_id;
 						entry = lang.mixin(entry, features[target_id]);
+					}else{
+						console.log("missing id: ", target_id);
+					}
+				}else if(this.type === "specialty_genes"){
+					if(metadata.hasOwnProperty(target_id)){
+						var m = metadata[target_id];
+						var org = hit.description[0].title.match(/\[(.*)\]/)[1];
+						entry = lang.mixin(entry, {database: m.locus_tag, source_id: m.alt_locus_tag, organism: org});
+						delete entry.genome_id;
+						delete entry.genome_name;
 					}else{
 						console.log("missing id: ", target_id);
 					}

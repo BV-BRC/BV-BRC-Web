@@ -47,9 +47,12 @@ define([
 			if(this.state.resultType == "genome_feature"){
 				this.gfGrid.set('state', state);
 				this.tabContainer.selectChild(this.gfGrid);
-			}else{
+			}else if(this.state.resultType == "genome_sequence"){
 				this.gsGrid.set('state', state);
 				this.tabContainer.selectChild(this.gsGrid);
+			}else{
+				this.sgGrid.set('state', state);
+				this.tabContainer.selectChild(this.sgGrid);
 			}
 		},
 
@@ -88,6 +91,14 @@ define([
 					sort: [{attribute: "pident", descending: true}]
 				}
 			});
+			var sgStore = new BlastResultMemoryStore({
+				type: "specialty_genes",
+				idProperty: "source_id",
+				topicId: this.topicId,
+				queryOptions: {
+					sort: [{attribute: "pident", descending: true}]
+				}
+			});
 
 			this.gfGrid = new GridContainer({
 				title: 'gf',
@@ -118,7 +129,6 @@ define([
 					evalue: {label: 'E value', field: 'evalue'}
 				}
 			});
-			// gfStore.watch('refresh', this.gfGrid.refresh);
 
 			this.gsGrid = new GridContainer({
 				title: 'gs',
@@ -147,8 +157,35 @@ define([
 				}
 			});
 
+			this.sgGrid = new GridContainer({
+				title: 'sg',
+				type: 'specialty_genes',
+				containerType: "specialty_genes",
+				region: "center",
+				store: sgStore,
+				columns: {
+					"Selection Checkboxes": selector({label: '', sortable: false, unhidable: true}),
+					expand: {
+						label: '', field: '', sortable: false, unhidable: true, renderCell: function(obj, val, node){
+							node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>';
+						}
+					},
+					database: {label: 'Database', field: "database"},
+					source_id: {label: 'Source ID', field: 'source_id'},
+					description: {label: 'Description', field: 'function'},
+					organism: {label: 'Organism', field: "organism"},
+					identity: {label: 'Identity (%)', field: "pident"},
+					q_coverage: {label: 'Query cover (%)', field: "query_coverage"},
+					s_coverage: {label: 'Subject cover (%', field: "subject_coverage"},
+					length: {label: 'Length', field: "length"},
+					score: {label: 'Score', field: 'bitscore'},
+					evalue: {label: 'E value', field: 'evalue'}
+				}
+			});
+
 			this.tabContainer.addChild(this.gfGrid);
 			this.tabContainer.addChild(this.gsGrid);
+			this.tabContainer.addChild(this.sgGrid);
 
 			// viewerHeader
 
