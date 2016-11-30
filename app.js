@@ -27,6 +27,8 @@ var jobs = require('./routes/jobs');
 var help = require('./routes/help');
 var app = express();
 
+var request = require('request');
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -115,6 +117,17 @@ passport.serializeUser(function(user, done){
 passport.deserializeUser(function(id, done){
 	done(null, {id: id});
 });
+
+var proxies = config.get("proxy");
+app.use("/p/:proxy/", function(req,res,next){
+
+	if (proxies[req.params.proxy]){
+		request(proxies[req.params.proxy]).pipe(res);
+	}else{
+		next();
+	}
+})
+
 app.use("*jbrowse.conf", express.static(path.join(__dirname, "public/js/jbrowse.conf")));
 app.use("/js/" + package.version + "/", [
 	express.static(path.join(__dirname, 'public/js/release/'), {

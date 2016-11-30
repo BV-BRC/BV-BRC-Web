@@ -38,7 +38,11 @@ var defaults = {
                 "defaultSender": "PATRIC <do-not-reply@patricbrc.org>",
                 "host": "",
                 "port":587
-        }
+        },
+
+	proxy: {
+		"brcdownloads": "http://brcdownloads.patricbrc.org"
+	}
 };
 
 module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);
