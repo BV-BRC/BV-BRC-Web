@@ -10,10 +10,9 @@ define("p3/widget/BlastResultGrid", [
 		region: "center",
 		query: "",
 		store: null,
-		dataModel: "genome_feature",
-		primaryKey: "feature_id",
 		columns: {},
-		constructor: function(options){
+		constructor: function(options, parent){
+			this.primaryKey = parent.primaryKey;
 		},
 
 		_setState: function(state){
@@ -90,16 +89,11 @@ define("p3/widget/BlastResultGrid", [
 
 		_selectAll: function(){
 
-			var def = new Deferred();
 			this._unloadedData = {};
-
-			var data = this.store.data.map(function(obj){
+			return Deferred.when(this.store.data.map(function(obj){
 				this._unloadedData[obj[this.primaryKey]] = obj;
 				return obj[this.primaryKey];
-			}, this);
-			def.resolve(data);
-
-			return def.promise;
+			}, this));
 		},
 
 		formatEvalue: function(evalue){
