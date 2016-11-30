@@ -27,7 +27,8 @@ var jobs = require('./routes/jobs');
 var help = require('./routes/help');
 var app = express();
 
-var request = require('request');
+var httpProxy = require('http-proxy');
+var apiProxy = httpProxy.createProxyServer();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -120,9 +121,8 @@ passport.deserializeUser(function(id, done){
 
 var proxies = config.get("proxy");
 app.use("/p/:proxy/", function(req,res,next){
-
 	if (proxies[req.params.proxy]){
-		request(proxies[req.params.proxy]).pipe(res);
+		apiProxy.web(req, res, {target: proxies[req.params.proxy]});
 	}else{
 		next();
 	}
