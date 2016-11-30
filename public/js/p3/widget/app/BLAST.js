@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct",
+	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct", "dojo/topic",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
 	"../viewer/Blast", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
-			on, query, domClass, domConstruct,
+			on, query, domClass, domConstruct, Topic,
 			WidgetBase, Templated, WidgetsInTemplate,
 			Template, FormMixin,
 			BlastResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
@@ -59,8 +59,8 @@ define([
 		{value: "transcriptomics.fna", label: "Transcriptomics Genomes (fna)"},
 		{value: "transcriptomics.ffn", label: "Transcriptomics Genomes features (ffn)"},
 		{value: "plasmid.fna", label: "plasmid contigs (fna)"},
-		{value: "plasmid.ffn", label: "plasmid contigs features (ffn)"},
-		{value: "plasmid.faa", label: "plasmid contigs proteins (faa)"},
+		// {value: "plasmid.ffn", label: "plasmid contigs features (ffn)"},
+		// {value: "plasmid.faa", label: "plasmid contigs proteins (faa)"},
 		{value: "spgenes.faa", label: "Specialty gene reference proteins (faa)"},
 		{value: "selGenome", label: "Search within selected genomes"},
 		{value: "selGroup", label: "Search within selected genome group"},
@@ -112,6 +112,22 @@ define([
 			});
 			this.result.placeAt(query(".blast_result")[0]);
 			this.result.startup();
+
+			Topic.subscribe("BLAST_UI", lang.hitch(this, function(){
+				// console.log("BLAST_UI:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "showErrorMessage":
+						this.showErrorMessage(value);
+						break;
+					case "showNoResultMessage":
+						this.showNoResultMessage();
+						break;
+					default:
+						break;
+				}
+			}));
 		},
 		toggleAdvanced: function(flag){
 			if(flag){
@@ -172,6 +188,9 @@ define([
 				}
 
 				resultType = database.split(".")[1] == "fna" ? "genome_sequence" : "genome_feature";
+				if(database == 'spgenes.faa'){
+					resultType = 'specialty_genes';
+				}
 
 				var q = {
 					method: "HomologyService.blast_fasta_to_database",
@@ -266,9 +285,7 @@ define([
 			query(".reSubmitBtn").style("visibility", "hidden");
 		},
 
-		buildErrorMessage: function(err){
-			// console.log(err);
-			this.loadingMask.hide();
+		showErrorMessage: function(err){
 			domClass.remove(query(".blast_error")[0], "hidden");
 			domClass.remove(query(".blast_message")[0], "hidden");
 			query(".blast_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
@@ -277,8 +294,7 @@ define([
 			query(".blast_result .GridContainer").style("visibility", "hidden");
 		},
 
-		buildNoResultMessage: function(){
-			this.loadingMask.hide();
+		showNoResultMessage: function(){
 			domClass.remove(query(".blast_error")[0], "hidden");
 			query(".blast_error h3")[0].innerHTML = "BLAST has no match. Please revise query and submit again.";
 			domClass.add(query(".blast_message")[0], "hidden");
