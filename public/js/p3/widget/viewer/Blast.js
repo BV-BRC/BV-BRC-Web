@@ -104,6 +104,7 @@ define([
 				title: 'gf',
 				type: 'genome_feature',
 				containerType: "feature_data",
+				primaryKey: "feature_id",
 				region: "center",
 				store: gfStore,
 				columns: {
@@ -134,6 +135,7 @@ define([
 				title: 'gs',
 				type: 'genome_sequence',
 				containerType: "sequence_data",
+				primaryKey: "sequence_id",
 				region: "center",
 				store: gsStore,
 				columns: {
@@ -161,6 +163,7 @@ define([
 				title: 'sg',
 				type: 'specialty_genes',
 				containerType: "specialty_genes",
+				primaryKey: "source_id",
 				region: "center",
 				store: sgStore,
 				columns: {

@@ -72,6 +72,17 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
+			this.on("dgrid-deselect", function(evt){
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+			});
+
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
