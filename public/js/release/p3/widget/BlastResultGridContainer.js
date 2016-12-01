@@ -1,17 +1,51 @@
 define("p3/widget/BlastResultGridContainer", [
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/topic",
-	"dijit/popup",
+	"dojo/on", "dojo/topic",
+	"dijit/popup", "dijit/TooltipDialog",
+	"./ContainerActionBar", "FileSaver",
 	"./GridContainer", "./BlastResultGrid", "./PerspectiveToolTip"
 ], function(declare, lang,
-			Topic,
-			popup,
+			on, Topic,
+			popup, TooltipDialog,
+			ContainerActionBar, saveAs,
 			GridContainer, BlastResultGrid, PerspectiveToolTipDialog){
+
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
+	on(downloadTT.domNode, "div:click", lang.hitch(function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var data = downloadTT.get("data");
+		var headers = downloadTT.get("headers");
+		var filename = "PATRIC_blast";
+		// console.log(data, headers);
+
+		var DELIMITER, ext;
+		if(rel === 'text/csv'){
+			DELIMITER = ',';
+			ext = 'csv';
+		}else{
+			DELIMITER = '\t';
+			ext = 'txt';
+		}
+
+		var content = data.map(function(d){
+			return d.join(DELIMITER);
+		});
+
+		saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), filename + '.' + ext);
+
+		popup.close(downloadTT);
+	}));
 
 	return declare([GridContainer], {
 		gridCtor: BlastResultGrid,
 		containerType: "",
-		enableFilterPanel: false,
 		visible: true,
 		store: null,
 
@@ -36,6 +70,74 @@ define("p3/widget/BlastResultGridContainer", [
 				this.grid.set('state', state);
 			}
 		},
+		createFilterPanel: function(opts){
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: lang.mixin({}, this.state),
+				enableAnchorButton: false,
+				currentContainerWidget: this
+			});
+		},
+		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"DownloadTable",
+				"fa icon-download fa-2x",
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(){
+
+					downloadTT.set("content", dfc);
+
+					var data = this.grid.store.query("", {});
+					var headers, content;
+
+					switch(this.type){
+						case "genome_feature":
+							headers = ["Genome", "Genome ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Length (NT)", "Length (AA)", "ALN Length", "Identity", "Query cover", "Subject cover", "Score", "E value"];
+							content = data.map(function(row){
+								return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row.function), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.bitscore, row.evalue];
+							});
+							break;
+						case "genome_sequence":
+							headers = ["Genome", "Genome ID", "Accession", "Description", "Product", "Identity", "Query cover", "Subject cover", "Score", "E value"];
+							content = data.map(function(row){
+								return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row.function), row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
+							});
+							break;
+						case "specialty_genes":
+							headers = ["Database", "Source ID", "Description", "Organism", "Identity", "Query cover", "Subject cover", "Length", "Score", "E value"];
+							content = data.map(function(row){
+								return [row.database, row.source_id, JSON.stringify(row.function), row.organism, row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
+							});
+							break;
+						default:
+							headers = [];
+							content = [];
+							break;
+					}
+
+					downloadTT.set("data", content);
+					downloadTT.set("headers", headers);
+
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				true
+			]
+		]),
 		/*
 		add GenomeBrowser as a special case and override ViewGenomeItem, ViewGenomeItems, ViewCDSFeaturesSeq,
 		ViewFeatureItem, ViewFeatureItem to open in a new tab

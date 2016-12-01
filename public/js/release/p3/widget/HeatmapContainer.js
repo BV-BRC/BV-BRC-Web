@@ -32,7 +32,7 @@ define("p3/widget/HeatmapContainer", [
 			window.flashCellClicked = lang.hitch(this, "flashCellClicked");
 			window.flashCellsSelected = lang.hitch(this, "flashCellsSelected");
 
-			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
+			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '99%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
 			this.flashDom = document.getElementById(domName);
 		},
 

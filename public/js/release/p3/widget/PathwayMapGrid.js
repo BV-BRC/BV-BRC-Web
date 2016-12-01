@@ -77,7 +77,7 @@ define("p3/widget/PathwayMapGrid", [
 				on.emit(_self.domNode, "select", newEvt);
 				Topic.publish("PathwayMap", "highlightEC", Object.keys(evt.grid.selection));
 			});
-/*
+
 			this.on("dgrid-deselect", function(evt){
 				//console.log("dgrid-deselect");
 				var newEvt = {
@@ -89,7 +89,7 @@ define("p3/widget/PathwayMapGrid", [
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
-*/
+
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
