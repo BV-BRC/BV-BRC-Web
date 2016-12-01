@@ -1143,7 +1143,7 @@ define([
 
 					item[column].forEach(function(val){
 						tr = domConstruct.create("tr", {}, tbody);
-						var [k, v] = val.split(':');
+						var k = val.split(':')[0], v = val.split(':')[1];
 
 						domConstruct.create("td", {
 							"class": "DataItemProperty",
