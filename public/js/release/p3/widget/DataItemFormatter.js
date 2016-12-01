@@ -1139,25 +1139,24 @@ define("p3/widget/DataItemFormatter", [
 				var column = value[j].text;
 				var multiValued = value[j].multiValued || false;
 
-				if(multiValued){
+				if(column && (item[column] || item[column] == "0")){
 
-					item[column].forEach(function(val){
-						tr = domConstruct.create("tr", {}, tbody);
-						var k = val.split(':')[0], v = val.split(':')[1];
+					if(multiValued){
+						item[column].forEach(function(val){
+							tr = domConstruct.create("tr", {}, tbody);
+							var k = val.split(':')[0], v = val.split(':')[1];
 
-						domConstruct.create("td", {
-							"class": "DataItemProperty",
-							innerHTML: k
-						}, tr);
-						domConstruct.create("td", {
-							"class": "DataItemValue",
-							innerHTML: v
-						}, tr);
-					})
-				}
-				else if(column && (item[column] || item[column] == "0")){
-
-					if(!mini || (mini && value[j].mini)){
+							domConstruct.create("td", {
+								"class": "DataItemProperty",
+								innerHTML: k
+							}, tr);
+							domConstruct.create("td", {
+								"class": "DataItemValue",
+								innerHTML: v
+							}, tr);
+						})
+					}
+					else if(!mini || (mini && value[j].mini)){
 
 						tr = domConstruct.create("tr", {}, tbody);
 						domConstruct.create("td", {

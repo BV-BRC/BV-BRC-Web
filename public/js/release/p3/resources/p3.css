@@ -11575,6 +11575,12 @@ A:hover {
 body.patric *:focus {
     outline: 0;
 }
+ul { 
+	list-style-position: inside; 
+}
+li ul {
+	margin-left: 2em;
+}
 iframe  {
   margin: 0;
   padding: 0;

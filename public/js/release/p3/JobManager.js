@@ -7,32 +7,43 @@ define("p3/JobManager", ["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr"
 	var ready = new Deferred();
 	var firstRun = true;
 
-	// var _DataStore = new Observable(new MemoryStore({idProperty: "id", data: []}));
-	var _DataStore = new MemoryStore({idProperty: "id", data: []});
+	var _DataStore = new Observable(new MemoryStore({idProperty: "id", data: []}));
+	var initialDataSet=true;
+	// var _DataStore = new MemoryStore({idProperty: "id", data: []});
 
 	function PollJobs(){
 		if(window.App && window.App.api && window.App.api.service){
 			// console.log("AppService.enumerate_tasks")
-			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 1000]), function(tasks){
+			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 10000]), function(tasks){
+
+
 				// console.log("Enumerate Task Results: ", tasks);
-				tasks[0].forEach(function(task){
-					// console.log("Get and Update Task: ", task);
-					//console.log("Checking for task: ", task.id)
-					// when(_DataStore.get(task.id), function(oldTask){
-					// 	if(!oldTask){
-					// 		 console.log("No Old Task, store as new");
-					// 		_DataStore.put(task);
-					// 	}else if(oldTask.status != task.status){
-					// 		console.log("Updating Status of task", task.status)
-					// 		_DataStore.put(task);
-					// 	}
-					// }, function(err){
-					// 	console.log("ERROR RETRIEVING TASK ", err)
-					// });
+				// console.log("_DataStore: ",_DataStore);
 
-					_DataStore.put(task);
-				});
+				if (initialDataSet){
+					_DataStore.setData(tasks[0].slice(0,-1));
+					_DataStore.put(tasks[0][tasks[0].length-1])
+				}else{
 
+					tasks[0].forEach(function(task){
+						// console.log("Get and Update Task: ", task);
+						//console.log("Checking for task: ", task.id)
+						// when(_DataStore.get(task.id), function(oldTask){
+						// 	if(!oldTask){
+						// 		 console.log("No Old Task, store as new");
+						// 		_DataStore.put(task);
+						// 	}else if(oldTask.status != task.status){
+						// 		console.log("Updating Status of task", task.status)
+						// 		_DataStore.put(task);
+						// 	}
+						// }, function(err){
+						// 	console.log("ERROR RETRIEVING TASK ", err)
+						// });
+
+						_DataStore.put(task);
+					});
+
+				}
 				Deferred.when(getJobSummary(), function(msg){
 					// console.log("Publish Job Summary: ", msg);
 					Topic.publish("/Jobs", msg);
@@ -133,8 +144,8 @@ define("p3/JobManager", ["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr"
 		},
 
 		getStore: function(){
-			return new Observable(_DataStore);
-			// return _DataStore;
+			// return new Observable(_DataStore);
+			return _DataStore;
 		}
 	}
 });
