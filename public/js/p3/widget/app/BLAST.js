@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct", "dojo/topic",
+	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
 	"../viewer/Blast", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
-			on, query, domClass, domConstruct, Topic,
+			on, query, domClass, domConstruct, domStyle, Topic,
 			WidgetBase, Templated, WidgetsInTemplate,
 			Template, FormMixin,
 			BlastResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
@@ -120,9 +120,11 @@ define([
 				switch(key){
 					case "showErrorMessage":
 						this.showErrorMessage(value);
+						this.hideResultGridContainer();
 						break;
 					case "showNoResultMessage":
 						this.showNoResultMessage();
+						this.hideResultGridContainer();
 						break;
 					default:
 						break;
@@ -300,6 +302,10 @@ define([
 			domClass.add(query(".blast_message")[0], "hidden");
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
+		},
+
+		hideResultGridContainer: function(){
+			domStyle.set(this.result.domNode, 'visibility', 'hidden');
 		},
 
 		onSuggestNameChange: function(){
