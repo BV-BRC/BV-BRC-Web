@@ -1,7 +1,7 @@
 define([
-	"dojo/_base/declare","./GenomeGridContainer","./Confirmation","../WorkspaceManager"
+	"dojo/_base/declare","./GenomeGridContainer","./Confirmation","../WorkspaceManager","dojo/when"
 ], function(
-	declare,GenomeGridContainer,Confirmation,WorkspaceManager
+	declare,GenomeGridContainer,Confirmation,WorkspaceManager,when
 ){
 	
 
