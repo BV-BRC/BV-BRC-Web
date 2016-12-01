@@ -79,6 +79,15 @@ body.patric *:focus {
     outline: 0;
 }
 
+ul { 
+	list-style-position: inside; 
+}
+
+li ul {
+	margin-left: 2em;
+}
+
+
 iframe  {
   margin: 0;
   padding: 0;
@@ -136,6 +145,7 @@ iframe  {
 .patric .Authenticated .ShowWithoutAuth {
     display: none;
 }
+
 
 ol {
   list-style-type: decimal; 
