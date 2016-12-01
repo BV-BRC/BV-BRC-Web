@@ -1,26 +1,4 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
-    <!--
-	<div class="TopMenuBar">
-		<span style="float:left;margin-left:4px;font-weight:200;"><span style="font-weight:900;color:#76A72D;">PAT</span>HOSYSTEMS <span style="font-weight:900;color:#76A72D;">R</span>ESOURCE <span style="font-weight:900;color:#76A72D;">I</span>NTEGRATION <span style="font-weight:900;color:#76A72D;">C</span>ENTER</span>
-
-		<a class="TopMenuLink" href="https://github.com/PATRIC3" title="PATRIC3 GitHub"><span class="fa icon-github-square" ></span></a>
-		<a class="TopMenuLink" href="http://www.addthis.com/bookmark.php?v=250&username=xa-4c40660c515875dc%3C" title="Share Patric"><span class="fa icon-share-alt-square" ></span></a>	
-		<a class="TopMenuLink" href="http://www.youtube.com/user/PATRICBRC" title="PATRIC YouTube Channel"><span class="fa icon-youtube-square" ></span></a>	
-		<a class="TopMenuLink" href="http://www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823" title="PATRIC Facebook Page"><span class="fa icon-facebook-square" ></span></a>	
-		<a class="TopMenuLink" href="http://twitter.com/PATRICBRC" title="PATRIC Twitter Feed"><span class="fa icon-twitter-square"></span></a>	
-		<a class="TopMenuLink" href="http://enews.patricbrc.org/feed/" title="PATRIC RSS Feed"><span class="fa icon-rss-square"></span></a>	
-		<a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">CITE</a>	
-		<a class="TopMenuLink" href="/content/news" title="News">NEWS</a>  
-		<a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> WORKSHOPS </a>  
-		<a class="TopMenuLink" href="/content/about" title="About PATRIC"> ABOUT </a>
-		<a class="TopMenuLink" href="/content/ContactUs" title="Contact Us"> CONTACT </a>
-		<a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">ACCOUNT</a> 
-		<a class="ShowWithAuth TopMenuLink" href="/logout">LOGOUT</a> 
-		<a class="HideWithAuth loginLink TopMenuLink" href="/register">REGISTER</a> 
-		<a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a>
-	</div>
--->
-
     <% var services = [
         {name: "Acinetobacter", href: "/view/Taxonomy/469#view_tab=overview"},
         {name: "Bacillus", href: "/view/Taxonomy/1386#view_tab=overview"},
@@ -101,6 +79,9 @@
                                 <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
                                         Resistance</a></div>
                                 <div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
+				<% if (request.isAuthenticated && request.isAuthenticated()) { %>
+                                	<div style="padding-left:1em;"><a class="navigationLink" href="/view/GenomeList/?eq(public,false)">Private Genomes</a></div>
+				<% } %>
                                 <div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic
                                         Features</a></div>
                                 <div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
