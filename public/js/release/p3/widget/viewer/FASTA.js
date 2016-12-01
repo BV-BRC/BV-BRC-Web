@@ -1,8 +1,10 @@
 define("p3/widget/viewer/FASTA", [
 	"dojo/_base/declare", "dijit/layout/ContentPane", "./Base",
-	"dojo/request/xhr", "../../util/PathJoin", "dojo/when"
+	"dojo/request/xhr", "../../util/PathJoin", "dojo/when","dojo/on",
+	"dojo/_base/lang","dojo/dom-construct"
 ], function(declare, ContentPane, Base,
-			Request, PathJoin, when){
+			Request, PathJoin, when, on,
+			lang,domConstruct){
 	return declare([Base], {
 		dataModel: "genome_feature",
 		limit: 25000,
@@ -68,6 +70,41 @@ define("p3/widget/viewer/FASTA", [
 				region: "top",
 				style: "padding:4px;"
 			});
+
+			on(this.header.domNode, ".icon-download:click", lang.hitch(this,function(evt){
+					console.log("Download FASTA Clicked",evt);
+
+					var baseUrl = PathJoin(this.apiServiceUrl, this.dataModel) + "/";
+
+					var query = this.state.search + "&limit(" + this.limit + ")"; 
+
+					baseUrl = baseUrl + "?" + query;
+
+
+					if(window.App.authorizationToken){
+						baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) 
+					}
+
+					baseUrl = baseUrl + "&http_accept=application/dna+fasta";
+
+
+					window.open(baseUrl);
+
+					return;
+
+					var form = domConstruct.create("form", {
+						style: "display: none;",
+						id: "downloadForm",
+						enctype: 'application/x-www-form-urlencoded',
+						name: "downloadForm",
+						method: "post",
+						action: baseUrl
+					}, this.domNode);
+					domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
+					form.submit();
+			}))
+
+
 
 			this.contentPanel = new ContentPane({
 				region: "center",

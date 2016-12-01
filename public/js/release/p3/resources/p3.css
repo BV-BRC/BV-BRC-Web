@@ -10588,6 +10588,9 @@ div.appsublabel {
     vertical-align: top;
     word-break: break-all;
 }
+.ExperimentComparison .DataItemProperty {
+    width: 210px;
+}
 .chart-wrapper.amr{
     overflow-x: scroll;
 }
@@ -11571,6 +11574,12 @@ A:hover {
 }
 body.patric *:focus {
     outline: 0;
+}
+ul { 
+	list-style-position: inside; 
+}
+li ul {
+	margin-left: 2em;
 }
 iframe  {
   margin: 0;

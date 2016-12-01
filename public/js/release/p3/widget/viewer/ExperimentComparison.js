@@ -31,13 +31,15 @@ define("p3/widget/viewer/ExperimentComparison", [
 			this._set("state", state);
 		},
 
-		"_setExperimentAttr": function(id){
-			// console.log('id: ', id);
-			if(!id){
+		"_setExperimentAttr": function(experiment){
+			if(!experiment){
 				return;
 			}
 
-			if(this.eid == id){
+			this.queryNode.innerHTML = experiment.title;
+			this.totalCountNode.innerHTML = " ( " + experiment.samples + " Comparisons )";
+
+			if(this.eid == experiment.eid){
 				return;
 			}
 		},
@@ -118,7 +120,7 @@ define("p3/widget/viewer/ExperimentComparison", [
 
 			this.inherited(arguments);
 
-			this.totalCountNode.innerHTML = " (1 Experiment) ";
+			// this.totalCountNode.innerHTML = " (1 Experiment) ";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "transcriptomics_experiment", this.eid), {
 				headers: {
@@ -128,7 +130,7 @@ define("p3/widget/viewer/ExperimentComparison", [
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(experiment){
-				// console.log("experiment result ", experiment);
+				console.log("experiment result ", experiment);
 				this.overview = this.createOverviewPanel(this.state);
 				this.comparisons = new TranscriptomicsComparisonGridContainer({
 					title: "Comparisons",

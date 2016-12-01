@@ -245,6 +245,7 @@ define([
 			var entries = [];
 			hits.forEach(function(hit){
 				var target_id = hit.description[0].id;
+				var m = metadata.hasOwnProperty(target_id) ? metadata[target_id] : {genome_id: '', genome_name: '', function: ''};
 				var entry = {
 					"qseqid": query_id,
 					"sseqid": target_id,
@@ -254,11 +255,11 @@ define([
 					"length": hit.len,
 					"evalue": this.formatEvalue(hit.hsps[0]['evalue']),
 					"bitscore": Math.round(hit.hsps[0]['bit_score']),
-					"genome_id": metadata[target_id].genome_id,
-					"genome_name": metadata[target_id].genome_name,
-					"function": metadata[target_id].function,
+					"genome_id": m.genome_id,
+					"genome_name": m.genome_name,
+					"function": m.function,
 					"detail": {
-						"match_count": metadata[target_id].match_count || 0,
+						"match_count": m.match_count || 0,
 						"matches": identical[target_id] || [],
 						"hsps": hit.hsps,
 						"query_len": query_length,
@@ -289,6 +290,16 @@ define([
 						var m = metadata[target_id];
 						var org = hit.description[0].title.match(/\[(.*)\]/)[1];
 						entry = lang.mixin(entry, {database: m.locus_tag, source_id: m.alt_locus_tag, organism: org});
+						delete entry.genome_id;
+						delete entry.genome_name;
+					}else if(hit.description[0].title){
+						var title = hit.description[0].title;
+						var id = title.split(' ')[0];
+						var desc = title.split(' ')[1].split(' [')[0];
+						var database = id.split('|')[0];
+						var source_id = id.split('|')[1];
+						var org = title.match(/\[(.*)\]/)[1];
+						entry = lang.mixin(entry, {database: database, source_id: source_id, organism: org, function: desc});
 						delete entry.genome_id;
 						delete entry.genome_name;
 					}else{
