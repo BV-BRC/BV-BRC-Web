@@ -166,7 +166,7 @@ define("p3/widget/DataItemFormatter", [
 				text: 'refseq_locus_tag',
 				link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
 				mini: true
-			},{
+			}, {
 				name: 'Gene Symbol',
 				text: 'gene',
 				mini: true
@@ -200,7 +200,7 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Taxon ID',
 				text: 'taxon_id',
 				link: '/view/Taxonomy/'
-			},{
+			}, {
 				name: 'Genome ID',
 				text: 'genome_id',
 				link: "/view/Genome/"
@@ -288,72 +288,72 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'Source',
 				text: 'source',
-				link: function(obj) {
-						var sourcelink = obj.source;
-						switch(obj.source){
-							case "PATRIC_VF":
-								sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))" target="_blank">' + obj.source + '</a>';
-								break; 
-							case "Victors": 
-								sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + obj.source + '</a>';
-								break;
-							case "VFDB":
-								sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + obj.source + '</a>';
-								break;
-							case "Human":
-								sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + obj.source + '</a>';
-								break;
-							case "ARDB":
-								sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + obj.source + '</a>';
-								break;
-							case "CARD":
-								sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + obj.source + '</a>';
-								break;
-							case "DrugBank":
-								sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + obj.source + '</a>';
-								break;
-							case "TTD":
-								sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + obj.source + '</a>'; 
-								break;
-							default:
-								break;
-						}
-						return sourcelink;
-					}				
+				link: function(obj){
+					var sourcelink = obj.source;
+					switch(obj.source){
+						case "PATRIC_VF":
+							sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))" target="_blank">' + obj.source + '</a>';
+							break;
+						case "Victors":
+							sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + obj.source + '</a>';
+							break;
+						case "VFDB":
+							sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + obj.source + '</a>';
+							break;
+						case "Human":
+							sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + obj.source + '</a>';
+							break;
+						case "ARDB":
+							sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + obj.source + '</a>';
+							break;
+						case "CARD":
+							sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + obj.source + '</a>';
+							break;
+						case "DrugBank":
+							sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + obj.source + '</a>';
+							break;
+						case "TTD":
+							sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + obj.source + '</a>';
+							break;
+						default:
+							break;
+					}
+					return sourcelink;
+				}
 			}, {
 				name: 'Source ID',
 				text: 'source_id',
-				link: function(obj) {
-						var sourcelink = obj.source_id;
-						switch(obj.source){
-							case "PATRIC_VF":
-								sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + obj.source_id  + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							case "Victors": 
-								sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							case "VFDB":
-								sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							case "Human":
-								sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							case "ARDB":
-								sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							case "DrugBank":
-								var padding = "BE0000000";
-								var id = padding.substring(0, padding.length-obj.source_id.length) + obj.source_id;
-								sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							case "TTD":
-								sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-								break;
-							default:
-								break;
-						}
-						return sourcelink;
+				link: function(obj){
+					var sourcelink = obj.source_id;
+					switch(obj.source){
+						case "PATRIC_VF":
+							sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						case "Victors":
+							sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						case "VFDB":
+							sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						case "Human":
+							sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						case "ARDB":
+							sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						case "DrugBank":
+							var padding = "BE0000000";
+							var id = padding.substring(0, padding.length - obj.source_id.length) + obj.source_id;
+							sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						case "TTD":
+							sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+							break;
+						default:
+							break;
 					}
+					return sourcelink;
+				}
 			}, {
 				name: 'Organism',
 				text: 'organism'
@@ -451,8 +451,8 @@ define("p3/widget/DataItemFormatter", [
 			displayDetail(item, columns, div, options);
 
 			return div;
-		},			
-			
+		},
+
 		"taxonomy_data": function(item, options){
 			options = options || {};
 
@@ -560,28 +560,27 @@ define("p3/widget/DataItemFormatter", [
 			return div;
 		},
 
-        "msa_details": function(item, options){
-            options = options || {};
-            var columns =[{
-                name: "No. of Members",
-                text: "numFeatures"
-            }, {
-                name: "No. of Organisms",
-                text: "numOrganisms"
-            }, {
-                name: "Min AA Length",
-                text: "minLength"
-            }, {
-                name: "Max AA Length",
-                text: "maxLength"
-            }];
+		"msa_details": function(item, options){
+			options = options || {};
+			var columns = [{
+				name: "No. of Members",
+				text: "numFeatures"
+			}, {
+				name: "No. of Organisms",
+				text: "numOrganisms"
+			}, {
+				name: "Min AA Length",
+				text: "minLength"
+			}, {
+				name: "Max AA Length",
+				text: "maxLength"
+			}];
 			var div = domConstruct.create("div");
 			displayHeader(div, "MSA", "fa icon-alignment fa-2x", "/view/MSA/", options);
 			displayDetail(item, columns, div, options);
 
 			return div;
 		},
-
 
 		"sequence_data": function(item, options){
 			options = options || {};
@@ -650,26 +649,38 @@ define("p3/widget/DataItemFormatter", [
 		"transcriptomics_experiment_data": function(item, options){
 			options = options || {};
 
-			var columns = [{
+			var sectionList = ['Experiment Info', 'Additional Metadata'];
+			var section = {};
+
+			section['Experiment Info'] = [{
 				name: 'Experiment ID',
 				text: 'eid'
 			}, {
-				name: 'Title',
-				text: 'title'
+				name: 'Accession',
+				text: 'accession',
+				link: 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
 			}, {
-				name: 'Comparisons',
-				text: 'samples'
+				name: 'Institution',
+				text: 'institution'
 			}, {
-				name: 'Genes',
-				text: 'genes'
+				name: 'PI',
+				text: 'pi'
+			}, {
+				name: 'Author',
+				text: 'author'
 			}, {
 				name: 'PubMed',
 				text: 'pmid',
 				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
 			}, {
-				name: 'Link Out',
-				text: 'accession',
-				link: 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+				name: 'Release Date',
+				text: 'release_date'
+			}, {
+				name: 'Title',
+				text: 'title'
+			}, {
+				name: 'Description',
+				text: 'description'
 			}, {
 				name: 'Organism',
 				text: 'organism'
@@ -680,37 +691,35 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Gene Modification',
 				text: 'mutant'
 			}, {
+				name: 'Time Series',
+				text: 'timeseries'
+			}, {
 				name: 'Experimental Condition',
 				text: 'condition'
 			}, {
-				name: 'Time Series',
-				text: 'timeseries'
+				name: 'Comparisons',
+				text: 'samples'
 			}, {
 				name: 'Platforms',
 				text: 'platforms'
 			}, {
+				name: 'Genes',
+				text: 'genes'
+			}, {
 				name: 'Genome IDs',
 				text: 'genome_ids'
-			}, {
-				name: 'Release Date',
-				text: 'release_date'
-			}, {
-				name: 'Author',
-				text: 'author'
-			}, {
-				name: 'PI',
-				text: 'pi'
-			}, {
-				name: 'Institution',
-				text: 'institution'
-			}, {
-				name: 'Description',
-				text: 'description'
+			}
+			];
+
+			section['Additional Metadata'] = [{
+				name: 'Additional Metadata',
+				multiValued: true,
+				text: 'additional_metadata'
 			}];
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/" + item.eid, options);
-			displayDetail(item, columns, div, options);
+			displayDetailBySections(item, sectionList, section, div, options);
 
 			return div;
 		},
@@ -789,40 +798,40 @@ define("p3/widget/DataItemFormatter", [
 			var columns = [{
 				name: "Genome Name",
 				text: "genome_name"
-			},{
+			}, {
 				name: "Accession",
 				text: "accession"
-			},{
+			}, {
 				name: "PATRIC ID",
 				text: "patric_id"
-			},{
+			}, {
 				name: "RefSeq Locus Tag",
 				text: "refseq_locus_tag"
-			},{
+			}, {
 				name: "Alt Locus Tag",
 				text: "alt_locus_tag"
-			},{
+			}, {
 				name: "Gene Symbol",
 				text: "gene"
-			},{
+			}, {
 				name: "Product",
 				text: "product"
-			},{
+			}, {
 				name: "Start",
 				text: "start"
-			},{
+			}, {
 				name: "End",
 				text: "end"
-			},{
+			}, {
 				name: "Strand",
 				text: "strand"
-			},{
+			}, {
 				name: "Comparisons",
 				text: "sample_size"
-			},{
+			}, {
 				name: "Up",
 				text: "up"
-			},{
+			}, {
 				name: "Down",
 				text: "down"
 			}];
@@ -1128,8 +1137,25 @@ define("p3/widget/DataItemFormatter", [
 
 			for(var j = 0; j < value.length; j++){
 				var column = value[j].text;
+				var multiValued = value[j].multiValued || false;
 
-				if(column && (item[column] || item[column] == "0")){
+				if(multiValued){
+
+					item[column].forEach(function(val){
+						tr = domConstruct.create("tr", {}, tbody);
+						var k = val.split(':')[0], v = val.split(':')[1];
+
+						domConstruct.create("td", {
+							"class": "DataItemProperty",
+							innerHTML: k
+						}, tr);
+						domConstruct.create("td", {
+							"class": "DataItemValue",
+							innerHTML: v
+						}, tr);
+					})
+				}
+				else if(column && (item[column] || item[column] == "0")){
 
 					if(!mini || (mini && value[j].mini)){
 
@@ -1200,7 +1226,7 @@ define("p3/widget/DataItemFormatter", [
 			}
 		}
 	}
-	
+
 	return function(item, type, options){
 
 		var new_type;
@@ -1215,8 +1241,8 @@ define("p3/widget/DataItemFormatter", [
 				new_type = "transcriptomics_sample_data";
 				break;
 			default:
-				new_type = (formatters[type])? type : "default";
-				// console.log("display in " + new_type + " format");
+				new_type = (formatters[type]) ? type : "default";
+			// console.log("display in " + new_type + " format");
 		}
 
 		return formatters[new_type](item, options);

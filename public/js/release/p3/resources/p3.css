@@ -10588,6 +10588,9 @@ div.appsublabel {
     vertical-align: top;
     word-break: break-all;
 }
+.ExperimentComparison .DataItemProperty {
+    width: 210px;
+}
 .chart-wrapper.amr{
     overflow-x: scroll;
 }
