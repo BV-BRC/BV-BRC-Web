@@ -6,7 +6,7 @@ define("p3/widget/Phylogeny", [
 	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "./SelectionToGroup",
 	"dijit/Dialog", "./ItemDetailPanel", "dojo/query", "FileSaver",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/BorderContainer",
-	"dijit/layout/ContentPane", "dojo/dom-class", "dojo/on"
+	"dijit/layout/ContentPane", "dojo/dom-class", "dojo/on", "dojo/topic"
 ], function(declare, PhyloTree, TreeNavSVG,
 			WidgetBase, request, domConstruct,
 			lang, domGeometry, domStyle, d3, PathJoin,
@@ -14,7 +14,7 @@ define("p3/widget/Phylogeny", [
 			Button, MenuItem, TooltipDialog, popup,
 			SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
 			ActionBar, ContainerActionBar, BorderContainer,
-			ContentPane, domClass, on){
+			ContentPane, domClass, on, Topic){
 
 	var infoMenu = new TooltipDialog({
 		content: "<div> Create groups and download sequences by making a selection in the tree on the left.</div>",
@@ -48,6 +48,7 @@ define("p3/widget/Phylogeny", [
 		tree: null,
 		apiServer: window.App.dataAPI,
 		phylogram: true,
+        containerType: "genome_data",
 		selection: null,
 		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
@@ -70,13 +71,14 @@ define("p3/widget/Phylogeny", [
 				region: "right",
 				style: "width:300px",
 				splitter: true,
-				layoutPriority: 1
+				layoutPriority: 1,
+                containerWidget: this
 			});
 			this.addChild(this.containerActionBar);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.containerPane);
-			//this.addChild(this.itemDetailPanel);
-			//this.itemDetailPanel.startup();
+		   // this.addChild(this.itemDetailPanel);
+			this.itemDetailPanel.startup();
 
 			var menuDiv = domConstruct.create("div", {style: "display: inline-block"}, this.containerActionBar.pathContainer);
 			this.treeHeader = domConstruct.create("div", {style: "margin-left: 20px; display: inline-block"}, this.containerActionBar.pathContainer);
@@ -143,7 +145,22 @@ define("p3/widget/Phylogeny", [
 			var cur = this.selection.map(lang.hitch(this, function(selected){
 				return {"genome_id": selected.id}
 			}));
-			this.selectionActionBar._setSelectionAttr(cur);
+
+            this.selectionActionBar.set("selection", cur);
+
+            if (cur.length ==1){
+                request.get(PathJoin(this.apiServer, "genome", cur[0].genome_id), {
+                    headers: {
+                        accept: "application/json"
+                    },
+                    handleAs: "json"
+                }).then(lang.hitch(this, function(record){
+			        this.itemDetailPanel.set('selection', [record]);
+                }));
+            }
+            else {
+			    this.itemDetailPanel.set('selection', cur);
+            }
 		},
 
 		onSetState: function(attr, oldVal, state){
@@ -336,6 +353,79 @@ define("p3/widget/Phylogeny", [
 					});
 				},
 				true
+			],[
+				"ViewGenomeItemFromGenome",
+				"MultiButton fa icon-selection-Genome fa-2x",
+				{
+					label: "GENOME",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
+					validContainerTypes: ["genome_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {
+						href: "/view/Genome/" + sel.genome_id,
+						target: "blank"
+					});
+				},
+				false
+			],
+			[
+				"ViewGenomeItems",
+				"MultiButton fa icon-selection-GenomeList fa-2x",
+				{
+					label: "GENOMES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					max: 1000,
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "sequence_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						var map = {};
+						selection.forEach(function(sel){
+							if(!map[sel.genome_id]){
+								map[sel.genome_id] = true
+							}
+						})
+						var genome_ids = Object.keys(map);
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "GenomeList",
+								perspectiveUrl: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var map = {};
+					selection.forEach(function(sel){
+						if(!map[sel.genome_id]){
+							map[sel.genome_id] = true
+						}
+					})
+					var genome_ids = Object.keys(map);
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+				},
+				false
 			],
 			[
 				"AddGroup",
