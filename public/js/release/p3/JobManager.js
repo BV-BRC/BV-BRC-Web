@@ -23,6 +23,7 @@ define("p3/JobManager", ["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr"
 				if (initialDataSet){
 					_DataStore.setData(tasks[0].slice(0,-1));
 					_DataStore.put(tasks[0][tasks[0].length-1])
+					initialDataSet=false;
 				}else{
 
 					tasks[0].forEach(function(task){
