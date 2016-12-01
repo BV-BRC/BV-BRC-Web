@@ -48,6 +48,7 @@ define([
 		tree: null,
 		apiServer: window.App.dataAPI,
 		phylogram: true,
+        containerType: "genome_data",
 		selection: null,
 		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
@@ -70,13 +71,14 @@ define([
 				region: "right",
 				style: "width:300px",
 				splitter: true,
-				layoutPriority: 1
+				layoutPriority: 1,
+                containerWidget: this
 			});
 			this.addChild(this.containerActionBar);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.containerPane);
-			//this.addChild(this.itemDetailPanel);
-			//this.itemDetailPanel.startup();
+		   // this.addChild(this.itemDetailPanel);
+			this.itemDetailPanel.startup();
 
 			var menuDiv = domConstruct.create("div", {style: "display: inline-block"}, this.containerActionBar.pathContainer);
 			this.treeHeader = domConstruct.create("div", {style: "margin-left: 20px; display: inline-block"}, this.containerActionBar.pathContainer);
@@ -143,7 +145,22 @@ define([
 			var cur = this.selection.map(lang.hitch(this, function(selected){
 				return {"genome_id": selected.id}
 			}));
-			this.selectionActionBar._setSelectionAttr(cur);
+
+            this.selectionActionBar.set("selection", cur);
+
+            if (cur.length ==1){
+                request.get(PathJoin(this.apiServer, "genome", cur[0].genome_id), {
+                    headers: {
+                        accept: "application/json"
+                    },
+                    handleAs: "json"
+                }).then(lang.hitch(this, function(record){
+			        this.itemDetailPanel.set('selection', [record]);
+                }));
+            }
+            else {
+			    this.itemDetailPanel.set('selection', cur);
+            }
 		},
 
 		onSetState: function(attr, oldVal, state){
