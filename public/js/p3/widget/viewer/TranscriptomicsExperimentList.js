@@ -15,7 +15,6 @@ define([
 		paramsMap: "query",
 		defaultTab: "experiments",
 		perspectiveLabel: "Experiment List View",
-//		perspectiveIconClass: "icon-selection-GenomeList",
 		perspectiveIconClass: "icon-selection-ExperimentList",
 		total_experiments: 0,
 		eids: null,
@@ -140,7 +139,7 @@ define([
 		},
 		onSetTotalExperiments: function(attr, oldVal, newVal){
 			// console.log("ON SET TOTAL Experiments: ", newVal);
-			this.totalCountNode.innerHTML = " ( " + newVal + " Experiments) ";
+			this.totalCountNode.innerHTML = " ( " + newVal + " Experiments )";
 		}
 	});
 });

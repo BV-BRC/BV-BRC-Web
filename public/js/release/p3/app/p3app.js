@@ -7,7 +7,7 @@ define("p3/app/p3app", [
 	"dojo/ready", "./app", "../router",
 	"dojo/window", "../widget/Drawer", "dijit/layout/ContentPane",
 	"../jsonrpc", "../panels", "../WorkspaceManager", "dojo/keys",
-	"dijit/Dialog"
+	"dijit/Dialog", "../util/PathJoin"
 ], function(declare,
 			Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
 			Registry, xhr, lang,
@@ -17,7 +17,7 @@ define("p3/app/p3app", [
 			Router, Window,
 			Drawer, ContentPane,
 			RPC, Panels, WorkspaceManager, Keys,
-			Dialog){
+			Dialog, PathJoin){
 	return declare([App], {
 		panels: Panels,
 		activeWorkspace: null,
@@ -150,7 +150,7 @@ define("p3/app/p3app", [
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
 				newState.style = "padding:0";
-				newState.value = _self.dataAPI + "/content/" + path;
+				newState.value = PathJoin(_self.dataAPI, "content", path);
 				newState.set = "href";
 				newState.requireAuth = false;
 				newState.pageTitle = 'PATRIC';

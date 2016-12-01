@@ -10588,6 +10588,9 @@ div.appsublabel {
     vertical-align: top;
     word-break: break-all;
 }
+.ExperimentComparison .DataItemProperty {
+    width: 210px;
+}
 .chart-wrapper.amr{
     overflow-x: scroll;
 }
@@ -11618,6 +11621,14 @@ iframe  {
 }
 .patric .Authenticated .ShowWithoutAuth {
     display: none;
+}
+ol {
+  list-style-type: decimal; 
+  padding: 0 0 0 30px;
+  margin: 0 0 17px 0;
+}
+ol li {
+  list-style: decimal;
 }
 TD.HomeServiceLink {
 	border-spacing: 0 0;

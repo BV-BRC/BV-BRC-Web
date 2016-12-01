@@ -121,9 +121,16 @@
 
                     <div class="left third">
                         <label class="paramlabel">E value threshold: </label><br/>
-                        <input name="threshold" type="text" value="10" style="width:50px"
-                               data-dojo-type="dijit/form/TextBox"
+                        <select name="threshold" type="text" value="10" style="width:50px"
+                               data-dojo-type="dijit/form/Select"
                                data-dojo-attach-point="evalue">
+                            <option value="0.0001">0.0001</option>
+                            <option value="0.001">0.001</option>
+                            <option value="0.01">0.01</option>
+                            <option value="0.1">0.1</option>
+                            <option value="1">1</option>
+                            <option value="10" selected="selected">10</option>
+                        </select>
                     </div>
                     <div class="clear"></div>
                 </div>

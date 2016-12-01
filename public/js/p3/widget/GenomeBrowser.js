@@ -323,7 +323,8 @@ define([
 				.replace(/^scaff?o?l?d?/, 'scaffold')
 				.replace(/^([a-z]*)0+/, '$1')
 				.replace(/^(\d+)$/, 'chr$1')
-				.replace(/^accn\|/, '');
+				.replace(/^accn\|/, '')
+                .replace(/^sid\|\d+\|accn\|/,'');
 
 			return refname;
 		},
