@@ -41,3 +41,7 @@
     vertical-align: top;
     word-break: break-all;
 }
+
+.ExperimentComparison .DataItemProperty {
+    width: 210px;
+}
