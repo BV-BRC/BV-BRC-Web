@@ -1,0 +1,23 @@
+<div class="HelpContent">
+    <div class="FullHelp">
+        <section name="Overview">
+             <h2>Overview</h2>
+             <p>The Model Reconstruction Service integrates and augments technologies for genome annotation, construction of gene-protein-reaction (GPR) associations, generation of biomass reactions, reaction network assembly, thermodynamic analysis of reaction reversibility, and model optimization, to generate draft genome-scale metabolic models. The service is capable of generating functioning draft metabolic models of an organism starting from an assembled genome sequence. Additional information is available in <a href="http://www.nature.com/nbt/journal/v28/n9/full/nbt.1672.html">High-throughput generation, optimization and analysis of genome-scale metabolic models</>.</p>
+        </section>
+    
+        <p>The Metabolic Reconstruction Service can be accessed from the Services Menu at the top of the PATRIC website page and via  the PATRIC Command Line Interface (CLI).</p>
+        <p><em>NOTE: You must be logged into the PATRIC Workspace to use the Metabolic Reconstruction Service.</em></p>
+
+        <section name="Select_Genome">
+            <h2>Select a Genome</h2>
+            <p>Select a public genome or a genome from workspace.</p>
+            <p>Note: click the filter icon to the left of the genome input box to help in finding your genomes.</p>
+        </section>
+
+        <section name="Optional_Parameters">
+            <h2>Optional Parameters</h2>
+            <p><b>Media</b>Select the growth media for the model.</p>
+            <p><b>Output Name</b></br>Optional output name for you model.  All related files will start with this name.</p>
+        </section>
+    </div>    
+</div>
