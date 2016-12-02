@@ -546,7 +546,7 @@ define([
 				var rel = e.target.attributes.rel.value;
 				var currentQuery = "?in(feature_id,(" + features.map(function(f){
 						return f.feature_id;
-					}).join(",") + "))";
+					}).join(",") + "))&sort(+feature_id)";
 
 				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);

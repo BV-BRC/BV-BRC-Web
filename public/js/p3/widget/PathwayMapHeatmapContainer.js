@@ -297,7 +297,7 @@ define([
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var currentQuery = "?in(feature_id,(" + featureIds + "))";
+				var currentQuery = "?in(feature_id,(" + featureIds + "))&sort(+feature_id)";
 
 				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);
