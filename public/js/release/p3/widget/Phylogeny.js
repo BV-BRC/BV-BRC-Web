@@ -48,7 +48,7 @@ define("p3/widget/Phylogeny", [
 		tree: null,
 		apiServer: window.App.dataAPI,
 		phylogram: true,
-        containerType: "genome_data",
+		containerType: "genome_data",
 		selection: null,
 		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
@@ -72,12 +72,12 @@ define("p3/widget/Phylogeny", [
 				style: "width:300px",
 				splitter: true,
 				layoutPriority: 1,
-                containerWidget: this
+				containerWidget: this
 			});
 			this.addChild(this.containerActionBar);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.containerPane);
-		   // this.addChild(this.itemDetailPanel);
+			// this.addChild(this.itemDetailPanel);
 			this.itemDetailPanel.startup();
 
 			var menuDiv = domConstruct.create("div", {style: "display: inline-block"}, this.containerActionBar.pathContainer);
@@ -116,10 +116,10 @@ define("p3/widget/Phylogeny", [
 				var sel = snapMenu.selection;
 				delete snapMenu.selection;
 				if(rel == "tree-svg"){
-					saveAs(new Blob([query("svg")[0].outerHTML]), "patric_tree.svg");
+					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_phylogeny_tree.svg");
 				}
 				else if(rel == "tree-newick"){
-					saveAs(new Blob([this.newick]), "patric_tree.nwk");
+					saveAs(new Blob([this.newick]), "PATRIC_phylogeny_tree.nwk");
 				}
 				popup.close(snapMenu);
 			}));
@@ -146,21 +146,21 @@ define("p3/widget/Phylogeny", [
 				return {"genome_id": selected.id}
 			}));
 
-            this.selectionActionBar.set("selection", cur);
+			this.selectionActionBar.set("selection", cur);
 
-            if (cur.length ==1){
-                request.get(PathJoin(this.apiServer, "genome", cur[0].genome_id), {
-                    headers: {
-                        accept: "application/json"
-                    },
-                    handleAs: "json"
-                }).then(lang.hitch(this, function(record){
-			        this.itemDetailPanel.set('selection', [record]);
-                }));
-            }
-            else {
-			    this.itemDetailPanel.set('selection', cur);
-            }
+			if(cur.length == 1){
+				request.get(PathJoin(this.apiServer, "genome", cur[0].genome_id), {
+					headers: {
+						accept: "application/json"
+					},
+					handleAs: "json"
+				}).then(lang.hitch(this, function(record){
+					this.itemDetailPanel.set('selection', [record]);
+				}));
+			}
+			else{
+				this.itemDetailPanel.set('selection', cur);
+			}
 		},
 
 		onSetState: function(attr, oldVal, state){
@@ -353,7 +353,7 @@ define("p3/widget/Phylogeny", [
 					});
 				},
 				true
-			],[
+			], [
 				"ViewGenomeItemFromGenome",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{

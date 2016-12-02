@@ -526,7 +526,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 					}
 				});
 
-				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'ProteinFamilies.' + ext);
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'PATRIC_protein_families_heatmap.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){
@@ -546,7 +546,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				var rel = e.target.attributes.rel.value;
 				var currentQuery = "?in(feature_id,(" + features.map(function(f){
 						return f.feature_id;
-					}).join(",") + "))";
+					}).join(",") + "))&sort(+feature_id)";
 
 				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);

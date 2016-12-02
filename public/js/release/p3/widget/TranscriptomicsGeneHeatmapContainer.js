@@ -410,7 +410,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 					}
 				});
 
-				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'Transcriptomics.' + ext);
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'PATRIC_transcriptomics_heatmap.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){
@@ -427,7 +427,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var currentQuery = "?in(feature_id,(" + geneIds + "))";
+				var currentQuery = "?in(feature_id,(" + geneIds + "))&sort(+feature_id)";
 
 				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadPT);

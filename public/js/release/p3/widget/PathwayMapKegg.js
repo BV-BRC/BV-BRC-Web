@@ -110,7 +110,7 @@ define("p3/widget/PathwayMapKegg", [
 				{label: "Print", multiple: false, validTypes: ["*"]},
 				function(){
 					var svg = this.pNS.export();
-					saveAs(new Blob([svg], {type: 'image/svg+xml'}), "PathwayMap.svg");
+					saveAs(new Blob([svg], {type: 'image/svg+xml'}), "PATRIC_pathway_map.svg");
 				},
 				true
 			]

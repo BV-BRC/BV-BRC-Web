@@ -50,7 +50,7 @@ define("p3/widget/DownloadTooltipDialog", [
 				when(this.grid.store.query({}), lang.hitch(this, function(results){
 					results = rql.query(query, {}, results);
 					var data = this["_to" + type.toLowerCase()](results);
-					saveAs(new Blob([data]), this.containerType + "_selection." + type);
+					saveAs(new Blob([data]), "PATRIC_" + this.containerType + "." + type);
 				}));
 			}else{
 
