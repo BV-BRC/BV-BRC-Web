@@ -377,6 +377,11 @@ define([
 				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
 			});
 
+			// work around for flash bug
+			if(maxIntensity == 70){
+				maxIntensity = 69;
+			}
+
 			// colorStop
 			if(maxIntensity == 1){
 				colorStop = [new ColorStop(1, 0xfadb4e)];
