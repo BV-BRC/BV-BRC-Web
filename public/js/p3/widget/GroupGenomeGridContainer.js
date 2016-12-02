@@ -36,6 +36,7 @@ define([
 							console.log("remove items from group, ", objs, _self.state);
 							when(WorkspaceManager.removeFromGroup(_self.state.ws_path, idType, objs), function(){
 								_self.grid.refresh();
+								_self.onRefresh();
 							});
 						}
 					});
@@ -44,7 +45,9 @@ define([
 
 				}
 			]
-		])
+		]),
+
+		onRefresh: function(){ }
 
 	})
 

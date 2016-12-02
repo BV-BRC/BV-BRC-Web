@@ -99,7 +99,11 @@ define([
                                 title: "Features",
                                 id: this.viewer.id + "_" + "features",
                                 tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-                                disabled: false
+                                disabled: false,
+                                onRefresh: lang.hitch(this,function(){
+                                	console.log("Refreshed Feature Grid....")
+                                	this.set("query", this.state.search, true);
+                                })
                         });
 
                         this.viewer.addChild(this.overview);
