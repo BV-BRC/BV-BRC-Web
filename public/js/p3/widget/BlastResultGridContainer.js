@@ -109,7 +109,7 @@ define([
 							});
 							break;
 						case "genome_sequence":
-							headers = ["Genome", "Genome ID", "Accession", "Description", "Product", "Identity", "Query cover", "Subject cover", "Score", "E value"];
+							headers = ["Genome", "Genome ID", "Accession", "Description", "Product", "Identity", "Query cover", "Subject cover", "ALN Length", "Score", "E value"];
 							content = data.map(function(row){
 								return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row.function), row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
 							});

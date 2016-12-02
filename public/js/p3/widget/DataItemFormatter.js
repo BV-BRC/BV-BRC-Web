@@ -1,8 +1,8 @@
 define([
 	"dojo/_base/lang", "dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
-	"dijit/form/Button", "../JobManager", "dijit/TitlePane"
+	"dijit/form/Button", "../JobManager", "dijit/TitlePane", "./formatter"
 ], function(lang, locale, domConstruct, domClass,
-			Button, JobManager, TitlePane){
+			Button, JobManager, TitlePane, formatter){
 
 	var formatters = {
 		"default": function(item, options){
@@ -289,70 +289,25 @@ define([
 				name: 'Source',
 				text: 'source',
 				link: function(obj){
-					var sourcelink = obj.source;
-					switch(obj.source){
-						case "PATRIC_VF":
-							sourcelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))" target="_blank">' + obj.source + '</a>';
-							break;
-						case "Victors":
-							sourcelink = '<a href="http://www.phidias.us/victors" target="_blank">' + obj.source + '</a>';
-							break;
-						case "VFDB":
-							sourcelink = '<a href="http://www.mgc.ac.cn/VFs" target="_blank">' + obj.source + '</a>';
-							break;
-						case "Human":
-							sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.26" target="_blank">' + obj.source + '</a>';
-							break;
-						case "ARDB":
-							sourcelink = '<a href="http://ardb.cbcb.umd.edu" target="_blank">' + obj.source + '</a>';
-							break;
-						case "CARD":
-							sourcelink = '<a href="https://card.mcmaster.ca/" target="_blank">' + obj.source + '</a>';
-							break;
-						case "DrugBank":
-							sourcelink = '<a href="http://www.drugbank.ca/" target="_blank">' + obj.source + '</a>';
-							break;
-						case "TTD":
-							sourcelink = '<a href="http://bidd.nus.edu.sg/group/cjttd/" target="_blank">' + obj.source + '</a>';
-							break;
-						default:
-							break;
+					var link = formatter.getExternalLinks(obj.source + '_HOME');
+
+					if(link){
+						return '<a href="' + link + '" target="_blank">' + obj.source + '</a>';
+					}else{
+						return obj.source;
 					}
-					return sourcelink;
 				}
 			}, {
 				name: 'Source ID',
 				text: 'source_id',
 				link: function(obj){
-					var sourcelink = obj.source_id;
-					switch(obj.source){
-						case "PATRIC_VF":
-							sourcelink = '<a href="/view/SpecialtyGeneEvidence/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						case "Victors":
-							sourcelink = '<a href="http://www.phidias.us/victors/gene_detail.php?c_mc_victor_id=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						case "VFDB":
-							sourcelink = '<a href="http://www.mgc.ac.cn/cgi-bin/VFs/gene.cgi?GeneID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						case "Human":
-							sourcelink = '<a href="https://www.ncbi.nlm.nih.gov/protein/' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						case "ARDB":
-							sourcelink = '<a href="http://ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						case "DrugBank":
-							var padding = "BE0000000";
-							var id = padding.substring(0, padding.length - obj.source_id.length) + obj.source_id;
-							sourcelink = '<a href="http://www.drugbank.ca/biodb/bio_entities/' + id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						case "TTD":
-							sourcelink = '<a href="http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID=' + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
-							break;
-						default:
-							break;
+					var link = formatter.getExternalLinks(obj.source);
+
+					if(link){
+						return '<a href="' + link + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+					}else{
+						return obj.source_id;
 					}
-					return sourcelink;
 				}
 			}, {
 				name: 'Organism',
@@ -448,6 +403,51 @@ define([
 			}];
 
 			var div = domConstruct.create("div");
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
+		// this is for blast result page against "Specialty gene reference proteins(faa)"
+		"specialty_genes": function(item, options){
+			options = options || {};
+
+			var columns = [{
+				name: 'Database',
+				text: 'database',
+				link: function(obj){
+					var link = formatter.getExternalLinks(obj.database + '_HOME');
+
+					if(link){
+						return '<a href="' + link + '" target="_blank">' + obj.database + '</a>';
+					}else{
+						return obj.database;
+					}
+				}
+			}, {
+				name: 'Source ID',
+				text: 'source_id',
+				link: function(obj){
+					var link = formatter.getExternalLinks(obj.database);
+
+					if(link){
+						return '<a href="' + link + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+					}else{
+						return obj.source_id;
+					}
+				}
+			}, {
+				name: 'Description',
+				text: 'function'
+			}, {
+				name: 'Organism',
+				text: 'organism'
+			}];
+
+			var label = item.database + ' | ' + item.source_id;
+
+			var div = domConstruct.create("div");
+			displayHeader(div, label, "fa icon-genome-features fa-2x", null, options);
 			displayDetail(item, columns, div, options);
 
 			return div;
