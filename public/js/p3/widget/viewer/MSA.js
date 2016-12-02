@@ -408,16 +408,16 @@ define([
 				var sel = snapMenu.selection;
 				delete snapMenu.selection;
 				if(rel == "msa"){
-					msa.utils.export.saveAsImg(m, "patric_msa.png");
+					msa.utils.export.saveAsImg(m, "PATRIC_msa.png");
 				}
 				else if(rel == "msa-txt"){
-					saveAs(new Blob([this.dataStats.clustal]), "msa_patric.txt");
+					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
 				}
 				else if(rel == "tree-svg"){
-					saveAs(new Blob([query("svg")[0].outerHTML]), "msa_tree.svg");
+					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_msa_tree.svg");
 				}
 				else if(rel == "tree-newick"){
-					saveAs(new Blob([this.data.tree]), "msa_tree.nwk");
+					saveAs(new Blob([this.data.tree]), "PATRIC_msa_tree.nwk");
 				}
 				popup.close(snapMenu);
 			}));

@@ -526,7 +526,7 @@ define([
 					}
 				});
 
-				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'ProteinFamilies.' + ext);
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'PATRIC_protein_families_heatmap.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){

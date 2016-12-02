@@ -116,10 +116,10 @@ define([
 				var sel = snapMenu.selection;
 				delete snapMenu.selection;
 				if(rel == "tree-svg"){
-					saveAs(new Blob([query("svg")[0].outerHTML]), "patric_tree.svg");
+					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_phylogeny_tree.svg");
 				}
 				else if(rel == "tree-newick"){
-					saveAs(new Blob([this.newick]), "patric_tree.nwk");
+					saveAs(new Blob([this.newick]), "PATRIC_phylogeny_tree.nwk");
 				}
 				popup.close(snapMenu);
 			}));

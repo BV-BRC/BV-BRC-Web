@@ -410,7 +410,7 @@ define([
 					}
 				});
 
-				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'Transcriptomics.' + ext);
+				saveAs(new Blob([header + '\n' + data.join('\n')], {type: rel}), 'PATRIC_transcriptomics_heatmap.' + ext);
 				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){

@@ -69,7 +69,7 @@ define([
 				console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
 				console.log("SVG BEGIN: ", svg.substr(0, 50));
-                saveAs(new Blob([svg]), "CircularGenome.svg");
+                saveAs(new Blob([svg]), "PATRIC_circular_genome.svg");
 				//domConstruct.place(e,this.exportContainer,"first");
 			}
 		},
