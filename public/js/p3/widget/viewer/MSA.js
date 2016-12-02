@@ -238,15 +238,15 @@ define([
 						}
 						this.dataMap[geneID] = record;
 						this.alt_labels["genome_name"][geneID] = this.data.map[geneID]["genome_name"];
-                        if("patric_id" in this.data.map[geneID]){
-						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
-                        }
-                        else if("refseq_locus_tag" in this.data.map[geneID]){
-						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["refseq_locus_tag"];
-                        }
-                        else{
-						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["feature_id"];
-                        }
+						if("patric_id" in this.data.map[geneID]){
+							this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
+						}
+						else if("refseq_locus_tag" in this.data.map[geneID]){
+							this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["refseq_locus_tag"];
+						}
+						else{
+							this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["feature_id"];
+						}
 
 					}
 				}
@@ -300,10 +300,10 @@ define([
 				seqs: msa.io.clustal.parse(this.dataStats.clustal)
 			};
 
-            var rearrangeSeqs={};
-            msa_models.seqs.forEach(lang.hitch(this, function(s){
-                rearrangeSeqs[s.name]=s;
-            }));
+			var rearrangeSeqs = {};
+			msa_models.seqs.forEach(lang.hitch(this, function(s){
+				rearrangeSeqs[s.name] = s;
+			}));
 
 			var opts = {};
 			// set your custom properties
@@ -335,7 +335,6 @@ define([
 				rowHeight: 14.04
 			};
 
-
 			this.tree = new d3Tree({selectionTarget: this});
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
 			this.tree.setTree(this.data.tree);
@@ -352,14 +351,12 @@ define([
 			this.tree.selectLabels("Organism Names");
 			this.tree.update();
 
-            Object.keys(rearrangeSeqs).forEach(lang.hitch(this,function(fid){
-                rearrangeSeqs[fid]["py"]=this.tree.idToHeight[fid];
-            }));
-            msa_models.seqs.sort(function(a, b) {
-                return a.py - b.py;
-            });
-
-
+			Object.keys(rearrangeSeqs).forEach(lang.hitch(this, function(fid){
+				rearrangeSeqs[fid]["py"] = this.tree.idToHeight[fid];
+			}));
+			msa_models.seqs.sort(function(a, b){
+				return a.py - b.py;
+			});
 
 			// init msa
 			var m = new msa.msa(opts);

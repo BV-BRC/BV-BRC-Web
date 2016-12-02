@@ -48,7 +48,7 @@ define([
 		tree: null,
 		apiServer: window.App.dataAPI,
 		phylogram: true,
-        containerType: "genome_data",
+		containerType: "genome_data",
 		selection: null,
 		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
@@ -72,12 +72,12 @@ define([
 				style: "width:300px",
 				splitter: true,
 				layoutPriority: 1,
-                containerWidget: this
+				containerWidget: this
 			});
 			this.addChild(this.containerActionBar);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.containerPane);
-		   // this.addChild(this.itemDetailPanel);
+			// this.addChild(this.itemDetailPanel);
 			this.itemDetailPanel.startup();
 
 			var menuDiv = domConstruct.create("div", {style: "display: inline-block"}, this.containerActionBar.pathContainer);
@@ -146,21 +146,21 @@ define([
 				return {"genome_id": selected.id}
 			}));
 
-            this.selectionActionBar.set("selection", cur);
+			this.selectionActionBar.set("selection", cur);
 
-            if (cur.length ==1){
-                request.get(PathJoin(this.apiServer, "genome", cur[0].genome_id), {
-                    headers: {
-                        accept: "application/json"
-                    },
-                    handleAs: "json"
-                }).then(lang.hitch(this, function(record){
-			        this.itemDetailPanel.set('selection', [record]);
-                }));
-            }
-            else {
-			    this.itemDetailPanel.set('selection', cur);
-            }
+			if(cur.length == 1){
+				request.get(PathJoin(this.apiServer, "genome", cur[0].genome_id), {
+					headers: {
+						accept: "application/json"
+					},
+					handleAs: "json"
+				}).then(lang.hitch(this, function(record){
+					this.itemDetailPanel.set('selection', [record]);
+				}));
+			}
+			else{
+				this.itemDetailPanel.set('selection', cur);
+			}
 		},
 
 		onSetState: function(attr, oldVal, state){
@@ -353,7 +353,7 @@ define([
 					});
 				},
 				true
-			],[
+			], [
 				"ViewGenomeItemFromGenome",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{
