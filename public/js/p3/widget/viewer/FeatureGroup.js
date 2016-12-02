@@ -1,12 +1,12 @@
 define([
-	"dojo/_base/declare", "./_FeatureList", "dojo/on",
+	"dojo/_base/declare", "./_FeatureList", "dojo/on","./TabViewerBase",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "dijit/layout/TabContainer", "../FeatureListOverview",
-	"dojo/request", "dojo/_base/lang"
-], function(declare, FeatureList, on,
+	"dojo/request", "dojo/_base/lang","../GroupFeatureGridContainer"
+], function(declare, FeatureList, on,TabViewerBase,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Overview,
-			xhr, lang){
+			xhr, lang, GroupFeatureGridContainer){
 	return declare([FeatureList], {
 		params: null,
 		apiServiceUrl: window.App.dataAPI,
@@ -86,6 +86,28 @@ define([
 				isFeatureGroup: true,
 				id: this.viewer.id + "_" + "overview"
 			});
-		}
+		},
+
+                postCreate: function(){
+			TabViewerBase.prototype.postCreate.call(this,arguments);
+                        this.watch("query", lang.hitch(this, "onSetQuery"));
+                        this.watch("total_features", lang.hitch(this, "onSetTotalFeatures"));
+
+                        this.overview = this.createOverviewPanel(this.state);
+
+                        this.features = new GroupFeatureGridContainer({
+                                title: "Features",
+                                id: this.viewer.id + "_" + "features",
+                                tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
+                                disabled: false,
+                                onRefresh: lang.hitch(this,function(){
+                                	console.log("Refreshed Feature Grid....")
+                                	this.set("query", this.state.search, true);
+                                })
+                        });
+
+                        this.viewer.addChild(this.overview);
+                        this.viewer.addChild(this.features);
+                },
 	});
 });

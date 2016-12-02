@@ -79,9 +79,6 @@
                                 <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
                                         Resistance</a></div>
                                 <div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
-				<% if (request.isAuthenticated && request.isAuthenticated()) { %>
-                                	<div style="padding-left:1em;"><a class="navigationLink" href="/view/GenomeList/?eq(public,false)">Private Genomes</a></div>
-				<% } %>
                                 <div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic
                                         Features</a></div>
                                 <div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
@@ -116,6 +113,7 @@
                                 <div><a class="navigationLink" href="/content/niaid-functional-genomics"
                                         target="_blank">NIAID Functional Genomics</a></div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -152,8 +150,13 @@
                                 </div>-->
                             </div>
                         </div>
-                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                            <a class="navigationLink" href="/job/">Your Jobs</a>
+                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">	
+				<div>
+					<a class="navigationLink" href="/job/">Your Jobs</a>
+				</div>
+				<div>
+					<a class="navigationLink" href="/view/GenomeList/?eq(public,false)">Your Genomes</a></span>
+				</div>
                         </div>
                     </div>
                 </div>

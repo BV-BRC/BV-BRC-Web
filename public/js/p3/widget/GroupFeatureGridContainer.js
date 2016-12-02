@@ -1,10 +1,10 @@
 define([
-	"dojo/_base/declare","./GenomeGridContainer","./Confirmation","../WorkspaceManager","dojo/when"
+	"dojo/_base/declare","./FeatureGridContainer","./Confirmation","../WorkspaceManager","dojo/when"
 ], function(
-	declare,GenomeGridContainer,Confirmation,WorkspaceManager,when
+	declare,FeatureGridContainer,Confirmation,WorkspaceManager,when
 ){
-	return declare([GenomeGridContainer], {
-		selectionActions: GenomeGridContainer.prototype.selectionActions.concat([
+	return declare([FeatureGridContainer], {
+		selectionActions: FeatureGridContainer.prototype.selectionActions.concat([
 			[
 				"RemoveItem",
 				"fa icon-x fa-2x",
@@ -19,8 +19,8 @@ define([
 					// console.log("Remove Items from Group", selection);
 					// console.log("currentContainerWidget: ", this.currentContainerWidget);
 
-					var idType = "genome_id";
-					var type = "genome";
+					var idType = "feature_id";
+					var type = "genome feature";
 					var objs = selection.map(function(s){
 						// console.log('s: ', s, s.data);
 						return s[idType];
@@ -46,8 +46,7 @@ define([
 				}
 			]
 		]),
-
-		onRefresh: function(){ }
+		onRefresh: function(){}
 
 	})
 
