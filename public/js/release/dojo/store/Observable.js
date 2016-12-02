@@ -48,8 +48,10 @@ var Observable = function(/*Store*/ store){
 	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
+		console.log("Observable Store Query: ", query, options);
 		options = options || {};
 		var results = originalQuery.apply(this, arguments);
+		console.log("Got Base Store Results: ", results);
 		if(results && results.forEach){
 			var nonPagedOptions = lang.mixin({}, options);
 			delete nonPagedOptions.start;
