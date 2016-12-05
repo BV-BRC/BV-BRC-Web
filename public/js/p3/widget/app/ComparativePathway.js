@@ -165,25 +165,40 @@ define([
 			if(this.validate()){
 				var values = this.getValues();
 
-				console.log(values, this.addedList);
+				var filter;
+				if(values.hasOwnProperty("keyword") && values.keyword !== ""){
+					switch(values.search_on){
+						case "keyword":
+							filter = "&filter=and(eq(annotation,PATRIC),keyword(" + encodeURIComponent(values.keyword) + "))";
+							break;
+						case "pathway_id":
+							filter = "&filter=and(eq(annotation,PATRIC),eq(pathway_id," + encodeURIComponent(values.keyword) + "))";
+							break;
+						case "ec_number":
+							filter = "&filter=and(eq(annotation,PATRIC),eq(ec_number," + encodeURIComponent(values.keyword) + "))";
+							break;
+						default:
+							break;
+					}
+				}
 
 				if(this.addedLibs === 0) return;
 
-				console.log(this.addedList);
+				// console.log(this.addedList);
 				// if(values['taxon_id'] !== ""){
 				// 	Topic.publish("/navigate", {href: "/view/Taxonomy/" + values['taxon_id'] + "#view_tab=pathways"});
 				// 	return;
 				// }
 
 				if(this.addedList.length === 1 && this.addedList[0]['type'] === 'genome_group'){
-					Topic.publish("/navigate", {href: "/view/GenomeGroup" + this.addedList[0]['path'] + "#view_tab=pathways"});
+					Topic.publish("/navigate", {href: "/view/GenomeGroup" + this.addedList[0]['path'] + "#view_tab=pathways" + ((filter) ? filter : "")});
 				}else{
 					var genomeList = [];
 					this.addedList.forEach(function(rec){
 						genomeList.push(rec.genome_ids);
 					});
 
-					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genomeList + "))#view_tab=pathways"});
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genomeList + "))#view_tab=pathways" + ((filter) ? filter : "")});
 				}
 			}else{
 				console.error("Form is incomplete");
