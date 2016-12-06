@@ -120,6 +120,8 @@ passport.deserializeUser(function(id, done){
 });
 
 var proxies = config.get("proxy");
+
+
 app.use("/p/:proxy/", function(req,res,next){
 	if (proxies[req.params.proxy]){
 		apiProxy.web(req, res, {target: proxies[req.params.proxy]});
@@ -127,6 +129,14 @@ app.use("/p/:proxy/", function(req,res,next){
 		next();
 	}
 })
+
+app.use("/portal/portal/patric/Home", [
+	function(req,res,next){
+		console.log("Got Portal Request");
+		next();
+	},
+	express.static(path.join(__dirname,"public/cached.html"))
+]);
 
 app.use("*jbrowse.conf", express.static(path.join(__dirname, "public/js/jbrowse.conf")));
 app.use("/js/" + package.version + "/", [
