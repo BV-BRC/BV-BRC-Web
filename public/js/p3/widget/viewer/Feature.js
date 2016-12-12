@@ -38,6 +38,8 @@ define([
 			this.state.feature_id = id;
 
 			if(id.match(/^fig/)){
+				id = id.replace(/\|/g, '%7C');
+				//console.log("fig id = ", id);
 				id = "?eq(patric_id," + id + ")&limit(1)";
 			}
 

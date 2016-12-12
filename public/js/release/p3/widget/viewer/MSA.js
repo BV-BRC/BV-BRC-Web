@@ -238,15 +238,15 @@ define("p3/widget/viewer/MSA", [
 						}
 						this.dataMap[geneID] = record;
 						this.alt_labels["genome_name"][geneID] = this.data.map[geneID]["genome_name"];
-                        if("patric_id" in this.data.map[geneID]){
-						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
-                        }
-                        else if("refseq_locus_tag" in this.data.map[geneID]){
-						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["refseq_locus_tag"];
-                        }
-                        else{
-						    this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["feature_id"];
-                        }
+						if("patric_id" in this.data.map[geneID]){
+							this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["patric_id"];
+						}
+						else if("refseq_locus_tag" in this.data.map[geneID]){
+							this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["refseq_locus_tag"];
+						}
+						else{
+							this.alt_labels["patric_id"][geneID] = this.data.map[geneID]["feature_id"];
+						}
 
 					}
 				}
@@ -300,10 +300,10 @@ define("p3/widget/viewer/MSA", [
 				seqs: msa.io.clustal.parse(this.dataStats.clustal)
 			};
 
-            var rearrangeSeqs={};
-            msa_models.seqs.forEach(lang.hitch(this, function(s){
-                rearrangeSeqs[s.name]=s;
-            }));
+			var rearrangeSeqs = {};
+			msa_models.seqs.forEach(lang.hitch(this, function(s){
+				rearrangeSeqs[s.name] = s;
+			}));
 
 			var opts = {};
 			// set your custom properties
@@ -335,7 +335,6 @@ define("p3/widget/viewer/MSA", [
 				rowHeight: 14.04
 			};
 
-
 			this.tree = new d3Tree({selectionTarget: this});
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
 			this.tree.setTree(this.data.tree);
@@ -352,14 +351,12 @@ define("p3/widget/viewer/MSA", [
 			this.tree.selectLabels("Organism Names");
 			this.tree.update();
 
-            Object.keys(rearrangeSeqs).forEach(lang.hitch(this,function(fid){
-                rearrangeSeqs[fid]["py"]=this.tree.idToHeight[fid];
-            }));
-            msa_models.seqs.sort(function(a, b) {
-                return a.py - b.py;
-            });
-
-
+			Object.keys(rearrangeSeqs).forEach(lang.hitch(this, function(fid){
+				rearrangeSeqs[fid]["py"] = this.tree.idToHeight[fid];
+			}));
+			msa_models.seqs.sort(function(a, b){
+				return a.py - b.py;
+			});
 
 			// init msa
 			var m = new msa.msa(opts);
@@ -408,16 +405,16 @@ define("p3/widget/viewer/MSA", [
 				var sel = snapMenu.selection;
 				delete snapMenu.selection;
 				if(rel == "msa"){
-					msa.utils.export.saveAsImg(m, "patric_msa.png");
+					msa.utils.export.saveAsImg(m, "PATRIC_msa.png");
 				}
 				else if(rel == "msa-txt"){
-					saveAs(new Blob([this.dataStats.clustal]), "msa_patric.txt");
+					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
 				}
 				else if(rel == "tree-svg"){
-					saveAs(new Blob([query("svg")[0].outerHTML]), "msa_tree.svg");
+					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_msa_tree.svg");
 				}
 				else if(rel == "tree-newick"){
-					saveAs(new Blob([this.data.tree]), "msa_tree.nwk");
+					saveAs(new Blob([this.data.tree]), "PATRIC_msa_tree.nwk");
 				}
 				popup.close(snapMenu);
 			}));

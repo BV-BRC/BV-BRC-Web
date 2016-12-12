@@ -97,7 +97,7 @@ define([
 			}
 		},
 
-                postCreate: function(){
+		postCreate: function(){
 			TabViewerBase.prototype.postCreate.call(this,arguments);
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
@@ -111,9 +111,13 @@ define([
                                 title: "Genomes",
                                 id: this.viewer.id + "_" + "genomes",
                                 state: this.state,
-                                disable: false
+                                disable: false,
+                                onRefresh: lang.hitch(this,function(){
+                                	console.log("Refreshed Genome Grid....")
+                                	this.set("query", this.state.search, true);
+                                })
                         });
-                        
+
                         this.sequences = new SequenceGridContainer({
                                 title: "Sequences",
                                 id: this.viewer.id + "_" + "sequences",

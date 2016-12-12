@@ -79,9 +79,6 @@
                                 <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
                                         Resistance</a></div>
                                 <div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
-				<% if (request.isAuthenticated && request.isAuthenticated()) { %>
-                                	<div style="padding-left:1em;"><a class="navigationLink" href="/view/GenomeList/?eq(public,false)">Private Genomes</a></div>
-				<% } %>
                                 <div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic
                                         Features</a></div>
                                 <div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
@@ -116,6 +113,7 @@
                                 <div><a class="navigationLink" href="/content/niaid-functional-genomics"
                                         target="_blank">NIAID Functional Genomics</a></div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -152,8 +150,13 @@
                                 </div>-->
                             </div>
                         </div>
-                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                            <a class="navigationLink" href="/job/">Your Jobs</a>
+                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">	
+				<div>
+					<a class="navigationLink" href="/job/">Your Jobs</a>
+				</div>
+				<div>
+					<a class="navigationLink" href="/view/GenomeList/?eq(public,false)">Your Genomes</a></span>
+				</div>
                         </div>
                     </div>
                 </div>
@@ -208,8 +211,8 @@
 
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
-                    <div><a class="" href="/content/Tutorials">Tutorials</a></div>
-                    <div><a class="" href="/content/UserGuide">User Guides</a></div>
+                    <div><a class="navigationLink" href="/content/Tutorials">Tutorials</a></div>
+                    <div><a class="navigationLink" href="/content/UserGuide">User Guides</a></div>
                     <hr>
                     <div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
                 </div>
@@ -221,7 +224,7 @@
                    data-dojo-type="p3/widget/GlobalSearch"/>
         </div>
 
-        <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 3px 2px 0 0; width:125px;">
+        <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 3px 2px 0 0;">
             <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
             <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Login</div>
         </div>

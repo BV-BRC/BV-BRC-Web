@@ -18,7 +18,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}), // no selector for now.
+			"Selection Checkboxes": selector({unhidable: true}),
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: true},
 			genome_id: {label: 'Genome ID', field: 'genome_id', hidden: true},
 			accession: {label: "Accession", field: "accession", hidden: true},
@@ -115,6 +115,16 @@ define("p3/widget/CorrelatedGenesGrid", [
 				this.store.set("state", state);
 				this.refresh();
 			}
+		},
+
+		_selectAll: function(){
+
+			this._unloadedData = {};
+
+			return Deferred.when(this.store.data.map(function(d){
+				this._unloadedData[d[this.primaryKey]] = d;
+				return d[this.primaryKey];
+			}, this));
 		},
 
 		createStore: function(server, token, state){
