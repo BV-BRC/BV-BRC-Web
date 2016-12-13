@@ -374,6 +374,15 @@ define([
 				// console.log("navigationLink:click - " + evt.target.pathname + (parts[1]||"") )
 				Router.go(evt.target.pathname + (parts[1] || ""));
 			})
+
+			on(document, ".navigationLinkOut:click", function(evt){
+				// console.log(evt);
+				evt.preventDefault();
+				var target = evt.srcElement || evt.target;
+
+				window.open(target.href);
+			})
+
 		},
 		loadPanel: function(id, params, callback){
 			var def = new Deferred();
