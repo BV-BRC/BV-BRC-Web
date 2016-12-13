@@ -118,6 +118,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 
 					_self.setData([]);
 					_self._loaded = true;
+					Topic.publish("PathwaySummary", "hideLoadingMask");
 					return true;
 				}
 
@@ -217,7 +218,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 					Topic.publish("PathwaySummary", "hideLoadingMask");
 					return true;
 				}, function(err){
-					console.error("Error in ProteinFamiliesStore: ", err)
+					console.error("Error in PathwaySummaryMemoryStore: ", err)
 				});
 			});
 			return this._loadingDeferred;

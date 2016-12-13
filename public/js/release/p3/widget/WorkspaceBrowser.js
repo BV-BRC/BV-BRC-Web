@@ -451,7 +451,7 @@ define("p3/widget/WorkspaceBrowser", [
 				// console.log("CREATE FOLDER", selection[0].path);
 				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
 			}, true);
-
+/* */
 			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
@@ -591,7 +591,7 @@ define("p3/widget/WorkspaceBrowser", [
 				});
 
 			}, true);
-
+/* */
 			this.actionPanel.addAction("ExperimentGeneList", "fa icon-list-unordered fa-2x", {
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
@@ -620,7 +620,9 @@ define("p3/widget/WorkspaceBrowser", [
 			}, true);
 
 			this.actionPanel.addAction("ExperimentGeneList2", "fa icon-list-unordered fa-2x", {
+				label: "GENES",
 				multiple: true,
+				allowMultiTypes: true,
 				validContainerTypes: ["experiment_group"],
 				validTypes: ["*"],
 				tooltip: "View Experiment Group Gene List"
