@@ -58,7 +58,6 @@ define("p3/widget/TaxonomyOverview", [
 
 		"_setTaxonomyAttr": function(genome){
 			this.genome = genome;
-			this.searchName = this.genome.taxon_name;
 			this.createSummary(genome);
 			// this.getWikiDescription(genome);
 		},
@@ -67,6 +66,7 @@ define("p3/widget/TaxonomyOverview", [
 			domConstruct.empty(this.taxonomySummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {}), this.taxonomySummaryNode, "first");
 			if(this.searchName != genome.taxon_name){
+				this.searchName = this.genome.taxon_name;
 				domConstruct.empty(this.pubmedSummaryNode);
 				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 			}

@@ -437,6 +437,9 @@ define("p3/widget/app/BLAST", [
 				return;
 			}
 			this.sequence_message.innerHTML = '';
+			if(this.program.isLoaded()){
+				this.program.closeDropDown();
+			}
 			this.program.set('disabled', false);
 
 			var sequence_type = this.isNucleotideFastaSequence(val) ? NA : AA;
