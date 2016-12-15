@@ -100,7 +100,7 @@ define([
 					'Accept': "application/solr+json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				data: postData
 			}), function(response){
@@ -177,7 +177,7 @@ define([
 						'Accept': "application/solr+json",
 						'Content-Type': "application/solrquery+x-www-form-urlencoded",
 						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						'Authorization': (window.App.authorizationToken || "")
 					},
 					data: q
 				}), function(response){

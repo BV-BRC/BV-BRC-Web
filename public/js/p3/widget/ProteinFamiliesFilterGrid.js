@@ -39,6 +39,7 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: store,
+		bufferRows: 500,
 		pfState: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
