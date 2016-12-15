@@ -46,7 +46,7 @@ define([
 				return;
 			}
 
-			var eutilSearchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?usehistory=y&db=pubmed&term=" + term + "&retmode=json";
+			var eutilSearchURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?usehistory=y&db=pubmed&term=" + term + "&retmode=json";
 
 			var div = domConstruct.create("div", {"class": "pubmed"});
 			var topLevelUl = domConstruct.create("ul", {}, div);
@@ -62,7 +62,7 @@ define([
 				if(pubmedList.esearchresult.count > 0){
 					var pmids = pubmedList.esearchresult.idlist;
 					var retmax = 5;
-					var eutilSummaryURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmax=" + retmax + "&retmode=json";
+					var eutilSummaryURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmax=" + retmax + "&retmode=json";
 
 					xhr.get(eutilSummaryURL, {
 						headers: {
@@ -79,7 +79,7 @@ define([
 
 							domConstruct.create("div", {innerHTML: pubmedSummary.result[value].pubdate}, listItem);
 							domConstruct.create("a", {
-								href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + value,
+								href: 'https://www.ncbi.nlm.nih.gov/pubmed/' + value,
 								target: '_blank',
 								innerHTML: pubmedSummary.result[value].title
 							}, listItem);
@@ -100,7 +100,7 @@ define([
 					}));
 
 					// add show more link
-					domConstruct.create("a", {href: window.location.protocol + "//www.ncbi.nlm.nih.gov/pubmed/?term=" + term, target:"_blank", innerHTML: "show more >>"}, div);
+					domConstruct.create("a", {href: "https://www.ncbi.nlm.nih.gov/pubmed/?term=" + term, target:"_blank", innerHTML: "show more >>"}, div);
 				}
 				else{
 					domConstruct.create("li", {innerHTML: "No recent articles found."}, topLevelUl);
