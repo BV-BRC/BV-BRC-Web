@@ -927,7 +927,10 @@ define([
 			}, {
 				name: "SRA Accession",
 				text: "sra_accession",
-				link: "http://www.ncbi.nlm.nih.gov/sra/?term="
+				link: function(obj){
+					return lang.replace('<a href="http://www.ncbi.nlm.nih.gov/sra/?term={1}" target="_blank">{0}</a>',
+						[obj['sra_accession'], obj['sra_accession'].split(',').join("+OR+")]);
+				}
 			}, {
 				name: 'GenBank Accessions',
 				text: 'genbank_accessions',
