@@ -251,7 +251,7 @@ define([
 				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
 				UploadManager.upload(msg, window.App.authorizationToken);
 				return obj;
-			}, function(err) {
+			}, function(err){
 				// only show prompt if given file-already-exists error
 				if (err.indexOf('overwrite flag is not set') === -1) return;
 

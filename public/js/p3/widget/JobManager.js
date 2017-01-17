@@ -1,14 +1,14 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
-	"dojo/dom-class", "dojo/dom-construct", "./JobsGrid",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",  "dojo/query",
+	"dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct", "./JobsGrid",
 	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager",
 	"dojo/topic", "dijit/layout/BorderContainer", "./ActionBar", "./ItemDetailPanel"
-], function(declare, WidgetBase, on, lang,
-			domClass, domConstr, JobsGrid,
+], function(declare, WidgetBase, on, lang, query,
+			domClass, domAttr, domConstr, JobsGrid,
 			Deferred, domGeometry, JobManager,
 			Topic, BorderContainer, ActionBar, ItemDetailPanel){
 	return declare([BorderContainer], {
-		"disabled": false,
+		disabled: false,
 		path: "/",
 
 		listJobs: function(){
@@ -59,8 +59,8 @@ define([
 		selectionActions: [
 			[
 				"ToggleItemDetail",
-				"fa icon-info-circle fa-2x", {
-				label: "DETAIL",
+				"fa icon-chevron-circle-right fa-2x", {
+				label: "HIDE",
 				persistent: true,
 				validTypes: ["*"],
 				tooltip: "Toggle Selection Detail"
@@ -69,15 +69,12 @@ define([
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
 					var children = this.getChildren();
-					// console.log("Children: ", children);
 					if(children.some(function(child){
 							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
 						}, this)){
-						// console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
 					}
 					else{
-						// console.log("Re-add child: ", this.itemDetailPanel);
 						this.addChild(this.itemDetailPanel);
 					}
 				},
@@ -114,8 +111,9 @@ define([
 				splitter: false,
 				region: "right",
 				layoutPriority: 2,
-				style: "width:48px;text-align:center;"
+				style: "width:58px;text-align:center;"
 			});
+
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
 				layoutPriority: 1,
@@ -143,6 +141,21 @@ define([
 			this.addChild(this.grid)
 			this.addChild(this.actionBar)
 			this.addChild(this.itemDetailPanel)
+
+			// show / hide item detail panel event
+			var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
+			on(hideBtn, "click",  function(e) {
+				var icon = query('.fa', hideBtn)[0],
+					text = query('.ActionButtonText', hideBtn)[0];
+
+				domClass.toggle(icon, "icon-chevron-circle-right");
+				domClass.toggle(icon, "icon-chevron-circle-left");
+
+				if (domClass.contains(icon, "icon-chevron-circle-left"))
+					domAttr.set(text, "textContent", "SHOW");
+				else
+					domAttr.set(text, "textContent", "HIDE");
+			})
 
 			// this.listJobs().then(function(jobs) {
 			// 	_self.render(jobs);
