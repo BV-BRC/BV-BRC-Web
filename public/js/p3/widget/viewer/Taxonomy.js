@@ -202,6 +202,14 @@ define([
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state));
 					break;
+				case "interactions":
+					if(this.setActivePanelState.caller === this.onSetState){
+						activeTab.set("state", lang.mixin({}, this.state, {
+							search: "descendants(" + this.state.taxon_id + ")"
+						}));
+						// console.warn(this.state);
+					}
+					break;
 				default:
 					var activeQueryState;
 					var prop = "genome_id";
