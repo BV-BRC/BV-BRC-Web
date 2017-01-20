@@ -101,7 +101,7 @@ define([
 			// console.log("FilterContainerActionBar setStateAttr newState ",JSON.stringify(state,null,4));
 			state = state || {};
 			this._set("state", state);
-			console.log("_setStateAttr query: ", state.search, this.query);
+			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
 		onSetState: function(attr, oldState, state){
@@ -110,7 +110,7 @@ define([
 				return;
 			}
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
-			console.log("FilterContainerActionBar onSetState() ", state);
+			// console.log("FilterContainerActionBar onSetState() ", state);
 
 			if(oldState){
 				// console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
@@ -692,7 +692,7 @@ define([
 			// removed the sorting here to allow us to specify the order on the categories appear on the filter panel. This is particular important for the Genome List page
 			// fields.sort().forEach(lang.hitch(this, function(f){
 			fields.forEach(lang.hitch(this, function(f){
-				console.log("Field: ",f)
+				// console.log("Field: ",f)
 				this.addCategory(f);
 			}))
 		},
