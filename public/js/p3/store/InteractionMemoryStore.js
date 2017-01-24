@@ -15,6 +15,7 @@ define([
 			}
 
 			console.warn("onSetState", state);
+			this.clear();
 		},
 
 		constructor: function(options){
@@ -50,9 +51,10 @@ define([
 				&& this.state.hashParams.filter !== "false"){
 				query += "&" + this.state.hashParams.filter;
 			}
-			query += "&facet((pivot,(method_id,method_name)),(mincount,1))&facet((pivot,(type_id,type_name)),(mincount,1))&facet((pivot,(taxon_a,taxon_b)),(mincount,1))&facet((pivot,(taxon_a,taxid_a)),(mincount,1))&facet((pivot,(taxon_b,taxid_b)),(mincount,1))&facet((pivot,(taxon_a,group_a)),(mincount,1))&facet((pivot,(taxon_b,group_b)),(mincount,1))&limit(500,0)";
+			query += "&limit(2000,0)";
+			console.log("query:", query);
 
-			this._loadingDeferred = when(request.get(this.apiServer + '/ppi/?' + query, {
+			this._loadingDeferred = when(request.get(this.apiServer + '/ppi2/?' + query, {
 				handleAs: 'json',
 				headers: {
 					'Accept': 'application/solr+json',

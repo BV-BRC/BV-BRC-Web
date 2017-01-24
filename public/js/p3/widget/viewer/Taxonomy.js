@@ -203,11 +203,10 @@ define([
 					activeTab.set("state", lang.mixin({}, this.state));
 					break;
 				case "interactions":
-					if(this.setActivePanelState.caller === this.onSetState){
+					if(this.state.genome_ids){
 						activeTab.set("state", lang.mixin({}, this.state, {
-							search: "descendants(" + this.state.taxon_id + ")"
+							search: "in(genome_id_a,(" + this.state.genome_ids.join(",") + "))",
 						}));
-						// console.warn(this.state);
 					}
 					break;
 				default:

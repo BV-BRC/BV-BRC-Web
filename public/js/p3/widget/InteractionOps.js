@@ -3,9 +3,11 @@ define([], function(){
 	this.createInteractorCyEle = function(d, ab){
 		return {
 			data: {
-				id: d['interactor_' + ab],
-				name: d['annotation_' + ab],
-				taxon: d['taxon_' + ab]
+				id: d['patric_id_' + ab],
+				name: d['gene_' + ab ] || d['patric_id_' + ab],
+				product: d['product_' + ab],
+				gene: d['gene_' + ab],
+				refseq_locus_tag: d['refseq_locus_tag_' + ab]
 			},
 			selectable: true
 		}

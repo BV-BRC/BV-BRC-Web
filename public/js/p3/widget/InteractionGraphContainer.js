@@ -1,9 +1,10 @@
+define.amd.jQuery = true;
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/popup", "dijit/TooltipDialog",
 	"cytoscape/dist/cytoscape.min", "jquery", "cytoscape-panzoom", "cytoscape-context-menus",
-	"webcola/WebCola/cola.min", "cytoscape-cola", "dagre/dist/dagre", "cytoscape-dagre", "cytoscape-cose",
+	"webcola/WebCola/cola.min", "cytoscape-cola", "dagre/dist/dagre", "cytoscape-dagre", "cytoscape-cose-bilkent",
 	"./ContainerActionBar", "./InteractionOps", "FileSaver"
 ], function(declare, lang,
 			on, Topic,
@@ -337,8 +338,8 @@ define([
 
 			cy.batch(function(){
 				data.forEach(function(d){
-					var i_a = d.interactor_a;
-					var i_b = d.interactor_b;
+					var i_a = d.patric_id_a;
+					var i_b = d.patric_id_b;
 
 					if(cy.getElementById(i_a).empty()){
 						cy.add(createInteractorCyEle(d, 'a'));
@@ -352,8 +353,8 @@ define([
 							id: d['interaction_id'],
 							source: i_a,
 							target: i_b,
-							type_name: d['type_name'],
-							method_name: d['method_name']
+							type_name: d['type'],
+							method_name: d['method']
 						}
 					})
 				});

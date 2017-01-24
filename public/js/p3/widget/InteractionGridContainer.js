@@ -7,8 +7,8 @@ define([
 	return declare([GridContainer], {
 		gridCtor: Grid,
 		containerType: "interaction_data",
-		facetFields: ["method_name", "type_name", "is_hpi"],
-		dataModel: "ppi",
+		facetFields: ["method", "type", "source_db", "source_id"],
+		dataModel: "ppi2",
 		primaryKey: "interaction_id",
 		constructor: function(options){
 			this.topicId = options.topicId;

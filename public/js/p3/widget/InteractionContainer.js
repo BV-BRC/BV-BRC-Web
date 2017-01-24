@@ -64,7 +64,6 @@ define([
 
 			this.mainGridContainer = new MainGridContainer({
 				title: "Table",
-				state: this.state,
 				topicId: this.topicId
 			});
 

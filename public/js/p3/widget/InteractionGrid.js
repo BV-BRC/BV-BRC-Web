@@ -12,15 +12,22 @@ define([
 		store: null,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
-			id_a: {label: "ID A", field: "interactor_a", hidden: true},
-			annotation_a: {label: "Interactor A", field: "annotation_a"},
-			brc_ids_a: {label: "BRC IDs A", field: "brc_ids_a"},
-			id_b: {label: "ID B", field: "interactor_b", hidden: true},
-			annotation_b: {label: "Interactor B", field: "annotation_b"},
-			brc_ids_b: {label: "BRC IDs B", field: "brc_ids_b"},
-			type: {label: "Interaction Type", field: "type_name"},
-			method: {label: "Detection Method", field: "method_name"},
-			litref: {label: "Reference", field: "litref"}
+			feature_id_a: {label: "Feature ID A", field: "feature_id_a", hidden:true},
+			patric_id_a: {label: "PATRIC ID A", field: "patric_id_a"},
+			refseq_locus_tag_a: {label: "RefSeq Locus Tag A", field: "refseq_locus_tag_a"},
+			gene_a: {label: "Gene A", field: "gene_a"},
+			product_a: {label: "Product A", field: "product_a"},
+
+			feature_id_b: {label: "Feature ID B", field: "feature_id_b", hidden:true},
+			patric_id_b: {label: "PATRIC ID B", field: "patric_id_b"},
+			refseq_locus_tag_b: {label: "RefSeq Locus Tag B", field: "refseq_locus_tag_b"},
+			gene_b: {label: "Gene B", field: "gene_b"},
+			product_b: {label: "Product B", field: "product_b"},
+
+			type: {label: "Interaction Type", field: "type"},
+			method: {label: "Detection Method", field: "method"},
+			litref: {label: "Pubmed", field: "pmid"},
+			score: {label: "Score", field: "score", hidden: true}
 		},
 		constructor: function(options, parent){
 

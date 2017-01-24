@@ -5,6 +5,11 @@ define([
 			when, QueryResults, Memory){
 
 	return declare([Memory], {
+		clear: function(){
+			delete this._loadingDeferred;
+			this._loaded = false;
+		},
+
 		reload: function(){
 
 			if(!this._loadingDeferred.isResolved()){
