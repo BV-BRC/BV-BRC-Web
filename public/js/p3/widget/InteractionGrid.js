@@ -26,7 +26,7 @@ define([
 
 			type: {label: "Interaction Type", field: "type"},
 			method: {label: "Detection Method", field: "method"},
-			litref: {label: "Pubmed", field: "pmid"},
+			pubmed: {label: "Pubmed", field: "pmid"},
 			score: {label: "Score", field: "score", hidden: true}
 		},
 		constructor: function(options, parent){
@@ -38,17 +38,6 @@ define([
 		startup: function(){
 			var _self = this;
 
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
-				var row = _self.row(evt);
-
-				on.emit(_self.domNode, "ItemDblClick", {
-					item_path: row.data.path,
-					item: row.data,
-					bubbles: true,
-					cancelable: true
-				});
-			});
-
 			this.on("dgrid-select", function(evt){
 				var newEvt = {
 					rows: evt.rows,
@@ -59,6 +48,7 @@ define([
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
+
 			this.on("dgrid-deselect", function(evt){
 				var newEvt = {
 					rows: evt.rows,
@@ -70,25 +60,7 @@ define([
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
 			this.inherited(arguments);
-			// this.refresh();
 		},
-		// _setQuery: function(query){
-		// 	if(!query){
-		// 		return;
-		// 	}
-		// 	console.log("Interaction Grid _setQuery", query);
-		//
-		// 	var state = this.state = lang.mixin({}, this.state, {
-		// 		query: query
-		// 	})
-		//
-		// 	if(!this.store){
-		// 		this.set('store', this.createStore(this.apiServer, this.apiToken, state));
-		// 	}else{
-		// 		this.store.set('state', state);
-		// 		this.refresh();
-		// 	}
-		// },
 		_setState: function(state){
 			// console.log("Interaction Grid _setState", state);
 			if(!this.store){
@@ -102,8 +74,8 @@ define([
 			this._unloadedData = {};
 
 			return Deferred.when(this.store.data.map(function(d){
-				this._unloadedData[d['interaction_id']] = d;
-				return d['interaction_id'];
+				this._unloadedData[d['id']] = d;
+				return d['id'];
 			}, this));
 		},
 		createStore: function(server, token, state){

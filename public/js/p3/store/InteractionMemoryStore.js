@@ -7,14 +7,14 @@ define([
 			Memory){
 
 	return declare([Memory, Stateful], {
-		idProperty: "interaction_id",
+		idProperty: "id",
 		state: null,
 		onSetState: function(attr, oldVal, state){
 			if(!state){
 				return;
 			}
 
-			console.warn("onSetState", state);
+			// console.warn("onSetState", state);
 			this.clear();
 		},
 
@@ -51,10 +51,9 @@ define([
 				&& this.state.hashParams.filter !== "false"){
 				query += "&" + this.state.hashParams.filter;
 			}
-			query += "&limit(2000,0)";
-			console.log("query:", query);
+			query += "&limit(200,0)";
 
-			this._loadingDeferred = when(request.get(this.apiServer + '/ppi2/?' + query, {
+			this._loadingDeferred = when(request.get(this.apiServer + '/ppi/?' + query, {
 				handleAs: 'json',
 				headers: {
 					'Accept': 'application/solr+json',
