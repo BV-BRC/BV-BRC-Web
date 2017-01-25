@@ -689,7 +689,9 @@ define([
 				return;
 			}
 
-			fields.sort().forEach(lang.hitch(this, function(f){
+			// removed the sorting here to allow us to specify the order on the categories appear on the filter panel. This is particular important for the Genome List page
+			// fields.sort().forEach(lang.hitch(this, function(f){
+			fields.forEach(lang.hitch(this, function(f){
 				// console.log("Field: ",f)
 				this.addCategory(f);
 			}))

@@ -5,12 +5,14 @@ define("p3/widget/Uploader", [
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Uploader.html", "dijit/form/Form", "dojo/_base/Deferred",
 	"dijit/ProgressBar", "dojo/dom-construct", "p3/UploadManager", "dojo/query", "dojo/dom-attr",
-	"dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/promise/all", "../WorkspaceManager"
+	"dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/promise/all", "../WorkspaceManager",
+	"./Confirmation"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, Deferred,
 			ProgressBar, domConstruct, UploadManager, Query, domAttr,
-			lang, domGeometry, domStyle, All, WorkspaceManager){
+			lang, domGeometry, domStyle, All, WorkspaceManager,
+			Confirmation){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
@@ -208,7 +210,7 @@ define("p3/widget/Uploader", [
 			}
 
 			this.watch("state", function(prop, val, val2){
-				console.log("Upload Form State: ", prop, val, val2);
+				// console.log("Upload Form State: ", prop, val, val2);
 				if(val2 == "Incomplete" || val2 == "Error"){
 					this.saveButton.set("disabled", true);
 				}else{
@@ -235,14 +237,14 @@ define("p3/widget/Uploader", [
 			return valid;
 		},
 
-		uploadFile: function(file, uploadDirectory, type){
+		uploadFile: function(file, uploadDirectory, type, overwrite){
 			if(!this._uploading){
 				this._uploading = []
 			}
 
 			var _self = this;
 			var obj = {path: uploadDirectory, name: file.name, type: type}
-			return Deferred.when(WorkspaceManager.create(obj, true), function(obj){
+			return Deferred.when(WorkspaceManager.create(obj, true, overwrite), function(obj){
 				domClass.add(_self.domNode, "Working");
 				var uploadUrl = obj.link_reference;
 
@@ -251,6 +253,20 @@ define("p3/widget/Uploader", [
 				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
 				UploadManager.upload(msg, window.App.authorizationToken);
 				return obj;
+			}, function(err){
+				// only show prompt if given file-already-exists error
+				if (err.indexOf('overwrite flag is not set') === -1) return;
+
+				var conf = "Are you sure you want to overwrite <i>" + obj.path + obj.name + "</i> ?";
+				var dlg = new Confirmation({
+					title: "Overwriting File!",
+					content: conf,
+					onConfirm: function(evt){
+						_self.uploadFile(file, uploadDirectory, type, true)
+					}
+				});
+				dlg.startup();
+				dlg.show();
 			});
 
 		},

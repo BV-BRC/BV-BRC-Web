@@ -271,7 +271,10 @@ define("p3/widget/WorkspaceBrowser", [
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+			var dfc = '<div>Download Table As...</div>'+
+					  '<div class="wsActionTooltip" rel="text/tsv">Text</div>'+
+					  '<div class="wsActionTooltip" rel="text/csv">CSV</div>'+
+					  '<div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
 					popup.close(downloadTT);
@@ -284,15 +287,13 @@ define("p3/widget/WorkspaceBrowser", [
 				var selection = self.actionPanel.get('selection');
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-				// console.log("selection: ", selection);
-				// console.log("DownloadQuery: ", dataType, currentQuery);
-				// console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+
 				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
 
 			this.browserHeader.addAction("DownloadTable", "fa icon-download fa-2x", {
-				label: "DOWNLOAD",
+				label: "DWNLD",
 				multiple: false,
 				validTypes: ["genome_group", "feature_group"],
 				tooltip: "Download Table",
@@ -314,19 +315,27 @@ define("p3/widget/WorkspaceBrowser", [
 			});
 
 			on(downloadTTSelect.domNode, "div:click", function(evt){
+				if (!('rel' in evt.target.attributes)) return;
+
 				var rel = evt.target.attributes.rel.value;
-				// console.log("REL: ", rel);
+
 				var selection = self.actionPanel.get('selection');
-				var dataType = (selection[0].type == "genome_group") ? "genome" : "genome_feature";
+				var type = selection[0].type;
+				var dataType = type === "genome_group" ? "genome" : "genome_feature";
 				var currentQuery = self.getQuery(selection[0]);
-				// console.log("selection: ", selection);
-				// console.log("DownloadQuery: ", dataType, currentQuery);
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+
+				var urlStr = "/api/" + dataType + "/" + currentQuery + "&http_authorization=" +
+					encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true";
+
+				// cursorMark requires a sort on an unique key
+				urlStr += type === "genome_group" ? '&sort(+genome_id)' : '&sort(+feature_id)';
+
+				window.open(urlStr);
 				popup.close(downloadTT);
 			});
 
 			this.actionPanel.addAction("SelectDownloadTable", "fa icon-download fa-2x", {
-				label: "DOWNLOAD",
+				label: "DWNLD",
 				multiple: false,
 				validTypes: ["genome_group", "feature_group"],
 				tooltip: "Download Selection",
@@ -351,7 +360,7 @@ define("p3/widget/WorkspaceBrowser", [
 			});
 
 			this.browserHeader.addAction("SelectDownloadSeqComparison", "fa icon-download fa-2x", {
-				label: "DOWNLOAD",
+				label: "DWNLD",
 				multiple: false,
 				validTypes: ["GenomeComparison"],
 				tooltip: "Download Results",
@@ -591,7 +600,7 @@ define("p3/widget/WorkspaceBrowser", [
 				});
 
 			}, true);
-
+/* */
 			this.actionPanel.addAction("ExperimentGeneList", "fa icon-list-unordered fa-2x", {
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
@@ -620,7 +629,9 @@ define("p3/widget/WorkspaceBrowser", [
 			}, true);
 
 			this.actionPanel.addAction("ExperimentGeneList2", "fa icon-list-unordered fa-2x", {
+				label: "GENES",
 				multiple: true,
+				allowMultiTypes: true,
 				validContainerTypes: ["experiment_group"],
 				validTypes: ["*"],
 				tooltip: "View Experiment Group Gene List"

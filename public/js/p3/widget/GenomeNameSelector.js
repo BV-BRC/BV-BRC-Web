@@ -16,6 +16,7 @@ define([
 		missingMessage: 'Specify genome name.',
 		placeHolder: 'e.g. Mycobacterium tuberculosis H37Rv',
 		searchAttr: "genome_name",
+        extraSearch: ["genome_id"],
 		queryExpr: "*${0}*",
 		queryFilter: "",
 		resultFields: ["genome_id", "genome_name", "strain", "public", "owner"],
@@ -44,7 +45,16 @@ define([
 				console.log("Store Headers: ", _self.store.headers);
 				var q = "";
                 if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
-                    q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
+                    if(_self.extraSearch){
+                        var components = ["eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")"];
+                        _self.extraSearch.forEach(lang.hitch(this, function(attr){
+                            components.push( "eq(" + attr, query[_self.searchAttr] + ")");
+                        }));
+                        q= "?or("+components.join(",")+")";
+                    }
+                    else{
+                        q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
+                    }
                 }
                 else{
                     return [];

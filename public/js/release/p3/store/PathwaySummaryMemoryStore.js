@@ -100,7 +100,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 					'Accept': "application/solr+json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					'Authorization': (window.App.authorizationToken || "")
 				},
 				data: postData
 			}), function(response){
@@ -118,6 +118,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 
 					_self.setData([]);
 					_self._loaded = true;
+					Topic.publish("PathwaySummary", "hideLoadingMask");
 					return true;
 				}
 
@@ -176,7 +177,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 						'Accept': "application/solr+json",
 						'Content-Type': "application/solrquery+x-www-form-urlencoded",
 						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						'Authorization': (window.App.authorizationToken || "")
 					},
 					data: q
 				}), function(response){
@@ -217,7 +218,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 					Topic.publish("PathwaySummary", "hideLoadingMask");
 					return true;
 				}, function(err){
-					console.error("Error in ProteinFamiliesStore: ", err)
+					console.error("Error in PathwaySummaryMemoryStore: ", err)
 				});
 			});
 			return this._loadingDeferred;

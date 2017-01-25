@@ -107,7 +107,7 @@ define([
 			var ecNumber = originalAxis.columnIds;
 			var genomeId = originalAxis.rowIds;
 
-			var query = "?and(eq(ec_number," + ecNumber + "),eq(genome_id," + genomeId + "),eq(annotation,PATRIC))";
+			var query = "?and(eq(ec_number," + ecNumber + "),eq(genome_id," + genomeId + "),eq(annotation,PATRIC))&limit(25000,0)";
 
 			Topic.publish("PathwayMap", "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "pathway", query), {
@@ -117,8 +117,17 @@ define([
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				}
-			}).then(lang.hitch(this, function(features){
+			}).then(lang.hitch(this, function(response){
 				Topic.publish("PathwayMap", "hideLoadingMask");
+
+				// dedupe features
+				var featureSet = {};
+				response.forEach(function(d){
+					if(!featureSet.hasOwnProperty(d.feature_id)){
+						featureSet[d.feature_id] = true;
+					}
+				});
+				var features = Object.keys(featureSet);
 
 				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, ecNumber, genomeId, features));
 				var actionBar = this._buildPanelButtons(colID, rowID, ecNumber, genomeId, features);
