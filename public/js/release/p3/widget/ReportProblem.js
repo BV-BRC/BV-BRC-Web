@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/ReportProblem.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div >\n\n\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"subject\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Subject must be provided',trim:true,placeHolder:'Subject'\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Textarea\" name=\"content\" data-dojo-attach-point=\"content\" style=\"width:600px;height:250px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Description must be provided',trim:true,rows:20\"></div>\n\t</div>\n\t\t<div class=\"workingMessage messageContainer\">\n\t\t\tSending Feedback...\n\t\t</div>\n\n\t\t<div class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">There was an error submitting your report:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n\t\t</div>\t\n</form>\n\n"}});
+'url:p3/widget/templates/ReportProblem.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\" encType=\"multipart/form-data\" name=\"problemForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div >\n\t\t<div class=\"HideWithAuth\">\n\t\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"email\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Email Address is required',trim:true,placeHolder:'Email Address'\"></div>\n\t\t</div>\n\n\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"subject\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Subject must be provided',trim:true,placeHolder:'Subject'\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Textarea\" name=\"content\" data-dojo-attach-point=\"content\" style=\"width:600px;height:250px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Description must be provided',trim:true,rows:20\"></div>\n\t\t<div>\n\t\t\tSelect file to attach (optional):\t<input data-dojo-attach-point=\"attachmentNode\" type=\"file\" name=\"attachment\" />\n\t\t</div>\n\t</div>\n\t\t<div class=\"workingMessage messageContainer\">\n\t\t\tSending Feedback...\n\t\t</div>\n\n\t\t<div class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">There was an error submitting your report:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n\t\t</div>\t\n</form>\n\n"}});
 define("p3/widget/ReportProblem", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
@@ -37,17 +37,28 @@ define("p3/widget/ReportProblem", [
 					values.userId = window.App.user.id.replace("@patricbrc.org", "");
 				}
 
+				var formData = new FormData();
+				Object.keys(values).forEach(function(key){
+					formData.append(key,values[key]);
+				});
+
+
+				if (this.attachmentNode && this.attachmentNode.files && this.attachmentNode.files[0]){
+					formData.append("attachment",this.attachmentNode.files[0]);
+				}
+
+
+
 				domClass.add(this.domNode, "Working");
-				// console.log("Problem VALUES: ", values);
 
 				when(request.post("/reportProblem", {
 					headers: {
-						"Authorization": (window.App.authorizationToken || "")
+						"Authorization": (window.App.authorizationToken || ""),
+						"enctype": "multipart/form-data"
 					},
-					data: values
+					data: formData
 				}), function(results){
-					// console.log("Report Problem Results: ", results);
-					on.emit(_self.domNode, "dialogAction", {action: "close", bubbles: true})
+					 on.emit(_self.domNode, "dialogAction", {action: "close", bubbles: true})
 				}, function(err){
 					console.log("Error Reporting Problem: ", err);
 				});

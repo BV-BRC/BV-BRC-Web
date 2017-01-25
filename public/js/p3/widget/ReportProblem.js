@@ -35,17 +35,28 @@ define([
 					values.userId = window.App.user.id.replace("@patricbrc.org", "");
 				}
 
+				var formData = new FormData();
+				Object.keys(values).forEach(function(key){
+					formData.append(key,values[key]);
+				});
+
+
+				if (this.attachmentNode && this.attachmentNode.files && this.attachmentNode.files[0]){
+					formData.append("attachment",this.attachmentNode.files[0]);
+				}
+
+
+
 				domClass.add(this.domNode, "Working");
-				// console.log("Problem VALUES: ", values);
 
 				when(request.post("/reportProblem", {
 					headers: {
-						"Authorization": (window.App.authorizationToken || "")
+						"Authorization": (window.App.authorizationToken || ""),
+						"enctype": "multipart/form-data"
 					},
-					data: values
+					data: formData
 				}), function(results){
-					// console.log("Report Problem Results: ", results);
-					on.emit(_self.domNode, "dialogAction", {action: "close", bubbles: true})
+					 on.emit(_self.domNode, "dialogAction", {action: "close", bubbles: true})
 				}, function(err){
 					console.log("Error Reporting Problem: ", err);
 				});

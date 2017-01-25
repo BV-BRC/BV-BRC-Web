@@ -5,9 +5,11 @@ var email = require("nodemailer");
 var smtpTransport = require("nodemailer-smtp-transport");
 var when = require("promised-io/promise").when;
 var defer = require("promised-io/promise").defer;
+var request = require('request');
+var formidable = require("express-formidable");
+var fs = require('fs');
 
-function mail(message, subject, options){
-	console.log("Send Mail", message, subject);
+function mail(message, subject,from,files, options){
 	if(!message){
 		throw Error("Message is required for mail()");
 	}
@@ -55,15 +57,24 @@ function mail(message, subject, options){
 		debug: true,
 		to: destMail,
 		sender: mailconf.defaultFrom, //"responder@hapticscience.com", // mailconf.defaultFrom,
-		from: mailconf.defaultFrom,
+		from: from || mailconf.defaultFrom,
 		subject: subject || "No Subject",
 		text: message
 	}
 
-	console.log("Sending Email: ", mailmsg);
+	var attachments = [];
+	if (files && files.length>0) {
+		files.forEach(function(f){
+			var attach={}
+			attach.filename = f.name;
+			attach.content= fs.createReadStream(f.path); 	
+			attachments.push(attach);
+		});
+		mailmsg.attachments = attachments;
+	}
+
 
 	transport.sendMail(mailmsg, function(err, result){
-		console.log("sendMail result: ", err, result);
 		if(deferred.fired){
 			return;
 		}
@@ -96,18 +107,64 @@ function buildMessage(formBody){
 	content.push("\n" + formBody.content);
 	return content.join("\n");
 }
+
+function getUserDetails(token,id){
+	var url = config.get("accountURL") + "/user/" + id;
+	var def = new defer();
+
+	request({
+		url: url,
+		headers: {
+			authorization: token || "",
+			accept: "text/json"
+		},
+		json: true
+	}, function(err,response,body){
+		if (err){
+			console.log("Unable to retrieve User details", err);
+			return def.reject(err);
+		}
+		def.resolve(body);	
+	});
+
+	return def.promise;
+}
 module.exports = [
-	bodyParser.urlencoded({extended: true}),
+	//bodyParser.urlencoded({extended: true}),
+	function(req,res,next){
+		next();
+	},
+	formidable(),
+
+	function(req,res,next){
+
+		if (req.headers && req.headers.authorization){
+			when(getUserDetails(req.headers.authorization,req.fields.userId), function(user){
+				req.from = user.email;
+				next();
+			}, function(err){
+				console.log("Unable to retrieve user profile: ", err);
+				next(err);
+			});
+
+		} else if (req.fields && req.fields.email){
+			req.from = req.fields.email;
+			next();
+		}else{
+			next()
+		}	
+	},
 	function(req, res, next){
-		console.log("Report A Problem: ", req.body);
-		var message = buildMessage(req.body);
-		var subject = buildSubject(req.body);
+		var body = req.fields;
+		var message = buildMessage(body);
+		var subject = buildSubject(body);
 
-		console.log("Report Message: ", message);
-		console.log("Report Subject: ", subject);
-
-		when(mail(message, subject), function(){
-			console.log("Problem Report Mail Sent");
+		//console.log("Report From: ", req.from || "");
+		//console.log("Report Subject: ", subject);
+	
+	
+		when(mail(message, subject, req.from||"", (req.files && req.files.attachment)?[req.files.attachment]: []), function(){
+			//console.log("Problem Report Mail Sent");
 			res.status(201).end();
 		}, function(err){
 			console.log("Error Sending Problem Report via Email", err);
