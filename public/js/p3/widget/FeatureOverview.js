@@ -460,7 +460,30 @@ define([
 					.then(lang.hitch(this, function(data){
 						if(data.length === 0) return;
 
-						this.set("featurePPI", data, this.feature.patric_id);
+						var second = data.map(function(d){
+							return [d.patric_id_a, d.patric_id_b];
+						}).reduce(function(a, b){
+							return a.concat(b);
+						}).map(function(d){
+							return encodeURIComponent(d);
+						});
+
+						var alreadyLoadedIds = data.map(function(d){
+							return d.id;
+						});
+
+						var q = "?and(in(patric_id_a,(" + second.join(",") + ")),in(patric_id_b,(" + second.join(",") + ")))";
+
+						xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + q), xhrOption)
+							.then(lang.hitch(this, function(newData){
+
+								var difference = newData.filter(function(d){
+									return alreadyLoadedIds.indexOf(d.id) == -1;
+								});
+								// console.log(difference);
+
+								this.set("featurePPI", data.concat(difference), this.feature.patric_id);
+							}));
 					}));
 			}
 		},

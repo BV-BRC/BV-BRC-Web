@@ -2,13 +2,17 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/dom-style", "dojo/query",
 	"dijit/layout/ContentPane",
-	"cytoscape/dist/cytoscape.min",
+	"cytoscape/dist/cytoscape.min", "webcola/WebCola/cola.min", "cytoscape-cola",
 	"./InteractionOps"
 ], function(declare, lang,
 			domConstruct, domStyle, query,
 			ContentPane,
-			cytoscape,
+			cytoscape, cola, cyCola,
 			InteractionOps){
+
+	if(typeof cytoscape('core', 'cola') !== 'function'){
+		cyCola(cytoscape, cola);
+	}
 
 	return declare([ContentPane], {
 		region: "center",
@@ -174,7 +178,9 @@ define([
 				})
 			});
 
-			cy.layout({name: 'concentric'});
+			// cy.layout({name: 'concentric'});
+			// cy.layout({name: 'circle', padding: 5, radius: 1});
+			cy.layout({name: 'cola'});
 		}
 	})
 });
