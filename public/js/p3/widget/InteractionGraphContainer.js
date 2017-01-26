@@ -1,13 +1,13 @@
 define.amd.jQuery = true;
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/on", "dojo/topic",
+	"dojo/on", "dojo/topic", "dojo/query", "dojo/dom-construct", "dojo/dom-style",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/popup", "dijit/TooltipDialog",
 	"cytoscape/dist/cytoscape.min", "jquery", "cytoscape-panzoom", "cytoscape-context-menus",
 	"webcola/WebCola/cola.min", "cytoscape-cola", "dagre/dist/dagre", "cytoscape-dagre", "cytoscape-cose-bilkent",
 	"./ContainerActionBar", "./InteractionOps", "FileSaver"
 ], function(declare, lang,
-			on, Topic,
+			on, Topic, query, domConstruct, domStyle,
 			BorderContainer, ContentPane, popup, TooltipDialog,
 			cytoscape, $, cyPanzoom, cyContextMenus,
 			cola, cyCola, dagre, cyDagre, cyCose,
@@ -227,8 +227,8 @@ define([
 								width: 40,
 								height: 40,
 								// border
-								'border-color': '#666666',
-								'border-width': 1,
+								'border-color': '#424242',
+								'border-width': 2,
 								'border-opacity': 0.8,
 								// background
 								'background-color': '#99CCFF'
@@ -237,24 +237,42 @@ define([
 							selector: 'node:selected',
 							style: {
 								'border-color': '#BBBB55',
-								'shadow-color': '#FFFF33',
+								'shadow-color': '#FFAB00',
 								'shadow-blur': 30,
 								'shadow-opacity': 1
 							}
 						}, {
 							selector: 'edge',
 							style: {
-								width: 2,
-								'background-color': '#555555',
+								width: 4,
+								'line-color': '#555555',
 								'curve-style': 'bezier'
 							}
 						}, {
 							selector: 'edge:selected',
 							style: {
 								'line-color': '#BBBB55',
-								'shadow-color': '#FFFF33',
-								'shadow-blur': 12,
+								'shadow-color': '#FFAB00', // a700
+								'shadow-blur': 30,
 								'shadow-opacity': 1
+							}
+						}, {
+							selector: 'edge.typeA',
+							style: {
+								'line-color': '#3F51B5' // indigo 500
+							}
+						}, {
+							selector: 'edge.typeB',
+							style: {
+								'line-color': '#009688', // teal 500
+								'line-style': 'dotted'
+							}
+						}, {
+							selector: 'edge.typeC',
+							style: {
+								'line-color': '#FF5722', // deep orange 500
+								'line-style': 'dashed',
+								'opacity': 0.6
 							}
 						}
 					]
@@ -303,6 +321,44 @@ define([
 						}
 					}]
 				});
+
+				var tooltipDiv = query("div.tooltip");
+				if(tooltipDiv.length == 0){
+					// this.tooltipLayer = domConstruct.place('<div class="tooltip" style="opacity: 0"></div>', query("body")[0], "last");
+					this.tooltipLayer = domConstruct.create("div", {"class": "tooltip", style: {opacity: 0}}, query("body")[0], "last");
+				}else{
+					this.tooltipLayer = tooltipDiv[0];
+				}
+
+				var self = this;
+
+				cy.on('mouseover', 'node, edge', function(evt){
+				// cy.on('tap', 'node, edge', function(evt){
+					var ele = evt.cyTarget;
+
+					var content = [];
+					if(ele.isNode()){
+						ele.data('id') ? content.push("PATRIC ID: " + ele.data('id')): {};
+						ele.data('refseq_locus_tag') ? content.push("RefSeq Locus Tag: " + ele.data('refseq_locus_tag')): {};
+						ele.data('gene') ? content.push("Gene: " + ele.data('gene')): {};
+						ele.data('product') ? content.push("Product: " + ele.data('product')): {};
+
+					}else if (ele.isEdge()){
+						content.push("Type: " + ele.data('type_name'));
+						content.push("Method: " + ele.data('method_name'));
+					}
+
+					// console.log(evt, self.tooltipLayer);
+
+					domStyle.set(self.tooltipLayer, "left", evt.originalEvent.x + "px");
+					domStyle.set(self.tooltipLayer, "top", evt.originalEvent.y + "px");
+					domStyle.set(self.tooltipLayer, "opacity", 0.95);
+					self.tooltipLayer.innerHTML = content.join("<br>");
+
+				});
+				cy.on('mouseout', 'node, edge', function(evt){
+					domStyle.set(self.tooltipLayer, "opacity", 0);
+				})
 			}
 		},
 		onFirstView: function(){
@@ -348,6 +404,22 @@ define([
 						cy.add(createInteractorCyEle(d, 'b'));
 					}
 
+					var edgeClass;
+					switch(d['method']){
+						case "experimental interaction detection":
+							edgeClass = "typeA";
+							break;
+						case "predictive text mining":
+							edgeClass = "typeB";
+							break;
+						case "inference":
+							edgeClass = "typeC";
+							break;
+						default:
+							edgeClass = "";
+							break;
+					}
+
 					cy.add({
 						data: {
 							id: d['interaction_id'],
@@ -355,7 +427,8 @@ define([
 							target: i_b,
 							type_name: d['type'],
 							method_name: d['method']
-						}
+						},
+						classes: edgeClass
 					})
 				});
 			});
