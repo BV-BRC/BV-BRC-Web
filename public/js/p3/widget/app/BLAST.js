@@ -270,9 +270,9 @@ define([
 			//
 			_self.result.loadingMask.show();
 			query(".blast_result .GridContainer").style("visibility", "visible");
-			domClass.add(query(".blast_form")[0], "hidden");
+			domClass.add(query(".service_form")[0], "hidden");
 			domClass.add(query(".appSubmissionArea")[0], "hidden");
-			domClass.add(query(".blast_error")[0], "hidden");
+			domClass.add(query(".service_error")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "visible");
 
 			def.promise.then(function(q){
@@ -282,24 +282,24 @@ define([
 		},
 
 		resubmit: function(){
-			domClass.remove(query(".blast_form")[0], "hidden");
+			domClass.remove(query(".service_form")[0], "hidden");
 			domClass.remove(query(".appSubmissionArea")[0], "hidden");
 			query(".reSubmitBtn").style("visibility", "hidden");
 		},
 
 		showErrorMessage: function(err){
-			domClass.remove(query(".blast_error")[0], "hidden");
-			domClass.remove(query(".blast_message")[0], "hidden");
-			query(".blast_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
-			query(".blast_message")[0].innerHTML = err.response.data.error.message;
+			domClass.remove(query(".service_error")[0], "hidden");
+			domClass.remove(query(".service_message")[0], "hidden");
+			query(".service_error h3")[0].innerHTML = "We were not able to complete your BLAST request. Please let us know with detail message below.";
+			query(".service_message")[0].innerHTML = err.response.data.error.message;
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
 		},
 
 		showNoResultMessage: function(){
-			domClass.remove(query(".blast_error")[0], "hidden");
-			query(".blast_error h3")[0].innerHTML = "BLAST has no match. Please revise query and submit again.";
-			domClass.add(query(".blast_message")[0], "hidden");
+			domClass.remove(query(".service_error")[0], "hidden");
+			query(".service_error h3")[0].innerHTML = "BLAST has no match. Please revise query and submit again.";
+			domClass.add(query(".service_message")[0], "hidden");
 
 			query(".blast_result .GridContainer").style("visibility", "hidden");
 		},
