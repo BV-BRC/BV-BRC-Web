@@ -18,7 +18,7 @@ var users = require('./routes/users');
 var reportProblem = require('./routes/reportProblem')
 var workspace = require('./routes/workspace');
 var viewers = require('./routes/viewers');
-var remotePage= require('./routes/remotePage');
+var remotePage = require('./routes/remotePage');
 var search = require('./routes/search');
 var contentViewer = require("./routes/content");
 var apps = require('./routes/apps');
@@ -96,6 +96,7 @@ app.use(function(req, res, next){
 		appServiceURL: config.get("appServiceURL"),
 		dataServiceURL: config.get("dataServiceURL"),
 		homologyServiceURL: config.get("homologyServiceURL"),
+		genomedistanceServiceURL: config.get("genomedistanceServiceURL"),
 		enableDevTools: config.get("enableDevTools"),
 		accountURL: config.get("accountURL"),
 		appLabel: config.get("appLabel"),
@@ -121,9 +122,8 @@ passport.deserializeUser(function(id, done){
 
 var proxies = config.get("proxy");
 
-
-app.use("/p/:proxy/", function(req,res,next){
-	if (proxies[req.params.proxy]){
+app.use("/p/:proxy/", function(req, res, next){
+	if(proxies[req.params.proxy]){
 		apiProxy.web(req, res, {target: proxies[req.params.proxy]});
 	}else{
 		next();
@@ -131,20 +131,20 @@ app.use("/p/:proxy/", function(req,res,next){
 })
 
 app.use("/portal/portal/patric/Home", [
-	function(req,res,next){
+	function(req, res, next){
 		console.log("Got Portal Request");
 		next();
 	},
-	express.static(path.join(__dirname,"public/cached.html"))
+	express.static(path.join(__dirname, "public/cached.html"))
 ]);
 
 app.use("*jbrowse.conf", express.static(path.join(__dirname, "public/js/jbrowse.conf")));
 app.use("/js/" + package.version + "/", [
 	express.static(path.join(__dirname, 'public/js/release/'), {
-		maxage:"356d",
+		maxage: "356d",
 		/*etag:false,*/
-		setHeaders: function(res,path){
-			var d = new Date(); 
+		setHeaders: function(res, path){
+			var d = new Date();
 			d.setYear(d.getFullYear() + 1);
 			res.setHeader("Expires", d.toGMTString());
 		}
