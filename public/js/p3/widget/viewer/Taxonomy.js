@@ -205,7 +205,7 @@ define([
 				case "interactions":
 					if(this.state.genome_ids){
 						activeTab.set("state", lang.mixin({}, this.state, {
-							search: "in(genome_id_a,(" + this.state.genome_ids.join(",") + "))",
+							search: "in(genome_id_a,(" + this.state.genome_ids.join(",") + "))"
 						}));
 					}
 					break;
