@@ -369,37 +369,79 @@ define([
 
 			var columns = [{
 				name: 'Property',
-				text: 'property'
+				text: 'property',
+				mini: true
 			}, {
 				name: 'Source',
-				text: 'source'
+				text: 'source',
+				link: function(obj){
+					var link = formatter.getExternalLinks(obj.source + '_HOME');
+
+					if(link){
+						return '<a href="' + link + '" target="_blank">' + obj.source + '</a>';
+					}else{
+						return obj.source;
+					}
+				},
+				mini: true
 			}, {
 				name: 'Source ID',
-				text: 'source_id'
+				text: 'source_id',
+				link: function(obj){
+					var link = formatter.getExternalLinks(obj.source);
+
+					if(link){
+						return '<a href="' + link + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+					}else{
+						return obj.source_id;
+					}
+				},
+				mini: true
+			}, {
+				name: 'Gene',
+				text: 'gene_name',
+				mini: true
 			}, {
 				name: 'Organism',
-				text: 'organism'
+				text: 'organism',
+				mini: true
 			}, {
-				name: 'Product',
-				text: 'product'
+				name: 'Genus',
+				text: 'genus'
 			}, {
-				name: 'Gene Name',
-				text: 'gene_name'
+				name: 'Species',
+				text: 'species'
+			}, {
+				name: 'Locus Tag',
+				text: 'locus_tag'
 			}, {
 				name: 'Gene ID',
 				text: 'gene_id',
-				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term=',
+				mini: true
 			}, {
-				name: 'gi',
+				name: 'GI',
 				text: 'gi',
-				link: 'http://www.ncbi.nlm.nih.gov/protein/'
+				link: 'http://www.ncbi.nlm.nih.gov/protein/',
+				mini: true
+			}, {
+				name: 'Product',
+				text: 'product',
+				mini: true
+			}, {
+				name: 'Classification',
+				text: 'classification'
+			}, {
+				name: 'PubMed',
+				text: 'pmid',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/',
+				mini: true
 			}, {
 				name: 'Function',
 				text: 'function'
 			}, {
-				name: 'PubMed',
-				text: 'pmid',
-				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
+				name: 'Assertion',
+				text: 'assertion'
 			}];
 
 			var div = domConstruct.create("div");
