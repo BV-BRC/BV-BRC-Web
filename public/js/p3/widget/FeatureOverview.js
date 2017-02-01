@@ -3,13 +3,15 @@ define([
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter",
+	"./FeaturePPIViewer", "./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, formatter, D3SingleGeneViewer, SelectionToGroup){
+			DataItemFormatter, ExternalItemFormatter, formatter,
+			FeaturePPIViewer, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -337,6 +339,13 @@ define([
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
 		},
+		_setFeaturePPIAttr: function(data, patric_id){
+			domClass.remove(this.fpViewerNode.parentNode, "hidden");
+			domConstruct.empty(this.fpViewerNode);
+			var fp_viewer = new FeaturePPIViewer();
+			fp_viewer.init(this.fpViewerNode);
+			fp_viewer.render(data, patric_id);
+		},
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
 
@@ -442,6 +451,40 @@ define([
 
 					this.set("featureComments", data);
 				}));
+			}
+
+			// protein-protein interaction
+			if(this.feature.patric_id){
+				query = "?or(eq(patric_id_a," + encodeURIComponent(this.feature.patric_id) + "),eq(patric_id_b," + encodeURIComponent(this.feature.patric_id) + "))";
+				xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + query), xhrOption)
+					.then(lang.hitch(this, function(data){
+						if(data.length === 0) return;
+
+						var second = data.map(function(d){
+							return [d.patric_id_a, d.patric_id_b];
+						}).reduce(function(a, b){
+							return a.concat(b);
+						}).map(function(d){
+							return encodeURIComponent(d);
+						});
+
+						var alreadyLoadedIds = data.map(function(d){
+							return d.id;
+						});
+
+						var q = "?and(in(patric_id_a,(" + second.join(",") + ")),in(patric_id_b,(" + second.join(",") + ")))";
+
+						xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + q), xhrOption)
+							.then(lang.hitch(this, function(newData){
+
+								var difference = newData.filter(function(d){
+									return alreadyLoadedIds.indexOf(d.id) == -1;
+								});
+								// console.log(difference);
+
+								this.set("featurePPI", data.concat(difference), this.feature.patric_id);
+							}));
+					}));
 			}
 		},
 

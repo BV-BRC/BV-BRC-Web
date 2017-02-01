@@ -5,7 +5,7 @@ define("p3/widget/viewer/_GenomeList", [
 	"dojo/request", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
+	"../TranscriptomicsContainer", "../InteractionContainer", "../GenomeGridContainer",
 	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish", "dijit/Dialog"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
@@ -312,6 +312,13 @@ define("p3/widget/viewer/_GenomeList", [
 				disabled: false,
 				state: this.state
 			});
+			if(window.App.appLabel !== ""){
+				this.interactions = new InteractionsContainer({
+					title: "Interactions",
+					id: this.viewer.id + "_" + "interactions",
+					state: this.state
+				});
+			}
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomes);
@@ -321,6 +328,9 @@ define("p3/widget/viewer/_GenomeList", [
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.interactions);
+			}
 
 			if(localStorage){
 				var gs = localStorage.getItem(this.showQuickstartKey);

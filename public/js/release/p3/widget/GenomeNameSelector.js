@@ -16,7 +16,7 @@ define("p3/widget/GenomeNameSelector", [
 		missingMessage: 'Specify genome name.',
 		placeHolder: 'e.g. Mycobacterium tuberculosis H37Rv',
 		searchAttr: "genome_name",
-        extraSearch: ["genome_id"],
+		extraSearch: ["genome_id"],
 		queryExpr: "*${0}*",
 		queryFilter: "",
 		resultFields: ["genome_id", "genome_name", "strain", "public", "owner"],
@@ -41,24 +41,24 @@ define("p3/widget/GenomeNameSelector", [
 
 			var orig = this.store.query;
 			this.store.query = lang.hitch(this.store, function(query, options){
-				console.log("query: ", query);
-				console.log("Store Headers: ", _self.store.headers);
+				// console.log("query: ", query);
+				// console.log("Store Headers: ", _self.store.headers);
 				var q = "";
-                if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
-                    if(_self.extraSearch){
-                        var components = ["eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")"];
-                        _self.extraSearch.forEach(lang.hitch(this, function(attr){
-                            components.push( "eq(" + attr, query[_self.searchAttr] + ")");
-                        }));
-                        q= "?or("+components.join(",")+")";
-                    }
-                    else{
-                        q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
-                    }
-                }
-                else{
-                    return [];
-                }
+				if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
+					if(_self.extraSearch){
+						var components = ["eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")"];
+						_self.extraSearch.forEach(lang.hitch(this, function(attr){
+							components.push("eq(" + attr, query[_self.searchAttr] + ")");
+						}));
+						q = "?or(" + components.join(",") + ")";
+					}
+					else{
+						q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
+					}
+				}
+				else{
+					return [];
+				}
 				if(_self.queryFilter){
 					q += _self.queryFilter
 				}
@@ -66,7 +66,7 @@ define("p3/widget/GenomeNameSelector", [
 				if(_self.resultFields && _self.resultFields.length > 0){
 					q += "&select(" + _self.resultFields.join(",") + ")";
 				}
-				console.log("Q: ", q);
+				// console.log("Q: ", q);
 				return orig.apply(_self.store, [q, options]);
 			});
 		},

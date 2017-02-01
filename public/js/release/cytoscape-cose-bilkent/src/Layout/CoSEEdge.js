@@ -1,0 +1,14 @@
+define("cytoscape-cose-bilkent/src/Layout/CoSEEdge", ["dojo","dijit","dojox"], function(dojo,dijit,dojox){
+var FDLayoutEdge = require('./FDLayoutEdge');
+
+function CoSEEdge(source, target, vEdge) {
+  FDLayoutEdge.call(this, source, target, vEdge);
+}
+
+CoSEEdge.prototype = Object.create(FDLayoutEdge.prototype);
+for (var prop in FDLayoutEdge) {
+  CoSEEdge[prop] = FDLayoutEdge[prop];
+}
+
+module.exports = CoSEEdge
+});

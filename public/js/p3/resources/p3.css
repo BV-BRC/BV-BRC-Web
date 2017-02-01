@@ -29,6 +29,9 @@
 @import url("HomePage.css");
 @import url("./dlp.css");
 @import url("./help.css");
+@import url("../../cytoscape-panzoom/font-awesome-4.0.3/css/font-awesome.min.css");
+@import url("../../cytoscape-panzoom/cytoscape.js-panzoom.css");
+@import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
 
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
 

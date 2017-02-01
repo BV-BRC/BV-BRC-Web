@@ -113,7 +113,6 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					lang.hitch(this, "_onNotify"), true);
 				
 				var sort = this.get("sort");
-				console.log("SORT: ", sort, " queryOptions: ", this.queryOptions) ;
 				if (!sort || !sort.length) {
 					console.warn("Observable store detected, but no sort order specified. " +
 						"You may experience quirks when adding/updating items.  " +

@@ -202,6 +202,13 @@ define([
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state));
 					break;
+				case "interactions":
+					if(this.state.genome_ids){
+						activeTab.set("state", lang.mixin({}, this.state, {
+							search: "in(genome_id_a,(" + this.state.genome_ids.join(",") + "))"
+						}));
+					}
+					break;
 				default:
 					var activeQueryState;
 					var prop = "genome_id";
