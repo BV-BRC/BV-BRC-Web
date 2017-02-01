@@ -3,14 +3,14 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/topic", "dojo/query", "dojo/dom-construct", "dojo/dom-style",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/popup", "dijit/TooltipDialog",
-	"cytoscape/dist/cytoscape.min", "jquery", "cytoscape-panzoom", "cytoscape-context-menus",
-	"webcola/WebCola/cola.min", "cytoscape-cola", "dagre/dist/dagre", "cytoscape-dagre", "cytoscape-cose-bilkent",
+	"cytoscape-panzoom/cytoscape-panzoom", "cytoscape-context-menus/cytoscape-context-menus",
+	"cytoscape-cola/cytoscape-cola", "cytoscape-dagre/cytoscape-dagre", /*"cytoscape-cose-bilkent/cytoscape-cose-bilkent",*/
 	"./ContainerActionBar", "./InteractionOps", "FileSaver"
 ], function(declare, lang,
 			on, Topic, query, domConstruct, domStyle,
 			BorderContainer, ContentPane, popup, TooltipDialog,
-			cytoscape, $, cyPanzoom, cyContextMenus,
-			cola, cyCola, dagre, cyDagre, cyCose,
+			cyPanzoom, cyContextMenus,
+			cyCola, cyDagre, /*cyCose,*/
 			ContainerActionBar, InteractionOps, saveAs){
 
 	var panelSubGraph = ['<div class="wsActionTooltip" rel="5">5 or More Nodes</div>', '<div class="wsActionTooltip" rel="10">10 or More Nodes</div>', '<div class="wsActionTooltip" rel="20">20 or More Nodes</div>', '<div class="wsActionTooltip" rel="max">Largest Subgraph</div>'].join("\n");
@@ -43,18 +43,6 @@ define([
 	// register modules
 	if(typeof cytoscape('core', 'panzoom') !== 'function'){
 		cyPanzoom(cytoscape, $);
-	}
-	if(typeof cytoscape('core', 'context-menus') !== 'function'){
-		cyContextMenus(cytoscape, $);
-	}
-	if(typeof cytoscape('core', 'cola') !== 'function'){
-		cyCola(cytoscape, cola);
-	}
-	if(typeof cytoscape('core', 'dagre') !== 'function'){
-		cyDagre(cytoscape, dagre);
-	}
-	if(typeof cytoscape('core', 'cose-bilkent') !== 'function'){
-		cyCose(cytoscape);
 	}
 
 	return declare([BorderContainer], {
@@ -278,7 +266,7 @@ define([
 					]
 				});
 
-				cy.panzoom();
+				// cy.panzoom();
 
 				cy.contextMenus({
 					menuItems: [{
@@ -325,7 +313,10 @@ define([
 				var tooltipDiv = query("div.tooltip");
 				if(tooltipDiv.length == 0){
 					// this.tooltipLayer = domConstruct.place('<div class="tooltip" style="opacity: 0"></div>', query("body")[0], "last");
-					this.tooltipLayer = domConstruct.create("div", {"class": "tooltip", style: {opacity: 0}}, query("body")[0], "last");
+					this.tooltipLayer = domConstruct.create("div", {
+						"class": "tooltip",
+						style: {opacity: 0}
+					}, query("body")[0], "last");
 				}else{
 					this.tooltipLayer = tooltipDiv[0];
 				}
@@ -333,17 +324,17 @@ define([
 				var self = this;
 
 				cy.on('mouseover', 'node, edge', function(evt){
-				// cy.on('tap', 'node, edge', function(evt){
+					// cy.on('tap', 'node, edge', function(evt){
 					var ele = evt.cyTarget;
 
 					var content = [];
 					if(ele.isNode()){
-						ele.data('id') ? content.push("PATRIC ID: " + ele.data('id')): {};
-						ele.data('refseq_locus_tag') ? content.push("RefSeq Locus Tag: " + ele.data('refseq_locus_tag')): {};
-						ele.data('gene') ? content.push("Gene: " + ele.data('gene')): {};
-						ele.data('product') ? content.push("Product: " + ele.data('product')): {};
+						ele.data('id') ? content.push("PATRIC ID: " + ele.data('id')) : {};
+						ele.data('refseq_locus_tag') ? content.push("RefSeq Locus Tag: " + ele.data('refseq_locus_tag')) : {};
+						ele.data('gene') ? content.push("Gene: " + ele.data('gene')) : {};
+						ele.data('product') ? content.push("Product: " + ele.data('product')) : {};
 
-					}else if (ele.isEdge()){
+					}else if(ele.isEdge()){
 						content.push("Type: " + ele.data('type_name'));
 						content.push("Method: " + ele.data('method_name'));
 					}

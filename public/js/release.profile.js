@@ -89,7 +89,12 @@ var profile = {
 		{
 			name: "phyloview",
 			location: "./phyloview"
-		}
+		},
+		{name: "cytoscape-panzoom", location:"./cytoscape-panzoom"},
+		{name: "cytoscape-context-menus", location:"./cytoscape-context-menus"},
+		{name: "cytoscape-cola", location:"./cytoscape-cola"},
+		{name: "cytoscape-dagre", location:"./cytoscape-dagre"},
+		{name: "cytoscape-cose-bilkent", location:"./cytoscape-cose-bilkent", main: "cytoscape-cose-bilkent"}
 
 	],
 

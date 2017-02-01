@@ -2,17 +2,17 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/dom-style", "dojo/query",
 	"dijit/layout/ContentPane",
-	"cytoscape/dist/cytoscape.min", "webcola/WebCola/cola.min", "cytoscape-cola",
+	"cytoscape-cola/cytoscape-cola",
 	"./InteractionOps"
 ], function(declare, lang,
 			domConstruct, domStyle, query,
 			ContentPane,
-			cytoscape, cola, cyCola,
+			cyCola,
 			InteractionOps){
 
-	if(typeof cytoscape('core', 'cola') !== 'function'){
-		cyCola(cytoscape, cola);
-	}
+	// if(typeof cytoscape('core', 'cola') !== 'function'){
+	// 	cyCola(cytoscape, cola);
+	// }
 
 	return declare([ContentPane], {
 		region: "center",
