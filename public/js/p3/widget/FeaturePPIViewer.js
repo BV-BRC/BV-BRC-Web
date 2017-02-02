@@ -121,26 +121,26 @@ define([
 				domStyle.set(self.tooltipLayer, "opacity", 0);
 			})
 		},
-		render: function(data, patric_id){
+		render: function(data, pin){
 
 			var cy = this.cy;
 			cy.batch(function(){
 				data.forEach(function(d){
 
-					var i_a = d.patric_id_a;
-					var i_b = d.patric_id_b;
+					var i_a = d.feature_id_a;
+					var i_b = d.feature_id_b;
 
 					if(cy.getElementById(i_a).empty()){
 
 						var node = createInteractorCyEle(d, 'a');
-						if(i_a == patric_id){
+						if(i_a == pin){
 							node.classes = "center";
 						}
 						cy.add(node);
 					}
 					if(cy.getElementById(i_b).empty()){
 						var node = createInteractorCyEle(d, 'b');
-						if(i_b == patric_id){
+						if(i_b == pin){
 							node.classes = "center";
 						}
 						cy.add(node);
@@ -148,7 +148,7 @@ define([
 
 					// console.log(d['method']);
 					var edgeClass;
-					switch(d['method']){
+					switch(d['detection_method']){
 						case "interologs mapping":
 							edgeClass = "typeA";
 							break;
@@ -170,8 +170,8 @@ define([
 						data: {
 							source: i_a,
 							target: i_b,
-							type_name: d['type'],
-							method_name: d['method']
+							interaction_type: d['interaction_type'],
+							detection_method: d['detection_method']
 						},
 						classes: edgeClass
 					})

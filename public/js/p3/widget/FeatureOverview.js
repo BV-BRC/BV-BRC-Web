@@ -339,12 +339,12 @@ define([
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
 		},
-		_setFeaturePPIAttr: function(data, patric_id){
+		_setFeaturePPIAttr: function(data, pin){
 			domClass.remove(this.fpViewerNode.parentNode, "hidden");
 			domConstruct.empty(this.fpViewerNode);
 			var fp_viewer = new FeaturePPIViewer();
 			fp_viewer.init(this.fpViewerNode);
-			fp_viewer.render(data, patric_id);
+			fp_viewer.render(data, pin);
 		},
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
@@ -455,34 +455,23 @@ define([
 
 			// protein-protein interaction
 			if(this.feature.patric_id){
-				query = "?or(eq(patric_id_a," + encodeURIComponent(this.feature.patric_id) + "),eq(patric_id_b," + encodeURIComponent(this.feature.patric_id) + "))";
+				query = "?or(eq(feature_id_a," + this.feature.feature_id + "),eq(feature_id_b," + this.feature.feature_id + "))";
 				xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + query), xhrOption)
 					.then(lang.hitch(this, function(data){
 						if(data.length === 0) return;
 
 						var second = data.map(function(d){
-							return [d.patric_id_a, d.patric_id_b];
+							return [d.feature_id_a, d.feature_id_b];
 						}).reduce(function(a, b){
 							return a.concat(b);
-						}).map(function(d){
-							return encodeURIComponent(d);
 						});
 
-						var alreadyLoadedIds = data.map(function(d){
-							return d.id;
-						});
-
-						var q = "?and(in(patric_id_a,(" + second.join(",") + ")),in(patric_id_b,(" + second.join(",") + ")))";
+						var q = "?and(in(feature_id_a,(" + second.join(",") + ")),in(feature_id_b,(" + second.join(",") + ")))";
 
 						xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + q), xhrOption)
-							.then(lang.hitch(this, function(newData){
+							.then(lang.hitch(this, function(data){
 
-								var difference = newData.filter(function(d){
-									return alreadyLoadedIds.indexOf(d.id) == -1;
-								});
-								// console.log(difference);
-
-								this.set("featurePPI", data.concat(difference), this.feature.patric_id);
+								this.set("featurePPI", data, this.feature.feature_id);
 							}));
 					}));
 			}
