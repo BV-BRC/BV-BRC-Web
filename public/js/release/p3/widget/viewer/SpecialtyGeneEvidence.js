@@ -100,7 +100,8 @@ define("p3/widget/viewer/SpecialtyGeneEvidence", [
 				var feature_id =feature[0].feature_id;
 				var spgenelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=false">Specialty Genes</a>';
 				var vflink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=eq(property,%22Virulence%20Factor%22)">Virulence Factors</a>';
-				var patricVFlink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(property,%22Virulence%20Factor%22),eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))">PATRIC_VF</a>';
+				// var patricVFlink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(property,%22Virulence%20Factor%22),eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))">PATRIC_VF</a>';
+				var patricVFlink = '<a href="/view/SpecialtyVFGeneList/?keyword(*)&eq(source,%22PATRIC_VF%22)#view_tab=specialtyVFGenes&filter=false">PATRIC_VF</a>';
 				var genelink = '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
 
 				//this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
@@ -130,7 +131,7 @@ define("p3/widget/viewer/SpecialtyGeneEvidence", [
 						return;				
 					}
 					var node = domConstruct.create("div", {style: "width: 50%"}, this.viewer.containerNode);
-					domConstruct.place(DataItemFormatter(reference[0], "spgene_ref_data", {}), node, "first");
+					domConstruct.place(DataItemFormatter(reference[0], "spgene_ref_data", {mini: true}), node, "first");
 				
 					// retrieve homologs
 					xhr.get(PathJoin(this.apiServiceUrl, "sp_gene", q), {
