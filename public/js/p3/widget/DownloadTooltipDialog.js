@@ -251,6 +251,12 @@ define([
 				"label": "Specialty Genes",
 				tableData: true
 			},
+			"spgene_ref_data": {
+				dataType: "sp_gene_ref",
+				pk: "id",
+				"label": "Specialty VF Genes",
+				tableData: true
+			},
 			"pathway_data": {
 				pk: "pathway_id",
 				dataType: "pathway",
