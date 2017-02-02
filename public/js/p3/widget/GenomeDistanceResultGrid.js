@@ -20,7 +20,7 @@ define([
 			// add extra columns
 			distance: {label: 'Distance', field: "distance", sortable: false},
 			pvalue: {label: 'P value', field: "pvalue", sortable: false},
-			counts: {label: 'Counts', field: "counts", sortable: false}
+			counts: {label: 'K-mer Counts', field: "counts", sortable: false}
 		}),
 
 		constructor: function(options, parent){

@@ -103,8 +103,8 @@ define([
 			var max_pvalue = this.evalue.get('value');
 			var max_distance = 0.01;
 			var max_hits = parseInt(this.max_hits.get('value'));
-			var include_reference = 0;
-			var include_representative = 0;
+			var include_reference = this.include_reference.get('value') ? 1 : 0;
+			var include_representative = this.include_representative.get('value') ? 1 : 0;
 
 			var def = new Deferred();
 			var resultType = "genome";
