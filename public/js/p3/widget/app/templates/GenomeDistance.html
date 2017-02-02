@@ -4,7 +4,7 @@
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
             <h3>Genome Distance</h3>
-            <p>...</p>
+            <p>Find similar genomes or compute genome distance estimation using Mash/MinHash.</p>
         </div>
 
         <div class="service_form">
@@ -69,6 +69,19 @@
                             <option value=1>1</option>
                             <option value=10>10</option>
                         </select>
+                    </div>
+
+                    <div class="left third">
+                        <div data-dojo-type="dijit/form/CheckBox"
+                             data-dojo-attach-point="include_reference"
+                             value="1"></div>
+                        <label class="paramlabel">Limit to reference</label>
+                        <br/>
+                        <div data-dojo-type="dijit/form/CheckBox"
+                            data-dojo-attach-point="include_representative"
+                             value="1"></div>
+                        <label class="paramlabel">Limit to representative</label>
+
                     </div>
                     <div class="clear"></div>
                 </div>
