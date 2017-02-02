@@ -254,7 +254,7 @@ define([
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
-			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, pwLink;
+			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink;
 			if(feature.hasOwnProperty('go')){
 				goLink = feature['go'].map(function(goStr){
 					var go = goStr.split('|');
@@ -281,6 +281,10 @@ define([
 				figfamLink = '<a href="/view/FeatureList/?eq(figfam_id,' + feature.figfam_id + ')#view_tab=features" target="_blank">' + feature.figfam_id + '</a>';
 			}
 
+			if(feature.hasOwnProperty('aa_sequence_md5')){
+				ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View in new Tab</a>';
+			}
+
 			if(feature.hasOwnProperty('pathway')){
 				pwLink = feature['pathway'].map(function(pwStr){
 					var pw = pwStr.split('|');
@@ -296,7 +300,7 @@ define([
 			var htr;
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:20%"}, htr);
+			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:25%"}, htr);
 			domConstruct.create("td", {innerHTML: plfamLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
@@ -306,6 +310,10 @@ define([
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "FIGfam", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: figfamLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Identical Proteins", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: ipLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "GO Terms", scope: "row"}, htr);
