@@ -140,7 +140,7 @@ define([
 				});
 
 				// keyword search
-				if(this.pfState.keyword !== ''){
+				if(!skip && this.pfState.keyword !== ''){
 					skip = !keywordRegex.some(function(needle){
 						return needle && (family.description.toLowerCase().indexOf(needle) >= 0 || family.family_id.toLowerCase().indexOf(needle) >= 0);
 					});
