@@ -24,8 +24,9 @@ define([
 			gene_b: {label: "Gene B", field: "gene_b"},
 			product_b: {label: "Product B", field: "product_b"},
 
-			type: {label: "Interaction Type", field: "type"},
-			method: {label: "Detection Method", field: "method"},
+			category: {label: "Category", field: "category"},
+			i_type: {label: "Interaction Type", field: "interaction_type"},
+			d_method: {label: "Detection Method", field: "detection_method"},
 			pubmed: {label: "Pubmed", field: "pmid"},
 			score: {label: "Score", field: "score", hidden: true}
 		},
