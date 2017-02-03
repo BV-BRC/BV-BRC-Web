@@ -10,10 +10,6 @@ define([
 			cyCola,
 			InteractionOps){
 
-	// if(typeof cytoscape('core', 'cola') !== 'function'){
-	// 	cyCola(cytoscape, cola);
-	// }
-
 	return declare([ContentPane], {
 		region: "center",
 		init: function(target){
@@ -105,8 +101,8 @@ define([
 					ele.data('product') ? content.push("Product: " + ele.data('product')) : {};
 
 				}else if(ele.isEdge()){
-					content.push("Type: " + ele.data('type_name'));
-					content.push("Method: " + ele.data('method_name'));
+					content.push("Interaction Type: " + ele.data('interaction_type'));
+					content.push("Detection Method: " + ele.data('detection_method'));
 				}
 
 				// console.log(evt, self.tooltipLayer);
@@ -124,6 +120,8 @@ define([
 		render: function(data, pin){
 
 			var cy = this.cy;
+			cy.elements().remove(); // remove existing elements
+
 			cy.batch(function(){
 				data.forEach(function(d){
 
@@ -168,6 +166,7 @@ define([
 
 					cy.add({
 						data: {
+							id: d['id'],
 							source: i_a,
 							target: i_b,
 							interaction_type: d['interaction_type'],

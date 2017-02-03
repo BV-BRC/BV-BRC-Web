@@ -4,14 +4,14 @@ define([
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
 	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter",
-	"./FeaturePPIViewer", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
 			DataItemFormatter, ExternalItemFormatter, formatter,
-			FeaturePPIViewer, D3SingleGeneViewer, SelectionToGroup){
+			D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -347,13 +347,7 @@ define([
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
 		},
-		_setFeaturePPIAttr: function(data, pin){
-			domClass.remove(this.fpViewerNode.parentNode, "hidden");
-			domConstruct.empty(this.fpViewerNode);
-			var fp_viewer = new FeaturePPIViewer();
-			fp_viewer.init(this.fpViewerNode);
-			fp_viewer.render(data, pin);
-		},
+
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
 
@@ -462,6 +456,7 @@ define([
 			}
 
 			// protein-protein interaction
+			/*
 			if(this.feature.patric_id){
 				query = "?or(eq(feature_id_a," + this.feature.feature_id + "),eq(feature_id_b," + this.feature.feature_id + "))";
 				xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + query), xhrOption)
@@ -482,7 +477,7 @@ define([
 								this.set("featurePPI", data, this.feature.feature_id);
 							}));
 					}));
-			}
+			}*/
 		},
 
 		onAddFeature: function(){
