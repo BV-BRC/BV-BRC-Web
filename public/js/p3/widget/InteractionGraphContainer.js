@@ -382,6 +382,7 @@ define([
 				return;
 			}
 			var cy = this.cy;
+			cy.elements().remove();
 
 			cy.batch(function(){
 				data.forEach(function(d){
@@ -413,7 +414,7 @@ define([
 
 					cy.add({
 						data: {
-							id: d['interaction_id'],
+							id: d['id'],
 							source: i_a,
 							target: i_b,
 							interaction_type: d['interaction_type'],
