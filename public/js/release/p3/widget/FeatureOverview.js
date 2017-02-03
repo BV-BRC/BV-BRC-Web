@@ -1,19 +1,19 @@
 require({cache:{
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\" data-dojo-attach-point=\"isRefSeqOnly\">\n            <span><b>Note:</b> There is no corresponding PATRIC feature.</span>\n        </div>\n        <div class=\"section\">\n            <div class=\"sgViewerWidget\" data-dojo-attach-point=\"sgViewerNode\">\n                <span>Loading ...</span>\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <div class=\"fpViewerWidget\" data-dojo-attach-point=\"fpViewerNode\">\n                <span>Loading ...</span>\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Database Identifiers</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\" data-dojo-attach-point=\"isRefSeqOnly\">\n            <span><b>Note:</b> There is no corresponding PATRIC feature.</span>\n        </div>\n        <div class=\"section\">\n            <div class=\"sgViewerWidget\" data-dojo-attach-point=\"sgViewerNode\">\n                <span>Loading ...</span>\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Database Identifiers</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"close2x section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
 define("p3/widget/FeatureOverview", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
 	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter",
-	"./FeaturePPIViewer", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
 			DataItemFormatter, ExternalItemFormatter, formatter,
-			FeaturePPIViewer, D3SingleGeneViewer, SelectionToGroup){
+			D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -256,7 +256,7 @@ define("p3/widget/FeatureOverview", [
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
-			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, pwLink;
+			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink;
 			if(feature.hasOwnProperty('go')){
 				goLink = feature['go'].map(function(goStr){
 					var go = goStr.split('|');
@@ -283,6 +283,10 @@ define("p3/widget/FeatureOverview", [
 				figfamLink = '<a href="/view/FeatureList/?eq(figfam_id,' + feature.figfam_id + ')#view_tab=features" target="_blank">' + feature.figfam_id + '</a>';
 			}
 
+			if(feature.hasOwnProperty('aa_sequence_md5')){
+				ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View in new Tab</a>';
+			}
+
 			if(feature.hasOwnProperty('pathway')){
 				pwLink = feature['pathway'].map(function(pwStr){
 					var pw = pwStr.split('|');
@@ -298,7 +302,7 @@ define("p3/widget/FeatureOverview", [
 			var htr;
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:20%"}, htr);
+			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:25%"}, htr);
 			domConstruct.create("td", {innerHTML: plfamLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
@@ -308,6 +312,10 @@ define("p3/widget/FeatureOverview", [
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "FIGfam", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: figfamLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Identical Proteins", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: ipLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "GO Terms", scope: "row"}, htr);
@@ -341,13 +349,7 @@ define("p3/widget/FeatureOverview", [
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
 		},
-		_setFeaturePPIAttr: function(data, patric_id){
-			domClass.remove(this.fpViewerNode.parentNode, "hidden");
-			domConstruct.empty(this.fpViewerNode);
-			var fp_viewer = new FeaturePPIViewer();
-			fp_viewer.init(this.fpViewerNode);
-			fp_viewer.render(data, patric_id);
-		},
+
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
 
@@ -456,38 +458,28 @@ define("p3/widget/FeatureOverview", [
 			}
 
 			// protein-protein interaction
+			/*
 			if(this.feature.patric_id){
-				query = "?or(eq(patric_id_a," + encodeURIComponent(this.feature.patric_id) + "),eq(patric_id_b," + encodeURIComponent(this.feature.patric_id) + "))";
+				query = "?or(eq(feature_id_a," + this.feature.feature_id + "),eq(feature_id_b," + this.feature.feature_id + "))";
 				xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + query), xhrOption)
 					.then(lang.hitch(this, function(data){
 						if(data.length === 0) return;
 
 						var second = data.map(function(d){
-							return [d.patric_id_a, d.patric_id_b];
+							return [d.feature_id_a, d.feature_id_b];
 						}).reduce(function(a, b){
 							return a.concat(b);
-						}).map(function(d){
-							return encodeURIComponent(d);
 						});
 
-						var alreadyLoadedIds = data.map(function(d){
-							return d.id;
-						});
-
-						var q = "?and(in(patric_id_a,(" + second.join(",") + ")),in(patric_id_b,(" + second.join(",") + ")))";
+						var q = "?and(in(feature_id_a,(" + second.join(",") + ")),in(feature_id_b,(" + second.join(",") + ")))";
 
 						xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + q), xhrOption)
-							.then(lang.hitch(this, function(newData){
+							.then(lang.hitch(this, function(data){
 
-								var difference = newData.filter(function(d){
-									return alreadyLoadedIds.indexOf(d.id) == -1;
-								});
-								// console.log(difference);
-
-								this.set("featurePPI", data.concat(difference), this.feature.patric_id);
+								this.set("featurePPI", data, this.feature.feature_id);
 							}));
 					}));
-			}
+			}*/
 		},
 
 		onAddFeature: function(){

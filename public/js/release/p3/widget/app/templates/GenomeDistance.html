@@ -3,7 +3,7 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Genome Distance</h3>
+            <h3>Similar Genome Finder</h3>
             <p>Find similar genomes or compute genome distance estimation using Mash/MinHash.</p>
         </div>
 
@@ -44,7 +44,7 @@
                     <div class="headerrow">
                         <label class="appBoxLabel">Parameters</label>
                     </div>
-                    <div class="left third">
+                    <div class="left quarter">
                         <label class="paramlabel">Max hits: </label><br/>
                         <select name="max_target" style="width: 100px"
                                 data-dojo-type="dijit/form/Select"
@@ -57,21 +57,34 @@
                         </select>
                     </div>
 
-                    <div class="left third">
-                        <label class="paramlabel">E value threshold: </label><br/>
-                        <select name="threshold" type="text" value=0.01 style="width:50px"
-                               data-dojo-type="dijit/form/Select"
-                               data-dojo-attach-point="evalue">
-                            <option value=0.0001>0.0001</option>
-                            <option value=0.001>0.001</option>
-                            <option value=0.01 selected="selected">0.01</option>
-                            <option value=0.1>0.1</option>
-                            <option value=1>1</option>
-                            <option value=10>10</option>
-                        </select>
+                    <div class="left quarter">
+                        <label class="paramlabel">P value threshold: </label><br/>
+                        <div data-dojo-type="dijit/form/Select"
+                             data-dojo-attach-point="pvalue"
+                             value="0.01" style="width:60px">
+                            <option value="0.001">0.001</option>
+                            <option value="0.01">0.01</option>
+                            <option value="0.1">0.1</option>
+                            <option value="1">1</option>
+                            <option value="10">10</option>
+                        </div>
+                    </div>
+                    <div class="left quarter">
+                        <label class="paramlabel">Distance: </label><br/>
+                        <div data-dojo-type="dijit/form/Select"
+                             data-dojo-attach-point="distance"
+                             value="0.01" style="width:60px">
+                            <option value="0.001">0.001</option>
+                            <option value="0.05">0.05</option>
+                            <option value="0.01">0.01</option>
+                            <option value="0.05">0.05</option>
+                            <option value="0.1">0.1</option>
+                            <option value="0.5">0.5</option>
+                            <option value="1">1</option>
+                        </div>
                     </div>
 
-                    <div class="left third">
+                    <div class="left quarter">
                         <div data-dojo-type="dijit/form/CheckBox"
                              data-dojo-attach-point="include_reference"
                              value="1"></div>

@@ -3,8 +3,8 @@ define("p3/widget/InteractionOps", [], function(){
 	this.createInteractorCyEle = function(d, ab){
 		return {
 			data: {
-				id: d['patric_id_' + ab],
-				name: d['gene_' + ab ] || d['patric_id_' + ab],
+				id: d['feature_id_' + ab],
+				name: d['gene_' + ab ],
 				product: d['product_' + ab],
 				gene: d['gene_' + ab],
 				refseq_locus_tag: d['refseq_locus_tag_' + ab]

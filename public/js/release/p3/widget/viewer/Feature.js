@@ -3,14 +3,14 @@ define("p3/widget/viewer/Feature", [
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "../FeatureOverview",
 	"dojo/request", "dojo/_base/lang",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
+	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../FeatureInteractionContainer",
 	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin",
 	"../GenomeBrowser"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
-			ActionBar, ContainerActionBar, PathwaysContainer,
+			ActionBar, ContainerActionBar, PathwaysContainer, FeatureInteractionContainer,
 			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin,
 			GenomeBrowser){
 	return declare([TabViewerBase], {
@@ -77,6 +77,7 @@ define("p3/widget/viewer/Feature", [
 
 			switch(active){
 				case "overview":
+				case "interactions":
 				case "correlatedGenes":
 					if(this.state && this.state.feature){
 						activeTab.set("state", lang.mixin({}, this.state));
@@ -249,11 +250,16 @@ define("p3/widget/viewer/Feature", [
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes"
 			});
+			this.interactions = new FeatureInteractionContainer({
+				title: "Interactions",
+				id: this.viewer.id + "_interactions"
+			});
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
+			this.viewer.addChild(this.interactions);
 		}
 	});
 });

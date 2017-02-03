@@ -21,7 +21,7 @@ define("p3/widget/InteractionGridContainer", [
 	return declare([GridContainer], {
 		gridCtor: Grid,
 		containerType: "interaction_data",
-		facetFields: ["method", "type", "source_db", "source_id"],
+		facetFields: ["category", "detection_method", "interaction_type", "source_db", "source_id"],
 		dataModel: "ppi",
 		constructor: function(options){
 			this.topicId = options.topicId;
@@ -77,7 +77,7 @@ define("p3/widget/InteractionGridContainer", [
 						var headers = ["Genome ID", "Genome Name", "Feature ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Feature ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Type", "Method", "Pubmed", "Score"];
 						var content = [];
 						data.forEach(function(row){
-							content.push([row.genome_id_a, row.genome_name_a, row.feature_id_a, row.patric_id_a, row.refseq_locus_tag_a, row.gene_a, '"' + row.product_a + '"', row.feature_id_b, row.patric_id_b, row.refseq_locus_tag_b, row.gene_b, '"' + row.product_b + '"', row.type, row.method, row.pmid, row.score].join(DELIMITER));
+							content.push([row.genome_id_a, row.genome_name_a, row.feature_id_a, row.patric_id_a, row.refseq_locus_tag_a, row.gene_a, '"' + row.product_a + '"', row.feature_id_b, row.patric_id_b, row.refseq_locus_tag_b, row.gene_b, '"' + row.product_b + '"', row.interaction_type, row.detection_method, row.pmid, row.score].join(DELIMITER));
 						})
 
 						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_interactions.' + ext);

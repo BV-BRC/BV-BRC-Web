@@ -335,8 +335,8 @@ define("p3/widget/InteractionGraphContainer", [
 						ele.data('product') ? content.push("Product: " + ele.data('product')) : {};
 
 					}else if(ele.isEdge()){
-						content.push("Type: " + ele.data('type_name'));
-						content.push("Method: " + ele.data('method_name'));
+						content.push("Interaction Type: " + ele.data('interaction_type'));
+						content.push("Detection Method: " + ele.data('detection_method'));
 					}
 
 					// console.log(evt, self.tooltipLayer);
@@ -382,11 +382,12 @@ define("p3/widget/InteractionGraphContainer", [
 				return;
 			}
 			var cy = this.cy;
+			cy.elements().remove();
 
 			cy.batch(function(){
 				data.forEach(function(d){
-					var i_a = d.patric_id_a;
-					var i_b = d.patric_id_b;
+					var i_a = d.feature_id_a;
+					var i_b = d.feature_id_b;
 
 					if(cy.getElementById(i_a).empty()){
 						cy.add(createInteractorCyEle(d, 'a'));
@@ -396,7 +397,7 @@ define("p3/widget/InteractionGraphContainer", [
 					}
 
 					var edgeClass;
-					switch(d['method']){
+					switch(d['detection_method']){
 						case "experimental interaction detection":
 							edgeClass = "typeA";
 							break;
@@ -413,11 +414,11 @@ define("p3/widget/InteractionGraphContainer", [
 
 					cy.add({
 						data: {
-							id: d['interaction_id'],
+							id: d['id'],
 							source: i_a,
 							target: i_b,
-							type_name: d['type'],
-							method_name: d['method']
+							interaction_type: d['interaction_type'],
+							detection_method: d['detection_method']
 						},
 						classes: edgeClass
 					})
