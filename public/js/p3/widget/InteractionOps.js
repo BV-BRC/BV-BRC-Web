@@ -6,6 +6,7 @@ define([], function(){
 				id: d['feature_id_' + ab],
 				name: d['gene_' + ab ],
 				product: d['product_' + ab],
+				node_type: (d['feature_id_' + ab] ? "genome_feature": ""),
 				gene: d['gene_' + ab],
 				refseq_locus_tag: d['refseq_locus_tag_' + ab]
 			},
