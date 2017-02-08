@@ -480,6 +480,15 @@ define([
 								'shadow-opacity': 1
 							}
 						}, {
+							selector: 'node.center',
+							style: {
+								label: 'data(gene)',
+								width: 30,
+								height: 30,
+								'font-size': 15,
+								'background-color': '#F44336'
+							}
+						}, {
 							selector: 'edge',
 							style: {
 								width: 4,
@@ -511,6 +520,18 @@ define([
 								'line-color': '#FF5722', // deep orange 500
 								'line-style': 'dashed',
 								'opacity': 0.6
+							}
+						}, {
+							selector: 'edge.typeD',
+							style: {
+								'line-color': '#8D6E63', // brown 400
+								'line-style': 'dotted'
+							}
+						}, {
+							selector: 'edge.typeE',
+							style: {
+								'line-color': '#1B5E20', // green 900
+								'line-style': 'dashed'
 							}
 						}
 					]
@@ -743,6 +764,12 @@ define([
 							break;
 						case "inference":
 							edgeClass = "typeC";
+							break;
+						case "phylogenetic profile":
+							edgeClass = "typeD";
+							break;
+						case "gene neighbourhood":
+							edgeClass = "typeE";
 							break;
 						default:
 							edgeClass = "";

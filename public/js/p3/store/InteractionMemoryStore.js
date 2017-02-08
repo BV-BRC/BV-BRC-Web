@@ -51,7 +51,7 @@ define([
 				&& this.state.hashParams.filter !== "false"){
 				query += "&" + this.state.hashParams.filter;
 			}
-			query += "&limit(200,0)";
+			query += "&limit(2000,0)";
 
 			this._loadingDeferred = when(request.get(this.apiServer + '/ppi/?' + query, {
 				handleAs: 'json',
