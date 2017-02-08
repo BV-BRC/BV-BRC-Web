@@ -15,6 +15,9 @@ define([
 			}
 
 			// console.warn("onSetState", state);
+			if(state.feature && state.feature.feature_id){
+				Topic.publish(this.topicId, "pinFeatures", [state.feature.feature_id]);
+			}
 			this.clear();
 		},
 
@@ -22,7 +25,7 @@ define([
 			this._loaded = false;
 
 			this.topicId = options.topicId;
-			console.log("interaction store created.", this.topicId);
+			// console.log("interaction store created.", this.topicId);
 
 			// Topic.subscribe()
 

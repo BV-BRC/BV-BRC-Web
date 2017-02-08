@@ -70,6 +70,7 @@ define([
 		gutters: false,
 		visible: false,
 		selection: null,
+		pins: [],
 		containerType: "interaction_data",
 		containerActions: [
 			[
@@ -436,6 +437,9 @@ define([
 					case "updateGraphData":
 						this.updateGraph(value);
 						break;
+					case "pinFeatures":
+						this.updatePins(value);
+						break;
 					default:
 						break;
 				}
@@ -480,12 +484,12 @@ define([
 								'shadow-opacity': 1
 							}
 						}, {
-							selector: 'node.center',
+							selector: 'node.pinned',
 							style: {
 								label: 'data(gene)',
-								width: 30,
-								height: 30,
-								'font-size': 15,
+								width: 45,
+								height: 45,
+								'font-size': 12,
 								'background-color': '#F44336'
 							}
 						}, {
@@ -735,6 +739,12 @@ define([
 				this.itemDetailPanel.set("selection", this.selection);
 			}
 		},
+
+		updatePins: function(data){
+
+			this.pins = data;
+		},
+
 		updateGraph: function(data){
 			if(data.length == 0){
 				return;
@@ -788,6 +798,13 @@ define([
 					})
 				});
 			});
+
+			// highlight pinned features
+			if(this.pins && this.pins.length > 0){
+				this.pins.forEach(function(id){
+					cy.getElementById(id).addClass('pinned');
+				})
+			}
 
 			// cy.layout({name: 'circle'});
 			cy.layout({name: 'cola', userConstIter: 1});
