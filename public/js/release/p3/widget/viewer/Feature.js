@@ -3,14 +3,14 @@ define("p3/widget/viewer/Feature", [
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "../FeatureOverview",
 	"dojo/request", "dojo/_base/lang",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../FeatureInteractionContainer",
+	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../InteractionContainer",
 	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin",
 	"../GenomeBrowser"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
-			ActionBar, ContainerActionBar, PathwaysContainer, FeatureInteractionContainer,
+			ActionBar, ContainerActionBar, PathwaysContainer, InteractionContainer,
 			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin,
 			GenomeBrowser){
 	return declare([TabViewerBase], {
@@ -77,10 +77,16 @@ define("p3/widget/viewer/Feature", [
 
 			switch(active){
 				case "overview":
-				case "interactions":
 				case "correlatedGenes":
 					if(this.state && this.state.feature){
 						activeTab.set("state", lang.mixin({}, this.state));
+					}
+					break;
+				case "interactions":
+					if(this.state && this.state.feature){
+						activeTab.set("state", lang.mixin({}, this.state, {
+							search: "secondDegreeInteraction(" + this.state.feature.feature_id + ")"
+						}));
 					}
 					break;
 				default:
@@ -250,9 +256,10 @@ define("p3/widget/viewer/Feature", [
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes"
 			});
-			this.interactions = new FeatureInteractionContainer({
+			this.interactions = new InteractionContainer({
 				title: "Interactions",
-				id: this.viewer.id + "_interactions"
+				id: this.viewer.id + "_interactions",
+				state: this.state
 			});
 
 			this.viewer.addChild(this.overview);

@@ -15,6 +15,9 @@ define("p3/store/InteractionMemoryStore", [
 			}
 
 			// console.warn("onSetState", state);
+			if(state.feature && state.feature.patric_id){
+				Topic.publish(this.topicId, "pinFeatures", [state.feature.patric_id]);
+			}
 			this.clear();
 		},
 
@@ -22,7 +25,7 @@ define("p3/store/InteractionMemoryStore", [
 			this._loaded = false;
 
 			this.topicId = options.topicId;
-			console.log("interaction store created.", this.topicId);
+			// console.log("interaction store created.", this.topicId);
 
 			// Topic.subscribe()
 
@@ -51,7 +54,7 @@ define("p3/store/InteractionMemoryStore", [
 				&& this.state.hashParams.filter !== "false"){
 				query += "&" + this.state.hashParams.filter;
 			}
-			query += "&limit(200,0)";
+			query += "&limit(2000,0)";
 
 			this._loadingDeferred = when(request.get(this.apiServer + '/ppi/?' + query, {
 				handleAs: 'json',
