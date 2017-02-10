@@ -15,8 +15,8 @@ define([
 			}
 
 			// console.warn("onSetState", state);
-			if(state.feature && state.feature.feature_id){
-				Topic.publish(this.topicId, "pinFeatures", [state.feature.feature_id]);
+			if(state.feature && state.feature.patric_id){
+				Topic.publish(this.topicId, "pinFeatures", [state.feature.patric_id]);
 			}
 			this.clear();
 		},

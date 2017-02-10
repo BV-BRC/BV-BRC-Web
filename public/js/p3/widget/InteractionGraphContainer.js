@@ -267,11 +267,15 @@ define([
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["interaction_data"],
 					pressAndHold: function(selection, button, opts, evt){
-						// TODO: check whether selection[0] is protein
+						if(selection[0].isNode() && selection[0].data('interactor_type') === 'Protein'){
+							var feature_id = selection[0].data('feature_id');
+						}else{
+							return;
+						}
 						popup.open({
 							popup: new PerspectiveToolTip({
 								perspective: "Feature",
-								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+								perspectiveUrl: "/view/Feature/" + feature_id
 							}),
 							around: button,
 							orient: ["below"]
@@ -281,18 +285,20 @@ define([
 				function(selection){
 					var sel = selection[0];
 
-					if(sel.isNode() && sel.data('node_type') === 'genome_feature'){
+					if(sel.isNode() && sel.data('interactor_type') === 'Protein'){
 
 						Topic.publish("/navigate", {
-							href: "/view/Feature/" + sel.data('id') + "#view_tab=overview",
+							href: "/view/Feature/" + sel.data('feature_id') + "#view_tab=overview",
 							target: "blank"
 						});
 
 					}else{
-						var feature_ids = [sel.data('source'), sel.data('target')];
+						var patric_ids = [sel.data('source'), sel.data('target')].map(function(id){
+							return encodeURIComponent(id);
+						});
 
 						Topic.publish("/navigate", {
-							href: "/view/FeatureList/?in(feature_id,(" + feature_ids.join(",") + "))#view_tab=features",
+							href: "/view/FeatureList/?in(patric_id,(" + patric_ids.join(",") + "))#view_tab=features",
 							target: "blank"
 						});
 					}
@@ -313,9 +319,9 @@ define([
 				function(selection){
 					// console.log(selection);
 					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('node_type') === 'genome_feature';
+						return ele.isNode() && ele.data('interactor_type') === 'Protein';
 					}).map(function(ele){
-						return ele.data('id'); // feature_id
+						return ele.data('feature_id'); // feature_id
 					});
 
 					Topic.publish("/navigate", {
@@ -340,11 +346,22 @@ define([
 				},
 				function(selection){
 
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('node_type') === 'genome_feature';
-					}).map(function(ele){
-						return ele.data('id'); // feature_id
-					});
+					var sel;
+					if(selection.length === 1){
+						// if one node is selected, selection is vanilla javascript array
+						sel = selection.filter(function(ele){
+							return ele.isNode() && ele.data('interactor_type') === 'Protein';
+						}).map(function(ele){
+							return ele.data('feature_id');
+						});
+					}else{
+						// if more than one node is selected, then selection is cytoscape selection.
+						sel = selection.filter(function(i, ele){
+							return ele.isNode() && ele.data('interactor_type') === 'Protein';
+						}).map(function(ele){
+							return ele.data('feature_id');
+						});
+					}
 
 					viewFASTATT.selection = sel;
 
@@ -371,9 +388,9 @@ define([
 				function(selection){
 
 					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('node_type') === 'genome_feature';
+						return ele.isNode() && ele.data('interactor_type') === 'Protein';
 					}).map(function(ele){
-						return ele.data('id'); // feature_id
+						return ele.data('feature_id');
 					});
 
 					Topic.publish("/navigate", {
@@ -399,9 +416,9 @@ define([
 				function(selection, containerWidget){
 
 					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('node_type') === 'genome_feature';
+						return ele.isNode() && ele.data('interactor_type') === 'Protein';
 					}).map(function(ele){
-						return {feature_id: ele.data('id')};
+						return {feature_id: ele.data('feature_id')};
 					});
 
 					// console.log("Add Items to Group", sel);
@@ -461,7 +478,7 @@ define([
 						{
 							selector: 'node',
 							style: {
-								label: 'data(name)',
+								label: 'data(gene)',
 								'text-opacity': 0.8,
 								'text-valign': 'center',
 								'text-halign': 'center',
@@ -607,7 +624,7 @@ define([
 						ele.data('id') ? content.push("PATRIC ID: " + ele.data('id')) : {};
 						ele.data('refseq_locus_tag') ? content.push("RefSeq Locus Tag: " + ele.data('refseq_locus_tag')) : {};
 						ele.data('gene') ? content.push("Gene: " + ele.data('gene')) : {};
-						ele.data('product') ? content.push("Product: " + ele.data('product')) : {};
+						ele.data('interactor_desc') ? content.push("Product: " + ele.data('interactor_desc')) : {};
 
 					}else if(ele.isEdge()){
 						content.push("Interaction Type: " + ele.data('interaction_type'));
@@ -689,9 +706,11 @@ define([
 
 				var cur = this.selection[0];
 				if(cur.isNode()){
-					// node // TODO: check whether this is protein as well
+					if(cur.data('interactor_type') !== "Protein"){
+						return;
+					}
 
-					var feature_id = cur.data('id');
+					var feature_id = cur.data('feature_id');
 					request.get(PathJoin(window.App.dataAPI, "genome_feature", feature_id), {
 						headers: {
 							accept: "application/json"
@@ -754,8 +773,8 @@ define([
 
 			cy.batch(function(){
 				data.forEach(function(d){
-					var i_a = d.feature_id_a;
-					var i_b = d.feature_id_b;
+					var i_a = d.interactor_a;
+					var i_b = d.interactor_b;
 
 					if(cy.getElementById(i_a).empty()){
 						cy.add(createInteractorCyEle(d, 'a'));
