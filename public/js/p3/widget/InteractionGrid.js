@@ -12,22 +12,22 @@ define([
 		store: null,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
+			interactor_a: {label: "Interactor A", field: "interactor_a"},
 			feature_id_a: {label: "Feature ID A", field: "feature_id_a", hidden:true},
-			patric_id_a: {label: "PATRIC ID A", field: "patric_id_a"},
-			refseq_locus_tag_a: {label: "RefSeq Locus Tag A", field: "refseq_locus_tag_a"},
+			refseq_locus_tag_a: {label: "RefSeq Locus Tag A", field: "refseq_locus_tag_a", hidden:true},
 			gene_a: {label: "Gene A", field: "gene_a"},
-			product_a: {label: "Product A", field: "product_a"},
+			int_desc_a: {label: "Desc A", field: "interactor_desc_a"},
 
+			interactor_b: {label: "Interactor B", field: "interactor_b"},
 			feature_id_b: {label: "Feature ID B", field: "feature_id_b", hidden:true},
-			patric_id_b: {label: "PATRIC ID B", field: "patric_id_b"},
-			refseq_locus_tag_b: {label: "RefSeq Locus Tag B", field: "refseq_locus_tag_b"},
+			refseq_locus_tag_b: {label: "RefSeq Locus Tag B", field: "refseq_locus_tag_b", hidden:true},
 			gene_b: {label: "Gene B", field: "gene_b"},
-			product_b: {label: "Product B", field: "product_b"},
+			int_desc_b: {label: "Desc B", field: "interactor_desc_b"},
 
 			category: {label: "Category", field: "category"},
 			i_type: {label: "Interaction Type", field: "interaction_type"},
 			d_method: {label: "Detection Method", field: "detection_method"},
-			pubmed: {label: "Pubmed", field: "pmid"},
+			pubmed: {label: "Pubmed", field: "pmid", hidden:true},
 			score: {label: "Score", field: "score", hidden: true}
 		},
 		constructor: function(options, parent){

@@ -1,17 +1,19 @@
 define.amd.jQuery = true;
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/on", "dojo/topic", "dojo/query", "dojo/dom-construct", "dojo/dom-style",
-	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/popup", "dijit/TooltipDialog",
+	"dojo/on", "dojo/topic", "dojo/query", "dojo/request", "dojo/dom-construct", "dojo/dom-style", "dojo/dom-class",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
 	"cytoscape-panzoom/cytoscape-panzoom", "cytoscape-context-menus/cytoscape-context-menus",
 	"cytoscape-cola/cytoscape-cola", "cytoscape-dagre/cytoscape-dagre", /*"cytoscape-cose-bilkent/cytoscape-cose-bilkent",*/
-	"./ContainerActionBar", "./InteractionOps", "FileSaver"
+	"./ContainerActionBar", "./ActionBar", "./ItemDetailPanel", "./InteractionOps", "FileSaver", "../util/PathJoin",
+	"./PerspectiveToolTip", "./SelectionToGroup"
 ], function(declare, lang,
-			on, Topic, query, domConstruct, domStyle,
-			BorderContainer, ContentPane, popup, TooltipDialog,
+			on, Topic, query, request, domConstruct, domStyle, domClass,
+			BorderContainer, ContentPane, popup, TooltipDialog, Dialog,
 			cyPanzoom, cyContextMenus,
 			cyCola, cyDagre, /*cyCose,*/
-			ContainerActionBar, InteractionOps, saveAs){
+			ContainerActionBar, ActionBar, ItemDetailPanel, InteractionOps, saveAs, PathJoin,
+			PerspectiveToolTip, SelectionToGroup){
 
 	var panelSubGraph = ['<div class="wsActionTooltip" rel="5">5 or More Nodes</div>', '<div class="wsActionTooltip" rel="10">10 or More Nodes</div>', '<div class="wsActionTooltip" rel="20">20 or More Nodes</div>', '<div class="wsActionTooltip" rel="max">Largest Subgraph</div>'].join("\n");
 
@@ -40,6 +42,25 @@ define([
 		}
 	});
 
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(viewFASTATT);
+		}
+	});
+
+	on(viewFASTATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewFASTATT.selection;
+		delete viewFASTATT.selection;
+		var idType;
+
+		Topic.publish("/navigate", {
+			href: "/view/FASTA/" + rel + "/?in(feature_id,(" + sel.join(",") + "))",
+			target: "blank"
+		});
+	});
+
 	// register modules
 	if(typeof cytoscape('core', 'panzoom') !== 'function'){
 		cyPanzoom(cytoscape, $);
@@ -48,6 +69,9 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		visible: false,
+		selection: null,
+		pins: [],
+		containerType: "interaction_data",
 		containerActions: [
 			[
 				"Legend",
@@ -178,6 +202,248 @@ define([
 				true
 			]
 		],
+		selectionActions: [
+			[
+				"ToggleItemDetail",
+				"fa icon-chevron-circle-right fa-2x",
+				{
+					label: "HIDE",
+					persistent: true,
+					validTypes: ["*"],
+					tooltip: "Toggle Details Pane"
+				},
+				function(selection, container, button){
+					var children = this.getChildren();
+					if(children.some(function(child){
+							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
+						}, this)){
+
+						this.removeChild(this.itemDetailPanel);
+
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "SHOW";
+						});
+
+						query(".ActionButton", button).forEach(function(node){
+							domClass.remove(node, "icon-chevron-circle-right");
+							domClass.add(node, "icon-chevron-circle-left");
+						})
+					}
+					else{
+						this.addChild(this.itemDetailPanel);
+
+						query(".ActionButtonText", button).forEach(function(node){
+							node.innerHTML = "HIDE";
+						});
+
+						query(".ActionButton", button).forEach(function(node){
+							domClass.remove(node, "icon-chevron-circle-left");
+							domClass.add(node, "icon-chevron-circle-right");
+						})
+					}
+				},
+				true
+			],
+			[
+				"DownloadSelection",
+				"fa icon-download fa-2x",
+				{
+					label: "DWNLD",
+					multiple: true,
+					validTypes: ["*"]
+				},
+				function(selection, container){
+					console.log(selection);
+				},
+				false
+			],
+			[
+				"ViewFeatureItem",
+				"MultiButton fa icon-selection-Feature fa-2x",
+				{
+					label: "FEATURE",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
+					validContainerTypes: ["interaction_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						if(selection[0].isNode() && selection[0].data('interactor_type') === 'Protein'){
+							var feature_id = selection[0].data('feature_id');
+						}else{
+							return;
+						}
+						popup.open({
+							popup: new PerspectiveToolTip({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + feature_id
+							}),
+							around: button,
+							orient: ["below"]
+						});
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+
+					if(sel.isNode() && sel.data('interactor_type') === 'Protein'){
+
+						Topic.publish("/navigate", {
+							href: "/view/Feature/" + sel.data('feature_id') + "#view_tab=overview",
+							target: "blank"
+						});
+
+					}else{
+						var patric_ids = [sel.data('source'), sel.data('target')].map(function(id){
+							return encodeURIComponent(id);
+						});
+
+						Topic.publish("/navigate", {
+							href: "/view/FeatureList/?in(patric_id,(" + patric_ids.join(",") + "))#view_tab=features",
+							target: "blank"
+						});
+					}
+				},
+				false
+			],
+			[
+				"ViewFeatureItems",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
+				{
+					label: "FEATURES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					max: 5000,
+					validContainerTypes: ["interaction_data"]
+				},
+				function(selection){
+					// console.log(selection);
+					var sel = selection.filter(function(i, ele){
+						return ele.isNode() && ele.data('interactor_type') === 'Protein';
+					}).map(function(ele){
+						return ele.data('feature_id'); // feature_id
+					});
+
+					Topic.publish("/navigate", {
+						href: "/view/FeatureList/?in(feature_id,(" + sel.join(",") + "))#view_tab=features",
+						target: "blank"
+					});
+				},
+				false
+			],
+			[
+				"ViewFASTA",
+				"fa icon-fasta fa-2x",
+				{
+					label: "FASTA",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					max: 5000,
+					tooltip: "View FASTA Data",
+					tooltipDialog: viewFASTATT,
+					validContainerTypes: ["interaction_data"]
+				},
+				function(selection){
+
+					var sel;
+					if(selection.length === 1){
+						// if one node is selected, selection is vanilla javascript array
+						sel = selection.filter(function(ele){
+							return ele.isNode() && ele.data('interactor_type') === 'Protein';
+						}).map(function(ele){
+							return ele.data('feature_id');
+						});
+					}else{
+						// if more than one node is selected, then selection is cytoscape selection.
+						sel = selection.filter(function(i, ele){
+							return ele.isNode() && ele.data('interactor_type') === 'Protein';
+						}).map(function(ele){
+							return ele.data('feature_id');
+						});
+					}
+
+					viewFASTATT.selection = sel;
+
+					popup.open({
+						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ViewFASTA.button,
+						orient: ["below"]
+					});
+				},
+				false
+			], [
+				"MultipleSeqAlignmentFeatures",
+				"fa icon-alignment fa-2x",
+				{
+					label: "MSA",
+					ignoreDataType: true,
+					min: 2,
+					multiple: true,
+					max: 200,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["interaction_data"]
+				},
+				function(selection){
+
+					var sel = selection.filter(function(i, ele){
+						return ele.isNode() && ele.data('interactor_type') === 'Protein';
+					}).map(function(ele){
+						return ele.data('feature_id');
+					});
+
+					Topic.publish("/navigate", {
+						href: "/view/MSA/?in(feature_id,(" + sel.join(",") + "))",
+						target: "blank"
+					});
+				},
+				false
+			],
+			[
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 10000,
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["interaction_data"]
+				},
+				function(selection, containerWidget){
+
+					var sel = selection.filter(function(i, ele){
+						return ele.isNode() && ele.data('interactor_type') === 'Protein';
+					}).map(function(ele){
+						return {feature_id: ele.data('feature_id')};
+					});
+
+					// console.log("Add Items to Group", sel);
+					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var type = "feature_group";
+
+					var stg = new SelectionToGroup({
+						selection: sel,
+						type: type,
+						path: containerWidget.get("path")
+					});
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						}, 2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();
+				},
+				false
+			]
+		],
 		constructor: function(options){
 
 			this.topicId = options.topicId;
@@ -188,10 +454,15 @@ define([
 					case "updateGraphData":
 						this.updateGraph(value);
 						break;
+					case "pinFeatures":
+						this.updatePins(value);
+						break;
 					default:
 						break;
 				}
 			}));
+
+			this.watch("selection", lang.hitch(this, "onSelection"));
 		},
 
 		_setVisibleAttr: function(visible){
@@ -207,7 +478,7 @@ define([
 						{
 							selector: 'node',
 							style: {
-								label: 'data(name)',
+								label: 'data(gene)',
 								'text-opacity': 0.8,
 								'text-valign': 'center',
 								'text-halign': 'center',
@@ -228,6 +499,15 @@ define([
 								'shadow-color': '#FFAB00',
 								'shadow-blur': 30,
 								'shadow-opacity': 1
+							}
+						}, {
+							selector: 'node.pinned',
+							style: {
+								label: 'data(gene)',
+								width: 45,
+								height: 45,
+								'font-size': 12,
+								'background-color': '#F44336'
 							}
 						}, {
 							selector: 'edge',
@@ -261,6 +541,18 @@ define([
 								'line-color': '#FF5722', // deep orange 500
 								'line-style': 'dashed',
 								'opacity': 0.6
+							}
+						}, {
+							selector: 'edge.typeD',
+							style: {
+								'line-color': '#8D6E63', // brown 400
+								'line-style': 'dotted'
+							}
+						}, {
+							selector: 'edge.typeE',
+							style: {
+								'line-color': '#1B5E20', // green 900
+								'line-style': 'dashed'
 							}
 						}
 					]
@@ -332,7 +624,7 @@ define([
 						ele.data('id') ? content.push("PATRIC ID: " + ele.data('id')) : {};
 						ele.data('refseq_locus_tag') ? content.push("RefSeq Locus Tag: " + ele.data('refseq_locus_tag')) : {};
 						ele.data('gene') ? content.push("Gene: " + ele.data('gene')) : {};
-						ele.data('product') ? content.push("Product: " + ele.data('product')) : {};
+						ele.data('interactor_desc') ? content.push("Product: " + ele.data('interactor_desc')) : {};
 
 					}else if(ele.isEdge()){
 						content.push("Interaction Type: " + ele.data('interaction_type'));
@@ -349,6 +641,15 @@ define([
 				});
 				cy.on('mouseout', 'node, edge', function(evt){
 					domStyle.set(self.tooltipLayer, "opacity", 0);
+				});
+				var cySelection;
+				cy.on('select unselect', 'node, edge', function(evt){
+					clearTimeout(cySelection);
+					cySelection = setTimeout(function(){
+						var selected = evt.cy.elements(":selected");
+						// console.log(selected);
+						self.set("selection", selected);
+					}, 300);
 				})
 			}
 		},
@@ -374,9 +675,95 @@ define([
 				style: "padding:0"
 			}));
 
+			this.selectionActionBar = new ActionBar({
+				region: "right",
+				layoutPriority: 4,
+				style: "width:56px;text-align:center;",
+				splitter: false,
+				currentContainerWidget: this
+			});
+			this.selectionActions.forEach(function(a){
+				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+			}, this);
+
+			this.itemDetailPanel = new ItemDetailPanel({
+				region: "right",
+				style: "width:250px",
+				minSize: 150,
+				layoutPriority: 3,
+				containerWidget: this
+			});
+
+			this.addChild(this.selectionActionBar);
+			this.addChild(this.itemDetailPanel);
+
 			this.inherited(arguments);
 			this._firstView = true;
 		},
+		onSelection: function(){
+
+			if(this.selection.length == 1){
+
+				var cur = this.selection[0];
+				if(cur.isNode()){
+					if(cur.data('interactor_type') !== "Protein"){
+						return;
+					}
+
+					var feature_id = cur.data('feature_id');
+					request.get(PathJoin(window.App.dataAPI, "genome_feature", feature_id), {
+						headers: {
+							accept: "application/json"
+						},
+						handleAs: "json"
+					}).then(lang.hitch(this, function(feature){
+						this.selectionActionBar.set('selection', [cur]);
+						this.itemDetailPanel.set('selection', [feature])
+					}))
+				}else{
+					// edge
+					this.selectionActionBar.set("selection", [cur]);
+					this.itemDetailPanel.set('selection', [cur.data()]);
+				}
+			}else{
+				/*
+					var isPureNodes = this.selection.every(function(s){
+						return s.isNode();
+					});
+
+					var sel;
+					if(isPureNodes){
+						sel = this.selection.map(function(s){
+							return lang.mixin(s.data(), {
+								feature_id: s.data('id')
+							})
+						});
+					}else{
+						sel = this.selection.map(function(s){
+							return s.data();
+						});
+					}
+
+					console.log(sel, isPureNodes);
+
+					if(isPureNodes){
+						this.selectionActionBar.set('currentContainerWidget', {containerType: "feature_data"});
+					}else{
+						this.selectionActionBar.set('currentContainerWidget', this);
+					}
+					this.selectionActionBar.set("selection", sel);
+					this.itemDetailPanel.set("selection", sel);
+				*/
+				this.selectionActionBar.set("selection", this.selection);
+				this.itemDetailPanel.set("selection", this.selection);
+			}
+		},
+
+		updatePins: function(data){
+
+			this.pins = data;
+		},
+
 		updateGraph: function(data){
 			if(data.length == 0){
 				return;
@@ -386,8 +773,8 @@ define([
 
 			cy.batch(function(){
 				data.forEach(function(d){
-					var i_a = d.feature_id_a;
-					var i_b = d.feature_id_b;
+					var i_a = d.interactor_a;
+					var i_b = d.interactor_b;
 
 					if(cy.getElementById(i_a).empty()){
 						cy.add(createInteractorCyEle(d, 'a'));
@@ -407,6 +794,12 @@ define([
 						case "inference":
 							edgeClass = "typeC";
 							break;
+						case "phylogenetic profile":
+							edgeClass = "typeD";
+							break;
+						case "gene neighbourhood":
+							edgeClass = "typeE";
+							break;
 						default:
 							edgeClass = "";
 							break;
@@ -424,6 +817,13 @@ define([
 					})
 				});
 			});
+
+			// highlight pinned features
+			if(this.pins && this.pins.length > 0){
+				this.pins.forEach(function(id){
+					cy.getElementById(id).addClass('pinned');
+				})
+			}
 
 			// cy.layout({name: 'circle'});
 			cy.layout({name: 'cola', userConstIter: 1});
