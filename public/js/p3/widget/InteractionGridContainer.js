@@ -23,6 +23,7 @@ define([
 		containerType: "interaction_data",
 		facetFields: ["category", "detection_method", "interaction_type", "source_db"],
 		dataModel: "ppi",
+		defaultFilter: "eq(detection_method,%22experimental%20interaction%20detection%22)",
 		constructor: function(options){
 			this.topicId = options.topicId;
 
