@@ -532,27 +532,23 @@ define([
 						}, {
 							selector: 'edge.typeB',
 							style: {
-								'line-color': '#009688', // teal 500
-								'line-style': 'dotted'
+								'line-color': '#009688' // teal 500
 							}
 						}, {
 							selector: 'edge.typeC',
 							style: {
 								'line-color': '#FF5722', // deep orange 500
-								'line-style': 'dashed',
 								'opacity': 0.6
 							}
 						}, {
 							selector: 'edge.typeD',
 							style: {
-								'line-color': '#8D6E63', // brown 400
-								'line-style': 'dotted'
+								'line-color': '#8D6E63' // brown 400
 							}
 						}, {
 							selector: 'edge.typeE',
 							style: {
-								'line-color': '#1B5E20', // green 900
-								'line-style': 'dashed'
+								'line-color': '#1B5E20' // green 900
 							}
 						}
 					]
