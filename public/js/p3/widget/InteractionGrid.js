@@ -12,12 +12,16 @@ define([
 		store: null,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
+			genome_id_a: {label: "Genome ID A", field: "genome_id_a", hidden: true},
+			genome_name_a: {label: "Genome Name A", field: "genome_name_a", hidden: true},
 			interactor_a: {label: "Interactor A", field: "interactor_a"},
 			feature_id_a: {label: "Feature ID A", field: "feature_id_a", hidden:true},
 			refseq_locus_tag_a: {label: "RefSeq Locus Tag A", field: "refseq_locus_tag_a", hidden:true},
 			gene_a: {label: "Gene A", field: "gene_a"},
 			int_desc_a: {label: "Desc A", field: "interactor_desc_a"},
 
+			genome_id_b: {label: "Genome ID B", field: "genome_id_b", hidden: true},
+			genome_name_b: {label: "Genome Name B", field: "genome_name_b", hidden: true},
 			interactor_b: {label: "Interactor B", field: "interactor_b"},
 			feature_id_b: {label: "Feature ID B", field: "feature_id_b", hidden:true},
 			refseq_locus_tag_b: {label: "RefSeq Locus Tag B", field: "refseq_locus_tag_b", hidden:true},

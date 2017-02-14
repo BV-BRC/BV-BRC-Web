@@ -53,7 +53,6 @@ define([
 		var rel = evt.target.attributes.rel.value;
 		var sel = viewFASTATT.selection;
 		delete viewFASTATT.selection;
-		var idType;
 
 		Topic.publish("/navigate", {
 			href: "/view/FASTA/" + rel + "/?in(feature_id,(" + sel.join(",") + "))",
@@ -69,18 +68,6 @@ define([
 		containerType: "interaction_data",
 		containerActions: [
 			[
-				"Legend",
-				"fa icon-bars fa-2x",
-				{
-					label: "Legend",
-					multiple: false,
-					validType: ["*"]
-				},
-				function(){
-					console.log("legend");
-				},
-				true
-			], [
 				"Export",
 				"fa icon-print fa-2x",
 				{
@@ -480,17 +467,15 @@ define([
 								'font-size': 10,
 								width: 40,
 								height: 40,
-								// border
-								'border-color': '#424242',
-								'border-width': 2,
-								'border-opacity': 0.8,
-								// background
 								'background-color': '#90CAF9' // blue 200
 							}
 						}, {
 							selector: 'node:selected',
 							style: {
-								'border-color': '#BBBB55',
+								'border-color': '#FFAB00',
+								'border-width': 2,
+								'border-opacity': 0.8,
+								'background-color': '#FFAB00',
 								'shadow-color': '#FFAB00',
 								'shadow-blur': 30,
 								'shadow-opacity': 1
@@ -507,19 +492,19 @@ define([
 						}, {
 							selector: 'node.host',
 							style: {
-								'font-size': 10,
+								'font-size': 9,
 								'background-color': '#A5D6A7' // green 200
 							}
 						}, {
 							selector: 'node.molecule',
-							shape: 'rectangle',
 							style: {
+								shape: 'roundrectangle',
 								'background-color': '#FFAB91' // orange 200
 							}
 						}, {
 							selector: 'edge',
 							style: {
-								width: 4,
+								width: 3,
 								'line-color': '#555555',
 								'curve-style': 'bezier'
 							}
@@ -623,6 +608,7 @@ define([
 					var content = [];
 					if(ele.isNode()){
 						ele.data('id') ? content.push("PATRIC ID: " + ele.data('id')) : {};
+						ele.data('genome') ? content.push("Genome: " + ele.data('genome')) : {};
 						ele.data('refseq_locus_tag') ? content.push("RefSeq Locus Tag: " + ele.data('refseq_locus_tag')) : {};
 						ele.data('gene') ? content.push("Gene: " + ele.data('gene')) : {};
 						ele.data('interactor_desc') ? content.push("Product: " + ele.data('interactor_desc')) : {};
@@ -651,13 +637,62 @@ define([
 						// console.log(selected);
 						self.set("selection", selected);
 					}, 300);
+				});
+/*
+				// create legend box
+				var canvas = cy.container().children[0].children[2];
+				var ctx = canvas.getContext("2d");
+				var legend = "data:image/svg+xml," +
+					"<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'>" +
+					"<foreignObject width='100%' height='100%'>" +
+					"<div xmlns='http://www.w3.org/1999/xhtml' style='font-size:12px'>" +
+					"<ul> <li style='color:red'> hello </li>  <li style='color:green'>thomas</li> </ul> "  +
+					"</div>" +
+					"</foreignObject>" +
+					"</svg>";
+
+				var imgL = new Image();
+
+				imgL.src = legend;
+				imgL.onload = function(){
+					console.log("loading legend");
+					ctx.drawImage(imgL, 0, 0);
+				}
+*/
+				cy.ready(function(){
+					cy.fit();
 				})
+
 			}
 		},
+
+		_buildLegendPanel: function(){
+
+			var legend = [
+			"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='300'>",
+				"<circle cx='10' cy='10' r='10' style='fill:#90CAF9'/><text dx='30' dy='15'>Pathogen Protein</text>",
+				"<circle cx='10' cy='35' r='10' style='fill:#A5D6A7'/><text dx='30' dy='40'>Host Protein</text>",
+				"<circle cx='10' cy='60' r='10' style='fill:#F44336'/><text dx='30' dy='65'>Protein in Context</text>",
+				"<line x1='0' y1='85' x2='20' y2='85' stroke-width='2' stroke='#555555'></line>",
+				"<text dx='30' dy='90'>Interaction</text>",
+				"<line x1='0' y1='110' x2='20' y2='110' stroke-width='2' stroke='#3F51B5'></line>",
+				"<text dx='30' dy='115'>Experimental</text>",
+			"</svg>"
+			].join('\n');
+
+			return new ContentPane({
+				region: "left",
+				content: legend
+			});
+
+		},
+
 		onFirstView: function(){
 			if(this._firstView){
 				return;
 			}
+
+			this.addChild(this._buildLegendPanel());
 
 			// action buttons
 			this.containerActionBar = new ContainerActionBar({
@@ -667,14 +702,19 @@ define([
 			this.containerActions.forEach(function(a){
 				this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
 			}, this);
-			this.addChild(this.containerActionBar);
+			// this.addChild(this.containerActionBar);
 
-			this.addChild(new ContentPane({
+			this.interactionViewPort = new BorderContainer({
+				gutters: false,
+				region: "center"
+			});
+			this.interactionViewPort.addChild(this.containerActionBar);
+			this.interactionViewPort.addChild(new ContentPane({
 				region: "center",
 				id: "cy",
-				// content: "<div id='cy'></div>",
 				style: "padding:0"
 			}));
+			this.addChild(this.interactionViewPort);
 
 			this.selectionActionBar = new ActionBar({
 				region: "right",
@@ -719,44 +759,25 @@ define([
 						handleAs: "json"
 					}).then(lang.hitch(this, function(feature){
 						this.selectionActionBar.set('selection', [cur]);
+						this.itemDetailPanel.set('containerWidget', {containerType: 'feature_data'});
 						this.itemDetailPanel.set('selection', [feature])
 					}))
 				}else{
 					// edge
 					this.selectionActionBar.set("selection", [cur]);
+					this.itemDetailPanel.set('containerWidget', this);
 					this.itemDetailPanel.set('selection', [cur.data()]);
 				}
 			}else{
-				/*
-					var isPureNodes = this.selection.every(function(s){
-						return s.isNode();
-					});
 
-					var sel;
-					if(isPureNodes){
-						sel = this.selection.map(function(s){
-							return lang.mixin(s.data(), {
-								feature_id: s.data('id')
-							})
-						});
-					}else{
-						sel = this.selection.map(function(s){
-							return s.data();
-						});
-					}
+				var sel = this.selection.filter(function(i, ele){
+					return ele.isNode() && ele.data('interactor_type') === 'Protein';
+				}).map(function(ele){
+					return ele.data('feature_id'); // feature_id
+				});
 
-					console.log(sel, isPureNodes);
-
-					if(isPureNodes){
-						this.selectionActionBar.set('currentContainerWidget', {containerType: "feature_data"});
-					}else{
-						this.selectionActionBar.set('currentContainerWidget', this);
-					}
-					this.selectionActionBar.set("selection", sel);
-					this.itemDetailPanel.set("selection", sel);
-				*/
-				this.selectionActionBar.set("selection", this.selection);
-				this.itemDetailPanel.set("selection", this.selection);
+				this.selectionActionBar.set("selection", sel);
+				this.itemDetailPanel.set("selection", sel);
 			}
 		},
 
