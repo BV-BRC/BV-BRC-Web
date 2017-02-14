@@ -2081,7 +2081,7 @@
 				},
 				{
 					 location:"../cytoscape-cose-bilkent",
-					 main:"cytoscape-cose-bilkent",
+					 main:"cytoscape-cose-bilkent.js",
 					 name:"cytoscape-cose-bilkent"
 				}
 		]

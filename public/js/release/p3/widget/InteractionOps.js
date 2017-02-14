@@ -10,6 +10,7 @@ define("p3/widget/InteractionOps", [], function(){
 				gene: d['gene_' + ab],
 				refseq_locus_tag: d['refseq_locus_tag_' + ab]
 			},
+			classes: (d['domain_' + ab] === "Bacteria" ? "" : "molecule"),
 			selectable: true
 		}
 	};

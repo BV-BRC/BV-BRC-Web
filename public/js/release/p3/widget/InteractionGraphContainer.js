@@ -3,15 +3,15 @@ define("p3/widget/InteractionGraphContainer", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/topic", "dojo/query", "dojo/request", "dojo/dom-construct", "dojo/dom-style", "dojo/dom-class",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
-	"cytoscape-panzoom/cytoscape-panzoom", "cytoscape-context-menus/cytoscape-context-menus",
-	"cytoscape-cola/cytoscape-cola", "cytoscape-dagre/cytoscape-dagre", /*"cytoscape-cose-bilkent/cytoscape-cose-bilkent",*/
+	"cytoscape-context-menus/cytoscape-context-menus",
+	"cytoscape-cola/cytoscape-cola", "cytoscape-dagre/cytoscape-dagre",
 	"./ContainerActionBar", "./ActionBar", "./ItemDetailPanel", "./InteractionOps", "FileSaver", "../util/PathJoin",
 	"./PerspectiveToolTip", "./SelectionToGroup"
 ], function(declare, lang,
 			on, Topic, query, request, domConstruct, domStyle, domClass,
 			BorderContainer, ContentPane, popup, TooltipDialog, Dialog,
-			cyPanzoom, cyContextMenus,
-			cyCola, cyDagre, /*cyCose,*/
+			cyContextMenus,
+			cyCola, cyDagre,
 			ContainerActionBar, ActionBar, ItemDetailPanel, InteractionOps, saveAs, PathJoin,
 			PerspectiveToolTip, SelectionToGroup){
 
@@ -60,11 +60,6 @@ define("p3/widget/InteractionGraphContainer", [
 			target: "blank"
 		});
 	});
-
-	// register modules
-	if(typeof cytoscape('core', 'panzoom') !== 'function'){
-		cyPanzoom(cytoscape, $);
-	}
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -490,7 +485,7 @@ define("p3/widget/InteractionGraphContainer", [
 								'border-width': 2,
 								'border-opacity': 0.8,
 								// background
-								'background-color': '#99CCFF'
+								'background-color': '#90CAF9' // blue 200
 							}
 						}, {
 							selector: 'node:selected',
@@ -508,6 +503,18 @@ define("p3/widget/InteractionGraphContainer", [
 								height: 45,
 								'font-size': 12,
 								'background-color': '#F44336'
+							}
+						}, {
+							selector: 'node.host',
+							style: {
+								'font-size': 10,
+								'background-color': '#A5D6A7' // green 200
+							}
+						}, {
+							selector: 'node.molecule',
+							shape: 'rectangle',
+							style: {
+								'background-color': '#FFAB91' // orange 200
 							}
 						}, {
 							selector: 'edge',
@@ -532,33 +539,27 @@ define("p3/widget/InteractionGraphContainer", [
 						}, {
 							selector: 'edge.typeB',
 							style: {
-								'line-color': '#009688', // teal 500
-								'line-style': 'dotted'
+								'line-color': '#009688' // teal 500
 							}
 						}, {
 							selector: 'edge.typeC',
 							style: {
 								'line-color': '#FF5722', // deep orange 500
-								'line-style': 'dashed',
 								'opacity': 0.6
 							}
 						}, {
 							selector: 'edge.typeD',
 							style: {
-								'line-color': '#8D6E63', // brown 400
-								'line-style': 'dotted'
+								'line-color': '#8D6E63' // brown 400
 							}
 						}, {
 							selector: 'edge.typeE',
 							style: {
-								'line-color': '#1B5E20', // green 900
-								'line-style': 'dashed'
+								'line-color': '#1B5E20' // green 900
 							}
 						}
 					]
 				});
-
-				// cy.panzoom();
 
 				cy.contextMenus({
 					menuItems: [{

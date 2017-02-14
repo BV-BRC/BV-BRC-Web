@@ -1,0 +1,33 @@
+/*@import url("../../dijit/themes/claro/claro.css");*/
+/*@import url("../../dojo/resources/dojo.css");*/
+
+@import url("../../dojo_theme_material/CSS/dojo/flat.css");
+/* dgrid */
+@import url("../../dojo_theme_material/CSS/dgrid/css/dgrid.css");
+@import url("../../dojo_theme_material/CSS/dgrid/css/skins/skin.css");
+@import url("../../dojo_theme_material/CSS/dgrid/css/extensions/ColumnHider.css");
+@import url("../../dojo_theme_material/CSS/dgrid/css/extensions/ColumnReorder.css");
+@import url("../../dojo_theme_material/CSS/dgrid/css/extensions/ColumnResizer.css");
+@import url("../../dojo_theme_material/CSS/dgrid/css/extensions/Pagination.css");
+/*
+
+p3.css
+
+.dgrid-row-table .dgrid-spacer-row {
+    display: none;
+}
+
+.FacetFilter ::-webkit-scrollbar,
+.dgrid ::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    background: #efefef;
+}
+
+Header.css
+.claro .topMenuButton .dijitButtonText {
+    padding: 0;
+    text-shadow: none;
+}
+
+*/
