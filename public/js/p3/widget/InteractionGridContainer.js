@@ -21,8 +21,9 @@ define([
 	return declare([GridContainer], {
 		gridCtor: Grid,
 		containerType: "interaction_data",
-		facetFields: ["category", "detection_method", "interaction_type", "source_db", "source_id"],
+		facetFields: ["category", "detection_method", "interaction_type", "source_db"],
 		dataModel: "ppi",
+		defaultFilter: "eq(detection_method,%22experimental%20interaction%20detection%22)",
 		constructor: function(options){
 			this.topicId = options.topicId;
 
@@ -74,10 +75,10 @@ define([
 
 						var data = this.grid.store.query("", {sort: this.grid.store.sort});
 
-						var headers = ["Genome ID", "Genome Name", "Feature ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Feature ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Type", "Method", "Pubmed", "Score"];
+						var headers = ["Interactor A", "Interactor Desc A", "Genome ID", "Genome Name", "Feature ID", "RefSeq Locus Tag", "Gene", "Interactor B", "Interactor Desc B", "Genome ID", "Genome Name", "Feature ID", "RefSeq Locus Tag", "Gene", "Category", "Interaction Type", "Detection Method", "Pubmed", "Score"];
 						var content = [];
 						data.forEach(function(row){
-							content.push([row.genome_id_a, row.genome_name_a, row.feature_id_a, row.patric_id_a, row.refseq_locus_tag_a, row.gene_a, '"' + row.product_a + '"', row.feature_id_b, row.patric_id_b, row.refseq_locus_tag_b, row.gene_b, '"' + row.product_b + '"', row.interaction_type, row.detection_method, row.pmid, row.score].join(DELIMITER));
+							content.push([row.interactor_a, '"' + row.interactor_desc_a + '"', row.genome_id_a, row.genome_name_a, row.feature_id_a, row.refseq_locus_tag_a, row.gene_a, row.interactor_b, '"' + row.interactor_desc_b + '"', row.genome_id_b, row.genome_name_b, row.feature_id_b, row.refseq_locus_tag_b, row.gene_b, row.category, row.interaction_type, row.detection_method, row.pmid, row.score].join(DELIMITER));
 						})
 
 						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_interactions.' + ext);

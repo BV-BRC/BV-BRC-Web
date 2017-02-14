@@ -1,5 +1,7 @@
 define("p3/widget/InteractionOps", [], function(){
 
+	var pathogenDomains = ["Bacteria", "Archaea"];
+
 	this.createInteractorCyEle = function(d, ab){
 		return {
 			data: {
@@ -8,8 +10,10 @@ define("p3/widget/InteractionOps", [], function(){
 				interactor_desc: d['interactor_desc_' + ab],
 				feature_id: d['feature_id_' + ab],
 				gene: d['gene_' + ab],
+				genome: d['genome_name_' + ab],
 				refseq_locus_tag: d['refseq_locus_tag_' + ab]
 			},
+			classes: (pathogenDomains.indexOf(d['domain_' + ab]) > -1 ? "" : "host"),
 			selectable: true
 		}
 	};

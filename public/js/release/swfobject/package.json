@@ -10,7 +10,7 @@
         "spec": ">=2.3.1 <2.4.0",
         "type": "range"
       },
-      "/Users/hsyoo/dev/deploy/p3_web"
+      "/Users/hsyoo/dev/p3_web"
     ]
   ],
   "_from": "swfobject-amd@>=2.3.1 <2.4.0",
@@ -40,7 +40,7 @@
   "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
   "_shrinkwrap": null,
   "_spec": "swfobject-amd@~2.3.1",
-  "_where": "/Users/hsyoo/dev/deploy/p3_web",
+  "_where": "/Users/hsyoo/dev/p3_web",
   "bugs": {
     "url": "https://github.com/HenningM/swfobject-amd/issues"
   },
@@ -52,7 +52,7 @@
   "directories": {},
   "dist": {
     "shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
-    "tarball": "http://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
+    "tarball": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
   },
   "gitHead": "c265c8037cc714931de0c85c0a8a3383adab6f67",
   "homepage": "https://github.com/HenningM/swfobject-amd",
