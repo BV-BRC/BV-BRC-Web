@@ -2065,11 +2065,6 @@
 					 location:"../cytoscape-dagre",
 					 main:"cytoscape-dagre.js",
 					 name:"cytoscape-dagre"
-				},
-				{
-					 location:"../cytoscape-cose-bilkent",
-					 main:"cytoscape-cose-bilkent.js",
-					 name:"cytoscape-cose-bilkent"
 				}
 		]
 });require({cache:{
