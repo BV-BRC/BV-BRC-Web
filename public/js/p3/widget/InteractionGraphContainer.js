@@ -453,7 +453,7 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 
-				var cy = this.cy = cytoscape({
+				var cy = this.cy = window.cy = cytoscape({
 					container: document.getElementById('cy'),
 					boxSelectionEnabled: true,
 					style: [
@@ -638,30 +638,6 @@ define([
 						self.set("selection", selected);
 					}, 300);
 				});
-/*
-				// create legend box
-				var canvas = cy.container().children[0].children[2];
-				var ctx = canvas.getContext("2d");
-				var legend = "data:image/svg+xml," +
-					"<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'>" +
-					"<foreignObject width='100%' height='100%'>" +
-					"<div xmlns='http://www.w3.org/1999/xhtml' style='font-size:12px'>" +
-					"<ul> <li style='color:red'> hello </li>  <li style='color:green'>thomas</li> </ul> "  +
-					"</div>" +
-					"</foreignObject>" +
-					"</svg>";
-
-				var imgL = new Image();
-
-				imgL.src = legend;
-				imgL.onload = function(){
-					console.log("loading legend");
-					ctx.drawImage(imgL, 0, 0);
-				}
-*/
-				cy.ready(function(){
-					cy.fit();
-				})
 
 			}
 		},
@@ -669,15 +645,16 @@ define([
 		_buildLegendPanel: function(){
 
 			var legend = [
-			"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='300'>",
-				"<circle cx='10' cy='10' r='10' style='fill:#90CAF9'/><text dx='30' dy='15'>Pathogen Protein</text>",
-				"<circle cx='10' cy='35' r='10' style='fill:#A5D6A7'/><text dx='30' dy='40'>Host Protein</text>",
-				"<circle cx='10' cy='60' r='10' style='fill:#F44336'/><text dx='30' dy='65'>Protein in Context</text>",
-				"<line x1='0' y1='85' x2='20' y2='85' stroke-width='2' stroke='#555555'></line>",
-				"<text dx='30' dy='90'>Interaction</text>",
-				"<line x1='0' y1='110' x2='20' y2='110' stroke-width='2' stroke='#3F51B5'></line>",
-				"<text dx='30' dy='115'>Experimental</text>",
-			"</svg>"
+				"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='300'>",
+				"<style>/* <![CDATA[ */ text{font-size:10px} /* ]]> */</style>",
+				"<circle cx='10' cy='10' r='10' style='fill:#90CAF9'/><text dx='30' dy='15'>Microbial protein</text>",
+				"<circle cx='10' cy='35' r='10' style='fill:#A5D6A7'/><text dx='30' dy='40'>Host protein</text>",
+				"<circle cx='10' cy='60' r='10' style='fill:#FFAB00'/><text dx='30' dy='65'>Selected</text>",
+				"<line x1='0' y1='85' x2='20' y2='85' stroke-width='3' stroke='#555555'></line>",
+				"<text dx='30' dy='90'>Predicted interaction</text>",
+				"<line x1='0' y1='110' x2='20' y2='110' stroke-width='3' stroke='#3F51B5'></line>",
+				"<text dx='30' dy='115'>Experimentally verified</text>",
+				"</svg>"
 			].join('\n');
 
 			return new ContentPane({
@@ -848,7 +825,7 @@ define([
 			}
 
 			// cy.layout({name: 'circle'});
-			cy.layout({name: 'cola', userConstIter: 1});
+			cy.layout({name: 'cola', allConstIter: 1, fit: true});
 		}
 	})
 });
