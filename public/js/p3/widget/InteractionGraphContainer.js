@@ -235,7 +235,7 @@ define([
 					validTypes: ["*"]
 				},
 				function(selection, container){
-					console.log(selection);
+					console.log(selection, container.selection);
 				},
 				false
 			],
@@ -249,11 +249,8 @@ define([
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["interaction_data"],
 					pressAndHold: function(selection, button, opts, evt){
-						if(selection[0].isNode() && selection[0].data('interactor_type') === 'Protein'){
-							var feature_id = selection[0].data('feature_id');
-						}else{
-							return;
-						}
+						var feature_id = selection[0].feature_id;
+
 						popup.open({
 							popup: new PerspectiveToolTip({
 								perspective: "Feature",
@@ -265,25 +262,12 @@ define([
 					}
 				},
 				function(selection){
-					var sel = selection[0];
+					var feature_id = selection[0].feature_id;
 
-					if(sel.isNode() && sel.data('interactor_type') === 'Protein'){
-
-						Topic.publish("/navigate", {
-							href: "/view/Feature/" + sel.data('feature_id') + "#view_tab=overview",
-							target: "blank"
-						});
-
-					}else{
-						var patric_ids = [sel.data('source'), sel.data('target')].map(function(id){
-							return encodeURIComponent(id);
-						});
-
-						Topic.publish("/navigate", {
-							href: "/view/FeatureList/?in(patric_id,(" + patric_ids.join(",") + "))#view_tab=features",
-							target: "blank"
-						});
-					}
+					Topic.publish("/navigate", {
+						href: "/view/Feature/" + feature_id + "#view_tab=overview",
+						target: "blank"
+					});
 				},
 				false
 			],
@@ -300,14 +284,9 @@ define([
 				},
 				function(selection){
 					// console.log(selection);
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('interactor_type') === 'Protein';
-					}).map(function(ele){
-						return ele.data('feature_id'); // feature_id
-					});
 
 					Topic.publish("/navigate", {
-						href: "/view/FeatureList/?in(feature_id,(" + sel.join(",") + "))#view_tab=features",
+						href: "/view/FeatureList/?in(feature_id,(" + selection.join(",") + "))#view_tab=features",
 						target: "blank"
 					});
 				},
@@ -328,24 +307,7 @@ define([
 				},
 				function(selection){
 
-					var sel;
-					if(selection.length === 1){
-						// if one node is selected, selection is vanilla javascript array
-						sel = selection.filter(function(ele){
-							return ele.isNode() && ele.data('interactor_type') === 'Protein';
-						}).map(function(ele){
-							return ele.data('feature_id');
-						});
-					}else{
-						// if more than one node is selected, then selection is cytoscape selection.
-						sel = selection.filter(function(i, ele){
-							return ele.isNode() && ele.data('interactor_type') === 'Protein';
-						}).map(function(ele){
-							return ele.data('feature_id');
-						});
-					}
-
-					viewFASTATT.selection = sel;
+					viewFASTATT.selection = selection;
 
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
@@ -369,14 +331,8 @@ define([
 				},
 				function(selection){
 
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('interactor_type') === 'Protein';
-					}).map(function(ele){
-						return ele.data('feature_id');
-					});
-
 					Topic.publish("/navigate", {
-						href: "/view/MSA/?in(feature_id,(" + sel.join(",") + "))",
+						href: "/view/MSA/?in(feature_id,(" + selection.join(",") + "))",
 						target: "blank"
 					});
 				},
@@ -397,10 +353,8 @@ define([
 				},
 				function(selection, containerWidget){
 
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('interactor_type') === 'Protein';
-					}).map(function(ele){
-						return {feature_id: ele.data('feature_id')};
+					var sel = selection.map(function(feature_id){
+						return {feature_id: feature_id};
 					});
 
 					// console.log("Add Items to Group", sel);
@@ -718,6 +672,7 @@ define([
 			this.inherited(arguments);
 			this._firstView = true;
 		},
+
 		onSelection: function(){
 
 			if(this.selection.length == 1){
