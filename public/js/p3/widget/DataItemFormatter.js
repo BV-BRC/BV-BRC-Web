@@ -131,23 +131,47 @@ define([
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			displayDetail(item, columns, div, options);
 
+			var stpDiv = domConstruct.create("div", {}, div);
+			var stddlg = new TitlePane({title: "Standard Output", style: "margin-bottom:5px;",open: false}, stpDiv);
 			var tpDiv = domConstruct.create("div", {}, div);
 			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
 			dlg.watch("open", function(attr, oldVal, open){
 				if(!open){
 					return;
 				}
-				JobManager.queryTaskDetail(item.id, true, true).then(function(detail){
-					//console.log("JOB DETAIL: ", detail);
-					if(detail.stderr){
+				JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
+					console.log("JOB DETAIL: ", detail);
+				if(detail.stderr){
 						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
 					}else{
-						dlg.set("content", "Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+						dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
+
+
 				}, function(err){
 					dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
 				});
 			});
+
+			stddlg.watch("open", function(attr, oldVal, open){
+				if(!open){
+					return;
+				}
+				JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
+					console.log("JOB DETAIL: ", detail);
+				if(detail.stdout){
+						stddlg.set("content", "<pre>" + detail.stdout + "</pre>");
+					}else{
+						stddlg.set("content", "Unable to retreive STDOUT of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+					}
+
+
+				}, function(err){
+					stddlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				});
+			});
+
+
 
 			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
