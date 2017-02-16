@@ -21,7 +21,7 @@ define("p3/widget/InteractionGridContainer", [
 	return declare([GridContainer], {
 		gridCtor: Grid,
 		containerType: "interaction_data",
-		facetFields: ["category", "detection_method", "interaction_type", "source_db"],
+		facetFields: ["category", "detection_method", "interaction_type", "source_db", "genome_name_a", "genome_name_b"],
 		dataModel: "ppi",
 		defaultFilter: "eq(detection_method,%22experimental%20interaction%20detection%22)",
 		constructor: function(options){

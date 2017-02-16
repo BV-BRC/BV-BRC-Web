@@ -1,9 +1,9 @@
 define("p3/store/InteractionMemoryStore", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
 	"./P3MemoryStore"
 ], function(declare, lang, Deferred,
-			request, when, Stateful, Topic,
+			request, when, Stateful, Topic, All,
 			Memory){
 
 	return declare([Memory, Stateful], {
@@ -54,22 +54,57 @@ define("p3/store/InteractionMemoryStore", [
 				&& this.state.hashParams.filter !== "false"){
 				query += "&" + this.state.hashParams.filter;
 			}
-			query += "&limit(2000,0)";
+			var dataUrl = this.apiServer + '/ppi/';
 
-			this._loadingDeferred = when(request.get(this.apiServer + '/ppi/?' + query, {
+			this._loadingDeferred = when(request.post(dataUrl, {
 				handleAs: 'json',
 				headers: {
 					'Accept': 'application/solr+json',
 					'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
-				}
+				},
+				data: query + "&limit(1)"
 			}), lang.hitch(this, function(res){
 
-				var data = res.response.docs;
+				var numFound = res.response.numFound;
 
-				this.setData(data);
-				this._loaded = true;
+				var fetchSize = 5000;
+				var steps = Math.ceil(numFound / fetchSize);
 
-				Topic.publish(this.topicId, "updateGraphData", data);
+				var forBlockScopedVars = [];
+				for(var i = 0; i < steps; i++){
+					forBlockScopedVars.push(i);
+				}
+				var allRequests = forBlockScopedVars.map(function(i){
+					var deferred = new Deferred();
+					var range = "items=" + (i * fetchSize) + "-" + ((i + 1) * fetchSize - 1);
+					request.post(dataUrl, {
+						handleAs: 'json',
+						headers: {
+							'Accept': 'application/json',
+							'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+							'Range': range
+						},
+						data: query
+					}).then(function(body){
+						deferred.resolve(body)
+					});
+					return deferred.promise;
+				});
+
+				console.time("getSubQueries");
+				return when(All(allRequests), lang.hitch(this, function(results){
+					console.timeEnd("getSubQueries");
+					console.time("data2");
+					var data = results.reduce(function(a, b){
+						return a.concat(b);
+					});
+
+					this.setData(data);
+					this._loaded = true;
+
+					Topic.publish(this.topicId, "updateGraphData", data);
+					console.timeEnd("data2");
+				}));
 			}));
 
 			return this._loadingDeferred;

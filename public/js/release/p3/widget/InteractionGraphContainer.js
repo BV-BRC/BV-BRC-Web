@@ -235,7 +235,7 @@ define("p3/widget/InteractionGraphContainer", [
 					validTypes: ["*"]
 				},
 				function(selection, container){
-					console.log(selection);
+					console.log(selection, container.selection);
 				},
 				false
 			],
@@ -249,11 +249,8 @@ define("p3/widget/InteractionGraphContainer", [
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["interaction_data"],
 					pressAndHold: function(selection, button, opts, evt){
-						if(selection[0].isNode() && selection[0].data('interactor_type') === 'Protein'){
-							var feature_id = selection[0].data('feature_id');
-						}else{
-							return;
-						}
+						var feature_id = selection[0].feature_id;
+
 						popup.open({
 							popup: new PerspectiveToolTip({
 								perspective: "Feature",
@@ -265,25 +262,12 @@ define("p3/widget/InteractionGraphContainer", [
 					}
 				},
 				function(selection){
-					var sel = selection[0];
+					var feature_id = selection[0].feature_id;
 
-					if(sel.isNode() && sel.data('interactor_type') === 'Protein'){
-
-						Topic.publish("/navigate", {
-							href: "/view/Feature/" + sel.data('feature_id') + "#view_tab=overview",
-							target: "blank"
-						});
-
-					}else{
-						var patric_ids = [sel.data('source'), sel.data('target')].map(function(id){
-							return encodeURIComponent(id);
-						});
-
-						Topic.publish("/navigate", {
-							href: "/view/FeatureList/?in(patric_id,(" + patric_ids.join(",") + "))#view_tab=features",
-							target: "blank"
-						});
-					}
+					Topic.publish("/navigate", {
+						href: "/view/Feature/" + feature_id + "#view_tab=overview",
+						target: "blank"
+					});
 				},
 				false
 			],
@@ -300,14 +284,9 @@ define("p3/widget/InteractionGraphContainer", [
 				},
 				function(selection){
 					// console.log(selection);
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('interactor_type') === 'Protein';
-					}).map(function(ele){
-						return ele.data('feature_id'); // feature_id
-					});
 
 					Topic.publish("/navigate", {
-						href: "/view/FeatureList/?in(feature_id,(" + sel.join(",") + "))#view_tab=features",
+						href: "/view/FeatureList/?in(feature_id,(" + selection.join(",") + "))#view_tab=features",
 						target: "blank"
 					});
 				},
@@ -328,24 +307,7 @@ define("p3/widget/InteractionGraphContainer", [
 				},
 				function(selection){
 
-					var sel;
-					if(selection.length === 1){
-						// if one node is selected, selection is vanilla javascript array
-						sel = selection.filter(function(ele){
-							return ele.isNode() && ele.data('interactor_type') === 'Protein';
-						}).map(function(ele){
-							return ele.data('feature_id');
-						});
-					}else{
-						// if more than one node is selected, then selection is cytoscape selection.
-						sel = selection.filter(function(i, ele){
-							return ele.isNode() && ele.data('interactor_type') === 'Protein';
-						}).map(function(ele){
-							return ele.data('feature_id');
-						});
-					}
-
-					viewFASTATT.selection = sel;
+					viewFASTATT.selection = selection;
 
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
@@ -369,14 +331,8 @@ define("p3/widget/InteractionGraphContainer", [
 				},
 				function(selection){
 
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('interactor_type') === 'Protein';
-					}).map(function(ele){
-						return ele.data('feature_id');
-					});
-
 					Topic.publish("/navigate", {
-						href: "/view/MSA/?in(feature_id,(" + sel.join(",") + "))",
+						href: "/view/MSA/?in(feature_id,(" + selection.join(",") + "))",
 						target: "blank"
 					});
 				},
@@ -397,10 +353,8 @@ define("p3/widget/InteractionGraphContainer", [
 				},
 				function(selection, containerWidget){
 
-					var sel = selection.filter(function(i, ele){
-						return ele.isNode() && ele.data('interactor_type') === 'Protein';
-					}).map(function(ele){
-						return {feature_id: ele.data('feature_id')};
+					var sel = selection.map(function(feature_id){
+						return {feature_id: feature_id};
 					});
 
 					// console.log("Add Items to Group", sel);
@@ -453,7 +407,7 @@ define("p3/widget/InteractionGraphContainer", [
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 
-				var cy = this.cy = cytoscape({
+				var cy = this.cy = window.cy = cytoscape({
 					container: document.getElementById('cy'),
 					boxSelectionEnabled: true,
 					style: [
@@ -638,30 +592,6 @@ define("p3/widget/InteractionGraphContainer", [
 						self.set("selection", selected);
 					}, 300);
 				});
-/*
-				// create legend box
-				var canvas = cy.container().children[0].children[2];
-				var ctx = canvas.getContext("2d");
-				var legend = "data:image/svg+xml," +
-					"<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'>" +
-					"<foreignObject width='100%' height='100%'>" +
-					"<div xmlns='http://www.w3.org/1999/xhtml' style='font-size:12px'>" +
-					"<ul> <li style='color:red'> hello </li>  <li style='color:green'>thomas</li> </ul> "  +
-					"</div>" +
-					"</foreignObject>" +
-					"</svg>";
-
-				var imgL = new Image();
-
-				imgL.src = legend;
-				imgL.onload = function(){
-					console.log("loading legend");
-					ctx.drawImage(imgL, 0, 0);
-				}
-*/
-				cy.ready(function(){
-					cy.fit();
-				})
 
 			}
 		},
@@ -669,15 +599,16 @@ define("p3/widget/InteractionGraphContainer", [
 		_buildLegendPanel: function(){
 
 			var legend = [
-			"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='300'>",
-				"<circle cx='10' cy='10' r='10' style='fill:#90CAF9'/><text dx='30' dy='15'>Pathogen Protein</text>",
-				"<circle cx='10' cy='35' r='10' style='fill:#A5D6A7'/><text dx='30' dy='40'>Host Protein</text>",
-				"<circle cx='10' cy='60' r='10' style='fill:#F44336'/><text dx='30' dy='65'>Protein in Context</text>",
-				"<line x1='0' y1='85' x2='20' y2='85' stroke-width='2' stroke='#555555'></line>",
-				"<text dx='30' dy='90'>Interaction</text>",
-				"<line x1='0' y1='110' x2='20' y2='110' stroke-width='2' stroke='#3F51B5'></line>",
-				"<text dx='30' dy='115'>Experimental</text>",
-			"</svg>"
+				"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='300'>",
+				"<style>/* <![CDATA[ */ text{font-size:10px} /* ]]> */</style>",
+				"<circle cx='10' cy='10' r='10' style='fill:#90CAF9'/><text dx='30' dy='15'>Microbial protein</text>",
+				"<circle cx='10' cy='35' r='10' style='fill:#A5D6A7'/><text dx='30' dy='40'>Host protein</text>",
+				"<circle cx='10' cy='60' r='10' style='fill:#FFAB00'/><text dx='30' dy='65'>Selected</text>",
+				"<line x1='0' y1='85' x2='20' y2='85' stroke-width='3' stroke='#555555'></line>",
+				"<text dx='30' dy='90'>Predicted interaction</text>",
+				"<line x1='0' y1='110' x2='20' y2='110' stroke-width='3' stroke='#3F51B5'></line>",
+				"<text dx='30' dy='115'>Experimentally verified</text>",
+				"</svg>"
 			].join('\n');
 
 			return new ContentPane({
@@ -741,6 +672,7 @@ define("p3/widget/InteractionGraphContainer", [
 			this.inherited(arguments);
 			this._firstView = true;
 		},
+
 		onSelection: function(){
 
 			if(this.selection.length == 1){
@@ -848,7 +780,7 @@ define("p3/widget/InteractionGraphContainer", [
 			}
 
 			// cy.layout({name: 'circle'});
-			cy.layout({name: 'cola', userConstIter: 1});
+			cy.layout({name: 'cola', allConstIter: 1, fit: true});
 		}
 	})
 });

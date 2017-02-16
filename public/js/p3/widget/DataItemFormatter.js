@@ -941,10 +941,10 @@ define([
 				text: 'interactor_desc_a'
 			}, {
 				name: 'Type',
-				text: 'interactor_type_a',
+				text: 'interactor_type_a'
 			}, {
 				name: 'Genome Name',
-				text: 'genome_name_a',
+				text: 'genome_name_a'
 			}, {
 				name: 'Refseq Locus Tag',
 				text: 'refseq_locus_tag_a'
@@ -961,10 +961,10 @@ define([
 				text: 'interactor_desc_b'
 			}, {
 				name: 'Type',
-				text: 'interactor_type_b',
+				text: 'interactor_type_b'
 			}, {
 				name: 'Genome Name',
-				text: 'genome_name_b',
+				text: 'genome_name_b'
 			}, {
 				name: 'Refseq Locus Tag',
 				text: 'refseq_locus_tag_b'
