@@ -139,7 +139,6 @@ define([
 				}
 				JobManager.queryTaskDetail(item.id, true, true).then(function(detail){
 					//console.log("JOB DETAIL: ", detail);
-					clearTimeout(timer);
 					if(detail.stderr){
 						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
 					}else{
