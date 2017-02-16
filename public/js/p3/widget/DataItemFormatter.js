@@ -909,6 +909,77 @@ define([
 			return div;
 		},
 
+		"interaction_data": function(item, options){
+			var sectionList = ['Interaction', 'Interactor A', 'Interactor B'];
+			var section = {};
+
+			section['Interaction'] = [{
+				name: 'Category',
+				text: 'category'
+			}, {
+				name: 'Interaction Type',
+				text: 'interaction_type'
+			}, {
+				name: 'Detection Method',
+				text: 'detection_method'
+			}, {
+				name: 'Source DB',
+				text: 'source_db'
+			}, {
+				name: 'Pubmed',
+				text: 'pmid'
+			}, {
+				name: 'Score',
+				text: 'score'
+			}];
+
+			section['Interactor A'] = [{
+				name: 'Interactor',
+				text: 'interactor_a'
+			}, {
+				name: 'Description',
+				text: 'interactor_desc_a'
+			}, {
+				name: 'Type',
+				text: 'interactor_type_a'
+			}, {
+				name: 'Genome Name',
+				text: 'genome_name_a'
+			}, {
+				name: 'Refseq Locus Tag',
+				text: 'refseq_locus_tag_a'
+			}, {
+				name: 'gene',
+				text: 'gene_a'
+			}];
+
+			section['Interactor B'] = [{
+				name: 'Interactor',
+				text: 'interactor_b'
+			}, {
+				name: 'Description',
+				text: 'interactor_desc_b'
+			}, {
+				name: 'Type',
+				text: 'interactor_type_b'
+			}, {
+				name: 'Genome Name',
+				text: 'genome_name_b'
+			}, {
+				name: 'Refseq Locus Tag',
+				text: 'refseq_locus_tag_b'
+			}, {
+				name: 'gene',
+				text: 'gene_b'
+			}];
+
+			var div = domConstruct.create("div");
+
+			displayDetailBySections(item, sectionList, section, div, options);
+
+			return div;
+		},
+
 		"genome_data": function(item, options){
 			options = options || {};
 

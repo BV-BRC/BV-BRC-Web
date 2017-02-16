@@ -131,24 +131,47 @@ define("p3/widget/DataItemFormatter", [
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			displayDetail(item, columns, div, options);
 
+			var stpDiv = domConstruct.create("div", {}, div);
+			var stddlg = new TitlePane({title: "Standard Output", style: "margin-bottom:5px;",open: false}, stpDiv);
 			var tpDiv = domConstruct.create("div", {}, div);
 			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
 			dlg.watch("open", function(attr, oldVal, open){
 				if(!open){
 					return;
 				}
-				JobManager.queryTaskDetail(item.id, true, true).then(function(detail){
-					//console.log("JOB DETAIL: ", detail);
-					clearTimeout(timer);
-					if(detail.stderr){
+				JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
+					console.log("JOB DETAIL: ", detail);
+				if(detail.stderr){
 						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
 					}else{
-						dlg.set("content", "Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+						dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
+
+
 				}, function(err){
 					dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
 				});
 			});
+
+			stddlg.watch("open", function(attr, oldVal, open){
+				if(!open){
+					return;
+				}
+				JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
+					console.log("JOB DETAIL: ", detail);
+				if(detail.stdout){
+						stddlg.set("content", "<pre>" + detail.stdout + "</pre>");
+					}else{
+						stddlg.set("content", "Unable to retreive STDOUT of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+					}
+
+
+				}, function(err){
+					stddlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				});
+			});
+
+
 
 			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
@@ -882,6 +905,77 @@ define("p3/widget/DataItemFormatter", [
 			var div = domConstruct.create("div");
 			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
 			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
+		"interaction_data": function(item, options){
+			var sectionList = ['Interaction', 'Interactor A', 'Interactor B'];
+			var section = {};
+
+			section['Interaction'] = [{
+				name: 'Category',
+				text: 'category'
+			}, {
+				name: 'Interaction Type',
+				text: 'interaction_type'
+			}, {
+				name: 'Detection Method',
+				text: 'detection_method'
+			}, {
+				name: 'Source DB',
+				text: 'source_db'
+			}, {
+				name: 'Pubmed',
+				text: 'pmid'
+			}, {
+				name: 'Score',
+				text: 'score'
+			}];
+
+			section['Interactor A'] = [{
+				name: 'Interactor',
+				text: 'interactor_a'
+			}, {
+				name: 'Description',
+				text: 'interactor_desc_a'
+			}, {
+				name: 'Type',
+				text: 'interactor_type_a'
+			}, {
+				name: 'Genome Name',
+				text: 'genome_name_a'
+			}, {
+				name: 'Refseq Locus Tag',
+				text: 'refseq_locus_tag_a'
+			}, {
+				name: 'gene',
+				text: 'gene_a'
+			}];
+
+			section['Interactor B'] = [{
+				name: 'Interactor',
+				text: 'interactor_b'
+			}, {
+				name: 'Description',
+				text: 'interactor_desc_b'
+			}, {
+				name: 'Type',
+				text: 'interactor_type_b'
+			}, {
+				name: 'Genome Name',
+				text: 'genome_name_b'
+			}, {
+				name: 'Refseq Locus Tag',
+				text: 'refseq_locus_tag_b'
+			}, {
+				name: 'gene',
+				text: 'gene_b'
+			}];
+
+			var div = domConstruct.create("div");
+
+			displayDetailBySections(item, sectionList, section, div, options);
 
 			return div;
 		},
