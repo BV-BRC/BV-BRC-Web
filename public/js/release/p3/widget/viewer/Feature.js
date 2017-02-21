@@ -5,14 +5,14 @@ define("p3/widget/viewer/Feature", [
 	"dojo/request", "dojo/_base/lang",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../InteractionContainer",
 	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin",
-	"../GenomeBrowser"
+	"../GenomeBrowser", "../CompareRegionContainer"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
 			ActionBar, ContainerActionBar, PathwaysContainer, InteractionContainer,
 			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin,
-			GenomeBrowser){
+			GenomeBrowser, CompareRegionContainer){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
@@ -245,7 +245,12 @@ define("p3/widget/viewer/Feature", [
 				tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 				state: lang.mixin({}, this.state)
 			});
-			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
+			if(window.App.appLabel !== ""){
+				this.compareRegionViewer = new CompareRegionContainer({
+					title: "Compare Region Viewer",
+					id: this.viewer.id + "_compareRegionViewer"
+				});
+			}
 			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
 
 			this.transcriptomics = new GeneExpressionContainer({
@@ -256,17 +261,24 @@ define("p3/widget/viewer/Feature", [
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes"
 			});
-			this.interactions = new InteractionContainer({
-				title: "Interactions",
-				id: this.viewer.id + "_interactions",
-				state: this.state
-			});
+			if(window.App.appLabel !== ""){
+				this.interactions = new InteractionContainer({
+					title: "Interactions",
+					id: this.viewer.id + "_interactions",
+					state: this.state
+				});
+			}
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.compareRegionViewer);
+			}
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
-			this.viewer.addChild(this.interactions);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.interactions);
+			}
 		}
 	});
 });
