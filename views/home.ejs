@@ -11,10 +11,10 @@
 	] %>
 
 	<% var flows = [
+		{name: "ASM MICROBE 2017", secondary: "NEW ORLEANS", rel: "carousel_asm", background: "#34698e"},
 		{name: "NEW PATRIC WEBSITE", secondary: "OFFICIAL RELEASE", rel: "carousel_newsite", background: "#34698e"},
-		{name: "FIRST US CASE", secondary: "COLISTIN-RESISTANT E. COLI", rel: "carousel_news1", background: "#34698e"},
-		{name: "ASSEMBLE AND ANNOTATE",secondary: "GENOMES", rel: "carousel_news3", background: "#34698e"},
-		{name: "SUPPORTING",secondary: "THE TB COMMUNITY", rel: "carousel_news4", background: "#34698e"}
+		{name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"},
+		{name: "SUPPORTING",secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
 	] %>
 
 	<% var workShops = [
@@ -37,71 +37,22 @@
 		</div>
 		<div class="layer" style="text-align: center;margin-bottom:0px;height:351px;">
 			<div data-dojo-type="dijit/layout/StackContainer" class="carousel" style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;" id="p3carousel">
-<!--
-				<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="id:'carousel_home'">		
-					<table style="width:100%;margin-right:4px;">
-						<tr>
-							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #629821;background:#fff;border-radius:4px;">
 
-								<div style="vertical-align:top;margin: 0px; width:100%;">
-									<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Browse</a> Data</div>
-									<div style="text-align:left;">
-										<ul>
-											<li>Genomes</li>
-											<li>Genomic Features</li>
-											<li>Protein Families</li>
-											<li>Transcriptomics Experiments</li>
-										</ul>
-									</div>
-								</div>
-								</td>
-							<td style="vertical-align:top;">
-								<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
-									<span class="fa-4x icon-long-arrow-right"></span><br>
-									<span class="fa-4x icon-long-arrow-left"></span>
-								</div>
-							</td>
-							<td style="width: 210px;padding:0px;vertical-align:top;border:4px solid #629821;background:#fff;border-radius:4px;">
-								<div style="vertical-align: top; margin: 0px;width:100%;">
-									<div style="font-size:1.2em;font-weight:bold;">Analyze</div>
-									<div style="text-align:left;">
-										<ul>
-										<% services.forEach(function(svc,index) { %>
-											<li style="margin:4px;"><a href="<%- svc.href %>"><%- svc.name %></a></li>
-										<% }) %>
-										</ul>
-									</div>
-								</div>
-							</td>
-							<td style="vertical-align:top;">
-								<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
-									<span class="fa-4x icon-long-arrow-right"></span><br>
-									<span class="fa-4x icon-long-arrow-left"></span>
-								</div>
-							</td>
-							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #629821;background:#fff;border-radius:4px;">
-								<div style="vertical-align: top; margin:0px;width:100%;">
-									<div style="font-size:1.2em;font-weight:bold;">Workspace</div>
-									<div style="text-align: left;">
-										<ul>
-											<li><a class="DialogButton" style="cursor:pointer;" rel="Upload:">Upload Your Data</a>
-												<ul>
-													<li>Contigs</li>
-													<li>Reads</li>
-													<li>Differential Expression Data</li>
-													<li>FASTA Files</li>
-												</ul>
-											</li>
-											<li>Create and Combine Data Groups</li>
-											<li>Store and share analyses</li>
-									</div>
-								</div>
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_asm" class="CarouselContent showOnLoad dijitVisible">
+					<div class="wrapper">
+						<img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2017/02/Screen-Shot-2017-02-20-at-5.30.49-PM.png">
+						<h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop @ ASM Microbe 2017</h2>
+						<h3 class="xl highlight-f upper far">PATRIC Workshop</h3>
+						<br/>
+						<p>PATRIC will be hosting a 1-day workshop entitled "Assemble, Annotate and Analyze Your Own Genome using PATRIC, the All Bacterial Bioinformatics Resource Center," <strong>workshop number 001-WS</strong> at the ASM Microbes 2017 on June 1, 2017 in New Orleans, Louisiana.&nbsp; The workshop will cover genome assembly and annotation, comparative genomics, RNA-Seq and transcriptomic analysis, and calling SNPs, MNPs, and indels using PATRIC's new Variation pipeline.&nbsp; The workshop will focus on analyzing researcher's private data compared to the available public data.
 
-							</td>
-						</tr>
-					</table>
+							Seating is limited, so please register soon if you are interested.&nbsp; The main ASM Microbes 2017 registration page is <a href="https://registration.experientevent.com/showasm171/Default.aspx?flowcode=ATT&amp;_ga=1.153913848.1104899086.1477325011">here</a>. &nbsp;Note that you must register for the conference in order to sign up for workshops.</p>
+						<br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow" href="https://registration.experientevent.com/showasm171/Default.aspx?flowcode=ATT&amp;_ga=1.153913848.1104899086.1477325011" target="_blank">Register</a></p>
+						<br><br>
+					</div>
 				</div>
--->
+
 				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_newsite" class="CarouselContent showOnLoad dijitVisible">
 					<div class="wrapper">
 						<h2 class="xxxl sans-alternate upper highlight-e">New PATRIC Website Release</h2>
@@ -113,115 +64,28 @@
 						<br><br>
 					</div>
 				</div>
-<!--
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_betasite" class="CarouselContent showOnLoad dijitVisible">
 
-<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2016/09/Screen-Shot-2016-09-12-at-3.45.12-PM.png"><h2 class="xxxl sans-alternate upper highlight-e">PATRIC Beta Website Release</h2><h3 class="xl highlight-f upper far"></h3><p>A new Beta version of the PATRIC website has now been released and is available at <a class="moz-txt-link-freetext" href="https://www.beta.patricbrc.org/" target="_blank">https://www.beta.patricbrc.org/</a>. The Beta release is provided for formative evaluation purposes. <span class="">Your opinion is very valuable to us. You can participate by test-driving the Beta site and providing us feedback from the Help / Provide Feedback menu option.</span>
-
-The Beta site will become the new Production site in late November 2016. In the interim, the <i>current</i> Production version of the PATRIC website is still available at <a class="moz-txt-link-freetext" href="https://www.patricbrc.org/" target="_blank">https://www.patricbrc.org</a>.</p><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="https://www.beta.patricbrc.org/">Beta Site</a></p>
-		<br><br><br><br><br><br><br><br>
-</div>
-			</div>
--->
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news1" class="CarouselContent showOnLoad dijitHidden">
-				<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2016/05/Screen-Shot-2016-05-27-at-1.18.24-PM1.png"><h2 class="xxxl sans-alternate upper highlight-e">First US Case of E. Coli Resistant to Colistin</h2><h3 class="xl highlight-f upper far"></h3><p>The assembled genome of Colistin-resistant <em>E. coli</em> MRSN 388634 is now available in PATRIC <a href="/view/Genome/562.10576">here</a>. Sequence reads for MRSN388634 have been deposited in the NCBI Short Read Archive by researchers at the Walter Reed Army Institute of Research and Walter Reed National Military Medical Center under Accession number SRP075674. The authors report the presence of mcr-1 in an <em>E. coli</em> cultured from a patient with a urinary tract infection in the United States. The early version of the publication can be found at “<a href="http://aac.asm.org/content/early/2016/05/25/AAC.01103-16.full.pdf">http://aac.asm.org/content/early/2016/05/25/AAC.01103-16.full.pdf</a>”.A provisional assembly and annotation is provided in PATRIC using the PATRIC Genome Assembly and Genome Annotation services and can be accessed <a href="/view/Genome/562.10576">here</a>. We will provide the GenBank version of the assembly once the genome becomes available in GenBank. We would like to thank the members of the Walter Reed team for their early release of the data in the Short Read Archive.</p><br/><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/Genome/562.10576">Genome</a></p></div>
-			</div>
-<% /*
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news2" class="CarouselContent showOnLoad dijitHidden">
-<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2014/05/AR_carousel.jpg"><h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2><h3 class="xl highlight-f upper far">for Infectious Disease Research</h3><p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics through gene mutation or acquisition of antibiotic resistance genes. &nbsp;PATRIC collects known antibiotic resistance genes from reputed external databases and publications and maps them to homologous genes using BLASTP, so you can easily find and analyze them with PATRIC tools. &nbsp;We also incorporate antibiotic susceptibility testing results as additional genome metadata.</p><br/><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/DataType/AntibioticResistance">Explore Data</a></p></div>
-			</div>
-*/ %>
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news3" class="CarouselContent showOnLoad dijitHidden">
-			<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2015/03/Assemble-Annotate_carousel2.png"><h2 class="xxxl sans-alternate upper highlight-e">Assemble and Annotate</h2><h3 class="xl highlight-f upper far">Your Genome Sequences</h3><p>PATRIC's new Genome Assembly Service App performs automatic genome assembly using the latest computational tools. Single or multiple assemblers can be invoked to compare results. PATRIC's new&nbsp;Genome Annotation Service App utilizes the RASTtk (Rapid Annotation using Subsystem Technology tookit) to enables researchers to build custom annotation pipelines for annotation of bacterial and archaeal genomes. &nbsp;These services are delivered through a new PATRIC Workspace that also supports other services including Differential Expression.</p><br/>
-				<p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/app/Assembly">Genome Assembly</a> &nbsp; <a class="button upper sans-alternate largest highlight avoid-arrow" href="/app/Annotation">Genome Annotation</a></p>
-			</div>
-			</div>
-
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news4" class="CarouselContent showOnLoad dijitHidden">
-			<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2013/05/Mycobacterium_tuberculosis_14313982_1.jpg"><h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2><h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3><p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This resource provides fast searching and powerful comparative analysis tools for all <i>Mycobacterium tuberculosis</i> genomes, including the H37Rv reference genome, its variants and other members in the tuberculosis complex. Also included are important reference genomes, <i>M. smegmatis</i> and <i>M. marinum</i>.</p><br/><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/Taxonomy/1763#view_tab=overview">Visit TB@PATRIC</a></p></div>
-			</div>
-<% /*
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_comparative_genomics" class="CarouselContent showOnLoad dijitHidden">
-				<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Comparative Genomics Workflow</div>
-				<table style="width:100%;margin-right:4px;">
-						<tr>
-							<td colspan="3"></td>
-							<td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem"><a href="/app/SeqComparison">Proteome Comparison</a></div></td>
-							<td colspan="4"></td>
-						</tr>
-						<tr>
-							<td><div class="FlowBoxItem">Search for Genomes</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Create Genome Set</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Protein Family Sorter</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Heatmap Clustering</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">MSA<br>Gene Trees</div></td>
-						</tr>
-		
-						<tr>
-							<td colspan="3"></td>
-							<td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem"><a href="/app/ComparativePathway">Comparative Pathways</a></div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Pathway Map<br>Heatmap</div></td>
-						</tr>
-					</table>
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_ar" class="CarouselContent showOnLoad dijitHidden">
+					<div class="wrapper">
+						<img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2014/05/AR_carousel.jpg">
+						<h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2>
+						<h3 class="xl highlight-f upper far">for Infectious Disease Research</h3>
+						<p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics through gene mutation or acquisition of antibiotic resistance genes. &nbsp;PATRIC collects known antibiotic resistance genes from reputed external databases and publications and maps them to homologous genes using BLASTP, so you can easily find and analyze them with PATRIC tools. &nbsp;We also incorporate antibiotic susceptibility testing results as additional genome metadata.</p>
+						<br/>
+						<p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/DataType/AntibioticResistance">Explore Data</a></p>
+					</div>
 				</div>
 
-
-				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_genomics" class="genomicsWorkflow showOnLoad dijitHidden">
-					<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Genomics Workflow</div>
-					<table style="width:100%;margin-right:4px;">
-						<tr>
-							<td><div class="FlowBoxItem DialogButton" rel="Upload:">Upload Reads</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem"><a href="/app/Assembly">Assemble</a></div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem"><a href="/app/Annotation">Annotate</a></div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Genomic Overview<br>Genomic Features<br>Specialty Genes<br>Pathways</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Genome Browser<br>Circular Viewer</div></td>
-						</tr>
-						<tr>
-							<td colspan="4"></td><td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-up"></div></td><td colspan="4"></td>
-						</tr>
-						<tr>
-							<td colspan="4"></td><td><div class="FlowBoxItem" class="DialogButton" rel="Upload:">Upload Preassembled<br>Contigs</div></td><td colspan="4"></td>
-						</tr>
-					</table>
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb" class="CarouselContent showOnLoad dijitHidden">
+					<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2013/05/Mycobacterium_tuberculosis_14313982_1.jpg">
+						<h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2>
+						<h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3>
+						<p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This resource provides fast searching and powerful comparative analysis tools for all <i>Mycobacterium tuberculosis</i> genomes, including the H37Rv reference genome, its variants and other members in the tuberculosis complex. Also included are important reference genomes, <i>M. smegmatis</i> and <i>M. marinum</i>.</p>
+						<br/>
+						<p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/Taxonomy/1763#view_tab=overview">Visit TB@PATRIC</a></p>
+					</div>
 				</div>
 
-				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_transcriptomics" class="showOnLoad dijitHidden">
-					<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Gene Expression Analysis</div>
-					<table style="width:100%;margin-right:4px;">
-						<tr>
-							<td><div class="FlowBoxItem DialogButton" rel="Upload:">Upload Reads</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem"><a href="/app/Rnaseq">RNA-Seq Analysis</a></div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem"><a href="">Differential Expression Analysis</a></div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Heatmap<br>Clustering</div></td>
-							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
-							<td><div class="FlowBoxItem">Pathway Analysis</div></td>
-						</tr>
-						<tr>
-							<td colspan="4"></td><td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-up"></div></td><td colspan="4"></td>
-						</tr>
-						<tr>
-							<td colspan="4"></td><td><div class="FlowBoxItem" class="DialogButton" rel="Upload:">Upload Differential Epxressions</div></td><td colspan="4"></td>
-						</tr>
-					</table>
-				</div>
-				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_variation_analysis" class="showOnLoad dijitHidden">
-					Variation Analysis Workflow Overview
-				</div>
-*/ %>
 			</div>
 		</div>
 	</div>
@@ -274,7 +138,7 @@ The Beta site will become the new Production site in late November 2016. In the 
 						</article>
 
 						<article class="tools" style="overflow:hidden;">
-					
+
 						<h2 class="wp-headline section-title section-title-b tools_headline" ><span class="wrap">What Can I Do @ PATRIC?</span></h2>
 					<div>
 					<div class="column" style="width: 311px;display:inline-block;vertical-align:top;float:left;margin-right:10px;">
@@ -346,7 +210,7 @@ The Beta site will become the new Production site in late November 2016. In the 
 						<div style="text-align:right;"><a class="navigationLink" href="/view/Taxonomy/2">Explore All Genera</a></div>
 						<% include workshops %>
 					</td>
-		
+
 				</tr>
 			</table>
 		</div>
@@ -372,9 +236,7 @@ The Beta site will become the new Production site in late November 2016. In the 
 					<div class="column" style="min-height: 143px;">
 						<div class="wrapper">
 							<h4 class="normal-weight close2x">Funding Statement</h4>
-							<p>This project has been funded in whole or in part with Federal funds from the National Institute of Allergy and Infectious Diseases,
-	                                                        National Institutes of Health, Department of Health and Human Services,
-	                                                        under Contract No. HHSN272201400027C, awarded to RL Stevens</p>
+							<p>This project has been funded in whole or in part with Federal funds from the National Institute of Allergy and Infectious Diseases, National Institutes of Health, Department of Health and Human Services, under Contract No. HHSN272201400027C, awarded to RL Stevens</p>
 						</div>
 					</div>
 					<div class="column last bold" style="min-height: 143px;">
