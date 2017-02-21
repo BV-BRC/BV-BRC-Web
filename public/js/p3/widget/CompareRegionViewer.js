@@ -592,7 +592,7 @@ define([
 			}
 			var feature_info = [["ID", feature.fid],
 				["Genome", row_data.org_name],
-				["Function", feature.function != null ? feature.function : "&lt;none&gt;"],
+				["Function", feature['function'] != null ? feature['function'] : "&lt;none&gt;"],
 				["Contig", feature.contig],
 				["Start", start],
 				["Stop", stop],
@@ -718,7 +718,7 @@ define([
 							x1: 0, y1: 0,
 							x2: 0, y2: 10,
 							colors: [{offset: 0, color: "#fff"},
-								{offset: 1, color: color}],
+								{offset: 1, color: color}]
 						};
 					}
 					else if(cycle == 2){
@@ -727,7 +727,7 @@ define([
 							x1: 0, y1: 10,
 							x2: 0, y2: 0,
 							colors: [{offset: 0, color: "#fff"},
-								{offset: 1, color: color}],
+								{offset: 1, color: color}]
 						};
 					}
 					else if(cycle == 3){
@@ -736,7 +736,7 @@ define([
 							x1: 0, y1: 10,
 							x2: 0, y2: 10,
 							colors: [{offset: 0, color: "#fff"},
-								{offset: 1, color: color}],
+								{offset: 1, color: color}]
 						};
 					}
 					else if(cycle == 4){
@@ -745,7 +745,7 @@ define([
 							x1: 0, y1: 7,
 							x2: 0, y2: 0,
 							colors: [{offset: 0, color: "#fff"},
-								{offset: 1, color: color}],
+								{offset: 1, color: color}]
 						};
 					}
 				}
