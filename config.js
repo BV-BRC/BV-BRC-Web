@@ -1,3 +1,5 @@
+
+const fs = require('fs');
 var nconf = require('nconf');
 
 var defaults = {
@@ -45,6 +47,13 @@ var defaults = {
 	}
 };
 
-module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);
+var config_filename = "p3-web.conf";
+var config_file = __dirname + "/" + config_filename;
+if (!fs.statSync(config_file))
+{
+    config_file = "./" + config_filename;
+}
+
+module.exports = nconf.argv().env().file(config_file).defaults(defaults);
 
 
