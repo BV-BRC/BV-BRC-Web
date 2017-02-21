@@ -75,7 +75,7 @@ define([
 			this.service = new SEEDClient("http://p3.theseed.org/qa/api");
 
 			this.viewer = new ContentPane({
-				region: "center",
+				region: "center"
 			});
 
 			this.compare_regions = new CompareRegionViewer(this.viewer.domNode, this.service);
