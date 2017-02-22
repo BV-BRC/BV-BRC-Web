@@ -11,6 +11,7 @@ define( "JBrowse/View/Track/CanvasFeatures", [
             'dojo/dom-construct',
             'dojo/Deferred',
             'dojo/on',
+
             'JBrowse/has',
             'JBrowse/Util',
             'JBrowse/View/GranularRectLayout',
@@ -32,6 +33,7 @@ define( "JBrowse/View/Track/CanvasFeatures", [
             domConstruct,
             Deferred,
             on,
+
             has,
             Util,
             Layout,
@@ -360,7 +362,7 @@ return declare(
             basesPerBin: basesPerBin
         };
 
-        if( !this.config.histograms.store&&this.store.getRegionFeatureDensities ) {
+        if( this.store.getRegionFeatureDensities ) {
             this.store.getRegionFeatureDensities(
                 query,
                 lang.hitch( this, '_drawHistograms', args )

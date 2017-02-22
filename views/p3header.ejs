@@ -264,12 +264,11 @@
                  data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'">
                 <span></span>
                 <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span>
-                        <hr>
-                        <div><a class="ShowWithAuth TopMenuLink"
-                                href="<%- request.applicationOptions.accountURL %>">Account Settings</a></div>
-                        <div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a></div>
-                    </div>
+                    <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div> 
+                    <hr>
+	            <div><a class="navigationLinkOut"
+                                href="<%- request.applicationOptions.accountURL %>">Account Settings</a></div> 
+                    <div><a class="logoutLink" href="/content/logout">Logout</a></div>
                 </div>
             </div>
         </div>

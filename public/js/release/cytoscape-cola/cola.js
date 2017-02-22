@@ -2073,9 +2073,9 @@ var cola;
         function intersects(l, P) {
             var ints = [];
             for (var i = 1, n = P.length; i < n; ++i) {
-                var aInt = cola.vpsc.Rectangle.lineIntersection(l.x1, l.y1, l.x2, l.y2, P[i - 1].x, P[i - 1].y, P[i].x, P[i].y);
-                if (aInt)
-                    ints.push(aInt);
+                var int = cola.vpsc.Rectangle.lineIntersection(l.x1, l.y1, l.x2, l.y2, P[i - 1].x, P[i - 1].y, P[i].x, P[i].y);
+                if (int)
+                    ints.push(int);
             }
             return ints;
         }
