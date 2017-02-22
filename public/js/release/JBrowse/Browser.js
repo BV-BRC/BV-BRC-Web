@@ -4,16 +4,12 @@ define( "JBrowse/Browser", [
             'dojo/_base/declare',
             'dojo/_base/lang',
             'dojo/on',
-            'dojo/html',
-            'dojo/query',
-            'dojo/dom-construct',
             'dojo/keys',
             'dojo/Deferred',
             'dojo/DeferredList',
             'dojo/topic',
             'dojo/aspect',
             'dojo/request',
-            'dojo/io-query',
             'JBrowse/has',
             'dojo/_base/array',
             'dijit/layout/ContentPane',
@@ -25,9 +21,7 @@ define( "JBrowse/Browser", [
             'dijit/form/ToggleButton',
             'dijit/form/DropDownButton',
             'dijit/DropDownMenu',
-            'dijit/CheckedMenuItem',
             'dijit/MenuItem',
-            'dijit/MenuSeparator',
             'dojox/form/TriStateCheckBox',
             'JBrowse/Util',
             'JBrowse/Store/LazyTrie',
@@ -39,14 +33,9 @@ define( "JBrowse/Browser", [
             'JBrowse/ConfigManager',
             'JBrowse/View/InfoDialog',
             'JBrowse/View/FileDialog',
-            'JBrowse/View/FastaFileDialog',
-            'JBrowse/Store/SeqFeature/IndexedFasta',
-            'JBrowse/Store/SeqFeature/UnindexedFasta',
             'JBrowse/Model/Location',
             'JBrowse/View/LocationChoiceDialog',
             'JBrowse/View/Dialog/SetHighlight',
-            'JBrowse/View/Dialog/Preferences',
-            'JBrowse/View/Dialog/OpenDirectory',
             'JBrowse/View/Dialog/SetTrackHeight',
             'JBrowse/View/Dialog/QuickHelp',
             'JBrowse/View/StandaloneDatasetList',
@@ -58,16 +47,12 @@ define( "JBrowse/Browser", [
             declare,
             lang,
             on,
-            html,
-            query,
-            domConstruct,
             keys,
             Deferred,
             DeferredList,
             topic,
             aspect,
             request,
-            ioQuery,
             has,
             array,
             dijitContentPane,
@@ -79,9 +64,7 @@ define( "JBrowse/Browser", [
             dijitToggleButton,
             dijitDropDownButton,
             dijitDropDownMenu,
-            dijitCheckedMenuItem,
             dijitMenuItem,
-            dijitMenuSeparator,
             dojoxTriStateCheckBox,
             Util,
             LazyTrie,
@@ -93,14 +76,9 @@ define( "JBrowse/Browser", [
             ConfigManager,
             InfoDialog,
             FileDialog,
-            FastaFileDialog,
-            IndexedFasta,
-            UnindexedFasta,
             Location,
             LocationChoiceDialog,
             SetHighlightDialog,
-            PreferencesDialog,
-            OpenDirectoryDialog,
             SetTrackHeightDialog,
             HelpDialog,
             StandaloneDatasetList,
@@ -177,12 +155,12 @@ constructor: function(params) {
 
                            // figure out what initial track list we will use:
                            var tracksToShow = [];
-                           // always add alwaysOnTracks, regardless of any other track params
+                           // always add alwaysOnTracks, regardless of any other track params                   
                            if (thisB.config.alwaysOnTracks) { tracksToShow = tracksToShow.concat(thisB.config.alwaysOnTracks.split(",")); }
-                           // add tracks specified in URL track param,
+                           // add tracks specified in URL track param, 
                            //    if no URL track param then add last viewed tracks via tracks cookie
-                           //    if no URL param and no tracks cookie, then use defaultTracks
-                           if (thisB.config.forceTracks)   { tracksToShow = tracksToShow.concat(thisB.config.forceTracks.split(",")); }
+                           //    if no URL param and no tracks cookie, then use defaultTracks 
+                           if (thisB.config.forceTracks)   { tracksToShow = tracksToShow.concat(thisB.config.forceTracks.split(",")); } 
                            else if (thisB.cookie("tracks")) { tracksToShow = tracksToShow.concat(thisB.cookie("tracks").split(",")); }
                            else if (thisB.config.defaultTracks) { tracksToShow = tracksToShow.concat(thisB.config.defaultTracks.split(",")); }
                            // currently, force "DNA" _only_ if no other guides as to what to show?
@@ -367,42 +345,6 @@ resolveUrl: function( url ) {
     return Util.resolveUrl( browserRoot, url );
 },
 
-welcomeScreen: function( container, error ) {
-    var thisB = this;
-    require(['dojo/text!JBrowse/View/Resource/Welcome.html'], function(Welcome) {
-        container.innerHTML = Welcome
-        var topPane = dojo.create( 'div',{ style: {overflow: 'hidden'}}, thisB.container );
-        dojo.byId('welcome').innerHTML="Your JBrowse is "+(Util.isElectron()?"running in Desktop mode":"on the web")+". To get started with <i>JBrowse-"+thisB.version+"</i>, select a sequence file";
-
-        on( dojo.byId('newOpen'), 'click', dojo.hitch( thisB, 'openFastaElectron' ));
-        on( dojo.byId('newOpenDirectory'), 'click', function() {
-                            new OpenDirectoryDialog({
-                                    browser: thisB,
-                                    setCallback: dojo.hitch( thisB, 'openDirectoryElectron' )
-                                }).show();
-                            })
-
-
-        try {
-            thisB.loadSessions();
-        } catch(e) { console.log(e); }
-
-        if( error ) {
-            var errors_div = dojo.byId('fatal_error_list');
-            dojo.create('div', { className: 'error', innerHTML: error }, errors_div );
-        }
-
-
-
-        request( 'sample_data/json/volvox/successfully_run' ).then( function() {
-            try {
-                document.getElementById('volvox_data_placeholder')
-                   .innerHTML = 'The example dataset is also available. View <a href="?data=sample_data/json/volvox">Volvox test data here</a>.';
-            } catch(e) {}
-        });
-    });
-},
-
 /**
  * Main error handler.  Displays links to configuration help or a
  * dataset selector in the main window.  Called when the main browser
@@ -432,31 +374,32 @@ fatalError: function( error ) {
                   .placeAt( this.container );
         } else {
             var container = this.container || document.body;
-            var thisB = this;
-
-            dojo.addClass( document.body, this.config.theme || "tundra"); //< tundra dijit theme
-
-            if( !Util.isElectron() ) {
-                require([
-                    'dojo/text!JBrowse/View/Resource/Welcome_old.html'
-                ], function(Welcome_old) {
-                    container.innerHTML = Welcome_old;
-                    if( error ) {
-                        var errors_div = dojo.byId('fatal_error_list');
-                        dojo.create('div', { className: 'error', innerHTML: formatError(error)+'' }, errors_div );
-                    }
-                    request( 'sample_data/json/volvox/successfully_run' ).then( function() {
-                           try {
-                               dojo.byId('volvox_data_placeholder').innerHTML = 'However, it appears you have successfully run <code>./setup.sh</code>, so you can see the <a href="?data=sample_data/json/volvox">Volvox test data here</a>.';
-                           } catch(e) {}
-                       });
-
-                });
-            }
-            else {
-                this.welcomeScreen( container, formatError(error) );
-            }
-
+            container.innerHTML = ''
+                + '<div class="fatal_error">'
+                + '  <h1>Congratulations, JBrowse is on the web!</h1>'
+                + "  <p>However, JBrowse could not start, either because it has not yet been configured"
+                + "     and loaded with data, or because of an error.</p>"
+                + "  <p style=\"font-size: 110%; font-weight: bold\">If this is your first time running JBrowse, <a title=\"View the tutorial\" href=\"docs/tutorial/\" target=\"_blank\">click here to follow the Quick-start Tutorial to show your data in JBrowse.</a></p>"
+                + '  <p id="volvox_data_placeholder"></p>'
+                + "  <p>Otherwise, please refer to the following resources for help in setting up JBrowse to show your data.</p>"
+                + '  <ul><li><a target="_blank" href="docs/tutorial/">Quick-start tutorial</a> - get your data visible quickly with minimum fuss</li>'
+                + '      <li><a target="_blank" href="http://gmod.org/wiki/JBrowse_Configuration_Guide">JBrowse Configuration Guide</a> - a comprehensive reference</li>'
+                + '      <li><a target="_blank" href="http://gmod.org/wiki/JBrowse">JBrowse wiki main page</a></li>'
+                + '      <li><a target="_blank" href="docs/config.html"><code>biodb-to-json.pl</code> configuration reference</a></li>'
+                + '      <li><a target="_blank" href="docs/featureglyphs.html">HTMLFeatures CSS class reference</a> - prepackaged styles (CSS classes) for HTMLFeatures tracks</li>'
+                + '  </ul>'
+                + '  <div id="fatal_error_list" class="errors"> <h2>Error message(s):</h2>'
+                + ( error ? '<div class="error"> '+formatError(error)+'</div>' : '' )
+                + '  </div>'
+                + '</div>'
+                ;
+            request( 'sample_data/json/volvox/successfully_run' )
+            .then( function() {
+                       try {
+                           document.getElementById('volvox_data_placeholder')
+                               .innerHTML = 'However, it appears you have successfully run <code>./setup.sh</code>, so you can see the <a href="?data=sample_data/json/volvox" target="_blank">Volvox test data here</a>.';
+                       } catch(e) {}
+                   });
 
             this.renderedFatalErrors = true;
         }
@@ -465,67 +408,22 @@ fatalError: function( error ) {
         dojo.create('div', { className: 'error', innerHTML: formatError(error)+'' }, errors_div );
     }
 },
-loadSessions: function() {
-    var fs = electronRequire('fs');
-    var app = electronRequire('electron').remote.app;
 
-    var path = app.getPath('userData') + "/sessions.json";
-    var obj = JSON.parse( fs.readFileSync( path, 'utf8' ) );
-    var table = dojo.create( 'table', { style: { overflow: 'hidden', width: '90%' } }, dojo.byId('previousSessions') );
-    var thisB = this;
-
-    if( ! obj.length ) {
-        var tr = dojo.create( 'tr', {}, table );
-        dojo.create('div', { 'innerHTML': '<ul><li>No sessions yet!</li></ul>'}, tr);
-    }
-    array.forEach( obj, function( session ) {
-        var tr = dojo.create( 'tr', {}, table );
-        var url = window.location.href.split('?')[0] + "?data=" + Util.replacePath( session.session );
-        dojo.create('td', {
-            "class": "dijitIconDelete",
-            onclick: function(e) {
-                if( confirm( "This will simply delete your session from the list, it won't remove any data files. Are you sure you want to continue?" ) ) {
-                    dojo.empty(table);
-                    var index = obj.indexOf(session);
-                    if( index != -1 ) {
-                        obj.splice(index, 1);
-                    }
-                    fs.writeFileSync(path, JSON.stringify(obj, null, 2), 'utf8')
-                    thisB.loadSessions();
-                }
-            }
-        }, tr);
-        dojo.create('td', { 'innerHTML': '<a href="'+url+'">'+session.session+'</a>' }, tr);
-    });
-},
 loadRefSeqs: function() {
-    var thisB = this;
     return this._milestoneFunction( 'loadRefSeqs', function( deferred ) {
         // load our ref seqs
         if( typeof this.config.refSeqs == 'string' )
             this.config.refSeqs = { url: this.config.refSeqs };
-        if( this.config.refSeqs.url && this.config.refSeqs.url.match(/.fai$/) ) {
-            new IndexedFasta({browser: this, faiUrlTemplate: this.config.refSeqs.url})
-                .getRefSeqs(function(refSeqs) {
-                    thisB.addRefseqs(refSeqs);
-                    deferred.resolve({success:true});
-                });
-            return;
-        }
-        else if( 'data' in this.config.refSeqs ) {
-            this.addRefseqs( this.config.refSeqs.data );
-            deferred.resolve({success:true});
-        } else {
-            request(this.config.refSeqs.url, { handleAs: 'text' } )
-                .then( function(o) {
-                           thisB.addRefseqs( dojo.fromJson(o) );
-                           deferred.resolve({success:true});
-                       },
-                       function( e ) {
-                           deferred.reject( 'Could not load reference sequence definitions. '+e );
-                       }
-                     );
-        }
+        var thisB = this;
+        request(this.config.refSeqs.url, { handleAs: 'text' } )
+            .then( function(o) {
+                       thisB.addRefseqs( dojo.fromJson(o) );
+                       deferred.resolve({success:true});
+                   },
+                   function( e ) {
+                       deferred.reject( 'Could not load reference sequence definitions. '+e );
+                   }
+                 );
     });
 },
 
@@ -682,131 +580,50 @@ initView: function() {
         if( ! this.config.show_overview )
             overview.style.cssText = "display: none";
 
-        if( Util.isElectron() && !this.config.hideGenomeOptions ) {
-            this.addGlobalMenuItem(this.config.classicMenu ? 'file':'dataset',
-              new dijitMenuItem(
-                  {
-                      id: 'menubar_dataset_file',
-                      label: "Open sequence file",
-                      iconClass: 'dijitIconFolderOpen',
-                      onClick: dojo.hitch( this, 'openFastaElectron' )
-                  }
-                )
-            );
-            this.addGlobalMenuItem(this.config.classicMenu ? 'file':'dataset',
-              new dijitMenuItem(
-                  {
-                      id: 'menubar_dataset_directory',
-                      label: "Open data directory",
-                      iconClass: 'dijitIconFolderOpen',
-                      onClick: function() {
-                            new OpenDirectoryDialog({
-                                    browser: thisObj,
-                                    setCallback: dojo.hitch( thisObj, 'openDirectoryElectron' )
-                                }).show();
-                            }
-                  }
-                )
-            );
-            this.addGlobalMenuItem(this.config.classicMenu ? 'file':'dataset',
-              new dijitMenuItem(
-                  {
-                      id: 'menubar_dataset_conf',
-                      label: "Open plugin",
-                      iconClass: 'dijitIconConfigure',
-                      onClick: function() {
-                            new PreferencesDialog({
-                                    browser: thisObj,
-                                    setCallback: dojo.hitch( thisObj, 'openConfig' )
-                                }).show();
-                            }
-                  }
-            ));
-            this.addGlobalMenuItem(this.config.classicMenu ? 'file':'dataset',
-              new dijitMenuItem(
-                  {
-                      id: 'menubar_dataset_save',
-                      label: "Save session",
-                      iconClass: 'dijitIconSave',
-                      onClick: dojo.hitch( this, 'saveData' )
-                  }
-                )
-            );
-            this.addGlobalMenuItem(this.config.classicMenu ? 'file':'dataset',
-              new dijitMenuItem(
-                  {
-                      id: 'menubar_dataset_home',
-                      label: "Return to main menu",
-                      iconClass: 'dijitIconTask',
-                      onClick: dojo.hitch( this, function() { var container = thisObj.container || document.body;thisObj.welcomeScreen(container); } )
-                  }
-                )
-            );
-        }
-        else if( !this.config.hideGenomeOptions ) {
-            this.addGlobalMenuItem(this.config.classicMenu ? 'file':'dataset',
-              new dijitMenuItem(
-                  {
-                      id: 'menubar_dataset_open',
-                      label: "Open sequence file",
-                      iconClass: 'dijitIconFolderOpen',
-                      onClick: dojo.hitch( this, 'openFasta' )
-                  })
-            );
-        }
-
-
         if( this.config.show_nav ) {
             this.navbox = this.createNavBox( topPane );
 
-            // make the dataset menu
-            if(this.config.classicMenu) {
-                if( this.config.datasets && ! this.config.dataset_id ) {
-                    console.warn("In JBrowse configuration, datasets specified, but dataset_id not set.  Dataset selector will not be shown.");
-                }
-                if( this.config.datasets && this.config.dataset_id ) {
-                    this.renderDatasetSelect( menuBar );
-                } else {
-
-                    this.poweredByLink = dojo.create('a', {
-                                    className: 'powered_by',
-                                    innerHTML: this.browserMeta().title,
-                                    title: 'powered by JBrowse'
-                                }, menuBar );
-                    thisObj.poweredBy_clickHandle = dojo.connect(this.poweredByLink, "onclick", dojo.hitch( aboutDialog, 'show') );
-                }
+            if( this.config.datasets && ! this.config.dataset_id ) {
+                console.warn("In JBrowse configuration, datasets specified, but dataset_id not set.  Dataset selector will not be shown.");
             }
-            else this.renderDatasetSelect( menuBar );
+            if( this.config.datasets && this.config.dataset_id ) {
+                this.renderDatasetSelect( menuBar );
+            } else {
+
+                this.poweredByLink = dojo.create('a', {
+                                className: 'powered_by',
+                                innerHTML: this.browserMeta().title,
+                                title: 'powered by JBrowse'
+                            }, menuBar );
+                thisObj.poweredBy_clickHandle = dojo.connect(this.poweredByLink, "onclick", dojo.hitch( aboutDialog, 'show') );
+            }
 
             // make the file menu
             this.addGlobalMenuItem( 'file',
                                     new dijitMenuItem(
                                         {
-                                            id: 'menubar_fileopen',
-                                            label: 'Open track file or URL',
+                                            id: 'menubar_fileopen', 
+                                            label: 'Open',
                                             iconClass: 'dijitIconFolderOpen',
                                             onClick: dojo.hitch( this, 'openFileDialog' )
                                         })
                                   );
 
-
-            this.addGlobalMenuItem( 'file', new dijitMenuSeparator() );
-
             this.fileDialog = new FileDialog({ browser: this });
 
             this.addGlobalMenuItem( 'file', new dijitMenuItem(
                 {
-                    id: 'menubar_combotrack',
+                    id: 'menubar_combotrack', 
                     label: 'Add combination track',
                     iconClass: 'dijitIconSample',
                     onClick: dojo.hitch(this, 'createCombinationTrack')
                 }));
 
-            this.renderGlobalMenu( 'file', {text: this.config.classicMenu?'File':'Track'}, menuBar );
+            this.renderGlobalMenu( 'file', {text: 'File'}, menuBar );
 
             // make the view menu
             this.addGlobalMenuItem( 'view', new dijitMenuItem({
-                id: 'menubar_sethighlight',
+                id: 'menubar_sethighlight', 
                 label: 'Set highlight',
                 iconClass: 'dijitIconFilter',
                 onClick: function() {
@@ -865,27 +682,27 @@ initView: function() {
             // make the options menu
             this.renderGlobalMenu( 'options', { text: 'Options', title: 'configure JBrowse' }, menuBar );
         }
-        function showHelp() {
-            new HelpDialog( lang.mixin(thisObj.config.quickHelp || {}, { browser: thisObj } )).show();
-        }
+
         if( this.config.show_nav ) {
             // make the help menu
             this.addGlobalMenuItem( 'help',
                                     new dijitMenuItem(
                                         {
-                                            id: 'menubar_about',
+                                            id: 'menubar_about', 
                                             label: 'About',
                                             //iconClass: 'dijitIconFolderOpen',
                                             onClick: dojo.hitch( aboutDialog, 'show' )
                                         })
                                   );
 
-
+            function showHelp() {
+                new HelpDialog( lang.mixin(thisObj.config.quickHelp || {}, { browser: thisObj } )).show();
+            }
             this.setGlobalKeyboardShortcut( '?', showHelp );
             this.addGlobalMenuItem( 'help',
                                     new dijitMenuItem(
                                         {
-                                            id: 'menubar_generalhelp',
+                                            id: 'menubar_generalhelp', 
                                             label: 'General',
                                             iconClass: 'jbrowseIconHelp',
                                             onClick: showHelp
@@ -895,13 +712,9 @@ initView: function() {
             this.renderGlobalMenu( 'help', {}, menuBar );
         }
 
-        if( this.config.show_nav && this.config.show_tracklist && this.config.show_overview && !Util.isElectron() ) {
+        if( this.config.show_nav && this.config.show_tracklist && this.config.show_overview ) {
             var shareLink = this.makeShareLink();
             if (shareLink) { menuBar.appendChild( shareLink ); }
-        }
-        else if(Util.isElectron()) {
-            var snapLink = this.makeSnapLink();
-            if(snapLink) { menuBar.appendChild( snapLink ); }
         }
         else
             menuBar.appendChild( this.makeFullViewLink() );
@@ -1002,316 +815,30 @@ createCombinationTrack: function() {
 },
 
 renderDatasetSelect: function( parent ) {
-    var thisB=this;
-
-
-
-
-    if(this.config.classicMenu) {
-        var dsconfig = this.config.datasets || {};
-        var datasetChoices = [];
-        for( var id in dsconfig ) {
-            if( ! /^_/.test(id) )
-                datasetChoices.push( dojo.mixin({ id: id }, dsconfig[id] ) );
-        }
-
-        new dijitSelectBox(
-            {
-                name: 'dataset',
-                className: 'dataset_select',
-                value: this.config.dataset_id,
-                options: array.map(
-                    datasetChoices,
-                    function( dataset ) {
-                        return { label: dataset.name, value: dataset.id };
-                    }),
-                onChange: dojo.hitch(this, function( dsID ) {
-                                         var ds = (this.config.datasets||{})[dsID];
-                                         if( ds )
-                                             window.location = ds.url;
-                                         return false;
-                                     })
-            }).placeAt( parent );
-    }
-    else {
-        if( this.config.datasets && this.config.dataset_id ) {
-            this.addGlobalMenuItem( 'dataset',
-                    new dijitMenuSeparator() );
-
-        for( var id in this.config.datasets ) {
-            if( ! /^_/.test(id) ) {
-                var dataset = this.config.datasets[id]
-
-                this.addGlobalMenuItem( 'dataset',
-                    new dijitMenuItem(
-                    {
-                        id: 'menubar_dataset_bookmark_' + id,
-                        label: id == this.config.dataset_id ? ('<b>' + dataset.name + '</b>') : dataset.name,
-                        iconClass: 'dijitIconBookmark',
-                        onClick: dojo.hitch( dataset, function() { window.location = this.url } )
-                    })
-                  );
-                }
-            }
-        }
-        this.renderGlobalMenu( 'dataset', {text: 'Genome'}, parent );
-    }
-},
-
-
-saveSessionDir: function( directory ) {
-    var fs = electronRequire('fs');
-    var app = electronRequire('electron').remote.app;
-    var path = app.getPath('userData')+"/sessions.json";
-    var obj = [];
-
-    try {
-        var obj = JSON.parse( fs.readFileSync(path, 'utf8') );
-    }
-    catch(e) {}
-
-    var dir = Util.replacePath( directory );
-    if( array.every(obj, function(elt) { return elt.session!=dir; }) )
-        obj.push({ session: dir });
-
-    fs.writeFileSync(path, JSON.stringify( obj, null, 2 ), 'utf8');
-},
-
-
-openDirectoryElectron: function( directory ) {
-    this.saveSessionDir( directory );
-    window.location = "?data=" + Util.replacePath( directory );
-},
-
-
-openConfig: function( plugins ) {
-    if( !confirm("If you have opened any new tracks, please save them before continuing. Are you sure you want to continue?") )
-        return;
-    var fs = electronRequire('fs');
-
-    var dir = this.config.dataRoot;
-    var trackList = JSON.parse( fs.readFileSync( dir + "/trackList.json", 'utf8') );
-
-    //remap existing plugins to object form
-    trackList.plugins = trackList.plugins || {};
-    if( lang.isArray( trackList.plugins ) ) {
-        var temp = {};
-        array.forEach( trackList.plugins, function( p ) {
-            temp[ p ] = { 'name': p, 'location': dir+'/'+p };
-        });
-        trackList.plugins = temp;
+    var dsconfig = this.config.datasets || {};
+    var datasetChoices = [];
+    for( var id in dsconfig ) {
+        if( ! /^_/.test(id) )
+            datasetChoices.push( dojo.mixin({ id: id }, dsconfig[id] ) );
     }
 
-    // add new plugins
-    array.forEach( plugins, function( plugin ) {
-        var name = plugin.match(/\/(\w+)$/)[1];
-        trackList.plugins[ name ] = { location: plugin, name: name };
-    });
-
-    try {
-        fs.writeFileSync( dir + "/trackList.json", JSON.stringify(trackList, null, 2) );
-    } catch(e) { console.log("Failed to save trackList.json"); }
-    window.location.reload();
-},
-
-
-
-saveData: function() {
-    if( !confirm("This will overwrite tracks and config data in your data directory. Are you sure you want to continue?") )
-        return;
-
-    var fs = electronRequire('fs');
-    var dir = this.config.dataRoot;
-
-    // use getstore to access the files that were loaded from local files, and create standard configs
-    var trackConfs = array.map( this.config.tracks, function(trackConfig) {
-        var temp = lang.clone( trackConfig );
-        this.getStore( temp.store, lang.hitch( this, function( obj ) {
-            temp.storeClass = obj.config.type;
-            if( !temp.urlTemplate ) {
-                lang.mixin( temp, obj.saveStore() );
-
-                if( temp.histograms && temp.histograms.store ) {
-                    this.getStore( temp.histograms.store, function( obj ) {
-                        lang.mixin( temp.histograms, obj.saveStore() );
-                    });
-                }
-            }
-            delete temp.store;
-        }));
-        return temp;
-    }, this);
-
-    var plugins = array.filter( Util.uniq( this.config.plugins ), function(elt) { return elt!="RegexSequenceSearch" });
-    var tmp = {};
-
-    if( lang.isArray( this.config.plugins ) ) {
-        array.forEach( this.config.plugins, function( p ) {
-            tmp[ p ] = typeof p == 'object' ? p : { 'name': p };
-        });
-    }
-    else tmp = this.config.plugins;
-    var minTrackList = {
-        tracks: trackConfs,
-        refSeqs: this.config.refSeqs,
-        refSeqOrder: this.config.refSeqOrder,
-        plugins:tmp
-    };
-    try {
-        fs.writeFileSync( Util.unReplacePath(dir) + "/trackList.json", JSON.stringify(minTrackList, null, 2) );
-    } catch(e) { alert('Unable to save track data'); }
-},
-
-
-openFastaElectron: function() {
-    this.fastaFileDialog = this.fastaFileDialog || new FastaFileDialog({browser: this});
-
-    var app = electronRequire('electron').remote.app;
-    var fs = electronRequire('fs');
-    var path = electronRequire('path');
-
-    this.fastaFileDialog.show ({
-        openCallback: dojo.hitch(this, function(results) {
-          var confs = results.trackConfs || [];
-
-          if( confs.length ) {
-            if( confs[0].store.fasta && confs[0].store.fai ) {
-                var fasta = Util.replacePath( confs[0].store.fasta.url );
-                var fai = Util.replacePath( confs[0].store.fai.url );
-
-                var trackList = {
-                    tracks: [{
-                        label: confs[0].label,
-                        key: confs[0].key,
-                        type: "SequenceTrack",
-                        category: "Reference sequence",
-                        storeClass: 'JBrowse/Store/SeqFeature/IndexedFasta',
-                        useAsRefSeqStore: true,
-                        chunkSize: 20000,
-                        urlTemplate: fasta,
-                        faiUrlTemplate: fai
-                    }],
-                    refSeqs: fai,
-                    refSeqOrder: results.refSeqOrder
-                };
-
-                // fix dix to be user data if we are accessing a url for fasta
-                var dir = app.getPath('userData')+"/"+confs[0].label;
-
-
-                try {
-                    fs.existsSync(dir) || fs.mkdirSync(dir);
-                    fs.writeFileSync( dir + "/trackList.json", JSON.stringify(trackList, null, 2));
-                    fs.closeSync( fs.openSync( dir+"/tracks.conf", 'w' ) );
-                    this.saveSessionDir( dir );
-                    window.location = window.location.href.split('?')[0] + "?data=" + Util.replacePath( dir );
-                } catch(e) { alert(e); }
-            }
-            else {
-                var fasta = Util.replacePath( confs[0].store.fasta.url );
-                try {
-                    var stats = fs.statSync( fasta );
-                    if(stats.size>100000000) {
-                       if(!confirm('Warning: you are opening a non-indexed fasta larger than 100MB. It is recommended to load a fasta (.fa) and the fasta index (.fai) to provide speedier loading. Do you wish to continue anyways?')) {
-                           return;
-                       }
-                    }
-                } catch(e) { /* */ }
-
-                var refseqs = new UnindexedFasta ({'browser': this, 'urlTemplate': fasta });
-                var thisB = this;
-                refseqs.getRefSeqs( function(res) {
-                    var trackList = {
-                        tracks: [{
-                            label: confs[0].label,
-                            key: confs[0].key,
-                            type: "SequenceTrack",
-                            category: "Reference sequence",
-                            useAsRefSeqStore: true,
-                            storeClass: 'JBrowse/Store/SeqFeature/UnindexedFasta',
-                            chunkSize: 20000,
-                            urlTemplate: fasta
-                        }],
-                        refSeqs: { data: res },
-                        refSeqOrder: results.refSeqOrder
-                    };
-                    try {
-                        var dir = app.getPath('userData')+"/"+confs[0].label;
-                        fs.existsSync(dir) || fs.mkdirSync(dir);
-                        fs.writeFileSync(dir + "/trackList.json", JSON.stringify(trackList, null, 2));
-                        fs.closeSync(fs.openSync( dir+"/tracks.conf", 'w' ));
-                        thisB.saveSessionDir( dir );
-                        window.location = window.location.href.split('?')[0] + "?data=" + Util.replacePath( dir );
-                    } catch(e) { alert(e); }
-                }, function(err) { console.error('error', err); });
-            }
-          }
-        })
-    });
-},
-
-openFasta: function() {
-    var thisB=this;
-    this.fastaFileDialog = this.fastaFileDialog || new FastaFileDialog({browser: this});
-
-    var replaceBrowser = function (newBrowserGenerator) {
-        thisB.teardown()
-        newBrowserGenerator()
-    }
-
-    this.fastaFileDialog.show ({
-        openCallback: dojo.hitch(this, function(results) {
-          var confs = results.trackConfs || [];
-          function loadNewRefSeq(refSeqs, tracks) {
-              replaceBrowser(function() {
-                  var newBrowser = new thisB.constructor({
-                      refSeqs: { data: refSeqs },
-                      refSeqOrder: results.refSeqOrder
-                  });
-                  newBrowser.afterMilestone('completely initialized', function() {
-                      array.forEach( tracks, function( conf ) {
-                          var storeConf = conf.store;
-                          if( storeConf && typeof storeConf == 'object' ) {
-                              delete conf.store;
-                              storeConf.name = 'refseqs'; // important to make it the refseq store
-                              conf.store = this.addStoreConfig( storeConf.name, storeConf );
-                          }
-                      }, newBrowser);
-                      newBrowser.publish( '/jbrowse/v1/v/tracks/new', tracks );
-                  });
-              });
-          }
-          if( confs.length ) {
-            if( confs[0].store.fasta && confs[0].store.fai ) {
-                new IndexedFasta({
-                    browser: this,
-                    fai: confs[0].store.fai,
-                    fasta: confs[0].store.fasta
-                })
-                .getRefSeqs(
-                    function(refSeqs) { loadNewRefSeq( refSeqs, confs ); },
-                    function(error) { alert('Error getting refSeq: '+error); }
-                );
-            }
-            else if( confs[0].store.fasta ) {
-                if( confs[0].store.fasta.size > 100000000 ) {
-                   if(!confirm('Warning: you are opening a non-indexed fasta larger than 100MB. It is recommended to load a fasta (.fa) and the fasta index (.fai) to provide speedier loading. Do you wish to continue anyways?')) {
-                       return;
-                   }
-                }
-                new UnindexedFasta({
-                    browser: this,
-                    fasta: confs[0].store.fasta
-                })
-                .getRefSeqs(
-                    function(refSeqs) { loadNewRefSeq( refSeqs, confs ); },
-                    function(error) { alert('Error getting refSeq: '+error); }
-                );
-            }
-
-          }
-        })
-      });
+    new dijitSelectBox(
+        {
+            name: 'dataset',
+            className: 'dataset_select',
+            value: this.config.dataset_id,
+            options: array.map(
+                datasetChoices,
+                function( dataset ) {
+                    return { label: dataset.name, value: dataset.id };
+                }),
+            onChange: dojo.hitch(this, function( dsID ) {
+                                     var ds = (this.config.datasets||{})[dsID];
+                                     if( ds )
+                                         window.location = ds.url;
+                                     return false;
+                                 })
+        }).placeAt( parent );
 },
 
 /**
@@ -1385,18 +912,13 @@ getTrackTypes: function() {
         this._knownTrackTypes = {
             // map of store type -> default track type to use for the store
             trackTypeDefaults: {
-                'JBrowse/Store/SeqFeature/BAM'         : 'JBrowse/View/Track/Alignments2',
-                'JBrowse/Store/SeqFeature/NCList'      : 'JBrowse/View/Track/CanvasFeatures',
-                'JBrowse/Store/SeqFeature/BigWig'      : 'JBrowse/View/Track/Wiggle/XYPlot',
-                'JBrowse/Store/SeqFeature/VCFTabix'    : 'JBrowse/View/Track/CanvasVariants',
-                'JBrowse/Store/SeqFeature/GFF3'        : 'JBrowse/View/Track/CanvasFeatures',
-                'JBrowse/Store/SeqFeature/GFF3Tabix'   : 'JBrowse/View/Track/CanvasFeatures',
-                'JBrowse/Store/SeqFeature/BED'         : 'JBrowse/View/Track/CanvasFeatures',
-                'JBrowse/Store/SeqFeature/BEDTabix'    : 'JBrowse/View/Track/CanvasFeatures',
-                'JBrowse/Store/SeqFeature/GTF'         : 'JBrowse/View/Track/CanvasFeatures',
-                'JBrowse/Store/SeqFeature/StaticChunked' : 'JBrowse/View/Track/Sequence',
-                'JBrowse/Store/SeqFeature/UnindexedFasta': 'JBrowse/View/Track/Sequence',
-                'JBrowse/Store/SeqFeature/IndexedFasta'  : 'JBrowse/View/Track/Sequence'
+                'JBrowse/Store/SeqFeature/BAM'        : 'JBrowse/View/Track/Alignments2',
+                'JBrowse/Store/SeqFeature/NCList'     : 'JBrowse/View/Track/CanvasFeatures',
+                'JBrowse/Store/SeqFeature/BigWig'     : 'JBrowse/View/Track/Wiggle/XYPlot',
+                'JBrowse/Store/Sequence/StaticChunked': 'JBrowse/View/Track/Sequence',
+                'JBrowse/Store/SeqFeature/VCFTabix'   : 'JBrowse/View/Track/CanvasVariants',
+                'JBrowse/Store/SeqFeature/GFF3'       : 'JBrowse/View/Track/CanvasFeatures',
+                'JBrowse/Store/SeqFeature/GTF'       : 'JBrowse/View/Track/CanvasFeatures'
             },
 
             knownTrackTypes: [
@@ -1626,22 +1148,14 @@ _reportGoogleUsageStats: function( stats ) {
 
 // phones home to custom analytics at jbrowse.org
 _reportCustomUsageStats: function(stats) {
-    var protocol = "https";
-
-    // overridable protocol
-    if (typeof this.config.clientReport != "undefined" && typeof this.config.clientReport.protocol != "undefined")
-        protocol = this.config.clientReport.protocol;
-
     // phone home with a GET request made by a script tag
-    var clientReport = protocol + '://jbrowse.org/analytics/clientReport?'
-               + dojo.objectToQuery( stats );
-
     dojo.create(
         'img',
         { style: {
               display: 'none'
           },
-          src: clientReport
+          src: 'http://jbrowse.org/analytics/clientReport?'
+               + dojo.objectToQuery( stats )
         },
         document.body
     );
@@ -1777,7 +1291,6 @@ _calculateClientStats: function() {
 
         // time param to prevent caching
         t: date.getTime()/1000,
-        electron: Util.isElectron(),
 
         // also get local time zone offset
         tzoffset: date.getTimezoneOffset(),
@@ -1801,21 +1314,8 @@ publish: function() {
 
     return topic.publish.apply( topic, arguments );
 },
-
 subscribe: function() {
-    this._uniqueSubscriptionId = this._uniqueSubscriptionId || 0;
-    this._subscription = this._subscription || {};
-    var uniqId = ++this._uniqueSubscriptionId;
-    var unsubber = topic.subscribe.apply( topic, arguments );
-    var thisB = this;
-    this._subscription[uniqId] = unsubber;
-    return (function(id) {
-        return { remove: function() {
-                delete thisB._subscription[id]
-                unsubber.remove()
-            }
-        }
-    }) (uniqId)
+    return topic.subscribe.apply( topic, arguments );
 },
 
 onResize: function() {
@@ -1924,7 +1424,7 @@ reachedMilestone: function( name ) {
 
 
 /**
- *  Load our configuration file(s) based on the parameters the
+ *  Load our configuration file(s) based on the parameters thex
  *  constructor was passed.  Does not return until all files are
  *  loaded and merged in.
  *  @returns nothing meaningful
@@ -1947,7 +1447,7 @@ loadConfig: function () {
                                this._addTrackConfigs( tracks );
 
                                // coerce some config keys to boolean
-                               dojo.forEach( ['show_tracklist','show_nav','show_overview','show_menu', 'show_tracklabels'], function(v) {
+                               dojo.forEach( ['show_tracklist','show_nav','show_overview','show_menu'], function(v) {
                                                  this.config[v] = this._coerceBoolean( this.config[v] );
                                              },this);
 
@@ -2090,11 +1590,9 @@ _coerceBoolean: function(val) {
  */
 addRefseqs: function( refSeqs ) {
     var allrefs = this.allRefs = this.allRefs || {};
-
     dojo.forEach( refSeqs, function(r) {
         this.allRefs[r.name] = r;
     },this);
-
 
     // generate refSeqOrder
     this.refSeqOrder =
@@ -2532,32 +2030,6 @@ globalKeyHandler: function( evt ) {
         evt.stopPropagation();
     }
 },
-makeSnapLink: function () {
-    var browser = this;
-    var shareURL = '#';
-    var dataRoot = this.config.dataRoot;
-
-    // make the share link
-    var button = new dijitButton({
-            className: 'share',
-            innerHTML: 'Screenshot',
-            title: 'share this view',
-            onClick: function() {
-                var fs = electronRequire('fs');
-                var screenshot = electronRequire('electron-screenshot')
-                var dialog = electronRequire('electron').remote.dialog;
-                dialog.showSaveDialog(function (fileName) {
-                    screenshot({
-                      filename: fileName,
-                      delay: 1
-                    }, function() { console.log('Saved screenshot',fileName); });
-                });
-            }
-        }
-    );
-
-    return button.domNode;
-},
 
 makeShareLink: function () {
     // don't make the link if we were explicitly configured not to
@@ -2709,28 +2181,17 @@ makeFullViewLink: function () {
  */
 
 onCoarseMove: function(startbp, endbp) {
+
     var currRegion = { start: startbp, end: endbp, ref: this.refSeq.name };
-    var searchVal = ""; // the feature that was typed into the search field
 
-    // update the location box with our current location (in this case locationBox is the legacy search box)
+    // update the location box with our current location
     if( this.locationBox ) {
-        //this.searchVal = searchVal;
-        var searchVal = this.locationBox.get('value');
-        if (searchVal.length) searchVal = ' "' + searchVal + '"';
-        var locationVal = Util.assembleLocStringWithLength( currRegion );
-
-        this.locationBox.set('value',locationVal,
+        this.locationBox.set(
+            'value',
+            Util.assembleLocStringWithLength( currRegion ),
             false //< don't fire any onchange handlers
         );
-        this.locationBox.set('placeholder',"search features, IDs");
         this.goButton.set( 'disabled', true ) ;
-    }
-    // update the id=location-box if it exists
-    var node = dojo.byId("location-info");
-    if (node) {
-        var location = Util.assembleLocStringWithLength( currRegion );
-        html.set(node, location + searchVal);
-        this.locationBox.set('value',"", false);
     }
 
     // also update the refseq selection dropdown if present
@@ -2856,8 +2317,7 @@ cookie: function(keyWithoutId,value) {
 
 createNavBox: function( parent ) {
     var thisB = this;
-    var align = 'center';
-    var navbox = dojo.create( 'div', { id: 'navbox', style: { 'text-align': align } }, parent );
+    var navbox = dojo.create( 'div', { id: 'navbox', style: { 'text-align': 'center' } }, parent );
 
     // container adds a white backdrop to the locationTrap.
     var locationTrapContainer = dojo.create('div', {className: 'locationTrapContainer'}, navbox );
@@ -2944,39 +2404,24 @@ createNavBox: function( parent ) {
 
     navbox.appendChild(document.createTextNode( four_nbsp ));
 
-    // default search box is location box
-    var locationMode = "";
-    var locationWidth = '40ex';
-    if (this.config.locationBox==="separate") { // separate location box
-        locationMode = "separate-location-box"
-        locationWidth = '25ex';
-    }
-
-    var searchbox = dojo.create('span', {
-        'id':'search-box',
-        'class': locationMode
-    }, navbox );
-
     // if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
     // set in the config, then put in a dropdown box for selecting
     // reference sequences
-    var refSeqSelectBoxPlaceHolder = dojo.create('span', {id:'search-refseq'}, searchbox );
+    var refSeqSelectBoxPlaceHolder = dojo.create('span', {}, navbox );
 
-    // make the location search box
+    // make the location box
     this.locationBox = new dijitComboBox(
         {
             id: "location",
             name: "location",
-            style: { width: locationWidth },
+            style: { width: '25ex' },
             maxLength: 400,
-            searchAttr: "name",
-            title: 'Enter a chromosomal position, symbol or ID to search'
+            searchAttr: "name"
         },
-        dojo.create('input', {}, searchbox) );
-        this.afterMilestone( 'loadNames', dojo.hitch(this, function() {
-        if( this.nameStore ) {
+        dojo.create('input', {}, navbox) );
+    this.afterMilestone( 'loadNames', dojo.hitch(this, function() {
+        if( this.nameStore )
             this.locationBox.set( 'store', this.nameStore );
-        }
     }));
 
     this.locationBox.focusNode.spellcheck = false;
@@ -3017,31 +2462,20 @@ createNavBox: function( parent ) {
          };
     }).call(this);
 
-    // make the 'Go' button
+    // make the 'Go' button'
     this.goButton = new dijitButton(
-    {
-        label: 'Go',
-        onClick: dojo.hitch( this, function(event) {
-            this.navigateTo(this.locationBox.get('value'));
-            this.goButton.set('disabled',true);
-            dojo.stopEvent(event);
-        }),
-        id: 'search-go-btn'
-    }, dojo.create('button',{},searchbox));
-
+        {
+            label: 'Go',
+            onClick: dojo.hitch( this, function(event) {
+                this.navigateTo(this.locationBox.get('value'));
+                this.goButton.set('disabled',true);
+                dojo.stopEvent(event);
+            })
+        }, dojo.create('button',{},navbox));
     this.highlightButtonPreviousState = false;
-
-    // create location box
-    // if in config "locationBox": "separate", then the search box will be the location box.
-    if (this.config.locationBox==="separate") {
-        this.locationInfoBox = domConstruct.place("<div id='location-info'>location</div>", navbox);
-    }
-
-    // make the highligher button
     this.highlightButton = new dojoxTriStateCheckBox({
         //label: 'Highlight',
-        title: 'Highlight a Region',
-        id: 'highlight-btn',
+        title: 'highlight a region',
         states:[false, true, "mixed"],
         onChange: function() {
             if( this.get('checked')==true ) {
@@ -3051,7 +2485,7 @@ createNavBox: function( parent ) {
                 var h = thisB.getHighlight();
                 if( h ) {
                     thisB.clearHighlight();
-                    thisB.view.redrawRegion( h );
+                    thisB.view.redrawRegion( h ); 
                 }
             }
             else { // mixed
@@ -3067,10 +2501,11 @@ createNavBox: function( parent ) {
                 thisB.view.behaviorManager.swapBehaviors('highlightingMouse','normalMouse');
             }
         }
-    }, dojo.create('button',{id: 'highlight-btn'},navbox));
+    }, dojo.create('button',{},navbox));
 
     this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
                    function() { thisB.highlightButton.set('checked',false); });
+
 
     this.afterMilestone('loadRefSeqs', dojo.hitch( this, function() {
 
@@ -3140,20 +2575,12 @@ createNavBox: function( parent ) {
 
     return navbox;
 },
+
 /**
  * Return the current highlight region, or null if none.
  */
 getHighlight: function() {
     return this._highlight || null;
-},
-
-getBookmarks: function() {
-    if( this.config.bookmarkService ) {
-        return request( this.config.bookmarkService + "?" + ioQuery.objectToQuery({ sequence: this.refSeq.name, organism: this.config.dataset_id }), {
-            handleAs: "json"
-        });
-    }
-    else return this.config.bookmarks;
 },
 
 /**
@@ -3221,22 +2648,6 @@ showRegionAfterSearch: function( location ) {
 },
 showRegionWithHighlight: function() { // backcompat
     return this.showRegionAfterSearch.apply( this, arguments );
-},
-
-/**
- * Tear it all down: remove all subscriptions, destroy widgets and DOM
- */
-teardown: function() {
-    for (var id in this._subscription) {
-        this._subscription[id].remove()
-    }
-
-    if(this.containerWidget)
-        this.containerWidget.destroyRecursive(true)
-
-    while (this.container && this.container.firstChild) {
-        this.container.removeChild(this.container.firstChild);
-    }
 }
 
 });
