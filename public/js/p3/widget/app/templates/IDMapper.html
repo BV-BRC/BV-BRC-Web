@@ -1,15 +1,16 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-	<div style="width: 420px;margin:auto;margin-top: 10px;padding:10px;">
-		<h2>ID Mapper</h2>
-		<p>Map IDs</p>
-	</div>
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>ID Mapper</h3>
+            <p>Map from one ID type to another and obtain PATRIC gene lists from a list of IDs.</p>
+        </div>
 
-	<div style="width: 500px;margin:auto;">	
 	<table style="width:100%;">
 		<tr>
-			<td>FROM:</td>
 			<td style="vertical-align:top;">
+                <div class="appRow" style="width:219px; white-space:nowrap"> FROM:
 				<select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="leftTypeSelect"  >
 					<option selected="true" value="patric_id">PATRIC ID</option>
 					<option value="feature_id">Feature ID</option>
@@ -65,12 +66,13 @@
 					<option value="UniRef90">UniRef90</option>
 					<option value="World-2DPAGE">World-2DPAGE</option>
 					<option value="eggNOG">eggNOG</option>
-				</select>	
+				</select>
+            </div>
 			</td>
 			<td>
 			</td>
-			<td>TO:</td>
 			<td>
+                <div class="appRow" style="width:219px; white-space:nowrap">TO:
                                 <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="rightTypeSelect" >
                                         <option selected="true" value="patric_id">PATRIC ID</option>
                                         <option value="feature_id">Feature ID</option>
@@ -126,29 +128,27 @@
                                         <option value="UniRef90">UniRef90</option>
                                         <option value="World-2DPAGE">World-2DPAGE</option>
                                         <option value="eggNOG">eggNOG</option>
-                                </select> 
+                                </select>
+                            </div>
 			</td>
 		</tr>
 		<tr>
-			<td data-dojo-attach-point="leftColumnCount" colspan="2">0 IDs</td>
-			<td></td>
-			<td data-dojo-attach-point="rightColumnCount" colspan="2">0 IDs</td>
-		</tr>
-		<tr>
-                        <td style="vertical-align:top;" colspan="2">
-				<div data-dojo-attach-point="leftList" style="width: 100%;height:500px;vertical-align:top" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeLeft"></div>
-			</td>
-			<td style="vertical-align:top; text-align:center;">
-
+			<td data-dojo-attach-point="leftColumnCount" >0 IDs</td>
+			<td style="text-align:left;">
 				<div data-dojo-type="dijit/form/Button" data-dojo-attach-point="mapButton" data-dojo-attach-event="onClick:map" data-dojo-props="disabled:true">MAP</div>
-
 			</td>
-
-			<td style="vertical-align: top;" colspan="2">
-				<div data-dojo-attach-point="rightList" style="width: 100%;height:500px;vertical-align:top;" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeRight"></div>
+			<td data-dojo-attach-point="rightColumnCount" colspan="2"></td>
+		</tr>
+		<tr>
+            <td style="vertical-align:top;" colspan="2">
+				<div data-dojo-attach-point="leftList" style="width: 100%;height:300px;vertical-align:top;max-height:350px" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeLeft"></div>
 			</td>
+            <td></td>
+            <td></td>
+            <td></td>
 		</tr>
 	</table>
 	</div>
+    <div data-dojo-attach-point="idmap_result"></div>
 </form>
 
