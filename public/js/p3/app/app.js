@@ -367,7 +367,7 @@ define([
 
                        on(document, ".logoutLink:click", function(evt){
                                console.log("logoutLink: click");
-                               window.open("/logout");
+                               window.location="/logout";
                        });
 			on(document, ".navigationLink:click", function(evt){
 				// console.log("NavigationLink Click", evt);
