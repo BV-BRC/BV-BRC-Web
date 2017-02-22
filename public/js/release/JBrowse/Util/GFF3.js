@@ -4,12 +4,10 @@
  */
 
 define("JBrowse/Util/GFF3", [
-           'dojo/_base/array',
-           'dojo/_base/lang'
+           'dojo/_base/array'
        ],
        function(
-           array,
-           lang
+           array
        ) {
 var gff3_field_names = 'seq_id source type start end score strand phase attributes'.split(' ');
 
@@ -127,7 +125,7 @@ return {
             var val = f[ gff3_field_names[i] ];
             if(i==6) // deserialize strand
                 fields[i] = val === null || val === undefined ? '.' : translate_strand[val+1];
-            else
+            else  
                 fields[i] = val === null || val === undefined ? '.' : this.escape( ''+val );
         }
         fields[8] = attrString;
@@ -141,13 +139,13 @@ return {
             var val = attrs[tag];
             var valstring = val.hasOwnProperty( 'toString' )
                                 ? this.escape( val.toString() ) :
-                            lang.isArray(val.values)
+                            val.values
                                 ? function(val) {
-                                    return lang.isArray(val)
+                                    return val instanceof Array
                                         ? array.map( val, this.escape ).join(',')
                                         : this.escape( val );
                                   }.call(this,val.values) :
-                            lang.isArray(val)
+                            val instanceof Array
                                 ? array.map( val, this.escape ).join(',')
                                 : this.escape( val );
             attrOrder.push( this.escape( tag )+'='+valstring);

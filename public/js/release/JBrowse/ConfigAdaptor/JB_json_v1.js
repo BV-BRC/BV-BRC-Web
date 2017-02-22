@@ -148,17 +148,18 @@ return declare('JBrowse.ConfigAdaptor.JB_json_v1',null,
                 },this);
 
                 //resolve the refSeqs and nameUrl if present
-                if( o.refSeqs && typeof o.refSeqs == 'string' )
+                if( o.refSeqs )
                     o.refSeqs = Util.resolveUrl( o.sourceUrl, o.refSeqs );
                 if( o.nameUrl )
                     o.nameUrl = Util.resolveUrl( o.sourceUrl, o.nameUrl );
             }
 
-            o = this.regularizeTrackConfigs( o );
+            o = this._regularizeTrackConfigs( o );
 
             return o;
         },
-        regularizeTrackConfigs: function( conf ) {
+
+        _regularizeTrackConfigs: function( conf ) {
             conf.stores = conf.stores || {};
 
             array.forEach( conf.tracks || [], function( trackConfig ) {
@@ -233,7 +234,7 @@ return declare('JBrowse.ConfigAdaptor.JB_json_v1',null,
 
                 // if this is the first sequence store we see, and we
                 // have no refseqs store defined explicitly, make this the refseqs store.
-                if( (storeClass == 'JBrowse/Store/Sequence/StaticChunked' || trackConfig.useAsRefSeqStore) && !mainconf.stores['refseqs'] )
+                if( storeClass == 'JBrowse/Store/Sequence/StaticChunked' && !mainconf.stores['refseqs'] )
                     storeConf.name = 'refseqs';
                 else
                     storeConf.name = 'store'+digest.objectFingerprint( storeConf );

@@ -77,7 +77,6 @@ return declare( BlockBased,
                                           im.style.top = "0px";
                                           break;
                                       case "bottom":
-                                          /* fall through */
                                       default:
                                           im.style.bottom = this.trackPadding + "px";
                                           break;

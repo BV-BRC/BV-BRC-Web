@@ -23,7 +23,6 @@ define( "JBrowse/View/Track/BlockBased", [
             'JBrowse/Component',
             'JBrowse/FeatureFiltererMixin',
             'JBrowse/Errors',
-            'JBrowse/Model/Location',
             'JBrowse/View/TrackConfigEditor',
             'JBrowse/View/ConfirmDialog',
             'JBrowse/View/Track/BlockBased/Block',
@@ -53,7 +52,6 @@ define( "JBrowse/View/Track/BlockBased", [
                   Component,
                   FeatureFiltererMixin,
                   Errors,
-                  Location,
                   TrackConfigEditor,
                   ConfirmDialog,
                   Block,
@@ -182,7 +180,7 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
         this.label = labelDiv;
 
         if ( ( this.config.style || {} ).trackLabelCss){
-            labelDiv.style.cssText += ";" + this.config.style.trackLabelCss;
+            labelDiv.style.cssText += ";" + trackConfig.style.trackLabelCss;
         }
 
         var closeButton = dojo.create('div',{
@@ -717,7 +715,7 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
             this.own( parent );
         }
 
-        for ( var key in menuStructure ) {
+        for ( key in menuStructure ) {
             var spec = menuStructure [ key ];
             try {
                 if ( spec.children ) {
@@ -1138,32 +1136,7 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
                          );
     },
 
-    renderRegionBookmark: function( args, bookmarks, renderLabels ) {
-        var thisB=this;
-        if( bookmarks.then ) {
-            bookmarks.then(
-                function( books ) {
-                    array.forEach( books.features, function( bookmark ) {
-                        if( bookmark.ref != this.refSeq.name ) return;
-                        var loc = new Location( bookmark.refseq+":"+bookmark.start+".."+bookmark.end );
-                        this.renderRegionHighlight( args, loc, bookmark.color, renderLabels?bookmark.label:null, renderLabels?bookmark.rlabel:null );
-                    }, thisB);
-                },
-                function(error) {
-                    console.log("Couldn't get bookmarks");
-                }
-            );
-        }
-        else {
-            array.forEach( bookmarks.features, function( bookmark ) {
-                if( bookmark.ref != this.refSeq.name ) return;
-                var loc = new Location( bookmark.refseq+":"+bookmark.start+".."+bookmark.end );
-                this.renderRegionHighlight( args, loc, bookmark.color, renderLabels?bookmark.label:null, renderLabels?bookmark.rlabel:null );
-            }, this);
-        }
-    },
-
-    renderRegionHighlight: function( args, highlight, color, label, rlabel ) {
+    renderRegionHighlight: function( args, highlight ) {
         // do nothing if the highlight does not overlap this region
         if( highlight.start > args.rightBase || highlight.end < args.leftBase )
             return;
@@ -1185,42 +1158,16 @@ return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
 
         var width = (right-left)*100/block_span;
         left = (left - args.leftBase)*100/block_span;
-        var highlight=domConstruct.create('div', {
-                                className: (color?'global_highlight_mod':'global_highlight')
+        var el = domConstruct.create('div', {
+                                className: 'global_highlight'
                                     + (trimLeft <= 0 ? ' left' : '')
                                     + (trimRight <= 0 ? ' right' : '' ),
                                 style: {
                                     left: left+'%',
                                     width: width+'%',
-                                    height: '100%',
-                                    background: color
+                                    height: '100%'
                                 }
                             }, args.block.domNode );
-                            
-        this.postRenderHighlight(highlight);
-
-        if( label ) {
-            /* 
-            //  vertical text, has bugs
-            if( trimLeft <= 0 ) {
-                domConstruct.create('div', { className:'verticaltext', style: { top: '50px', left: left+'%',transformOrigin: left+'%'+' top' }, innerHTML: label }, args.block.domNode);
-            }
-            if( trimRight <= 0 ) {
-                domConstruct.create('div', { className:'verticaltext', style: { top: '50px', left: left+width+'%',transformOrigin: left+width+'%'+' top' }, innerHTML: rlabel }, args.block.domNode);
-            }*/
-            if( trimLeft <= 0 ) {
-                var d1=domConstruct.create('div', { className:'horizontaltext', style: { background: 'white', zIndex: 1000, left: left+'%' }, innerHTML: label }, args.block.domNode);
-            }
-            if( trimRight <= 0 ) {
-                var d2=domConstruct.create('div', { className:'horizontaltext', style: { background: 'white', zIndex: 1000, left: left+width+'%' }, innerHTML: rlabel }, args.block.domNode);
-            }
-
-            var textWidth = (d1.clientWidth + 1) + "px";
-            d1.style.left='calc('+left+'% - '+textWidth+')';
-        }
-    },
-    postRenderHighlight: function(node) {
-        
     }
 
 });

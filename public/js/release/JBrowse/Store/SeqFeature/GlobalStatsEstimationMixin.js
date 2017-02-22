@@ -7,10 +7,9 @@
 define("JBrowse/Store/SeqFeature/GlobalStatsEstimationMixin", [
            'dojo/_base/declare',
            'dojo/_base/array',
-           'dojo/Deferred',
-           'JBrowse/Errors'
+           'dojo/Deferred'
        ],
-       function( declare, array, Deferred, Errors ) {
+       function( declare, array, Deferred ) {
 
 return declare( null, {
 
@@ -23,9 +22,6 @@ return declare( null, {
         var deferred = new Deferred();
 
         refseq = refseq || this.refSeq;
-        var timeout = this.storeTimeout || 3000;
-
-        var startTime = new Date();
 
         var statsFromInterval = function( length, callback ) {
             var thisB = this;
@@ -45,29 +41,21 @@ return declare( null, {
                                                  });
                               },
                               function( error ) {
+                                      console.error( error );
                                       callback.call( thisB, length,  null, error );
                               });
         };
 
         var maybeRecordStats = function( interval, stats, error ) {
             if( error ) {
-                if( error.isInstanceOf(Errors.DataOverflow) ) {
-                     console.log( 'Store statistics found chunkSizeLimit error, using empty: '+(this.source||this.name) );
-                     deferred.resolve( { featureDensity: 0, error: 'global stats estimation found chunkSizeError' } );
-                }
-                else {
-                    deferred.reject( error );
-                }
+                deferred.reject( error );
             } else {
-                 var refLen = refseq.end - refseq.start;
+                var refLen = refseq.end - refseq.start;
                  if( stats._statsSampleFeatures >= 300 || interval * 2 > refLen || error ) {
                      console.log( 'Store statistics: '+(this.source||this.name), stats );
                      deferred.resolve( stats );
-                 } else if( ((new Date()) - startTime) < timeout ) {
-                     statsFromInterval.call( this, interval * 2, maybeRecordStats );
                  } else {
-                     console.log( 'Store statistics timed out: '+(this.source||this.name) );
-                     deferred.resolve( { featureDensity: 0, error: 'global stats estimation timed out' } );
+                     statsFromInterval.call( this, interval * 2, maybeRecordStats );
                  }
             }
         };
