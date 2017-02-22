@@ -97,6 +97,7 @@ app.use(function(req, res, next){
 		dataServiceURL: config.get("dataServiceURL"),
 		homologyServiceURL: config.get("homologyServiceURL"),
 		genomedistanceServiceURL: config.get("genomedistanceServiceURL"),
+		compareregionServiceURL: config.get("compareregionServiceURL"),
 		enableDevTools: config.get("enableDevTools"),
 		accountURL: config.get("accountURL"),
 		appLabel: config.get("appLabel"),

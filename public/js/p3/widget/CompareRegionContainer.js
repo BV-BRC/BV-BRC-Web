@@ -12,12 +12,17 @@ define([
 		gutters: false,
 		visible: false,
 		state: null,
+		patric_id: null,
 		onSetState: function(attr, oldVal, state){
 			if(!state){
 				return;
 			}
 
 			if(!state.feature){
+				return;
+			}
+
+			if(this.patric_id == state.feature.patric_id){
 				return;
 			}
 
@@ -30,6 +35,7 @@ define([
 						// console.log(data);
 						this.compare_regions.set_data(data);
 						this.compare_regions.render();
+						this.patric_id = state.feature.patric_id;
 						this.loadingMask.hide();
 					}.bind(this),
 					function(err){
@@ -72,7 +78,7 @@ define([
 				return;
 			}
 
-			this.service = new SEEDClient("http://p3.theseed.org/qa/api");
+			this.service = new SEEDClient(window.App.compareregionServiceURL);
 
 			this.viewer = new ContentPane({
 				region: "center"
