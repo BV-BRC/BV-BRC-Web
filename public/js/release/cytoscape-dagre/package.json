@@ -10,7 +10,7 @@
         "spec": ">=1.3.0 <2.0.0",
         "type": "range"
       },
-      "/Users/dmachi/work/PATRIC/p3_web"
+      "/Users/hsyoo/dev/deploy/p3_web"
     ]
   ],
   "_from": "cytoscape-dagre@>=1.3.0 <2.0.0",
@@ -44,7 +44,7 @@
   "_shasum": "d66d362ae1ea733f60c2f0ffae5ffb06f1f612c7",
   "_shrinkwrap": null,
   "_spec": "cytoscape-dagre@^1.3.0",
-  "_where": "/Users/dmachi/work/PATRIC/p3_web",
+  "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-dagre/issues"
   },
