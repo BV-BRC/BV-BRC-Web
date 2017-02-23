@@ -1,10 +1,10 @@
 define([
-	'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/connect',
+	'dojo/_base/declare', 'dojo/_base/lang',
 	'dojox/gfx', 'dojox/gfx/utils',
 	'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu',
 	'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/Evented',
 	'dojo/domReady!'
-], function(declare, lang, connect,
+], function(declare, lang,
 			gfx, gfx_utils,
 			Tooltip, popup, TooltipDialog, Menu,
 			dom, on, domStyle, Evented){
@@ -15,7 +15,7 @@ define([
 		 * adjusted after rendering (it is dependent on the number of rows we generate).
 		 */
 		viewport_width: null,
-		viewport_default_height: 40000,
+		viewport_default_height: 2000,
 		canvas_width: null,
 		canvas_offset: null,
 		name_width: 250,
@@ -75,8 +75,7 @@ define([
 			this.viewport_width = this.container.clientWidth;
 			this.canvas_offset = this.name_width + this.name_gutter;
 			this.canvas_width = this.viewport_width - this.canvas_offset;
-			window.console.log("pane sizes: vp_width=", this.viewport_width, " canvas_offset=", this.canvas_offset,
-				" canvas_width=", this.canvas_width);
+			// window.console.log("pane sizes: vp_width=", this.viewport_width, " canvas_offset=", this.canvas_offset, " canvas_width=", this.canvas_width);
 		},
 
 		init_panes: function(){
@@ -282,7 +281,7 @@ define([
 			this.min_offset = min_offset;
 
 			var scale = this.canvas_width / contig_range;
-			window.console.log("computed scale", this.canvas_width, min_offset, contig_range, scale);
+			// window.console.log("computed scale", this.canvas_width, min_offset, contig_range, scale);
 			this.scale = scale;
 
 			/**
@@ -297,10 +296,12 @@ define([
 
 				row_idx = what[1];
 			}
-			//	    console.log("ending row idx ", row_idx);
+
 			var vp_height = row_idx * this.row_height + this.compare_top_height;
-			console.log("set viewport height " + vp_height);
+			// console.log("set viewport height " + vp_height);
 			domStyle.set(this.target_div, "height", vp_height + "px");
+			this.surface.setDimensions(this.viewport_width, vp_height + 200);
+
 			this.compare_group.setClip({
 				x: 100 * scale,
 				y: 0,
@@ -312,7 +313,7 @@ define([
 
 		make_arrow: function(parent, x1, x2, height){
 			var m = 15;
-			var w = x2 - x1;
+			// var w = x2 - x1;
 			var back = Math.round(0.65 * height);
 
 			var points;
@@ -359,14 +360,12 @@ define([
 			}
 
 			var p2 = [];
-			var i;
+
 			for(var i = 0; i < points.length; i += 2){
 				p2.push({x: Math.round(points[i]), y: Math.round(points[i + 1])});
 			}
 
-			poly = parent.createPolyline(p2);
-
-			return poly;
+			return parent.createPolyline(p2);
 		},
 
 		make_rect: function(parent, x1, x2, height){
@@ -383,9 +382,7 @@ define([
 				dat.width = x1 - x2;
 			}
 
-			var rect = parent.createRect(dat);
-
-			return rect;
+			return parent.createRect(dat);
 		},
 
 		add_feature: function(row, row_data, x1, x2, height, color, feature, is_pin){
@@ -476,7 +473,7 @@ define([
 
 			if(1){
 				glyph.on("click", function(evt){
-					window.console.log("click alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey + " which=" + evt.which);
+					// window.console.log("click alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey + " which=" + evt.which);
 
 					if(evt.shiftKey){
 						if(this.selected_fids[feature.fid]){
