@@ -1,13 +1,15 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom-construct",
+	"dojo/dom-construct", "dojo/when", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/form/Select", "dijit/form/Button",
 	"dojox/widget/Standby",
+	"FileSaver",
 	"./SEEDClient", "./CompareRegionViewer"
 ], function(declare, lang,
-			domConstruct,
+			domConstruct, when, Topic,
 			BorderContainer, ContentPane, Select, Button,
 			Standby,
+			saveAs,
 			SEEDClient, CompareRegionViewer){
 
 	return declare([BorderContainer], {
@@ -15,6 +17,28 @@ define([
 		visible: false,
 		state: null,
 		patric_id: null,
+		topicId: null,
+
+		constructor: function(options){
+			this.topicId = "CompareRegions_" + options.id.split('_compareRegionViewer')[0];
+
+			Topic.subscribe(this.topicId, lang.hitch(this, function(){
+
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "showLoadingMask":
+						this.loadingMask.show();
+						break;
+					case "hideLoadingMask":
+						this.loadingMask.hide();
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+
 		onSetState: function(attr, oldVal, state){
 			if(!state){
 				return;
@@ -32,7 +56,7 @@ define([
 
 			if(this.viewer){
 				// this.viewer.set('state', state);
-				this.render(state.feature.patric_id, 15000, 15, "pgfam", "representative reference");
+				this.render(state.feature.patric_id, 10000, 10, "pgfam", "representative reference");
 			}
 
 			this._set('state', state);
@@ -52,6 +76,15 @@ define([
 					console.error(err);
 				}
 			)
+		},
+
+		export: function(){
+			if(this.compare_regions){
+
+				when(this.compare_regions.exportSVG(), function(data){
+					saveAs(new Blob([data], {type: 'image/svg+xml'}), "PATRIC_compare_regions.svg");
+				});
+			}
 		},
 
 		_setVisibleAttr: function(visible){
@@ -92,6 +125,7 @@ define([
 			});
 
 			this.compare_regions = new CompareRegionViewer(this.viewer.domNode, this.service);
+			this.compare_regions.topicId = this.topicId;
 
 			this.filterPanel = this._buildFilterPanel();
 
@@ -112,10 +146,10 @@ define([
 			});
 
 			// region size
-			var label_resgion_size = domConstruct.create("label", {innerHTML: "Region Size: "});
+			var label_region_size = domConstruct.create("label", {innerHTML: "Region Size: "});
 			this.region_size = new Select({
 				name: "region_size",
-				value: 15000,
+				value: 10000,
 				style: "width: 100px; margin-right: 10px",
 				options: [{
 					value: 5000, label: "5,000bp"
@@ -127,16 +161,16 @@ define([
 					value: 20000, label: "20,000bp"
 				}]
 			});
-			domConstruct.place(label_resgion_size, filterPanel.containerNode, "last");
+			domConstruct.place(label_region_size, filterPanel.containerNode, "last");
 			domConstruct.place(this.region_size.domNode, filterPanel.containerNode, "last");
 
 			// domConstruct.place("<br/>", filterPanel.containerNode, "last");
 
 			// number of genomes
-			var label_n_genomes = domConstruct.create("label", {innerHTML: "Number of Regions: "});
+			var label_n_genomes = domConstruct.create("label", {innerHTML: "Number of genomes: "});
 			this.n_genomes = new Select({
 				name: "n_genomes",
-				value: 15,
+				value: 10,
 				style: "width: 50px; margin-right: 10px",
 				options: [{
 					value: 5, label: "5"
@@ -146,6 +180,8 @@ define([
 					value: 15, label: "15"
 				}, {
 					value: 20, label: "20"
+				}, {
+					value: 50, label: "50"
 				}]
 			});
 			domConstruct.place(label_n_genomes, filterPanel.containerNode, "last");
@@ -171,19 +207,15 @@ define([
 			// domConstruct.place("<br/>", filterPanel.containerNode, "last");
 
 			// filter
-			var label_g_filter = domConstruct.create("label", {innerHTML: "Search in "});
+			var label_g_filter = domConstruct.create("label", {innerHTML: "Genomes: "});
 			this.g_filter = new Select({
 				name: "filter",
 				value: "representative reference",
 				style: "width: 100px; margin-right: 10px",
 				options: [{
-					value: "reference", label: "Reference"
-				}, {
-					value: "representative", label: "Representative"
-				}, {
 					value: "representative reference", label: "Reference & Representative"
 				}, {
-					value: "all", label: "All"
+					value: "all", label: "All public genomes"
 				}]
 			});
 			domConstruct.place(label_g_filter, filterPanel.containerNode, "last");
@@ -204,6 +236,15 @@ define([
 				})
 			});
 			domConstruct.place(btn_submit.domNode, filterPanel.containerNode, "last");
+
+			// export button
+			var btn_export = new Button({
+				label: "Export",
+				onClick: lang.hitch(this, function(){
+					this.export();
+				})
+			});
+			domConstruct.place(btn_export.domNode, filterPanel.containerNode, "last");
 
 			return filterPanel;
 		}

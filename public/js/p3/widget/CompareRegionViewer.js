@@ -1,13 +1,15 @@
 define([
 	'dojo/_base/declare', 'dojo/_base/lang',
 	'dojox/gfx', 'dojox/gfx/utils',
-	'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu',
-	'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/Evented',
+	'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu', 'dijit/Dialog',
+	'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/dom-construct', 'dojo/query', 'dojo/topic', 'dojo/request', 'dojo/Evented',
+	'./DataItemFormatter', '../util/PathJoin',
 	'dojo/domReady!'
 ], function(declare, lang,
 			gfx, gfx_utils,
-			Tooltip, popup, TooltipDialog, Menu,
-			dom, on, domStyle, Evented){
+			Tooltip, popup, TooltipDialog, Menu, Dialog,
+			dom, on, domStyle, domConstruct, query, Topic, request, Evented,
+			DataItemFormatter, PathJoin){
 
 	return declare([Evented], {
 		/**
@@ -103,6 +105,10 @@ define([
 			if(this.data){
 				this.render();
 			}
+		},
+
+		exportSVG: function(){
+			return gfx_utils.toSvg(this.surface);
 		},
 
 		set_data: function(data){
@@ -474,7 +480,7 @@ define([
 			if(1){
 				glyph.on("click", function(evt){
 					// window.console.log("click alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey + " which=" + evt.which);
-
+/*
 					if(evt.shiftKey){
 						if(this.selected_fids[feature.fid]){
 							this.selected_fids[feature.fid] = false;
@@ -496,16 +502,43 @@ define([
 					}
 
 					evt.preventDefault();
+*/
+					if(feature.fid && feature.fid.indexOf(".BLAST") > -1){
+						return;
+					}
+
+					var topicId = this.topicId;
+					Topic.publish(topicId, "showLoadingMask");
+					request.get(PathJoin(window.App.dataServiceURL, "/genome_feature/?eq(patric_id," + encodeURIComponent(feature.fid) + ")"), {
+						handleAs: "json",
+						headers: {
+							Accept: "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'Authorization': (window.App.authorizationToken || "")
+						}
+					}).then(function(data){
+						// console.log(data[0]);
+						Topic.publish(topicId, "hideLoadingMask");
+
+						var content = DataItemFormatter(data[0], "feature_data", {linkTitle:true});
+						if(!window.featureDialog){
+							window.featureDialog = new Dialog({title: "Feature Summary"});
+						}
+						window.featureDialog.set("content", content);
+						window.featureDialog.show();
+					})
+
 				}.bind(this));
 
 				glyph.on("dblclick", function(evt){
-					window.console.log("dblclick alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey);
-					this.emit("feature_dblclick", {feature: feature.fid});
-					evt.preventDefault();
+					// window.console.log("dblclick alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey);
+					// this.emit("feature_dblclick", {feature: feature.fid});
+					// evt.preventDefault();
+					Topic.publish("/navigate", {href:"/view/Feature/" + feature.fid + "#view_tab=compareRegionViewer"})
 				}.bind(this));
 
 				var feature_info_str = this.create_hover_text(feature, row_data);
-
+/*
 				var ttinfo = {
 					content: feature_info_str,
 					around: {
@@ -517,9 +550,24 @@ define([
 					position: ["after", "before"],
 					bb: bb
 				};
+*/
+				var tooltipDiv = query("div.tooltip");
+				if(tooltipDiv.length == 0){
+					this.tooltipLayer = domConstruct.create("div", {
+						"class": "tooltip",
+						style: {opacity: 0}
+					}, query("body")[0], "last");
+				}else{
+					this.tooltipLayer = tooltipDiv[0];
+				}
 
 				glyph.on("mouseenter", function(evt){
-					// window.console.log(JSON.stringify(ttinfo));
+
+					domStyle.set(this.tooltipLayer, "left", evt.x + "px");
+					domStyle.set(this.tooltipLayer, "top", evt.y + "px");
+					domStyle.set(this.tooltipLayer, "opacity", 0.95);
+					this.tooltipLayer.innerHTML = feature_info_str;
+/*
 					Tooltip.show(ttinfo.content, ttinfo.around, ttinfo.position);
 					this.sig = glyph.on("mouseout", function(e){
 						Tooltip.hide(ttinfo.around);
@@ -528,13 +576,13 @@ define([
 							this.sig.remove();
 						this.sig = null;
 					});
+*/
 				}.bind(this));
 
-				glyph.on("mousedown", function(evt){
-					window.console.log("mdown");
-					evt.preventDefault();
+				glyph.on("mouseout", function(evt){
+					domStyle.set(this.tooltipLayer, "opacity", 0);
 				}.bind(this));
-
+/*
 				if(typeof this.menu_create_callback === 'function'){
 					glyph.on("contextmenu", function(evt){
 						Tooltip.hide(ttinfo.around);
@@ -577,10 +625,22 @@ define([
 						evt.preventDefault();
 					}.bind(this));
 				}
+*/
 			}
 		},
 
 		create_hover_text: function(feature, row_data){
+
+			var feature_info = [["PATRIC_ID", feature.fid],
+				["Product", feature.function],
+				["Location", feature.beg + "..." + feature.end + " (" + feature.size + "bp, " + feature.strand + ")"]];
+
+			return feature_info.map(function(line){
+				return line.join(": ");
+			}).join("<br/>");
+		},
+
+		create_hover_text_ori: function(feature, row_data){
 			var start = feature.beg;
 			var stop = feature.end;
 			var size = feature.size + " bp";
@@ -679,7 +739,10 @@ define([
 			//
 			// Label the row.
 			//
-			var label = data.org_name.replace(/^(\w)\S+/, "$1.");
+			var names = data.org_name.split(' ');
+			var label = names.slice(0, 3).join(' ');
+			var label2 = names.slice(3).join(' ');
+			// var label = data.org_name.replace(/^(\w)\S+/, "$1.");
 			var label_txt = this.name_group.createText({
 				text: label,
 				x: this.name_front_margin,
@@ -688,6 +751,14 @@ define([
 			});
 //	    label_txt.setStroke("black");
 			label_txt.setFill("black");
+
+			var label_txt_2 = this.name_group.createText({
+				text: label2,
+				x: this.name_front_margin + 10,
+				y: y + height / 2 + 15,
+				align: 'start'
+			});
+			label_txt_2.setFill("black");
 
 			var pegs = data.features;
 
