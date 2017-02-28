@@ -30,6 +30,8 @@ define([
 				// console.log("default path: ", this.defaultPath);
 				this.fasta.set('path', this.defaultPath);
 				this.fasta.set('type', ['contigs']);
+				this.fasta.set('required', false);
+				this.fasta.on('change', lang.hitch(this, "onFastaChange"));
 				this.fasta.placeAt(fastaDom, "only");
 
 				domClass.remove(this.fasta_wrapper, "hidden");
@@ -76,22 +78,9 @@ define([
 		},
 
 		validate: function(){
-			// console.log("validate", this.sequence.get('value'), (this.sequence.get('value')).length,  this.database.get('value'), this.program.get('value'));
+			// console.log("validate", this.genome_id.get('value'), this.fasta.get('value'), !(this.genome_id.get('value') == '' && this.fasta.get('value') == ''));
 
-			// var sequence = this.sequence.get('value');
-			//
-			// if(sequence && sequence.length > 1
-			// 	&& this.database.get('value')
-			// 	&& this.program.get('value')
-			// 	&& this.hasSingleFastaSequence(sequence)){
-			//
-			// 	// console.log("validation passed");
-			// 	this.mapButton.set('disabled', false);
-				return true;
-			// }else{
-			// 	this.mapButton.set('disabled', true);
-			// 	return false;
-			// }
+			return !(this.genome_id.get('value') == '' && this.fasta.get('value') == '');
 		},
 
 		submit: function(){
@@ -103,8 +92,16 @@ define([
 			var max_pvalue = parseFloat(this.pvalue.get('value')) || 0.01;
 			var max_distance = parseFloat(this.distance.get('value')) || 0.01;
 			var max_hits = parseInt(this.max_hits.get('value'));
-			var include_reference = this.include_reference.get('value') ? 1 : 0;
-			var include_representative = this.include_representative.get('value') ? 1 : 0;
+			var scope_ref = this.scope_ref.get('value');
+			var scope_all = this.scope_all.get('value');
+			var include_reference, include_representative;
+			if(scope_ref == "ref" && scope_all === false){
+				include_reference = 1;
+				include_representative = 1;
+			}else{
+				include_reference = 0;
+				include_representative = 0;
+			}
 
 			var def = new Deferred();
 			var resultType = "genome";
@@ -171,7 +168,7 @@ define([
 
 		showNoResultMessage: function(){
 			domClass.remove(query(".service_error")[0], "hidden");
-			query(".service_error h3")[0].innerHTML = "Genome Distance Service has no match. Please revise query and submit again.";
+			query(".service_error h3")[0].innerHTML = "Similar Genome Finder returned no hit. Please revise parameters and submit again.";
 			domClass.add(query(".service_message")[0], "hidden");
 
 			query(".genomedistance_result .GridContainer").style("visibility", "hidden");
@@ -181,7 +178,24 @@ define([
 			domStyle.set(this.result.domNode, 'visibility', 'hidden');
 		},
 
+		onFastaChange: function(){
+			// when fasta file chosen
+			// console.log("onFastaChange", this.fasta.get('value'), this.genome_id.get('value'));
+			if(this.genome_id.get('value') !== '' && this.fasta.get('value') !== ''){
+				this.genome_id.reset();
+			}
+			// 2nd call due to the genome name change
+			// if(this.genome_id.get('value') !== '' && this.fasta.get('value') == ''){
+			// 	console.log("2nd call");
+			// }
+			this.validate();
+		},
+
 		onSuggestNameChange: function(){
+			// console.log("onGenomeIDChange", this.fasta.get('value'), this.genome_id.get('value'));
+			if(this.fasta && this.fasta.get('value') !== '' && this.genome_id.get('value') !== ''){
+				this.fasta.reset();
+			}
 			this.validate();
 		}
 	});
