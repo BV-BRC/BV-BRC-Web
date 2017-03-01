@@ -8,7 +8,7 @@ define([
 			on, Topic,
 			popup, TooltipDialog,
 			ContainerActionBar, saveAs,
-			GridContainer, GenomeDistanceResultGrid){
+			GridContainer, IDMappingAppResultGrid){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 
@@ -48,7 +48,7 @@ define([
 	var downloadFields = ["source", "target", "uniprotkb_accession", "patric_id"];
 
 	return declare([GridContainer], {
-		gridCtor: GenomeDistanceResultGrid,
+		gridCtor: IDMappingAppResultGrid,
 		containerType: "",
 		visible: true,
 		store: null,

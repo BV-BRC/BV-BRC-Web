@@ -105,7 +105,6 @@
                                         <option value="NCBI_TaxID">NCBI_TaxID</option>
                                         <option value="OMA">OMA</option>
                                         <option value="OrthoDB">OrthoDB</option>
-                                        <option value="PATRIC">PATRIC</option>
                                         <option value="PDB">PDB</option>
                                         <option value="PeroxiBase">PeroxiBase</option>
                                         <option value="PhosSite">PhosSite</option>
@@ -134,9 +133,7 @@
 		</tr>
 		<tr>
 			<td data-dojo-attach-point="leftColumnCount" >0 IDs</td>
-			<td style="text-align:left;">
-				<div data-dojo-type="dijit/form/Button" data-dojo-attach-point="mapButton" data-dojo-attach-event="onClick:map" data-dojo-props="disabled:true">MAP</div>
-			</td>
+            <td></td>
 			<td data-dojo-attach-point="rightColumnCount" colspan="2"></td>
 		</tr>
 		<tr>
@@ -147,6 +144,13 @@
             <td></td>
             <td></td>
 		</tr>
+        <tr>
+            <td></td>
+			<td style="text-align:left;">
+            <div data-dojo-type="dijit/form/Button" data-dojo-attach-point="mapButton" data-dojo-attach-event="onClick:map" data-dojo-props="disabled:true">MAP</div>
+            </td>
+            <td colspan="2"></td>
+
 	</table>
 	</div>
     <div class="idmap_result_div" data-dojo-attach-point="idmap_result_div"></div>
