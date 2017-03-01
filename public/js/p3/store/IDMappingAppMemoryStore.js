@@ -5,7 +5,7 @@ define([
 ], function(declare, lang, Deferred,
 			request, when, Stateful, Topic, All,
 			Memory, QueryResults){
-
+	
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
@@ -148,6 +148,7 @@ define([
 							d['target'] = d[toId];
                             d['idx'] = idx;
                             d['source'] = d[fromId];
+                            d['document_type']='feature_data';
                             _self.sourceToTarget[d[fromId]][d[toId]]=true;
                             idx+=1;
 						});
@@ -277,6 +278,7 @@ define([
 												item['target'] = t;
 												item['source'] = item[fromId];
 												item['idx'] = item['feature_id'] + '_' + item['target'];
+                                                item['document_type']='feature_data';
                                                 _self.sourceToTarget[item[fromId]][t]=true;
 												data.push(item);
 											});
@@ -350,6 +352,8 @@ define([
                                     var item = Object.create(d);
                                     item['source'] = giSource[d['gene_id']];
                                     item['target']=d[toId];
+                                    item['feature_id']=d['feature_id'];
+                                    item['document_type']="feature_data";
                                     item['idx'] = item['feature_id'] + '_' + item['target'];
                                     _self.sourceToTarget[item['source']][d[toId]]=true;
                                     data.push(item);
