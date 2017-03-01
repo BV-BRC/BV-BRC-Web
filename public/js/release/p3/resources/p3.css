@@ -16033,6 +16033,14 @@ div.overview {
 #navbox.navbox .fa-2x{
     font-size: 2em;
 }
+.msg-box-below-topnav {
+    width: 967px;
+    margin: 5px auto;
+    padding: 5px 10px;
+    border: 2px solid #444;
+    background: yellow;
+    border-radius: 4px;
+}
 #faceted_tracksel .faceted_tracksel_on_off.tab {
     top: 170px;
     font-size: .6em;
