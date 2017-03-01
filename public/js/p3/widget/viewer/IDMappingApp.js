@@ -62,7 +62,7 @@ define([
 
 			this.gsGrid = new GridContainer({
 				type: 'idmap',
-				containerType: "id_data",
+				containerType: "feature_data",
 				topicId: this.topicId,
 				store: gsStore,
 				region: "center"

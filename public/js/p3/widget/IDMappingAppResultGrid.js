@@ -14,6 +14,7 @@ define([
 		columns:{
 		    "Selection Checkboxes": selector({label: '', unhidable: true}),
 			source: {label: 'Source', field: 'source'},
+			feature_id: {label: 'Feature ID', field: 'feature_id', hidden:true},
 			target: {label: 'Target', field: 'target'},
             uniprotkb_accession: {label: 'UniprotKB Acc', field:'uniprotkb_accession'},
 			patric_id: {label: 'PATRIC ID', field: 'patric_id'},
