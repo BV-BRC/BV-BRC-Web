@@ -10,7 +10,7 @@
         "spec": ">=2.4.0 <3.0.0",
         "type": "range"
       },
-      "/Users/hsyoo/dev/p3_web"
+      "/Users/hsyoo/dev/deploy/p3_web"
     ]
   ],
   "_from": "cytoscape-panzoom@>=2.4.0 <3.0.0",
@@ -44,7 +44,7 @@
   "_shasum": "e060e2278c29d77302b740acc2dfd44e675b761f",
   "_shrinkwrap": null,
   "_spec": "cytoscape-panzoom@^2.4.0",
-  "_where": "/Users/hsyoo/dev/p3_web",
+  "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-panzoom/issues"
   },
