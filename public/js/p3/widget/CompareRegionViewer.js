@@ -631,8 +631,9 @@ define([
 
 		create_hover_text: function(feature, row_data){
 
-			var feature_info = [["PATRIC_ID", feature.fid],
-				["Product", feature.function],
+			var feature_info = [
+				["PATRIC_ID", feature.fid],
+				["Product", feature["function"]],
 				["Location", feature.beg + "..." + feature.end + " (" + feature.size + "bp, " + feature.strand + ")"]];
 
 			return feature_info.map(function(line){

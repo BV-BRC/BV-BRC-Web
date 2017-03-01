@@ -78,7 +78,7 @@ define([
 			)
 		},
 
-		export: function(){
+		exportToSVG: function(){
 			if(this.compare_regions){
 
 				when(this.compare_regions.exportSVG(), function(data){
@@ -240,9 +240,7 @@ define([
 			// export button
 			var btn_export = new Button({
 				label: "Export",
-				onClick: lang.hitch(this, function(){
-					this.export();
-				})
+				onClick: lang.hitch(this, "exportToSVG")
 			});
 			domConstruct.place(btn_export.domNode, filterPanel.containerNode, "last");
 
