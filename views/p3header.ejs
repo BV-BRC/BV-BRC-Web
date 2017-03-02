@@ -203,9 +203,13 @@
                                         Pathway</a></div>
                                 <div><a class="navigationLink" href="/app/Reconstruct">Model
                                         Reconstruction</a></div>
-                                <div class="menuHeader">Data</div>
+                            </div>
+                            <% if(!isProd){ %>
+                            <div class="menuHeader">Data</div>
+                            <div class="menuItems">
                                 <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
                             </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
