@@ -65,10 +65,10 @@ define([
 
 		onChange: function(){
 			console.log("onChangeType: ", this.leftTypeSelect.get('value'), this.rightTypeSelect.get('value'));
-			if(this.leftTypeSelect.get('value') && this.rightTypeSelect.get('value') && (this.mapFromIDs && (this.mapFromIDs.length > 0))){
+			if(this.leftTypeSelect.get('value') && (this.mapFromIDs && (this.mapFromIDs.length > 0))){
 				this.mapButton.set('disabled', false);
 			}else{
-				this.mapButton.set('disabled', true);
+				this.mapButton.set('disabled', false);
 			}
 
 		},
@@ -89,11 +89,12 @@ define([
 
 			var _self = this;
 
-			console.log("ids: ", ids);
-            
-			query(".idmap_result_div .GridContainer").style("visibility", "visible");
-            
-			_self.result.set('state', {"fromIdGroup": fromIdGroup, "fromId": from, "toIdGroup":toIdGroup, "toId":to, "fromIdValue":ids});
+            if (this.leftList.get('value').replace(/^\s+|\s+$/gm,'') != ""){
+
+			    console.log("ids: ", ids);
+			    query(".idmap_result_div .GridContainer").style("visibility", "visible");
+                _self.result.set('state', {"fromIdGroup": fromIdGroup, "fromId": from, "toIdGroup":toIdGroup, "toId":to, "fromIdValue":ids});
+            }
 
 			return;
 			if(ids && (ids.length > 0)){
@@ -146,7 +147,7 @@ define([
 			var ids = [];
 			var nsplit = val.split("\n");
 			nsplit.forEach(function(i){
-				var y = i.split(",");
+				var y = i.replace(/^\s+|\s+$/gm,'').split(/[\s,;\t]+/);
 				ids = ids.concat(y);
 			});
 			ids = ids.filter(function(id){
@@ -166,8 +167,8 @@ define([
 			var dispVal = ids.join("\n");
 
 			if(this.leftList.get('value') != dispVal){
+			    this.onChange();
 				this.leftList.set('value', ids.join("\n"));
-				this.onChange();
 			}
 		},
 
