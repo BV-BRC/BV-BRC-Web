@@ -79,6 +79,21 @@ define([
                 }
             });
         },
+        findFailure: function(fromIdValue, toId){
+            _self=this;
+			var summary = {
+				total: fromIdValue.length,
+				found: 0,
+				type: toId
+			};
+            summary.found = 0;
+            Topic.publish("IDMapping", "updateHeader", summary);
+            var data = [];
+            _self.expandNoMap(data);
+            _self.setData(data);
+            _self._loaded = true;
+            return true;
+        },
 
 		loadData: function(){
 			if(this._loadingDeferred){
@@ -216,13 +231,7 @@ define([
 						}), function(response){
 
 							if(response.length === 0){
-								summary.found = 0;
-								Topic.publish("IDMapping", "updateHeader", summary);
-                                var data = [];
-                                _self.expandNoMap(data);
-								_self.setData(data);
-								_self._loaded = true;
-								return true;
+                                return _self.findFailure(fromIdValue,toId);
 							}
 
 							response.forEach(function(d){
@@ -323,6 +332,11 @@ define([
                             }
                         }), function(response){
 
+
+							if(response.length === 0){
+                                return _self.findFailure(fromIdValue,toId);
+							}
+
                             var giNumbers = []; // response.map(function(d){ return d.id_value;});
                             var giSource = [];
 
@@ -330,7 +344,7 @@ define([
                                 var gi = d['id_value'];
                                 giNumbers.push(gi);
                                 var accession = d['uniprotkb_accession'];
-                                giSource[gi] = accessionSource[accession];
+                                giSource[gi] = {'uniprotkb_accession': accession, 'source':accessionSource[accession]};
                             });
 
                             return when(request.post(_self.apiServer + '/genome_feature/', {
@@ -350,7 +364,8 @@ define([
                                 var data = [];
                                 response.forEach(function(d){
                                     var item = Object.create(d);
-                                    item['source'] = giSource[d['gene_id']];
+                                    item['source'] = giSource[d['gene_id']]["source"];
+                                    item['uniprotkb_accession']=giSource[d['gene_id']]['uniprotkb_accession'];
                                     item['target']=d[toId];
                                     item['feature_id']=d['feature_id'];
                                     item['document_type']="feature_data";
@@ -397,6 +412,10 @@ define([
                         }), function(response){
 
                             var uniprotkbAccessionList = [];
+
+							if(response.length === 0){
+                                return _self.findFailure(fromIdValue,toId);
+							}
 
                             response.forEach(function(d){
                                 var accession = d['uniprotkb_accession'];
