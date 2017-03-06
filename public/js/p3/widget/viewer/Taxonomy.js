@@ -202,6 +202,14 @@ define([
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state));
 					break;
+				case "amr":
+					// need to show all (prevent referenceGenomes)
+					if(this.state.genome_ids){
+						activeTab.set("state", lang.mixin({}, this.state, {
+							search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"
+						}))
+					}
+					break;
 				case "interactions":
 					// console.log("interactions tab", this.setActivePanelState.caller, this.state);
 					if(this.state.genome_ids){
