@@ -13,6 +13,7 @@ define([
 		state: null,
         rowLimit :25000,
         sourceToTarget: {}, //models one to many, and no mapping relationships
+        summary: {total: 0, found: 0, type: "None", mapped:0},
 		
         onSetState: function(attr, oldVal, state){
 			if(!state){
@@ -72,22 +73,27 @@ define([
         expandNoMap: function(data){
             var _self=this;
             var idx = data.length+1;
+            var hasMap=0;
+            var numFound=0;
             Object.keys(_self.sourceToTarget).forEach(function(source){
-                if(Object.keys(_self.sourceToTarget[source]).length == 0){
+                var numTargets = Object.keys(_self.sourceToTarget[source]).length;
+                if( numTargets == 0){
                     data.push({'source':source,'idx':idx});
                     idx+=1;
                 }
+                else{
+                    hasMap+=1;
+                    numFound+= numTargets;
+                }
             });
+            _self.summary.mapped=hasMap;
+            _self.summary.found=numFound;
+
         },
         findFailure: function(fromIdValue, toId){
             _self=this;
-			var summary = {
-				total: fromIdValue.length,
-				found: 0,
-				type: toId
-			};
-            summary.found = 0;
-            Topic.publish("IDMapping", "updateHeader", summary);
+            _self.summary.found = 0;
+            Topic.publish("IDMapping", "updateHeader", _self.summary);
             var data = [];
             _self.expandNoMap(data);
             _self.setData(data);
@@ -131,11 +137,8 @@ define([
 
 
 
-			var summary = {
-				total: fromIdValue.length,
-				found: 0,
-				type: toId
-			};
+			_self.summary.total =fromIdValue.length;
+			_self.summary.type =toId;
 
 			// console.log(this.state);
 
@@ -156,8 +159,6 @@ define([
 						}
 					}), function(data){
 
-						summary.found = data.length;
-						Topic.publish("IDMapping", "updateHeader", summary);
                         var idx =0;
 						data.forEach(function(d){
 							d['target'] = d[toId];
@@ -168,6 +169,7 @@ define([
                             idx+=1;
 						});
                         _self.expandNoMap(data);
+						Topic.publish(_self.topicId, "updateHeader", _self.summary);
 						_self.setData(data);
 				        Topic.publish(_self.topicId, "hideLoadingMask");
 						_self._loaded = true;
@@ -206,8 +208,8 @@ define([
 						// console.log(giNumbers);
 
 						if(giNumbers.length === 0){
-							summary.found = 0;
-							Topic.publish("IDMapping", "updateHeader", summary);
+							_self.summary.found = 0;
+							Topic.publish(_self.topicId, "updateHeader", _self.summary);
 				            Topic.publish(_self.topicId, "hideLoadingMask");
 
 							_self.setData([]);
@@ -295,8 +297,8 @@ define([
 									}
 								});
 
-								summary.found = data.length;
-								Topic.publish("IDMapping", "updateHeader", summary);
+								_self.summary.found = data.length;
+								Topic.publish(_self.topicId, "updateHeader", _self.summary);
                                 _self.expandNoMap(data);
 
 								_self.setData(data);
@@ -387,8 +389,7 @@ define([
                             return {d: d};
                         });
                         this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionSourceMap), function(data){
-                            summary.found = data.length;
-                            Topic.publish("IDMapping", "updateHeader", summary);
+                            Topic.publish(_self.topicId, "updateHeader", _self.summary);
 
                             _self.setData(data);
                             _self._loaded = true;
@@ -424,8 +425,7 @@ define([
                             });
 
                             return when(defUniprotKB2PATRIC(uniprotkbAccessionList, accessionSourceMap), function(data){
-                                summary.found = data.length;
-                                Topic.publish("IDMapping", "updateHeader", summary);
+                                Topic.publish(_self.topicId, "updateHeader", _self.summary);
 
                                 _self.setData(data);
                                 _self._loaded = true;
@@ -485,8 +485,7 @@ define([
                             return {d: d};
                         });
                         this._loadingDeferred = when(defUniprotKB2Other(fromIdValue, accessionSourceMap), function(data){
-                            summary.found = data.length;
-                            Topic.publish("IDMapping", "updateHeader", summary);
+                            Topic.publish("IDMapping", "updateHeader", _self.summary);
 
                             _self.setData(data);
                             _self._loaded = true;
@@ -518,8 +517,8 @@ define([
                             });
 
                             return when(defUniprotKB2Other(uniprotkbAccessionList, accessionSourceMap), function(data){
-                                summary.found = data.length;
-                                Topic.publish("IDMapping", "updateHeader", summary);
+                                _self.summary.found = data.length;
+                                Topic.publish("IDMapping", "updateHeader", _self.summary);
 
                                 _self.setData(data);
                                 _self._loaded = true;
