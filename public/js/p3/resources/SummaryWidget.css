@@ -115,6 +115,9 @@
 }
 
 /* Antimicrobial Resistance at genome overview */
+.patric .apSummaryWidget.SummaryWidget .tableNode {
+    height: 148px;
+}
 .patric .apSummaryWidget.SummaryWidget TH {
     text-align: center;
 }

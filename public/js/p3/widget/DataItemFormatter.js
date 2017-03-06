@@ -981,6 +981,12 @@ define([
 			var section = {};
 
 			section['Summary'] = [{
+				name: 'Taxon ID',
+				text: 'taxon_id'
+			}, {
+				name: 'Genome ID',
+				text: 'genome_id'
+			}, {
 				name: 'Genome Name',
 				text: 'genome_name'
 			}, {
@@ -992,6 +998,9 @@ define([
 			}, {
 				name: 'Testing Standard',
 				text: 'testing_standard'
+			}, {
+				name: 'Testing Standard Year',
+				text: 'testing_standard_year'
 			}];
 
 			section['Measurement'] = [{

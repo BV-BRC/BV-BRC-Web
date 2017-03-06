@@ -222,7 +222,7 @@ define([
 
 			if(window.App.appLabel !== ""){
 				this.amr = new AMRPanelGridContainer({
-					title: "AMR",
+					title: "AMR Phenotypes",
 					id: this.viewer.id + "_" + "amr"
 				});
 			}
@@ -275,13 +275,13 @@ define([
 				});
 			}
 			this.viewer.addChild(this.overview);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.amr);
+			}
 			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.browser);
 			this.viewer.addChild(this.circular);
 			this.viewer.addChild(this.sequences);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.amr);
-			}
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
