@@ -93,6 +93,7 @@ define([
 
 			    console.log("ids: ", ids);
 			    query(".idmap_result_div .GridContainer").style("visibility", "visible");
+			    query(".PerspectiveTotalCount").style("visibility", "visible");
                 _self.result.set('state', {"fromIdGroup": fromIdGroup, "fromId": from, "toIdGroup":toIdGroup, "toId":to, "fromIdValue":ids});
             }
 
