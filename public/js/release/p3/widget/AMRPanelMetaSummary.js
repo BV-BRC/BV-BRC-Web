@@ -15,15 +15,15 @@ define("p3/widget/AMRPanelMetaSummary", [
 
 	var chartNavBarHtml = [
 		"<span class='label'>Scale</span>",
-			"<ul class='scale'>",
-				"<li class='real active'>Counts</li>",
-				"<li class='normalize'>Percent</li> ",
-			"</ul>",
+		"<ul class='scale'>",
+		"<li class='real active'>Counts</li>",
+		"<li class='normalize'>Percent</li> ",
+		"</ul>",
 		"<span class='label'>Order by</span>",
-			"<ul class='sort'>",
-				"<li class='label active'>Name</li>",
-				"<li class='value'>Count</li>",
-			"</ul>"
+		"<ul class='sort'>",
+		"<li class='label active'>Name</li>",
+		"<li class='value'>Count</li>",
+		"</ul>"
 	].join("\n");
 
 	return declare([SummaryWidget], {
@@ -85,7 +85,7 @@ define("p3/widget/AMRPanelMetaSummary", [
 					});
 
 					var phenotypes = ["Resistant", "Susceptible", "Intermediate"];
-					var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash,'');
+					var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
 
 					chartData.push({
 						label: antibiotic,
@@ -94,7 +94,7 @@ define("p3/widget/AMRPanelMetaSummary", [
 							return lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, phenotypes[idx], d['dist'][idx]]);
 						},
 						link: function(d, idx){
-							return lang.replace(linkBase + '#view_tab=genomes&filter=join(genome_amr,and(eq(antibiotic,{0}),eq(resistant_phenotype,{1})),genome_id)', [antibiotic, phenotypes[idx]]);
+							return lang.replace(linkBase + '#view_tab=amr&filter=and(eq(antibiotic,{0}),eq(resistant_phenotype,{1}))', [antibiotic, phenotypes[idx]]);
 						},
 						total: total,
 						dist: dist
