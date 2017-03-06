@@ -132,7 +132,7 @@ define([
 			displayDetail(item, columns, div, options);
 
 			var stpDiv = domConstruct.create("div", {}, div);
-			var stddlg = new TitlePane({title: "Standard Output", style: "margin-bottom:5px;",open: false}, stpDiv);
+			var stddlg = new TitlePane({title: "Standard Output", style: "margin-bottom:5px;", open: false}, stpDiv);
 			var tpDiv = domConstruct.create("div", {}, div);
 			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
 			dlg.watch("open", function(attr, oldVal, open){
@@ -141,12 +141,11 @@ define([
 				}
 				JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
 					console.log("JOB DETAIL: ", detail);
-				if(detail.stderr){
+					if(detail.stderr){
 						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
 					}else{
 						dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
-
 
 				}, function(err){
 					dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
@@ -159,19 +158,16 @@ define([
 				}
 				JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
 					console.log("JOB DETAIL: ", detail);
-				if(detail.stdout){
+					if(detail.stdout){
 						stddlg.set("content", "<pre>" + detail.stdout + "</pre>");
 					}else{
 						stddlg.set("content", "Unable to retreive STDOUT of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
 
-
 				}, function(err){
 					stddlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
 				});
 			});
-
-
 
 			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
@@ -971,6 +967,56 @@ define([
 			}, {
 				name: 'gene',
 				text: 'gene_b'
+			}];
+
+			var div = domConstruct.create("div");
+
+			displayDetailBySections(item, sectionList, section, div, options);
+
+			return div;
+		},
+
+		"genome_amr_data": function(item, options){
+			var sectionList = ['Summary', 'Measurement', 'Laboratory typing'];
+			var section = {};
+
+			section['Summary'] = [{
+				name: 'Genome Name',
+				text: 'genome_name'
+			}, {
+				name: 'Antibiotic',
+				text: 'antibiotic'
+			}, {
+				name: 'Resistant Phenotype',
+				text: 'resistant_phenotype'
+			}, {
+				name: 'Testing Standard',
+				text: 'testing_standard'
+			}];
+
+			section['Measurement'] = [{
+				name: 'Sign',
+				text: 'measurement_sign'
+			}, {
+				name: 'Value',
+				text: 'measurement_value'
+			}, {
+				name: 'Units',
+				text: 'measurement_unit'
+			}];
+
+			section['Laboratory typing'] = [{
+				name: 'Method',
+				text: 'laboratory_typing_method'
+			}, {
+				name: 'Platform',
+				text: 'laboratory_typing_platform'
+			}, {
+				name: 'Vendor',
+				text: 'vendor'
+			}, {
+				name: 'Version',
+				text: 'laboratory_typing_method_version'
 			}];
 
 			var div = domConstruct.create("div");

@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionContainer", "../Phylogeny", "../GenomeBrowser",
-	"../SequenceGridContainer", "../../util/PathJoin"
+	"../SequenceGridContainer", "../AMRPanelGridContainer", "../../util/PathJoin"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser,
-			SequenceGridContainer, PathJoin){
+			SequenceGridContainer, AMRPanelGridContainer, PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
@@ -220,6 +220,13 @@ define([
 				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
 			});
 
+			if(window.App.appLabel !== ""){
+				this.amr = new AMRPanelGridContainer({
+					title: "AMR",
+					id: this.viewer.id + "_" + "amr"
+				});
+			}
+
 			this.features = new FeatureGridContainer({
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
@@ -272,6 +279,9 @@ define([
 			this.viewer.addChild(this.browser);
 			this.viewer.addChild(this.circular);
 			this.viewer.addChild(this.sequences);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.amr);
+			}
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
