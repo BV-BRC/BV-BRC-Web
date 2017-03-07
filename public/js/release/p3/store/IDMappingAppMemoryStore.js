@@ -88,12 +88,13 @@ define("p3/store/IDMappingAppMemoryStore", [
             });
             _self.summary.mapped=hasMap;
             _self.summary.found=numFound;
+            Topic.publish(_self.topicId, "updateHeader", _self.summary);
+            Topic.publish(_self.topicId, "hideLoadingMask");
 
         },
         findFailure: function(fromIdValue, toId){
             _self=this;
             _self.summary.found = 0;
-            Topic.publish("IDMapping", "updateHeader", _self.summary);
             var data = [];
             _self.expandNoMap(data);
             _self.setData(data);
@@ -129,6 +130,15 @@ define("p3/store/IDMappingAppMemoryStore", [
 			var toIdGroup = this.state.toIdGroup;
 			var toId = this.state.toId;
 			var fromIdValue = this.state.fromIdValue.split(',');
+            var via ="gene_id";
+            via= this.state.joinId;
+            var joinId = null;
+            if (via == "gene_id"){
+                joinId = {"genome_feature":"gene_id","id_ref":"GeneID"};
+            }
+            else{
+                joinId = {"genome_feature":"gi","id_ref":"GI"};
+            }
 
             _self.sourceToTarget={};
             fromIdValue.forEach(function(d){
@@ -169,9 +179,7 @@ define("p3/store/IDMappingAppMemoryStore", [
                             idx+=1;
 						});
                         _self.expandNoMap(data);
-						Topic.publish(_self.topicId, "updateHeader", _self.summary);
 						_self.setData(data);
-				        Topic.publish(_self.topicId, "hideLoadingMask");
 						_self._loaded = true;
 						return true;
 					});
@@ -200,7 +208,7 @@ define("p3/store/IDMappingAppMemoryStore", [
 					}), function(features){
 
 						giNumbers = features.map(function(d){
-							return d.gene_id;
+							return d[joinId.genome_feature];
 						}).filter(function(d){
 							return d !== undefined && d > 0;
 						});
@@ -208,10 +216,8 @@ define("p3/store/IDMappingAppMemoryStore", [
 						// console.log(giNumbers);
 
 						if(giNumbers.length === 0){
-							_self.summary.found = 0;
-							Topic.publish(_self.topicId, "updateHeader", _self.summary);
 				            Topic.publish(_self.topicId, "hideLoadingMask");
-
+                            _self.findFailure(fromIdValue, toId);
 							_self.setData([]);
 							_self._loaded = true;
 							return true;
@@ -227,7 +233,7 @@ define("p3/store/IDMappingAppMemoryStore", [
 								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 							},
 							data: {
-								q: "id_type:GeneID AND id_value:(" + giNumbers.join(" OR ") + ")",
+								q: "id_type:"+joinId.id_ref+" AND id_value:(" + giNumbers.join(" OR ") + ")",
 								rows: _self.rowLimit
 							}
 						}), function(response){
@@ -251,7 +257,7 @@ define("p3/store/IDMappingAppMemoryStore", [
 									'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 								},
 								data: {
-									q: "uniprotkb_accession:(" + Object.keys(accessionGiMap).join(" OR ") + ") AND " + ((toId === 'UniProtKB-Accession') ? 'id_type:GeneID' : 'id_type:(' + toId + ')'),
+									q: "uniprotkb_accession:(" + Object.keys(accessionGiMap).join(" OR ") + ") AND " + ((toId === 'UniProtKB-Accession') ? 'id_type:'+joinId.id_ref : 'id_type:(' + toId + ')'),
 									rows: _self.rowLimit
 								}
 							}), function(response){
@@ -282,8 +288,8 @@ define("p3/store/IDMappingAppMemoryStore", [
 								var data = [];
 								features.forEach(function(d){
 								    var item = Object.create(d);
-									if(d.hasOwnProperty('gene_id')){
-										var target = giTarget[d['gene_id']];
+									if(d.hasOwnProperty(joinId.genome_feature)){
+										var target = giTarget[d[joinId.genome_feature]];
 										if(target){
 											target.forEach(function(t){
 												item['target'] = t;
@@ -329,7 +335,7 @@ define("p3/store/IDMappingAppMemoryStore", [
                                 'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
                             },
                             data: {
-                                q: "uniprotkb_accession:(" + uniprotKBAccession.join(" OR ") + ") AND id_type:GeneID",
+                                q: "uniprotkb_accession:(" + uniprotKBAccession.join(" OR ") + ") AND id_type:"+joinId.id_ref,
                                 rows: _self.rowLimit
                             }
                         }), function(response){
@@ -358,7 +364,7 @@ define("p3/store/IDMappingAppMemoryStore", [
                                     'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
                                 },
                                 data: {
-                                    q: "gene_id:(" + giNumbers.join(" OR ") + ") AND annotation:PATRIC",
+                                    q: joinId.genome_feature+":(" + giNumbers.join(" OR ") + ") AND annotation:PATRIC",
                                     rows: _self.rowLimit
                                 }
                             }), function(response){
@@ -366,8 +372,8 @@ define("p3/store/IDMappingAppMemoryStore", [
                                 var data = [];
                                 response.forEach(function(d){
                                     var item = Object.create(d);
-                                    item['source'] = giSource[d['gene_id']]["source"];
-                                    item['uniprotkb_accession']=giSource[d['gene_id']]['uniprotkb_accession'];
+                                    item['source'] = giSource[d[joinId.genome_feature]]["source"];
+                                    item['uniprotkb_accession']=giSource[d[joinId.genome_feature]]['uniprotkb_accession'];
                                     item['target']=d[toId];
                                     item['feature_id']=d['feature_id'];
                                     item['document_type']="feature_data";
@@ -389,11 +395,8 @@ define("p3/store/IDMappingAppMemoryStore", [
                             return {d: d};
                         });
                         this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionSourceMap), function(data){
-                            Topic.publish(_self.topicId, "updateHeader", _self.summary);
-
                             _self.setData(data);
                             _self._loaded = true;
-                            Topic.publish(_self.topicId, "hideLoadingMask");
                             return true;
                         });
                     }else{
@@ -425,11 +428,9 @@ define("p3/store/IDMappingAppMemoryStore", [
                             });
 
                             return when(defUniprotKB2PATRIC(uniprotkbAccessionList, accessionSourceMap), function(data){
-                                Topic.publish(_self.topicId, "updateHeader", _self.summary);
 
                                 _self.setData(data);
                                 _self._loaded = true;
-                                Topic.publish(_self.topicId, "hideLoadingMask");
                                 return true;
                             });
                         });
@@ -485,11 +486,8 @@ define("p3/store/IDMappingAppMemoryStore", [
                             return {d: d};
                         });
                         this._loadingDeferred = when(defUniprotKB2Other(fromIdValue, accessionSourceMap), function(data){
-                            Topic.publish("IDMapping", "updateHeader", _self.summary);
-
                             _self.setData(data);
                             _self._loaded = true;
-                            Topic.publish(_self.topicId, "hideLoadingMask");
                             return true;
                         });
                     }else{
@@ -517,12 +515,9 @@ define("p3/store/IDMappingAppMemoryStore", [
                             });
 
                             return when(defUniprotKB2Other(uniprotkbAccessionList, accessionSourceMap), function(data){
-                                _self.summary.found = data.length;
-                                Topic.publish("IDMapping", "updateHeader", _self.summary);
 
                                 _self.setData(data);
                                 _self._loaded = true;
-                                Topic.publish(_self.topicId, "hideLoadingMask");
                                 return true;
                             });
                         });
