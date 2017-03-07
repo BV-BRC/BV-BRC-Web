@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "./_GenomeList", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
+	"../GenomeOverview",
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
@@ -9,7 +9,7 @@ define([
 	"../TaxonomyTreeGridContainer", "../TaxonomyOverview", "dojo/topic", "../../util/QueryToEnglish"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, GenomeOverview,
+			GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
@@ -355,22 +355,13 @@ define([
 		onSetAnchor: function(evt){
 			evt.stopPropagation();
 			evt.preventDefault();
-			var f = evt.filter;
 			var parts = [];
-
-			// if(this.query){
-			// 	var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
-			// 	if(q != "keyword(*)"){
-			// 		parts.push(q)
-			// 	}
-			// }
 
 			if(evt.filter && evt.filter != "false"){
 				parts.push(evt.filter)
 			}
 
-			// console.log("parts: ", parts);
-
+			var q;
 			if(parts.length > 1){
 				q = "?and(" + parts.join(",") + ")"
 			}else if(parts.length == 1){
@@ -379,9 +370,7 @@ define([
 				q = "";
 			}
 
-			// console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
-
 			if(this.state.hashParams && this.state.hashParams.view_tab){
 				hp = {view_tab: this.state.hashParams.view_tab}
 			}else{
@@ -390,12 +379,10 @@ define([
 
 			hp.filter = "false";
 
-			// console.log("HP: ", JSON.stringify(hp));
-			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
+			var l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");
 
-			//console.log(" NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});

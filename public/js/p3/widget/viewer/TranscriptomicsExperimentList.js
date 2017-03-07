@@ -12,7 +12,6 @@ define([
 		"disabled": false,
 		"containerType": "transcriptomics_experiment_data",
 		"query": null,
-		paramsMap: "query",
 		defaultTab: "experiments",
 		perspectiveLabel: "Experiment List View",
 		perspectiveIconClass: "icon-selection-ExperimentList",
