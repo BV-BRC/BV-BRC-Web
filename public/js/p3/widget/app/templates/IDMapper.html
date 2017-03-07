@@ -10,7 +10,7 @@
 	<table style="width:100%;">
 		<tr>
 			<td style="vertical-align:top;">
-                <div class="appRow" style="width:219px; white-space:nowrap"> FROM:
+                <div class="appRow" style="width:140px; white-space:nowrap"> FROM:
 				<select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="leftTypeSelect"  >
 					<option selected="true" value="patric_id">PATRIC ID</option>
 					<option value="feature_id">Feature ID</option>
@@ -71,7 +71,7 @@
 			<td>
 			</td>
 			<td>
-                <div class="appRow" style="width:219px; white-space:nowrap">TO:
+                <div class="appRow" style="width:140px; white-space:nowrap">TO:
                                 <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="rightTypeSelect" >
                                         <option selected="true" value="patric_id">PATRIC ID</option>
                                         <option value="feature_id">Feature ID</option>
@@ -129,16 +129,28 @@
                                 </select>
                             </div>
 			</td>
+            <td></td>
+            <td>
+                <div class="appRow" style="width:100px; white-space:nowrap"> VIA:
+				<select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
+					<option selected="true" value="gene_id">GeneID</option>
+					<option value="gi">GI</option>
+                </select>
+            </td>
 		</tr>
 		<tr>
 			<td data-dojo-attach-point="leftColumnCount" >0 IDs</td>
             <td></td>
-			<td data-dojo-attach-point="rightColumnCount" colspan="2"></td>
+			<td data-dojo-attach-point="rightColumnCount" colspan="4"></td>
 		</tr>
 		<tr>
             <td style="vertical-align:top;" colspan="2">
 				<div data-dojo-attach-point="leftList" style="width: 100%;height:300px;vertical-align:top;max-height:350px" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeLeft"></div>
 			</td>
+            <td> 
+            </td>
+            <td>
+            </td>
             <td></td>
             <td></td>
             <td></td>
@@ -148,7 +160,7 @@
 			<td style="text-align:left;">
             <div data-dojo-type="dijit/form/Button" data-dojo-attach-point="mapButton" data-dojo-attach-event="onClick:map" data-dojo-props="disabled:false">MAP</div>
             </td>
-            <td colspan="2"></td>
+            <td colspan="4"></td>
 
 	</table>
 	</div>
