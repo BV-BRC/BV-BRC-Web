@@ -46,6 +46,7 @@ define([
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
+			var antibioticName = this.state.search.split(",")[1].split(")")[0];
 
 			switch(active){
 				case "overview":
@@ -53,14 +54,17 @@ define([
 					break;
 				case "amr":
 					activeTab.set("state", lang.mixin({}, this.state, {
-						search: this.state.search.replace("antibiotic_name", "antibiotic")
+						search: "eq(antibiotic," + antibioticName + ")"
 					}));
 					break;
-				case "features":
-				case "specialtyGenes":
-					var antibioticName = this.state.search.split(",")[1].split(")")[0];
+				case "amrGenes":
 					activeTab.set("state", lang.mixin({}, this.state, {
 						search: "keyword(" + antibioticName + ")"
+					}));
+					break;
+				case "amrRegions":
+					activeTab.set("state", lang.mixin({}, this.state, {
+						search: "keyword(" + antibioticName + ")&eq(feature_type,classifier_predicted_region)"
 					}));
 					break;
 				default:
@@ -96,21 +100,21 @@ define([
 				id: this.viewer.id + "_" + "amr"
 			});
 
-			this.features = new FeatureGridContainer({
-				title: "Features",
-				id: this.viewer.id + "_" + "features",
-				defaultFilter: "eq(feature_type,%22classifier_predicted_region%22)"
+			this.amrGenes = new SpecialtyGeneGridContainer({
+				title: "AMR Genes",
+				id: this.viewer.id + "_" + "amrGenes"
 			});
 
-			this.specialtyGenes = new SpecialtyGeneGridContainer({
-				title: "Specialty Genes",
-				id: this.viewer.id + "_" + "specialtyGenes"
+			this.amrRegions = new FeatureGridContainer({
+				title: "AMR Regions",
+				id: this.viewer.id + "_" + "amrRegions",
+				defaultFilter: ""
 			});
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.amr);
-			this.viewer.addChild(this.features);
-			this.viewer.addChild(this.specialtyGenes);
+			this.viewer.addChild(this.amrGenes);
+			this.viewer.addChild(this.amrRegions);
 		}
 	})
 });
