@@ -34,68 +34,52 @@ define([
 
 			// display 2D structure
 			// https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=33613&t=l
-			/*
 			var url = "https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=" + data['pubchem_cid'] + "&t=l";
-			xhr.get(url, {
-				headers: {
-					'X-Requested-With': null
-				}
-			})
-				.then(lang.hitch(this, function(img){
-					// console.log(data);
-					// console.log(this.structureNode.domNode);
-					var canvas = domConstruct.create("canvas");
-					canvas.width = img.width;
-					canvas.height = img.height;
-					var ctx = canvas.getContext("2d");
-					ctx.drawImage(img, 0, 0);
 
-					domConstruct.place(canvas.domNode, this.structureNode, "first");
-				}));
-			*/
+			domConstruct.empty(this.structureNode);
+			domConstruct.create("img", {"src": url}, this.structureNode, "first");
+
+			// smiles
+			// domConstruct.create("h5", {innerHTML: "Canonical smiles"}, this.structureNode);
+			// domConstruct.create("span", {innerHTML: data['canonical_smiles']}, this.structureNode);
+			// domConstruct.create("h5", {innerHTML: "Isomeric smiles"}, this.structureNode);
+			// domConstruct.create("span", {innerHTML: data['isomeric_smiles']}, this.structureNode);
 		},
 
 		_setDescriptionAttr: function(data){
 
 			domConstruct.empty(this.descNode);
 
-			var table = domConstruct.create("table", {"class": "p3basic"}, this.descNode);
-			var tbody = domConstruct.create("tbody", {}, table);
-
 			data.forEach(function(row){
-				var tr = domConstruct.create('tr', {}, tbody);
-				domConstruct.create("td", {innerHTML: row}, tr);
-			});
+				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.descNode);
+			}, this);
 		},
 
 		_setMechanismAttr: function(data){
 
 			domConstruct.empty(this.moaNode);
 
-			var table = domConstruct.create("table", {"class": "p3basic"}, this.moaNode);
-			var tbody = domConstruct.create("tbody", {}, table);
-
 			data.forEach(function(row){
-				var tr = domConstruct.create('tr', {}, tbody);
-				domConstruct.create("td", {innerHTML: row}, tr);
-			});
+				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.moaNode);
+			}, this);
 		},
 
 		_setPharmacologyAttr: function(data){
 
 			domConstruct.empty(this.pharmacologyNode);
 
-			var table = domConstruct.create("table", {"class": "p3basic"}, this.pharmacologyNode);
-			var tbody = domConstruct.create("tbody", {}, table);
+			data['pharmacology'].forEach(function(row){
+				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.pharmacologyNode);
+			}, this);
 
-			data.forEach(function(row){
-				var tr = domConstruct.create('tr', {}, tbody);
-				domConstruct.create("td", {innerHTML: row}, tr);
-			});
+			domConstruct.create("h5", {innerHTML: "Pharmacological Classes"}, this.pharmacologyNode)
+			data['pharmacological_classes'].forEach(function(row){
+				domConstruct.create("div", {"class": "close", innerHTML: row}, this.pharmacologyNode);
+			}, this);
 		},
 
-		getAntibioticData: function(name){
-			xhr.get(PathJoin(this.apiServiceUrl, "antibiotics", "?eq(antibiotic_name," + name + ")"), xhrOption)
+		getAntibioticData: function(query){
+			xhr.get(PathJoin(this.apiServiceUrl, "antibiotics", "?" + query), xhrOption)
 				.then(lang.hitch(this, function(data){
 
 					var d = data[0];
@@ -108,14 +92,14 @@ define([
 						inchi_key: d['inchi_key'],
 						// canonical_smiles: d['canonical_smiles'],
 						// isomeric_smiles: d['isomeric_smiles'],
-						mesh_tree: d['mesh_tree']
+						atc_classification: d['atc_classification']
 					});
 
 					this.set('antibioticSummary', summary);
 
 					this.set('description', d['description']);
 					this.set('mechanism', d['mechanism_of_action']);
-					this.set('pharmacology', d['pharmacology']);
+					this.set('pharmacology', d);
 
 				}))
 		}
