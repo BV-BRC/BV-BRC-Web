@@ -18,7 +18,9 @@ define([
 		store: store,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
-			genome_name: {label: "Genome Name", field: "genome_name", hidden: true},
+			taxon_id: {label: "Taxon ID", field: "taxon_id", hidden: true},
+			genome_id: {label: "Genome ID", field: "genome_id", hidden: true},
+			genome_name: {label: "Genome Name", field: "genome_name"},
 			antibiotic: {label: "Antibiotic", field: "antibiotic"},
 			phenotype: {label: "Resistant Phenotype", field: "resistant_phenotype"},
 			m_sign: {label: "Measurement Sign", field: "measurement_sign"},

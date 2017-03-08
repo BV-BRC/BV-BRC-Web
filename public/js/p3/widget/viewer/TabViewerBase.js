@@ -1,14 +1,14 @@
 define([
-	"dojo/_base/declare", "./Base", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer"
-], function(declare, ViewerBase, on, Topic,
-			domClass, ContentPane, domConstruct,
-			formatter, TabContainer){
+	"dojo/_base/declare",
+	"dojo/dom-construct",
+	"dijit/layout/ContentPane",
+	"./Base", "../TabContainer"
+], function(declare,
+			domConstruct,
+			ContentPane,
+			ViewerBase, TabContainer){
 	return declare([ViewerBase], {
 		"query": null,
-		genome_id: "",
-		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
 		perspectiveLabel: "BasePerspective Perspective",
 		perspectiveIconClass: "icon-info",

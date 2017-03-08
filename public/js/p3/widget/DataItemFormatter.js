@@ -981,6 +981,12 @@ define([
 			var section = {};
 
 			section['Summary'] = [{
+				name: 'Taxon ID',
+				text: 'taxon_id'
+			}, {
+				name: 'Genome ID',
+				text: 'genome_id'
+			}, {
 				name: 'Genome Name',
 				text: 'genome_name'
 			}, {
@@ -992,6 +998,9 @@ define([
 			}, {
 				name: 'Testing Standard',
 				text: 'testing_standard'
+			}, {
+				name: 'Testing Standard Year',
+				text: 'testing_standard_year'
 			}];
 
 			section['Measurement'] = [{
@@ -1022,6 +1031,37 @@ define([
 			var div = domConstruct.create("div");
 
 			displayDetailBySections(item, sectionList, section, div, options);
+
+			return div;
+		},
+
+		"antibiotic_data": function(item, options){
+			options = options || {};
+
+			var columns = [{
+				name: 'Antibiotic Name',
+				text: 'antibiotic_name'
+			}, {
+				name: 'PubChem CID',
+				text: 'pubchem_cid',
+				link: 'https://pubchem.ncbi.nlm.nih.gov/compound/'
+			}, {
+				name: 'CAS ID',
+				text: 'cas_id'
+			}, {
+				name: 'Molecular Formula',
+				text: 'molecular_formula',
+				link: 'https://pubchem.ncbi.nlm.nih.gov/search/#collection=compounds&query_type=mf&sort=mw&sort_dir=asc&query='
+			}, {
+				name: 'Molecular Weight',
+				text: 'molecular_weight'
+			}, {
+				name: 'InChI Key',
+				text: 'inchi_key'
+			}];
+
+			var div = domConstruct.create("div");
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
