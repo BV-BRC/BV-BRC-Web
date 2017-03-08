@@ -1,24 +1,19 @@
 define("p3/widget/viewer/GenomeGroup", [
-	"dojo/_base/declare", "./_GenomeList", "dojo/on", "dojo/topic","./TabViewerBase",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "dijit/layout/TabContainer", "../GenomeListOverview",
-	"dojo/request", "dojo/_base/lang",
-	"../FeatureGridContainer", "../SpecialtyGeneGridContainer",
-        "../PathwaysContainer", "../ProteinFamiliesContainer",
-        "../TranscriptomicsContainer", "../GroupGenomeGridContainer",
-        "../SequenceGridContainer", "dijit/Dialog"
-], function(declare, GenomeList, on, Topic,TabViewerBase,
-			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, Overview,
-			xhr, lang,
-			FeatureGridContainer, SpecialtyGeneGridContainer,
-			PathwaysContainer, ProteinFamiliesContainer,
-			TranscriptomicsContainer, GroupGenomeGridContainer,
-			SequenceGridContainer, Dialog
-){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/topic",
+	"./TabViewerBase", "./_GenomeList",
+	"../GenomeListOverview", "../GroupGenomeGridContainer", "../SequenceGridContainer",
+	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
+	"../PathwaysContainer", "../TranscriptomicsContainer"
+
+], function(declare, lang,
+			Topic,
+			TabViewerBase, GenomeList,
+			Overview, GroupGenomeGridContainer, SequenceGridContainer,
+			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+			PathwaysContainer, TranscriptomicsContainer){
+
 	return declare([GenomeList], {
-		params: null,
-		apiServiceUrl: window.App.dataAPI,
 		groupPath: null,
 		perspectiveLabel: "Genome Group View",
 		perspectiveIconClass: "icon-selection-GenomeList",
@@ -98,86 +93,87 @@ define("p3/widget/viewer/GenomeGroup", [
 		},
 
 		postCreate: function(){
-			TabViewerBase.prototype.postCreate.call(this,arguments);
+			TabViewerBase.prototype.postCreate.call(this, arguments);
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
-                        this.watch("genome_ids", lang.hitch(this, "onSetGenomeIds"));
-                        this.watch("referenceGenomes", lang.hitch(this, "onSetReferenceGenomes"));
-                        this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
+			this.watch("genome_ids", lang.hitch(this, "onSetGenomeIds"));
+			this.watch("referenceGenomes", lang.hitch(this, "onSetReferenceGenomes"));
+			this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
 
-                        this.overview = this.createOverviewPanel(this.state);
+			this.overview = this.createOverviewPanel();
 
-                        this.genomes = new GroupGenomeGridContainer({
-                                title: "Genomes",
-                                id: this.viewer.id + "_" + "genomes",
-                                state: this.state,
-                                disable: false,
-                                onRefresh: lang.hitch(this,function(){
-                                	console.log("Refreshed Genome Grid....")
-                                	this.set("query", this.state.search, true);
-                                })
-                        });
+			this.genomes = new GroupGenomeGridContainer({
+				title: "Genomes",
+				id: this.viewer.id + "_" + "genomes",
+				state: this.state,
+				disable: false,
+				onRefresh: lang.hitch(this, function(){
+					console.log("Refreshed Genome Grid....")
+					this.set("query", this.state.search, true);
+				})
+			});
 
-                        this.sequences = new SequenceGridContainer({
-                                title: "Sequences",
-                                id: this.viewer.id + "_" + "sequences",
-                                state: this.state,
-                                disable: false
-                        });
-                        this.features = new FeatureGridContainer({
-                                title: "Features",
-                                id: this.viewer.id + "_" + "features",
-                                disabled: false
-                        });
-                        this.specialtyGenes = new SpecialtyGeneGridContainer({
-                                title: "Specialty Genes",
-                                id: this.viewer.id + "_" + "specialtyGenes",
-                                disabled: false,
-                                state: this.state
-                        });
-                        this.pathways = new PathwaysContainer({
-                                title: "Pathways",
-                                id: this.viewer.id + "_" + "pathways",
-                                disabled: false
-                        });
-                        this.proteinFamilies = new ProteinFamiliesContainer({
-                                title: "Protein Families",
-                                id: this.viewer.id + "_" + "proteinFamilies",
-                                disabled: false
-                        });
-                        this.transcriptomics = new TranscriptomicsContainer({
-                                title: "Transcriptomics",
-                                id: this.viewer.id + "_" + "transcriptomics",
-                                disabled: false,
-                                state: this.state
-                        });
+			this.sequences = new SequenceGridContainer({
+				title: "Sequences",
+				id: this.viewer.id + "_" + "sequences",
+				state: this.state,
+				disable: false
+			});
+			this.features = new FeatureGridContainer({
+				title: "Features",
+				id: this.viewer.id + "_" + "features",
+				disabled: false
+			});
+			this.specialtyGenes = new SpecialtyGeneGridContainer({
+				title: "Specialty Genes",
+				id: this.viewer.id + "_" + "specialtyGenes",
+				disabled: false,
+				state: this.state
+			});
+			this.pathways = new PathwaysContainer({
+				title: "Pathways",
+				id: this.viewer.id + "_" + "pathways",
+				disabled: false
+			});
+			this.proteinFamilies = new ProteinFamiliesContainer({
+				title: "Protein Families",
+				id: this.viewer.id + "_" + "proteinFamilies",
+				disabled: false
+			});
+			this.transcriptomics = new TranscriptomicsContainer({
+				title: "Transcriptomics",
+				id: this.viewer.id + "_" + "transcriptomics",
+				disabled: false,
+				state: this.state
+			});
 
-                        this.viewer.addChild(this.overview);
-                        this.viewer.addChild(this.genomes);
-                        this.viewer.addChild(this.sequences);
-                        this.viewer.addChild(this.features);
-                        this.viewer.addChild(this.specialtyGenes);
-                        this.viewer.addChild(this.proteinFamilies);
-                        this.viewer.addChild(this.pathways);
-                        this.viewer.addChild(this.transcriptomics);
+			this.viewer.addChild(this.overview);
+			this.viewer.addChild(this.genomes);
+			this.viewer.addChild(this.sequences);
+			this.viewer.addChild(this.features);
+			this.viewer.addChild(this.specialtyGenes);
+			this.viewer.addChild(this.proteinFamilies);
+			this.viewer.addChild(this.pathways);
+			this.viewer.addChild(this.transcriptomics);
 
-                        if(localStorage){
-                                var gs = localStorage.getItem(this.showQuickstartKey);
-                                if(gs){
-                                        gs = JSON.parse(gs);
-                                }
-                                if(!gs){
+			/*
+			if(localStorage){
+				var gs = localStorage.getItem(this.showQuickstartKey);
+				if(gs){
+					gs = JSON.parse(gs);
+				}
+				if(!gs){
 
-                                        var dlg = new Dialog({
-                                                title: "PATRIC Quickstart",
-                                                content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
-                                        });
-                                        dlg.show();
-                                        localStorage.setItem(this.showQuickstartKey, true);
-                                }
+					var dlg = new Dialog({
+						title: "PATRIC Quickstart",
+						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+					});
+					dlg.show();
+					localStorage.setItem(this.showQuickstartKey, true);
+				}
 
-                        }
-                },
+			}*/
+		},
 
 		buildHeaderContent: function(){
 			return (this.groupPath).split('Genome Groups/')[1];

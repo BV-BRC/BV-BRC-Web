@@ -12,7 +12,6 @@ define("p3/widget/viewer/TaxonList", [
 		"disabled": false,
 		"containerType": "taxonomy_data",
 		"query": null,
-		paramsMap: "query",
 		defaultTab: "taxons",
 		total_taxons: null,
 		perspectiveLabel: "Taxon List View",
@@ -33,7 +32,7 @@ define("p3/widget/viewer/TaxonList", [
 
 			var url = PathJoin(this.apiServiceUrl, "taxonomy", "?" + (this.query) + "&gt(genomes,1)" + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
 
-			 console.log("taxonomy query url: ", url);
+			console.log("taxonomy query url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -43,10 +42,10 @@ define("p3/widget/viewer/TaxonList", [
 				handleAs: "json"
 			}).then(function(res){
 
-				if(res && res.response && res.response.docs && (res.response.docs.length>0)){
+				if(res && res.response && res.response.docs && (res.response.docs.length > 0)){
 					var features = res.response.docs;
-					_self.set("total_taxons", features?res.response.numFound:0);
-			
+					_self.set("total_taxons", features ? res.response.numFound : 0);
+
 				}else{
 					_self.set("total_taxons", 0);
 				}
@@ -124,7 +123,7 @@ define("p3/widget/viewer/TaxonList", [
 		onSetTotalTaxons: function(attr, oldVal, newVal){
 			console.log("ON SET TOTAL TAXONS: ", newVal);
 
-			this.totalCountNode.innerHTML = " ( " + newVal +  " Taxa ) ";
+			this.totalCountNode.innerHTML = " ( " + newVal + " Taxa ) ";
 		},
 		hideWarning: function(){
 			if(this.warningPanel){

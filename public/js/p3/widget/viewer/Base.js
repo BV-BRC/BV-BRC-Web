@@ -1,25 +1,15 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dojo/dom-construct", "dojo/_base/lang"
-], function(declare, BorderContainer, on, Topic,
-			domClass, domConstruct, lang){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic",
+	"dijit/layout/BorderContainer"
+], function(declare, lang,
+			on, Topic,
+			BorderContainer){
+
 	return declare([BorderContainer], {
 		"baseClass": "ViewerApp",
 		state: null,
-		paramsMap: null,
 		apiServiceUrl: window.App.dataAPI,
-
-		// _setStateAttr: function(state) {
-		// 	console.log("State: ", state);
-		// 	this.params = params;
-		// 	if (!this._started){ return; }
-		// 	this._set("params", params);
-
-		// 	// if (this.paramsMap && typeof this.paramsMap=="string"){
-		// 	// 	console.log(this.id, " Set Params: ", params, " mapped to ", this.paramsMap, " Widget: ", this)
-		// 	// 	this.set(this.paramsMap, params);
-		// 	// }
-		// },
 
 		refresh: function(){
 		},
@@ -38,7 +28,6 @@ define([
 		},
 
 		onSetAnchor: function(evt){
-
 		},
 
 		_setStateAttr: function(state){

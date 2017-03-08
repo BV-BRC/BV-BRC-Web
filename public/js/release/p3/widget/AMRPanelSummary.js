@@ -12,32 +12,28 @@ define("p3/widget/AMRPanelSummary", [
 		dataModel: "genome_amr",
 		query: "",
 		view: "table",
-		baseQuery: "",
+		baseQuery: "&limit(1)&facet((pivot,(resistant_phenotype,antibiotic)),(mincount,1))&json(nl,map)",
 		columns: [
-			{label: "Antibiotic", field: "antibiotic"},
-			{label: "Resistant Phenotype", field: "resistant_phenotype"},
 			{
-				label: "Measurement",
-				children: [
-					{label: "Sign", field: "measurement_sign"},
-					{label: "Value", field: "measurement_value"},
-					{label: "Units", field: "measurement_unit"}
-				]
+				label: "Phenotypes", field: "resistant_phenotype",
+				renderCell: function(obj, val, node){
+					node.innerHTML = lang.replace('<a href="#view_tab=amr&filter=eq(resistant_phenotype,{0})">{1}</a>', [encodeURIComponent(val), val]);
+				}
 			},
 			{
-				label: "Laboratory typing",
-				children: [
-					{label: "Method", field: "laboratory_typing_method"},
-					{label: "Platform", field: "laboratory_typing_platform"},
-					{label: "Vendor", field: "vendor"},
-					{label: "Version", field: "laboratory_typing_method_version"}
-				]
-			},
-			{label: "Testing standard", field: "testing_standard"}
+				label: "Antibiotics", field: "antibiotics",
+				renderCell: function(obj, val, node){
+					if(val){
+						node.innerHTML = val.join(', ');
+					}else{
+						node.innerHTML = ' ';
+					}
+				}
+			}
 		],
 		processData: function(data){
 
-			if(!data || data.response.numFound == 0){
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,antibiotic']){
 				// hide this section
 				domClass.add(this.domNode.parentNode, "hidden");
 				return;
@@ -46,9 +42,19 @@ define("p3/widget/AMRPanelSummary", [
 			// make section visible
 			domClass.remove(this.domNode.parentNode, "hidden");
 
-			this._tableData = data.response.docs;
+			data = data.facet_counts.facet_pivot['resistant_phenotype,antibiotic'];
+			var byPhenotypes = [];
 
-			this.set('data', data.response.docs);
+			data.forEach(function(summary){
+				var antibiotics = [];
+				summary.pivot.forEach(function(pv){
+					antibiotics.push(pv.value);
+				});
+				byPhenotypes.push({resistant_phenotype: summary.value, antibiotics: antibiotics});
+			});
+
+			this._tableData = byPhenotypes;
+			this.set('data', byPhenotypes);
 		},
 
 		render_table: function(){

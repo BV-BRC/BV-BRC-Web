@@ -12,10 +12,9 @@ define([
 		"containerType": "spgene_data",
 		"query": null,
 		defaultTab: "specialtyGenes",
-		paramsMap: "query",
 		perspectiveLabel: "Specialty Gene List View",
 		perspectiveIconClass: "icon-selection-FeatureList",
-		total_features: 0,
+		totalFeatures: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
@@ -44,7 +43,7 @@ define([
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
-						_self._set("total_features", res.response.numFound);
+						_self._set("totalFeatures", res.response.numFound);
 					}
 				}else{
 					console.warn("Invalid Response for: ", url);
@@ -106,7 +105,7 @@ define([
 			this.inherited(arguments);
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
-			this.watch("total_features", lang.hitch(this, "onSetTotalSpecialtyGenes"));
+			this.watch("totalFeatures", lang.hitch(this, "onSetTotalSpecialtyGenes"));
 
 
 			this.specialtyGenes = new SpecialtyGeneGridContainer({

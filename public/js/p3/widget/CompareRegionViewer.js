@@ -1,13 +1,15 @@
 define([
-	'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/connect',
+	'dojo/_base/declare', 'dojo/_base/lang',
 	'dojox/gfx', 'dojox/gfx/utils',
-	'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu',
-	'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/Evented',
+	'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu', 'dijit/Dialog',
+	'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/dom-construct', 'dojo/query', 'dojo/topic', 'dojo/request', 'dojo/Evented',
+	'./DataItemFormatter', '../util/PathJoin',
 	'dojo/domReady!'
-], function(declare, lang, connect,
+], function(declare, lang,
 			gfx, gfx_utils,
-			Tooltip, popup, TooltipDialog, Menu,
-			dom, on, domStyle, Evented){
+			Tooltip, popup, TooltipDialog, Menu, Dialog,
+			dom, on, domStyle, domConstruct, query, Topic, request, Evented,
+			DataItemFormatter, PathJoin){
 
 	return declare([Evented], {
 		/**
@@ -15,7 +17,7 @@ define([
 		 * adjusted after rendering (it is dependent on the number of rows we generate).
 		 */
 		viewport_width: null,
-		viewport_default_height: 40000,
+		viewport_default_height: 2000,
 		canvas_width: null,
 		canvas_offset: null,
 		name_width: 250,
@@ -75,8 +77,7 @@ define([
 			this.viewport_width = this.container.clientWidth;
 			this.canvas_offset = this.name_width + this.name_gutter;
 			this.canvas_width = this.viewport_width - this.canvas_offset;
-			window.console.log("pane sizes: vp_width=", this.viewport_width, " canvas_offset=", this.canvas_offset,
-				" canvas_width=", this.canvas_width);
+			// window.console.log("pane sizes: vp_width=", this.viewport_width, " canvas_offset=", this.canvas_offset, " canvas_width=", this.canvas_width);
 		},
 
 		init_panes: function(){
@@ -104,6 +105,10 @@ define([
 			if(this.data){
 				this.render();
 			}
+		},
+
+		exportSVG: function(){
+			return gfx_utils.toSvg(this.surface);
 		},
 
 		set_data: function(data){
@@ -282,7 +287,7 @@ define([
 			this.min_offset = min_offset;
 
 			var scale = this.canvas_width / contig_range;
-			window.console.log("computed scale", this.canvas_width, min_offset, contig_range, scale);
+			// window.console.log("computed scale", this.canvas_width, min_offset, contig_range, scale);
 			this.scale = scale;
 
 			/**
@@ -297,10 +302,12 @@ define([
 
 				row_idx = what[1];
 			}
-			//	    console.log("ending row idx ", row_idx);
+
 			var vp_height = row_idx * this.row_height + this.compare_top_height;
-			console.log("set viewport height " + vp_height);
+			// console.log("set viewport height " + vp_height);
 			domStyle.set(this.target_div, "height", vp_height + "px");
+			this.surface.setDimensions(this.viewport_width, vp_height + 200);
+
 			this.compare_group.setClip({
 				x: 100 * scale,
 				y: 0,
@@ -312,7 +319,7 @@ define([
 
 		make_arrow: function(parent, x1, x2, height){
 			var m = 15;
-			var w = x2 - x1;
+			// var w = x2 - x1;
 			var back = Math.round(0.65 * height);
 
 			var points;
@@ -359,14 +366,12 @@ define([
 			}
 
 			var p2 = [];
-			var i;
+
 			for(var i = 0; i < points.length; i += 2){
 				p2.push({x: Math.round(points[i]), y: Math.round(points[i + 1])});
 			}
 
-			poly = parent.createPolyline(p2);
-
-			return poly;
+			return parent.createPolyline(p2);
 		},
 
 		make_rect: function(parent, x1, x2, height){
@@ -383,9 +388,7 @@ define([
 				dat.width = x1 - x2;
 			}
 
-			var rect = parent.createRect(dat);
-
-			return rect;
+			return parent.createRect(dat);
 		},
 
 		add_feature: function(row, row_data, x1, x2, height, color, feature, is_pin){
@@ -476,8 +479,8 @@ define([
 
 			if(1){
 				glyph.on("click", function(evt){
-					window.console.log("click alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey + " which=" + evt.which);
-
+					// window.console.log("click alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey + " which=" + evt.which);
+/*
 					if(evt.shiftKey){
 						if(this.selected_fids[feature.fid]){
 							this.selected_fids[feature.fid] = false;
@@ -499,16 +502,43 @@ define([
 					}
 
 					evt.preventDefault();
+*/
+					if(feature.fid && feature.fid.indexOf(".BLAST") > -1){
+						return;
+					}
+
+					var topicId = this.topicId;
+					Topic.publish(topicId, "showLoadingMask");
+					request.get(PathJoin(window.App.dataServiceURL, "/genome_feature/?eq(patric_id," + encodeURIComponent(feature.fid) + ")"), {
+						handleAs: "json",
+						headers: {
+							Accept: "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'Authorization': (window.App.authorizationToken || "")
+						}
+					}).then(function(data){
+						// console.log(data[0]);
+						Topic.publish(topicId, "hideLoadingMask");
+
+						var content = DataItemFormatter(data[0], "feature_data", {linkTitle:true});
+						if(!window.featureDialog){
+							window.featureDialog = new Dialog({title: "Feature Summary"});
+						}
+						window.featureDialog.set("content", content);
+						window.featureDialog.show();
+					})
+
 				}.bind(this));
 
 				glyph.on("dblclick", function(evt){
-					window.console.log("dblclick alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey);
-					this.emit("feature_dblclick", {feature: feature.fid});
-					evt.preventDefault();
+					// window.console.log("dblclick alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey);
+					// this.emit("feature_dblclick", {feature: feature.fid});
+					// evt.preventDefault();
+					Topic.publish("/navigate", {href:"/view/Feature/" + feature.fid + "#view_tab=compareRegionViewer"})
 				}.bind(this));
 
 				var feature_info_str = this.create_hover_text(feature, row_data);
-
+/*
 				var ttinfo = {
 					content: feature_info_str,
 					around: {
@@ -520,9 +550,24 @@ define([
 					position: ["after", "before"],
 					bb: bb
 				};
+*/
+				var tooltipDiv = query("div.tooltip");
+				if(tooltipDiv.length == 0){
+					this.tooltipLayer = domConstruct.create("div", {
+						"class": "tooltip",
+						style: {opacity: 0}
+					}, query("body")[0], "last");
+				}else{
+					this.tooltipLayer = tooltipDiv[0];
+				}
 
 				glyph.on("mouseenter", function(evt){
-					// window.console.log(JSON.stringify(ttinfo));
+
+					domStyle.set(this.tooltipLayer, "left", evt.x + "px");
+					domStyle.set(this.tooltipLayer, "top", evt.y + "px");
+					domStyle.set(this.tooltipLayer, "opacity", 0.95);
+					this.tooltipLayer.innerHTML = feature_info_str;
+/*
 					Tooltip.show(ttinfo.content, ttinfo.around, ttinfo.position);
 					this.sig = glyph.on("mouseout", function(e){
 						Tooltip.hide(ttinfo.around);
@@ -531,13 +576,13 @@ define([
 							this.sig.remove();
 						this.sig = null;
 					});
+*/
 				}.bind(this));
 
-				glyph.on("mousedown", function(evt){
-					window.console.log("mdown");
-					evt.preventDefault();
+				glyph.on("mouseout", function(evt){
+					domStyle.set(this.tooltipLayer, "opacity", 0);
 				}.bind(this));
-
+/*
 				if(typeof this.menu_create_callback === 'function'){
 					glyph.on("contextmenu", function(evt){
 						Tooltip.hide(ttinfo.around);
@@ -580,10 +625,23 @@ define([
 						evt.preventDefault();
 					}.bind(this));
 				}
+*/
 			}
 		},
 
 		create_hover_text: function(feature, row_data){
+
+			var feature_info = [
+				["PATRIC_ID", feature.fid],
+				["Product", feature["function"]],
+				["Location", feature.beg + "..." + feature.end + " (" + feature.size + "bp, " + feature.strand + ")"]];
+
+			return feature_info.map(function(line){
+				return line.join(": ");
+			}).join("<br/>");
+		},
+
+		create_hover_text_ori: function(feature, row_data){
 			var start = feature.beg;
 			var stop = feature.end;
 			var size = feature.size + " bp";
@@ -682,7 +740,10 @@ define([
 			//
 			// Label the row.
 			//
-			var label = data.org_name.replace(/^(\w)\S+/, "$1.");
+			var names = data.org_name.split(' ');
+			var label = names.slice(0, 3).join(' ');
+			var label2 = names.slice(3).join(' ');
+			// var label = data.org_name.replace(/^(\w)\S+/, "$1.");
 			var label_txt = this.name_group.createText({
 				text: label,
 				x: this.name_front_margin,
@@ -691,6 +752,14 @@ define([
 			});
 //	    label_txt.setStroke("black");
 			label_txt.setFill("black");
+
+			var label_txt_2 = this.name_group.createText({
+				text: label2,
+				x: this.name_front_margin + 10,
+				y: y + height / 2 + 15,
+				align: 'start'
+			});
+			label_txt_2.setFill("black");
 
 			var pegs = data.features;
 

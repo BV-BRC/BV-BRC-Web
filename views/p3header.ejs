@@ -28,6 +28,7 @@
 
 
     var servicesMiddle = Math.round(services.length / 2);
+    var isProd = request.applicationOptions.appLabel == "";
     %>
 
     <div class="P3Header" style="display: flex">
@@ -173,7 +174,9 @@
                                 <div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
                                 <div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
                                 <div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>
+                                <% if(!isProd){ %>
                                 <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder</a></div>
+                                <% } %>
                                 <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a>
                                 </div>
                             </div>
@@ -200,9 +203,13 @@
                                         Pathway</a></div>
                                 <div><a class="navigationLink" href="/app/Reconstruct">Model
                                         Reconstruction</a></div>
-                                <!-- <div class="menuHeader">Utilities</div>
-                                <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>-->
                             </div>
+                            <% if(!isProd){ %>
+                            <div class="menuHeader">Data</div>
+                            <div class="menuItems">
+                                <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
+                            </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -273,4 +280,11 @@
             </div>
         </div>
     </div>
+    <!--
+    <div class="msg-box-below-topnav">
+        <span>
+            The PATRIC services and user workspace data will be offline for infrastructure maintenance beginning Monday morning (3/6/2012) at 7:00am CST and will be unavailable all day.  We expect the work to be completed and to have PATRIC services back online by Tuesday morning.
+        </span>
+    </div>
+    -->
 </div>

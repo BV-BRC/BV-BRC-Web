@@ -116,11 +116,11 @@ define("p3/widget/SelectionToGroup", [
             }
 			var def;
 			if(this.targetType.get("value") == "existing"){
-				def = WorkspaceManager.addToGroup(this.value, this.idType, this.selection.map(lang.hitch(this, function(o){
+				def = WorkspaceManager.addToGroup(this.value, this.idType, this.selection.filter(function(d){return this.idType in d}).map(lang.hitch(this, function(o){
 					return o[this.idType];
 				})));
 			}else{
-				def = WorkspaceManager.createGroup(this.value, this.type, this.path, this.idType, this.selection.map(lang.hitch(this, function(o){
+				def = WorkspaceManager.createGroup(this.value, this.type, this.path, this.idType, this.selection.filter(function(d){return this.idType in d}).map(lang.hitch(this, function(o){
 					return o[this.idType];
 				})));
 			}
