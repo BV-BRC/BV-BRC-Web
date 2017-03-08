@@ -1,12 +1,12 @@
 define("p3/widget/AMRPanelGridContainer", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/on", "dojo/topic",
-	"dijit/TooltipDialog", "dijit/popup",
-	"./GridContainer", "./AMRPanelGrid", "./PerspectiveToolTip"
+	"dijit/TooltipDialog", "dijit/popup", "dijit/Dialog",
+	"./GridContainer", "./AMRPanelGrid", "./PerspectiveToolTip", "./SelectionToGroup"
 ], function(declare, lang,
 			domConstruct, on, Topic,
-			TooltipDialog, popup,
-			GridContainer, Grid, PerspectiveToolTipDialog){
+			TooltipDialog, popup, Dialog,
+			GridContainer, Grid, PerspectiveToolTipDialog, SelectionToGroup){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
@@ -114,6 +114,61 @@ define("p3/widget/AMRPanelGridContainer", [
 					var sel = selection[0];
 
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id, target: "blank"});
+				},
+				false
+			],
+			[
+				"ViewAntibioticItem",
+				"fa icon-selection-Genome fa-2x",
+				{
+					label: "ANTIBIOTIC",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Antibiotic View",
+					ignoreDataType: true,
+					validContainerTypes: ["genome_amr_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					var query = "?eq(antibiotic_name," + encodeURIComponent(sel.antibiotic) + ")";
+
+					Topic.publish("/navigate", {href: "/view/Antibiotic/" + query, target: "blank"});
+				},
+				false
+			],
+			[
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 10000,
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["genome_amr_data"]
+				},
+				function(selection, containerWidget){
+
+					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var type = "genome_group";
+
+					var stg = new SelectionToGroup({
+						selection: selection,
+						type: type,
+						path: ""
+					});
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						}, 2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();
 				},
 				false
 			]

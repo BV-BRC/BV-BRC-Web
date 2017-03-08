@@ -13,7 +13,7 @@ define("p3/util/QueryToEnglish", [
 		}
 
 		function walk(term){
-			console.log("Walk: ", term.name, " Args: ", term.args);
+			// console.log("Walk: ", term.name, " Args: ", term.args);
 			switch(term.name){
 				case "and":
 				case "or":
@@ -21,7 +21,7 @@ define("p3/util/QueryToEnglish", [
 						return walk(t);
 					}).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
 
-					console.log("out: ", out);
+					// console.log("out: ", out);
 					break;
 				case "in":
 					var f = decodeURIComponent(term.args[0]).replace(/_/g," ");;
