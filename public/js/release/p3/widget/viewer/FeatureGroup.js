@@ -1,15 +1,13 @@
 define("p3/widget/viewer/FeatureGroup", [
-	"dojo/_base/declare", "./_FeatureList", "dojo/on","./TabViewerBase",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "dijit/layout/TabContainer", "../FeatureListOverview",
-	"dojo/request", "dojo/_base/lang","../GroupFeatureGridContainer"
-], function(declare, FeatureList, on,TabViewerBase,
-			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, Overview,
-			xhr, lang, GroupFeatureGridContainer){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"./_FeatureList", "./TabViewerBase",
+	"../FeatureListOverview", "../GroupFeatureGridContainer"
+], function(declare, lang,
+			FeatureList, TabViewerBase,
+			Overview, GroupFeatureGridContainer){
+
 	return declare([FeatureList], {
-		params: null,
-		apiServiceUrl: window.App.dataAPI,
+		defaultTab: "overview",
 		groupPath: null,
 		perspectiveLabel: "Feature Group View",
 		perspectiveIconClass: "icon-selection-FeatureList",
@@ -79,35 +77,31 @@ define("p3/widget/viewer/FeatureGroup", [
 			return (this.groupPath).split('Feature Groups/')[1];
 		},
 
-		createOverviewPanel: function(){
-			return new Overview({
+		postCreate: function(){
+			TabViewerBase.prototype.postCreate.call(this, arguments);
+			this.watch("query", lang.hitch(this, "onSetQuery"));
+			this.watch("totalFeatures", lang.hitch(this, "onSetTotalFeatures"));
+
+			this.overview = new Overview({
 				content: "Feature Group Overview",
 				title: "Overview",
 				isFeatureGroup: true,
 				id: this.viewer.id + "_" + "overview"
 			});
+
+			this.features = new GroupFeatureGridContainer({
+				title: "Features",
+				id: this.viewer.id + "_" + "features",
+				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
+				disabled: false,
+				onRefresh: lang.hitch(this, function(){
+					// console.log("Refreshed Feature Grid....")
+					this.set("query", this.state.search, true);
+				})
+			});
+
+			this.viewer.addChild(this.overview);
+			this.viewer.addChild(this.features);
 		},
-
-                postCreate: function(){
-			TabViewerBase.prototype.postCreate.call(this,arguments);
-                        this.watch("query", lang.hitch(this, "onSetQuery"));
-                        this.watch("total_features", lang.hitch(this, "onSetTotalFeatures"));
-
-                        this.overview = this.createOverviewPanel(this.state);
-
-                        this.features = new GroupFeatureGridContainer({
-                                title: "Features",
-                                id: this.viewer.id + "_" + "features",
-                                tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
-                                disabled: false,
-                                onRefresh: lang.hitch(this,function(){
-                                	console.log("Refreshed Feature Grid....")
-                                	this.set("query", this.state.search, true);
-                                })
-                        });
-
-                        this.viewer.addChild(this.overview);
-                        this.viewer.addChild(this.features);
-                },
 	});
 });

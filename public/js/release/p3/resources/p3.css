@@ -14249,6 +14249,9 @@ div.appsublabel {
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
     min-height: 400px;
 }
+.patric .apSummaryWidget.SummaryWidget .tableNode {
+    height: 148px;
+}
 .patric .apSummaryWidget.SummaryWidget TH {
     text-align: center;
 }

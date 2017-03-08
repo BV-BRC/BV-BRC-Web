@@ -17,9 +17,10 @@ define("p3/widget/AMRPanelGridContainer", [
 
 	return declare([GridContainer], {
 		containerType: "genome_amr_data",
-		facetFields: ["resistant_phenotype", "laboratory_typing_method", "laboratory_typing_platform", "testing_standard"],
+		facetFields: ["antibiotic", "resistant_phenotype", "laboratory_typing_method", "laboratory_typing_platform", "testing_standard"],
 		dataModel: "genome_amr",
 		primaryKey: "id",
+		maxDownloadSize: 25000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
