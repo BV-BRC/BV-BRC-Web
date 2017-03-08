@@ -1058,6 +1058,18 @@ define([
 			}, {
 				name: 'InChI Key',
 				text: 'inchi_key'
+			}, {
+				name: 'ATC Classification',
+				text: 'atc_classification',
+				link: function(obj){
+					return obj['atc_classification'].join(", ");
+				}
+			// }, {
+			// 	name: 'Synonyms',
+			// 	text: 'synonyms',
+			// 	link: function(obj){
+			// 		return obj['synonyms'].join(", ");
+			// 	}
 			}];
 
 			var div = domConstruct.create("div");
