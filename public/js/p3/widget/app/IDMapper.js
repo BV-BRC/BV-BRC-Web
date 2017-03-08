@@ -77,6 +77,9 @@ define([
 			console.log("MAP: ", this.mapFromIDs, this.leftTypeSelect.get('value'), this.rightTypeSelect.get('value'));
 			var from = this.leftTypeSelect.get('value');
 			var to = this.rightTypeSelect.get('value');
+            var via = "gene_id";
+            via= this.joinUsing.get('value');
+
 			//var ids = this.mapFromIDs.map(encodeURIComponent).join(",");
 			var ids = this.mapFromIDs.join(",");
 			var q;
@@ -93,7 +96,8 @@ define([
 
 			    console.log("ids: ", ids);
 			    query(".idmap_result_div .GridContainer").style("visibility", "visible");
-                _self.result.set('state', {"fromIdGroup": fromIdGroup, "fromId": from, "toIdGroup":toIdGroup, "toId":to, "fromIdValue":ids});
+			    query(".PerspectiveTotalCount").style("visibility", "visible");
+                _self.result.set('state', {"fromIdGroup": fromIdGroup, "joinId":via, "fromId": from, "toIdGroup":toIdGroup, "toId":to, "fromIdValue":ids});
             }
 
 			return;

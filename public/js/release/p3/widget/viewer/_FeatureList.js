@@ -1,21 +1,24 @@
 define("p3/widget/viewer/_FeatureList", [
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
-	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview",
-	"../../util/QueryToEnglish"
-], function(declare, TabViewerBase, on, Topic,
-			domClass, ContentPane, domConstruct,
-			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
-			GenomeGridContainer, PathJoin, xhr, lang, Overview,
-			QueryToEnglish){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/topic", "dojo/request",
+	"dijit/layout/ContentPane",
+	"./TabViewerBase",
+	"../FeatureListOverview", "../FeatureGridContainer",
+	"../../util/PathJoin", "../../util/QueryToEnglish"
+], function(declare, lang,
+			Topic, xhr,
+			ContentPane,
+			TabViewerBase,
+			Overview, FeatureGridContainer,
+			PathJoin, QueryToEnglish){
+
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureList",
 		"disabled": false,
 		"containerType": "feature_data",
 		"query": null,
-		paramsMap: "query",
-		total_features: 0,
+		totalFeatures: 0,
+		defaultTab: "features",
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		perspectiveLabel: "Feature List View",
 		perspectiveIconClass: "icon-selection-FeatureList",
@@ -28,8 +31,6 @@ define("p3/widget/viewer/_FeatureList", [
 
 			var _self = this;
 
-			console.log("FeatureList QUERY: ", query)
-
 			xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 				headers: {
 					accept: "application/solr+json",
@@ -40,11 +41,11 @@ define("p3/widget/viewer/_FeatureList", [
 				handleAs: "json",
 				data: query + "&limit(1)"
 			}).then(function(res){
-				console.log("Got FeatureList Query Results: ", res)
+				// console.log("Got FeatureList Query Results: ", res)
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
-						_self._set("total_features", res.response.numFound);
+						_self._set("totalFeatures", res.response.numFound);
 					}
 				}else{
 					console.log("Invalid Response for: ", query);
@@ -59,25 +60,19 @@ define("p3/widget/viewer/_FeatureList", [
 			this.inherited(arguments);
 			this.set("query", state.search);
 
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// if(active == "features"){
 			this.setActivePanelState();
-			// }
 
 			this.inherited(arguments);
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
 			var qe = QueryToEnglish(newVal);
-			// this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + qe + "</div>");
 
 			this.queryNode.innerHTML = "Features: " + qe;
 		},
 
 		setActivePanelState: function(){
-			console.log("Active Panel: ", active)
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active Panel: ", active)
 
 			var activeTab = this[active];
 
@@ -103,7 +98,7 @@ define("p3/widget/viewer/_FeatureList", [
 					}
 					break;
 			}
-			console.log(active, this.state);
+			// console.log(active, this.state);
 			if(activeTab){
 				var pageTitle = "Feature List " + activeTab.title;
 				// console.log("Feature List: ", pageTitle);
@@ -119,22 +114,17 @@ define("p3/widget/viewer/_FeatureList", [
 			this.setActivePanelState();
 		},
 
-		createOverviewPanel: function(state){
-			return new Overview({
-				content: "Overview",
-				title: "Feature List Overview",
-				id: this.viewer.id + "_" + "overview",
-				state: this.state
-			});
-		},
-
 		postCreate: function(){
 			this.inherited(arguments);
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
-			this.watch("total_features", lang.hitch(this, "onSetTotalFeatures"));
+			this.watch("totalFeatures", lang.hitch(this, "onSetTotalFeatures"));
 
-			this.overview = this.createOverviewPanel(this.state);
+			this.overview = new Overview({
+				content: "Overview",
+				title: "Feature List Overview",
+				id: this.viewer.id + "_" + "overview"
+			});
 
 			this.features = new FeatureGridContainer({
 				title: "Features",
@@ -146,9 +136,11 @@ define("p3/widget/viewer/_FeatureList", [
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.features);
 		},
+
 		onSetTotalFeatures: function(attr, oldVal, newVal){
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genome Features ) ";
 		},
+
 		hideWarning: function(){
 			if(this.warningPanel){
 				this.removeChild(this.warningPanel);
@@ -166,6 +158,7 @@ define("p3/widget/viewer/_FeatureList", [
 			}
 			this.addChild(this.warningPanel);
 		},
+
 		onSetAnchor: function(evt){
 
 			evt.stopPropagation();

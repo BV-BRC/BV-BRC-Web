@@ -1,25 +1,23 @@
 define("p3/widget/viewer/Feature", [
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer", "../FeatureOverview",
-	"dojo/request", "dojo/_base/lang",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../InteractionContainer",
-	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin",
-	"../GenomeBrowser", "../CompareRegionContainer"
-], function(declare, TabViewerBase, on, Topic,
-			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, FeatureOverview,
-			xhr, lang,
-			ActionBar, ContainerActionBar, PathwaysContainer, InteractionContainer,
-			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin,
-			GenomeBrowser, CompareRegionContainer){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/request",
+	"./TabViewerBase",
+	"../FeatureOverview", "../GenomeBrowser", "../CompareRegionContainer",
+	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../InteractionContainer",
+	"../../util/PathJoin"
+
+], function(declare, lang,
+			xhr,
+			TabViewerBase,
+			FeatureOverview, GenomeBrowser, CompareRegionContainer,
+			GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer,
+			PathJoin){
+
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
-		"query": null,
 		containerType: "feature_group",
 		feature_id: "",
-		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Feature View",
 		perspectiveIconClass: "icon-selection-Feature",
 
@@ -157,10 +155,9 @@ define("p3/widget/viewer/Feature", [
 				});
 
 				var out = visibleIndexes.map(function(idx){
-						return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
-					});
+					return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+				});
 				this.queryNode.innerHTML = out.join(" &raquo; ") + " &raquo; " + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', {feature: feature});
-				//this.queryNode.innerHTML = out.join(" &raquo; ");
 			}));
 
 			var content = [];
@@ -213,21 +210,10 @@ define("p3/widget/viewer/Feature", [
 
 			this.feature = this.state.feature = feature;
 
-			// this.queryNode.innerHTML = this.buildHeaderContent(feature);
 			this.buildHeaderContent(feature);
-			// domConstruct.empty(this.totalCountNode);
 
 			this.setActivePanelState();
 			this.resize();
-		},
-
-		createOverviewPanel: function(){
-			return new FeatureOverview({
-				content: "Overview",
-				title: "Overview",
-				id: this.viewer.id + "_" + "overview",
-				state: this.state
-			});
 		},
 
 		postCreate: function(){
@@ -237,7 +223,12 @@ define("p3/widget/viewer/Feature", [
 
 			this.inherited(arguments);
 
-			this.overview = this.createOverviewPanel();
+			this.overview = new FeatureOverview({
+				content: "Overview",
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview"
+			});
+
 			this.genomeBrowser = new GenomeBrowser({
 				title: "Genome Browser",
 				id: this.viewer.id + "_genomeBrowser",
@@ -251,16 +242,18 @@ define("p3/widget/viewer/Feature", [
 					id: this.viewer.id + "_compareRegionViewer"
 				});
 			}
-			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
+			// TODO: implement pathways tab
 
 			this.transcriptomics = new GeneExpressionContainer({
 				title: "Transcriptomics",
 				id: this.viewer.id + "_transcriptomics"
 			});
+
 			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes"
 			});
+
 			if(window.App.appLabel !== ""){
 				this.interactions = new InteractionContainer({
 					title: "Interactions",
