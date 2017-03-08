@@ -156,7 +156,7 @@ define("p3/widget/formatter", ["dojo/date/locale", "dojo/dom-construct", "dojo/d
 			link = "/view/SpecialtyGeneEvidence/"; // Rv3875
 		}
 		else if (target.match(/PATRIC_VF_HOME/)) {
-			link = "/view/SpecialtyGeneList/?and(eq(source,PATRIC_VF),eq(evidence,Literature))";
+			link = "/view/SpecialtyVFGeneList/?keyword(*)&eq(source,PATRIC_VF)";
 		}
 		else if (target.match(/ARDB$/i)) {
 			link = "//ardb.cbcb.umd.edu/cgi/search.cgi?db=R&term="; // AAL09826

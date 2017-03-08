@@ -1,0 +1,126 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>Similar Genome Finder</h3>
+            <p>Find similar genomes or compute genome distance estimation using Mash/MinHash.</p>
+        </div>
+
+        <div class="service_form">
+            <div class="appBox appShadow">
+                <div class="headerrow"  style="margin-bottom: 7px">
+                    <label class="appBoxLabel">Select a Genome</label>
+                </div>
+                <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                     data-dojo-type="p3/widget/GenomeNameSelector"
+                     data-dojo-attach-point="genome_id"
+                     data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
+                     style="width:600px;">
+                </div>
+                <div class="form_msg_warning" data-dojo-attach-point="genome_message"></div>
+            </div>
+
+            <div class="appBox appShadow hidden" data-dojo-attach-point="fasta_wrapper">
+                <div class="headerrow" style="margin-bottom: 7px">
+                    <label class="appBoxLabel">Upload FASTA</label>
+                </div>
+                <div name="fasta" style="width:100%"></div>
+
+                <div class="form_msg_warning" data-dojo-attach-point="fasta_message"></div>
+            </div>
+
+            <div class="appRow" style="text-align:center">
+                <div class="appRowSegment" data-dojo-attach-point="advanced">
+                    <label class="largelabel">Advanced options</label>
+                    <div class="iconbox" style="margin-left:0">
+                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div data-dojo-attach-point="advancedOptions" style="display: none">
+                <div class="appBox appShadow">
+                    <div class="headerrow">
+                        <label class="appBoxLabel">Parameters</label>
+                    </div>
+                    <div class="left quarter">
+                        <label class="paramlabel">Max hits: </label><br/>
+                        <select name="max_target" style="width: 100px"
+                                data-dojo-type="dijit/form/Select"
+                                data-dojo-attach-point="max_hits">
+                            <option value="1">1</option>
+                            <option value="10">10</option>
+                            <option value="50" selected="selected">50</option>
+                            <option value="100">100</option>
+                            <option value="500">500</option>
+                        </select>
+                    </div>
+
+                    <div class="left quarter">
+                        <label class="paramlabel">P value threshold: </label><br/>
+                        <div data-dojo-type="dijit/form/Select"
+                             data-dojo-attach-point="pvalue"
+                             value="0.01" style="width:60px">
+                            <option value="0.001">0.001</option>
+                            <option value="0.01">0.01</option>
+                            <option value="0.1">0.1</option>
+                            <option value="1">1</option>
+                            <option value="10">10</option>
+                        </div>
+                    </div>
+                    <div class="left quarter">
+                        <label class="paramlabel">Distance: </label><br/>
+                        <div data-dojo-type="dijit/form/Select"
+                             data-dojo-attach-point="distance"
+                             value="0.01" style="width:60px">
+                            <option value="0.001">0.001</option>
+                            <option value="0.05">0.05</option>
+                            <option value="0.01">0.01</option>
+                            <option value="0.05">0.05</option>
+                            <option value="0.1">0.1</option>
+                            <option value="0.5">0.5</option>
+                            <option value="1">1</option>
+                        </div>
+                    </div>
+
+                    <div class="left quarter">
+                        <div data-dojo-type="dijit/form/CheckBox"
+                             data-dojo-attach-point="include_reference"
+                             value="1"></div>
+                        <label class="paramlabel">Limit to reference</label>
+                        <br/>
+                        <div data-dojo-type="dijit/form/CheckBox"
+                            data-dojo-attach-point="include_representative"
+                             value="1"></div>
+                        <label class="paramlabel">Limit to representative</label>
+
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="appSubmissionArea">
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-type="dijit/form/Button"
+                     data-dojo-attach-point="mapButton"
+                     data-dojo-attach-event="onClick:submit"
+                     data-dojo-props="disabled:false">
+                    Search
+                </div>
+            </div>
+        </div>
+        <div class="reSubmitBtn" style="visibility: hidden"
+             data-dojo-type="dijit/form/Button"
+             data-dojo-attach-event="onClick:resubmit">Edit form and resubmit
+        </div>
+    </div>
+
+    <div class="service_error hidden">
+        <h3></h3>
+        <div class="service_message"></div>
+    </div>
+    <div class="genomedistance_result"></div>
+</form>
+

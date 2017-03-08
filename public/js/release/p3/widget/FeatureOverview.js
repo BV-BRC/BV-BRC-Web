@@ -5,13 +5,15 @@ define("p3/widget/FeatureOverview", [
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter", "./D3SingleGeneViewer", "./SelectionToGroup"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter",
+	"./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, formatter, D3SingleGeneViewer, SelectionToGroup){
+			DataItemFormatter, ExternalItemFormatter, formatter,
+			D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -254,7 +256,7 @@ define("p3/widget/FeatureOverview", [
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
-			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, pwLink;
+			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink;
 			if(feature.hasOwnProperty('go')){
 				goLink = feature['go'].map(function(goStr){
 					var go = goStr.split('|');
@@ -281,6 +283,10 @@ define("p3/widget/FeatureOverview", [
 				figfamLink = '<a href="/view/FeatureList/?eq(figfam_id,' + feature.figfam_id + ')#view_tab=features" target="_blank">' + feature.figfam_id + '</a>';
 			}
 
+			if(feature.hasOwnProperty('aa_sequence_md5')){
+				ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View in new Tab</a>';
+			}
+
 			if(feature.hasOwnProperty('pathway')){
 				pwLink = feature['pathway'].map(function(pwStr){
 					var pw = pwStr.split('|');
@@ -296,7 +302,7 @@ define("p3/widget/FeatureOverview", [
 			var htr;
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:20%"}, htr);
+			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:25%"}, htr);
 			domConstruct.create("td", {innerHTML: plfamLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
@@ -306,6 +312,10 @@ define("p3/widget/FeatureOverview", [
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "FIGfam", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: figfamLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Identical Proteins", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: ipLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "GO Terms", scope: "row"}, htr);
@@ -339,6 +349,7 @@ define("p3/widget/FeatureOverview", [
 			gene_viewer.init(this.sgViewerNode);
 			gene_viewer.render(data);
 		},
+
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
 
@@ -445,6 +456,30 @@ define("p3/widget/FeatureOverview", [
 					this.set("featureComments", data);
 				}));
 			}
+
+			// protein-protein interaction
+			/*
+			if(this.feature.patric_id){
+				query = "?or(eq(feature_id_a," + this.feature.feature_id + "),eq(feature_id_b," + this.feature.feature_id + "))";
+				xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + query), xhrOption)
+					.then(lang.hitch(this, function(data){
+						if(data.length === 0) return;
+
+						var second = data.map(function(d){
+							return [d.feature_id_a, d.feature_id_b];
+						}).reduce(function(a, b){
+							return a.concat(b);
+						});
+
+						var q = "?and(in(feature_id_a,(" + second.join(",") + ")),in(feature_id_b,(" + second.join(",") + ")))";
+
+						xhr.get(PathJoin(this.apiServiceUrl, "/ppi/" + q), xhrOption)
+							.then(lang.hitch(this, function(data){
+
+								this.set("featurePPI", data, this.feature.feature_id);
+							}));
+					}));
+			}*/
 		},
 
 		onAddFeature: function(){

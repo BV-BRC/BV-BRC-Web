@@ -202,6 +202,25 @@ define([
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state));
 					break;
+				case "interactions":
+					// console.log("interactions tab", this.setActivePanelState.caller, this.state);
+					if(this.state.genome_ids){
+						var genome_ids;
+						if(this.state.referenceGenomes){
+							genome_ids = this.state.referenceGenomes.map(function(g){
+								return g.genome_id;
+							});
+						}else{
+							if(this.state.genome_ids.length > 1000){
+								return;
+							}
+							genome_ids = this.state.genome_ids;
+						}
+						activeTab.set("state", lang.mixin({}, this.state, {
+							search: "or(in(genome_id_a,(" + genome_ids.join(",") + ")),in(genome_id_b,(" + genome_ids.join(",") + ")))"
+						}));
+					}
+					break;
 				default:
 					var activeQueryState;
 					var prop = "genome_id";

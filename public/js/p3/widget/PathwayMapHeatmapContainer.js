@@ -342,7 +342,7 @@ define([
 
 				var dlg = new Dialog({title: "Add This Feature To Group"});
 				var stg = new SelectionToGroup({
-					selection: features,
+					selection: features.map(function(f){ return {feature_id:f}; }),
 					type: 'feature_group'
 				});
 				on(dlg.domNode, "dialogAction", function(evt){

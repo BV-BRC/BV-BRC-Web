@@ -5,7 +5,7 @@ define("p3/widget/viewer/Genome", [
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser",
+	"../TranscriptomicsContainer", "../InteractionContainer", "../Phylogeny", "../GenomeBrowser",
 	"../SequenceGridContainer", "../../util/PathJoin"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
@@ -74,6 +74,11 @@ define("p3/widget/viewer/Genome", [
 					break;
 				case "proteinFamilies":
 					// do not set state, the container is built by setVisible already
+					break;
+				case "interactions":
+					activeTab.set("state", lang.mixin({}, this.state, {
+						search: "or(eq(genome_id_a," + this.genome_id + "),eq(genome_id_b," + this.genome_id + "))"
+					}));
 					break;
 				default:
 					if(activeQueryState){
@@ -255,6 +260,13 @@ define("p3/widget/viewer/Genome", [
 				id: this.viewer.id + "_" + "transcriptomics",
 				state: this.state
 			});
+			if(window.App.appLabel !== ""){
+				this.interactions = new InteractionsContainer({
+					title: "Interactions",
+					id: this.viewer.id + "_" + "interactions",
+					state: this.state
+				});
+			}
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.browser);
@@ -265,6 +277,9 @@ define("p3/widget/viewer/Genome", [
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.interactions);
+			}
 		}
 	});
 });

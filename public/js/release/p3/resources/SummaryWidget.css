@@ -138,3 +138,6 @@
 .patric .sgViewerWidget .chart g polyline {
     cursor: pointer;
 }
+.patric .fpViewerWidget {
+    height: 200px;
+}

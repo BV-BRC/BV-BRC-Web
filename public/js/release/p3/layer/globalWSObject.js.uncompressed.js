@@ -2058,6 +2058,26 @@
 				{
 					 location:"../phyloview",
 					 name:"phyloview"
+				},
+				{
+					 location:"../cytoscape-panzoom",
+					 main:"cytoscape-panzoom.js",
+					 name:"cytoscape-panzoom"
+				},
+				{
+					 location:"../cytoscape-context-menus",
+					 main:"cytoscape-context-menus.js",
+					 name:"cytoscape-context-menus"
+				},
+				{
+					 location:"../cytoscape-cola",
+					 main:"cytoscape-cola.js",
+					 name:"cytoscape-cola"
+				},
+				{
+					 location:"../cytoscape-dagre",
+					 main:"cytoscape-dagre.js",
+					 name:"cytoscape-dagre"
 				}
 		]
 });require({cache:{

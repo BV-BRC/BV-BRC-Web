@@ -76,8 +76,7 @@ var Range = declare( null,
         if (oranges.length == 1) {
             return oranges[0];
         } else {
-            alert('unknown error: _Compound');
-            //return new _Compound(oranges);
+            return new _Compound(oranges);
         }
     },
 
@@ -108,8 +107,7 @@ var Range = declare( null,
         } else if (or.length == 1) {
             return or[0];
         } else {
-            alert('unknown error: _Compound');
-            //return new _Compound(or);
+            return new _Compound(or);
         }
     },
 

@@ -1,0 +1,96 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "cytoscape-cola@^1.4.3",
+        "scope": null,
+        "escapedName": "cytoscape-cola",
+        "name": "cytoscape-cola",
+        "rawSpec": "^1.4.3",
+        "spec": ">=1.4.3 <2.0.0",
+        "type": "range"
+      },
+      "/Users/dmachi/work/PATRIC/p3_web"
+    ]
+  ],
+  "_from": "cytoscape-cola@>=1.4.3 <2.0.0",
+  "_id": "cytoscape-cola@1.4.3",
+  "_inCache": true,
+  "_location": "/cytoscape-cola",
+  "_nodeVersion": "6.7.0",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/cytoscape-cola-1.4.3.tgz_1480616228887_0.694283553166315"
+  },
+  "_npmUser": {
+    "name": "maxkfranz",
+    "email": "maxkfranz@gmail.com"
+  },
+  "_npmVersion": "3.10.3",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "cytoscape-cola@^1.4.3",
+    "scope": null,
+    "escapedName": "cytoscape-cola",
+    "name": "cytoscape-cola",
+    "rawSpec": "^1.4.3",
+    "spec": ">=1.4.3 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.4.3.tgz",
+  "_shasum": "20c15ac37bb0b0deadc5f025caea346519221019",
+  "_shrinkwrap": null,
+  "_spec": "cytoscape-cola@^1.4.3",
+  "_where": "/Users/dmachi/work/PATRIC/p3_web",
+  "bugs": {
+    "url": "https://github.com/cytoscape/cytoscape.js-cola/issues"
+  },
+  "dependencies": {},
+  "description": "The Cola.js physics simulation layout for Cytoscape.js",
+  "devDependencies": {
+    "gulp": "^3.8.8",
+    "gulp-jshint": "^1.8.5",
+    "gulp-prompt": "^0.1.1",
+    "gulp-replace": "^0.4.0",
+    "gulp-shell": "^0.2.9",
+    "jshint-stylish": "^1.0.0",
+    "run-sequence": "^1.0.0"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "20c15ac37bb0b0deadc5f025caea346519221019",
+    "tarball": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.4.3.tgz"
+  },
+  "gitHead": "188d49bccece7aaba265ec0666fc7459c97af8c5",
+  "homepage": "https://github.com/cytoscape/cytoscape.js-cola",
+  "keywords": [
+    "cytoscape",
+    "cyext"
+  ],
+  "license": "MIT",
+  "main": "cytoscape-cola.js",
+  "maintainers": [
+    {
+      "name": "maxkfranz",
+      "email": "maxkfranz@gmail.com"
+    }
+  ],
+  "name": "cytoscape-cola",
+  "optionalDependencies": {},
+  "peerDependencies": {
+    "cytoscape": "^2.4.0",
+    "webcola": "^3.1.2"
+  },
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cytoscape/cytoscape.js-cola.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.4.3"
+}

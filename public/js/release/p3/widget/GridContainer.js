@@ -319,7 +319,7 @@ define("p3/widget/GridContainer", [
 					tooltip: "Download Selection",
 					max: 5000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection, container){
 					console.log("this.currentContainerType: ", this.containerType);
@@ -444,7 +444,7 @@ define("p3/widget/GridContainer", [
 					label: "VF EVID",
 					validTypes: ["*"],
 					multiple: false,
-					validContainerTypes: ["spgene_data"],
+					validContainerTypes: ["spgene_data", "spgene_ref_data"],
 					tooltip: "View Specialty Gene Evidence"
 				},
 				function(selection){
