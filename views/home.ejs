@@ -10,8 +10,9 @@
     {name: "Metabolic Reconstruction", href: "/app/Reconstruct"}
 ] %>
 <% var flows = [
+    {name: "GLBIO 2017", secondary: "CHICAGO, IL", rel: "carousel_glbio", background: "#34698e"},
     {name: "ASM MICROBE 2017", secondary: "NEW ORLEANS", rel: "carousel_asm", background: "#34698e"},
-    {name: "NEW PATRIC WEBSITE", secondary: "OFFICIAL RELEASE", rel: "carousel_newsite", background: "#34698e"},
+//    {name: "NEW PATRIC WEBSITE", secondary: "OFFICIAL RELEASE", rel: "carousel_newsite", background: "#34698e"},
     {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"},
     {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
 ] %>
@@ -36,15 +37,39 @@
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
 
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_asm"
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_glbio"
                      class="CarouselContent showOnLoad dijitVisible">
+                    <div class="wrapper">
+                        <img class="right"
+                             src="http://enews.patricbrc.org/wp-content/uploads/2017/03/Screen-Shot-2017-03-09-at-10.26.28-AM.png">
+                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop at GLBIO 2017</h2>
+                        <h3 class="xl highlight-f upper far"></h3>
+                        <p>PATRIC will be hosting a 1/2-day workshop entitled "Assemble, Annotate and Analyze Your Own
+                            Genome using PATRIC, the All Bacterial Bioinformatics Resource Center," at the Great Lakes
+                            Bioinformatics (GLBIO) Conference at the University of Illinois at Chicago on May 17, 2017
+                            in Chicago, Illinois. &nbsp;The workshop will include genome assembly and annotation, and
+                            tools for comparative genomic analysis. Seating is limited to 50 participants. Note that you
+                            must register for the conference
+                            (<a href="https://www.iscb.org/glbio2017-register">https://www.iscb.org/glbio2017-register</a>)
+                            in order to sign up for workshops.</p>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="http://enews.patricbrc.org/5163/patric-workshop-at-glbio-2017-in-chicago-may-17-2017/"
+                              target="_blank">More Information</a></p>
+                        <br><br>
+                    </div>
+                </div>
+
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_asm"
+                     class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
                              src="http://enews.patricbrc.org/wp-content/uploads/2017/02/Screen-Shot-2017-02-20-at-5.30.49-PM.png">
                         <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop @ ASM Microbe 2017</h2>
                         <h3 class="xl highlight-f upper far">PATRIC Workshop</h3>
                         <br/>
-                        <p style="line-height:15.6px">PATRIC will be hosting a 1-day workshop entitled "Assemble, Annotate and Analyze Your Own
+                        <p style="line-height:15.6px">PATRIC will be hosting a 1-day workshop entitled "Assemble,
+                            Annotate and Analyze Your Own
                             Genome using PATRIC, the All Bacterial Bioinformatics Resource Center," <strong>workshop
                                 number 001-WS</strong> at the ASM Microbes 2017 on June 1, 2017 in New Orleans,
                             Louisiana.&nbsp; The workshop will cover genome assembly and annotation, comparative
@@ -63,9 +88,9 @@
                         <br><br>
                     </div>
                 </div>
-
+                <% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_newsite"
-                     class="CarouselContent showOnLoad dijitVisible">
+                     class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <h2 class="xxxl sans-alternate upper highlight-e">New PATRIC Website Release</h2>
                         <h3 class="xl highlight-f upper far">Welcome to the new version of the PATRIC Website</h3>
@@ -84,7 +109,7 @@
                         <br><br>
                     </div>
                 </div>
-
+                */ %>
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_ar"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
