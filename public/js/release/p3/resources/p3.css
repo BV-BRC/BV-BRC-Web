@@ -5097,11 +5097,11 @@ table {  font-size:100%; }
 }
 @font-face {
   font-family: 'icomoon';
-  src:  url("icomoon/fonts/icomoon.eot?5ca0eb");
-  src:  url("icomoon/fonts/icomoon.eot?5ca0eb#iefix") format('embedded-opentype'),
-    url("icomoon/fonts/icomoon.ttf?5ca0eb") format('truetype'),
-    url("icomoon/fonts/icomoon.woff?5ca0eb") format('woff'),
-    url("icomoon/fonts/icomoon.svg?5ca0eb#icomoon") format('svg');
+  src:  url("icomoon/fonts/icomoon.eot?9vm5yy");
+  src:  url("icomoon/fonts/icomoon.eot?9vm5yy#iefix") format('embedded-opentype'),
+    url("icomoon/fonts/icomoon.ttf?9vm5yy") format('truetype'),
+    url("icomoon/fonts/icomoon.woff?9vm5yy") format('woff'),
+    url("icomoon/fonts/icomoon.svg?9vm5yy#icomoon") format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -8951,6 +8951,12 @@ table {  font-size:100%; }
 }
 .icon-layout:before {
   content: "\e9c4";
+}
+.icon-selection-AntibioticList:before {
+  content: "\ebb1";
+}
+.icon-selection-Antibiotic:before {
+  content: "\ebb0";
 }
 .icon-subtree:before {
   content: "\e900";
