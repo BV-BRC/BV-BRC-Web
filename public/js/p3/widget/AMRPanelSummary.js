@@ -33,7 +33,8 @@ define([
 		],
 		processData: function(data){
 
-			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,antibiotic']){
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,antibiotic']
+				|| data.facet_counts.facet_pivot['resistant_phenotype,antibiotic'].length == 0){
 				// hide this section
 				domClass.add(this.domNode.parentNode, "hidden");
 				return;
