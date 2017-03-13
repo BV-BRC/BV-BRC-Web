@@ -7,12 +7,13 @@ define("p3/widget/viewer/PathwayList", [
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, PathwayGridContainer, SequenceGridContainer,
 			PathJoin, xhr, lang){
+	// NOTE: called from global search (see widget/GlobalSearch.js)
+	// but currently disabled
 	return declare([TabViewerBase], {
 		"baseClass": "PathwayList",
 		"disabled": false,
 		"containerType": "feature_data",
 		"query": null,
-		paramsMap: "query",
 		total_pathways: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){

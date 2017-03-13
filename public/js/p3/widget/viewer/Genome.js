@@ -1,27 +1,25 @@
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer", "../GenomeOverview",
-	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
-	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "../InteractionContainer", "../Phylogeny", "../GenomeBrowser",
-	"../SequenceGridContainer", "../AMRPanelGridContainer", "../../util/PathJoin"
-], function(declare, TabViewerBase, on, Topic,
-			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, GenomeOverview,
-			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
-			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
-			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser,
-			SequenceGridContainer, AMRPanelGridContainer, PathJoin){
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-construct", "dojo/request",
+	"./TabViewerBase",
+	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
+	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
+	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
+	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer",
+	"../../util/PathJoin"
+], function(declare, lang,
+			domConstruct, xhr,
+			TabViewerBase,
+			GenomeOverview, AMRPanelGridContainer, Phylogeny,
+			GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
+			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+			PathwaysContainer, TranscriptomicsContainer, InteractionsContainer,
+			PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
-		"query": null,
 		containerType: "genome_group",
 		genome_id: "",
-		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Genome View",
 		perspectiveIconClass: "icon-selection-Genome",
 
@@ -136,14 +134,6 @@ define([
 			this.resize();
 		},
 
-		createOverviewPanel: function(){
-			return new GenomeOverview({
-				title: "Overview",
-				id: this.viewer.id + "_" + "overview",
-				state: this.state
-			});
-		},
-
 		onSetState: function(attr, oldState, state){
 
 			var parts = state.pathname.split("/");
@@ -208,7 +198,12 @@ define([
 
 			this.inherited(arguments);
 
-			this.overview = this.createOverviewPanel();
+			this.overview = new GenomeOverview({
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview",
+				state: this.state
+			});
+
 			this.phylogeny = new Phylogeny({
 				title: "Phylogeny",
 				id: this.viewer.id + "_" + "phylogeny"
@@ -222,7 +217,7 @@ define([
 
 			if(window.App.appLabel !== ""){
 				this.amr = new AMRPanelGridContainer({
-					title: "AMR",
+					title: "AMR Phenotypes",
 					id: this.viewer.id + "_" + "amr"
 				});
 			}
@@ -251,22 +246,26 @@ define([
 				id: this.viewer.id + "_" + "specialtyGenes",
 				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
 			});
+
 			this.pathways = new PathwaysContainer({
 				apiServer: this.apiServiceUrl,
 				title: "Pathways",
 				id: this.viewer.id + "_" + "pathways",
 				state: this.state
 			});
+
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
 				id: this.viewer.id + "_" + "proteinFamilies",
 				state: this.state
 			});
+
 			this.transcriptomics = new TranscriptomicsContainer({
 				title: "Transcriptomics",
 				id: this.viewer.id + "_" + "transcriptomics",
 				state: this.state
 			});
+
 			if(window.App.appLabel !== ""){
 				this.interactions = new InteractionsContainer({
 					title: "Interactions",
@@ -274,14 +273,15 @@ define([
 					state: this.state
 				});
 			}
+
 			this.viewer.addChild(this.overview);
+			if(window.App.appLabel !== ""){
+				this.viewer.addChild(this.amr);
+			}
 			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.browser);
 			this.viewer.addChild(this.circular);
 			this.viewer.addChild(this.sequences);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.amr);
-			}
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);

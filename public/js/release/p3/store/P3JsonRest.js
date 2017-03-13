@@ -55,6 +55,11 @@ define("p3/store/P3JsonRest", [
 			//      The optional arguments to apply to the resultset.
 			// returns: dojo/store/api/Store.QueryResults
 			//      The results of the query, extended with iterative methods.
+
+			if(!query){
+				return QueryResults([]);
+			}
+
 			options = options || {};
 			var headers = lang.mixin({
 				Accept: this.accepts

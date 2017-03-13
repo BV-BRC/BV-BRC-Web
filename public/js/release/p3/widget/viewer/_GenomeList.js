@@ -1,7 +1,7 @@
 define("p3/widget/viewer/_GenomeList", [
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/_base/lang",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/topic",
-	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
+	"../GenomeOverview",
 	"dojo/request", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
@@ -10,7 +10,7 @@ define("p3/widget/viewer/_GenomeList", [
 	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish", "dijit/Dialog"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
-			formatter, TabContainer, GenomeOverview,
+			GenomeOverview,
 			xhr, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
@@ -18,11 +18,10 @@ define("p3/widget/viewer/_GenomeList", [
 			AMRPanelGridContainer,
 			SequenceGridContainer, PathJoin, QueryToEnglish, Dialog){
 	return declare([TabViewerBase], {
-		paramsMap: "query",
 		maxGenomesPerList: 10000,
 		maxReferenceGenomes: 500,
 		totalGenomes: 0,
-		defaultTab: "overview",
+		// defaultTab: "overview",
 		perspectiveLabel: "Genome List View",
 		perspectiveIconClass: "icon-selection-GenomeList",
 
@@ -256,13 +255,8 @@ define("p3/widget/viewer/_GenomeList", [
 			this.setActivePanelState();
 		},
 
-		createOverviewPanel: function(state){
-			return new ContentPane({
-				content: "Overview",
-				title: "Genome List Overview",
-				id: this.viewer.id + "_" + "overview",
-				state: this.state
-			});
+		createOverviewPanel: function(){
+			// implement this
 		},
 
 		postCreate: function(){
@@ -273,7 +267,7 @@ define("p3/widget/viewer/_GenomeList", [
 			this.watch("referenceGenomes", lang.hitch(this, "onSetReferenceGenomes"));
 			this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
 
-			this.overview = this.createOverviewPanel(this.state);
+			this.overview = this.createOverviewPanel();
 
 			this.genomes = new GenomeGridContainer({
 				title: "Genomes",
@@ -289,7 +283,7 @@ define("p3/widget/viewer/_GenomeList", [
 			});
 			if(window.App.appLabel !== ""){
 				this.amr = new AMRPanelGridContainer({
-					title: "AMR",
+					title: "AMR Phenotypes",
 					id: this.viewer.id + "_" + "amr"
 				});
 			}
@@ -330,10 +324,10 @@ define("p3/widget/viewer/_GenomeList", [
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomes);
-			this.viewer.addChild(this.sequences);
 			if(window.App.appLabel !== ""){
 				this.viewer.addChild(this.amr);
 			}
+			this.viewer.addChild(this.sequences);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
