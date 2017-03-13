@@ -119,7 +119,7 @@ define("p3/widget/AMRPanelGridContainer", [
 			],
 			[
 				"ViewAntibioticItem",
-				"fa icon-selection-Genome fa-2x",
+				"fa icon-selection-Antibiotic fa-2x",
 				{
 					label: "ANTIBIOTIC",
 					validTypes: ["*"],
