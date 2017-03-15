@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/request", "dojo/dom-construct", "dojo/text!./templates/AntibioticOverview.html",
+	"dojo/request", "dojo/dom-construct", "dojo/dom-class", "dojo/text!./templates/AntibioticOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated",
-	"../util/PathJoin", "./DataItemFormatter"
+	"../util/PathJoin", "./DataItemFormatter", "./ExternalItemFormatter"
 ], function(declare, lang,
-			xhr, domConstruct, Template,
+			xhr, domConstruct, domClass, Template,
 			WidgetBase, Templated,
-			PathJoin, DataItemFormatter){
+			PathJoin, DataItemFormatter, ExternalItemFormatter){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -20,9 +20,19 @@ define([
 	return declare([WidgetBase, Templated], {
 		templateString: Template,
 		apiServiceUrl: window.App.dataAPI,
+		query: null,
 		_setStateAttr: function(state){
 			this._set("state", state);
 			// console.log("state:", state);
+
+			if(this.query == state.search){
+				return;
+			}else{
+				this.query = state.search;
+			}
+
+			var antibioticName = state.search.split(",")[1].split(")")[0];
+			this.set('publications', antibioticName + '+resistance+pathogen');
 
 			this.getAntibioticData(state.search);
 		},
@@ -39,6 +49,16 @@ define([
 			domConstruct.empty(this.structureNode);
 			domConstruct.create("img", {"src": url}, this.structureNode, "first");
 
+			// var sdfUrl = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/" + data['pubchem_cid'] + "/record/SDF/?record_type=3d&response_type=display";
+
+			// xhr.post(sdfUrl, {'X-Requested-With': null})
+			// 	.then(function(data){
+			// 		console.log(data);
+			// 		$3Dmol.viewers.addAsOneMolecule(data, "sdf");
+			// 		$3Dmol.viewers.zoomTo();
+			// 		$3Dmol.viewers.render();
+			// 	});
+
 			// smiles
 			// domConstruct.create("h5", {innerHTML: "Canonical smiles"}, this.structureNode);
 			// domConstruct.create("span", {innerHTML: data['canonical_smiles']}, this.structureNode);
@@ -47,6 +67,9 @@ define([
 		},
 
 		_setDescriptionAttr: function(data){
+
+			// section visible
+			domClass.remove(this.descNode.parentNode, "hidden");
 
 			domConstruct.empty(this.descNode);
 
@@ -57,6 +80,9 @@ define([
 
 		_setMechanismAttr: function(data){
 
+			// section visible
+			domClass.remove(this.moaNode.parentNode, "hidden");
+
 			domConstruct.empty(this.moaNode);
 
 			data.forEach(function(row){
@@ -66,16 +92,39 @@ define([
 
 		_setPharmacologyAttr: function(data){
 
+			// section visible
+			domClass.remove(this.pharmacologyNode.parentNode, "hidden");
+
 			domConstruct.empty(this.pharmacologyNode);
 
 			data['pharmacology'].forEach(function(row){
 				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.pharmacologyNode);
 			}, this);
 
-			domConstruct.create("h5", {innerHTML: "Pharmacological Classes"}, this.pharmacologyNode)
-			data['pharmacological_classes'].forEach(function(row){
-				domConstruct.create("div", {"class": "close", innerHTML: row}, this.pharmacologyNode);
+			if(data.hasOwnProperty('pharmacological_classes')){
+				domConstruct.create("h5", {"class": "close2x", innerHTML: "Pharmacological Classes"}, this.pharmacologyNode);
+				data['pharmacological_classes'].forEach(function(row){
+					domConstruct.create("div", {"class": "close", innerHTML: row}, this.pharmacologyNode);
+				}, this);
+			}
+		},
+
+		_setSynonymsAttr: function(data){
+
+			// section visible
+			domClass.remove(this.synonymsNode.parentNode, "hidden");
+
+			domConstruct.empty(this.synonymsNode);
+
+			data.forEach(function(row){
+				domConstruct.create("div", {"class": "keyword medium", innerHTML: row}, this.synonymsNode);
 			}, this);
+		},
+
+		_setPublicationsAttr: function(keyword){
+			domConstruct.empty(this.pubmedSummaryNode);
+
+			domConstruct.place(ExternalItemFormatter(keyword, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 
 		getAntibioticData: function(query){
@@ -97,10 +146,18 @@ define([
 
 					this.set('antibioticSummary', summary);
 
-					this.set('description', d['description']);
-					this.set('mechanism', d['mechanism_of_action']);
-					this.set('pharmacology', d);
-
+					if(d.hasOwnProperty('description')){
+						this.set('description', d['description']);
+					}
+					if(d.hasOwnProperty('mechanism_of_action')){
+						this.set('mechanism', d['mechanism_of_action']);
+					}
+					if(d.hasOwnProperty('pharmacology')){
+						this.set('pharmacology', d);
+					}
+					if(d.hasOwnProperty('synonyms')){
+						this.set('synonyms', d['synonyms']);
+					}
 				}))
 		}
 	})
