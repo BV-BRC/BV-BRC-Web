@@ -391,8 +391,8 @@ define([
 
                     if(fromId === 'UniProtKB-Accession'){
 
-                        accessionSourceMap = fromIdValue.map(function(d){
-                            return {d: d};
+                        fromIdValue.forEach(function(d){
+                            accessionSourceMap[d]= d;
                         });
                         this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionSourceMap), function(data){
                             _self.setData(data);
