@@ -1062,7 +1062,10 @@ define([
 				name: 'ATC Classification',
 				text: 'atc_classification',
 				link: function(obj){
-					return obj['atc_classification'].join(", ");
+					// return obj['atc_classification'].join(", ");
+					return obj['atc_classification'].map(function(cls){
+						return '<div class="keyword small">' + cls +'</div>';
+					}).join(' ')
 				}
 			// }, {
 			// 	name: 'Synonyms',
