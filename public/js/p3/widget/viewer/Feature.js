@@ -95,7 +95,8 @@ define([
 			}
 
 			if(this.feature){
-				var pageTitle = this.feature.patric_id + "::Feature " + activeTab.title;
+				var label = (this.feature.patric_id) ? this.feature.patric_id : (this.feature.refseq_locus_tag) ? this.feature.refseq_locus_tag : (this.feature.protein_id) ? this.feature.protein_id : this.feature.feature_id;
+				var pageTitle = label + "::Feature " + activeTab.title;
 				// console.log("Feature setActivePanelState: ", pageTitle);
 				if(window.document.title !== pageTitle){
 					window.document.title = pageTitle;
