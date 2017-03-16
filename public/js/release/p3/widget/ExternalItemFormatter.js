@@ -43,7 +43,8 @@ define("p3/widget/ExternalItemFormatter", [
 			else if(item.hasOwnProperty('taxon_name')){
 				term = item.taxon_name;
 			}else{
-				return;
+				// item is keyword string
+				term = item;
 			}
 
 			var eutilSearchURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?usehistory=y&db=pubmed&term=" + term + "&retmode=json";
