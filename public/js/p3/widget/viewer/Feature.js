@@ -258,8 +258,7 @@ define([
 			if(window.App.appLabel !== ""){
 				this.interactions = new InteractionContainer({
 					title: "Interactions",
-					id: this.viewer.id + "_interactions",
-					state: this.state
+					id: this.viewer.id + "_interactions"
 				});
 			}
 
