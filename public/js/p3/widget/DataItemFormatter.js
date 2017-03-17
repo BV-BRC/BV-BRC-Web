@@ -919,11 +919,22 @@ define([
 				name: 'Detection Method',
 				text: 'detection_method'
 			}, {
+				name: 'Evidence',
+				text: 'evidence'
+			}, {
 				name: 'Source DB',
 				text: 'source_db'
 			}, {
 				name: 'Pubmed',
-				text: 'pmid'
+				text: 'pmid',
+				link: function(obj){
+					if(obj['pmid'].length > 0){
+						console.log(pmid, typeof pmid);
+						return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid.split(';').join(',')  + '" target="_blank">' + pmid + '</a>';
+					}else{
+						return '';
+					}
+				}
 			}, {
 				name: 'Score',
 				text: 'score'
@@ -931,7 +942,10 @@ define([
 
 			section['Interactor A'] = [{
 				name: 'Interactor',
-				text: 'interactor_a'
+				text: 'interactor_a',
+				link: function(obj){
+					return '<a href="/view/Feature/' + obj['feature_id_a'] + '">' + obj['interactor_a'] + '</a>';
+				}
 			}, {
 				name: 'Description',
 				text: 'interactor_desc_a'
@@ -943,7 +957,8 @@ define([
 				text: 'genome_name_a'
 			}, {
 				name: 'Refseq Locus Tag',
-				text: 'refseq_locus_tag_a'
+				text: 'refseq_locus_tag_a',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/?term='
 			}, {
 				name: 'gene',
 				text: 'gene_a'
@@ -951,7 +966,10 @@ define([
 
 			section['Interactor B'] = [{
 				name: 'Interactor',
-				text: 'interactor_b'
+				text: 'interactor_b',
+				link: function(obj){
+					return '<a href="/view/Feature/' + obj['feature_id_b'] + '">' + obj['interactor_b'] + '</a>';
+				}
 			}, {
 				name: 'Description',
 				text: 'interactor_desc_b'
@@ -963,7 +981,8 @@ define([
 				text: 'genome_name_b'
 			}, {
 				name: 'Refseq Locus Tag',
-				text: 'refseq_locus_tag_b'
+				text: 'refseq_locus_tag_b',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/?term='
 			}, {
 				name: 'gene',
 				text: 'gene_b'
@@ -1062,17 +1081,10 @@ define([
 				name: 'ATC Classification',
 				text: 'atc_classification',
 				link: function(obj){
-					// return obj['atc_classification'].join(", ");
 					return obj['atc_classification'].map(function(cls){
-						return '<div class="keyword small">' + cls +'</div>';
+						return '<div class="keyword small">' + cls + '</div>';
 					}).join(' ')
 				}
-			// }, {
-			// 	name: 'Synonyms',
-			// 	text: 'synonyms',
-			// 	link: function(obj){
-			// 		return obj['synonyms'].join(", ");
-			// 	}
 			}];
 
 			var div = domConstruct.create("div");
