@@ -53,6 +53,7 @@ define([
 			this.conditionStore = new Memory({data: []});
 			this.libraryStore = new Memory({data: [],idProperty:"id"});
 			this.libraryID = 0;
+            this.exp_design = {"checked":false};
 		},
 
 		startup: function(){
@@ -69,8 +70,8 @@ define([
 			//this.emptyTable(this.condTable, this.initConditions);
 			
             //for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
-            var control = {id: "control", condition: "control", label: "Control"};
-            var treatment = {id: "treatment", condition: "treatment", label: "Treatment"};
+            var control = {id: "control", condition: "control", label: "Control", icon:this.getConditionIcon()};
+            var treatment = {id: "treatment", condition: "treatment", label: "Treatment", icon:this.getConditionIcon()};
             this.updateConditionStore(record = control, remove = false);
             this.updateConditionStore(record = treatment, remove = false);
 
@@ -83,11 +84,11 @@ define([
 					}
 				)
 			}));
-			var handle = on(this.group_switch, "click", lang.hitch(this, function(evt){
-				this.exp_design.checked = !this.exp_design.checked ? true : false;
-				this.exp_design.value = this.exp_design.checked ? "on" : "off";
-				this.onDesignToggle();
-			}));
+			//var handle = on(this.group_switch, "click", lang.hitch(this, function(evt){
+			//	this.exp_design.checked = !this.exp_design.checked ? true : false;
+			//	this.exp_design.value = this.exp_design.checked ? "on" : "off";
+			//	this.onDesignToggle();
+			//}));
 			this.condition_single.labelFunc = this.showConditionLabels;
 			this.condition_paired.labelFunc = this.showConditionLabels;
 			// this.block_condition.show();
@@ -99,9 +100,20 @@ define([
 			this._started = true;
 		},
 
+
+        onRecipeChange: function(){
+            var strategy= this.recipe.get("value");
+            if(strategy == "resampling"){
+                this.exp_design.checked=true;
+            }
+            else{
+                this.exp_design.checked=false;
+            }
+            this.onDesignToggle();
+        },
 		onDesignToggle: function(){
 			var disable = !this.exp_design.checked;
-			this.condition.set("disabled", disable);
+			//this.condition.set("disabled", disable);
 			this.condition_single.set("disabled", disable);
 			this.condition_paired.set("disabled", disable);
 			if(disable){
@@ -114,7 +126,7 @@ define([
 				// this.block_condition.hide();
 				this.numCondWidget.set('value', Number(this.addedCond.counter));
 				this.destroyLibRow(query_id = false, id_type = "design");
-				dojo.removeClass(this.condTable, "disabled");
+				//dojo.removeClass(this.condTable, "disabled");
 			}
 		},
 

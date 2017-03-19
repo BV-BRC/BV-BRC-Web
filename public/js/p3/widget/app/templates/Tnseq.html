@@ -28,10 +28,10 @@
                             <div class="appRow">
                                 <label class="paramlabel">Strategy</label><br>
                                 <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe"
-                                        style="width:300px" required="true"
+                                        style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange"
                                         data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                                    <option value="Gumbel">Gumbel</option>
-                                    <option value="Resampling">Resampling</option>
+                                    <option value="gumbel">Gumbel</option>
+                                    <option value="resampling">Resampling</option>
                                 </select>
                             </div>
                             <div class="appRow">
@@ -60,47 +60,6 @@
                         </div>
                     </td>
                     <td>
-                        <div id="conditionbox" class="appBox appShadow"
-                             style="min-height: 217px; height:auto; width:330px">
-                            <div class="headerrow">
-                                <label class="appBoxLabel">Conditions</label>
-                                <div name="groupinfo" class="infobox iconbox infobutton tooltipinfo">
-                                    <i class="fa icon-info-circle fa"></i>
-                                </div>
-                                <br>
-                            </div>
-                            <div class="appRow">
-                                <!--<div class="mblSwRoundShape1" style="margin-bottom:10px" data-dojo-attach-point="exp_design" data-dojo-attach-event="stateChanged:onDesignToggle" data-dojo-props="value:'off'" style="font-size: 13px; width: 80px;" data-dojo-type="dojox/mobile/Switch"></div>-->
-                                <div style="margin-left:10px" data-dojo-attach-point="group_switch" class="onoffswitch">
-                                    <input type="checkbox" value="off" name="onoffswitch" class="onoffswitch-checkbox"
-                                           data-dojo-attach-point="exp_design">
-                                    <label class="onoffswitch-label">
-                                        <span class="onoffswitch-inner"></span>
-                                        <span class="onoffswitch-switch"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="appRow" style="width:270px; padding-left:10px; padding-right:40px;"
-                                 data-dojo-attach-point="advrow">
-                                <div style="width:85%;display:inline-block;">
-                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="condition"
-                                         data-dojo-attach-point="condition" required="false"
-                                         data-dojo-props="disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'"></div>
-                                </div>
-                                <div style="width:10%;display:inline-block;"><i
-                                        data-dojo-attach-event="click:onAddCondition"
-                                        class="fa icon-plus-circle fa-lg"></i></div>
-                            </div>
-                            <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
-                                <table class="librarytable disabled" frame="box" data-dojo-attach-point="condTable"
-                                       style='margin:0 0 0 10px; width:90%;'>
-                                    <tbody data-dojo-attach-point="condTableBody">
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <!-- <div data-dojo-attach-point="block_condition" data-dojo-type="dojox.widget.Standby" data-dojo-props="opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'"></div> -->
                     </td>
                 </tr>
                 <tr>
