@@ -72,8 +72,11 @@ define([
             //for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
             var control = {id: "control", condition: "control", label: "Control", icon:this.getConditionIcon()};
             var treatment = {id: "treatment", condition: "treatment", label: "Treatment", icon:this.getConditionIcon()};
+            //temporary until contrasts table added
             this.updateConditionStore(record = control, remove = false);
             this.updateConditionStore(record = treatment, remove = false);
+            this.addedCond.counter=2;
+
 
 			//adjust validation for each of the attach points associated with read files
 			Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function(attachname){
@@ -120,7 +123,7 @@ define([
 				// this.block_condition.show();
 				this.numCondWidget.set('value', Number(1));
 				this.destroyLibRow(query_id = true, id_type = "design");
-				dojo.addClass(this.condTable, "disabled");
+				//dojo.addClass(this.condTable, "disabled");
 			}
 			else{
 				// this.block_condition.hide();
