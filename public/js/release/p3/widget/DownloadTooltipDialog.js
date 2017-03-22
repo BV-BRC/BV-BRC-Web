@@ -288,6 +288,18 @@ define("p3/widget/DownloadTooltipDialog", [
 				"label": "Comparisons",
 				tableData: true
 			},
+			"interaction_data": {
+				dataType: "ppi",
+				pk: "id",
+				"label": "Interactions",
+				tableData: true
+			},
+			"genome_amr_data": {
+				dataType: "genome_amr",
+				pk: "id",
+				"label": "AMR Phenotypes",
+				tableData: true
+			},
 			"default": {
 				"label": "Items",
 				tableData: true

@@ -67,13 +67,14 @@ define([
 
 				var numFound = res.response.numFound;
 
-				var fetchSize = 5000;
-				var steps = Math.ceil(numFound / fetchSize);
-
-				var forBlockScopedVars = [];
-				for(var i = 0; i < steps; i++){
-					forBlockScopedVars.push(i);
-				}
+				var fetchSize = 1000;
+				// var steps = Math.ceil(numFound / fetchSize);
+				//
+				// var forBlockScopedVars = [];
+				// for(var i = 0; i < steps; i++){
+				// 	forBlockScopedVars.push(i);
+				// }
+				var forBlockScopedVars = [0];
 				var allRequests = forBlockScopedVars.map(function(i){
 					var deferred = new Deferred();
 					var range = "items=" + (i * fetchSize) + "-" + ((i + 1) * fetchSize - 1);
