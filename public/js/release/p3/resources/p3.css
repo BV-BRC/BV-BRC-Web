@@ -16497,3 +16497,18 @@ body footer.main-footer ul.left {
     font-weight: bold;
     color: #E53935;
 }
+.keyword {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: inline-block;
+}
+.keyword.small{
+    margin: 0 2px 2px 0;
+    padding: 3px 5px;
+}
+.keyword.medium {
+    margin: 0 5px 5px 0;
+    padding: 3px 6px;
+}
+.center-text {
+    text-align: center; }
