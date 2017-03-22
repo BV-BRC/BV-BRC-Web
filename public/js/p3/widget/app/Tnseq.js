@@ -228,7 +228,13 @@ define([
 			//	assembly_values["single_end_libs"] = singleLibs;
 			//}
             assembly_values["read_files"]=allLibs;
-            assembly_values["contrasts"]=[["control","treatment"]];
+            if (assembly_values["recipe"] == "resampling"){
+                assembly_values["contrasts"]=[["control","treatment"]];
+            }
+            else{
+                assembly_values["contrasts"]=[["control"]];
+            }
+
 			return assembly_values;
 
 		},
