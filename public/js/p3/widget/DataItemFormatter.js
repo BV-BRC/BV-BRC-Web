@@ -929,8 +929,9 @@ define([
 				text: 'pmid',
 				link: function(obj){
 					if(obj['pmid'].length > 0){
-						console.log(pmid, typeof pmid);
-						return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid.split(';').join(',')  + '" target="_blank">' + pmid + '</a>';
+						var pmid = obj['pmid'][0];
+						// console.log(pmid, typeof pmid);
+						return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid.split(';').join(',') + '" target="_blank">' + pmid + '</a>';
 					}else{
 						return '';
 					}
