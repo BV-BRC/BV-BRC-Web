@@ -708,7 +708,7 @@ define([
 					}))
 				}else{
 					// edge
-					this.selectionActionBar.set("selection", [cur]);
+					this.selectionActionBar.set("selection", []);
 					this.itemDetailPanel.set('containerWidget', this);
 					this.itemDetailPanel.set('selection', [cur.data()]);
 				}

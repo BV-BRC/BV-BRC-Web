@@ -36,7 +36,10 @@ define([
 			return a.concat(b);
 		});
 
-		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(feature_id,(" + ids.join(",") + "))", target: "blank"});
+		Topic.publish("/navigate", {
+			href: "/view/FASTA/" + rel + "/?in(feature_id,(" + ids.join(",") + "))",
+			target: "blank"
+		});
 	});
 
 	return declare([GridContainer], {
@@ -133,8 +136,9 @@ define([
 							return [x.feature_id_a, x.feature_id_b];
 						}).reduce(function(a, b){
 							return a.concat(b);
+						}).filter(function(x, i, orig){
+							return orig.indexOf(x) == i;
 						});
-						// TODO: dedupe sel array
 
 						popup.open({
 							popup: new PerspectiveToolTipDialog({
@@ -152,8 +156,9 @@ define([
 						return [x.feature_id_a, x.feature_id_b];
 					}).reduce(function(a, b){
 						return a.concat(b);
+					}).filter(function(x, i, orig){
+						return orig.indexOf(x) == i;
 					});
-					// TODO: dedupe sel array
 
 					// console.log(sel);
 					Topic.publish("/navigate", {
@@ -203,8 +208,9 @@ define([
 						return [x.feature_id_a, x.feature_id_b];
 					}).reduce(function(a, b){
 						return a.concat(b);
+					}).filter(function(x, i, orig){
+						return orig.indexOf(x) == i;
 					});
-					// TODO: dedupe sel array
 
 					var dlg = new Dialog({title: "Copy Selection to Group"});
 					var type = "feature_group";
