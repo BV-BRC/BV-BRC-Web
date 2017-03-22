@@ -249,7 +249,7 @@ define([
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["interaction_data"],
 					pressAndHold: function(selection, button, opts, evt){
-						var feature_id = selection[0].feature_id;
+						var feature_id = selection[0].data('feature_id');
 
 						popup.open({
 							popup: new PerspectiveToolTip({
@@ -262,7 +262,7 @@ define([
 					}
 				},
 				function(selection){
-					var feature_id = selection[0].feature_id;
+					var feature_id = selection[0].data('feature_id');
 
 					Topic.publish("/navigate", {
 						href: "/view/Feature/" + feature_id + "#view_tab=overview",
@@ -306,8 +306,13 @@ define([
 					validContainerTypes: ["interaction_data"]
 				},
 				function(selection){
-
-					viewFASTATT.selection = selection;
+					if(selection.length == 1){
+						viewFASTATT.selection = selection.map(function(node){
+							return node.data('feature_id');
+						});
+					}else{
+						viewFASTATT.selection = selection;
+					}
 
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
@@ -353,9 +358,16 @@ define([
 				},
 				function(selection, containerWidget){
 
-					var sel = selection.map(function(feature_id){
-						return {feature_id: feature_id};
-					});
+					var sel;
+					if(selection.length == 1){
+						sel = selection.map(function(node){
+							return {feature_id: node.data('feature_id')}
+						})
+					}else{
+						sel = selection.map(function(feature_id){
+							return {feature_id: feature_id};
+						})
+					}
 
 					// console.log("Add Items to Group", sel);
 					var dlg = new Dialog({title: "Copy Selection to Group"});
