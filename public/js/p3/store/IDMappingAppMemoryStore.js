@@ -136,6 +136,12 @@ define([
             if (via == "gene_id"){
                 joinId = {"genome_feature":"gene_id","id_ref":"GeneID"};
             }
+            else if (via =="refseq_locus_tag"){
+                joinId = {"genome_feature":"refseq_locus_tag","id_ref":"Gene_OrderedLocusName"};
+            }
+            else if (via =="protein_id"){
+                joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
+            }
             else{
                 joinId = {"genome_feature":"gi","id_ref":"GI"};
             }
