@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div id="selectedinfo">
+    Read files placed here will contribute to a single Tn-Seq analysis. Read files placed into this table under the same condition will be considered replicates.
+    </div>
+    <div id="pairinfo">
+    <b><h3>Paired read library</h3></b>
+    <!--<p>Paired-end sequencing has advantages over the use of single reads. Paired-end reads give added structure to the genome assembly problem which can be useful when dealing with ambiguous or low complexity regions.</p>-->
+    <p><b>Read File 1 & 2</b></br>
+    Many paired read libraries are given as file pairs, with each file containing half of each read pair. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair, the selection of which file is READ 1 and which is READ 2 does not matter.</p>
+    <b>Condition</b><br>
+    The group/condition specified will be used to determine contrasts in the conditionally essential mode. Reads assigned to the same group will be used as replicates. Choose whether the sample is a treatment or control.
+    </div>
+    <div class="apphelp" id="pipelineinfo">
+       <h3>Configuration</h3>
+       <h4>Strategy</h4>
+       <p>This parameter determines whether the genes are determined to be essential in a single condition or by comparison to a control.</p>
+       <b>Essential</b><br>
+        <p>Runs the <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004401">TRANSIT</a> software. With this strategy selected
+        TRANSIT will calculate the probability of being essential using the Gumbel or Extreme Value distribution.
+        </p>
+        <b>Conditionally Essential</b></br>
+        <p>Runs the <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004401">TRANSIT</a> software. With this strategy selected
+        TRANSIT will operate in "resampling" mode and use the difference between the sum of read-counts in each condition to calculate the probability of being essential.
+       <h4>Output Folder</h4>
+       <p>The workspace folder where results will be placed.</p>
+       <h4>Output Name</h4>
+       <p>Name used to uniquely identify results.</p>
+    </div>
+    <div id="groupinfo">
+       <h3>Groups/Conditions</h3>
+       <p>Turning on Groups/Conditions also turns on differential expression analysis. In this panel the user has the ability to specify conditions that can be assigned to read libraries. When this option is enabled each read libary moved to the "Selected libraries" panel must have a group designation. Read libraries assigned to different groups will be compared for differential expression in all vs. all fashion. Two or more read libraries marked with the same group will be regarded as replicates.</p>
+    </div>
+  </body>
+</html>
