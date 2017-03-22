@@ -3,12 +3,12 @@ define([
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/GlobalSearch.html", "./Button", "dijit/registry", "dojo/_base/lang",
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
-	"../util/searchToQuery"
+	"../util/searchToQuery", "../util/searchToQueryWithOr"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass, Templated, WidgetsInTemplate,
 			template, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
-			searchToQuery
+			searchToQuery, searchToQueryWithOr
 ){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
@@ -24,14 +24,20 @@ define([
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchInput.get('value');
 				var searchFilter = this.searchFilter.get('value');
+				var searchOption = this.searchOption.get('value');
 				if(!query){
 					return;
 				}
 
 				console.log("Search Filter: ", searchFilter);
 				query = query.replace(/'/g,"").replace(/:/g, " ");
+				
 				var q = searchToQuery(query);
 				
+				if (searchOption == "option_or") {
+					q = searchToQueryWithOr(query);
+				}
+							
 				var clear = false;
 				switch(searchFilter){
 					case "amr":
@@ -86,7 +92,12 @@ define([
 		onClickAdvanced: function(evt){
 			var query = this.searchInput.get('value');
 			var searchFilter = this.searchFilter.get('value');
+			var searchOption = this.searchOption.get('value');
+			
 			var q = searchToQuery(query);
+			if (searchOption == "option_or") {
+				q = searchToQueryWithOr(query);
+			}
 
 			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
 			this.searchInput.set("value", '');

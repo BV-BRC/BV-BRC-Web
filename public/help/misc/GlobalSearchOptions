@@ -1,0 +1,16 @@
+<div style="width:480px">
+	<p>Select the option "All items" or "Any item" from the drop-down list. The default is  "All items". </p>
+	</br>
+	<p>Option "All items": Search user specified search query term with user specified logical operators (AND, OR). If the user doesn't specify the logical operators, all keyword terms in the query will be searched with the logical operator "AND". e.g. if the query is 'dnaA Brucella', 'dnaA AND Brucella' will be searched. However, if the user enters 'dnaA OR Brucella', the search will be 'dnaA OR Brucella'. </p>
+	</br>
+	<p>Option "Any item": Search the query terms with logical operator "OR". For example: if the query is 'dnaA Brucella', 'dnaA OR Brucella' will be searched. This option also allows the user to search multiple ids separated by spaces. e.g. 1051055.3
+1051056.3
+1051057.3
+1051058.3
+1051059.3
+1051060.3
+1051061.3
+1051062.3
+1160160.4
+1160161.3 </p>
+</div>
