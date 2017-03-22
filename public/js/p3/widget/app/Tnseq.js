@@ -228,7 +228,7 @@ define([
 			//	assembly_values["single_end_libs"] = singleLibs;
 			//}
             assembly_values["read_files"]=allLibs;
-            assembly_values["contrasts"=[["control","treatment"]]
+            assembly_values["contrasts"]=[["control","treatment"]];
 			return assembly_values;
 
 		},
