@@ -156,9 +156,10 @@ define([
 			var condList = this.conditionStore.data;
 			var singleList = this.libraryStore.query({"type": "single"});
 			var condLibs = [];
-			var pairedLibs = [];
+			var allLibs = {};
 			var singleLibs = [];
 			this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
+            var defaultCond = "control";
 			//for (var k in values) {
 			//	if(!k.startsWith("libdat_")){
 			//		assembly_values[k]=values[k];
@@ -176,36 +177,58 @@ define([
 					}
 				});
 			}
+            else{
+                condLibs.push(defaultCond);
+            }
 
 			pairedList.forEach(function(libRecord){
 				var toAdd = {};
+                var curCond = null;
 				if('condition' in libRecord && this.exp_design.checked){
-					toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
+					//toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
+                    curCond=libRecord['condition'];
 				}
+                else{
+                    curCond=defaultCond;
+                }
 				pairedAttrs.forEach(function(attr){
 					toAdd[attr] = libRecord[attr]
 				});
-				pairedLibs.push(toAdd);
+				//pairedLibs.push(toAdd);
+                if( ! (curCond in allLibs)){
+                    allLibs[curCond]={'replicates':[],'library':curCond};
+                }
+                allLibs[curCond]['replicates'].push(toAdd);
 			}, this);
-			if(pairedLibs.length){
-				assembly_values["paired_end_libs"] = pairedLibs;
-			}
+			//if(pairedLibs.length){
+			//	assembly_values["paired_end_libs"] = pairedLibs;
+			//}
 			if(condLibs.length){
 				assembly_values["experimental_conditions"] = condLibs;
 			}
 			singleList.forEach(function(libRecord){
 				var toAdd = {};
+                var curCond = null;
 				if('condition' in libRecord && this.exp_design.checked){
 					toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
 				}
+                else{
+                    curCond=defaultCond;
+                }
 				singleAttrs.forEach(function(attr){
 					toAdd[attr] = libRecord[attr]
 				});
-				singleLibs.push(toAdd);
+                if( ! (curCond in allLibs)){
+                    allLibs[curCond]={'replicates':[],'library':curCond};
+                }
+				//singleLibs.push(toAdd);
+                allLibs[curCond]['replicates'].push(toAdd);
 			}, this);
-			if(singleLibs.length){
-				assembly_values["single_end_libs"] = singleLibs;
-			}
+			//if(singleLibs.length){
+			//	assembly_values["single_end_libs"] = singleLibs;
+			//}
+            assembly_values["read_files"]=allLibs;
+            assembly_values["contrasts"=[["control","treatment"]]
 			return assembly_values;
 
 		},
