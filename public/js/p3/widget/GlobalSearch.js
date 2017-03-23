@@ -22,7 +22,7 @@ define([
 
 		onKeypress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
-				var query = this.searchInput.get('value');
+				var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
 				var searchFilter = this.searchFilter.get('value');
 				var searchOption = this.searchOption.get('value');
 				if(!query){
@@ -98,9 +98,13 @@ define([
 			}
 		},
 		onClickAdvanced: function(evt){
-			var query = this.searchInput.get('value');
+			var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
 			var searchFilter = this.searchFilter.get('value');
 			var searchOption = this.searchOption.get('value');
+
+			if(!query){
+				return;
+			}
 			
 			var q = searchToQuery(query);
 			if (searchOption == "option_or") {
