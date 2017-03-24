@@ -1367,116 +1367,103 @@ define("p3/widget/DataItemFormatter", [
 		}, titleDiv);
 	}
 
-	function displayDetailBySections(item, meta_data_section, meta_data, parent, options){
+	function displayDetailBySections(item, sections, meta_data, parent, options){
 
 		var mini = options && options.mini || false;
 
 		var table = domConstruct.create("table", {}, parent);
 		var tbody = domConstruct.create("tbody", {}, table);
 
-		for(var i = 0; i < meta_data_section.length; i++){
-			var tr;
-			if(mini == false){
-
-				tr = domConstruct.create("tr", {}, tbody);
-				domConstruct.create("td", {
-					innerHTML: meta_data_section[i],
-					"class": "DataItemSectionHead",
-					colspan: 2
-				}, tr);
+		sections.forEach(function(section){
+			if(!mini){
+				var header = renderSectionHeader(section);
+				domConstruct.place(header, tbody);
 			}
 
-			var value = meta_data[meta_data_section[i]];
-
-			for(var j = 0; j < value.length; j++){
-				var column = value[j].text;
-				var multiValued = value[j].multiValued || false;
-
-				if(column && (item[column] || item[column] == "0")){
-
-					if(multiValued){
-						item[column].forEach(function(val){
-							tr = domConstruct.create("tr", {}, tbody);
-							var k = val.split(':')[0], v = val.split(':')[1];
-
-							domConstruct.create("td", {
-								"class": "DataItemProperty",
-								innerHTML: k
-							}, tr);
-							domConstruct.create("td", {
-								"class": "DataItemValue",
-								innerHTML: v
-							}, tr);
-						})
-					}
-					else if(!mini || (mini && value[j].mini)){
-
-						tr = domConstruct.create("tr", {}, tbody);
-						domConstruct.create("td", {
-							"class": "DataItemProperty",
-							innerHTML: value[j].name
-						}, tr);
-
-						var innerHTML;
-						if(value[j].link && item[column] != "-" && item[column] != "0"){
-							if(typeof(value[j].link) == "function"){
-								innerHTML = value[j].link.apply(this, arguments);
-							}else{
-								innerHTML = "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>";
-							}
-						}
-						else{
-							innerHTML = item[column];
-						}
-
-						domConstruct.create("td", {
-							"class": "DataItemValue",
-							innerHTML: innerHTML
-						}, tr);
-					}
+			meta_data[section].forEach(function(column){
+				var row = renderProperty(column, item, options);
+				if(row){
+					domConstruct.place(row, tbody);
 				}
+			})
+		})
+	}
+
+	function displayDetail(item, columns, parent, options){
+
+		var table = domConstruct.create("table", {}, parent);
+		var tbody = domConstruct.create("tbody", {}, table);
+
+		columns.forEach(function(column){
+			var row = renderProperty(column, item, options);
+			if(row){
+				domConstruct.place(row, tbody);
+			}
+		})
+	}
+
+	function renderProperty(column, item, options){
+		var key = column.text;
+		var label = column.name;
+		var multiValued = column.multiValued || false;
+		var mini = options && options.mini || false;
+
+		if(key && item[key] && !column.data_hide){
+			if(multiValued){
+				var tr = domConstruct.create("tr", {});
+				var td = domConstruct.create("td", {colspan: 2}, tr);
+
+				domConstruct.place(renderDataTable(item[key]), td);
+				return tr;
+			}
+			else if(!mini || column.mini){
+				var l = evaluateLink(column.link, item[key], item);
+				return renderRow(label, l);
 			}
 		}
 	}
 
-	function displayDetail(item, column_data, parent, options){
-		var mini = options && options.mini || false;
+	function evaluateLink(link, value, item){
+		return (link && value !== "-" && value !== "0") ? (
+			(typeof(link) == "function") ? link.apply(this, [item]) : '<a href="' + link + value + '" target="_blank">' + value + '</a>'
+		) : value;
+	}
 
-		var table = domConstruct.create("table", {}, parent);
-		var tbody = domConstruct.create("tbody", {}, table);
+	function renderSectionHeader(title){
+		var tr = domConstruct.create("tr", {});
+		domConstruct.create("td", {
+			innerHTML: title,
+			"class": "DataItemSectionHead",
+			colspan: 2
+		}, tr);
 
-		for(var i = 0; i < column_data.length; i++){
-			var column = column_data[i].text;
+		return tr;
+	}
 
-			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
+	function renderRow(property, value){
+		var tr = domConstruct.create("tr", {});
+		domConstruct.create("td", {
+			"class": "DataItemProperty",
+			innerHTML: property
+		}, tr);
+		domConstruct.create("td", {
+			"class": "DataItemValue",
+			innerHTML: value
+		}, tr);
 
-				if(!mini || (mini && column_data[i].mini)){
+		return tr;
+	}
 
-					var tr = domConstruct.create("tr", {}, tbody);
-					domConstruct.create("td", {
-						"class": "DataItemProperty",
-						innerHTML: column_data[i].name
-					}, tr);
+	function renderDataTable(data){
+		var table = domConstruct.create("table", {"class": "p3table"});
+		for (var i = 0, len = data.length; i < len; i++){
+			var k = data[i].split(':')[0], v = data[i].split(':')[1];
 
-					var innerHTML;
-					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
-						if(typeof(column_data[i].link) == "function"){
-							innerHTML = column_data[i].link.apply(this, arguments);
-						}else{
-							innerHTML = "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>";
-						}
-					}
-					else{
-						innerHTML = item[column];
-					}
-
-					domConstruct.create("td", {
-						"class": "DataItemValue",
-						innerHTML: innerHTML
-					}, tr);
-				}
-			}
+			var tr = domConstruct.create("tr", {}, table);
+			domConstruct.create("td", {"class": "DataItemProperty", innerHTML: k}, tr);
+			domConstruct.create("td", {"class": "DataItemValue", innerHTML: v}, tr);
 		}
+		return table;
 	}
 
 	return function(item, type, options){

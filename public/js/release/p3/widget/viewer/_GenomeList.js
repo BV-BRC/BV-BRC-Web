@@ -281,12 +281,12 @@ define("p3/widget/viewer/_GenomeList", [
 				state: this.state,
 				disable: false
 			});
-			if(window.App.appLabel !== ""){
-				this.amr = new AMRPanelGridContainer({
-					title: "AMR Phenotypes",
-					id: this.viewer.id + "_" + "amr"
-				});
-			}
+
+			this.amr = new AMRPanelGridContainer({
+				title: "AMR Phenotypes",
+				id: this.viewer.id + "_" + "amr"
+			});
+
 			this.features = new FeatureGridContainer({
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
@@ -314,28 +314,23 @@ define("p3/widget/viewer/_GenomeList", [
 				disabled: false,
 				state: this.state
 			});
-			if(window.App.appLabel !== ""){
-				this.interactions = new InteractionsContainer({
-					title: "Interactions",
-					id: this.viewer.id + "_" + "interactions",
-					state: this.state
-				});
-			}
+
+			this.interactions = new InteractionsContainer({
+				title: "Interactions",
+				id: this.viewer.id + "_" + "interactions",
+				state: this.state
+			});
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomes);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.amr);
-			}
+			this.viewer.addChild(this.amr);
 			this.viewer.addChild(this.sequences);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.interactions);
-			}
+			this.viewer.addChild(this.interactions);
 
 			if(localStorage){
 				var gs = localStorage.getItem(this.showQuickstartKey);

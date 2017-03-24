@@ -47,7 +47,7 @@ define([
 		containerType: "interaction_data",
 		facetFields: ["category", "evidence", "detection_method", "interaction_type", "source_db", "genome_name_a", "genome_name_b"],
 		dataModel: "ppi",
-		defaultFilter: "eq(detection_method,%22experimental%20interaction%20detection%22)",
+		defaultFilter: "eq(evidence,experimental)",
 		constructor: function(options){
 			this.topicId = options.topicId;
 
