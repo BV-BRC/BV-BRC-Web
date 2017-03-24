@@ -12,12 +12,13 @@ define([
 		dataModel: "genome_amr",
 		query: "",
 		view: "table",
-		baseQuery: "&limit(1)&facet((pivot,(resistant_phenotype,antibiotic)),(mincount,1))&json(nl,map)",
+		baseQuery: "&limit(1)&facet((pivot,(resistant_phenotype,laboratory_typing_method,antibiotic)),(mincount,1))&json(nl,map)",
 		columns: [
 			{
 				label: "Phenotypes", field: "resistant_phenotype",
 				renderCell: function(obj, val, node){
-					node.innerHTML = lang.replace('<a href="#view_tab=amr&filter=eq(resistant_phenotype,{0})">{1}</a>', [encodeURIComponent(val), val]);
+					var label = (obj.is_computed) ? val + ' (predicted)' : val;
+					node.innerHTML = lang.replace('<a href="#view_tab=amr&filter=eq(resistant_phenotype,{0})">{1}</a>', [encodeURIComponent(val), label]);
 				}
 			},
 			{
@@ -33,8 +34,8 @@ define([
 		],
 		processData: function(data){
 
-			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,antibiotic']
-				|| data.facet_counts.facet_pivot['resistant_phenotype,antibiotic'].length == 0){
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,laboratory_typing_method,antibiotic']
+				|| data.facet_counts.facet_pivot['resistant_phenotype,laboratory_typing_method,antibiotic'].length == 0){
 				// hide this section
 				domClass.add(this.domNode.parentNode, "hidden");
 				return;
@@ -43,15 +44,20 @@ define([
 			// make section visible
 			domClass.remove(this.domNode.parentNode, "hidden");
 
-			data = data.facet_counts.facet_pivot['resistant_phenotype,antibiotic'];
+			data = data.facet_counts.facet_pivot['resistant_phenotype,laboratory_typing_method,antibiotic'];
 			var byPhenotypes = [];
 
-			data.forEach(function(summary){
-				var antibiotics = [];
-				summary.pivot.forEach(function(pv){
-					antibiotics.push(pv.value);
+			data.forEach(function(phenotype){
+				phenotype.pivot.forEach(function(method){
+					var antibiotics = method.pivot.map(function(pv){
+						return pv.value;
+					});
+					var isComputed = (method.value == "Computational Prediction");
+					byPhenotypes.push({resistant_phenotype: phenotype.value,
+						antibiotics: antibiotics,
+						is_computed: isComputed
+					})
 				});
-				byPhenotypes.push({resistant_phenotype: summary.value, antibiotics: antibiotics});
 			});
 
 			this._tableData = byPhenotypes;
