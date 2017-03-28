@@ -99,11 +99,21 @@ define("p3/widget/InteractionGridContainer", [
 
 						var data = this.grid.store.query("", {sort: this.grid.store.sort});
 
-						var headers = ["Interactor A", "Interactor Desc A", "Genome ID", "Genome Name", "Feature ID", "RefSeq Locus Tag", "Gene", "Interactor B", "Interactor Desc B", "Genome ID", "Genome Name", "Feature ID", "RefSeq Locus Tag", "Gene", "Category", "Interaction Type", "Detection Method", "Evidence", "Pubmed", "Score"];
+						var headers = ["Interactor A ID", "Interactor A Type", "Interactor A Desc",
+							"Domain A", "Taxon ID A", "Genome ID A", "Genome Name A", "RefSeq Locus Tag A", "gene A",
+							"Interactor B ID", "Interactor B Type", "Interactor B Desc",
+							"Domain B", "Taxon ID B", "Genome ID B", "Genome Name B", "RefSeq Locus Tag B", "gene B",
+							"Category", "Interaction Type", "Detection Method", "Evidence",
+							"PMID", "Source DB", "Source ID", "Score"];
 						var content = [];
 						data.forEach(function(row){
-							content.push([row.interactor_a, '"' + row.interactor_desc_a + '"', row.genome_id_a, row.genome_name_a, row.feature_id_a, row.refseq_locus_tag_a, row.gene_a, row.interactor_b, '"' + row.interactor_desc_b + '"', row.genome_id_b, row.genome_name_b, row.feature_id_b, row.refseq_locus_tag_b, row.gene_b, row.category, row.interaction_type, row.detection_method, row.pmid, row.score].join(DELIMITER));
-						})
+							content.push([row.interactor_a, row.interactor_type_a, '"' + row.interactor_desc_a + '"',
+								row.domain_a, row.taxon_id_a, row.genome_id_a, row.genome_name_a, row.refseq_locus_tag_a, row.gene_a,
+								row.interactor_b, row.interactor_type_b, '"' + row.interactor_desc_b + '"',
+								row.domain_b, row.taxon_id_b, row.genome_id_b, row.genome_name_b, row.refseq_locus_tag_b, row.gene_b,
+								row.category, '"' + row.interaction_type + '"', '"' + row.detection_method + '"', '"' + row.evidence + '"',
+								'"' + (row.pmid || []).join(",") + '"', '"' + row.source_db + '"', '"' + row.source_id + '"', row.score].join(DELIMITER));
+						});
 
 						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_interactions.' + ext);
 
