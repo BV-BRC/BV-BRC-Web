@@ -27,7 +27,7 @@ define("p3/widget/GlobalSearch", [
 				var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
 				var searchFilter = this.searchFilter.get('value');
 				var searchOption = this.searchOption.get('value');
-				if(!query){
+				if(!query || !query.match(/[a-z0-9]/i)){
 					return;
 				}
 
@@ -104,7 +104,7 @@ define("p3/widget/GlobalSearch", [
 			var searchFilter = this.searchFilter.get('value');
 			var searchOption = this.searchOption.get('value');
 
-			if(!query){
+			if(!query || !query.match(/[a-z0-9]/i)){
 				return;
 			}
 			
