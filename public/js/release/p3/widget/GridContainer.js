@@ -319,12 +319,12 @@ define("p3/widget/GridContainer", [
 					tooltip: "Download Selection",
 					max: 5000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
 				},
 				function(selection, container){
-					console.log("this.currentContainerType: ", this.containerType);
-					console.log("GridContainer selection: ", selection);
-					console.log("   ARGS: ", arguments);
+					// console.log("this.currentContainerType: ", this.containerType);
+					// console.log("GridContainer selection: ", selection);
+					// console.log("   ARGS: ", arguments);
 
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);

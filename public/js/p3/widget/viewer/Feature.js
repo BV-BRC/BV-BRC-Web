@@ -95,7 +95,8 @@ define([
 			}
 
 			if(this.feature){
-				var pageTitle = this.feature.patric_id + "::Feature " + activeTab.title;
+				var label = (this.feature.patric_id) ? this.feature.patric_id : (this.feature.refseq_locus_tag) ? this.feature.refseq_locus_tag : (this.feature.protein_id) ? this.feature.protein_id : this.feature.feature_id;
+				var pageTitle = label + "::Feature " + activeTab.title;
 				// console.log("Feature setActivePanelState: ", pageTitle);
 				if(window.document.title !== pageTitle){
 					window.document.title = pageTitle;
@@ -236,12 +237,12 @@ define([
 				tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 				state: lang.mixin({}, this.state)
 			});
-			if(window.App.appLabel !== ""){
-				this.compareRegionViewer = new CompareRegionContainer({
-					title: "Compare Region Viewer",
-					id: this.viewer.id + "_compareRegionViewer"
-				});
-			}
+
+			this.compareRegionViewer = new CompareRegionContainer({
+				title: "Compare Region Viewer",
+				id: this.viewer.id + "_compareRegionViewer"
+			});
+
 			// TODO: implement pathways tab
 
 			this.transcriptomics = new GeneExpressionContainer({
@@ -254,24 +255,17 @@ define([
 				id: this.viewer.id + "_correlatedGenes"
 			});
 
-			if(window.App.appLabel !== ""){
-				this.interactions = new InteractionContainer({
-					title: "Interactions",
-					id: this.viewer.id + "_interactions",
-					state: this.state
-				});
-			}
+			this.interactions = new InteractionContainer({
+				title: "Interactions",
+				id: this.viewer.id + "_interactions"
+			});
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.compareRegionViewer);
-			}
+			this.viewer.addChild(this.compareRegionViewer);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.interactions);
-			}
+			this.viewer.addChild(this.interactions);
 		}
 	});
 });

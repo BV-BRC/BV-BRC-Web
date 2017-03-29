@@ -269,7 +269,7 @@ define("p3/widget/DataItemFormatter", [
 				}
 			}];
 
-			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.feature_id;
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
 
 			var div = domConstruct.create("div");
 			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
@@ -919,11 +919,23 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Detection Method',
 				text: 'detection_method'
 			}, {
+				name: 'Evidence',
+				text: 'evidence'
+			}, {
 				name: 'Source DB',
 				text: 'source_db'
 			}, {
 				name: 'Pubmed',
-				text: 'pmid'
+				text: 'pmid',
+				link: function(obj){
+					if(obj['pmid'].length > 0){
+						var pmid = obj['pmid'][0];
+						// console.log(pmid, typeof pmid);
+						return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid.split(';').join(',') + '" target="_blank">' + pmid + '</a>';
+					}else{
+						return '';
+					}
+				}
 			}, {
 				name: 'Score',
 				text: 'score'
@@ -931,7 +943,10 @@ define("p3/widget/DataItemFormatter", [
 
 			section['Interactor A'] = [{
 				name: 'Interactor',
-				text: 'interactor_a'
+				text: 'interactor_a',
+				link: function(obj){
+					return '<a href="/view/Feature/' + obj['feature_id_a'] + '">' + obj['interactor_a'] + '</a>';
+				}
 			}, {
 				name: 'Description',
 				text: 'interactor_desc_a'
@@ -943,7 +958,8 @@ define("p3/widget/DataItemFormatter", [
 				text: 'genome_name_a'
 			}, {
 				name: 'Refseq Locus Tag',
-				text: 'refseq_locus_tag_a'
+				text: 'refseq_locus_tag_a',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/?term='
 			}, {
 				name: 'gene',
 				text: 'gene_a'
@@ -951,7 +967,10 @@ define("p3/widget/DataItemFormatter", [
 
 			section['Interactor B'] = [{
 				name: 'Interactor',
-				text: 'interactor_b'
+				text: 'interactor_b',
+				link: function(obj){
+					return '<a href="/view/Feature/' + obj['feature_id_b'] + '">' + obj['interactor_b'] + '</a>';
+				}
 			}, {
 				name: 'Description',
 				text: 'interactor_desc_b'
@@ -963,7 +982,8 @@ define("p3/widget/DataItemFormatter", [
 				text: 'genome_name_b'
 			}, {
 				name: 'Refseq Locus Tag',
-				text: 'refseq_locus_tag_b'
+				text: 'refseq_locus_tag_b',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/?term='
 			}, {
 				name: 'gene',
 				text: 'gene_b'
@@ -1062,14 +1082,10 @@ define("p3/widget/DataItemFormatter", [
 				name: 'ATC Classification',
 				text: 'atc_classification',
 				link: function(obj){
-					return obj['atc_classification'].join(", ");
+					return obj['atc_classification'].map(function(cls){
+						return '<div class="keyword small">' + cls + '</div>';
+					}).join(' ')
 				}
-			// }, {
-			// 	name: 'Synonyms',
-			// 	text: 'synonyms',
-			// 	link: function(obj){
-			// 		return obj['synonyms'].join(", ");
-			// 	}
 			}];
 
 			var div = domConstruct.create("div");
@@ -1351,116 +1367,103 @@ define("p3/widget/DataItemFormatter", [
 		}, titleDiv);
 	}
 
-	function displayDetailBySections(item, meta_data_section, meta_data, parent, options){
+	function displayDetailBySections(item, sections, meta_data, parent, options){
 
 		var mini = options && options.mini || false;
 
 		var table = domConstruct.create("table", {}, parent);
 		var tbody = domConstruct.create("tbody", {}, table);
 
-		for(var i = 0; i < meta_data_section.length; i++){
-			var tr;
-			if(mini == false){
-
-				tr = domConstruct.create("tr", {}, tbody);
-				domConstruct.create("td", {
-					innerHTML: meta_data_section[i],
-					"class": "DataItemSectionHead",
-					colspan: 2
-				}, tr);
+		sections.forEach(function(section){
+			if(!mini){
+				var header = renderSectionHeader(section);
+				domConstruct.place(header, tbody);
 			}
 
-			var value = meta_data[meta_data_section[i]];
-
-			for(var j = 0; j < value.length; j++){
-				var column = value[j].text;
-				var multiValued = value[j].multiValued || false;
-
-				if(column && (item[column] || item[column] == "0")){
-
-					if(multiValued){
-						item[column].forEach(function(val){
-							tr = domConstruct.create("tr", {}, tbody);
-							var k = val.split(':')[0], v = val.split(':')[1];
-
-							domConstruct.create("td", {
-								"class": "DataItemProperty",
-								innerHTML: k
-							}, tr);
-							domConstruct.create("td", {
-								"class": "DataItemValue",
-								innerHTML: v
-							}, tr);
-						})
-					}
-					else if(!mini || (mini && value[j].mini)){
-
-						tr = domConstruct.create("tr", {}, tbody);
-						domConstruct.create("td", {
-							"class": "DataItemProperty",
-							innerHTML: value[j].name
-						}, tr);
-
-						var innerHTML;
-						if(value[j].link && item[column] != "-" && item[column] != "0"){
-							if(typeof(value[j].link) == "function"){
-								innerHTML = value[j].link.apply(this, arguments);
-							}else{
-								innerHTML = "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>";
-							}
-						}
-						else{
-							innerHTML = item[column];
-						}
-
-						domConstruct.create("td", {
-							"class": "DataItemValue",
-							innerHTML: innerHTML
-						}, tr);
-					}
+			meta_data[section].forEach(function(column){
+				var row = renderProperty(column, item, options);
+				if(row){
+					domConstruct.place(row, tbody);
 				}
+			})
+		})
+	}
+
+	function displayDetail(item, columns, parent, options){
+
+		var table = domConstruct.create("table", {}, parent);
+		var tbody = domConstruct.create("tbody", {}, table);
+
+		columns.forEach(function(column){
+			var row = renderProperty(column, item, options);
+			if(row){
+				domConstruct.place(row, tbody);
+			}
+		})
+	}
+
+	function renderProperty(column, item, options){
+		var key = column.text;
+		var label = column.name;
+		var multiValued = column.multiValued || false;
+		var mini = options && options.mini || false;
+
+		if(key && item[key] && !column.data_hide){
+			if(multiValued){
+				var tr = domConstruct.create("tr", {});
+				var td = domConstruct.create("td", {colspan: 2}, tr);
+
+				domConstruct.place(renderDataTable(item[key]), td);
+				return tr;
+			}
+			else if(!mini || column.mini){
+				var l = evaluateLink(column.link, item[key], item);
+				return renderRow(label, l);
 			}
 		}
 	}
 
-	function displayDetail(item, column_data, parent, options){
-		var mini = options && options.mini || false;
+	function evaluateLink(link, value, item){
+		return (link && value !== "-" && value !== "0") ? (
+			(typeof(link) == "function") ? link.apply(this, [item]) : '<a href="' + link + value + '" target="_blank">' + value + '</a>'
+		) : value;
+	}
 
-		var table = domConstruct.create("table", {}, parent);
-		var tbody = domConstruct.create("tbody", {}, table);
+	function renderSectionHeader(title){
+		var tr = domConstruct.create("tr", {});
+		domConstruct.create("td", {
+			innerHTML: title,
+			"class": "DataItemSectionHead",
+			colspan: 2
+		}, tr);
 
-		for(var i = 0; i < column_data.length; i++){
-			var column = column_data[i].text;
+		return tr;
+	}
 
-			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
+	function renderRow(property, value){
+		var tr = domConstruct.create("tr", {});
+		domConstruct.create("td", {
+			"class": "DataItemProperty",
+			innerHTML: property
+		}, tr);
+		domConstruct.create("td", {
+			"class": "DataItemValue",
+			innerHTML: value
+		}, tr);
 
-				if(!mini || (mini && column_data[i].mini)){
+		return tr;
+	}
 
-					var tr = domConstruct.create("tr", {}, tbody);
-					domConstruct.create("td", {
-						"class": "DataItemProperty",
-						innerHTML: column_data[i].name
-					}, tr);
+	function renderDataTable(data){
+		var table = domConstruct.create("table", {"class": "p3table"});
+		for (var i = 0, len = data.length; i < len; i++){
+			var k = data[i].split(':')[0], v = data[i].split(':')[1];
 
-					var innerHTML;
-					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
-						if(typeof(column_data[i].link) == "function"){
-							innerHTML = column_data[i].link.apply(this, arguments);
-						}else{
-							innerHTML = "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>";
-						}
-					}
-					else{
-						innerHTML = item[column];
-					}
-
-					domConstruct.create("td", {
-						"class": "DataItemValue",
-						innerHTML: innerHTML
-					}, tr);
-				}
-			}
+			var tr = domConstruct.create("tr", {}, table);
+			domConstruct.create("td", {"class": "DataItemProperty", innerHTML: k}, tr);
+			domConstruct.create("td", {"class": "DataItemValue", innerHTML: v}, tr);
 		}
+		return table;
 	}
 
 	return function(item, type, options){

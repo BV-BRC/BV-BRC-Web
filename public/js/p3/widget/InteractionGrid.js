@@ -31,6 +31,7 @@ define([
 			category: {label: "Category", field: "category"},
 			i_type: {label: "Interaction Type", field: "interaction_type"},
 			d_method: {label: "Detection Method", field: "detection_method"},
+			evidence: {label: "Evidence", field: "evidence"},
 			pubmed: {label: "Pubmed", field: "pmid", hidden:true},
 			score: {label: "Score", field: "score", hidden: true}
 		},

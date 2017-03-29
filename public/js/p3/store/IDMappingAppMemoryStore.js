@@ -136,6 +136,12 @@ define([
             if (via == "gene_id"){
                 joinId = {"genome_feature":"gene_id","id_ref":"GeneID"};
             }
+            else if (via =="refseq_locus_tag"){
+                joinId = {"genome_feature":"refseq_locus_tag","id_ref":"Gene_OrderedLocusName"};
+            }
+            else if (via =="protein_id"){
+                joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
+            }
             else{
                 joinId = {"genome_feature":"gi","id_ref":"GI"};
             }
@@ -391,8 +397,8 @@ define([
 
                     if(fromId === 'UniProtKB-Accession'){
 
-                        accessionSourceMap = fromIdValue.map(function(d){
-                            return {d: d};
+                        fromIdValue.forEach(function(d){
+                            accessionSourceMap[d]= d;
                         });
                         this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionSourceMap), function(data){
                             _self.setData(data);

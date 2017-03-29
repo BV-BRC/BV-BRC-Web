@@ -1,0 +1,20 @@
+<div style="width:600px">
+	<p>Select the option <b>"All terms"</b> or <b>"Any term"</b> or <b>"All exact terms"</b> or <b>"Any exact term"</b> from the drop-down list. The default is <b>"All items"</b>. </p>
+	</br>
+	<p><b>All terms:</b> This is the least restricted search which allows users to enter any words or numbers into the search text box.  All terms search will automatically enter “<b>AND</b>” as a logical operator between anything entered in the global search, but users can specify a more specific search by using “<b>AND</b>” or “<b>OR</b>”. </p>
+	<p style="margin-left: 30px"><b>Example:</b> if the query is '<b>dnaA Brucella</b>', '<b>dnaA AND Brucella</b>' will be searched. However, if the user enters '<b>dnaA OR Brucella</b>', the search will be '<b>dnaA OR Brucella</b>'. </p>
+	</br>
+	<p><b>Any term:</b> This search enters the logical operator "<b>OR</b>" between any terms (words or numbers) that have been entered into the search text box. 
+	<p style="margin-left: 30px"><b>Example:</b> If the query is '<b>dnaA Brucella</b>', '<b>dnaA OR Brucella</b>' will be searched. </p>
+	<p style="margin-left: 30px"><b>Example:</b> A less specific query will return a number of results. Any strings contain the keyword(s) will be returned.  If the genome ID 1051056.3 is entered, and there are two genomes with similar IDs (e.g. 1051056.3 and 1051056.32), both of the genome IDs will be returned when <b>Any term</b> is used. </p>
+	<p style="margin-left: 30px"><b>Example:</b> If the query is a number of genome IDs separated by spaces (e.g. 1051056.3 1051057.3 1051058.3 1051059.3 1051060.3 1051061.3 1051062.3 1160160.4), the query will be translated to '1051056.3 OR 1051057.3 OR 1051058.3 OR 1051059.3 OR 1051060.3 OR 1051061.3 OR 1051062.3 OR 1160160.4'. </p> 
+	</br>
+	<p><b>All exact terms:</b> This search takes each keyword or number and does an exact match by both automatically entering quotation marks around the terms, and including the logical operator "<b>AND</b>". </p>
+	<p style="margin-left: 30px"><b>Example:</b>  If the query is '<b>dnaA Brucella</b>', '<b>"dnaA" AND "Brucella"</b>' will be searched. </p>
+	<p style="margin-left: 30px">Users can also enter OR in this search.  If the user enters '<b>dnaA OR Brucella</b>', the search will be '<b>"dnaA" OR "Brucella"</b>'. </p>	
+	</br>
+	<p><b>Any exact term:</b> This search performs exact matches of each of the query terms with quotes and logical operator "<b>OR</b>". </p>
+	<p style="margin-left: 30px"><b>Example:</b> If the query is '<b>dnaA Brucella</b>', '<b>"dnaA" OR "Brucella"</b>' will be searched. This does the exact match of each of the terms entered. </p>
+	<p style="margin-left: 30px"><b>Example:</b> This option allows the user to search multiple ids separated by spaces and gives the exact matches of each of the ids specified. e.g. 1051056.3 1051057.3 1051058.3 1051059.3 1051060.3 1051061.3 1051062.3 1160160.4. The query will be translated to '"1051056.3" OR "1051057.3" OR "1051058.3" OR "1051059.3" OR "1051060.3" OR "1051061.3" OR "1051062.3" OR "1160160.4"'. </p>	
+	
+</div>
