@@ -1,10 +1,9 @@
 define("JBrowse/View/Export/GFF3", [ 'dojo/_base/declare',
          'dojo/_base/lang',
          'dojo/_base/array',
-         'JBrowse/View/Export',
-         'JBrowse/Util/GFF3'
+         'JBrowse/View/Export'
        ],
-       function( declare, lang, array, ExportBase, UtilGFF3 ) {
+       function( declare, lang, array, ExportBase ) {
 
 return declare( ExportBase,
  /**
@@ -214,7 +213,7 @@ return declare( ExportBase,
      * @private
      */
     _gff3_escape: function( val ) {
-        return (''+val).replace(/[\n\r\t\;\=%&,\x00-\x1f\x7f-\xff]+/g, UtilGFF3.escape );
+        return (''+val).replace(/[\n\r\t\;\=%&,\x00-\x1f\x7f-\xff]+/g, escape );
     }
 });
 

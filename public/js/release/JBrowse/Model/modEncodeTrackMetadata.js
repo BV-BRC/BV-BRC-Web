@@ -1,13 +1,8 @@
 define( "JBrowse/Model/modEncodeTrackMetadata", [
             'dojo/_base/declare',
-            'dojo/data/util/simpleFetch',
-            'JBrowse/Util'
+            'dojo/data/util/simpleFetch'
         ],
-       function( declare, simpleFetch, Util ) {
-
-var dojof = Util.dojof;
-
-
+       function( declare, simpleFetch ) {
 var M = declare( null,
 
 /**
@@ -83,9 +78,9 @@ var M = declare( null,
 
     getFeatures: function() {
         return {
-            'dojo.data.api.Read': true,
-            'dojo.data.api.Identity': true
-        };
+	    'dojo.data.api.Read': true,
+	    'dojo.data.api.Identity': true
+	};
     },
     close: function() {},
 

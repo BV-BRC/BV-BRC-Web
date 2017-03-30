@@ -122,11 +122,11 @@ define("p3/widget/AdvancedSearch", [
 		searchResults: null,
 
 		formatgenome: function(docs,total){
-			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
+			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
 
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + "</a></div>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + "</a></div>");
 
 				out.push("<div class='resultInfo'>");
 				if (doc.plasmids && doc.plasmids > 0){
@@ -171,10 +171,10 @@ define("p3/widget/AdvancedSearch", [
 		},
 
 		formatgenome_feature: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score",'">Genomic Features&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score",'">Genomic Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
 				if (doc.gene) {  out.push(" | " + doc.gene ); }
 				out.push("</div>");
 
@@ -203,10 +203,10 @@ define("p3/widget/AdvancedSearch", [
 
 
 		formatsp_gene: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false",'">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" ref="/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false",'">Specialty Genes&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
 				if (doc.gene) {  out.push(" | " + doc.gene ); }
 				out.push("</div>");
 
@@ -233,14 +233,14 @@ define("p3/widget/AdvancedSearch", [
 			console.log("formattranscriptomics_experiment docs: ", docs);
 			var out;
 			if (total==1){
-				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/ExperimentComparison/',docs[0].eid,"#view_tab=overview",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
+				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/',docs[0].eid,"#view_tab=overview",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
 			} else if (total>1) {
-				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];			
+				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];			
 			}
 			
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a href='/view/ExperimentComparison/" + doc.eid + "#view_tab=overview'>" + doc.title + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/ExperimentComparison/" + doc.eid + "#view_tab=overview'>" + doc.title + "</a>");
 				out.push("</div>");
 				out.push("<div class='resultInfo'>" + doc.organism);
 
@@ -274,11 +274,11 @@ define("p3/widget/AdvancedSearch", [
 		formattaxonomy: function(docs,total){
 			var q = this.state.search; 
 			console.log("format taxonomy q: ", q);
-			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/TaxonList/?',q,'">Taxa</a>&nbsp;(', total, ")</div>"];
+			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/TaxonList/?',q,'">Taxa</a>&nbsp;(', total, ")</div>"];
 			
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a href='/view/Taxonomy/" + doc.taxon_id + "'>" + doc.taxon_name + "</a></div>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Taxonomy/" + doc.taxon_id + "'>" + doc.taxon_name + "</a></div>");
 				out.push("<div class='resultInfo'>" + doc.genomes +  " Genomes</div>");
 				out.push("</div>")
 			})
@@ -319,17 +319,16 @@ define("p3/widget/AdvancedSearch", [
 
 			var out = ['<div style="width:700px;margin:auto;font-size:1.5em;border:1px solid #333;background:#efefef;border-radius:3px;padding:4px;"><table>']
 
-				for (var i =0; i<keys.length;i+=3){
+			for (var i =0; i<keys.length;i+=3){
 				out.push("<tr>");
-				out.push("<td><a href=\"" + this.generateLink(keys[i],resultCounts[keys[i]].docs,resultCounts[keys[i]].total) + "\">" + this.labelsByType[keys[i]] + ": " + resultCounts[keys[i]].total + "</a></td>");
+				out.push("<td><a class=\"navigationLink\"  href=\"" + this.generateLink(keys[i],resultCounts[keys[i]].docs,resultCounts[keys[i]].total) + "\">" + this.labelsByType[keys[i]] + ": " + resultCounts[keys[i]].total + "</a></td>");
 				if (keys[i+1]){
-					out.push("<td><a href=\"" + this.generateLink(keys[i+1],resultCounts[keys[i+1]].docs,resultCounts[keys[i+1]].total)  + "\">" + this.labelsByType[keys[i+1]] + ": " + resultCounts[keys[i+1]].total + "</a></td>");
+					out.push("<td><a class=\"navigationLink\" href=\"" + this.generateLink(keys[i+1],resultCounts[keys[i+1]].docs,resultCounts[keys[i+1]].total)  + "\">" + this.labelsByType[keys[i+1]] + ": " + resultCounts[keys[i+1]].total + "</a></td>");
 				} else { out.push("<td></td>"); }
 				if (keys[i+2]){
-					out.push("<td><a href=\"" + this.generateLink(keys[i+2],resultCounts[keys[i+2]].docs,resultCounts[keys[i+2]].total)  + "\">" + this.labelsByType[keys[i+2]] + ": " + resultCounts[keys[i+2]].total + "</a></td>");
+					out.push("<td><a class=\"navigationLink\" href=\"" + this.generateLink(keys[i+2],resultCounts[keys[i+2]].docs,resultCounts[keys[i+2]].total)  + "\">" + this.labelsByType[keys[i+2]] + ": " + resultCounts[keys[i+2]].total + "</a></td>");
 				}else { out.push("<td></td>"); }
 				out.push("</tr>")
-
 			}
 			out.push("</table></div>")
 
