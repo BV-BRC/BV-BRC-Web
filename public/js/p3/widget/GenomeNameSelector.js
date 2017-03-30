@@ -44,16 +44,22 @@ define([
 				// console.log("query: ", query);
 				// console.log("Store Headers: ", _self.store.headers);
 				var q = "";
+				var searchAttrStripped = "";
+
 				if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
+
+					// strip the non-alphanumeric characters from the query string
+					searchAttrStripped = "*".concat(query[_self.searchAttr].toString().replace(/\W/g, ''), "*");
+
 					if(_self.extraSearch){
-						var components = ["eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")"];
+						var components = ["eq(" + _self.searchAttr + "," + searchAttrStripped + ")"];
 						_self.extraSearch.forEach(lang.hitch(this, function(attr){
-							components.push("eq(" + attr, query[_self.searchAttr] + ")");
+							components.push("eq(" + attr, searchAttrStripped + ")");
 						}));
 						q = "?or(" + components.join(",") + ")";
 					}
 					else{
-						q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
+						q = "?eq(" + _self.searchAttr + "," + searchAttrStripped + ")";
 					}
 				}
 				else{
