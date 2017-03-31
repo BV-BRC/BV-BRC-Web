@@ -22,6 +22,8 @@ define([
 		resultFields: ["genome_id", "genome_name", "strain", "public", "owner"],
 		includePrivate: true,
 		includePublic: true,
+		includeReference: true,
+		includeRepresentative: true,
 		pageSize: 25,
 		highlightMatch: "all",
 		autoComplete: false,
@@ -79,28 +81,32 @@ define([
 
 		_setIncludePublicAttr: function(val){
 			this.includePublic = val;
-			if(this.includePublic && this.includePrivate){
-				this.queryFilter = "";
-			}else if(this.includePublic && !this.includePrivate){
-				this.queryFilter = "&eq(public,true)"
-			}else if(this.includePrivate && !this.includePublic){
-				this.queryFilter = "&eq(public,false)"
-			}else{
-				this.queryFilter = "&and(eq(public,true),eq(public,false))";
-			}
+			this._setQueryFilter();
 		},
 
 		_setIncludePrivateAttr: function(val){
 			this.includePrivate = val;
-			if(this.includePublic && this.includePrivate){
-				this.queryFilter = "";
-			}else if(this.includePublic && !this.includePrivate){
-				this.queryFilter = "&eq(public,true)"
-			}else if(this.includePrivate && !this.includePublic){
-				this.queryFilter = "&eq(private,false)"
-			}else{
-				this.queryFilter = "&and(eq(private,true),eq(private,false))";
-			}
+			this._setQueryFilter();
+		},
+
+		_setIncludeReferenceAttr: function(val){
+			this.includeReferece = val;
+			this._setQueryFilter();
+		},
+
+		_setIncludeRepresentativeAttr: function(val){
+			this.includeRepresentative = val;
+			this._setQueryFilter();
+		},
+
+		_setQueryFilter: function(){
+				var queryFilterComponents = []
+				queryFilterComponents.push("eq(public," + this.includePublic + ")")
+				queryFilterComponents.push("eq(private," + this.includePrivate + ")")
+				queryFilterComponents.push("eq(reference," + this.includeReference + ")")
+				queryFilterComponents.push("eq(representative," + this.includeRepresentative + ")")
+				this.queryFilter = "&and(" + queryFilterComponents.join(",") + ")";
+				console.log("Query Filter set to: " + this.queryFilter)
 		},
 
 		postCreate: function(){
@@ -115,6 +121,7 @@ define([
 			var dfc = domConstr.create("div");
 			domConstr.create("div", {innerHTML: "Include in Search", style: {"font-weight": 900}}, dfc);
 
+			// public genomes
 			var publicDiv = domConstr.create('div', {});
 			domConstr.place(publicDiv, dfc, "last");
 			var publicCB = new Checkbox({checked: true})
@@ -122,10 +129,10 @@ define([
 				console.log("Toggle Public Genomes to " + val);
 				this.set("includePublic", val);
 			}));
-
 			domConstr.place(publicCB.domNode, publicDiv, "first");
 			domConstr.create("span", {innerHTML: "Public Genomes"}, publicDiv);
 
+			// private genomes
 			var privateDiv = domConstr.create('div', {});
 			domConstr.place(privateDiv, dfc, "last");
 			var privateCB = new Checkbox({checked: true})
@@ -135,6 +142,28 @@ define([
 			}));
 			domConstr.place(privateCB.domNode, privateDiv, "first");
 			domConstr.create("span", {innerHTML: "My Genomes"}, privateDiv);
+
+			// reference genomes
+			var referenceDiv = domConstr.create('div', {});
+			domConstr.place(referenceDiv, dfc, "last");
+			var referenceCB = new Checkbox({checked: true})
+			referenceCB.on("change", lang.hitch(this, function(val){
+				console.log("Toggle Reference Genomes to " + val);
+				this.set("includeReference", val);
+			}));
+			domConstr.place(referenceCB.domNode, referenceDiv, "first");
+			domConstr.create("span", {innerHTML: "Reference Genomes"}, referenceDiv);
+
+			// representative genomes
+			var representativeDiv = domConstr.create('div', {});
+			domConstr.place(representativeDiv, dfc, "last");
+			var representativeCB = new Checkbox({checked: true})
+			representativeCB.on("change", lang.hitch(this, function(val){
+				console.log("Toggle Representative Genomes to " + val);
+				this.set("includeRepresentative", val);
+			}));
+			domConstr.place(representativeCB.domNode, representativeDiv, "first");
+			domConstr.create("span", {innerHTML: "Representative Genomes"}, representativeDiv);
 
 			var filterTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
