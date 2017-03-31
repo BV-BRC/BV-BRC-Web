@@ -90,7 +90,7 @@ define([
 		},
 
 		_setIncludeReferenceAttr: function(val){
-			this.includeReferece = val;
+			this.includeReference = val;
 			this._setQueryFilter();
 		},
 
@@ -101,12 +101,35 @@ define([
 
 		_setQueryFilter: function(){
 				var queryFilterComponents = []
-				queryFilterComponents.push("eq(public," + this.includePublic + ")")
-				queryFilterComponents.push("eq(private," + this.includePrivate + ")")
-				queryFilterComponents.push("eq(reference," + this.includeReference + ")")
-				queryFilterComponents.push("eq(representative," + this.includeRepresentative + ")")
-				this.queryFilter = "&and(" + queryFilterComponents.join(",") + ")";
-				console.log("Query Filter set to: " + this.queryFilter)
+
+				// this block should include all 4 combinations of selection of public
+				// and private; both unchecked means you get nothing!
+				if (!this.includePublic) {
+					queryFilterComponents.push("eq(public," + this.includePublic + ")");
+				}
+				if (!this.includePrivate) {
+					queryFilterComponents.push("eq(public," + !this.includePrivate + ")");
+				}
+
+				// this block should include all 4 combinations of selection of reference
+				// and representative; both unchecked means you get nothing!
+				if (!this.includeRepresentative) {
+					queryFilterComponents.push("eq(reference_genome,%22Reference%22)");
+				}
+				if (!this.includeReference) {
+					queryFilterComponents.push("eq(reference_genome,%22Representative%22)");
+				}
+
+				// assemble the query filter
+				if (queryFilterComponents.length == 0) {
+					this.queryFilter = "";
+				} else if (queryFilterComponents.length == 1) {
+					this.queryFilter = queryFilterComponents.join("")
+				} else {
+					this.queryFilter = "&and(" + queryFilterComponents.join(",") + ")";
+				}
+
+				console.log("Query Filter set to: " + this.queryFilter);
 		},
 
 		postCreate: function(){
