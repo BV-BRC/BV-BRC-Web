@@ -56,7 +56,7 @@ define([
 
 			if(this.viewer){
 				// this.viewer.set('state', state);
-				this.render(state.feature.patric_id, 10000, 10, "pgfam", "representative reference");
+				this.render(state.feature.patric_id, 10000, 10, "pgfam", "representative+reference");
 			}
 
 			this._set('state', state);
@@ -213,7 +213,7 @@ define([
 				value: "representative reference",
 				style: "width: 100px; margin-right: 10px",
 				options: [{
-					value: "representative reference", label: "Reference & Representative"
+					value: "representative+reference", label: "Reference & Representative"
 				}, {
 					value: "all", label: "All public genomes"
 				}]
