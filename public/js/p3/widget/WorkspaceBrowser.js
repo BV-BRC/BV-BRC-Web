@@ -836,7 +836,9 @@ define([
 			// 	Topic.publish("/login");
 			// 	return;
 			// }
-			if(!parts[1]){
+			if(parts[0] == 'public') {
+				obj = {metadata: {type: "folder"}, type: "folder", path: "/"}
+			}else if(!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
 				obj = WorkspaceManager.getObject(val, true)
@@ -910,8 +912,11 @@ define([
 						// console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
-						this.actionPanel.set("currentContainerWidget", newPanel);
-						this.itemDetailPanel.set("containerWidget", newPanel);
+
+						if (this.actionPanel) {
+							this.actionPanel.set("currentContainerWidget", newPanel);
+							this.itemDetailPanel.set("containerWidget", newPanel);
+						}
 
 						if(newPanel.on){
 							newPanel.on("select", lang.hitch(this, function(evt){
@@ -981,8 +986,9 @@ define([
 					WorkspaceManager.set("currentPath", val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
-					// console.log("Set Browser Header Path: ", this.path);
-					this.browserHeader.set("path", this.path);
+					// console.log("Set Browser Heade	 Path: ", this.path);
+					if (this.browserHeader)
+						this.browserHeader.set("path", this.path);
 				}));
 
 			}), lang.hitch(this, function(err){

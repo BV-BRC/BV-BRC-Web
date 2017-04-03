@@ -469,7 +469,7 @@ define([
 
 		},
 
-		getFolderContents: function(path, showHidden, recursive){
+		getFolderContents: function(path, showHidden, recursive, public){
 			var _self = this;
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
@@ -494,6 +494,16 @@ define([
 
 						return true;
 					});
+
+					// if getting "public" workspaces, filter out writeable and owner workspaces
+					if (public){
+						res = res.filter(function(r){
+							if(r.global_permission == 'w') return false;
+							else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+							return true;
+						})
+					}
+
 					//console.log("Final getFolderContents()", res)
 					return res;
 				},

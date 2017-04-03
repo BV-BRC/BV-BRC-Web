@@ -23,13 +23,27 @@ define([
 		},
 
 		generatePathLinks: function(path){
-			var parts = path.split("/");
+			// strip out /public/
+			var parts = path.replace(/\/+/g, '/').split("/");
+			if(parts[1] == 'public'){
+				parts.splice(1, 1)
+			}
+
 			if(parts[0] == ""){
 				parts.shift();
 			}
 			var len = parts.length;
 			var out = ["<span class='wsBreadCrumb'>"];
 			var bp = ["workspace"];
+
+			if (path == '/public/') {
+				out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>')
+			}else if(path.replace(/\/+/g, '/').split('/')[1] == 'public'){
+				out.push('<i class="icon-globe"></i> '+
+					'<a class="navigationLink perspective" href="/'+bp.join("/")+'/public">Public Workspaces</a>'+
+					' <i class="icon-caret-right"></i> ')
+			}
+
 			// console.log("parts: ", parts);
 			parts.forEach(function(p, idx){
 				if(idx == (parts.length - 1)){
@@ -42,6 +56,7 @@ define([
 				out.push("'>" + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + "</a>&nbsp;/&nbsp;");
 			});
 			//out.push("<span>" + parts.join("/") + "</span>");
+
 			return out.join("");
 		},
 

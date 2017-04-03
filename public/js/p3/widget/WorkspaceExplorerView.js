@@ -24,15 +24,31 @@ define([
 			sort: [{attribute: "name", descending: false}]
 		},
 		listWorkspaceContents: function(ws){
+			console.log('FIRST PASS', ws)
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
 			}
-			if(!ws){
+
+			// change root path '/public' to '/'
+			if(!ws || ws == "/public"){
 				ws = "/"
 			}
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws, window.App && window.App.showHiddenFiles), function(res){
+			console.log('SECOND pass', ws)
+			// ignore "/public/"
+			// "/public/..." isn't a real path, just used in urls for state
+			var parts = ws.replace(/\/+/g, '/').split('/');
+			if(parts[1] == 'public'){
+				parts.splice(1, 1);
+				ws = parts.join('/');
+			}
+
+			console.log('getting contents', ws)
+			var filterPublic =  ws == '/' ? true : false;
+			return Deferred.when(WorkspaceManager.getFolderContents(
+				ws, window.App && window.App.showHiddenFiles, null, filterPublic), function(res){
+				console.log('retrieved contents', res)
 				if(_self.types){
 					res = res.filter(function(r){
 						return (r && r.type && (_self.types.indexOf(r.type) >= 0))
@@ -104,20 +120,21 @@ define([
 			this.refresh();
 			this._items = items;
 			this.renderArray(items);
-			// this.refresh();	
+			// this.refresh();
 		},
 
 		refreshWorkspace: function(){
 			var _self = this;
 			this.listWorkspaceContents(this.path).then(function(contents){
-				// console.log("listWSContents: ", contents);
+
+				 console.log("refreshWorkspace path: ", _self.path);
 				var parts = _self.path.split("/").filter(function(x){
 					return !!x
 				});
-				// console.log("Path Parts: ", parts);
+				console.log("Path Parts: ", parts);
 				if(parts.length > 1){
 					parts.pop();
-					var parentPath = "/" + parts.join("/");
+					var parentPath = parts[0] == 'public' ? "/"+parts.slice(1).join('/') : "/"+parts.join('/');
 					// console.log("parentPath: ", parentPath);
 
 					var p = {
@@ -132,7 +149,7 @@ define([
 				}
 
 				// console.log("Revised Contents:", contents);
-				_self.render(_self.path, contents);
+				_self.render(parentPath, contents);
 			})
 
 		},
@@ -174,6 +191,9 @@ define([
 
 		save: function(){
 			console.log("Save Arguments: ", arguments);
+		},
+		getLayout: function(){
+			console.log('is this the layout?', this.layout)
 		}
 	});
 });
