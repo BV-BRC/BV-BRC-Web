@@ -24,7 +24,6 @@ define([
 			sort: [{attribute: "name", descending: false}]
 		},
 		listWorkspaceContents: function(ws){
-			console.log('FIRST PASS', ws)
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
@@ -35,7 +34,6 @@ define([
 				ws = "/"
 			}
 
-			console.log('SECOND pass', ws)
 			// ignore "/public/"
 			// "/public/..." isn't a real path, just used in urls for state
 			var parts = ws.replace(/\/+/g, '/').split('/');

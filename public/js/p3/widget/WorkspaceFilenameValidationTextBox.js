@@ -45,13 +45,11 @@ define([
 		},
 
 		checkForName: function(val){
-			console.log("CHECK for name")
 			if(!this.path){
 				return;
 			}
 			this.externalCheck = "checking";
 			this.externalCheckValue = val;
-
 			return Deferred.when(WorkspaceManager.getObject(this.path + "/" + val), lang.hitch(this, function(obj){
 				if(obj){
 					console.log("Found Existing Object", obj);
@@ -69,14 +67,11 @@ define([
 		},
 
 		validator: function(val, constraints){
-			console.log('val/contraints', val, constraints)
-
 			var valid = false;
 			var re = /(\(|\)|\/|\:)/g
 			var match = val.match(re);
 
 			if(this.required && this._isEmpty(val)){
-				console.log('VALIDATOR1')
 				return false;
 			}
 
@@ -94,7 +89,6 @@ define([
 			console.log("Val: ", val, "ExternalCheckVal: ", this.externalCheckValue)
 			if(this.externalCheckValue && val == this.externalCheckValue){
 				if(this.externalCheck == "exists"){
-				console.log('VALIDATOR2')
 					return false;
 				}
 				return true;
