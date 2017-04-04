@@ -771,7 +771,7 @@ define([
 			var upperBound = d3.max(data, function(d){
 				return d.reported || d.value;
 			});
-			var yScale = d3.scale.linear().range([0, chartHeight]).domain([0, upperBound]);
+			var yScale = d3.scale.linear().range([30, chartHeight]).domain([0, upperBound]);
 			var xScale = d3.scale.linear().range([0, chartWidth]).domain([0, data.length]);
 			var bars = canvas.selectAll("g.bar").data(data);
 			bars.enter().append("g");
