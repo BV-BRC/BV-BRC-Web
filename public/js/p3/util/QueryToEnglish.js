@@ -14,13 +14,32 @@ define([
 
 		function walk(term){
 			// console.log("Walk: ", term.name, " Args: ", term.args);
+			// console.log("term: ", term);			
 			switch(term.name){
 				case "and":
 				case "or":
-					var out = term.args.map(function(t){
-						return walk(t);
-					}).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
+					//var out = term.args.map(function(t){
+					//	return walk(t);
+					//}).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
 
+					var v = term.args;
+					//console.log("V: ",v)
+					if (!(v instanceof Array)){
+						v = [v];
+					}
+					var vals = v.map(walk);
+					var out = "";
+					
+					// set the number of terms to display in the perspective window 	
+					var numTerms = 7;
+
+					if (vals.length==1){
+						out = vals.join("")
+					}else if (vals.length < numTerms+1) {
+						out = out + vals.join('<span class="searchOperator">' + term.name.toUpperCase() + '</span>');
+					}else{
+						out = out + vals.slice(0,numTerms).join('<span class="searchOperator">' + term.name.toUpperCase() + '</span>') + ' ... ' + (vals.length-numTerms) + ' more terms ...';
+					}
 					// console.log("out: ", out);
 					break;
 				case "in":
@@ -72,10 +91,10 @@ define([
 					out = 'Feature Group <span class="searchValue">' + groupName + "</span>"
 					break;
 				default:
-					if (typeof term == "string"){
+					if (typeof term == "string" || typeof term == "number"){
 						return '<span class="searchValue"> '  +decodeURIComponent(term) + '</span>';
 					}
-					console.log("Skipping Unused term: ", term.name, term.args);
+					// console.log("Skipping Unused term: ", term.name, term.args);
 			}
 
 			return out;
