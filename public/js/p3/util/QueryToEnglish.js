@@ -36,9 +36,9 @@ define([
 					if (vals.length==1){
 						out = vals.join("")
 					}else if (vals.length < numTerms+1) {
-						out = out + vals.join('<span class="searchOperator">' + term.name.toUpperCase() + '</span>');
+						out = out + vals.join('<span class="searchOperator"> ' + term.name.toUpperCase() + ' </span>');
 					}else{
-						out = out + vals.slice(0,numTerms).join('<span class="searchOperator">' + term.name.toUpperCase() + '</span>') + ' ... ' + (vals.length-numTerms) + ' more terms ...';
+						out = out + vals.slice(0,numTerms).join('<span class="searchOperator"> ' + term.name.toUpperCase() + ' </span>') + ' ... ' + (vals.length-numTerms) + ' more terms ...';
 					}
 					// console.log("out: ", out);
 					break;
@@ -92,7 +92,7 @@ define([
 					break;
 				default:
 					if (typeof term == "string" || typeof term == "number"){
-						return '<span class="searchValue"> '  +decodeURIComponent(term) + '</span>';
+						return '<span class="searchValue">'  +decodeURIComponent(term) + '</span>';
 					}
 					// console.log("Skipping Unused term: ", term.name, term.args);
 			}
