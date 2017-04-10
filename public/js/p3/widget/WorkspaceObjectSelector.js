@@ -191,12 +191,20 @@ define([
 					style: "border:0px;"
 				});
 
+				console.log('path', _self.path.split('/')[1] == 'public')
  				var viewSelector = new Select({
 					name: "togglePublic",
 					style: { width: '100px' },
 					options: [
-						{ label: "My Workspaces", value: "mine", selected: true},
-						{ label: "Public Workspaces", value: "public"}
+						{
+							label: "My Workspaces",
+							value: "mine",
+							selected:  _self.path.split('/')[1] == 'public' ? false : true
+						},{
+							label: "Public Workspaces",
+							value: "public",
+							selected:  _self.path.split('/')[1] == 'public' ? true : false
+						}
 					]
 				})
 
