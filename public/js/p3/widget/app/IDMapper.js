@@ -3,14 +3,16 @@ define([
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/IDMapper.html", "dijit/form/Form", "../../util/PathJoin",
 	"dojo/request", "../viewer/IDMappingApp", "../../WorkspaceManager", "../WorkspaceObjectSelector",
-    "dojo/query"
+    "dojo/query", "dojo/_base/lang"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, PathJoin,
-			xhr, ResultContainer, WorkspaceManager, WorkspaceObjectSelector,query){
+			xhr, ResultContainer, WorkspaceManager, 
+            WorkspaceObjectSelector,query,lang){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "IDMapper",
+		applicationName: "IDMapper",
 		templateString: Template,
 		path: "",
 		mapFromIDs: null,
@@ -32,6 +34,20 @@ define([
 			});
 			this.result.placeAt(this.idmap_result_div);
 			this.result.startup();
+			this.advrow2.turnedOn = (this.advrow2.style.display != 'none');
+			on(this.advanced2, 'click', lang.hitch(this, function(){
+				this.advrow2.turnedOn = (this.advrow2.style.display != 'none');
+				if(!this.advrow2.turnedOn){
+					this.advrow2.turnedOn = true;
+					this.advrow2.style.display = 'block';
+					this.advicon2.className = "fa icon-caret-left fa-1";
+				}
+				else{
+					this.advrow2.turnedOn = false;
+					this.advrow2.style.display = 'none';
+					this.advicon2.className = "fa icon-caret-down fa-1";
+				}
+			}));
         },
 
 

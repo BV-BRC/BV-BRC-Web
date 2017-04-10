@@ -99,12 +99,12 @@ removeAll: function() {
 // Destroy this node and all its children.
 destroy: function() {
     if(this.leftChild) {
-        this.leftChild.destroy();
+        leftChild.destroy();
         this.removeLeft();
     }
     if(this.rightChild) {
-        this.rightChild.destroy();
-        this.removeRight();
+        rightChild.destroy();
+        this.removeRight;
     }
     this.Value = undefined;
 },
@@ -112,7 +112,7 @@ destroy: function() {
 // Return an array containing all leaf nodes of this tree.
 getLeaves: function() {
     if(this.isLeaf()) {
-        var retArray = [];
+        var retArray = new Array();
         retArray[0] = this.Value;
         return retArray;
     } else if(this.leftChild === undefined)     {

@@ -237,12 +237,12 @@ define("p3/widget/viewer/Feature", [
 				tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 				state: lang.mixin({}, this.state)
 			});
-			if(window.App.appLabel !== ""){
-				this.compareRegionViewer = new CompareRegionContainer({
-					title: "Compare Region Viewer",
-					id: this.viewer.id + "_compareRegionViewer"
-				});
-			}
+
+			this.compareRegionViewer = new CompareRegionContainer({
+				title: "Compare Region Viewer",
+				id: this.viewer.id + "_compareRegionViewer"
+			});
+
 			// TODO: implement pathways tab
 
 			this.transcriptomics = new GeneExpressionContainer({
@@ -255,24 +255,17 @@ define("p3/widget/viewer/Feature", [
 				id: this.viewer.id + "_correlatedGenes"
 			});
 
-			if(window.App.appLabel !== ""){
-				this.interactions = new InteractionContainer({
-					title: "Interactions",
-					id: this.viewer.id + "_interactions",
-					state: this.state
-				});
-			}
+			this.interactions = new InteractionContainer({
+				title: "Interactions",
+				id: this.viewer.id + "_interactions"
+			});
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.compareRegionViewer);
-			}
+			this.viewer.addChild(this.compareRegionViewer);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
-			if(window.App.appLabel !== ""){
-				this.viewer.addChild(this.interactions);
-			}
+			this.viewer.addChild(this.interactions);
 		}
 	});
 });

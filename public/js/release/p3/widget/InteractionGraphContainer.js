@@ -249,7 +249,7 @@ define("p3/widget/InteractionGraphContainer", [
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["interaction_data"],
 					pressAndHold: function(selection, button, opts, evt){
-						var feature_id = selection[0].feature_id;
+						var feature_id = selection[0].data('feature_id');
 
 						popup.open({
 							popup: new PerspectiveToolTip({
@@ -262,7 +262,7 @@ define("p3/widget/InteractionGraphContainer", [
 					}
 				},
 				function(selection){
-					var feature_id = selection[0].feature_id;
+					var feature_id = selection[0].data('feature_id');
 
 					Topic.publish("/navigate", {
 						href: "/view/Feature/" + feature_id + "#view_tab=overview",
@@ -306,8 +306,13 @@ define("p3/widget/InteractionGraphContainer", [
 					validContainerTypes: ["interaction_data"]
 				},
 				function(selection){
-
-					viewFASTATT.selection = selection;
+					if(selection.length == 1){
+						viewFASTATT.selection = selection.map(function(node){
+							return node.data('feature_id');
+						});
+					}else{
+						viewFASTATT.selection = selection;
+					}
 
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
@@ -353,9 +358,16 @@ define("p3/widget/InteractionGraphContainer", [
 				},
 				function(selection, containerWidget){
 
-					var sel = selection.map(function(feature_id){
-						return {feature_id: feature_id};
-					});
+					var sel;
+					if(selection.length == 1){
+						sel = selection.map(function(node){
+							return {feature_id: node.data('feature_id')}
+						})
+					}else{
+						sel = selection.map(function(feature_id){
+							return {feature_id: feature_id};
+						})
+					}
 
 					// console.log("Add Items to Group", sel);
 					var dlg = new Dialog({title: "Copy Selection to Group"});
@@ -475,27 +487,27 @@ define("p3/widget/InteractionGraphContainer", [
 							style: {
 								'line-color': '#3F51B5' // indigo 500
 							}
-						}, {
-							selector: 'edge.typeB',
-							style: {
-								'line-color': '#009688' // teal 500
-							}
-						}, {
-							selector: 'edge.typeC',
-							style: {
-								'line-color': '#FF5722', // deep orange 500
-								'opacity': 0.6
-							}
-						}, {
-							selector: 'edge.typeD',
-							style: {
-								'line-color': '#8D6E63' // brown 400
-							}
-						}, {
-							selector: 'edge.typeE',
-							style: {
-								'line-color': '#1B5E20' // green 900
-							}
+						// }, {
+						// 	selector: 'edge.typeB',
+						// 	style: {
+						// 		'line-color': '#009688' // teal 500
+						// 	}
+						// }, {
+						// 	selector: 'edge.typeC',
+						// 	style: {
+						// 		'line-color': '#FF5722', // deep orange 500
+						// 		'opacity': 0.6
+						// 	}
+						// }, {
+						// 	selector: 'edge.typeD',
+						// 	style: {
+						// 		'line-color': '#8D6E63' // brown 400
+						// 	}
+						// }, {
+						// 	selector: 'edge.typeE',
+						// 	style: {
+						// 		'line-color': '#1B5E20' // green 900
+						// 	}
 						}
 					]
 				});
@@ -570,6 +582,7 @@ define("p3/widget/InteractionGraphContainer", [
 					}else if(ele.isEdge()){
 						content.push("Interaction Type: " + ele.data('interaction_type'));
 						content.push("Detection Method: " + ele.data('detection_method'));
+						content.push("Evidence: " + ele.data('evidence'));
 					}
 
 					// console.log(evt, self.tooltipLayer);
@@ -696,7 +709,7 @@ define("p3/widget/InteractionGraphContainer", [
 					}))
 				}else{
 					// edge
-					this.selectionActionBar.set("selection", [cur]);
+					this.selectionActionBar.set("selection", []);
 					this.itemDetailPanel.set('containerWidget', this);
 					this.itemDetailPanel.set('selection', [cur.data()]);
 				}
@@ -737,33 +750,14 @@ define("p3/widget/InteractionGraphContainer", [
 						cy.add(createInteractorCyEle(d, 'b'));
 					}
 
-					var edgeClass;
-					switch(d['detection_method']){
-						case "experimental interaction detection":
-							edgeClass = "typeA";
-							break;
-						case "predictive text mining":
-							edgeClass = "typeB";
-							break;
-						case "inference":
-							edgeClass = "typeC";
-							break;
-						case "phylogenetic profile":
-							edgeClass = "typeD";
-							break;
-						case "gene neighbourhood":
-							edgeClass = "typeE";
-							break;
-						default:
-							edgeClass = "";
-							break;
-					}
+					var edgeClass = (d['evidence'].indexOf('experimental') > -1 ) ? "typeA": "";
 
 					cy.add({
 						data: {
 							id: d['id'],
 							source: i_a,
 							target: i_b,
+							evidence: d['evidence'],
 							interaction_type: d['interaction_type'],
 							detection_method: d['detection_method']
 						},

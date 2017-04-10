@@ -131,11 +131,6 @@
 			</td>
             <td></td>
             <td>
-                <div class="appRow" style="width:100px; white-space:nowrap"> VIA:
-				<select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
-					<option selected="true" value="gene_id">GeneID</option>
-					<option value="gi">GI</option>
-                </select>
             </td>
 		</tr>
 		<tr>
@@ -147,9 +142,33 @@
             <td style="vertical-align:top;" colspan="2">
 				<div data-dojo-attach-point="leftList" style="width: 100%;height:300px;vertical-align:top;max-height:350px" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeLeft"></div>
 			</td>
-            <td> 
-            </td>
-            <td>
+            <td style="vertical-align:top; padding-left:20px" colspan="2">
+                    <div class="appRow">
+                        <div class="appRowSegment">
+                            <div data-dojo-attach-point="advanced2" style="display:inline-block">
+                                <label class="largelabel">Advanced</label>
+                                <div class="iconbox" style="margin-left:0px">
+                                    <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
+                        <div class="appField" style="width:150px;">
+                            <label class="paramlabel">PATRIC Feature Strategy</label>
+                            <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
+                                <i class="fa icon-info-circle fa"></i>
+                            </div>
+                            <div class="appField" style="width:120px;">
+                            <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
+                                <option value="gene_id">GeneID</option>
+                                <option selected="true" value="gi">GI</option>
+                                <option value="refseq_locus_tag">Refseq locus tag</option>
+                                <option value="protein_id">Refseq Protein Acc</option>
+                            </select>
+                            </div>
+                        </div>
+                    </div>
             </td>
             <td></td>
             <td></td>

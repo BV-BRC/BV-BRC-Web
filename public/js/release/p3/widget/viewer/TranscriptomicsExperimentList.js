@@ -1,10 +1,10 @@
 define("p3/widget/viewer/TranscriptomicsExperimentList", [
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "../../util/QueryToEnglish",
 	"../PageGrid", "../formatter", "../TranscriptomicsExperimentGridContainer", "../TranscriptomicsComparisonGridContainer",
 	"../../util/PathJoin", "dojo/request", "dojo/_base/lang"
 ], function(declare, TabViewerBase, on,
-			domClass, ContentPane, domConstruct,
+			domClass, ContentPane, domConstruct, QueryToEnglish,
 			Grid, formatter, TranscriptomicsExperimentGridContainer, TranscriptomicsComparisonGridContainer,
 			PathJoin, xhr, lang){
 	return declare([TabViewerBase], {
@@ -71,6 +71,11 @@ define("p3/widget/viewer/TranscriptomicsExperimentList", [
 			this.inherited(arguments);
 		},
 
+		onSetQuery: function(attr, oldVal, newVal){
+			var content = QueryToEnglish(newVal);
+			this.queryNode.innerHTML = '<span class="queryModel">Experiments: </span>  ' + content;
+		},
+
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "experiments";
@@ -115,7 +120,7 @@ define("p3/widget/viewer/TranscriptomicsExperimentList", [
 			//this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("eids", lang.hitch(this, "onSetEIDS"));
 
-			//this.watch("query", lang.hitch(this, "onSetQuery"));
+			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.watch("total_experiments", lang.hitch(this, "onSetTotalExperiments"));
 
 			//this.overview = this.createOverviewPanel(this.state);

@@ -77,7 +77,7 @@ define([
 
 			this.inherited(arguments);
 
-			var feature_query = "?and(eq(source_id,"+this.source_id+"),eq(source,PATRIC_VF))&limit(1)"; 
+			var feature_query = "?and(eq(source_id," + this.source_id + "),eq(source,PATRIC_VF))&limit(1)";
 			xhr.get(PathJoin(this.apiServiceUrl, "sp_gene", feature_query), {
 				headers: {
 					accept: "application/json",
@@ -86,18 +86,18 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(feature){
-				console.log("feature result ", feature);
-				if (feature && feature.length==0) {
-					this.totalCountNode.innerHTML = "Specialty Genes > "  + this.source_id + '</a>';	
+				// console.log("feature result ", feature);
+				if(feature && feature.length == 0){
+					this.totalCountNode.innerHTML = "Specialty Genes > " + this.source_id + '</a>';
 					var messagePane = new ContentPane({
 						title: "Result",
 						region: "top",
 						content: "<p>No PATRIC curation data found</p>"
 					});
 					this.viewer.addChild(messagePane);
-					return;				
+					return;
 				}
-				var feature_id =feature[0].feature_id;
+				var feature_id = feature[0].feature_id;
 				var spgenelink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=false">Specialty Genes</a>';
 				var vflink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=eq(property,%22Virulence%20Factor%22)">Virulence Factors</a>';
 				// var patricVFlink = '<a href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(property,%22Virulence%20Factor%22),eq(source,%22PATRIC_VF%22),eq(evidence,%22Literature%22))">PATRIC_VF</a>';
@@ -105,10 +105,10 @@ define([
 				var genelink = '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
 
 				//this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
-				var q = "?and(eq(source_id,"+this.source_id+"),eq(source,PATRIC_VF))&limit(25000)"; 
+				var q = "?and(eq(source_id," + this.source_id + "),eq(source,PATRIC_VF))&limit(25000)";
 				//var q = "?and(eq(source_id,"+"Rv3375"+ "),eq(source,PATRIC_VF))";
-			
-				console.log("query evidence, q=", q);
+
+				// console.log("query evidence, q=", q);
 				xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_ref", q), {
 					headers: {
 						accept: "application/json",
@@ -117,22 +117,22 @@ define([
 					},
 					handleAs: "json"
 				}).then(lang.hitch(this, function(reference){
-					console.log("reference result ", reference);
+					// console.log("reference result ", reference);
 					this.set("reference", reference);
 					this.state.reference = reference;
-					if(reference && reference.length==0){
+					if(reference && reference.length == 0){
 						var messagePane = new ContentPane({
 							title: "Result",
 							region: "top",
 							content: "<p>No PATRIC curation data found</p>"
 						});
 						this.viewer.addChild(messagePane);
-						this.totalCountNode.innerHTML= "Specialty Genes > " + '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
-						return;				
+						this.totalCountNode.innerHTML = "Specialty Genes > " + '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+						return;
 					}
 					var node = domConstruct.create("div", {style: "width: 50%"}, this.viewer.containerNode);
 					domConstruct.place(DataItemFormatter(reference[0], "spgene_ref_data", {mini: true}), node, "first");
-				
+
 					// retrieve homologs
 					xhr.get(PathJoin(this.apiServiceUrl, "sp_gene", q), {
 						headers: {
@@ -142,7 +142,7 @@ define([
 						},
 						handleAs: "json"
 					}).then(lang.hitch(this, function(homolog){
-						console.log("homolog result ", homolog);
+						// console.log("homolog result ", homolog);
 
 						var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
 						var featureOverview = '<a href="/view/Feature/' + feature_id + '#view_tab=overview">Feature_Overview</a>';
@@ -150,14 +150,20 @@ define([
 						var featureTranscriptomics = '<a href="/view/Feature/' + feature_id + '#view_tab=transcriptomics">Transcriptomics</a>';
 						var featureCogene = '<a href="/view/Feature/' + feature_id + '#view_tab=correlatedGenes">Correlated_Genes</a>';
 						var featurelinks = featureOverview + "&nbsp;&nbsp;" + featureBrowser + "&nbsp;&nbsp;" + featureTranscriptomics + "&nbsp;&nbsp;" + featureCogene;
-						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>View this feature in: </b>&nbsp;&nbsp;" + featurelinks + "</p>"}, this.viewer.containerNode);
+						var div = domConstruct.create("div", {
+							style: "margin-left: 10px",
+							innerHTML: "<p><b>View this feature in: </b>&nbsp;&nbsp;" + featurelinks + "</p>"
+						}, this.viewer.containerNode);
 
 						var count = homolog.length;
 						var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
 						var link = '<a title="View homologs" href="/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=and(eq(source,PATRIC_VF),eq(source_id,' + this.source_id + '))" >' + count + '</a>';
-						var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Homologs: </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + link + "</p>"}, this.viewer.containerNode);
+						var div = domConstruct.create("div", {
+							style: "margin-left: 10px",
+							innerHTML: "<p><b>Homologs: </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + link + "</p>"
+						}, this.viewer.containerNode);
 
-						console.log("query evidence, q=", q);
+						// console.log("query evidence, q=", q);
 						xhr.get(PathJoin(this.apiServiceUrl, "sp_gene_evidence", q), {
 							headers: {
 								accept: "application/json",
@@ -166,11 +172,17 @@ define([
 							},
 							handleAs: "json"
 						}).then(lang.hitch(this, function(evidence){
-							console.log("evidence result ", evidence);
+							// console.log("evidence result ", evidence);
 							this.totalCountNode.innerHTML = spgenelink + " > " + vflink + " > " + patricVFlink + " > " + genelink;
 							var hr = domConstruct.create("hr", {style: "width: 100%"}, this.viewer.containerNode);
-							var div = domConstruct.create("div", {style: "margin-left: 10px", innerHTML: "<p><b>Evidence:</b></p></br>"}, this.viewer.containerNode);
-							var evidencenode = domConstruct.create("div", {id:"evid", style: "margin-left: 10px; margin-right: 10px;"}, this.viewer.containerNode);				
+							var div = domConstruct.create("div", {
+								style: "margin-left: 10px",
+								innerHTML: "<p><b>Evidence:</b></p></br>"
+							}, this.viewer.containerNode);
+							var evidencenode = domConstruct.create("div", {
+								id: "evid",
+								style: "margin-left: 10px; margin-right: 10px;"
+							}, this.viewer.containerNode);
 							var grid = new Grid({
 								columns: {
 									specific_organism: 'Organism',
@@ -189,9 +201,9 @@ define([
 							this.setActivePanelState();
 						}));
 					}));
-					
+
 				}));
-			}));		
+			}));
 
 		}
 	});
