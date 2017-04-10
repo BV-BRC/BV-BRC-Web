@@ -42,11 +42,9 @@ define([
 				ws = parts.join('/');
 			}
 
-			console.log('getting contents', ws)
 			var filterPublic =  ws == '/' ? true : false;
 			return Deferred.when(WorkspaceManager.getFolderContents(
 				ws, window.App && window.App.showHiddenFiles, null, filterPublic), function(res){
-				console.log('retrieved contents', res)
 				if(_self.types){
 					res = res.filter(function(r){
 						return (r && r.type && (_self.types.indexOf(r.type) >= 0))
@@ -125,16 +123,15 @@ define([
 			var _self = this;
 			this.listWorkspaceContents(this.path).then(function(contents){
 
-				 console.log("refreshWorkspace path: ", _self.path);
 				var parts = _self.path.split("/").filter(function(x){
 					return !!x
 				});
-				console.log("Path Parts: ", parts);
+
 				if(parts.length > 1){
 					parts.pop();
-					var parentPath = parts[0] == 'public' ? "/"+parts.slice(1).join('/') : "/"+parts.join('/');
-					// console.log("parentPath: ", parentPath);
 
+					var parentPath = parts[0] == 'public' ? "/"+parts.slice(1).join('/') : "/"+parts.join('/');
+						parentPath = (parts[0] == 'public' && parentPath.split('/').length < 3) ? '/' : parentPath;
 					var p = {
 						name: "Parent Folder",
 						path: parentPath,
@@ -142,12 +139,12 @@ define([
 						id: parentPath,
 						owner_id: "@"
 					};
-					// console.log("p: ", p);
+
 					contents.unshift(p);
 				}
 
 				// console.log("Revised Contents:", contents);
-				_self.render(parentPath, contents);
+				_self.render(_self.path, contents);
 			})
 
 		},

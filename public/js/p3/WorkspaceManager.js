@@ -290,7 +290,7 @@ define([
 			}));
 		},
 
-		getObjectsByType: function(types, showHidden){
+		getObjectsByType: function(types, showHidden, specialPath){
 			var _self = this;
 			types = (types instanceof Array) ? types : [types];
 			// console.log("Get ObjectsByType: ", types);
@@ -298,21 +298,18 @@ define([
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
 				var _self = this;
 
-				var path = current.path;
+				var path = specialPath || current.path;
 				return Deferred.when(this.api("Workspace.ls", [{
-					paths: [current.path],
+					paths: [path],
 					excludeDirectories: false,
 					excludeObjects: false,
 					query: {type: types},
 					recursive: true
 				}]), function(results){
-					//console.log("getObjectsByType Results: ", results);
 					if(!results[0] || !results[0][path]){
 						return [];
 					}
 					var res = results[0][path];
-
-					//console.log("array res", res);
 
 					res = res.map(function(r){
 						return _self.metaListToObj(r);

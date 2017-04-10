@@ -73,10 +73,8 @@ define([
 		},
 
 		_setPathAttr: function(val){
-			console.log("_setPathAttr: ", val);
 			this.path = val;
 			if(this.grid){
-				console.log("set Grid Path: ", val);
 				this.grid.set('path', val);
 			}
 			if(this.uploader){
@@ -84,7 +82,8 @@ define([
 			}
 
 			if(this.currentPathNode){
-				this.currentPathNode.innerHTML = "Folder: " + val;
+				this.currentPathNode.innerHTML = "Folder: " +
+				val;
 			}
 			this.cancelRefresh();
 			this.refreshWorkspaceItems();
@@ -101,14 +100,12 @@ define([
 			this.refreshWorkspaceItems();
 		},
 		_setValueAttr: function(value, refresh){
-			var _self = this;
-
 			this.value = value;
 			if(this._started){
 				if(refresh){
 					this.refreshWorkspaceItems()
 				}else{
-					_self.searchBox.set('value', _self.value);
+					this.searchBox.set('value', this.value);
 				}
 			}
 
@@ -120,7 +117,14 @@ define([
 
 		_setSelectionAttr: function(val){
 			this.selection = val;
-			console.log("this.selection: ", this.selection);
+
+			// ensures item is in store (for public workspaces),
+			// this is more efficient that recursively grabing all public objects of a certain type
+			try{
+				this.store.add(this.selection)
+			} catch(e){}
+
+			//console.log("this.selection: ", this.selection);
 			if(!val){
 				this.selValNode.innerHTML = "None.";
 				this.okButton.set('disabled', true);
@@ -196,13 +200,23 @@ define([
 					]
 				})
 
+				viewSelector.on('change', function(val){
+					if(val == 'mine') {
+						var home = '/'+window.App.user.id+'/home';
+						_self.set('path', home);
+					}else if(val == 'public'){
+						_self.set('path', '/public/')
+					}
+				})
+
+				domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
 
 				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
 				var span = domConstr.create("span", {style: {"float": 'left'}});
 				domConstr.place(span, buttonsPane.containerNode, "first");
 				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
 				this.showUnspecifiedWidget.on("change", function(val){
-					console.log("changed showUnspecifiedwidget: ", val);
+					// console.log("changed showUnspecifiedwidget: ", val);
 					_self.set("showUnspecified", val);
 				});
 				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
@@ -217,7 +231,6 @@ define([
 					if(_self.selection){
 						_self.set("value", _self.selection.path);
 					}
-					_self.onSearchChange(_self.selection.path)
 
 					_self.dialog.hide();
 				});
@@ -274,7 +287,7 @@ define([
 				});
 
 				on(uploader.domNode, "dialogAction", function(evt){
-					console.log("Uploader Dialog Action: ", evt);
+					// console.log("Uploader Dialog Action: ", evt);
 					if(evt.files && evt.files[0] && evt.action == "close"){
 						var file = evt.files[0];
 						_self.set("selection", file);
@@ -291,23 +304,6 @@ define([
 				backBC.addChild(uploader);
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
 
-				domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
-
-				viewSelector.on('change', function(val){
-					console.log('changing!')
-
-					if(val == 'mine') {
-						var home = '/'+window.App.user.id+'/home';
-						_self.set('path', home);
-					}else if(val == 'public'){
-						_self.set('path', '/public/')
-					}
-
-					_self.grid.destroy()
-					_self.grid = _self.createGrid();
-					frontBC.addChild(_self.grid);
-
-				})
 
 			}
 			this.dialog.flip("front");
@@ -332,10 +328,9 @@ define([
 					return b.timestamp - a.timestamp;
 				});
 
-				var store = new Memory({data: items, idProperty: "path"});
+				this.store = new Memory({data: items, idProperty: "path"});
 
-				// console.log("SearchBox: ", this.searchBox, "THIS: ", this);
-				this.searchBox.set("store", store);
+				this.searchBox.set("store", this.store);
 				if(this.value){
 					this.searchBox.set('value', this.value);
 				}
@@ -352,13 +347,12 @@ define([
 			if(this._started){
 				return;
 			}
-			console.log("call getObjectsByType(); ", this.type);
+			// console.log("call getObjectsByType(); ", this.type);
 			this.inherited(arguments);
 
 			var _self = this;
 			if(!this.path){
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
-					console.log("CURRENT PATH: ", path);
 					_self.set('path', path);
 					_self.refreshWorkspaceItems();
 				});
@@ -406,7 +400,6 @@ define([
 				});
 			}
 
-			console.log('isValid', isValid)
 			return isValid;
 		},
 		createGrid: function() {
@@ -488,7 +481,7 @@ define([
 						_self.dialog.hide()
 					}
 				}
-				console.log("ItemDblClick for chooser: ", evt);
+				// console.log("ItemDblClick for chooser: ", evt);
 				//	var row = evt.rows[0];
 				//	var data = row.data;
 				//	console.log("selected: ", data);
@@ -496,7 +489,6 @@ define([
 
 			grid.on("select", function(evt){
 				var row = evt.rows[0];
-				console.log('setting selection!!!!!!', row.data)
 				_self.set("selection", row.data);
 			});
 

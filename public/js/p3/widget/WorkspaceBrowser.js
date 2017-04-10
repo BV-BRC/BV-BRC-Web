@@ -831,13 +831,14 @@ define([
 			});
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
-			// console.log("Workspace: ", workspace, parts[1], val)
-			// if (!window.App.user || !window.App.user.id){
-			// 	Topic.publish("/login");
-			// 	return;
-			// }
+
 			if(parts[0] == 'public') {
-				obj = {metadata: {type: "folder"}, type: "folder", path: "/"}
+				if (parts.length == 1){
+					obj = {metadata: {type: "folder"}, type: "folder", path: "/"}
+				}else{
+					var val = '/' + val.split('/').slice(2).join('/');
+					obj = WorkspaceManager.getObject(val, true)
+				}
 			}else if(!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
@@ -846,9 +847,7 @@ define([
 			Deferred.when(obj, lang.hitch(this, function(obj){
 
 				if(this.browserHeader){
-					// console.log("Set BrowserHeader selection: ", [obj]);
 					this.browserHeader.set("selection", [obj]);
-
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
@@ -971,7 +970,7 @@ define([
 						this.activePanel = newPanel;
 					}else{
 						this.activePanel.set('path', this.path);
-						if(this.activePanel.clearSelection){
+						if(this.activePaneal && 'clearSelection' in this.activePaneal){
 							this.activePanel.clearSelection();
 						}
 					}
