@@ -191,7 +191,6 @@ define([
 					style: "border:0px;"
 				});
 
-				console.log('path', _self.path.split('/')[1] == 'public')
  				var viewSelector = new Select({
 					name: "togglePublic",
 					style: { width: '100px' },
@@ -199,11 +198,11 @@ define([
 						{
 							label: "My Workspaces",
 							value: "mine",
-							selected:  _self.path.split('/')[1] == 'public' ? false : true
+							selected:  _self.path.split('/')[1] != 'public'
 						},{
 							label: "Public Workspaces",
 							value: "public",
-							selected:  _self.path.split('/')[1] == 'public' ? true : false
+							selected:  _self.path.split('/')[1] == 'public'
 						}
 					]
 				})
@@ -277,7 +276,6 @@ define([
 					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
 				});
 				on(backhead.domNode, "span:click", function(evt){
-					console.log("Click: ", evt);
 					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
 						case "flip":
