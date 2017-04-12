@@ -3,12 +3,12 @@ define([
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/GlobalSearch.html", "./Button", "dijit/registry", "dojo/_base/lang",
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
-	"../util/searchToQuery", "../util/searchToQueryWithOr"
+	"../util/searchToQuery", "../util/searchToQueryWithOr", "../util/searchToQueryWithQuoteOr", "../util/searchToQueryWithQuoteAnd"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass, Templated, WidgetsInTemplate,
 			template, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
-			searchToQuery, searchToQueryWithOr
+			searchToQuery, searchToQueryWithOr, searchToQueryWithQuoteOr, searchToQueryWithQuoteAnd
 ){
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
@@ -22,14 +22,14 @@ define([
 
 		onKeypress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
-				var query = this.searchInput.get('value');
+				var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
 				var searchFilter = this.searchFilter.get('value');
 				var searchOption = this.searchOption.get('value');
-				if(!query){
+				if(!query || !query.match(/[a-z0-9]/i)){
 					return;
 				}
 
-				console.log("Search Filter: ", searchFilter);
+				console.log("Search Filter: ", searchFilter, "searchOption=", searchOption);
 				query = query.replace(/'/g,"").replace(/:/g, " ");
 				
 				var q = searchToQuery(query);
@@ -37,6 +37,14 @@ define([
 				if (searchOption == "option_or") {
 					q = searchToQueryWithOr(query);
 				}
+				else if (searchOption == "option_or2") {
+					q = searchToQueryWithQuoteOr(query);
+				}
+				else if (searchOption == "option_and2") {
+					q = searchToQueryWithQuoteAnd(query);
+				}
+
+				console.log("Search query q=: ", q);
 							
 				var clear = false;
 				switch(searchFilter){
@@ -90,14 +98,25 @@ define([
 			}
 		},
 		onClickAdvanced: function(evt){
-			var query = this.searchInput.get('value');
+			var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
 			var searchFilter = this.searchFilter.get('value');
 			var searchOption = this.searchOption.get('value');
+
+			if(!query || !query.match(/[a-z0-9]/i)){
+				return;
+			}
 			
 			var q = searchToQuery(query);
 			if (searchOption == "option_or") {
 				q = searchToQueryWithOr(query);
 			}
+			else if (searchOption == "option_or2") {
+				q = searchToQueryWithQuoteOr(query);
+			}
+			else if (searchOption == "option_and2") {
+				q = searchToQueryWithQuoteAnd(query);
+			}
+
 
 			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
 			this.searchInput.set("value", '');

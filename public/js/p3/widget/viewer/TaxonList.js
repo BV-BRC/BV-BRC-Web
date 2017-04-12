@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../TaxonGridContainer",
+	"../PageGrid", "../formatter", "../TaxonGridContainer", "../../util/QueryToEnglish",
 	"../../util/PathJoin", "dojo/request", "dojo/_base/lang"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, TaxonGridContainer,
+			Grid, formatter, TaxonGridContainer, QueryToEnglish,
 			PathJoin, xhr, lang){
 	return declare([TabViewerBase], {
 		"baseClass": "TaxonList",
@@ -70,7 +70,8 @@ define([
 			if(this.overview){
 				this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
 			}
-			this.queryNode.innerHTML = decodeURIComponent(newVal);
+			var content = QueryToEnglish(newVal);
+			this.queryNode.innerHTML = '<span class="queryModel">Taxa: </span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -113,7 +114,7 @@ define([
 			this.watch("total_taxons", lang.hitch(this, "onSetTotalTaxons"));
 			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.taxons = new TaxonGridContainer({
-				title: "Taxons",
+				title: "Taxa",
 				id: this.viewer.id + "_" + "taxons",
 				disabled: false
 			});

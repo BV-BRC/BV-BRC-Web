@@ -487,27 +487,27 @@ define([
 							style: {
 								'line-color': '#3F51B5' // indigo 500
 							}
-						}, {
-							selector: 'edge.typeB',
-							style: {
-								'line-color': '#009688' // teal 500
-							}
-						}, {
-							selector: 'edge.typeC',
-							style: {
-								'line-color': '#FF5722', // deep orange 500
-								'opacity': 0.6
-							}
-						}, {
-							selector: 'edge.typeD',
-							style: {
-								'line-color': '#8D6E63' // brown 400
-							}
-						}, {
-							selector: 'edge.typeE',
-							style: {
-								'line-color': '#1B5E20' // green 900
-							}
+						// }, {
+						// 	selector: 'edge.typeB',
+						// 	style: {
+						// 		'line-color': '#009688' // teal 500
+						// 	}
+						// }, {
+						// 	selector: 'edge.typeC',
+						// 	style: {
+						// 		'line-color': '#FF5722', // deep orange 500
+						// 		'opacity': 0.6
+						// 	}
+						// }, {
+						// 	selector: 'edge.typeD',
+						// 	style: {
+						// 		'line-color': '#8D6E63' // brown 400
+						// 	}
+						// }, {
+						// 	selector: 'edge.typeE',
+						// 	style: {
+						// 		'line-color': '#1B5E20' // green 900
+						// 	}
 						}
 					]
 				});
@@ -582,6 +582,7 @@ define([
 					}else if(ele.isEdge()){
 						content.push("Interaction Type: " + ele.data('interaction_type'));
 						content.push("Detection Method: " + ele.data('detection_method'));
+						content.push("Evidence: " + ele.data('evidence'));
 					}
 
 					// console.log(evt, self.tooltipLayer);
@@ -749,33 +750,14 @@ define([
 						cy.add(createInteractorCyEle(d, 'b'));
 					}
 
-					var edgeClass;
-					switch(d['detection_method']){
-						case "experimental interaction detection":
-							edgeClass = "typeA";
-							break;
-						case "predictive text mining":
-							edgeClass = "typeB";
-							break;
-						case "inference":
-							edgeClass = "typeC";
-							break;
-						case "phylogenetic profile":
-							edgeClass = "typeD";
-							break;
-						case "gene neighbourhood":
-							edgeClass = "typeE";
-							break;
-						default:
-							edgeClass = "";
-							break;
-					}
+					var edgeClass = (d['evidence'].indexOf('experimental') > -1 ) ? "typeA": "";
 
 					cy.add({
 						data: {
 							id: d['id'],
 							source: i_a,
 							target: i_b,
+							evidence: d['evidence'],
 							interaction_type: d['interaction_type'],
 							detection_method: d['detection_method']
 						},
