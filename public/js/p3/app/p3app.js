@@ -85,7 +85,7 @@ define([
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
 				}
-		
+
 				newState.widgetClass="dijit/layout/ContentPane";
 				newState.requireAuth=false;
 				console.log("Navigate to ", newState);
@@ -186,7 +186,10 @@ define([
 
 				var path = params.params[0] || ("/" + _self.user.id + "/home/");
 				var parts = path.split("/");
-				if(parts.length < 3){
+
+				if(path.replace(/\/+/g, '') == 'public'){
+					path = '/public/';
+				}else if(parts.length < 3){
 					path = ("/" + _self.user.id + "/home/");
 				}
 				newState.widgetClass = "p3/widget/WorkspaceManager";
