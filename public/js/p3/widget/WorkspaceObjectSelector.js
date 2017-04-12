@@ -6,8 +6,7 @@ define([
 	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
 	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
-	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect", "dijit/form/Select",
-
+	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect", "dijit/form/Select"
 ], function(declare, WidgetBase, on, lang,
 			domClass, Templated, WidgetsInTemplate,
 			Template, Dialog, HasDropDown, ContentPane, TextBox,
@@ -450,7 +449,7 @@ define([
 						formatter: function(blah) {
 							return blah.split('@')[0];
 						},
-						hidden: false,
+						hidden: false
 					},
 					creation_time: {
 						label: "Created",
