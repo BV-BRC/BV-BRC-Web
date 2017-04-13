@@ -51,7 +51,7 @@ define([
 				if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
 
 					// strip the non-alphanumeric characters from the query string
-					searchAttrStripped = "*".concat(query[_self.searchAttr].toString().replace(/\W/g, ''), "*");
+					searchAttrStripped = "*".concat(query[_self.searchAttr].toString().replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), "*");
 
 					if(_self.extraSearch){
 						var components = ["eq(" + _self.searchAttr + "," + searchAttrStripped + ")"];
