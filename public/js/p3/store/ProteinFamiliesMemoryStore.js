@@ -82,6 +82,7 @@ define([
 					case "setFamilyType":
 						Topic.publish(this.topicId, "showLoadingMask");
 						this.pfState = value;
+						this._filtered = null;
 						if(arraysEqual(this.genome_ids, this.pfState.genomeIds)){
 							this.reload();
 							Topic.publish(this.topicId, "showMainGrid");

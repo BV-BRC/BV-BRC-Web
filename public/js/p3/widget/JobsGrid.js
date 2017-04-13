@@ -20,6 +20,7 @@ function(declare, Grid, Store, DijitRegistry,
 			"status_indicator": {
 				label: "",
 				field: "status",
+				unhidable: true,
 				formatter: formatter.status_indicator
 			},
 			"status": {
