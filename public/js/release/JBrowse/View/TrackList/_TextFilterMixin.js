@@ -31,7 +31,7 @@ return declare( null, {
        this.textFilterInput = dom.create(
             'input',
             { type: 'text',
-              placeholder: 'filter tracks',
+              placeholder: 'filter by text',
               onkeypress: lang.hitch( this, function( evt ) {
                   if( evt.keyCode == keys.ESCAPE ) {
                       this.textFilterInput.value = '';
