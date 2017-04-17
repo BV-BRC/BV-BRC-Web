@@ -211,6 +211,7 @@ define([
                 var curCond = null;
 				if('condition' in libRecord && this.exp_design.checked){
 					toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
+                    curCond = libRecord['condition'];
 				}
                 else{
                     curCond=defaultCond;
