@@ -11,6 +11,7 @@ var CIGAR_DECODER  = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X', '?', '?', '?'
 var readInt   = BAMUtil.readInt;
 var readShort = BAMUtil.readShort;
 var readFloat = BAMUtil.readFloat;
+var readByte  = BAMUtil.readByte;
 
 var Feature = Util.fastDeclare(
 {
@@ -246,38 +247,30 @@ var Feature = Util.fastDeclare(
     },
 
     _bin_mq_nl: function() {
-        with( this.bytes )
-            return readInt( byteArray, start + 12  );
+        return readInt( this.bytes.byteArray, this.bytes.start + 12  );
     },
     _flag_nc: function() {
-        with( this.bytes )
-            return readInt( byteArray, start + 16 );
+        return readInt( this.bytes.byteArray, this.bytes.start + 16 );
     },
     seq_length: function() {
-        with( this.bytes )
-            return readInt( byteArray, start + 20 );
+        return readInt( this.bytes.byteArray, this.bytes.start + 20 );
     },
     _next_refid: function() {
-        with( this.bytes )
-            return readInt( byteArray, start + 24 );
+        return readInt( this.bytes.byteArray, this.bytes.start + 24 );
     },
     _next_pos: function() {
-        with( this.bytes )
-            return readInt( byteArray, start + 28 );
+        return readInt( this.bytes.byteArray, this.bytes.start + 28 );
     },
     template_length: function() {
-        with( this.bytes )
-            return readInt( byteArray, start + 32 );
+        return readInt( this.bytes.byteArray, this.bytes.start + 32 );
     },
 
     /**
      * parse the core data: ref ID and start
      */
     _coreParse: function() {
-        with( this.bytes ) {
-            this._refID      = readInt( byteArray, start + 4 );
-            this.data.start  = readInt( byteArray, start + 8 );
-        }
+        this._refID      = readInt( this.bytes.byteArray, this.bytes.start + 4 );
+        this.data.start  = readInt( this.bytes.byteArray, this.bytes.start + 8 );
     },
 
     /**
@@ -334,6 +327,47 @@ var Feature = Util.fastDeclare(
                     }
                     else {
                         value += String.fromCharCode(cc);
+                    }
+                }
+                break;
+            case 'b':
+                value = '';
+                var cc = byteArray[p++];
+                var Btype = String.fromCharCode(cc);
+                if( Btype == 'i'|| Btype == 'I' ) {
+                    var limit = readInt( byteArray, p )
+                    p += 4;
+                    for( var k = 0; k < limit; k++ ) {
+                        value += readInt( byteArray, p );
+                        if(k+1<limit) value += ',';
+                        p += 4;
+                    }
+                }
+                if( Btype == 's'|| Btype == 'S' ) {
+                    var limit = readInt( byteArray, p )
+                    p += 4;
+                    for( var k = 0; k < limit; k++ ) {
+                        value += readShort( byteArray, p );
+                        if(k+1<limit) value += ',';
+                        p += 2;
+                    }
+                }
+                if( Btype == 'c'|| Btype == 'C' ) {
+                    var limit = readInt( byteArray, p )
+                    p += 4;
+                    for( var k = 0; k < limit; k++ ) {
+                        value += readByte( byteArray, p );
+                        if(k+1<limit) value += ',';
+                        p += 1;
+                    }
+                }
+                if( Btype == 'f' ) {
+                    var limit = readInt( byteArray, p )
+                    p += 4;
+                    for( var k = 0; k < limit; k++ ) {
+                        value += readFloat( byteArray, p );
+                        if(k+1<limit) value += ',';
+                        p += 4;
                     }
                 }
                 break;

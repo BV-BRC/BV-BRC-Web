@@ -85,6 +85,8 @@ var BAMStore = declare( [ SeqFeatureStore, DeferredStatsMixin, DeferredFeaturesM
                                  }),
             failure: lang.hitch( this, '_failAllDeferred' )
         });
+
+        this.storeTimeout = args.storeTimeout || 3000;
     },
 
     /**
@@ -106,6 +108,13 @@ var BAMStore = declare( [ SeqFeatureStore, DeferredStatsMixin, DeferredFeaturesM
     // called by getFeatures from the DeferredFeaturesMixin
     _getFeatures: function( query, featCallback, endCallback, errorCallback ) {
         this.bam.fetch( this.refSeq.name, query.start, query.end, featCallback, endCallback, errorCallback );
+    },
+
+    saveStore: function() {
+        return {
+            urlTemplate: this.config.bam.url,
+            baiUrlTemplate: this.config.bai.url
+        };
     }
 
 });
