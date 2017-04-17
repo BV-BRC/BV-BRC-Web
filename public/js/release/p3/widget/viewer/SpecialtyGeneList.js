@@ -1,9 +1,9 @@
 define("p3/widget/viewer/SpecialtyGeneList", [
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "../../util/QueryToEnglish",
 	"../PageGrid", "../formatter", "../SpecialtyGeneGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
 ], function(declare, TabViewerBase, on, Topic,
-			domClass, ContentPane, domConstruct,
+			domClass, ContentPane, domConstruct, QueryToEnglish,
 			Grid, formatter, SpecialtyGeneGridContainer, 
 			PathJoin, xhr, lang){
 	return declare([TabViewerBase], {
@@ -63,7 +63,8 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.queryNode.innerHTML = decodeURIComponent(newVal);
+			var content = QueryToEnglish(newVal);
+			this.queryNode.innerHTML = '<span class="queryModel">Specialty Genes: </span>  ' + content;
 		},
 
 		setActivePanelState: function(){
