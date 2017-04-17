@@ -61,6 +61,8 @@ return declare([ SeqFeatureStore, DeferredFeaturesMixin, DeferredStatsMixin ],
 
         this.name = args.name || ( this.data.url && new urlObj( this.data.url ).path.replace(/^.+\//,'') ) || 'anonymous';
 
+        this.storeTimeout = 3000;
+
         this._load();
     },
 
@@ -111,7 +113,7 @@ return declare([ SeqFeatureStore, DeferredFeaturesMixin, DeferredStatsMixin ],
                 data = this.newDataView( bytes );
                 if( data.getInt32() != this.BIG_WIG_MAGIC && magic != this.BIG_BED_MAGIC) {
                     console.error('Not a BigWig or BigBed file');
-                    deferred.reject('Not a BigWig or BigBed file');
+                    this._deferred.reject('Not a BigWig or BigBed file');
                     return;
                 }
             }
@@ -336,7 +338,15 @@ return declare([ SeqFeatureStore, DeferredFeaturesMixin, DeferredStatsMixin ],
         }
         //console.log( 'using unzoomed level');
         return this.getUnzoomedView();
+    },
+
+
+    saveStore: function() {
+        return {
+            urlTemplate: this.config.blob.url
+        };
     }
+
 });
 
 });
