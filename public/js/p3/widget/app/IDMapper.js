@@ -3,13 +3,14 @@ define([
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/IDMapper.html", "dijit/form/Form", "../../util/PathJoin",
 	"dojo/request", "../viewer/IDMappingApp", "../../WorkspaceManager", "../WorkspaceObjectSelector",
-    "dojo/query", "dojo/_base/lang"
+    "dojo/query", "dojo/_base/lang", "dijit/Tooltip", "dijit/popup"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, PathJoin,
 			xhr, ResultContainer, WorkspaceManager, 
-            WorkspaceObjectSelector,query,lang){
+            WorkspaceObjectSelector,query,lang,
+            Tooltip, popup){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "IDMapper",
 		applicationName: "IDMapper",
@@ -48,6 +49,12 @@ define([
 					this.advicon2.className = "fa icon-caret-down fa-1";
 				}
 			}));
+            
+            _self=this;
+            _self.info_dialog = new Tooltip({
+                label: "This tool uses the Uniprot-KB mapping table to map external IDs to PATRIC. This is done using NCBI IDs. Due to updates over time some NCBI IDs may achieve better mapping results than others.",
+                connectId: _self.patricMapInfo
+            });
         },
 
 

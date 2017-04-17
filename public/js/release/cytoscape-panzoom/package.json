@@ -1,55 +1,24 @@
 {
-  "_args": [
-    [
-      {
-        "raw": "cytoscape-panzoom@^2.4.0",
-        "scope": null,
-        "escapedName": "cytoscape-panzoom",
-        "name": "cytoscape-panzoom",
-        "rawSpec": "^2.4.0",
-        "spec": ">=2.4.0 <3.0.0",
-        "type": "range"
-      },
-      "/Users/dmachi/work/PATRIC/p3_web"
-    ]
+  "name": "cytoscape-panzoom",
+  "version": "2.4.0",
+  "description": "Panzoom extension for Cytoscape.js",
+  "main": "cytoscape-panzoom.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cytoscape/cytoscape.js-panzoom.git"
+  },
+  "keywords": [
+    "cytoscape",
+    "cyext"
   ],
-  "_from": "cytoscape-panzoom@>=2.4.0 <3.0.0",
-  "_id": "cytoscape-panzoom@2.4.0",
-  "_inCache": true,
-  "_location": "/cytoscape-panzoom",
-  "_nodeVersion": "5.11.1",
-  "_npmOperationalInternal": {
-    "host": "packages-16-east.internal.npmjs.com",
-    "tmp": "tmp/cytoscape-panzoom-2.4.0.tgz_1464943281515_0.6675791284069419"
-  },
-  "_npmUser": {
-    "name": "metincansiper",
-    "email": "metincansiper@gmail.com"
-  },
-  "_npmVersion": "3.8.6",
-  "_phantomChildren": {},
-  "_requested": {
-    "raw": "cytoscape-panzoom@^2.4.0",
-    "scope": null,
-    "escapedName": "cytoscape-panzoom",
-    "name": "cytoscape-panzoom",
-    "rawSpec": "^2.4.0",
-    "spec": ">=2.4.0 <3.0.0",
-    "type": "range"
-  },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/cytoscape-panzoom/-/cytoscape-panzoom-2.4.0.tgz",
-  "_shasum": "e060e2278c29d77302b740acc2dfd44e675b761f",
-  "_shrinkwrap": null,
-  "_spec": "cytoscape-panzoom@^2.4.0",
-  "_where": "/Users/dmachi/work/PATRIC/p3_web",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-panzoom/issues"
   },
-  "dependencies": {},
-  "description": "Panzoom extension for Cytoscape.js",
+  "homepage": "https://github.com/cytoscape/cytoscape.js-panzoom",
   "devDependencies": {
     "gulp": "^3.8.8",
     "gulp-jshint": "^1.8.5",
@@ -59,38 +28,34 @@
     "jshint-stylish": "^1.0.0",
     "run-sequence": "^1.0.0"
   },
-  "directories": {},
+  "peerDependencies": {
+    "jquery": "^1.4 || ^2.0",
+    "cytoscape": "^2.0"
+  },
+  "gitHead": "cd17fe4ca84ffecb99c02d4013e6f108fda796a1",
+  "_id": "cytoscape-panzoom@2.4.0",
+  "_shasum": "e060e2278c29d77302b740acc2dfd44e675b761f",
+  "_from": "cytoscape-panzoom@>=2.4.0 <3.0.0",
+  "_npmVersion": "3.8.6",
+  "_nodeVersion": "5.11.1",
+  "_npmUser": {
+    "name": "metincansiper",
+    "email": "metincansiper@gmail.com"
+  },
   "dist": {
     "shasum": "e060e2278c29d77302b740acc2dfd44e675b761f",
     "tarball": "https://registry.npmjs.org/cytoscape-panzoom/-/cytoscape-panzoom-2.4.0.tgz"
   },
-  "gitHead": "cd17fe4ca84ffecb99c02d4013e6f108fda796a1",
-  "homepage": "https://github.com/cytoscape/cytoscape.js-panzoom",
-  "keywords": [
-    "cytoscape",
-    "cyext"
-  ],
-  "license": "MIT",
-  "main": "cytoscape-panzoom.js",
   "maintainers": [
     {
       "name": "maxkfranz",
       "email": "maxkfranz@gmail.com"
     }
   ],
-  "name": "cytoscape-panzoom",
-  "optionalDependencies": {},
-  "peerDependencies": {
-    "jquery": "^1.4 || ^2.0",
-    "cytoscape": "^2.0"
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/cytoscape-panzoom-2.4.0.tgz_1464943281515_0.6675791284069419"
   },
-  "readme": "ERROR: No README data found!",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cytoscape/cytoscape.js-panzoom.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "2.4.0"
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/cytoscape-panzoom/-/cytoscape-panzoom-2.4.0.tgz"
 }
