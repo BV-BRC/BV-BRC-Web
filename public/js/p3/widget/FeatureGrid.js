@@ -49,7 +49,8 @@ define([
 			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
 			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
 			aa_length: {label: "Length (AA)", field: "aa_length", hidden: true},
-			product: {label: "Product", field: "product", hidden: false}
+			product: {label: "Product", field: "product", hidden: false},
+			go: {label: "GO Terms", field: "go", hidden: true}
 		},
 		_setQuery: function(query){
 			this.inherited(arguments);

@@ -130,6 +130,15 @@ define([
 			domConstruct.empty(this.totalCountNode);
 
 			this._set("genome", genome);
+
+			// check host genomes. remove the circular viewer tab if it's a host genome
+			if(genome && genome.taxon_lineage_ids){
+			    // console.log("this genome: ", genome);
+				if (genome.taxon_lineage_ids.length>1 && genome.taxon_lineage_ids[1] == "2759"){
+					this.viewer.removeChild(this.circular);
+				}
+			}
+
 			this.setActivePanelState();
 			this.resize();
 		},
