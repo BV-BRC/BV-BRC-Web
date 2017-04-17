@@ -79,8 +79,6 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, DeferredFeaturesMixin, Gl
                    },
                    lang.hitch( thisB, '_failAllDeferred' )
                  );
-
-        this.storeTimeout = args.storeTimeout || 3000;
     },
 
     /** fetch and parse the VCF header lines */
@@ -141,14 +139,6 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, DeferredFeaturesMixin, Gl
      */
     hasRefSeq: function( seqName, callback, errorCallback ) {
         return this.indexedData.index.hasRefSeq( seqName, callback, errorCallback );
-    },
-
-
-    saveStore: function() {
-        return {
-            urlTemplate: this.config.file.url,
-            tbiUrlTemplate: this.config.tbi.url
-        };
     }
 
 });
