@@ -187,13 +187,6 @@ return declare( [ SeqFeatureStore, MismatchesMixin ], {
             }
             , errorCallback
         );
-    },
-
-    saveStore: function() {
-        return {
-            urlTemplate: this.config.bam.url,
-            baiUrlTemplate: this.config.bai.url
-        };
     }
 });
 });
