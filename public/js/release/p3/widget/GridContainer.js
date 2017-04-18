@@ -1250,7 +1250,7 @@ define("p3/widget/GridContainer", [
 					// console.log("Row: ", rownum)
 					if(row.data){
 						return row.data;
-					}else{
+					}else if (this.grid && this.grid._unloadedData) {
 						// console.log("No Row: ", rownum)
 						return this.grid._unloadedData[rownum];
 						// var data = {};
