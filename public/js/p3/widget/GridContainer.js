@@ -343,6 +343,50 @@ define([
 				},
 				false
 			], [
+				"CopySelection",
+				"fa icon-copy3 fa-2x",
+				{
+					label: "COPY",
+					multiple: true,
+					validTypes: ["*"],
+					ignoreDataType: true,
+					tooltip: "Copy selection to clipboard",
+					max: 5000,
+					//tooltipDialog: copySelectionTT,
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"],
+
+					// press and hold gives column selection options
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("COPY:PressAndHold");
+						console.log("Selection: ", selection, selection[0]);
+						popup.open({
+							// XXX make this a column-selection and CSV/TSV Headers/No dialog
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
+							around: button,
+							orient: ["below"]
+						});
+					}
+				},
+				function(selection, container){
+					console.log("this.currentContainerType: ", this.containerType);
+					console.log("GridContainer selection: ", selection);
+					console.log("   ARGS: ", arguments);
+
+					// convert to tsv for easy paste to a spreadsheet
+					var copy_text = new DownloadTooltipDialog({})._totsv(selection);
+
+					// put it on the clipboard
+					clipboard.copy(copy_text).then(
+						function(){console.log("Copy success");},
+  					function(err){console.log("Copy failure", err);}
+					);
+
+				},
+				false
+			], [
 				"ViewFeatureItem",
 				"MultiButton fa icon-selection-Feature fa-2x",
 				{
