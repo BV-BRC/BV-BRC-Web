@@ -5,18 +5,20 @@
 
 node   (6.x lts)
 ```
-# installing node 6.x lts using homebrew on macOS
-brew tap homebrew/versions
-brew install homebrew/versions/node6-lts
+// installing node 6.x lts using homebrew on macOS
+brew install node@6
 
-# centos
+// centos
 curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
 yum -y install nodejs
 
-# for more detail https://nodejs.org/en/download/
+// for more detail https://nodejs.org/en/download/
 ```
 
-redis  (3.2+) http://redis.io/
+redis  (3.2+) http://redis.io/ or
+```
+brew install redis
+```
 
 
 ## Installation
@@ -26,6 +28,14 @@ git clone --recursive  https://github.com/PATRIC3/p3_web.git
 cd p3_web
 npm install
 cp p3-web.conf.sample p3-web.conf  (and edit as necessary)
+```
+
+If you cloned without --recursive flag,
+```
+cd p3_web
+npm install
+git submodule update --init
+// Note: git submodule fetches a module in node_modules directory. So npm install first!
 ```
 
 ## Authentication config for development
@@ -47,7 +57,7 @@ Note: authentication is stored as a session cookie.  You can clear it via your b
 ## Running
 
 ```
-redis-server
+redis-server &
 npm start 
 ```
 
