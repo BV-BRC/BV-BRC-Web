@@ -34,6 +34,10 @@ define([
 			//get xsetup from object type
 			ustring["xsetup"] = this.xfile.searchBox.get("item").type == 'expression_gene_matrix' ? 'gene_matrix' : 'gene_list'; // should be this.xfile.get("selection").type but need to fix on quick drop
 			ustring["organism"] = this.scientific_nameWidget.get('displayedValue');
+			ustring["host"] = false;			
+			if (values["host"] == "true"){
+				ustring["host"] = true;
+			}
 			exp_values["ustring"] = JSON.stringify(ustring);
 			exp_values["xfile"] = values["xfile"];
 			exp_values["mfile"] = values["mfile"];
