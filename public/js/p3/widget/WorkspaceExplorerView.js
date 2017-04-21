@@ -77,8 +77,7 @@ define([
 							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 						}
 					});
-					return res
-
+					return res;
 				})
 
 				return res;

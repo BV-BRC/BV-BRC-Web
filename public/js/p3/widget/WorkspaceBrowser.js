@@ -836,7 +836,6 @@ define([
 				multiple: true,
 				validTypes: ["folder"],
 				tooltip: "Share Folder",
-					attachScope: self
 			}, function(selection){
 				//console.log('The selection', selection)
 
@@ -848,7 +847,6 @@ define([
 				self.userPermDialog(folderPath, selection)
 
 			}, false);
-
 
 
 			this.itemDetailPanel = new ItemDetailPanel({
@@ -952,23 +950,14 @@ define([
 			// open form in dialog
 			var dlg = new Confirmation({
 				title: "Edit Sharing",
+				okLabel: "Done",
+				cancelLabel: false,
 				content: conf,
 				style: { width: '700px'},
 				onConfirm: function(evt){
-					console.log('userSelector', self.userSelector);
-
 					Topic.publish('/refreshWorkspace')
-					/*
-					self.actionPanel.set("selection", []);
-					self.itemDetailPanel.set('selection', []);
-					setTimeout(function(){
-						self.actionPanel.set("selection", selection);
-						self.itemDetailPanel.set('selection', selection);
-					},2000)
-					*/
 				}
 			})
-
 
 			// create current permission table
 			var prom = WorkspaceManager.listPermissions(folderPath);
@@ -983,7 +972,6 @@ define([
 					})
 
 
-
 					dojo.place(
 						'<tr>'+
 							'<td data-user="'+perm[0]+'">'+perm[0]+
@@ -991,8 +979,6 @@ define([
 							'<td style="width: 1px;"><i class="fa icon-trash fa-2x">',
 						query('tbody', currentUsers)[0]
 					);
-
-
 				})
 
 				if(!perms.length) {
@@ -1029,21 +1015,6 @@ define([
 				})
 
 			}
-
-			// listen for addition of users
-			/*var handle = Topic.subscribe("/addUserPermission", function(user){
-				console.log('user.id', user.id)
-
-
-				users.push(user);
-				handle.remove();
-			});*/
-
-			/*
-			permSelect.on("change", function(){
-				console.log('')
-			});
-			*/
 
 			dlg.startup()
 			dlg.show();
