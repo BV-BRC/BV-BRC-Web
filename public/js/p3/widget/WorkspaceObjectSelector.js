@@ -446,10 +446,13 @@ define([
 						label: "Owner",
 						field: "owner_id",
 						className: "wsItemCreationTime",
-						formatter: function(blah) {
-							return blah.split('@')[0];
-						},
+						formatter: formatter.baseUsername,
 						hidden: false
+					},
+					sharedWith: {
+						label: "Members",
+						field: "_item",
+						formatter: formatter.usersFormatter
 					},
 					creation_time: {
 						label: "Created",

@@ -27,7 +27,7 @@ define([
 					return "/" + [this.userId, "home", "Experiment Groups"].join("/");
 
 				default:
-					return "/" + [this.userId, "home"].join("/");
+					return "/" + this.userId;
 			}
 		},
 		_userWorkspacesGetter: function(){
@@ -194,6 +194,7 @@ define([
 		},
 
 		createFolder: function(paths){
+			console.log('attempting to create', paths)
 			var _self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -213,7 +214,10 @@ define([
 				}else{
 					var r = results[0][0];
 					Topic.publish("/refreshWorkspace", {});
-					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
+					Topic.publish("/Notification", {
+						message: r[3].split('/').length > 3 ? "Folder Created" : "Workspace Created",
+						type: "message"
+					});
 					return _self.metaListToObj(r);
 				}
 			}));
@@ -352,6 +356,7 @@ define([
 				throw new Error("Invalid Path(s) to delete");
 			}
 			path = decodeURIComponent(path);
+			console.log('getting thing: ', path)
 			// console.log('getObjects: ', path, "metadata_only:", metadataOnly);
 			return Deferred.when(this.api("Workspace.get", [{
 				objects: [path],
@@ -509,6 +514,39 @@ define([
 					//console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
+		},
+
+
+		setPermissions: function(path, permissions){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.set_permissions", [{
+				path: path,
+				permissions: permissions
+
+			}]), function(results) {
+				console.log('results', results)
+			},
+
+			function(err){
+				//console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
+		},
+
+		listPermissions: function(paths){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.list_permissions", [{
+				objects: Array.isArray(paths) ? paths : [paths],
+
+			}]), function(results) {
+				console.log('results', results)
+				return Array.isArray(paths) ? results[0] : results[0][paths];
+			},
+
+			function(err){
+				//console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
 		},
 
 		metaListToObj: function(list){

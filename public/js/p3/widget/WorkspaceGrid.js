@@ -51,12 +51,17 @@ define([
 				formatter: formatter.baseUsername,
 				hidden: false
 			},
+			sharedWith: {
+				label: "Members",
+				field: "_item",
+				formatter: formatter.usersFormatter
+			},
 			creation_time: {
 				label: "Created",
 				field: "creation_time",
 				className: "wsItemCreationTime",
 				formatter: formatter.date
-			}/*,
+			},/*,
 
 			userMeta: {
 				label: "User Metadata",

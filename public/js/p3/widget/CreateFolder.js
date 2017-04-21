@@ -7,7 +7,7 @@ define([
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, Topic, WorkspaceManager){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-		"baseClass": "CreateWorkspace",
+		"baseClass": "CreateFolder",
 		templateString: Template,
 		path: "",
 		_setPathAttr: function(p){
@@ -36,11 +36,10 @@ define([
 			if(this.validate()){
 				var values = this.getValues();
 				domClass.add(this.domNode, "Working");
-				console.log("CREATING FOLDER: ", this.path + values.name, this.path);
+
 				WorkspaceManager.createFolder(this.path + values.name).then(function(results){
-					console.log("RESULTS", results)
+
 					domClass.remove(_self.domNode, "Working");
-					console.log("create_workspace_folder results", results);
 					var path = "/" + ["workspace", results.path].join("/");
 					Topic.publish("/refreshWorkspace", {});
 					on.emit(_self.domNode, "dialogAction", {action: "close", navigate: path, bubbles: true});
@@ -56,7 +55,6 @@ define([
 		},
 
 		onCancel: function(evt){
-			console.log("Cancel/Close Dialog", evt);
 			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		}
 	});

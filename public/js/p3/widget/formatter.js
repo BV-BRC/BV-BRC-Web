@@ -1,4 +1,5 @@
-define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(locale, domConstruct, domClass){
+define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class", "dijit/Tooltip"],
+function(locale, domConstruct, domClass, Tooltip){
 
 	var dateFormatter = function(obj, format){
 		if(!obj || obj == "0001-01-01T00:00:00Z"){
@@ -201,6 +202,20 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		return link;
 	}
 
+    // source: http://stackoverflow.com/questions/3426404/create-a-hexadecimal-colour-based-on-a-string-with-javascript
+	var colorHash = function(str) {
+		var hash = 0;
+		for (var i = 0; i < str.length; i++) {
+			hash = str.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		var colour = '#';
+		for (var i = 0; i < 3; i++) {
+			var value = (hash >> (i * 8)) & 0xFF;
+			colour += ('00' + value.toString(16)).substr(-2);
+		}
+		return colour;
+	}
+
 	var formatters = {
 		getExternalLinks: getExternalLinks,
 		dateOnly: function(obj){
@@ -289,7 +304,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 				return ""
 			}
 			var parts = val.split("@");
-			return parts[0];
+			return val == window.App.user.id ? 'me' : parts[0];
 		},
 		status: function(val){
 			return val;
@@ -402,6 +417,50 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 			}
 
 			return _autoLabels;
+		},
+
+
+		usersFormatter: function(obj){
+			var userPerms = obj.permissions;
+			if(!userPerms) return '-';
+
+
+			var users = []
+			userPerms.forEach(function(perm){
+				if(perm[0] == 'global_permission') return;
+				users.push(perm[0])
+			})
+
+			var html =
+				'<span id="'+obj.id+'">' +
+					(users.length ? users.length+1 + ' member' + (users.length+1 > 1 ? 's' : '' ) : 'Only me') +
+				'</span>';
+
+			//new Tooltip({
+			//	connectId: [obj.id],
+			//	label: "value <b>45</b>"
+			//});
+
+			/*
+			var html = '';
+			userPerms.forEach(function(perm){
+				if (perm[0] == 'global_permission') return;
+				html +=
+					'<span class="userPermIcon" style="background: ' + colorHash(perm[0]) + ';">' +
+						perm[0][0] +
+					'</span> '
+			})
+			*/
+
+			return html;
+		},
+
+		permissionMap: function(perm){
+			var mapping = {
+				'r': 'Can view',
+				'w': 'Can edit'
+			}
+			return mapping[perm];
 		},
 
 		// takes an array of form [{label: "", value: ""} ... ]

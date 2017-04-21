@@ -43,30 +43,43 @@ define([
 			}
 
 			var filterPublic =  ws == '/' ? true : false;
-			return Deferred.when(WorkspaceManager.getFolderContents(
-				ws, window.App && window.App.showHiddenFiles, null, filterPublic), function(res){
-				if(_self.types){
-					res = res.filter(function(r){
-						return (r && r.type && (_self.types.indexOf(r.type) >= 0))
+			var prom = WorkspaceManager.getFolderContents(ws, window.App && window.App.showHiddenFiles, null, filterPublic)
+			return Deferred.when(prom, function(res){
+
+				var paths = res.map(function(obj) { return obj.path; });
+				var prom2 = WorkspaceManager.listPermissions(paths)
+				return Deferred.when(prom2, function(permHash){
+
+					res.forEach(function(obj){
+						obj.permissions = permHash[obj.path]
 					})
 
-				}
-				// console.log("self.sort: ", _self.sort, _self.queryOptions);
-				var sort = _self.get('sort');
-				if(!sort || sort.length == 0){
-					sort = _self.queryOptions.sort;
-				}
 
-				// console.log('sort: ', sort);
+					if(_self.types){
+						res = res.filter(function(r){
+							return (r && r.type && (_self.types.indexOf(r.type) >= 0))
+						})
 
-				res.sort(function(a, b){
-					var s = sort[0];
-					if(s.descending){
-						return (a[s.attribute] > b[s.attribute]) ? 1 : -1
-					}else{
-						return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 					}
-				});
+					// console.log("self.sort: ", _self.sort, _self.queryOptions);
+					var sort = _self.get('sort');
+					if(!sort || sort.length == 0){
+						sort = _self.queryOptions.sort;
+					}
+
+					// console.log('sort: ', sort);
+
+					res.sort(function(a, b){
+						var s = sort[0];
+						if(s.descending){
+							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
+						}else{
+							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
+						}
+					});
+					return res
+
+				})
 
 				return res;
 			}, function(err){
@@ -124,7 +137,7 @@ define([
 			this.listWorkspaceContents(this.path).then(function(contents){
 
 				var parts = _self.path.split("/").filter(function(x){
-					return !!x
+					return !!x;
 				});
 
 				if(parts.length > 1){

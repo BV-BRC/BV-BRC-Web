@@ -1,11 +1,21 @@
-<form dojoAttachPoint="containerNode"
+<form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-	<div class="PanelForm" style="">
-		<input data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for new Workspace',trim:true,placeHolder:'MyWorkspace'" />
-		<div style="margin:4px;margin-top:8px;text-align:right;">
-			<div data-dojo-attach-point="cancelButton" data-dojo-type="dijit/form/Button">Cancel</div>
-			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Create Workspace</div>
-		</div>	
+	<div >
+		<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true"
+			data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Workspace',trim:true,placeHolder:'My Workspace'"></div>
 	</div>
+		<div class="workingMessage messageContainer">
+			Creating new workspace ...
+		</div>
+
+		<div class="errorMessage messageContainer">
+			<div style="font-weight:900;font-size:1.1em;">Error Creating Workspace:</div>
+			<p data-dojo-attach-point="errorMessage">Error</p>
+		</div>
+
+		<div style="margin:4px;margin-top:8px;text-align:right;">
+			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Create Workspace</div>
+		</div>
 </form>
 

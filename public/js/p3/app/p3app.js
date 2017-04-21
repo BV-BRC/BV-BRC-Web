@@ -184,14 +184,15 @@ define([
 					newState[prop] = params.state[prop]
 				}
 
-				var path = params.params[0] || ("/" + _self.user.id + "/home/");
+				var path = params.params[0] || ("/" + _self.user.id ); //  + "/home/")
 				var parts = path.split("/");
 
 				if(path.replace(/\/+/g, '') == 'public'){
 					path = '/public/';
 				}else if(parts.length < 3){
-					path = ("/" + _self.user.id + "/home/");
+					path = ("/" + _self.user.id );  //+ "/home/"
 				}
+
 				newState.widgetClass = "p3/widget/WorkspaceManager";
 				newState.value = path;
 				newState.set = "path";
@@ -355,13 +356,14 @@ define([
 						style: {"margin-right": "4px"}
 					}, d);
 				}
-				domConstruct.create("a", {
-					'class': 'navigationLink',
-					href: "/workspace" + ws.path,
-					innerHTML: ws.name
-				}, d);
 
 				if(ws.name == "home"){
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						href: "/workspace" + ws.path,
+						innerHTML: ws.name
+					}, d);
+
 					domConstruct.create("br", {}, d);
 
 					domConstruct.create("a", {

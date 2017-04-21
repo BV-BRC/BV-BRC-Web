@@ -32,7 +32,7 @@ a.HelpLink:active {
 
 .wsBreadCrumbContainer {
 	display: inline-block;
-	margin: 12px 0 0 8px;
+	margin: 12px 0 12px 8px;
 }
 
 .wsBreadCrumb {
@@ -466,4 +466,27 @@ th.dgrid-cell.wsItemType {
 	border:#d3d3d3 1px solid;
 	display:inline-block;
 	margin: 0 4px 0 0;
+}
+
+.userPermIcon {
+	background: #444;
+	color: #fff;
+	padding: 5px;
+	border-radius: 3px;
+	font-size: .8em;
+	margin-right: 3px;
+}
+
+
+.fa-rotate-90 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+  -webkit-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.fa-rotate-180 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
 }

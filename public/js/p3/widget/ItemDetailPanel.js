@@ -163,8 +163,19 @@ define([
 								_self[key + "Node"].set('disabled', true);
 								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "none");
 							}
-						}
-						else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						}else if(key == "permissions"){
+
+							/*
+							var rows = []
+							val.forEach(function(perm){
+								if (perm[0] == 'global_permission') return;
+								rows.push(perm[0] + ' - ' + formatter.permissionMap(perm[1]));
+							})
+
+							_self[key + "Node"].innerHTML = 'Members:<br>' + (rows.length ? rows.join('<br>') : 'Only me');
+							*/
+
+						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
 							_self[this.property_aliases[key] + "Node"].innerHTML = val;
 						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
 							_self[this.property_aliases[key] + "Widget"].set("value", val);

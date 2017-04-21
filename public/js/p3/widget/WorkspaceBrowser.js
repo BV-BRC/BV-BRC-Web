@@ -4,15 +4,19 @@ define([
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
-	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip"
+	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
+	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip", "../widget/UserSelector",
+	"dijit/form/Button", "./formatter", "dojo/NodeList-traverse"
 
-], function(declare, BorderContainer, on, query,
-			domClass, ContentPane, domConstruct, domAttr,
-			WorkspaceExplorerView, Topic, ItemDetailPanel,
-			ActionBar, Deferred, WorkspaceManager, lang,
-			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog){
+], function(
+	declare, BorderContainer, on, query,
+	domClass, ContentPane, domConstruct, domAttr,
+	WorkspaceExplorerView, Topic, ItemDetailPanel,
+	ActionBar, Deferred, WorkspaceManager, lang,
+	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
+	popup, IDMappingTemplate, xhr, Select,
+	ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog, UserSelector,
+	Button, Formatter){
 	return declare([BorderContainer], {
 		baseClass: "WorkspaceBrowser",
 		disabled: false,
@@ -447,19 +451,38 @@ define([
 			}, function(selection){
 				// console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
-			}, true);
+			}, self.path.split('/').length > 3);
 
-			this.browserHeader.addAction("Create Folder", "fa icon-folder-plus fa-2x", {
+			var addFolderBtn = this.browserHeader.addAction("CreateFolder", "fa icon-folder-plus fa-2x", {
 				label: "ADD FOLDER",
-				multiple: true,
 				validTypes: ["folder"],
 				tooltip: "Create Folder"
-			}, function(selection){
-				// console.log("CREATE FOLDER", selection[0].path);
-				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
-			}, true);
+			}, function(sel){
+				console.log('selection', sel)
 
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
+				// selection may not be set if top level.
+				var path = sel ? sel[0].path + sel[0].name : '/' + window.App.user.id;
+				Topic.publish("/openDialog", {
+					type: "CreateFolder",
+					params: path
+				});
+			}, self.path.split('/').length > 3);
+
+			var addFolderBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-hdd-o fa-2x", {
+				label: "ADD WORKSPACE",
+				validTypes: ["folder"],
+				tooltip: "Create Workspace"
+			}, function(sel){
+
+				Topic.publish("/openDialog", {
+					type: "CreateWorkspace",
+				});
+			},  self.path.split('/').length < 3);
+
+
+			//addFolderBtnaddFolderBtn.innerHTML = "NEW WORKSPACE";
+
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
 					popup.close(viewFASTATT);
@@ -806,6 +829,28 @@ define([
 
 			}, false);
 
+
+			this.actionPanel.addAction("ShareFolder", "fa icon-user-plus fa-2x", {
+				label: "SHARE",
+				allowMultiTypes: false,
+				multiple: true,
+				validTypes: ["folder"],
+				tooltip: "Share Folder",
+					attachScope: self
+			}, function(selection){
+				//console.log('The selection', selection)
+
+				// get folder selected
+				var folderPath = selection.map(function(s){
+					return s.path || s.data.path;
+				})[0];
+
+				self.userPermDialog(folderPath, selection)
+
+			}, false);
+
+
+
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
 				style: "width: 300px",
@@ -821,6 +866,189 @@ define([
 
 		},
 
+
+		userPermDialog: function(folderPath, selection){
+			var self = this;
+			// data model for user permissions
+			var userPerms = [];
+
+			// build user permission form
+			var conf = domConstruct.toDom(
+				'<div class="userPermForm">'+
+					//'<div data-dojo-attach-event="onChange:onSuggestNameChange"'+
+					//	'data-dojo-type="p3/widget/UserSelector" name="user" maxHeight=200 style="width:30%"'+
+					//	'required="true" data-dojo-attach-point="userSelector"></div>'+
+				'</div>'
+			)
+
+			var currentUsers = domConstruct.toDom(
+				'<table class="currentUsers p3basic striped">'+
+					'<thead>'+
+						'<th>User Name'+
+						'<th>Permission'+
+					'<tbody>'
+			);
+
+			// user's permission
+			var userSelector = new UserSelector({
+				name: "user",
+				//style: { maxHeight: '200px' }
+			})
+
+
+			// user's permission
+			var permSelect = new Select({
+				name: "perm",
+				style: { width: '100px', margin: '0 10px' },
+				options: [
+					{
+						label: "Can view",
+						value: "r",
+						selected: true
+					},{
+						label: "Can edit",
+						value: "w",
+					}
+				]
+			})
+
+			// add user button.
+			// Note: on click the user is added server side.
+			var addUserBtn = new Button({
+				label: "Add User",
+				//disabled: true,
+				onClick: function(){
+					var userId = userSelector.getSelected();
+						perm = permSelect.attr('value')
+
+					console.log('user/perm', userId, perm, folderPath)
+
+					if (!userId.length) return;
+
+					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
+					Deferred.when(prom, lang.hitch(this, function(result) {
+						console.log('userId perm', userId, perm)
+						dojo.place(
+							'<tr>'+
+								'<td data-user="'+userId+'">'+userId+
+								'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
+								'<td style="width: 1px;"><i class="fa icon-trash fa-2x">',
+							query('tbody', currentUsers)[0]
+						);
+
+						reinitDeleteEvents();
+
+						// reset filter select
+						userSelector.reset();
+					}))
+				}
+			});
+
+			domConstruct.place(currentUsers, conf, "first")
+			domConstruct.place(userSelector.domNode, conf)
+			domConstruct.place(permSelect.domNode, conf, "last")
+			domConstruct.place(addUserBtn.domNode, conf, "last")
+
+			// open form in dialog
+			var dlg = new Confirmation({
+				title: "Edit Sharing",
+				content: conf,
+				style: { width: '700px'},
+				onConfirm: function(evt){
+					console.log('userSelector', self.userSelector);
+
+					Topic.publish('/refreshWorkspace')
+					/*
+					self.actionPanel.set("selection", []);
+					self.itemDetailPanel.set('selection', []);
+					setTimeout(function(){
+						self.actionPanel.set("selection", selection);
+						self.itemDetailPanel.set('selection', selection);
+					},2000)
+					*/
+				}
+			})
+
+
+			// create current permission table
+			var prom = WorkspaceManager.listPermissions(folderPath);
+			Deferred.when(prom, function(perms){
+				console.log('permission', perms, query('tbody', currentUsers))
+				perms.forEach(function(perm){
+					if(perm[0] == 'global_permission') return;
+
+					userPerms.push({
+						user: perm[0],
+						permission: perm[1]
+					})
+
+
+
+					dojo.place(
+						'<tr>'+
+							'<td data-user="'+perm[0]+'">'+perm[0]+
+							'<td data-perm="'+perm[1]+'">'+Formatter.permissionMap(perm[1])+
+							'<td style="width: 1px;"><i class="fa icon-trash fa-2x">',
+						query('tbody', currentUsers)[0]
+					);
+
+
+				})
+
+				if(!perms.length) {
+					dojo.place('<tr>Folder not shared...', query('tbody', currentUsers)[0])
+				}
+
+				// event for deleting users
+				reinitDeleteEvents();
+			})
+
+
+			function reinitDeleteEvents(){
+				query('tbody .icon-trash', currentUsers).on('click', function(){
+					var _self = this;
+					var userRow = query('tr [data-user="'+userId+'"]').parents('tr'),
+						userId = dojo.attr(query('tr [data-user]', userRow[0])[0], 'data-user')
+						//perm = dojo.attr(query('[data-perm]', userRow)[0], 'data-perm');
+
+					console.log('userId', userId )
+
+					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, 'n']]);
+					Deferred.when(prom, lang.hitch(this, function(result){
+						console.log('user Row', userRow)
+						console.log('deleted user!', userId)
+						domConstruct.destroy(query('tr [data-user="'+userId+'"]').parents('tr')[0])
+					}, function(err){
+						var parts = err.split("_ERROR_");
+						var d = new Dialog({
+							content: parts[1] || parts[0],
+							title: "Error deleting user: "+userId,
+							style: "width: 250px !important;"
+						}).show();
+					}))
+				})
+
+			}
+
+			// listen for addition of users
+			/*var handle = Topic.subscribe("/addUserPermission", function(user){
+				console.log('user.id', user.id)
+
+
+				users.push(user);
+				handle.remove();
+			});*/
+
+			/*
+			permSelect.on("change", function(){
+				console.log('')
+			});
+			*/
+
+			dlg.startup()
+			dlg.show();
+		},
+
 		_setPathAttr: function(val){
 			// console.log("WorkspaceBrowser setPath()", val)
 			this.path = decodeURIComponent(val);
@@ -834,14 +1062,19 @@ define([
 
 			if(parts[0] == 'public') {
 				if (parts.length == 1){
-					obj = {metadata: {type: "folder"}, type: "folder", path: "/"}
+					obj = {metadata: {type: "folder"}, type: "folder", path: "/", isPublic: true}
 				}else{
 					var val = '/' + val.split('/').slice(2).join('/');
 					obj = WorkspaceManager.getObject(val, true)
 				}
 			}else if(!parts[1]){
-				obj = {metadata: {type: "folder"}}
+				console.log('this one')
+				obj = {metadata: {type: "folder"}, type: "folder", path: "/" + window.App.user.id, isWorkspace: true}
 			}else{
+				console.log('VAL from setPathAttr', val)
+				//if(val[val.length - 1] == "/"){
+				//	ws = ws.substr(0, ws.length - 1)
+				//}
 				obj = WorkspaceManager.getObject(val, true)
 			}
 			Deferred.when(obj, lang.hitch(this, function(obj){
@@ -851,6 +1084,7 @@ define([
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
+
 				switch(obj.type){
 					case "folder":
 						panelCtor = WorkspaceExplorerView;
@@ -930,6 +1164,7 @@ define([
 								if(sel.length > 0){
 									this.addChild(this.actionPanel);
 								}
+								console.log('SETTING SElection')
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
 							}));
@@ -1000,6 +1235,9 @@ define([
 				});
 				d.show();
 			}));
+		},
+		onSuggestNameChange: function(){
+			console.log('THERE WAS A CHANGE LOCAL')
 		},
 
 		getQuery: function(obj){
