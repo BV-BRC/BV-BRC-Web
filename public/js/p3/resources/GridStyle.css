@@ -28,6 +28,11 @@
     width: 8%;
 }
 
+.dgrid-cell.field-go {
+    width: 8%;
+	text-align: left;    
+}
+
 /* protein family grid */
 .dgrid-cell.field-family_id {
     width: 12%;
@@ -46,7 +51,6 @@
 .dgrid-cell.field-aa_length_min,
 .dgrid-cell.field-aa_length_max,
 .dgrid-cell.field-aa_length_mean,
-.dgrid-cell.field-go,
 .dgrid-cell.field-aa_length_std {
     width: 8%;
     text-align: center;
