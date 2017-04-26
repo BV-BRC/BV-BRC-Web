@@ -46,6 +46,7 @@
 .dgrid-cell.field-aa_length_min,
 .dgrid-cell.field-aa_length_max,
 .dgrid-cell.field-aa_length_mean,
+.dgrid-cell.field-go,
 .dgrid-cell.field-aa_length_std {
     width: 8%;
     text-align: center;
