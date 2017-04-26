@@ -194,10 +194,9 @@ define([
 		},
 
 		createFolder: function(paths){
-			console.log('attempting to create', paths)
 			var _self = this;
 			if(!paths){
-				throw new Error("Invalid Path(s) to delete");
+				throw new Error("Invalid Path(s) to create");
 			}
 			if(!(paths instanceof Array)){
 				paths = [paths];
@@ -279,7 +278,7 @@ define([
 			});
 		},
 
-		createWorkspace: function(name){
+		createWorkspace: function(name, triggerRefresh){
 			//console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
 			return Deferred.when(this.createFolder("/" + this.userId + "/" + name + "/"), lang.hitch(this, function(workspace){
 				if(name == "home"){
@@ -391,6 +390,68 @@ define([
 				// console.log("getObjects() res", res);
 				return res;
 			});
+
+		},
+
+		rename: function(path, newName){
+			var _self = this;
+			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
+
+
+			function renameHelper() {
+				return Deferred.when(_self.api("Workspace.copy", [{
+						objects: [[path, newPath]],
+						recursive: true,
+						move: true
+					}],
+					function(res){
+						Topic.publish("/refreshWorkspace", {});
+						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+						return res;
+					}))
+			}
+
+			if(path.split('/').length <= 3) {
+				return _self.renameWorkspace(path, newName)
+			}
+
+			// ensure name doesn't already exist
+			return Deferred.when(this.getObjects(newPath, true),
+				function(response){
+					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+					return null;
+				}, function(err){
+
+					console.log(err)
+					return renameHelper();
+				})
+		},
+
+		renameWorkspace: function(path, newName){
+			var _self = this;
+			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
+
+			if (path == newPath) {
+				throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+				return null
+			}
+
+			 return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
+
+
+				return Deferred.when(_self.api("Workspace.copy", [{
+						objects: [[path, newPath]],
+						recursive: true,
+						move: true
+					}],
+					function(res){
+						Topic.publish("/refreshWorkspace", {});
+						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+						return res;
+					}))
+
+			 })
+
 
 		},
 

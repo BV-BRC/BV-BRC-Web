@@ -6,7 +6,7 @@ define([
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
 	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip", "../widget/UserSelector",
-	"dijit/form/Button", "./formatter", "dojo/NodeList-traverse"
+	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "dojo/NodeList-traverse"
 
 ], function(
 	declare, BorderContainer, on, query,
@@ -16,7 +16,7 @@ define([
 	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
 	popup, IDMappingTemplate, xhr, Select,
 	ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog, UserSelector,
-	Button, Formatter){
+	Button, Formatter, TextBox){
 	return declare([BorderContainer], {
 		baseClass: "WorkspaceBrowser",
 		disabled: false,
@@ -848,6 +848,23 @@ define([
 
 			}, false);
 
+			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
+				label: "RENAME",
+				allowMultiTypes: false,
+				multiple: false,
+				validTypes: ["*"],
+				tooltip: "Rename folders or objects",
+			}, function(selection){
+				//console.log('The selection', selection)
+
+				var path = selection.map(function(s){
+					return s.path || s.data.path;
+				})[0];
+
+				self.renameDialog(path)
+
+			}, false);
+
 
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
@@ -864,6 +881,62 @@ define([
 
 		},
 
+		renameDialog: function(path){
+			var self = this;
+			var conf = '';
+
+			var currentName = path.slice(path.lastIndexOf('/')+1);
+			var nameInput = new TextBox({
+				name: "name",
+				value: currentName,
+				style: { width: '500px'},
+				placeHolder: "Enter your new name..."
+			});
+
+			//domConstruct.place(nameInput, conf);
+
+			var dlg = new Confirmation({
+				title: "Rename <i>"+path+'</i>',
+				content: nameInput.domNode,
+				okLabel: 'Rename',
+				closeOnOK: false,
+				style: { width: '600px' },
+				onConfirm: function(evt){
+					var _self = this;
+
+					console.log(nameInput.get('value'), path.slice(path.lastIndexOf('/')+1))
+					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value'))
+						var d = new Dialog({
+							content: "Please pick a new name.",
+							title: "Oh no!",
+							style: "width: 250px !important;"
+						}).show();
+
+					var prom = WorkspaceManager.rename(path, nameInput.get('value'))
+					Deferred.when(prom, function(res){
+						console.log('renamed the FIlE!')
+						Topic.publish("/refreshWorkspace", {});
+						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+
+						self.actionPanel.set("selection", []);
+						self.itemDetailPanel.set('selection', []);
+						_self.hideAndDestroy();
+					}, function(error){
+						console.log('DID NOT RENaME FILE', error)
+
+						var d = new Dialog({
+							content: error.toString(),
+							title: "Oh no!",
+							style: "width: 250px !important;"
+						}).show();
+					})
+
+
+				}
+			})
+			dlg.startup()
+			dlg.show();
+		},
 
 		userPermDialog: function(folderPath, selection){
 			var self = this;
@@ -871,13 +944,7 @@ define([
 			var userPerms = [];
 
 			// build user permission form
-			var conf = domConstruct.toDom(
-				'<div class="userPermForm">'+
-					//'<div data-dojo-attach-event="onChange:onSuggestNameChange"'+
-					//	'data-dojo-type="p3/widget/UserSelector" name="user" maxHeight=200 style="width:30%"'+
-					//	'required="true" data-dojo-attach-point="userSelector"></div>'+
-				'</div>'
-			)
+			var conf = domConstruct.toDom('<div class="userPermForm">')
 
 			var currentUsers = domConstruct.toDom(
 				'<table class="currentUsers p3basic striped">'+
@@ -1135,7 +1202,7 @@ define([
 								if(sel.length > 0){
 									this.addChild(this.actionPanel);
 								}
-								console.log('SETTING SElection')
+
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
 							}));
@@ -1206,9 +1273,6 @@ define([
 				});
 				d.show();
 			}));
-		},
-		onSuggestNameChange: function(){
-			console.log('THERE WAS A CHANGE LOCAL')
 		},
 
 		getQuery: function(obj){

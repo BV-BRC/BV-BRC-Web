@@ -175,6 +175,7 @@ define([
 //			})
 
 			Topic.subscribe("/refreshWorkspace", function(msg){
+				console.log('refreshing in explorer?', msg)
 				_self.refreshWorkspace();
 			});
 
