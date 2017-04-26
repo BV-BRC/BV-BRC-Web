@@ -59,7 +59,7 @@ define([
 					break;
 				case "amrGenes":
 					activeTab.set("state", lang.mixin({}, this.state, {
-						search: "keyword(" + antibioticName + ")"
+						search: "keyword(" + antibioticName + ")&eq(property,%22Antibiotic%20Resistance%22)"
 					}));
 					break;
 				case "amrRegions":
