@@ -18,15 +18,17 @@ define([
 		subsections: {
 			"Genome": [
 				{label: "Overview", link: "overview"},
+				{label: "AMR Phenotypes", link: "amr"},
 				{label: "Phylogeny", link: "phylogeny"},
-				{label: "Browser", link: "browser"},
+				{label: "Genome Browser", link: "browser"},
 				{label: "Circular Viewer", link: "circular"},
 				{label: "Sequences", link: "sequences"},
 				{label: "Features", link: "features"},
 				{label: "Specialty Genes", link: "specialtyGenes"},
 				{label: "Protein Families", link: "proteinFamilies"},
 				{label: "Pathways", link: "pathways"},
-				{label: "Transcriptomics", link: "transcriptomics"}
+				{label: "Transcriptomics", link: "transcriptomics"},
+				{label: "Interactions", link: "interactions"}
 			],
 			"GenomeList": [
 				{label: "Overview", link: "overview"},
