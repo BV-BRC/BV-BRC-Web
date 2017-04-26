@@ -102,6 +102,7 @@ define([
 
 			this.amrGenes = new SpecialtyGeneGridContainer({
 				title: "AMR Genes",
+				facetFields: ["property", "source", "evidence", "classification"],
 				id: this.viewer.id + "_" + "amrGenes"
 			});
 
