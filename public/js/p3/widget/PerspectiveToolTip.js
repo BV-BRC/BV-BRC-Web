@@ -62,9 +62,11 @@ define([
 			],
 			"Feature": [
 				{label: "Overview", link: "overview"},
-				{label: "Browser", link: "genomeBrowser"},
+				{label: "Genome Browser", link: "genomeBrowser"},
+				{label: "Compare Region Viewer", link: "compareRegionViewer"},
 				{label: "Transcriptomics", link: "transcriptomics"},
-				{label: "Correlated Genes", link: "correlatedGenes"}
+				{label: "Correlated Genes", link: "correlatedGenes"},
+				{label: "Interactions", link: "interactions"}
 			],
 			"FeatureList": [
 				{label: "Overview", link: "overview"},
