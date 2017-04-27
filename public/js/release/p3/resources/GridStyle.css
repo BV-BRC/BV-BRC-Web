@@ -21,6 +21,10 @@
 .dgrid-cell.field-gene {
     width: 8%;
 }
+.dgrid-cell.field-go {
+    width: 8%;
+	text-align: left;    
+}
 .dgrid-cell.field-family_id {
     width: 12%;
 }

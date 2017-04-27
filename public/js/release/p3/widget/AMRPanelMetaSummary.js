@@ -85,7 +85,12 @@ define("p3/widget/AMRPanelMetaSummary", [
 					});
 
 					var phenotypes = ["Resistant", "Susceptible", "Intermediate"];
-					var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
+					
+					// var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, ''); // this won't work for local server http://www.patric.local:3000/
+					var linkBase = (window.location.href).replace(window.location.hash, '');
+
+					// console.log("window.location=", window.location);
+					// console.log("linkBase=", linkBase);
 
 					chartData.push({
 						label: antibiotic,
