@@ -27,6 +27,7 @@ define([
 		nameIsValid: false,
 		intermediateChanges: true,
 		placeHolder: "",
+		trim: true,
 
 		_setPathAttr: function(val){
 			console.log("_setPathAttr: ", val);

@@ -342,57 +342,53 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			// console.log("updateUserWorkspaceList: ", data);
 			var wsNode = dom.byId("YourWorkspaces");
 			domConstruct.empty("YourWorkspaces");
-			// console.log("Your Workspaces Node: ", wsNode);
+
 			data.forEach(function(ws){
-				// console.log("Create Link for Workspace: ", ws.path);
+				if(ws.name !== "home") return;
 
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
-				if(ws.name == "home"){
-					domConstruct.create("i", {
-						"class": "fa icon-caret-down fa-1x noHoverIcon",
-						style: {"margin-right": "4px"}
-					}, d);
-				}
 
-				if(ws.name == "home"){
-					domConstruct.create("a", {
-						'class': 'navigationLink',
-						href: "/workspace" + ws.path,
-						innerHTML: ws.name
-					}, d);
+				domConstruct.create("i", {
+					"class": "fa icon-caret-down fa-1x noHoverIcon",
+					style: {"margin-right": "4px"}
+				}, d);
 
-					domConstruct.create("br", {}, d);
+				domConstruct.create("a", {
+					'class': 'navigationLink',
+					href: "/workspace" + ws.path,
+					innerHTML: ws.name
+				}, d);
 
-					domConstruct.create("a", {
-						'class': 'navigationLink',
-						"style": {"padding-left": "16px"},
-						href: "/workspace" + ws.path + "/Genome%20Groups",
-						innerHTML: "Genome Groups"
-					}, d)
+				domConstruct.create("br", {}, d);
 
-					domConstruct.create("br", {}, d);
+				domConstruct.create("a", {
+					'class': 'navigationLink',
+					"style": {"padding-left": "16px"},
+					href: "/workspace" + ws.path + "/Genome%20Groups",
+					innerHTML: "Genome Groups"
+				}, d)
 
-					domConstruct.create("a", {
-						'class': 'navigationLink',
-						"style": {"padding-left": "16px"},
-						href: "/workspace" + ws.path + "/Feature%20Groups",
-						innerHTML: "Feature Groups"
-					}, d)
+				domConstruct.create("br", {}, d);
 
-					domConstruct.create("br", {}, d);
+				domConstruct.create("a", {
+					'class': 'navigationLink',
+					"style": {"padding-left": "16px"},
+					href: "/workspace" + ws.path + "/Feature%20Groups",
+					innerHTML: "Feature Groups"
+				}, d)
 
-					domConstruct.create("a", {
-						'class': 'navigationLink',
-						"style": {"padding-left": "16px"},
-						href: "/workspace" + ws.path + "/Experiment%20Groups",
-						innerHTML: "Experiment Groups"
-					}, d)
+				domConstruct.create("br", {}, d);
 
-				}
+				domConstruct.create("a", {
+					'class': 'navigationLink',
+					"style": {"padding-left": "16px"},
+					href: "/workspace" + ws.path + "/Experiment%20Groups",
+					innerHTML: "Experiment Groups"
+				}, d)
 			})
+
 		},
 
 		search_all_header: function(){
