@@ -145,7 +145,8 @@ define("p3/widget/GenomeMetaSummary", [
 					// console.log(evt);
 					var target = evt.run.data[evt.index].link;
 					if(target){
-						var url = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, target);
+						var baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+						var url = (window.location.href).split(baseUrl)[1].replace(window.location.hash, target);
 						Topic.publish("/navigate", {href: url});
 					}
 				}
