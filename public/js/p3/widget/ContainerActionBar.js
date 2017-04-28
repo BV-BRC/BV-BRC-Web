@@ -23,7 +23,7 @@ define([
 		},
 
 		generatePathLinks: function(path){
-			// strip out /public/
+			// strip out /public/ of parts array
 			var parts = path.replace(/\/+/g, '/').split("/");
 			if(parts[1] == 'public'){
 				parts.splice(1, 1);
@@ -36,9 +36,13 @@ define([
 			var out = ["<span class='wsBreadCrumb'>"];
 			var bp = ["workspace"];
 
-			var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public' ? true : false;
+			var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public';
+
+			// if viewing all public workspaces, just create header
 			if (path == '/public/') {
 				out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>')
+
+			// if viewing a specific public workspace, create bread crumbs
 			}else if(isPublic){
 				out.push('<i class="icon-globe"></i> '+
 					'<a class="navigationLink perspective" href="/'+bp.join("/")+'/public">Public Workspaces</a>'+
@@ -46,22 +50,22 @@ define([
 			}
 
 
-			parts.forEach(function(p, idx){
+			parts.forEach(function(part, idx){
 				if(idx == (parts.length - 1)){
-					out.push(p + "&nbsp;");
+					out.push('<b class="perspective">' + part.replace("@patricbrc.org", "") + '</b>');
 					return;
 				}
 
 				// don't create links for top level path of public path
 				if(isPublic && idx == 0){
-					out.push('<b class="perspective">' + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + '</b> / ');
+					out.push('<b class="perspective">' + ((idx == 0) ? part.replace("@patricbrc.org", "") : part) + '</b> / ');
 					return;
 				};
 
 				out.push("<a class='navigationLink' href='");
-				bp.push(p);
+				bp.push(part);
 				out.push("/" + bp.join("/"));
-				out.push("'>" + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + "</a> / ");
+				out.push("'>" + ((idx == 0) ? part.replace("@patricbrc.org", "") : part) + "</a> / ");
 			});
 
 			return out.join("");

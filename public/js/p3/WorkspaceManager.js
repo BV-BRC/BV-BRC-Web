@@ -278,11 +278,16 @@ define([
 			});
 		},
 
-		createWorkspace: function(name, triggerRefresh){
-			//console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
+		createWorkspace: function(name){
+			console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
 			return Deferred.when(this.createFolder("/" + this.userId + "/" + name + "/"), lang.hitch(this, function(workspace){
 				if(name == "home"){
-					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path + "/Feature Groups", workspace.path + "/Experiments", workspace.path + "/Experiment Groups"]), function(){
+					return Deferred.when(this.createFolder([
+							workspace.path + "/Genome Groups",
+							workspace.path + "/Feature Groups",
+							workspace.path + "/Experiments",
+							workspace.path + "/Experiment Groups"
+						]), function(){
 						Topic.publish("/Notification", {
 							message: "New workspace '" + name + "' created",
 							type: "message"
@@ -355,7 +360,7 @@ define([
 				throw new Error("Invalid Path(s) to delete");
 			}
 			path = decodeURIComponent(path);
-			console.log('getting thing: ', path)
+
 			// console.log('getObjects: ', path, "metadata_only:", metadataOnly);
 			return Deferred.when(this.api("Workspace.get", [{
 				objects: [path],
@@ -395,11 +400,26 @@ define([
 
 		rename: function(path, newName){
 			var _self = this;
+
+			if(path.split('/').length <= 3) {
+				return _self.renameWorkspace(path, newName)
+			}
+
+
+			if(path.split('/').length <= 3) {
+				return _self.renameWorkspace(path, newName)
+			}
+
+			// ensure path doesn't already exist
 			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
+			return Deferred.when(this.getObjects(newPath, true),
+				function(response){
+					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+					return null;
+				}, function(err){
 
-
-			function renameHelper() {
-				return Deferred.when(_self.api("Workspace.copy", [{
+					console.log(err)
+					return Deferred.when(_self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
 						recursive: true,
 						move: true
@@ -409,21 +429,6 @@ define([
 						Topic.publish("/Notification", {message: "File renamed", type: "message"});
 						return res;
 					}))
-			}
-
-			if(path.split('/').length <= 3) {
-				return _self.renameWorkspace(path, newName)
-			}
-
-			// ensure name doesn't already exist
-			return Deferred.when(this.getObjects(newPath, true),
-				function(response){
-					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
-					return null;
-				}, function(err){
-
-					console.log(err)
-					return renameHelper();
 				})
 		},
 
@@ -436,8 +441,9 @@ define([
 				return null
 			}
 
-			 return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
-
+			console.log('attemtping to create workspace')
+			return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
+				console.log('attempting to move (copy) workspace')
 
 				return Deferred.when(_self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
@@ -600,7 +606,6 @@ define([
 				objects: Array.isArray(paths) ? paths : [paths],
 
 			}]), function(results) {
-				console.log('results', results)
 				return Array.isArray(paths) ? results[0] : results[0][paths];
 			},
 

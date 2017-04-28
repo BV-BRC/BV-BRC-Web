@@ -29,7 +29,7 @@ define([
 				var values = this.getValues();
 				domClass.add(this.domNode, "Working");
 
-				WorkspaceManager.createFolder('/' + window.App.user.id + '/' + values.name).then(function(results){
+				WorkspaceManager.createWorkspace(values.name).then(function(results){
 					domClass.remove(_self.domNode, "Working");
 					var path = "/" + ["workspace", results.path].join("/");
 					Topic.publish("/refreshWorkspace", {});

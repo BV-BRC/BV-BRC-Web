@@ -1106,10 +1106,8 @@ define([
 					obj = WorkspaceManager.getObject(val, true)
 				}
 			}else if(!parts[1]){
-				console.log('this one')
 				obj = {metadata: {type: "folder"}, type: "folder", path: "/" + window.App.user.id, isWorkspace: true}
 			}else{
-				console.log('VAL from setPathAttr', val)
 				//if(val[val.length - 1] == "/"){
 				//	ws = ws.substr(0, ws.length - 1)
 				//}

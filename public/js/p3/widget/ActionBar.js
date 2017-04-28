@@ -78,15 +78,24 @@ define([
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
 
+
+
 				// if top level "workspace", hide 'create folder' and upload
-				if(sel[0] && 'isWorkspace' in sel[0] && (an === "CreateFolder" || an === "Upload"))
+				if(sel[0] && 'isWorkspace' in sel[0] && (an === "CreateFolder" || an === "Upload")){
 					return false;
+				}
 
 				// if not top level "workspace", hide 'create workspace'
-				else if (sel[0] && !('isWorkspace' in sel[0]) && an === "CreateWorkspace")
+				else if (sel[0] && !('isWorkspace' in sel[0]) && ["CreateWorkspace"].indexOf(an) !== -1){
 					return false;
+				}
 
-				// if public view, hide upload and create folder
+				// don't allow sharing on folders
+				else if (sel[0] && sel[0].path.split('/').length > 3 && ["ShareFolder"].indexOf(an) !== -1){
+					return false;
+				}
+
+				// if public view, hide ability for upload, create folder, delete, share
 				else if(sel[0] &&  ('isPublic' in sel[0] || sel[0].owner_id !== window.App.user.id) &&
 					["Upload", "CreateFolder", "DeleteFolder", "DeleteItem", "ShareFolder"].indexOf(an) !== -1) {
 					return false;
