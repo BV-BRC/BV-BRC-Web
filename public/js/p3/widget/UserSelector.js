@@ -165,12 +165,6 @@ define([
 			var label = item.id + ('name' in item ? ' <<i>' + item.name + '</i>>' : '');
 
 			return label;
-		},
-		onChange: function(userName){
-            console.log('there was a change:', userName)
-			Topic.publish("/addUserPermission", {id: userName});
-        }
-
-
+		}
 	});
 });

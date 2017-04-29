@@ -844,7 +844,7 @@ define([
 					return s.path || s.data.path;
 				})[0];
 
-				self.userPermDialog(folderPath, selection)
+				self.userPermDialog(selection[0])
 
 			}, false);
 
@@ -938,28 +938,63 @@ define([
 			dlg.show();
 		},
 
-		userPermDialog: function(folderPath, selection){
+		userPermDialog: function(selection){
 			var self = this;
-			// data model for user permissions
+
+			var folderPath = selection.path;
+
+			/**
+			 * Data model and data model helpers
+			 */
 			var userPerms = [];
 
-			// build user permission form
-			var conf = domConstruct.toDom('<div class="userPermForm">')
+			function rmUser(userId){
+				userPerms = userPerms.filter(function(perm){return userId != perm.user});
+				console.log('users after', userPerms)
+			}
 
+			function addUser(userId, perm){
+				var alreadyExists = findUser(userId);
+				if(alreadyExists) return false;
+
+				userPerms.push({
+					user: userId,
+					permission: perm
+				});
+
+				return true;
+			}
+
+			function findUser(userId){
+				return userPerms.find(function(perm){return userId == perm.user});
+			}
+
+
+			/**
+			 * Build the form and events
+			 */
+
+			var form = domConstruct.toDom('<div class="userPermForm">')
+
+			var ownerId = Formatter.baseUsername(selection.owner_id);
 			var currentUsers = domConstruct.toDom(
 				'<table class="currentUsers p3basic striped">'+
 					'<thead>'+
-						'<th>User Name'+
-						'<th>Permission'+
-					'<tbody>'
+						'<tr>'+
+							'<th>User Name'+
+							'<th>Permission'+
+							'<th>&nbsp;'+
+					'<tbody>'+
+						'<tr>'+
+							'<td><i>'+ selection.owner_id.split('@')[0] + ' ' + (ownerId == 'me' ? '(me)': '')+'</i>'+
+							'<td>Owner'+
+							'<td>&nbsp;'
 			);
 
-			// user's permission
+			// user's name
 			var userSelector = new UserSelector({
 				name: "user",
-				//style: { maxHeight: '200px' }
 			})
-
 
 			// user's permission
 			var permSelect = new Select({
@@ -977,8 +1012,8 @@ define([
 				]
 			})
 
-			// add user button.
-			// Note: on click the user is added server side.
+			// add user's permission button
+			// Note: on click, the user is added server side.
 			var addUserBtn = new Button({
 				label: "Add User",
 				//disabled: true,
@@ -986,13 +1021,14 @@ define([
 					var userId = userSelector.getSelected();
 						perm = permSelect.attr('value')
 
-					console.log('user/perm', userId, perm, folderPath)
-
 					if (!userId.length) return;
+
+					// don't add already existing users
+					if(findUser(userId)) return;
 
 					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
 					Deferred.when(prom, lang.hitch(this, function(result) {
-						console.log('userId perm', userId, perm)
+						//console.log('adding user to dom', userId, perm)
 						dojo.place(
 							'<tr>'+
 								'<td data-user="'+userId+'">'+userId+
@@ -1009,17 +1045,17 @@ define([
 				}
 			});
 
-			domConstruct.place(currentUsers, conf, "first")
-			domConstruct.place(userSelector.domNode, conf)
-			domConstruct.place(permSelect.domNode, conf, "last")
-			domConstruct.place(addUserBtn.domNode, conf, "last")
+			domConstruct.place(currentUsers, form, "first")
+			domConstruct.place(userSelector.domNode, form)
+			domConstruct.place(permSelect.domNode, form, "last")
+			domConstruct.place(addUserBtn.domNode, form, "last")
 
 			// open form in dialog
 			var dlg = new Confirmation({
 				title: "Edit Sharing",
 				okLabel: "Done",
 				cancelLabel: false,
-				content: conf,
+				content: form,
 				style: { width: '700px'},
 				onConfirm: function(evt){
 					Topic.publish('/refreshWorkspace')
@@ -1029,15 +1065,14 @@ define([
 			// create current permission table
 			var prom = WorkspaceManager.listPermissions(folderPath);
 			Deferred.when(prom, function(perms){
-				console.log('permission', perms, query('tbody', currentUsers))
 				perms.forEach(function(perm){
-					if(perm[0] == 'global_permission') return;
+					// server sometimes returns 'none' permissions, so ignore them.
+					if(perm[0] == 'global_permission' || perm[1] == 'n') return;
 
 					userPerms.push({
 						user: perm[0],
 						permission: perm[1]
 					})
-
 
 					dojo.place(
 						'<tr>'+
@@ -1048,9 +1083,9 @@ define([
 					);
 				})
 
-				if(!perms.length) {
-					dojo.place('<tr>Folder not shared...', query('tbody', currentUsers)[0])
-				}
+				//if(perms.length == 1) {
+				//	dojo.place('<tr><td>Add more users below...<td>&nbsp;<td>&nbsp;', query('tbody', currentUsers)[0])
+				//}
 
 				// event for deleting users
 				reinitDeleteEvents();
@@ -1060,17 +1095,14 @@ define([
 			function reinitDeleteEvents(){
 				query('tbody .icon-trash', currentUsers).on('click', function(){
 					var _self = this;
-					var userRow = query('tr [data-user="'+userId+'"]').parents('tr'),
-						userId = dojo.attr(query('tr [data-user]', userRow[0])[0], 'data-user')
-						//perm = dojo.attr(query('[data-perm]', userRow)[0], 'data-perm');
-
-					console.log('userId', userId )
+					var userRow = query(this).parents('tr')[0],
+						userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');
 
 					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, 'n']]);
 					Deferred.when(prom, lang.hitch(this, function(result){
-						console.log('user Row', userRow)
-						console.log('deleted user!', userId)
-						domConstruct.destroy(query('tr [data-user="'+userId+'"]').parents('tr')[0])
+						domConstruct.destroy(userRow)
+
+						rmUser(userId);
 					}, function(err){
 						var parts = err.split("_ERROR_");
 						var d = new Dialog({
@@ -1080,8 +1112,8 @@ define([
 						}).show();
 					}))
 				})
-
 			}
+
 
 			dlg.startup()
 			dlg.show();

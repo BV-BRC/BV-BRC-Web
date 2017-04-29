@@ -604,9 +604,8 @@ define([
 			var _self = this;
 			return Deferred.when(this.api("Workspace.list_permissions", [{
 				objects: Array.isArray(paths) ? paths : [paths],
-
-			}]), function(results) {
-				return Array.isArray(paths) ? results[0] : results[0][paths];
+			}]), function(res) {
+				return Array.isArray(paths) ? res[0] : res[0][paths];
 			},
 
 			function(err){
