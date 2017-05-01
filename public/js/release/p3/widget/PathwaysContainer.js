@@ -53,7 +53,7 @@ define("p3/widget/PathwaysContainer", [
 				return;
 			}
 
-			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && !this.tabContainer.selectedChildWidget.state){
+			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && this.tabContainer.selectedChildWidget.state != state){
 				this.tabContainer.selectedChildWidget.set('state', state);
 			}
 
@@ -213,4 +213,3 @@ define("p3/widget/PathwaysContainer", [
 
 	})
 });
-

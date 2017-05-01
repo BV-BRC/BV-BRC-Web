@@ -28,7 +28,8 @@ define("p3/widget/FunctionalProfile", [
 
 			var self = this;
 			var d = res.facet_counts.facet_fields.product; // now key-value pair
-			var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
+			var baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+			var linkBase = (window.location.href).split(baseUrl)[1].replace(window.location.hash, '');
 			var data = Object.keys(d).map(function(key){
 				return {
 					label: key,

@@ -59,7 +59,7 @@ define("p3/widget/viewer/Antibiotic", [
 					break;
 				case "amrGenes":
 					activeTab.set("state", lang.mixin({}, this.state, {
-						search: "keyword(" + antibioticName + ")"
+						search: "keyword(" + antibioticName + ")&eq(property,%22Antibiotic%20Resistance%22)"
 					}));
 					break;
 				case "amrRegions":
@@ -102,6 +102,7 @@ define("p3/widget/viewer/Antibiotic", [
 
 			this.amrGenes = new SpecialtyGeneGridContainer({
 				title: "AMR Genes",
+				facetFields: ["property", "source", "evidence", "classification"],
 				id: this.viewer.id + "_" + "amrGenes"
 			});
 

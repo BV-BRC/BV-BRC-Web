@@ -897,7 +897,7 @@ define([
 					label: "PTHWY",
 					ignoreDataType: true,
 					multiple: true,
-					max: 200,
+					max: 5000,
 					validTypes: ["*"],
 					tooltip: "Pathway Summary",
 					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]

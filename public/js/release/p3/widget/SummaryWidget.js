@@ -57,7 +57,12 @@ define("p3/widget/SummaryWidget", [
 
 		onSetData: function(attr, oldVal, data){
 			// hide loading
-			domClass.add(this.loadingNode, "hidden");
+			if (data.length === 0){
+				this.loadingNode.innerHTML = "No record found";
+				return;
+			}else{
+				domClass.add(this.loadingNode, "hidden");
+			}
 
 			this["render_" + this.view]();
 		},
