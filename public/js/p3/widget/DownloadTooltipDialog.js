@@ -245,11 +245,12 @@ define([
 				otherData: ["dna+fasta", "protein+fasta"]
 			},
 			"spgene_data": {
-				dataType: "sp_gene",
-				field: "feature_id",
-				pk: "id",
+				//FASTA data does not exist in sp_gene table, use genome_feature table instead
+				dataType: "genome_feature",
+				pk: "feature_id",
 				"label": "Specialty Genes",
-				tableData: true
+				tableData: true,
+				otherData: ["dna+fasta", "protein+fasta"]
 			},
 			"spgene_ref_data": {
 				dataType: "sp_gene_ref",
