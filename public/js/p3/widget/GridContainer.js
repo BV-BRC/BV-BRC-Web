@@ -358,30 +358,25 @@ define([
 					tooltip: "Copy Selection to Clipboard. Press and Hold for more options.",
 					tooltipDialog: copySelectionTT,
 					max: 5000,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"],
-					currentContainerWidget: this, // XXX this is where you pack things into opts below
-
-					// press and hold gives column selection options
-					pressAndHold: function(selection, button, opts, evt){
-						console.log("COPY:PressAndHold");
-						console.log("COPY:Selection: ", selection, button, opts, evt);
-						copySelectionTT.set("selection", selection);
-						copySelectionTT.set("containerType", opts.currentContainerWidget.containerType)
-						copySelectionTT.set("grid", opts.currentContainerWidget.container.grid)
-						popup.open({
-							popup: copySelectionTT,
-							around: button,
-							orient: ["below"]
-						});
-					}
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
 				},
 				function(selection, container){
-					//console.log("this.currentContainerType: ", this.containerType);
-					//console.log("GridContainer selection: ", selection);
-					//console.log("   ARGS: ", arguments);
+					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("selection", selection);
+					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("containerType", this.containerType);
+					if(container && container.grid){
+						this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("grid", container.grid);
+					}
 
-					// this is the click (quick options: TSV with all columns and headers)
-					copySelectionTT.copySelection("tsv",selection);
+					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.timeout(3500);
+
+					setTimeout(lang.hitch(this, function(){
+						popup.open({
+							popup: this.selectionActionBar._actions.CopySelection.options.tooltipDialog,
+							around: this.selectionActionBar._actions.CopySelection.button,
+							orient: ["below"]
+						});
+					}), 10);
+
 				},
 				false
 			], [
