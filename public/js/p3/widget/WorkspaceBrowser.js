@@ -833,19 +833,11 @@ define([
 			this.actionPanel.addAction("ShareFolder", "fa icon-user-plus fa-2x", {
 				label: "SHARE",
 				allowMultiTypes: false,
-				multiple: true,
+				multiple: false,
 				validTypes: ["folder"],
 				tooltip: "Share Folder",
 			}, function(selection){
-				//console.log('The selection', selection)
-
-				// get folder selected
-				var folderPath = selection.map(function(s){
-					return s.path || s.data.path;
-				})[0];
-
 				self.userPermDialog(selection[0])
-
 			}, false);
 
 			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
@@ -973,10 +965,9 @@ define([
 			/**
 			 * Build the form and events
 			 */
+			var ownerId = Formatter.baseUsername(selection.owner_id);
 
 			var form = domConstruct.toDom('<div class="userPermForm">')
-
-			var ownerId = Formatter.baseUsername(selection.owner_id);
 			var currentUsers = domConstruct.toDom(
 				'<table class="currentUsers p3basic striped">'+
 					'<thead>'+
