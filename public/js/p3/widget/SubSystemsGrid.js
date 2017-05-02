@@ -19,7 +19,7 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
 		store: store,
-		dataModel: "pathway",
+		dataModel: "subsystem",
 		primaryKey: "id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,

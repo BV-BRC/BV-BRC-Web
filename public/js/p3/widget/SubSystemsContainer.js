@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./SubSystemsGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
+	"./SubSystemsMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
 	"../store/SubSystemMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
@@ -39,7 +39,7 @@ define([
 		maxGenomeCount: 500,
 		tooltip: 'The "Pathways" tab contains a list of pathways for genomes associated with the current view',
 		apiServer: window.App.dataServiceURL,
-		defaultFilter: "eq(annotation,%22PATRIC%22)",
+		//defaultFilter: "eq(annotation,%22PATRIC%22)",
 
 		postCreate: function(){
 			this.inherited(arguments);
@@ -129,7 +129,7 @@ define([
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: subsystemStore,
-				facetFields: ["annotation", "subsystem_class"],
+				facetFields: ["subclass"],
 				queryOptions: {
 					sort: [{attribute: "subsystem_id"}]
 				},

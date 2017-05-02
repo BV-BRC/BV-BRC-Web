@@ -16,11 +16,11 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "idx",
+		idProperty: "id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null,
-		type: "pathway",
+		type: "subsystem",
 		onSetState: function(attr, oldVal, state){
 
 			var ov, nv;
@@ -111,7 +111,7 @@ define([
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
-						field: "pathway_id",
+						field: "subsystem_id",
 						limit: -1,
 						facet: {
 							genome_count: "unique(genome_id)",
@@ -206,7 +206,7 @@ define([
 			var q = this.buildQuery();
 
 			var _self = this;
-			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
@@ -220,7 +220,7 @@ define([
 
 				var docs = [];
 				var props = {
-					"pathway": "pathway_id",
+					"subsystem": "subsystem_id",
 					"roleid": "role_id",
 					"genes": 'feature_id'
 				};
@@ -232,7 +232,8 @@ define([
 						map[b["val"]] = b;
 						delete b["val"];
 					});
-
+					docs = ds;
+/*
 					docs = ds.map(function(doc){
 						var p = props[this.type];
 						var pv = doc[p];
@@ -265,7 +266,7 @@ define([
 						}
 						return doc;
 					}, this);
-
+*/
 					_self.setData(docs);
 					_self._loaded = true;
 					return true;

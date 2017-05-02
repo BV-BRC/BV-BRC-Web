@@ -131,6 +131,8 @@ define([
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
 
+			//TODO - add interactions gridcontainer
+
 			this.subsystems = new SubSystemsGridContainer({
 				title: "Subsystems",
 				id: this.viewer.id + "_" + "subsystems",
@@ -138,8 +140,10 @@ define([
 				primaryKey: "subsystem_id",
 			});
 
+			//TODO - add genes gridcontainer
+
 			this.viewer.addChild(this.overview);
-			this.viewer.addChild(this.pathways);
+			this.viewer.addChild(this.subsystems);
 
 		},
 		onSetTotalPathways: function(attr, oldVal, newVal){
