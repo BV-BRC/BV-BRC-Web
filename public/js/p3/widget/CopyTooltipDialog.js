@@ -14,6 +14,7 @@ define([
 		containerType: "",
 		selection: null,
 		grid: null,
+		conf: null,
 
 		_setSelectionAttr: function(val){
 			//console.log("CopyTooltipDialog._setSelectionAttr: ", val);
@@ -37,7 +38,8 @@ define([
 			popup.close(this);
 		},
 
-		_tocsv: function(selection){
+		_totsv: function(selection, includeHeader, selectedOnly, pkOnly){
+
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
@@ -45,68 +47,80 @@ define([
 			keys.forEach(function(key){
 				header.push(key);
 			});
-			out.push(header.join(","));
-			selection.forEach(function(obj){
+
+			// if we want the header, push it to the array
+			if (includeHeader){
+				out.push(header.join("\t"));
+			}
+
+			// did for loops because forEach drops this.conf.pk out of scope
+			for (var i=0; i<selection.length; i++) {
 				var io = [];
+				var obj = selection[i];
 
-				keys.forEach(function(key){
-					if (obj[key] instanceof Array){
-						io.push(obj[key].join(";"));
-					}else{
-						io.push(obj[key]);
+				for (var j=0; j<keys.length; j++) {
+					var key = keys[j];
+
+					// if we only care about the primary key and this is it OR we care about everything
+					if ( (key == this.conf.pk && pkOnly) || !pkOnly) {
+
+						// push it to the array
+						if (obj[key] instanceof Array){
+							io.push(obj[key].join(";"));
+						} else {
+							io.push(obj[key]);
+						}
 					}
-				})
-
-				out.push(io.join(","));
-			});
-
-			return out.join("\n");
-
-		},
-
-		_totsv: function(selection){
-			var out = [];
-			var keys = Object.keys(selection[0]);
-
-			var header = []
-			keys.forEach(function(key){
-				header.push(key);
-			});
-			out.push(header.join("\t"));
-			selection.forEach(function(obj){
-				var io = [];
-
-				keys.forEach(function(key){
-					if (obj[key] instanceof Array){
-						io.push(obj[key].join(";"));
-					}else{
-						io.push(obj[key]);
-					}
-				})
-
+				}
 				out.push(io.join("\t"));
-			});
-
+  		}
 			return out.join("\n");
 
 		},
 
+		// XXX known issue: seleted items not accessible after changing pages (NPE)
 		copySelection: function(type, selection){
 			console.log("CopyTooltipDialog:copySelection(", type,",", selection,")");
 
 			// format the text
-			var copy_text;
+			var includeHeader;
+			var selectedOnly;
+			var pkOnly;
 			switch(type){
-				case "csv":
-					copy_text = this._tocsv(selection);
+				case "full_w_header":
+					includeHeader = true;
+					selectedOnly = false;
+					pkOnly = false;
 					break;
-				case "tsv":
-					copy_text = this._totsv(selection);
+				case "full_wo_header":
+					includeHeader = false;
+					selectedOnly = false;
+					pkOnly = false;
+					break;
+				case "selected_w_header":
+					includeHeader = true;
+					selectedOnly = true;
+					pkOnly = false;
+					break;
+				case "selected_wo_header":
+					includeHeader = false;
+					selectedOnly = true;
+					pkOnly = false;
+					break;
+				case "ids_only":
+					includeHeader = false;
+					selectedOnly = false;
+					pkOnly = true;
 					break;
 				default:
-					copy_text = this._totsv(selection);
+					includeHeader = true;
+					selectedOnly = false;
+					pkOnly = false;
 					break;
 			}
+
+			// convert to tsv
+			var copy_text = this._totsv(selection, includeHeader, selectedOnly, pkOnly);
 
 			// put it on the clipboard (https://www.npmjs.com/package/clipboard-js)
 			clipboard.copy(copy_text);
@@ -136,8 +150,11 @@ define([
 			domConstruct.create("td", {style: "width:10px;"}, tr);
 			var oData = this.otherCopyNode = domConstruct.create("td", {style: "vertical-align:top;"}, tr);
 
-			domConstruct.create("div", {"class": "wsActionTooltip", rel: "tsv", innerHTML: "Text"}, tData);
-			domConstruct.create("div", {"class": "wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
+			domConstruct.create("div", {"class": "wsActionTooltip", rel: "full_w_header", innerHTML: "Full Table (with headers)"}, tData);
+			domConstruct.create("div", {"class": "wsActionTooltip", rel: "full_wo_header", innerHTML: "Full Table (without headers)"}, tData);
+			domConstruct.create("div", {"class": "wsActionTooltip", rel: "selected_w_header", innerHTML: "Selected Columns (with headers)"}, tData);
+			domConstruct.create("div", {"class": "wsActionTooltip", rel: "selected_wo_header", innerHTML: "Selected Columns (without headers)"}, tData);
+			domConstruct.create("div", {"class": "wsActionTooltip", rel: "ids_only", innerHTML: "Primary IDs Only"}, tData);
 
 			tr = domConstruct.create("tr", {}, table);
 			var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
@@ -237,18 +254,17 @@ define([
 			},
 			"default": {
 				"label": "Items",
+				pk: "id",
 				tableData: true
 			}
 		},
 
 		_setContainerTypeAttr: function(val){
 			console.log("CopyTooltipDialog.setContainerType: ", val);
-			var label;
+
 			this.containerType = val;
-
-			var conf = this.copyableConfig[val] || this.copyableConfig["default"];
-
-			this.set("label", conf.label);
+			this.conf = this.copyableConfig[val] || this.copyableConfig["default"];
+			this.set("label", this.conf.label);
 
 			if(!this._started){
 				return;
@@ -256,8 +272,8 @@ define([
 
 			domConstruct.empty(this.otherCopyNode);
 
-			if(conf.otherData){
-				conf.otherData.forEach(function(type){
+			if(this.conf.otherData){
+				this.conf.otherData.forEach(function(type){
 					domConstruct.create("div", {
 						"class": "wsActionTooltip",
 						rel: type,
