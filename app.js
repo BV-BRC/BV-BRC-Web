@@ -15,7 +15,7 @@ var package = require("./package.json");
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
-var reportProblem = require('./routes/reportProblem')
+var reportProblem = require('./routes/reportProblem');
 var workspace = require('./routes/workspace');
 var viewers = require('./routes/viewers');
 var remotePage = require('./routes/remotePage');

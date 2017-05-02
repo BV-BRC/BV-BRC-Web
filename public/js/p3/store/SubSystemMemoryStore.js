@@ -107,7 +107,7 @@ define([
 		},
 
 		queryTypes: {
-			pathway: "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			subsystem: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -116,14 +116,13 @@ define([
 						facet: {
 							genome_count: "unique(genome_id)",
 							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
+							role_id: "unique(role_id)"
 						}
 					}
 				}
 			})) + ")",
 
-			ecnumber: "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			roleId: "&group((field,role_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -132,8 +131,7 @@ define([
 						facet: {
 							genome_count: "unique(genome_id)",
 							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
+							role_id: "unique(role_id)"
 						}
 					}
 				}
@@ -147,8 +145,7 @@ define([
 						facet: {
 							genome_count: "unique(genome_id)",
 							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
+							role_id: "unique(role_id)"
 						}
 					}
 				}
@@ -224,7 +221,7 @@ define([
 				var docs = [];
 				var props = {
 					"pathway": "pathway_id",
-					"ecnumber": "ec_number",
+					"roleid": "role_id",
 					"genes": 'feature_id'
 				};
 				if(response && response.grouped && response.grouped[props[this.type]]){
