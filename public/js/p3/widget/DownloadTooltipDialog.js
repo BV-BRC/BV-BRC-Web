@@ -40,13 +40,21 @@ define([
 		downloadSelection: function(type, selection){
 
 			var conf = this.downloadableConfig[this.containerType];
+			var dataType, pkField;
+			if ((type == "dna+fasta" || type == "protein+fasta") && conf.secondaryDataType && conf.secondartyPK) {
+				dataType = conf.secondaryDataType;
+				pkField = conf.secondartyPK;
+			} else {
+				dataType = conf.dataType;
+				pkField = conf.pk;
+			}
 			var sel = selection.map(function(sel){
-				return sel[conf.field || conf.pk]
+				return sel[pkField]
 			});
 
 			console.log("DOWNLOAD TYPE: ", type)
 			if(conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
-				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
+				var query = "in(" + pkField + ",(" + sel.join(",") + "))&sort(+" + pkField + ")&limit(2500000)"
 				when(this.grid.store.query({}), lang.hitch(this, function(results){
 					results = rql.query(query, {}, results);
 					var data = this["_to" + type.toLowerCase()](results);
@@ -73,8 +81,8 @@ define([
 				if(baseUrl.charAt(-1) !== "/"){
 					baseUrl = baseUrl + "/";
 				}
-				baseUrl = baseUrl + conf.dataType + "/";
-				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
+				baseUrl = baseUrl + dataType + "/";
+				var query = "in(" + pkField + ",(" + sel.join(",") + "))&sort(+" + pkField + ")&limit(2500000)";
 				console.log("Download Query: ", query);
 
 				baseUrl = baseUrl + "?&http_download=true&http_accept=" + accept
@@ -245,12 +253,15 @@ define([
 				otherData: ["dna+fasta", "protein+fasta"]
 			},
 			"spgene_data": {
-				//FASTA data does not exist in sp_gene table, use genome_feature table instead
-				dataType: "genome_feature",
-				pk: "feature_id",
+				dataType: "sp_gene",
+				pk: "id",
 				"label": "Specialty Genes",
 				tableData: true,
-				otherData: ["dna+fasta", "protein+fasta"]
+				otherData: ["dna+fasta", "protein+fasta"],
+				//FASTA data does not exist in sp_gene table, use genome_feature table instead
+				//set secondaryDataType & secondartyPK to allow download from a second table
+				secondaryDataType: "genome_feature",
+				secondartyPK: "feature_id"
 			},
 			"spgene_ref_data": {
 				dataType: "sp_gene_ref",
