@@ -862,7 +862,9 @@ define([
 			}, function(selection){
 
 				// open object selector to get destination
-				var objSelector = new WSObjectSelector();
+				var objSelector = new WSObjectSelector({
+					allowUpload: false
+				});
 				objSelector.set('type', ['folder']);
 				objSelector.title = "Copy contents of " + selection.length +
 									(selection.length ? " items" : " item") +
@@ -886,7 +888,9 @@ define([
 			}, function(selection){
 
 				// open object selector to get destination
-				var objSelector = new WSObjectSelector();
+				var objSelector = new WSObjectSelector({
+					allowUpload: false
+				});
 				objSelector.set('type', ['folder']);
 				objSelector.title = "Move contents of " + selection.length +
 									(selection.length ? " items" : " item") +

@@ -28,6 +28,7 @@ define([
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
+		allowUpload: true,
 		title: "Choose or Upload a Workspace Object",
 		reset: function(){
 			this.searchBox.set('value', '');
@@ -146,10 +147,16 @@ define([
 			this.currentPathNode = domConstr.create("div", {innerHTML: "Folder: " + this.path}, wrap);
 			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
-//			domConstr.place(this.selValNode, sel, "last");
+
 			var buttonContainer = domConstr.create("div", {
-				style: {"font-size": ".85em", display: "inline-block", "float": "right", "text-align": "right"},
-				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i>'
+				style: {
+					"font-size": ".85em",
+					"display": "inline-block",
+					"float": "right",
+					"text-align": "right"
+				},
+				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;"></i>&nbsp;'+
+						   (this.allowUpload ? '<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i>' : '')
 			}, wrap);
 
 			return wrap;
@@ -185,7 +192,7 @@ define([
 						padding: "0px"
 					}
 				});
-				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
+
 				domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
 
 				var selectionPane = new ContentPane({
@@ -275,46 +282,50 @@ define([
 				frontBC.startup();
 
 
-				var backhead = new ContentPane({
-					region: "top",
-					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
-				});
-				on(backhead.domNode, "span:click", function(evt){
-					var rel = domAttr.get(evt.target, "rel");
-					switch(rel){
-						case "flip":
-							_self.dialog.flip();
-							break;
-					}
-				});
-				var uploader = this.uploader = new Uploader({
-					path: _self.path,
-					region: "center",
-					multiple: false,
-					types: this.type,
-					pathLabel: "Upload file to: ",
-					buttonLabel: "Select File"
-				});
-
-				on(uploader.domNode, "dialogAction", function(evt){
-					// console.log("Uploader Dialog Action: ", evt);
-					if(evt.files && evt.files[0] && evt.action == "close"){
-						var file = evt.files[0];
-						_self.set("selection", file);
-						_self.set('value', file.path, true);
-						_self.dialog.hide();
-					}else{
-						_self.dialog.flip()
-					}
-				});
-
-				uploader.startup();
-
-				backBC.addChild(backhead);
-				backBC.addChild(uploader);
-				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
+				// add uploader to back side of dialog
+				if (_self.allowUpload) {
+					var backhead = new ContentPane({
+						region: "top",
+						content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
+					});
+					on(backhead.domNode, "span:click", function(evt){
+						var rel = domAttr.get(evt.target, "rel");
+						switch(rel){
+							case "flip":
+								_self.dialog.flip();
+								break;
+						}
+					});
 
 
+					this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
+					var uploader = this.uploader = new Uploader({
+						path: _self.path,
+						region: "center",
+						multiple: false,
+						types: this.type,
+						pathLabel: "Upload file to: ",
+						buttonLabel: "Select File"
+					});
+
+					on(uploader.domNode, "dialogAction", function(evt){
+						// console.log("Uploader Dialog Action: ", evt);
+						if(evt.files && evt.files[0] && evt.action == "close"){
+							var file = evt.files[0];
+							_self.set("selection", file);
+							_self.set('value', file.path, true);
+							_self.dialog.hide();
+						}else{
+							_self.dialog.flip()
+						}
+					});
+
+					uploader.startup();
+
+					backBC.addChild(backhead);
+					backBC.addChild(uploader);
+					domConstr.place(backBC.domNode, this.dialog.backPane, "first");
+				}
 			}
 			this.dialog.flip("front");
 			this.dialog.show();
