@@ -23,8 +23,6 @@ define("p3/store/PathwayMemoryStore", [
 		type: "pathway",
 		onSetState: function(attr, oldVal, state){
 
-			//console.log("PathwayMemoryStore onSetState() oldState:", oldVal);
-			//console.log("								 New State:", state);
 			var ov, nv;
 			if(oldVal){
 				ov = oldVal.search;

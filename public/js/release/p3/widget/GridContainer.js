@@ -1324,8 +1324,8 @@ define("p3/widget/GridContainer", [
 			this.selectionActions.forEach(function(a){
 				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 			}, this);
-
 		},
+		
 		startup: function(){
 			if(this._started){
 				return;

@@ -1,27 +1,55 @@
 {
-  "name": "cytoscape-context-menus",
-  "version": "2.1.1",
-  "description": "A Cytoscape.js extension to provide context menu around elements and core instance.",
-  "main": "cytoscape-context-menus.js",
-  "spm": {
-    "main": "cytoscape-context-menus.js"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus.git"
-  },
-  "keywords": [
-    "cytoscape",
-    "cyext"
+  "_args": [
+    [
+      {
+        "raw": "cytoscape-context-menus@^2.1.1",
+        "scope": null,
+        "escapedName": "cytoscape-context-menus",
+        "name": "cytoscape-context-menus",
+        "rawSpec": "^2.1.1",
+        "spec": ">=2.1.1 <3.0.0",
+        "type": "range"
+      },
+      "/Users/andrewguard/projects/p3_web"
+    ]
   ],
-  "license": "MIT",
+  "_from": "cytoscape-context-menus@>=2.1.1 <3.0.0",
+  "_id": "cytoscape-context-menus@2.1.1",
+  "_inCache": true,
+  "_location": "/cytoscape-context-menus",
+  "_nodeVersion": "5.11.1",
+  "_npmOperationalInternal": {
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/cytoscape-context-menus-2.1.1.tgz_1483360880447_0.6392837611492723"
+  },
+  "_npmUser": {
+    "name": "metincansiper",
+    "email": "metincansiper@gmail.com"
+  },
+  "_npmVersion": "3.8.6",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "cytoscape-context-menus@^2.1.1",
+    "scope": null,
+    "escapedName": "cytoscape-context-menus",
+    "name": "cytoscape-context-menus",
+    "rawSpec": "^2.1.1",
+    "spec": ">=2.1.1 <3.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-2.1.1.tgz",
+  "_shasum": "d4ca45fccb54655478a4d47c9a088c40d692f69b",
+  "_shrinkwrap": null,
+  "_spec": "cytoscape-context-menus@^2.1.1",
+  "_where": "/Users/andrewguard/projects/p3_web",
   "bugs": {
     "url": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus/issues"
   },
-  "homepage": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus",
+  "dependencies": {},
+  "description": "A Cytoscape.js extension to provide context menu around elements and core instance.",
   "devDependencies": {
     "gulp": "^3.8.8",
     "gulp-jshint": "^1.8.5",
@@ -31,34 +59,41 @@
     "jshint-stylish": "^1.0.0",
     "run-sequence": "^1.0.0"
   },
-  "peerDependencies": {
-    "cytoscape": "^2.7.0",
-    "jquery": "^1.7.0 || ^2.0.0 || ^3.0.0"
-  },
-  "gitHead": "750b967ea26493d1642137528d10df60df064ada",
-  "_id": "cytoscape-context-menus@2.1.1",
-  "_shasum": "d4ca45fccb54655478a4d47c9a088c40d692f69b",
-  "_from": "cytoscape-context-menus@>=2.1.1 <3.0.0",
-  "_npmVersion": "3.8.6",
-  "_nodeVersion": "5.11.1",
-  "_npmUser": {
-    "name": "metincansiper",
-    "email": "metincansiper@gmail.com"
-  },
+  "directories": {},
   "dist": {
     "shasum": "d4ca45fccb54655478a4d47c9a088c40d692f69b",
     "tarball": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-2.1.1.tgz"
   },
+  "gitHead": "750b967ea26493d1642137528d10df60df064ada",
+  "homepage": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus",
+  "keywords": [
+    "cytoscape",
+    "cyext"
+  ],
+  "license": "MIT",
+  "main": "cytoscape-context-menus.js",
   "maintainers": [
     {
       "name": "metincansiper",
       "email": "metincansiper@gmail.com"
     }
   ],
-  "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/cytoscape-context-menus-2.1.1.tgz_1483360880447_0.6392837611492723"
+  "name": "cytoscape-context-menus",
+  "optionalDependencies": {},
+  "peerDependencies": {
+    "cytoscape": "^2.7.0",
+    "jquery": "^1.7.0 || ^2.0.0 || ^3.0.0"
   },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-2.1.1.tgz"
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "spm": {
+    "main": "cytoscape-context-menus.js"
+  },
+  "version": "2.1.1"
 }

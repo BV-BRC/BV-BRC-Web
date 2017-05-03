@@ -6,7 +6,7 @@ define("p3/widget/viewer/Genome", [
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
 	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer",
-	"../../util/PathJoin"
+	"../SubSystemsContainer","../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
 			TabViewerBase,
@@ -14,7 +14,7 @@ define("p3/widget/viewer/Genome", [
 			GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
 			PathwaysContainer, TranscriptomicsContainer, InteractionsContainer,
-			PathJoin){
+			SubSystemsContainer, PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
@@ -261,6 +261,12 @@ define("p3/widget/viewer/Genome", [
 				state: this.state
 			});
 
+			this.subsystems = new SubSystemsContainer({
+				title: "Subsystems",
+				id: this.viewer.id + "_" + "subsystems",
+				state: this.state
+			})
+
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
 				id: this.viewer.id + "_" + "proteinFamilies",
@@ -289,6 +295,7 @@ define("p3/widget/viewer/Genome", [
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
+			this.viewer.addChild(this.subsystems);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.interactions);
 		}
