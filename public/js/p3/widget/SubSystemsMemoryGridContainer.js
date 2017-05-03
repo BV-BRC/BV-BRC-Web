@@ -154,27 +154,14 @@ define([
 					var headers, content = [], filename;
 
 					switch(this.type){
-						case "pathway":
-							headers = ["Pathway ID", "Pathway Name", "Pathway Class", "Annotation", "Unique Genome Count", "Unique Gene Count", "Unique EC Count", "EC Conservation", "Gene Conservation"];
+						case "subsystem":
+							headers = ["Subsystem Id", "Subsystem Name", "Subclass", "Role Name", "Role ID", "Refseq Locus Tag", "Product", "Patric ID", "Genome Name", "Genome ID", "Gene", "Feature ID", "Class", "Alt Locus Tag", "Active"];
 							data.forEach(function(row){
-								content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.genome_count, row.gene_count, row.ec_count, row.ec_cons, row.gene_cons]);
+								content.push([row.subsystem_id, JSON.stringify(row.subsystem_name), JSON.stringify(row.subclass), row.role_name, row.role_id, row.refseq_locus_tag, row.product, row.patric_id, row.genome_name, row.genome_id, row.gene, row.feature_id, row.class, row.alt_locus_tag, row.active]);
 							});
-							filename = "PATRIC_pathways";
+							filename = "PATRIC_subsystems";
 							break;
-						case "ec_number":
-							headers = ["Pathway ID", "Pathway Name", "Pathway Class", "Annotation", "EC Number", "Description", "Genome Count", "Unique Gene Count"];
-							data.forEach(function(row){
-								content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.ec_number, JSON.stringify(row.ec_description), row.genome_count, row.gene_count]);
-							});
-							filename = "PATRIC_pathways_ecnumbers";
-							break;
-						case "gene":
-							headers = ["Genome Name", "Accession", "PATRIC ID", "Refseq Locus Tag", "Alt Locus Tag", "Gene", "Product", "Annotation", "Pathway Name", "EC Description"];
-							data.forEach(function(row){
-								content.push([row.genome_name, row.accession, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, JSON.stringify(row.product), row.annotation, JSON.stringify(row.pathway_name), JSON.stringify(row.ec_description)]);
-							});
-							filename = "PATRIC_pathways_genes";
-							break;
+	
 						default:
 							break;
 					}

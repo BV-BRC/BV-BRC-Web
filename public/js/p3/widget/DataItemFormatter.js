@@ -585,17 +585,6 @@ define([
 			return div;
 		},
 
-// 		Pathway ID	00010
-// Pathway Name	Glycolysis / Gluconeogenesis
-// Pathway Class	Carbohydrate Metabolism
-// Annotation	PATRIC
-// Unique Genome Count	1
-// Unique Gene Count	27
-// Unique EC Count	19
-// EC Conservation	100
-// Gene Conservation	1.42
-
-
 		"subsystem_data": function(item, options){
 			options = options || {};
 
