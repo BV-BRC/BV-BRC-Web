@@ -585,7 +585,18 @@ define([
 			return div;
 		},
 
-		"subsystems_data": function(item, options){
+// 		Pathway ID	00010
+// Pathway Name	Glycolysis / Gluconeogenesis
+// Pathway Class	Carbohydrate Metabolism
+// Annotation	PATRIC
+// Unique Genome Count	1
+// Unique Gene Count	27
+// Unique EC Count	19
+// EC Conservation	100
+// Gene Conservation	1.42
+
+
+		"subsystem_data": function(item, options){
 			options = options || {};
 
 			var columns = [{
@@ -596,31 +607,47 @@ define([
 				text: 'subsystem_name'
 			}, {
 				name: 'Subsystem Class',
-				text: 'subsystem_class'
+				text: 'subclass'
 			}, {
-				name: 'Annotation',
-				text: 'annotation'
-			}
-			// {
-			// 	name: 'Unique Genome Count',
-			// 	text: 'genome_count'
-			// }, {
-			// 	name: 'Unique Gene Count',
-			// 	text: 'gene_count'
-			// }, {
-			// 	name: 'Unique EC Count',
-			// 	text: 'ec_count'
-			// }, {
-			// 	name: 'EC Conservation',
-			// 	text: 'ec_cons'
-			// }, {
-			// 	name: 'Gene Conservation',
-			// 	text: 'gene_cons'
-			// }
-			];
+				name: 'Genome ID',
+				text: 'genome_id'
+			}, {
+				name: 'Genome Name',
+				text: 'genome_name'
+			}, {
+				name: 'Class',
+				text: 'class'
+			}, {
+				name: 'Role Name',
+				text: 'role_name'
+			}, {
+				name: 'Role ID',
+				text: 'role_id'
+			}, {
+				name: 'Active',
+				text: 'active'
+			}, {
+				name: 'Product',
+				text: 'product'
+			}, {
+				name: 'Gene',
+				text: 'gene'
+			}, {
+				name: 'Alternative Locus Tag',
+				text: 'alt_locus_tag'
+			}, {
+				name: 'Refseq Locus Tag',
+				text: 'refseq_locus_tag'
+			}, {
+				name: 'Feature ID',
+				text: 'feature_id'
+			}, {
+				name: 'Patric ID',
+				text: 'patric_id'
+			}];
 
 			var div = domConstruct.create("div");
-			displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Subsystems/" + item.subsystem_id, options);
+			displayHeader(div, item.subsystem_name, "fa icon-git-pull-request fa-2x", "/view/Subsystems/" + item.subsystem_id, options);
 			displayDetail(item, columns, div, options);
 
 			return div;

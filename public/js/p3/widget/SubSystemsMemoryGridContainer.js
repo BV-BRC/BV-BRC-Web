@@ -50,7 +50,7 @@ define([
 
 	return declare([GridContainer], {
 		gridCtor: SubSystemsGrid,
-		containerType: "pathway_data",
+		containerType: "subsystem_data",
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
 		facetFields: ["annotation"],
 		enableFilterPanel: true,
