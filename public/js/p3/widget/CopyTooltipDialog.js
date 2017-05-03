@@ -38,14 +38,18 @@ define([
 			popup.close(this);
 		},
 
-		_totsv: function(selection, includeHeader, selectedOnly, pkOnly){
+		// convert the selection into TSV format, skipping headers and columns as specified
+		_totsv: function(selection, includeHeader, selectedOnly, shownCols){
 
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
-			var header = []
+			// construct the header
+			var header = [];
 			keys.forEach(function(key){
-				header.push(key);
+				if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
+					header.push(key);
+				}
 			});
 
 			// if we want the header, push it to the array
@@ -53,7 +57,8 @@ define([
 				out.push(header.join("\t"));
 			}
 
-			// did for loops because forEach drops this.conf.pk out of scope
+			// for each selected item, push its data to the result array
+			// Note: did for loops because its a bit faster than forEach (and a bit easier to follow syntactically)
 			for (var i=0; i<selection.length; i++) {
 				var io = [];
 				var obj = selection[i];
@@ -61,9 +66,11 @@ define([
 				for (var j=0; j<keys.length; j++) {
 					var key = keys[j];
 
-					// if we only care about the primary key and this is it OR we care about everything
-					if ( (key == this.conf.pk && pkOnly) || !pkOnly) {
+					console.log('[2]key:',key) // gotta check if the key exists in the columns first: if (typeof this.grid.columns[key] != 'undefined')
+					// is this masking really the best way to do this?  getting ugly
 
+					// decide if we should include this column
+					if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 						// push it to the array
 						if (obj[key] instanceof Array){
 							io.push(obj[key].join(";"));
@@ -80,7 +87,9 @@ define([
 
 		// XXX known issue: seleted items not accessible after changing pages (NPE)
 		copySelection: function(type, selection){
-			console.log("CopyTooltipDialog:copySelection(", type,",", selection,")");
+			console.log("CopyTooltipDialog.copySelection(", type,",", selection,")");
+			//console.log('CopyTooltipDialog.grid', this.grid)
+			console.log('CopyTooltipDialog.grid.columns:', this.grid.columns)
 
 			// format the text
 			var includeHeader;
@@ -90,37 +99,43 @@ define([
 				case "full_w_header":
 					includeHeader = true;
 					selectedOnly = false;
-					pkOnly = false;
 					break;
 				case "full_wo_header":
 					includeHeader = false;
 					selectedOnly = false;
-					pkOnly = false;
 					break;
 				case "selected_w_header":
 					includeHeader = true;
 					selectedOnly = true;
-					pkOnly = false;
 					break;
 				case "selected_wo_header":
 					includeHeader = false;
 					selectedOnly = true;
-					pkOnly = false;
-					break;
-				case "ids_only":
-					includeHeader = false;
-					selectedOnly = false;
-					pkOnly = true;
 					break;
 				default:
 					includeHeader = true;
 					selectedOnly = false;
-					pkOnly = false;
 					break;
 			}
 
+			// build a list of which columns are visible to the user
+			var shownCols = [];
+			if (selectedOnly) {
+				var col_keys = Object.keys(this.grid.columns);
+				for (var i=0; i<col_keys.length; i++) {
+					var key = col_keys[i];
+
+					// if the key is not hidden, put it in the list of shown columns
+					if ( (typeof this.grid.columns[key].hidden != 'undefined') || !this.grid.columns[key].hidden) {
+						shownCols.push(key);
+					}
+				}
+			}
+
+			console.log('CopyTooltipDialog.shownCols:', shownCols);
+
 			// convert to tsv
-			var copy_text = this._totsv(selection, includeHeader, selectedOnly, pkOnly);
+			var copy_text = this._totsv(selection, includeHeader, selectedOnly, shownCols);
 
 			// put it on the clipboard (https://www.npmjs.com/package/clipboard-js)
 			clipboard.copy(copy_text);
@@ -154,7 +169,6 @@ define([
 			domConstruct.create("div", {"class": "wsActionTooltip", rel: "full_wo_header", innerHTML: "Full Table (without headers)"}, tData);
 			domConstruct.create("div", {"class": "wsActionTooltip", rel: "selected_w_header", innerHTML: "Selected Columns (with headers)"}, tData);
 			domConstruct.create("div", {"class": "wsActionTooltip", rel: "selected_wo_header", innerHTML: "Selected Columns (without headers)"}, tData);
-			domConstruct.create("div", {"class": "wsActionTooltip", rel: "ids_only", innerHTML: "Primary IDs Only"}, tData);
 
 			tr = domConstruct.create("tr", {}, table);
 			var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
