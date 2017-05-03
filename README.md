@@ -1,18 +1,17 @@
-# PATRIC 3 WebApp <sup>(Beta)</sup>
+# PATRIC 3 WebApp
 
 
 ## Requirements
 
-node   (6.x lts)
+node   (6.x LTS) https://nodejs.org or 
+
 ```
-// installing node 6.x lts using homebrew on macOS
+// macOS
 brew install node@6
 
 // centos
 curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
 yum -y install nodejs
-
-// for more detail https://nodejs.org/en/download/
 ```
 
 redis  (3.2+) http://redis.io/ or
@@ -83,7 +82,7 @@ git submodule update --init
 git merge upstream/master
 ```
 
-Read more here [here](https://help.github.com/articles/syncing-a-fork/).
+Read more [here](https://help.github.com/articles/syncing-a-fork/).
 
 ## Builds
 
