@@ -41,15 +41,24 @@ define([
 		// convert the selection into TSV format, skipping headers and columns as specified
 		_totsv: function(selection, includeHeader, selectedOnly, shownCols){
 			var out = [];
-			var keys = Object.keys(selection[0]);
+
+			// gather all of the keys present in the selected objects and remove any undefined entries
+			var key_set = [];
+			var clean_selection = [];
+			selection.forEach(function(obj){
+				if (obj){
+					key_set = new Set([...key_set, ...Object.keys(obj)]);
+					clean_selection.push(obj);
+				}
+			});
 
 			// construct the header
 			var header = [];
-			keys.forEach(function(key){
+			for (let key of key_set.keys()){
 				if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 					header.push(key);
 				}
-			});
+			}
 
 			// if we want the header, push it to the array
 			if (includeHeader){
@@ -57,10 +66,10 @@ define([
 			}
 
 			// for each selected item, push its data to the result array
-			selection.forEach(function(obj){
+			clean_selection.forEach(function(obj){
 				var io = [];
 
-				keys.forEach(function(key){
+				for (let key of key_set.keys()){
 					// decide if we should include this column
 					if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 						// push it to the array
@@ -70,7 +79,7 @@ define([
 							io.push(obj[key]);
 						}
 					}
-				});
+				}
 				out.push(io.join("\t"));
   		});
 			return out.join("\n");
@@ -79,7 +88,6 @@ define([
 
 		// XXX known issue: seleted items not accessible after changing pages (NPE)
 		copySelection: function(type, selection){
-			//console.log("CopyTooltipDialog.copySelection(", type,",", selection,")");
 
 			// format the text
 			var includeHeader;
@@ -122,11 +130,17 @@ define([
 				}
 			}
 
+			// console.log("CopyTooltipDialog.copySelection(", type,",", selection,",",shownCols,")");
+
 			// convert to tsv
 			var copy_text = this._totsv(selection, includeHeader, selectedOnly, shownCols);
 
 			// put it on the clipboard (https://www.npmjs.com/package/clipboard-js)
 			clipboard.copy(copy_text);
+
+			// close the popup; this gives a bit of a visual indicator it worked
+			var _self = this;
+			popup.close(_self);
 		},
 
 		startup: function(){
