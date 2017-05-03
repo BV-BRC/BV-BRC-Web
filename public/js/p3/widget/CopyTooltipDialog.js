@@ -40,7 +40,6 @@ define([
 
 		// convert the selection into TSV format, skipping headers and columns as specified
 		_totsv: function(selection, includeHeader, selectedOnly, shownCols){
-
 			var out = [];
 			var keys = Object.keys(selection[0]);
 
@@ -58,17 +57,10 @@ define([
 			}
 
 			// for each selected item, push its data to the result array
-			// Note: did for loops because its a bit faster than forEach (and a bit easier to follow syntactically)
-			for (var i=0; i<selection.length; i++) {
+			selection.forEach(function(obj){
 				var io = [];
-				var obj = selection[i];
 
-				for (var j=0; j<keys.length; j++) {
-					var key = keys[j];
-
-					console.log('[2]key:',key) // gotta check if the key exists in the columns first: if (typeof this.grid.columns[key] != 'undefined')
-					// is this masking really the best way to do this?  getting ugly
-
+				keys.forEach(function(key){
 					// decide if we should include this column
 					if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 						// push it to the array
@@ -78,18 +70,16 @@ define([
 							io.push(obj[key]);
 						}
 					}
-				}
+				});
 				out.push(io.join("\t"));
-  		}
+  		});
 			return out.join("\n");
 
 		},
 
 		// XXX known issue: seleted items not accessible after changing pages (NPE)
 		copySelection: function(type, selection){
-			console.log("CopyTooltipDialog.copySelection(", type,",", selection,")");
-			//console.log('CopyTooltipDialog.grid', this.grid)
-			console.log('CopyTooltipDialog.grid.columns:', this.grid.columns)
+			//console.log("CopyTooltipDialog.copySelection(", type,",", selection,")");
 
 			// format the text
 			var includeHeader;
@@ -125,14 +115,12 @@ define([
 				for (var i=0; i<col_keys.length; i++) {
 					var key = col_keys[i];
 
-					// if the key is not hidden, put it in the list of shown columns
-					if ( (typeof this.grid.columns[key].hidden != 'undefined') || !this.grid.columns[key].hidden) {
+					// if the column is not hidden, put it in the list of shown columns
+					if ((typeof this.grid.columns[key].hidden == 'undefined') || !this.grid.columns[key].hidden) {
 						shownCols.push(key);
 					}
 				}
 			}
-
-			console.log('CopyTooltipDialog.shownCols:', shownCols);
 
 			// convert to tsv
 			var copy_text = this._totsv(selection, includeHeader, selectedOnly, shownCols);
@@ -182,7 +170,7 @@ define([
 		},
 
 		_setLabelAttr: function(val){
-			console.log("CopyTooltipDialog._setLabelAttr: ", val);
+			//console.log("CopyTooltipDialog._setLabelAttr: ", val);
 			this.label = val;
 			if(this._started){
 				this.labelNode.innerHTML = "Copy selected " + this.label + " (" + (this.selection ? this.selection.length : "0") + ") as...";
@@ -274,7 +262,7 @@ define([
 		},
 
 		_setContainerTypeAttr: function(val){
-			console.log("CopyTooltipDialog.setContainerType: ", val);
+			//console.log("CopyTooltipDialog.setContainerType: ", val);
 
 			this.containerType = val;
 			this.conf = this.copyableConfig[val] || this.copyableConfig["default"];
