@@ -6,8 +6,9 @@ define([
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
 	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip", "../widget/UserSelector",
-	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "dojo/NodeList-traverse"
+	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "./WorkspaceObjectSelector",
 
+	"dojo/NodeList-traverse"
 ], function(
 	declare, BorderContainer, on, query,
 	domClass, ContentPane, domConstruct, domAttr,
@@ -16,7 +17,7 @@ define([
 	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
 	popup, IDMappingTemplate, xhr, Select,
 	ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog, UserSelector,
-	Button, Formatter, TextBox){
+	Button, Formatter, TextBox, WSObjectSelector){
 	return declare([BorderContainer], {
 		baseClass: "WorkspaceBrowser",
 		disabled: false,
@@ -847,15 +848,58 @@ define([
 				validTypes: ["*"],
 				tooltip: "Rename folders or objects",
 			}, function(selection){
-				//console.log('The selection', selection)
 
-				var path = selection.map(function(s){
-					return s.path || s.data.path;
-				})[0];
-
+				var path = selection[0].path;
 				self.renameDialog(path)
-
 			}, false);
+
+			this.actionPanel.addAction("Copy", "fa icon-files-o fa-2x", {
+				label: "COPY",
+				allowMultiTypes: true,
+				multiple: true,
+				validTypes: ["*"],
+				tooltip: "Copy selected objects",
+			}, function(selection){
+
+				// open object selector to get destination
+				var objSelector = new WSObjectSelector();
+				objSelector.set('type', ['folder']);
+				objSelector.title = "Copy contents of " + selection.length +
+									(selection.length ? " items" : " item") +
+									" to...";
+				objSelector.set('path', self.path);
+				objSelector.onSelection = function(destPath){
+					var paths = selection.map(function(obj){ return obj.path });
+					WorkspaceManager.copy(paths, destPath);
+				}
+
+				objSelector.openChooser();
+			}, false);
+
+
+			this.actionPanel.addAction("Move", "fa icon-arrow-right fa-2x", {
+				label: "MOVE",
+				allowMultiTypes: true,
+				multiple: true,
+				validTypes: ["*"],
+				tooltip: "Move selected objects",
+			}, function(selection){
+
+				// open object selector to get destination
+				var objSelector = new WSObjectSelector();
+				objSelector.set('type', ['folder']);
+				objSelector.title = "Move contents of " + selection.length +
+									(selection.length ? " items" : " item") +
+									" to...";
+				objSelector.set('path', self.path);
+				objSelector.onSelection = function(destPath){
+					var paths = selection.map(function(obj){ return obj.path });
+					WorkspaceManager.move(paths, destPath);
+				}
+
+				objSelector.openChooser();
+			}, false);
+
 
 
 			this.itemDetailPanel = new ItemDetailPanel({
@@ -870,7 +914,6 @@ define([
 			this.addChild(this.browserHeader);
 
 			this.inherited(arguments);
-
 		},
 
 		renameDialog: function(path){

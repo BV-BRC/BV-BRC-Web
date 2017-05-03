@@ -397,14 +397,62 @@ define([
 			});
 
 		},
+		copy: function(paths, dest){
+			var _self = this;
+
+			// copy contents into folders of same name, but whatever parent path is choosen
+			var srcDestPaths = paths.map(function(path){
+				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
+			})
+
+			return Deferred.when(_self.api("Workspace.copy", [{
+					objects: srcDestPaths,
+					recursive: true,
+					move: false
+				}]),
+				function(res){
+					console.log('server res', res)
+					Topic.publish("/refreshWorkspace", {});
+					Topic.publish("/Notification", {
+						message: "Copied contents of "+ paths.length + (paths.length ? " items" : 'item'),
+						type: "message"
+					});
+					return res;
+				}, function(err){
+					console.log('the error', err)
+					Topic.publish("/Notification", {
+						message: "Copy failed",
+						type: "error",
+					});
+				})
+		},
+
+		move: function(paths, dest){
+			var _self = this;
+
+			var srcDestPaths = paths.map(function(path){
+				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
+			})
+
+			return Deferred.when(_self.api("Workspace.copy", [{
+					objects: srcDestPaths,
+					recursive: true,
+					move: true
+				}]),
+				function(res){
+					console.log('server res', res)
+					Topic.publish("/refreshWorkspace", {});
+					Topic.publish("/Notification", {
+						message: "Moved contents of "+ paths.length + (paths.length ? " items" : 'item'),
+						type: "message"
+					});
+					return res;
+				})
+		},
+
 
 		rename: function(path, newName){
 			var _self = this;
-
-			if(path.split('/').length <= 3) {
-				return _self.renameWorkspace(path, newName)
-			}
-
 
 			if(path.split('/').length <= 3) {
 				return _self.renameWorkspace(path, newName)
@@ -418,7 +466,6 @@ define([
 					return null;
 				}, function(err){
 
-					console.log(err)
 					return Deferred.when(_self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
 						recursive: true,
@@ -545,14 +592,11 @@ define([
 					includeSubDirs: false,
 					recursive: recursive ? true : false
 				}]), function(results){
-					//console.log("path: ", path);
 
 					if(!results[0] || !results[0][path]){
 						return [];
 					}
 					var res = results[0][path];
-
-					//console.log("array res", res);
 
 					res = res.map(function(r){
 						return _self.metaListToObj(r);
@@ -573,7 +617,6 @@ define([
 						})
 					}
 
-					//console.log("Final getFolderContents()", res)
 					return res;
 				},
 
@@ -585,13 +628,14 @@ define([
 
 
 		setPermissions: function(path, permissions){
+
 			var _self = this;
 			return Deferred.when(this.api("Workspace.set_permissions", [{
 				path: path,
 				permissions: permissions
 
-			}]), function(results) {
-				console.log('results', results)
+			}]), function(res) {
+				return res;
 			},
 
 			function(err){

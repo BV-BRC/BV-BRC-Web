@@ -28,6 +28,7 @@ define([
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
+		title: "Choose or Upload a Workspace Object",
 		reset: function(){
 			this.searchBox.set('value', '');
 		},
@@ -171,7 +172,10 @@ define([
 			}
 			if(!this.dialog){
 				var _self = this;
-				this.dialog = new Dialog({title: "Choose or Upload a Workspace Object", draggable: true});
+				this.dialog = new Dialog({
+					title: this.title,
+					draggable: true
+				});
 				var frontBC = new BorderContainer({style: {width: "700px", height: "500px"}});
 				var backBC = new BorderContainer({
 					style: {
@@ -238,6 +242,7 @@ define([
 						_self.set("value", _self.selection.path);
 					}
 
+					_self.onSelection(_self.selection.path);
 					_self.dialog.hide();
 				});
 				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
@@ -342,11 +347,15 @@ define([
 			}));
 		},
 		onSearchChange: function(value){
+			console.log('search change')
 			this.set("value", value);
 			this.onChange(value);
 			this.validate(true);
 		},
 		onChange: function(value){
+		},
+		onSelection: function(){
+
 		},
 		startup: function(){
 			if(this._started){
@@ -489,13 +498,10 @@ define([
 						_self.dialog.hide()
 					}
 				}
-				// console.log("ItemDblClick for chooser: ", evt);
-				//	var row = evt.rows[0];
-				//	var data = row.data;
-				//	console.log("selected: ", data);
 			});
 
 			grid.on("select", function(evt){
+				console.log('SELECTION!!!!!')
 				var row = evt.rows[0];
 				_self.set("selection", row.data);
 			});
