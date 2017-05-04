@@ -154,10 +154,65 @@ define([
 					var headers, content = [], filename;
 
 					switch(this.type){
-						case "subsystem":
-							headers = ["Subsystem Id", "Subsystem Name", "Subclass", "Role Name", "Role ID", "Refseq Locus Tag", "Product", "Patric ID", "Genome Name", "Genome ID", "Gene", "Feature ID", "Class", "Alt Locus Tag", "Active"];
+
+						case "subsystems":
+							headers = [
+									"Class", 
+									"Subclass", 
+									"Subsystem Id", 
+									"Subsystem Name", 
+									"Role ID", 
+									"Role Name", 
+									"Active",  
+									"Patric ID", 
+									"Gene", 
+									"Product"
+								]
+
 							data.forEach(function(row){
-								content.push([row.subsystem_id, JSON.stringify(row.subsystem_name), JSON.stringify(row.subclass), row.role_name, row.role_id, row.refseq_locus_tag, row.product, row.patric_id, row.genome_name, row.genome_id, row.gene, row.feature_id, row.class, row.alt_locus_tag, row.active]);
+								content.push([
+									row.class, 
+									JSON.stringify(row.subclass), 
+									row.subsystem_id, 
+									JSON.stringify(row.subsystem_name), 
+									row.role_id,
+									row.role_name, 
+									row.active,
+									row.patric_id, 
+									row.gene,
+									row.product	
+								]);
+							});
+							filename = "PATRIC_subsystems";
+							break;
+
+						case "genes":
+							headers = [
+									"Class", 
+									"Subclass", 
+									"Subsystem Id", 
+									"Subsystem Name", 
+									"Role ID", 
+									"Role Name", 
+									"Active",  
+									"Patric ID", 
+									"Gene", 
+									"Product"
+								]
+
+							data.forEach(function(row){
+								content.push([
+									row.class, 
+									JSON.stringify(row.subclass), 
+									row.subsystem_id, 
+									JSON.stringify(row.subsystem_name), 
+									row.role_id,
+									row.role_name, 
+									row.active,
+									row.patric_id, 
+									row.gene,
+									row.product	
+								]);
 							});
 							filename = "PATRIC_subsystems";
 							break;

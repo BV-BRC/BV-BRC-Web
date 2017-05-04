@@ -83,6 +83,29 @@ define([
 						search: search
 					}));
 					break;
+				case "genes":
+					var search = this.state.search + "&group((field,subsystem_id),(format,simple),(ngroups,false),(limit,1),(facet,false))" +
+						"&json(facet," + encodeURIComponent(JSON.stringify({
+							stat: {
+								field: {
+									field: "subsystem_id",
+									limit: -1
+									// ,
+									// facet: {
+									// 	genome_count: "unique(genome_id)",
+									// 	gene_count: "unique(feature_id)",
+									// 	ec_count: "unique(ec_number)",
+									// 	genome_ec: "unique(genome_ec)"
+									// }
+								}
+							}
+						})) + ")";
+
+					// console.log("PATHWAY LIST SEARCH: ", search);
+					activeTab.set("state", lang.mixin({}, this.state, {
+						search: search
+					}));
+					break;
 				
 				default:
 					var activeQueryState;
@@ -131,8 +154,6 @@ define([
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
 
-			//TODO - add interactions gridcontainer
-
 			this.subsystems = new SubSystemsGridContainer({
 				title: "Subsystems",
 				id: this.viewer.id + "_" + "subsystems",
@@ -140,10 +161,16 @@ define([
 				primaryKey: "subsystem_id",
 			});
 
-			//TODO - add genes gridcontainer
+			this.genes = new SubSystemsGridContainer({
+				title: "Genes",
+				id: this.viewer.id + "_" + "genes",
+				disabled: false,
+				primaryKey: "subsystem_id",
+			});
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.subsystems);
+			this.viewer.addChild(this.genes);
 
 		},
 		onSetTotalPathways: function(attr, oldVal, newVal){

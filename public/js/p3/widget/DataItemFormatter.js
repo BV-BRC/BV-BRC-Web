@@ -588,51 +588,32 @@ define([
 		"subsystem_data": function(item, options){
 			options = options || {};
 
-			var columns = [{
-				name: 'Subsystem ID',
-				text: 'subsystem_id'
+			var columns = [
+
+			{
+				name: 'Class',
+				text: 'class'
+			}, {
+				name: 'Subclass',
+				text: 'subclass'
 			}, {
 				name: 'Subsystem Name',
 				text: 'subsystem_name'
 			}, {
-				name: 'Subsystem Class',
-				text: 'subclass'
-			}, {
-				name: 'Genome ID',
-				text: 'genome_id'
-			}, {
-				name: 'Genome Name',
-				text: 'genome_name'
-			}, {
-				name: 'Class',
-				text: 'class'
-			}, {
 				name: 'Role Name',
 				text: 'role_name'
-			}, {
-				name: 'Role ID',
-				text: 'role_id'
 			}, {
 				name: 'Active',
 				text: 'active'
 			}, {
-				name: 'Product',
-				text: 'product'
+				name: 'Patric ID',
+				text: 'patric_id'
 			}, {
 				name: 'Gene',
 				text: 'gene'
 			}, {
-				name: 'Alternative Locus Tag',
-				text: 'alt_locus_tag'
-			}, {
-				name: 'Refseq Locus Tag',
-				text: 'refseq_locus_tag'
-			}, {
-				name: 'Feature ID',
-				text: 'feature_id'
-			}, {
-				name: 'Patric ID',
-				text: 'patric_id'
+				name: 'Product',
+				text: 'product'
 			}];
 
 			var div = domConstruct.create("div");

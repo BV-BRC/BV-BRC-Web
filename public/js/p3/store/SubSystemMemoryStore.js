@@ -107,7 +107,7 @@ define([
 		},
 
 		queryTypes: {
-			subsystem: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			subsystems: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -122,20 +122,20 @@ define([
 				}
 			})) + ")",
 
-			roleId: "&group((field,role_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-			"&json(facet," + encodeURIComponent(JSON.stringify({
-				stat: {
-					field: {
-						field: "ec_number",
-						limit: -1,
-						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							role_id: "unique(role_id)"
-						}
-					}
-				}
-			})) + ")",
+			// gene: "&group((field,role_id),(format,simple),(ngroups,false),(limit,1),(facet,true))" +
+			// "&json(facet," + encodeURIComponent(JSON.stringify({
+			// 	stat: {
+			// 		field: {
+			// 			field: "ec_number",
+			// 			limit: -1,
+			// 			facet: {
+			// 				genome_count: "unique(genome_id)",
+			// 				gene_count: "unique(feature_id)",
+			// 				role_id: "unique(role_id)"
+			// 			}
+			// 		}
+			// 	}
+			// })) + ")",
 			genes: "&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
@@ -143,8 +143,8 @@ define([
 						field: "feature_id",
 						limit: -1,
 						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
+							// genome_count: "unique(genome_id)",
+							// gene_count: "unique(feature_id)",
 							role_id: "unique(role_id)"
 						}
 					}
@@ -220,7 +220,7 @@ define([
 
 				var docs = [];
 				var props = {
-					"subsystem": "subsystem_id",
+					"subsystems": "subsystem_id",
 					"roleid": "role_id",
 					"genes": 'feature_id'
 				};

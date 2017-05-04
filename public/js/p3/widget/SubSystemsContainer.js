@@ -112,23 +112,38 @@ define([
 			//console.log("PathwaysContainer onFirstView()");
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
+			var subsystemsStore = this.subsystemsStore = new SubSystemMemoryStore({type: "subsystems"});
+			var geneSubsystemsStore = this.geneSubsystemsStore = new SubSystemMemoryStore({type: "genes"});
+
 			var tabController = new StackController({
 				containerId: this.id + "_TabContainer",
 				region: "top",
 				"class": "TextTabButtons"
 			});
 
-			var subsystemStore = this.subsystemStore = new SubSystemMemoryStore({
-				type: "subsystem"
-			});
 
 			this.subsystemsGrid = new SubSystemsGridContainer({
 				title: "Subsystems",
-				type: "subsystem",
+				type: "subsystems",
 				// state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
-				store: subsystemStore,
+				store: subsystemsStore,
+				facetFields: ["subclass"],
+				queryOptions: {
+					sort: [{attribute: "subsystem_id"}]
+				},
+				enableFilterPanel: true,
+				visible: true
+			});
+
+			this.genesGrid = new SubSystemsGridContainer({
+				title: "Genes",
+				type: "genes",
+				// state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				store: geneSubsystemsStore,
 				facetFields: ["subclass"],
 				queryOptions: {
 					sort: [{attribute: "subsystem_id"}]
@@ -140,6 +155,7 @@ define([
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.subsystemsGrid);
+			this.tabContainer.addChild(this.genesGrid);
 
 			
 			topic.subscribe(this.id + "_TabContainer-selectChild", lang.hitch(this, function(page){
