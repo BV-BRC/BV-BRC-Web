@@ -604,7 +604,11 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 
 				if(push_flag){
 					var order = geneOrderMap[gene.feature_id];
-					cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
+					if (gene.patric_id){
+						cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
+					} else {
+						cols[order] = createColumn(order, gene.feature_id, gene.gene + " - " + gene.product, gene.dist, meta);					
+					}
 				}
 			}, this);
 
