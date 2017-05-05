@@ -30,8 +30,7 @@ define([
 			active: {label: "Active", field: "active"},
 			patric_id: {label: "Patric ID", field: "patric_id"},
 			gene: {label: "Gene", field: "gene"},
-			product: {label: "Product", field: "product"},
-			count: {label: "Count", field: ""}
+			product: {label: "Product", field: "product"}
 			
 		},
 
