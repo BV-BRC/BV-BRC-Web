@@ -16,7 +16,7 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "id",
+		idProperty: "subsystem_id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null, 
