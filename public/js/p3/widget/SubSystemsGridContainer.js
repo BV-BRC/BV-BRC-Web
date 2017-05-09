@@ -52,10 +52,10 @@ define([
 
 	return declare([GridContainer], {
 		containerType: "subsystem_data",
-		//facetFields: ["subsystem_class", "subsystem_name", "role_id"],
+		facetFields: ["subsystem_class", "subsystem_name", "role_id"],
 		maxGenomeCount: 500,
 		maxDownloadSize: 2000,
-		dataModel: "subsystem",
+		dataModel: "subsystemx",
 		getFilterPanel: function(opts){
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([

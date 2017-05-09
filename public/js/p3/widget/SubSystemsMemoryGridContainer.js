@@ -51,8 +51,8 @@ define([
 	return declare([GridContainer], {
 		gridCtor: SubSystemsGrid,
 		containerType: "subsystem_data",
-		defaultFilter: "eq(annotation,%22PATRIC%22)",
-		facetFields: ["annotation"],
+		// defaultFilter: "eq(annotation,%22PATRIC%22)",
+		// facetFields: ["annotation"],
 		enableFilterPanel: true,
 		apiServer: window.App.dataServiceURL,
 		store: null,
@@ -62,7 +62,7 @@ define([
 		primaryKey: "id",
 		maxDownloadSize: 25000,
 		typeMap: {
-			"subsystem": "subsystem_id",
+			"subsystems": "subsystem_id",
 			"role_id": "role_id",
 			"gene": "feature_id"
 		},
@@ -243,7 +243,7 @@ define([
 					validTypes: ["genome_feature"],
 					multiple: false,
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
-					validContainerTypes: ["pathway_data"],
+					validContainerTypes: ["subsystem_data"],
 					pressAndHold: function(selection, button, opts, evt){
 						console.log("PressAndHold");
 						console.log("Selection: ", selection, selection[0])
@@ -268,14 +268,14 @@ define([
 				false
 			],
 			[
-				"ViewPathwayMap",
+				"ViewSubsystemMap",
 				"fa icon-map-o fa-2x",
 				{
 					label: "Map",
 					multiple: false,
 					validTypes: ["*"],
-					tooltip: "View PathwayMap",
-					validContainerTypes: ["pathway_data"]
+					tooltip: "View SubsystemMap",
+					validContainerTypes: ["subsystem_data"]
 				},
 				function(selection){
 					// console.log(selection, this.type, this.state);
@@ -291,15 +291,15 @@ define([
 					}
 
 					switch(this.type){
-						case "pathway":
-							url['pathway_id'] = selection[0].pathway_id;
+						case "subsystems":
+							url['subsystem_id'] = selection[0].pathway_id;
 							break;
-						case "ec_number":
-							url['pathway_id'] = selection[0].pathway_id;
-							url['ec_number'] = selection[0].ec_number;
+						case "role_id":
+							url['subsystem_id'] = selection[0].pathway_id;
+							url['role_id'] = selection[0].ec_number;
 							break;
 						case "gene":
-							url['pathway_id'] = selection[0].pathway_id;
+							url['subsystem_id'] = selection[0].pathway_id;
 							url['feature_id'] = selection[0].feature_id;
 							break;
 						default:

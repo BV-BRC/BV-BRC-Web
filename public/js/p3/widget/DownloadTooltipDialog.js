@@ -267,7 +267,7 @@ define([
 			"subsystem_data": {
 				pk: "subsystem_id",
 				dataType: "subsystem",
-				"label": "Subsystems",
+				"label": "Subsystem",
 				"generateDownloadFromStore": true,
 				tableData: true
 			},
