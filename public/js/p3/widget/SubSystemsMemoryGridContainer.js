@@ -64,7 +64,7 @@ define([
 		typeMap: {
 			"subsystems": "subsystem_id",
 			"role_id": "role_id",
-			"gene": "feature_id"
+			"genes": "feature_id"
 		},
 		_setQueryAttr: function(query){
 			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
