@@ -117,7 +117,7 @@ define([
 						facet: {
 							genome_count: "unique(genome_id)",
 							gene_count: "unique(feature_id)",
-							role_id: "unique(role_id)"
+							role_count: "unique(role_id)"
 						}
 					}
 				}
@@ -212,7 +212,14 @@ define([
 							map[b["val"]] = b;
 							delete b["val"];
 						});
-						docs = ds;
+						docs = ds.map(function(doc){
+							var p = props[this.type];
+							var pv = doc[p];
+							lang.mixin(doc, map[pv] || {});
+						
+							return doc;
+						}, this);
+
 						_self.setData(docs);
 						_self._loaded = true;
 						return true;
