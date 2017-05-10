@@ -7,7 +7,7 @@ define([
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, Topic, WorkspaceManager){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-		"baseClass": "CreateFolder",
+		baseClass: "CreateFolder",
 		templateString: Template,
 		path: "",
 		_setPathAttr: function(p){
@@ -38,7 +38,6 @@ define([
 				domClass.add(this.domNode, "Working");
 
 				WorkspaceManager.createFolder(this.path + values.name).then(function(results){
-
 					domClass.remove(_self.domNode, "Working");
 					var path = "/" + ["workspace", results.path].join("/");
 					Topic.publish("/refreshWorkspace", {});

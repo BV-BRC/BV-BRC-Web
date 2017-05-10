@@ -355,7 +355,9 @@ define([
 
 			}, false);
 
-			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
+			var dtsfc = '<div>Download Job Results:</div>'+
+						'<div class="wsActionTooltip" rel="circos.svg">SVG Image</div>'+
+						'<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
 			var downloadTTSelectFile = new TooltipDialog({
 				content: dtsfc, onMouseLeave: function(){
 					popup.close(downloadTTSelect);
@@ -383,8 +385,6 @@ define([
 
 			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader, function(evt){
 				var rel = evt.target.attributes.rel.value;
-//				console.log("REL: ", rel);
-//				console.log("SELECTION: ", this._actions.SelectDownloadSeqComparison.selection);
 				var outputFiles = this._actions.SelectDownloadSeqComparison.selection.autoMeta.output_files;
 				outputFiles.some(function(t){
 					var fname = t[0];
@@ -429,7 +429,9 @@ define([
 			}, function(selection){
 				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"});
+				Topic.publish("/navigate", {
+					href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"
+				});
 			}, false);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
@@ -480,7 +482,8 @@ define([
 				});
 			},  self.path.split('/').length < 3);
 
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>'+
+					  '<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
 					popup.close(viewFASTATT);
@@ -966,8 +969,6 @@ define([
 							style: "width: 250px !important;"
 						}).show();
 					})
-
-
 				}
 			})
 			dlg.startup()

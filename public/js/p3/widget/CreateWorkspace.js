@@ -7,7 +7,7 @@ define([
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, Topic, WorkspaceManager){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-		"baseClass": "CreateWorkspace",
+		baseClass: "CreateWorkspace",
 		templateString: Template,
 		validate: function(){
 			var valid = this.inherited(arguments);
@@ -33,7 +33,11 @@ define([
 					domClass.remove(_self.domNode, "Working");
 					var path = "/" + ["workspace", results.path].join("/");
 					Topic.publish("/refreshWorkspace", {});
-					on.emit(_self.domNode, "dialogAction", {action: "close", navigate: path, bubbles: true});
+
+					on.emit(_self.domNode, "dialogAction", {
+						action: "close",
+						bubbles: true
+					});
 				}, function(err){
 					console.log("Error:", err);
 					domClass.remove(_self.domNode, "Working");
