@@ -50,7 +50,7 @@ define([
 			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
 			aa_length: {label: "Length (AA)", field: "aa_length", hidden: true},
 			product: {label: "Product", field: "product", hidden: false},
-			go: {label: "GO Terms", field: "go", hidden: true}
+			go: {label: "GO Terms", field: "go", sortable: false, hidden: true}
 		},
 		_setQuery: function(query){
 			this.inherited(arguments);

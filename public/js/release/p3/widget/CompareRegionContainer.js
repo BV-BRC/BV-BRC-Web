@@ -1,13 +1,13 @@
 define("p3/widget/CompareRegionContainer", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/when", "dojo/topic",
-	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/form/Select", "dijit/form/Button",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/form/Select", "dijit/form/Button", "dijit/Dialog",
 	"dojox/widget/Standby",
 	"FileSaver",
 	"./SEEDClient", "./CompareRegionViewer"
 ], function(declare, lang,
 			domConstruct, when, Topic,
-			BorderContainer, ContentPane, Select, Button,
+			BorderContainer, ContentPane, Select, Button, Dialog,
 			Standby,
 			saveAs,
 			SEEDClient, CompareRegionViewer){
@@ -56,7 +56,15 @@ define("p3/widget/CompareRegionContainer", [
 
 			if(this.viewer){
 				// this.viewer.set('state', state);
-				this.render(state.feature.patric_id, 10000, 10, "pgfam", "representative+reference");
+				if (state.feature.feature_type === 'CDS'){
+					this.render(state.feature.patric_id, 10000, 10, "pgfam", "representative+reference");
+				}else{
+					new Dialog({
+						title: '',
+						content: 'Compare Region Viewer is only available for CDS features.',
+						style: "width: 400px"
+					}).show();
+				}
 			}
 
 			this._set('state', state);
@@ -68,7 +76,15 @@ define("p3/widget/CompareRegionContainer", [
 				function(data){
 					// console.log(data);
 					this.compare_regions.set_data(data);
-					this.compare_regions.render();
+					try {
+						this.compare_regions.render();
+					} catch (err) {
+						console.log(err);
+						new Dialog({
+							title: 'Please report this error: ' + err.name,
+							content: err.message
+						}).show();
+					}
 					this.loadingMask.hide();
 				}.bind(this),
 				function(err){
