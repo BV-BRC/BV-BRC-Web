@@ -626,6 +626,31 @@ define([
 				})
 		},
 
+		listSharedWithUser: function(path){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.ls", [{
+					paths: ['/'],
+				}]), function(results){
+					var allWS = results[0]['/'];
+
+					// transform to human friendly
+					allWS = allWS.map(function(r){ return _self.metaListToObj(r); })
+
+					// filter out public and owner's folders (silly, I know)
+					var sharedWithUser = allWS.filter(function(r){
+						if(r.global_permission !== 'n') return false;
+						else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+						return true;
+					})
+
+
+					return sharedWithUser;
+				},
+
+				function(err){
+					_self.showError(err);
+				})
+		},
 
 		setPermissions: function(path, permissions){
 

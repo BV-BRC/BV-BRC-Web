@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
 	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager",
-	"dojo/topic", '../WorkspaceManager'
+	"dojo/topic", '../WorkspaceManager', "dojo/promise/all"
 ], function(declare, WidgetBase, on,
 			domClass, domConstr, WorkspaceGrid,
 			Deferred, domGeometry, JobManager,
-			Topic, WorkspaceManager){
+			Topic, WorkspaceManager, all){
 	return declare([WorkspaceGrid], {
 		"disabled": false,
 		path: "/",
@@ -43,8 +43,21 @@ define([
 			}
 
 			var filterPublic =  ws == '/' ? true : false;
-			var prom = WorkspaceManager.getFolderContents(ws, window.App && window.App.showHiddenFiles, null, filterPublic)
-			return Deferred.when(prom, function(res){
+			var prom1 = WorkspaceManager.getFolderContents(ws, window.App && window.App.showHiddenFiles, null, filterPublic);
+
+			// if listing user's top level, included 'shared with me' as well
+			var userID = window.App.user.id;
+			var isUserTopLevel = (ws == '/'+userID);
+			if(isUserTopLevel){
+				var prom2 = WorkspaceManager.listSharedWithUser(userID);
+			}
+
+			return all([prom1, prom2]).then(function(results){
+				var res = results[0];
+
+				// join 'shared with me' data if needed
+				if(isUserTopLevel) res = res.concat(results[1]);
+
 
 				var paths = res.map(function(obj) { return obj.path; });
 				var prom2 = WorkspaceManager.listPermissions(paths)

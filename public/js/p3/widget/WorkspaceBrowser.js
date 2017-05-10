@@ -469,7 +469,7 @@ define([
 				});
 			}, self.path.split('/').length > 3);
 
-			var addFolderBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-hdd-o fa-2x", {
+			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-hdd-o fa-2x", {
 				label: "ADD WORKSPACE",
 				validTypes: ["folder"],
 				tooltip: "Create Workspace"
@@ -479,9 +479,6 @@ define([
 					type: "CreateWorkspace",
 				});
 			},  self.path.split('/').length < 3);
-
-
-			//addFolderBtnaddFolderBtn.innerHTML = "NEW WORKSPACE";
 
 			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
@@ -869,7 +866,10 @@ define([
 				objSelector.title = "Copy contents of " + selection.length +
 									(selection.length ? " items" : " item") +
 									" to...";
-				objSelector.set('path', self.path);
+
+				// always set to user's root
+				objSelector.set('path', '/'+window.App.user.id);
+
 				objSelector.onSelection = function(destPath){
 					var paths = selection.map(function(obj){ return obj.path });
 					WorkspaceManager.copy(paths, destPath);
@@ -895,7 +895,10 @@ define([
 				objSelector.title = "Move contents of " + selection.length +
 									(selection.length ? " items" : " item") +
 									" to...";
-				objSelector.set('path', self.path);
+
+				// always set to user's root
+				objSelector.set('path', '/'+window.App.user.id);
+
 				objSelector.onSelection = function(destPath){
 					var paths = selection.map(function(obj){ return obj.path });
 					WorkspaceManager.move(paths, destPath);
