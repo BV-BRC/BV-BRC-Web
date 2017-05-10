@@ -148,8 +148,6 @@ define([
 			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
 
-			console.log('THING', this.path.split('/').length )
-
 			var buttonContainer = domConstr.create("div", {
 				style: {
 					"font-size": ".85em",

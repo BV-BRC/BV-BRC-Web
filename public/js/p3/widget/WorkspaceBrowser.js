@@ -935,8 +935,6 @@ define([
 				placeHolder: "Enter your new name..."
 			});
 
-			//domConstruct.place(nameInput, conf);
-
 			var dlg = new Confirmation({
 				title: "Rename <i>"+path+'</i>',
 				content: nameInput.domNode,
@@ -946,7 +944,6 @@ define([
 				onConfirm: function(evt){
 					var _self = this;
 
-					console.log(nameInput.get('value'), path.slice(path.lastIndexOf('/')+1))
 					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value'))
 						var d = new Dialog({
 							content: "Please pick a new name.",
@@ -956,7 +953,6 @@ define([
 
 					var prom = WorkspaceManager.rename(path, nameInput.get('value'))
 					Deferred.when(prom, function(res){
-						console.log('renamed the FIlE!')
 						Topic.publish("/refreshWorkspace", {});
 						Topic.publish("/Notification", {message: "File renamed", type: "message"});
 
@@ -964,8 +960,6 @@ define([
 						self.itemDetailPanel.set('selection', []);
 						_self.hideAndDestroy();
 					}, function(error){
-						console.log('DID NOT RENaME FILE', error)
-
 						var d = new Dialog({
 							content: error.toString(),
 							title: "Oh no!",
@@ -1123,10 +1117,6 @@ define([
 						query('tbody', currentUsers)[0]
 					);
 				})
-
-				//if(perms.length == 1) {
-				//	dojo.place('<tr><td>Add more users below...<td>&nbsp;<td>&nbsp;', query('tbody', currentUsers)[0])
-				//}
 
 				// event for deleting users
 				reinitDeleteEvents();

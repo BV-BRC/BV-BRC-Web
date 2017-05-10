@@ -30,7 +30,7 @@ define([
 		constructor: function(){
 			var _self = this;
 			if(!this.store){
-			//https://user.patricbrc.org/user/?or(eq(last_name,re:%5eMac),eq(first_name,re:%5eMac))&http_accept=application/json
+			    //https://user.patricbrc.org/user/?or(eq(last_name,re:%5eMac),eq(first_name,re:%5eMac))&http_accept=application/json
 				this.store = new Store({
 					target: PathJoin(this.apiServiceUrl, "user") + "/",
 					idProperty: "id",
@@ -41,9 +41,7 @@ define([
 
 			var orig = this.store.query;
 			this.store.query = lang.hitch(this.store, function(query, options){
-				//console.log('query', query, options)
 
-				// console.log("Store Headers: ", _self.store.headers);
 				var q = "";
 				if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
 					if(_self.extraSearch){
@@ -64,12 +62,13 @@ define([
 					q += _self.queryFilter
 				}
 
+				// only select what is in  _self.resultFields
 				if(_self.resultFields && _self.resultFields.length > 0){
 					q += "&select(" + _self.resultFields.join(",") + ")";
 				}
 
 				q += "&limit("+_self.pageSize+")";
-				// console.log("Q: ", q);
+
 				return orig.apply(_self.store, [q, options]);
 			});
 		},
@@ -103,52 +102,6 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 
-			/*
-			this.filterButton = domConstr.create("i", {
-				"class": "fa icon-filter fa-1x",
-				style: {"float": "left", "font-size": "1.2em", "margin": "2px"}
-			});
-			domConstr.place(this.filterButton, this.domNode, "first");
-
-
-			var dfc = domConstr.create("div");
-			domConstr.create("div", {innerHTML: "Include in Search", style: {"font-weight": 900}}, dfc);
-
-			var publicDiv = domConstr.create('div', {});
-			domConstr.place(publicDiv, dfc, "last");
-			var publicCB = new Checkbox({checked: true})
-			publicCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Public Genomes to " + val);
-				this.set("includePublic", val);
-			}));
-
-			domConstr.place(publicCB.domNode, publicDiv, "first");
-			domConstr.create("span", {innerHTML: "Public Genomes"}, publicDiv);
-
-			var privateDiv = domConstr.create('div', {});
-			domConstr.place(privateDiv, dfc, "last");
-			var privateCB = new Checkbox({checked: true})
-			privateCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Private Genomes to " + val);
-				this.set("includePrivate", val);
-			}));
-			domConstr.place(privateCB.domNode, privateDiv, "first");
-			domConstr.create("span", {innerHTML: "My Genomes"}, privateDiv);
-
-			var filterTT = new TooltipDialog({
-				content: dfc, onMouseLeave: function(){
-					popup.close(filterTT);
-				}
-			})
-
-			on(this.filterButton, "click", lang.hitch(this, function(){
-				popup.open({
-					popup: filterTT,
-					around: this.domNode,
-					orient: ["below"]
-				});
-			}));
-			*/
 		},
 
 		/*isValid: function(){
@@ -156,14 +109,11 @@ define([
 		},*/
 
 		getSelected: function(){
-			return this.attr('value');
+			return this.attr('value') + '@patricbrc.org';
 		},
 
 		labelFunc: function(item, store){
-
-			//console.log('item', item)
 			var label = item.id + ('name' in item ? ' <<i>' + item.name + '</i>>' : '');
-
 			return label;
 		}
 	});
