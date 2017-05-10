@@ -148,6 +148,8 @@ define([
 			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
 
+			console.log('THING', this.path.split('/').length )
+
 			var buttonContainer = domConstr.create("div", {
 				style: {
 					"font-size": ".85em",
@@ -155,7 +157,9 @@ define([
 					"float": "right",
 					"text-align": "right"
 				},
-				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;"></i>&nbsp;'+
+				innerHTML: (this.path.split('/').length <= 3 ?
+						   '<i rel="createWS" class="fa icon-drive-o fa-2x" style="vertical-align: bottom;"></i>&nbsp;' :
+						   '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;"></i>&nbsp;')+
 						   (this.allowUpload ? '<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i>' : '')
 			}, wrap);
 
@@ -174,159 +178,159 @@ define([
 		},
 
 		openChooser: function(){
-			if(this.disabled){
+			if(this.disabled || this.dialog){
 				return;
 			}
-			if(!this.dialog){
-				var _self = this;
-				this.dialog = new Dialog({
-					title: this.title,
-					draggable: true
-				});
-				var frontBC = new BorderContainer({style: {width: "700px", height: "500px"}});
-				var backBC = new BorderContainer({
-					style: {
-						width: "700px",
-						height: "500px",
-						margin: "0",
-						padding: "0px"
+
+			var _self = this;
+			this.dialog = new Dialog({
+				title: this.title,
+				draggable: true
+			});
+			var frontBC = new BorderContainer({style: {width: "700px", height: "500px"}});
+			var backBC = new BorderContainer({
+				style: {
+					width: "700px",
+					height: "500px",
+					margin: "0",
+					padding: "0px"
+				}
+			});
+
+			domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
+
+			var selectionPane = new ContentPane({
+				region: "top",
+				content: this.createSelectedPane(),
+				style: "border:0px;"
+			});
+
+			var viewSelector = new Select({
+				name: "togglePublic",
+				style: { width: '100px' },
+				options: [
+					{
+						label: "My Workspaces",
+						value: "mine",
+						selected:  _self.path.split('/')[1] != 'public'
+					},{
+						label: "Public Workspaces",
+						value: "public",
+						selected:  _self.path.split('/')[1] == 'public'
 					}
-				});
+				]
+			})
 
-				domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
+			viewSelector.on('change', function(val){
+				if(val == 'mine') {
+					var home = '/'+window.App.user.id+'/home';
+					_self.set('path', home);
+				}else if(val == 'public'){
+					_self.set('path', '/public/')
+				}
+			})
 
-				var selectionPane = new ContentPane({
+			domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
+
+			var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
+			var span = domConstr.create("span", {style: {"float": 'left'}});
+			domConstr.place(span, buttonsPane.containerNode, "first");
+			this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
+			this.showUnspecifiedWidget.on("change", function(val){
+				// console.log("changed showUnspecifiedwidget: ", val);
+				_self.set("showUnspecified", val);
+			});
+			domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
+			domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
+			var cancelButton = new Button({label: "Cancel"});
+			cancelButton.on('click', function(){
+				_self.dialog.hide();
+			});
+			var okButton = this.okButton = new Button({label: "OK"});
+
+			okButton.on("click", function(evt){
+				if(_self.selection){
+					_self.set("value", _self.selection.path);
+				}
+
+				_self.onSelection(_self.selection.path);
+				_self.dialog.hide();
+			});
+			domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
+			domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
+
+
+			on(selectionPane.domNode, "i:click", function(evt){
+				// console.log("Click: ", evt);
+				var rel = domAttr.get(evt.target, "rel");
+				switch(rel){
+					case "upload":
+						_self.dialog.flip();
+						break;
+					case "createFolder":
+						// console.log("Create Folder", _self.grid.row(0));
+						var element = _self.grid.row(0).element;
+						// console.log("element: ", element);
+						_self.grid.addNewFolder({id: "untitled"});
+
+						break;
+				}
+			});
+			// var _self = this;
+
+			var grid = this.grid = this.createGrid();
+
+			frontBC.addChild(selectionPane);
+			frontBC.addChild(grid);
+			frontBC.addChild(buttonsPane);
+			frontBC.startup();
+
+
+			// add uploader to back side of dialog
+			if (_self.allowUpload) {
+				var backhead = new ContentPane({
 					region: "top",
-					content: this.createSelectedPane(),
-					style: "border:0px;"
+					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
 				});
-
- 				var viewSelector = new Select({
-					name: "togglePublic",
-					style: { width: '100px' },
-					options: [
-						{
-							label: "My Workspaces",
-							value: "mine",
-							selected:  _self.path.split('/')[1] != 'public'
-						},{
-							label: "Public Workspaces",
-							value: "public",
-							selected:  _self.path.split('/')[1] == 'public'
-						}
-					]
-				})
-
-				viewSelector.on('change', function(val){
-					if(val == 'mine') {
-						var home = '/'+window.App.user.id+'/home';
-						_self.set('path', home);
-					}else if(val == 'public'){
-						_self.set('path', '/public/')
-					}
-				})
-
-				domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
-
-				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
-				var span = domConstr.create("span", {style: {"float": 'left'}});
-				domConstr.place(span, buttonsPane.containerNode, "first");
-				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
-				this.showUnspecifiedWidget.on("change", function(val){
-					// console.log("changed showUnspecifiedwidget: ", val);
-					_self.set("showUnspecified", val);
-				});
-				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
-				domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
-				var cancelButton = new Button({label: "Cancel"});
-				cancelButton.on('click', function(){
-					_self.dialog.hide();
-				});
-				var okButton = this.okButton = new Button({label: "OK"});
-
-				okButton.on("click", function(evt){
-					if(_self.selection){
-						_self.set("value", _self.selection.path);
-					}
-
-					_self.onSelection(_self.selection.path);
-					_self.dialog.hide();
-				});
-				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
-
-
-				on(selectionPane.domNode, "i:click", function(evt){
-					// console.log("Click: ", evt);
+				on(backhead.domNode, "span:click", function(evt){
 					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
-						case "upload":
+						case "flip":
 							_self.dialog.flip();
-							break;
-						case "createFolder":
-							// console.log("Create Folder", _self.grid.row(0));
-							var element = _self.grid.row(0).element;
-							// console.log("element: ", element);
-							_self.grid.addNewFolder({id: "untitled"});
-
 							break;
 					}
 				});
-				// var _self = this;
-
-				var grid = this.grid = this.createGrid();
-
-				frontBC.addChild(selectionPane);
-				frontBC.addChild(grid);
-				frontBC.addChild(buttonsPane);
-				frontBC.startup();
 
 
-				// add uploader to back side of dialog
-				if (_self.allowUpload) {
-					var backhead = new ContentPane({
-						region: "top",
-						content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
-					});
-					on(backhead.domNode, "span:click", function(evt){
-						var rel = domAttr.get(evt.target, "rel");
-						switch(rel){
-							case "flip":
-								_self.dialog.flip();
-								break;
-						}
-					});
+				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
+				var uploader = this.uploader = new Uploader({
+					path: _self.path,
+					region: "center",
+					multiple: false,
+					types: this.type,
+					pathLabel: "Upload file to: ",
+					buttonLabel: "Select File"
+				});
 
+				on(uploader.domNode, "dialogAction", function(evt){
+					// console.log("Uploader Dialog Action: ", evt);
+					if(evt.files && evt.files[0] && evt.action == "close"){
+						var file = evt.files[0];
+						_self.set("selection", file);
+						_self.set('value', file.path, true);
+						_self.dialog.hide();
+					}else{
+						_self.dialog.flip()
+					}
+				});
 
-					this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
-					var uploader = this.uploader = new Uploader({
-						path: _self.path,
-						region: "center",
-						multiple: false,
-						types: this.type,
-						pathLabel: "Upload file to: ",
-						buttonLabel: "Select File"
-					});
+				uploader.startup();
 
-					on(uploader.domNode, "dialogAction", function(evt){
-						// console.log("Uploader Dialog Action: ", evt);
-						if(evt.files && evt.files[0] && evt.action == "close"){
-							var file = evt.files[0];
-							_self.set("selection", file);
-							_self.set('value', file.path, true);
-							_self.dialog.hide();
-						}else{
-							_self.dialog.flip()
-						}
-					});
-
-					uploader.startup();
-
-					backBC.addChild(backhead);
-					backBC.addChild(uploader);
-					domConstr.place(backBC.domNode, this.dialog.backPane, "first");
-				}
+				backBC.addChild(backhead);
+				backBC.addChild(uploader);
+				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
 			}
+
 			this.dialog.flip("front");
 			this.dialog.show();
 		},
@@ -443,6 +447,8 @@ define([
 						get: function(item){
 							if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
 								return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+							}else if(item.type == "folder" && item.path.split('/').length <= 3){
+								return 'workspace'; // style as workspace "drive"
 							}
 							return item.type;
 						},
