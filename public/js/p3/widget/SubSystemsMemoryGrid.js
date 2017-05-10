@@ -14,7 +14,7 @@ define([
 		apiServer: window.App.dataServiceURL,
 		store: null,
 		dataModel: "subsystem",
-		primaryKey: "subsystem_id",
+		primaryKey: "id",
 		selectionModel: "extended",
 		loadingMessage: "Loading subsystems.  This may take several minutes...",
 		deselectOnRefresh: true,

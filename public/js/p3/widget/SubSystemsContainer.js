@@ -132,6 +132,7 @@ define([
 				facetFields: ["subclass"],
 				columns: {
 					"Selection Checkboxes": selector({unhidable: true}),
+					id: {label: 'ID', field: 'id', hidden: true},
 					subsystem_id: {label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
 					class: {label: "Class", field: "class"},
 					subclass: {label: 'Subclass', field: 'subclass'},
@@ -148,7 +149,7 @@ define([
 					
 				},
 				queryOptions: {
-					sort: [{attribute: "subsystem_id"}]
+					sort: [{attribute: "id"}]
 				},
 				enableFilterPanel: true,
 				visible: true
@@ -164,6 +165,7 @@ define([
 				facetFields: ["class", "subclass", "active"],
 				columns: {
 					"Selection Checkboxes": selector({unhidable: true}),
+					id: {label: 'ID', field: 'id', hidden: true},
 					subsystem_id: {label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
 					class: {label: "Class", field: "class"},
 					subclass: {label: 'Subclass', field: 'subclass'},
@@ -176,7 +178,7 @@ define([
 					product: {label: "Product", field: "product"}
 				},
 				queryOptions: {
-					sort: [{attribute: "subsystem_id"}]
+					sort: [{attribute: "id"}]
 				},
 				enableFilterPanel: true,
 				visible: true

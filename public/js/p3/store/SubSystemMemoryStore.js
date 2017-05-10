@@ -16,7 +16,7 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "subsystem_id",
+		idProperty: "id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null, 
@@ -203,7 +203,7 @@ define([
 
 				//flat queries return a different data format
 				if ( response && response.grouped && response.facets ) {
-					
+					//subsystems tab
 					if ( response.grouped[props[this.type]] ){
 						var ds = response.grouped[props[this.type]].doclist.docs;
 						var buckets = response.facets.stat.buckets;
@@ -232,6 +232,7 @@ define([
 					}
 
 				} else if ( response ) {
+					// genes tab
 					_self.setData(response.grouped.subsystem_id.doclist.docs);
 					_self._loaded = true;
 					return true;
