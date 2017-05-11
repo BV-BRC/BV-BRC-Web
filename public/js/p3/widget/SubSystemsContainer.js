@@ -23,12 +23,10 @@ define([
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection');
 		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery);
+
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
@@ -47,7 +45,6 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			//console.log("PathwaysContainer set STATE.  state: ", state, " First View: ", this._firstView);
 
 			if(!state){
 				return;
@@ -55,11 +52,11 @@ define([
 
 			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && this.tabContainer.selectedChildWidget.state != state){
 				this.tabContainer.selectedChildWidget.set('state', state);
+				this._firstView = false;
 			}
 
 			if(state.autoFilterMessage){
 				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:/misc/GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-1x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
-				// var msg = state.autoFilterMessage;
 				if(!this.messagePanel){
 					this.messagePanel = new ContentPane({
 						"class": "WarningPanel",
@@ -82,8 +79,6 @@ define([
 					this.removeChild(this.messagePanel)
 				}
 			}
-
-			// this._set("state", state);
 		},
 
 		visible: false,
@@ -93,11 +88,6 @@ define([
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-
-				// if(this.pathwaysGrid){
-				// 	this.pathwaysGrid.set("visible", true)
-				// }
-
 			}
 		},
 
@@ -109,7 +99,6 @@ define([
 			if(this._firstView){
 				return;
 			}
-			//console.log("PathwaysContainer onFirstView()");
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
 			var subsystemsStore = this.subsystemsStore = new SubSystemMemoryStore({type: "subsystems"});
@@ -127,7 +116,7 @@ define([
 				type: "subsystems",
 				// state: this.state,
 				apiServer: this.apiServer,
-				defaultFilter: this.defaultFilter,
+				//defaultFilter: this.defaultFilter,
 				store: subsystemsStore,
 				facetFields: ["subclass"],
 				columns: {
@@ -160,7 +149,7 @@ define([
 				type: "genes",
 				// state: this.state,
 				apiServer: this.apiServer,
-				defaultFilter: this.defaultFilter,
+				//defaultFilter: this.defaultFilter,
 				store: geneSubsystemsStore,
 				facetFields: ["class", "subclass", "active"],
 				columns: {
@@ -188,7 +177,6 @@ define([
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.subsystemsGrid);
 			this.tabContainer.addChild(this.genesGrid);
-
 			
 			topic.subscribe(this.id + "_TabContainer-selectChild", lang.hitch(this, function(page){
 				page.set('state', this.state)
@@ -196,7 +184,5 @@ define([
 
 			this._firstView = true;
 		}
-
 	})
 });
-
