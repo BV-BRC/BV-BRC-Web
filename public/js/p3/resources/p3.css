@@ -80,8 +80,8 @@ body.patric *:focus {
     outline: 0;
 }
 
-ul { 
-	list-style-position: inside; 
+ul {
+	list-style-position: inside;
 }
 
 li ul {
@@ -123,7 +123,17 @@ iframe  {
 }
 
 .dijitToasterContainer {
-    margin: 5px;
+    margin: 10px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+}
+.dijitToasterContainer .dijitToasterContent {
+    background-color: #313131;
+    color: #8cea00; /*rgb(250,250,250);*/
+    padding: 1em;
+}
+
+.dijitToasterContainer .dijitToasterError {
+    color: #ff1059;
 }
 
 .ShowWithAuth {
@@ -149,7 +159,7 @@ iframe  {
 
 
 ol {
-  list-style-type: decimal; 
+  list-style-type: decimal;
   padding: 0 0 0 30px;
   margin: 0 0 17px 0;
 }
