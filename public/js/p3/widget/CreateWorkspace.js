@@ -38,11 +38,21 @@ define([
 						action: "close",
 						bubbles: true
 					});
+
+					Topic.publish("/Notification", {
+						message: "Wroksapce Created",
+						positionDirection: 'bl-up'
+					});
+
 				}, function(err){
-					console.log("Error:", err);
 					domClass.remove(_self.domNode, "Working");
 					domClass.add(_self.domNode, "Error");
 					_self.errorMessage.innerHTML = err;
+
+					Topic.publish("/Notification", {
+						message: "Error Creating Workspace",
+						type: "error"
+					});
 				})
 			}else{
 				console.log("Form is incomplete");

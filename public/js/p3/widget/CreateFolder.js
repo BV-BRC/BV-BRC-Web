@@ -42,11 +42,20 @@ define([
 					var path = "/" + ["workspace", results.path].join("/");
 					Topic.publish("/refreshWorkspace", {});
 					on.emit(_self.domNode, "dialogAction", {action: "close", navigate: path, bubbles: true});
+
+					Topic.publish("/Notification", {
+						message: "Folder Created",
+					});
+
 				}, function(err){
-					console.log("Error:", err);
 					domClass.remove(_self.domNode, "Working");
 					domClass.add(_self.domNode, "Error");
 					_self.errorMessage.innerHTML = err;
+
+					Topic.publish("/Notification", {
+						message: "Error Creating Folder",
+						type: "error"
+					});
 				})
 			}else{
 				console.log("Form is incomplete");

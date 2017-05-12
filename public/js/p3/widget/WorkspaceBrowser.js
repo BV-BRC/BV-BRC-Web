@@ -779,7 +779,7 @@ define([
 				},
 				false);
 
-			this.actionPanel.addAction("DeleteItem", "fa icon-trash fa-2x", {
+			this.actionPanel.addAction("DeleteItem", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: true,
 				multiple: true,
@@ -804,7 +804,7 @@ define([
 				dlg.show();
 			}, false);
 
-			this.actionPanel.addAction("DeleteFolder", "fa icon-trash fa-2x", {
+			this.actionPanel.addAction("DeleteFolder", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: false,
 				multiple: true,
@@ -986,7 +986,7 @@ define([
 			var userPerms = [];
 
 			function rmUser(userId){
-				userPerms = userPerms.filter(function(perm){return userId != perm.user});
+				userPerms = userPerms.filter(function(perm){ return userId != perm.user });
 				console.log('users after', userPerms)
 			}
 
@@ -1003,7 +1003,7 @@ define([
 			}
 
 			function findUser(userId){
-				return userPerms.find(function(perm){return userId == perm.user});
+				return userPerms.find(function(perm){ return userId == perm.user });
 			}
 
 
@@ -1069,7 +1069,7 @@ define([
 							'<tr>'+
 								'<td data-user="'+userId+'">'+userId+
 								'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
-								'<td style="width: 1px;"><i class="fa icon-trash fa-2x">',
+								'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
 							query('tbody', currentUsers)[0]
 						);
 
@@ -1114,7 +1114,7 @@ define([
 						'<tr>'+
 							'<td data-user="'+perm[0]+'">'+perm[0]+
 							'<td data-perm="'+perm[1]+'">'+Formatter.permissionMap(perm[1])+
-							'<td style="width: 1px;"><i class="fa icon-trash fa-2x">',
+							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
 						query('tbody', currentUsers)[0]
 					);
 				})
@@ -1125,7 +1125,7 @@ define([
 
 
 			function reinitDeleteEvents(){
-				query('tbody .icon-trash', currentUsers).on('click', function(){
+				query('tbody .icon-trash-o', currentUsers).on('click', function(){
 					var _self = this;
 					var userRow = query(this).parents('tr')[0],
 						userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');

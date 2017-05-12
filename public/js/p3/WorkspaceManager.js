@@ -193,33 +193,21 @@ define([
 
 		},
 
-		createFolder: function(paths){
+		createFolder: function(path){
 			var _self = this;
-			if(!paths){
-				throw new Error("Invalid Path(s) to create");
-			}
-			if(!(paths instanceof Array)){
-				paths = [paths];
-			}
-			var objs = paths.map(function(p){
-				return [p, "Directory"]
-			})
-			return Deferred.when(this.api("Workspace.create", [{objects: objs}]), lang.hitch(this, function(results){
-				var res;
+			if(!path) throw new Error("Invalid Path to create");
 
-				if(!results[0][0] || !results[0][0]){
-					Topic.publish("/Notification", {message: "Error Creating Folder", type: "error", duration: 0});
-					throw new Error("Error Creating Folder");
+			return Deferred.when(this.api("Workspace.create", [{
+					objects: [[path, "Directory"]]
+				}]), function(results){
+
+				var createdPath = results[0][0];
+				if(!createdPath){
+					throw new Error("Please try a new name.");
 				}else{
-					var r = results[0][0];
-					Topic.publish("/refreshWorkspace", {});
-					Topic.publish("/Notification", {
-						message: r[3].split('/').length > 3 ? "Folder Created" : "Workspace Created",
-						type: "message"
-					});
-					return _self.metaListToObj(r);
+					return _self.metaListToObj(createdPath);
 				}
-			}));
+			});
 		},
 		updateMetadata: function(path, userMeta, type){
 			var data = [path, userMeta || {}, type || undefined];
@@ -279,7 +267,6 @@ define([
 		},
 
 		createWorkspace: function(name){
-			console.log("Create workspace ", name, "userId", this.userId);
 			return Deferred.when(this.createFolder("/" + this.userId + "/" + name + "/"), lang.hitch(this, function(workspace){
 				if(name == "home"){
 					return Deferred.when(this.createFolder([
@@ -295,7 +282,7 @@ define([
 						return workspace
 					})
 				}
-				console.log('returning workspace', workspace)
+
 				return workspace
 			}));
 		},
