@@ -55,7 +55,6 @@ define([
 
 			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && this.tabContainer.selectedChildWidget.state != state){
 				this.tabContainer.selectedChildWidget.set('state', state);
-				this._firstView = false;
 			}
 
 			if(state.autoFilterMessage){
