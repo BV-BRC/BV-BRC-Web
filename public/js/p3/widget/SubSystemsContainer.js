@@ -35,9 +35,9 @@ define([
 		gutters: false,
 		state: null,
 		maxGenomeCount: 500,
-		tooltip: 'The "Pathways" tab contains a list of pathways for genomes associated with the current view',
+		tooltip: 'The "Subsystems" tab contains a list of subsystems for genomes associated with the current view',
 		apiServer: window.App.dataServiceURL,
-		//defaultFilter: "eq(annotation,%22PATRIC%22)",
+		//defaultFilter: "eq(subclass,%22*%22)",
 
 		postCreate: function(){
 			this.inherited(arguments);
@@ -52,7 +52,6 @@ define([
 
 			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && this.tabContainer.selectedChildWidget.state != state){
 				this.tabContainer.selectedChildWidget.set('state', state);
-				//this._firstView = false;
 			}
 
 			if(state.autoFilterMessage){

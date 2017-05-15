@@ -252,5 +252,7 @@ define([
 
 			return this._loadingDeferred;
 		}
+
+		
 	})
 });

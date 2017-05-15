@@ -51,8 +51,8 @@ define([
 	return declare([GridContainer], {
 		gridCtor: SubSystemsGrid,
 		containerType: "subsystem_data",
-		// defaultFilter: "eq(annotation,%22PATRIC%22)",
-		// facetFields: ["annotation"],
+		//defaultFilter: "",
+		//facetFields: ["annotation"],
 		enableFilterPanel: true,
 		apiServer: window.App.dataServiceURL,
 		store: null,
