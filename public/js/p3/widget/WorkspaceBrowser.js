@@ -27,6 +27,8 @@ define([
 		design: "sidebar",
 		splitter: false,
 		startup: function(){
+			var self = this;
+
 			if(this._started){
 				return;
 			}
@@ -45,7 +47,6 @@ define([
 				layoutPriority: 3
 			});
 
-			var self = this;
 			this.actionPanel.addAction("ToggleItemDetail", "fa icon-chevron-circle-right fa-2x", {
 				label: "HIDE",
 				persistent: true,
@@ -783,7 +784,11 @@ define([
 				label: "DELETE",
 				allowMultiTypes: true,
 				multiple: true,
-				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"],
+				validTypes: [
+					"genome_group", "feature_group", "experiment_group", "job_result",
+					"unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata",
+					"DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"
+				],
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
@@ -811,18 +816,22 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Delete Folder"
 			}, function(selection){
-				var objs = selection.map(function(s){
-					console.log('s: ', s, s.data);
-					return s.path || s.data.path;
-				});
-				var conf = "Are you sure you want to delete" +
-					((objs.length > 1) ? " these folders" : " this folder") +
-					" and its contents from your workspace?"
+				var objs = selection.map(function(o){ return o.path; });
+
+				var isWorkspace = self.path.split('/').length < 3;
+
+				var conf = "Are you sure you want to delete " +
+					(objs.length > 1 ? "these" : "this") +
+					(isWorkspace ? ' workspace' : ' folder') +
+					(objs.length > 1 ? "s" : "") +
+					" and its contents?"
 
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						WorkspaceManager.deleteObject(objs, true, true);
+						var prom = WorkspaceManager.deleteObject(objs, true, true);
+						//Deferred.when(prom, function(result)
+
 					}
 				})
 				dlg.startup()
@@ -843,8 +852,6 @@ define([
 
 			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
 				label: "RENAME",
-				allowMultiTypes: false,
-				multiple: false,
 				validTypes: ["*"],
 				tooltip: "Rename folders or objects",
 			}, function(selection){

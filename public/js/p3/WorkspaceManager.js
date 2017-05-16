@@ -1,10 +1,11 @@
 define([
 	"dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 	"dojo/_base/Deferred", "dojo/topic", "./jsonrpc", "dojo/Stateful",
-	"dojo/promise/all"
-], function(xhr, declare, lang,
-			Deferred, Topic, RPC, Stateful,
-			All){
+	"dojo/promise/all", "dijit/Dialog", "dijit/form/Button"
+], function(
+	xhr, declare, lang,
+	Deferred, Topic, RPC, Stateful,
+	All, Dialog, Button){
 
 	var WorkspaceManager = (declare([Stateful], {
 		userWorkspaces: null,
@@ -235,17 +236,21 @@ define([
 			if(paths.indexOf("home") >= 0){
 				throw new Error("Cannot delete your 'home' Workspace");
 			}
-			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
+			return Deferred.when(this.api("Workspace.delete", [{
 				objects: paths,
 				deleteDirectories: true,
 				force: force
 			}]), function(results){
 				Topic.publish("/refreshWorkspace", {});
 				Topic.publish("/Notification", {message: "Folder Removed", type: "message"});
+			}, function(err) {
+				console.log('error ', errror)
+				Topic.publish("/Notification", {message: paths.length + " items could not be deleted", type: "error"});
 			});
 		},
 
 		deleteObject: function(paths, deleteFolders, force){
+			var self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -261,8 +266,16 @@ define([
 				force: force,
 				deleteDirectories: deleteFolders
 			}]), function(results){
-				Topic.publish("/Notification", {message: paths.length + " objects removed", type: "message"});
+				Topic.publish("/Notification", {
+					message: paths.length + (paths.length > 1 ? ' objects' : ' object') + " removed",
+					type: "message"
+				});
 				Topic.publish("/refreshWorkspace", {});
+			}, function(err) {
+				console.log('error ', err)
+				var btn = self.errorDetailsBtn();
+
+				Topic.publish("/Notification", {message: paths.length + " items could not be deleted" + btn.domNode, type: "error"});
 			});
 		},
 
@@ -452,7 +465,6 @@ define([
 			return Deferred.when(this.getObjects(newPath, true),
 				function(response){
 					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
-					return null;
 				}, function(err){
 
 					return Deferred.when(_self.api("Workspace.copy", [{
@@ -690,6 +702,25 @@ define([
 			}
 		},
 
+		errorDetailsBtn: function(){
+
+			var btn = new Button({
+				label: "Details",
+				//disabled: true,
+				onClick: function(){
+					new Dialog({
+						title: "Group Comparison",
+						style: "width: 1250px !important; height: 750px !important;",
+						onHide: function(){
+							dlg.destroy()
+						}
+					}).startup()
+					dlg.show()
+				}
+			})
+
+			return btn;
+		},
 		_userWorkspacesSetter: function(val){
 			Topic.publish("/userWorkspaces", val);
 			this.userWorkspaces = val;

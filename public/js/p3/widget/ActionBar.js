@@ -60,7 +60,10 @@ define([
 				//console.log("isMultiTyped: ", multiTypedSelection);
 				valid = Object.keys(this._actions).filter(function(an){
 					//console.log("Check action: ", an, this._actions[an].options);
-					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
+					return this._actions[an] && this._actions[an].options &&
+						(this._actions[an].options.multiple &&
+						((this._actions[an].options.ignoreDataType || !multiTypedSelection ||
+						(multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
 				}, this);
 
 				//console.log("multiselect valid: ", valid)
@@ -77,8 +80,6 @@ define([
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
-
-
 
 				// if top level "workspace", hide 'create folder' and upload
 				if(sel[0] && 'isWorkspace' in sel[0] && (an === "CreateFolder" || an === "Upload")){

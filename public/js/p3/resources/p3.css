@@ -132,7 +132,7 @@ iframe  {
     padding: 1em;
 }
 
-.dijitToasterContainer .dijitToasterError {
+.dijitToasterError .dijitToasterContent {
     color: #ff1059;
 }
 
