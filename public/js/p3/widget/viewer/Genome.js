@@ -145,13 +145,15 @@ define([
 
 		onSetState: function(attr, oldState, state){
 
+			if(!state){
+				return;
+			}
+
 			var parts = state.pathname.split("/");
 			this.set("genome_id", parts[parts.length - 1]);
 			state.genome_id = parts[parts.length - 1];
 			state.genome_ids = [state.genome_id];
-			if(!state){
-				return;
-			}
+			
 
 			// console.log("Genome: ", state.genome, state.genome_id)
 
@@ -195,8 +197,12 @@ define([
 				}
 			}
 
-			this.setActivePanelState();
-
+			if(!oldState){
+				return;
+			} else {
+				this.setActivePanelState();
+			}
+			
 			// console.log("viewer/Genome onSetState() after set genome_id")
 		},
 
