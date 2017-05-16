@@ -257,14 +257,12 @@ define([
 			this.pathways = new PathwaysContainer({
 				apiServer: this.apiServiceUrl,
 				title: "Pathways",
-				id: this.viewer.id + "_" + "pathways",
-				state: this.state
+				id: this.viewer.id + "_" + "pathways"
 			});
 
 			this.subsystems = new SubSystemsContainer({
 				title: "Subsystems",
-				id: this.viewer.id + "_" + "subsystems",
-				state: this.state
+				id: this.viewer.id + "_" + "subsystems"
 			})
 
 			this.proteinFamilies = new ProteinFamiliesContainer({

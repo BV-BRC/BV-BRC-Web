@@ -37,6 +37,7 @@ define([
 		maxGenomeCount: 500,
 		tooltip: 'The "Subsystems" tab contains a list of subsystems for genomes associated with the current view',
 		apiServer: window.App.dataServiceURL,
+
 		//defaultFilter: "eq(subclass,%22*%22)",
 
 		postCreate: function(){
@@ -117,7 +118,7 @@ define([
 				apiServer: this.apiServer,
 				//defaultFilter: this.defaultFilter,
 				store: subsystemsStore,
-				facetFields: ["subclass"],
+				facetFields: ["class", "subclass"],
 				columns: {
 					"Selection Checkboxes": selector({unhidable: true}),
 					id: {label: 'ID', field: 'id', hidden: true},
@@ -128,13 +129,7 @@ define([
 					genome_count: {label: 'Genome Count', field: 'genome_count'},
 					gene_count: {label: 'Gene Count', field: 'gene_count'},
 					role_count: {label: 'Role Count', field: 'role_count'},
-					role_id: {label: "Role ID", field: "role_id", hidden: true},
-					role_name: {label: "Role Name", field: "role_name"},
-					active: {label: "Active", field: "active"},
-					patric_id: {label: "Patric ID", field: "patric_id"},
-					gene: {label: "Gene", field: "gene"},
-					product: {label: "Product", field: "product"}
-					
+					active: {label: "Active", field: "active"}
 				},
 				queryOptions: {
 					sort: [{attribute: "id"}]
@@ -150,7 +145,7 @@ define([
 				apiServer: this.apiServer,
 				//defaultFilter: this.defaultFilter,
 				store: geneSubsystemsStore,
-				facetFields: ["class", "subclass", "active"],
+				facetFields: ["class", "subclass", "active", "subsystem_name"],
 				columns: {
 					"Selection Checkboxes": selector({unhidable: true}),
 					id: {label: 'ID', field: 'id', hidden: true},
