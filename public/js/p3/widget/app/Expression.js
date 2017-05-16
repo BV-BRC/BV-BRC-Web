@@ -26,7 +26,7 @@ define([
 		getValues: function(){
 			var values = this.inherited(arguments);
 			var exp_values = {};
-			var ustring_keys = ["xformat", "source_id_type", "data_type", "experiment_title", "experiment_description", "organism", "metadata_format", "genome_id"];
+			var ustring_keys = ["xformat", "source_id_type", "data_type", "experiment_title", "experiment_description", "organism", "metadata_format", "genome_id","pmid"];
 			var ustring = {};
 			ustring_keys.forEach(function(k){
 				ustring[k] = values[k];
