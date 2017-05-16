@@ -472,8 +472,8 @@ define([
 				});
 			}, self.path.split('/').length > 3);
 
-			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-hdd-o fa-2x", {
-				label: "ADD WORKSPACE",
+			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-add-workspace fa-2x", {
+				label: "NEW WS",
 				validTypes: ["folder"],
 				tooltip: "Create Workspace"
 			}, function(sel){

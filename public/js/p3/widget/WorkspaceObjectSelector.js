@@ -446,7 +446,8 @@ define([
 							if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
 								return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
 							}else if(item.type == "folder" && item.path.split('/').length <= 3){
-								return 'workspace'; // style as workspace "drive"
+								// determine if shared or not
+								return item.permissions.length > 1 ? 'sharedWorkspace' :'workspace';
 							}
 							return item.type;
 						},
