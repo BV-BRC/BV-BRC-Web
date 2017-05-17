@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ItemDetailPanel.html", "dojo/_base/lang", "./formatter", "dojo/dom-style",
-	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter",
+	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter", "dojo/topic"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, lang, formatter, domStyle,
-			WorkspaceManager, domConstruct, query, DataItemFormatter){
+			WorkspaceManager, domConstruct, query, DataItemFormatter, Topic){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		baseClass: "ItemDetailPanel",
 		disabled: false,
@@ -192,15 +192,19 @@ define([
 								rows.push(perm[0] + ' - ' + formatter.permissionMap(perm[1]));
 							})
 
+							var editBtn = domConstruct.toDom('<a>Edit</a>');
+							on(editBtn, 'click', _self.openPermEditor)
 
 							domConstruct.empty(node);
 							domConstruct.place(
-								'<b>Workspace Members</b> ' +
-									( item.path.split('/').length <= 3 ? '(<a data-dojo-attach-event="onClick:openPermEditor">Edit</a>)' : '') +
-								'<br>' +
+								'<b>Workspace Members</b> ', node)
+
+							if(item.path.split('/').length <= 3 && ['o', 'a'].indexOf(item.user_permission) != -1)
+								domConstruct.place(editBtn, node)
+
+							domConstruct.place('<br>' +
 								rows.join('<br>')
 							, node);
-
 
 						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
 							_self[this.property_aliases[key] + "Node"].innerHTML = val;
@@ -258,7 +262,7 @@ define([
 			this.inherited(arguments);
 		},
 		openPermEditor: function(){
-			console.log('called open perm editor')
+			Topic.publish("/openUserPerms", this.item );
 		},
 
 		saveType: function(val, val2){

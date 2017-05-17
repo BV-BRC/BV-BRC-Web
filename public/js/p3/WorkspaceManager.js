@@ -1,11 +1,11 @@
 define([
 	"dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 	"dojo/_base/Deferred", "dojo/topic", "./jsonrpc", "dojo/Stateful",
-	"dojo/promise/all", "dijit/Dialog", "dijit/form/Button"
+	"dojo/promise/all", "dijit/Dialog", "dijit/form/Button", "dojo/dom-construct"
 ], function(
 	xhr, declare, lang,
 	Deferred, Topic, RPC, Stateful,
-	All, Dialog, Button){
+	All, Dialog, Button, domConstruct){
 
 	var WorkspaceManager = (declare([Stateful], {
 		userWorkspaces: null,
@@ -250,6 +250,7 @@ define([
 		},
 
 		deleteObject: function(paths, deleteFolders, force){
+
 			var self = this;
 			if(!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -257,7 +258,9 @@ define([
 			if(!(paths instanceof Array)){
 				paths = [paths];
 			}
-			if(paths.indexOf("home") >= 0){
+
+			console.log('called delete object!', paths.filter(function(p){ p.indexOf("home") >= 0}) )
+			if(paths.filter(function(p){ return p.indexOf("home") >= 0}).length) {
 				throw new Error("Cannot delete your 'home' Workspace");
 			}
 
@@ -267,7 +270,7 @@ define([
 				deleteDirectories: deleteFolders
 			}]), function(results){
 				Topic.publish("/Notification", {
-					message: paths.length + (paths.length > 1 ? ' objects' : ' object') + " removed",
+					message: paths.length + (paths.length > 1 ? ' items' : ' item') + " removed",
 					type: "message"
 				});
 				Topic.publish("/refreshWorkspace", {});
@@ -275,7 +278,14 @@ define([
 				console.log('error ', err)
 				var btn = self.errorDetailsBtn();
 
-				Topic.publish("/Notification", {message: paths.length + " items could not be deleted" + btn.domNode, type: "error"});
+				var msg = domConstruct.toDom('<span>' + paths.length + " items could not be deleted");
+				domConstruct.place(btn.domNode, msg, 'last')
+				console.log('msg', msg)
+
+				Topic.publish("/Notification", {
+					message: msg,
+					type: "error"
+				});
 			});
 		},
 

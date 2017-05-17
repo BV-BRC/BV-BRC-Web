@@ -880,9 +880,15 @@ define([
 				// always set to user's root
 				objSelector.set('path', '/'+window.App.user.id);
 
+				// on selection, do the copy
 				objSelector.onSelection = function(destPath){
 					var paths = selection.map(function(obj){ return obj.path });
-					WorkspaceManager.copy(paths, destPath);
+
+					var prom = WorkspaceManager.copy(paths, destPath);
+					Deferred.when(prom, function(){
+						self.actionPanel.set("selection", []);
+						self.itemDetailPanel.set('selection', []);
+					})
 				}
 
 				objSelector.openChooser();
@@ -917,6 +923,10 @@ define([
 				objSelector.openChooser();
 			}, false);
 
+			// listen for opening user permisssion dialog
+			Topic.subscribe('/openUserPerms', function(selection){
+				self.userPermDialog(selection);
+			})
 
 
 			this.itemDetailPanel = new ItemDetailPanel({
