@@ -28,8 +28,9 @@ define([
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
-		allowUpload: true,
+		allowUpload: true,  	  // whether or not to add the upload button
 		title: "Choose or Upload a Workspace Object",
+		//autoSelectParent: false,  // if true, the folder currently being viewed is selected by default
 		reset: function(){
 			this.searchBox.set('value', '');
 		},
@@ -176,11 +177,12 @@ define([
 		},
 
 		openChooser: function(){
+			var _self = this;
+
 			if(this.disabled || this.dialog){
 				return;
 			}
 
-			var _self = this;
 			this.dialog = new Dialog({
 				title: this.title,
 				draggable: true
@@ -331,6 +333,8 @@ define([
 
 			this.dialog.flip("front");
 			this.dialog.show();
+
+
 		},
 
 		cancelRefresh: function(){
@@ -360,15 +364,15 @@ define([
 			}));
 		},
 		onSearchChange: function(value){
-			console.log('search change')
 			this.set("value", value);
 			this.onChange(value);
 			this.validate(true);
 		},
 		onChange: function(value){
 		},
-		onSelection: function(){
 
+		onSelection: function(){
+			/* can be overwritten */
 		},
 		startup: function(){
 			if(this._started){
@@ -517,14 +521,24 @@ define([
 			});
 
 			grid.on("select", function(evt){
-				console.log('SELECTION!!!!!')
 				var row = evt.rows[0];
 				_self.set("selection", row.data);
+				console.log('row.data', row.data)
 			});
 
 			grid.on("deselect", function(evt){
 				_self.set('selection', "");
 			});
+
+			/*
+			if(this.autoSelectParent){
+
+				_self.set("selection", {
+					path: _self.path,
+					name: _self.path.slice(_self.path.lastIndexOf('/')+1)
+				});
+			}
+			*/
 
 			return grid
 

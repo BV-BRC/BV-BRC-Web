@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ItemDetailPanel.html", "dojo/_base/lang", "./formatter", "dojo/dom-style",
-	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter"
+	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter",
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, lang, formatter, domStyle,
@@ -36,8 +36,6 @@ define([
 			var currentIcon;
 
 			this.watch("containerWidget", lang.hitch(this, function(prop, oldVal, containerWidget){
-
-				// console.log("set containerWidget", containerWidget);
 
 				if(oldVal && oldVal.containerType){
 					domClass.remove(this.domNode, oldVal.containerType);
@@ -80,10 +78,24 @@ define([
 					domClass.remove(this.domNode, "dataItem");
 
 					var t = item.document_type || item.type;
+
+					// determine if workspace and if actually shared
+					if(t == "folder" && item.path.split('/').length <= 3){
+						t = item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
+					}
+
 					switch(t){
 						case "folder":
 							domClass.add(_self.typeIcon, "fa icon-folder fa-2x")
 							currentIcon = "fa icon-folder fa-2x";
+							break;
+						case "workspace":
+							domClass.add(_self.typeIcon, "fa icon-hdd-o fa-2x")
+							currentIcon = "fa icon-hdd-o fa-2x";
+							break;
+						case "sharedWorkspace":
+							domClass.add(_self.typeIcon, "fa icon-shared-workspace fa-2x")
+							currentIcon = "fa icon-shared-workspace fa-2x";
 							break;
 						//case "contigs":
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
@@ -164,16 +176,31 @@ define([
 								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "none");
 							}
 						}else if(key == "permissions"){
+							var node = _self[key + "Node"];
 
-							/*
 							var rows = []
+
+							// add owner's priv
+							if(item.user_permission == 'o')
+								rows.push(window.App.user.id.split('@')[0] + ' (Me) - Owner');
+							else
+								rows.push(item.owner_id + ' - Owner');
+
+							// add all other privs, ignoring global
 							val.forEach(function(perm){
 								if (perm[0] == 'global_permission') return;
 								rows.push(perm[0] + ' - ' + formatter.permissionMap(perm[1]));
 							})
 
-							_self[key + "Node"].innerHTML = 'Members:<br>' + (rows.length ? rows.join('<br>') : 'Only me');
-							*/
+
+							domConstruct.empty(node);
+							domConstruct.place(
+								'<b>Workspace Members</b> ' +
+									( item.path.split('/').length <= 3 ? '(<a data-dojo-attach-event="onClick:openPermEditor">Edit</a>)' : '') +
+								'<br>' +
+								rows.join('<br>')
+							, node);
+
 
 						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
 							_self[this.property_aliases[key] + "Node"].innerHTML = val;
@@ -229,6 +256,9 @@ define([
 				}
 			}));
 			this.inherited(arguments);
+		},
+		openPermEditor: function(){
+			console.log('called open perm editor')
 		},
 
 		saveType: function(val, val2){
