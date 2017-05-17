@@ -623,7 +623,8 @@ define([
 					if(filterPublic){
 						res = res.filter(function(r){
 							if(r.global_permission == 'w') return false;
-							else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+							//else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+							else if(r.global_permission == 'n') return false;
 							return true;
 						})
 					}

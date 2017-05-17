@@ -428,6 +428,7 @@ function(locale, domConstruct, domClass, Tooltip){
 			var userPerms = obj.permissions;
 			if(!userPerms) return '-';
 
+			if(obj.global_permission !== 'n') return 'Public';
 
 			var users = []
 			userPerms.forEach(function(perm){
@@ -462,7 +463,8 @@ function(locale, domConstruct, domClass, Tooltip){
 		permissionMap: function(perm){
 			var mapping = {
 				'r': 'Can view',
-				'w': 'Can edit'
+				'w': 'Can edit',
+				'a': 'Admin'
 			}
 			return mapping[perm];
 		},

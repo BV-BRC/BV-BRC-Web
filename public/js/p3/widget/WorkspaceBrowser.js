@@ -886,8 +886,7 @@ define([
 
 					var prom = WorkspaceManager.copy(paths, destPath);
 					Deferred.when(prom, function(){
-						self.actionPanel.set("selection", []);
-						self.itemDetailPanel.set('selection', []);
+						self.activePanel.clearSelection();
 					})
 				}
 
@@ -917,7 +916,11 @@ define([
 
 				objSelector.onSelection = function(destPath){
 					var paths = selection.map(function(obj){ return obj.path });
-					WorkspaceManager.move(paths, destPath);
+					var prom = WorkspaceManager.move(paths, destPath);
+
+					Deferred.when(prom, function(){
+						self.activePanel.clearSelection();
+					})
 				}
 
 				objSelector.openChooser();
