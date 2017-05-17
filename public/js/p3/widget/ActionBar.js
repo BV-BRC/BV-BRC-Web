@@ -96,9 +96,9 @@ define([
 					return false;
 				}
 
-				// if public view, hide ability for upload, create folder, delete, share
+				// if public or not owner, hide ability for upload, create folder, delete, share
 				else if(sel[0] &&  ('isPublic' in sel[0] || sel[0].owner_id !== window.App.user.id) &&
-					["Upload", "CreateFolder", "DeleteFolder", "DeleteItem", "ShareFolder"].indexOf(an) !== -1) {
+					["Upload", "CreateFolder", "DeleteFolder", "DeleteItem", "ShareFolder", "Move", "Rename"].indexOf(an) !== -1) {
 					return false;
 				}
 				else if(sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence"){
