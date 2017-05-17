@@ -3,12 +3,14 @@ define([
 	"dojo/request", "dojo/when", "dojo/dom-class",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog", "./PerspectiveToolTip"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog", "./PerspectiveToolTip",
+	"./CopyTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			request, when, domClass,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog){
+			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
+		  CopyTooltipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
@@ -43,6 +45,9 @@ define([
 
 	var downloadSelectionTT = new DownloadTooltipDialog({});
 	downloadSelectionTT.startup();
+
+	var copySelectionTT = new CopyTooltipDialog({});
+	copySelectionTT.startup();
 
 	var idMappingTTDialog = new TooltipDialog({
 		style: "overflow: visible;",
@@ -336,6 +341,38 @@ define([
 						popup.open({
 							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
 							around: this.selectionActionBar._actions.DownloadSelection.button,
+							orient: ["below"]
+						});
+					}), 10);
+
+				},
+				false
+			], [
+				"CopySelection",
+				"fa icon-copy3 fa-2x",
+				{
+					label: "COPY",
+					multiple: true,
+					validTypes: ["*"],
+					ignoreDataType: true,
+					tooltip: "Copy Selection to Clipboard. Press and Hold for more options.",
+					tooltipDialog: copySelectionTT,
+					max: 5000,
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
+				},
+				function(selection, container){
+					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("selection", selection);
+					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("containerType", this.containerType);
+					if(container && container.grid){
+						this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("grid", container.grid);
+					}
+
+					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.timeout(3500);
+
+					setTimeout(lang.hitch(this, function(){
+						popup.open({
+							popup: this.selectionActionBar._actions.CopySelection.options.tooltipDialog,
+							around: this.selectionActionBar._actions.CopySelection.button,
 							orient: ["below"]
 						});
 					}), 10);
