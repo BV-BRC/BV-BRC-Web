@@ -350,11 +350,9 @@ define([
 
 					Topic.publish("/navigate", {
 
-
-
 						href: "/view/PathwaySummary/?features=" + featureIds.map(function(x){
 							return x.feature_id;
-						}).join(",");
+						}).join(","),
 						target: "blank"
 					});
 				},
