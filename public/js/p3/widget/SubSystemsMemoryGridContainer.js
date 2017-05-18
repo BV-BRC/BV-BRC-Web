@@ -272,52 +272,6 @@ define([
 					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
 				},
 				false
-			],
-			[
-				"ViewSubsystemMap",
-				"fa icon-map-o fa-2x",
-				{
-					label: "Map",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "View SubsystemMap",
-					validContainerTypes: ["subsystem_data"]
-				},
-				function(selection){
-					// console.log(selection, this.type, this.state);
-					var url = {annotation: 'PATRIC'};
-
-					if(this.state.hasOwnProperty('taxon_id')){
-						url['taxon_id'] = this.state.taxon_id;
-					}else if(this.state.hasOwnProperty('genome')){
-						url['genome_id'] = this.state.genome.genome_id;
-					}
-					if(this.state.hasOwnProperty('genome_ids')){
-						url['genome_ids'] = this.state.genome_ids;
-					}
-
-					switch(this.type){
-						case "subsystems":
-							url['subsystem_id'] = selection[0].pathway_id;
-							break;
-						case "role_id":
-							url['subsystem_id'] = selection[0].pathway_id;
-							url['role_id'] = selection[0].ec_number;
-							break;
-						case "gene":
-							url['subsystem_id'] = selection[0].pathway_id;
-							url['feature_id'] = selection[0].feature_id;
-							break;
-						default:
-							break;
-					}
-					var params = Object.keys(url).map(function(p){
-						return p + "=" + url[p]
-					}).join("&");
-					// console.log(params);
-					Topic.publish("/navigate", {href: "/view/PathwayMap/?" + params, target: "blank"});
-				},
-				false
 			]
 		]),
 		onSetState: function(attr, oldState, state){
