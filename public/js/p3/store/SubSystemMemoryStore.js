@@ -216,6 +216,19 @@ define([
 							var p = props[this.type];
 							var pv = doc[p];
 							lang.mixin(doc, map[pv] || {});
+
+							switch(this.type){
+								case "subsystems":
+									doc.document_type = "subsystems_subsystem";
+									break;
+								case "roleid":
+									break;
+								case "genes":
+									doc.document_type = "subsystems_gene";
+									break;
+								default:
+									break;
+							}
 						
 							return doc;
 						}, this);
@@ -233,7 +246,26 @@ define([
 
 				} else if ( response ) {
 					// genes tab
-					_self.setData(response.grouped.subsystem_id.doclist.docs);
+					var ds = response.grouped.subsystem_id.doclist.docs;
+					docs = ds.map(function(doc){
+					
+						switch(this.type){
+							case "subsystems":
+								doc.document_type = "subsystems_subsystem";
+								break;
+							case "roleid":
+								break;
+							case "genes":
+								doc.document_type = "subsystems_gene";
+								break;
+							default:
+								break;
+						}
+					
+						return doc;
+					}, this);
+
+					_self.setData(docs);
 					_self._loaded = true;
 					return true;
 				} else {

@@ -534,7 +534,7 @@ define([
 					multiple: false,
 					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					ignoreDataType: true,
-					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data", "subsystem_data"],
+					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
 					pressAndHold: function(selection, button, opts, evt){
 						console.log("PressAndHold");
 						console.log("Selection: ", selection, selection[0])
@@ -566,7 +566,7 @@ define([
 					max: 1000,
 					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					ignoreDataType: true,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "sequence_data", "subsystem_data"],
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "sequence_data"],
 					pressAndHold: function(selection, button, opts, evt){
 						var map = {};
 						selection.forEach(function(sel){
@@ -638,7 +638,7 @@ define([
 					max: 5000,
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "subsystem_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					// console.log("view FASTA")
@@ -662,7 +662,7 @@ define([
 					max: 200,
 					validTypes: ["*"],
 					tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data", "subsystem_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					// console.log("MSA Selection: ", selection);
@@ -686,7 +686,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "subsystem_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
 
@@ -895,7 +895,7 @@ define([
 					max: 5000,
 					validTypes: ["*"],
 					tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "subsystem_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
 

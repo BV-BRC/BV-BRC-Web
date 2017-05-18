@@ -116,7 +116,7 @@ define([
 				type: "subsystems",
 				// state: this.state,
 				apiServer: this.apiServer,
-				//defaultFilter: this.defaultFilter,
+				// defaultFilter: this.defaultFilter,
 				store: subsystemsStore,
 				facetFields: ["class", "subclass"],
 				columns: {
@@ -143,7 +143,7 @@ define([
 				type: "genes",
 				// state: this.state,
 				apiServer: this.apiServer,
-				//defaultFilter: this.defaultFilter,
+				// defaultFilter: this.defaultFilter,
 				store: geneSubsystemsStore,
 				facetFields: ["class", "subclass", "active", "subsystem_name"],
 				columns: {

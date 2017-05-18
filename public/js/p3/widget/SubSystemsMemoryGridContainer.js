@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./SubSystemsMemoryGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog", "./FilterContainerActionBar", "FileSaver",
+	"./SubSystemsMemoryGrid", "dijit/popup", "dojo/topic", "dojo/request", "dojo/when",
+	"dijit/TooltipDialog", "./FilterContainerActionBar", "FileSaver", "../util/PathJoin", 
 	"dojo/_base/lang", "dojo/dom-construct", "./PerspectiveToolTip"
 
 ], function(declare, GridContainer, on,
-			SubSystemsGrid, popup, Topic,
-			TooltipDialog, ContainerActionBar, saveAs,
+			SubSystemsGrid, popup, Topic, request, when,
+			TooltipDialog, ContainerActionBar, saveAs, PathJoin,
 			lang, domConstruct, PerspectiveToolTipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
@@ -246,8 +246,9 @@ define([
 				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
-					validTypes: ["genome_feature"],
-					multiple: false,
+					validTypes: ["*"],
+					multiple: true,
+					max: 10,
 					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["subsystem_data"],
 					pressAndHold: function(selection, button, opts, evt){
@@ -264,15 +265,169 @@ define([
 					}
 				},
 				function(selection, container){
-					// console.log(selection, container);
-					if(container.type !== "gene"){
-						return;
+
+					console.log("foo");
+
+					///container.state.genome_ids
+
+					var query = "and(in(genome_id,(" + container.state.genome_ids.join(',') + ")),in(subsystem_id,(" + selection.map(function(s){
+						return s.subsystem_id;
+					}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(featureIds){
+						Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds.map(function(x){
+							return x.feature_id;
+						}).join(",") + "))#view_tab=features", target: "blank"});
+					});
+				},
+				false
+			],
+
+			// BEGIN PathwaySummary -----------------------------------------------------
+
+			[
+				"PathwaySummary",
+				"fa icon-git-pull-request fa-2x",
+				{
+					label: "PTHWY",
+					ignoreDataType: true,
+					multiple: true,
+					max: 5000,
+					validTypes: ["subsystems_gene"],
+					tooltip: "Pathway Summary",
+					validContainerTypes: ["subsystem_data"]
+				},
+				function(selection, containerWidget){
+
+					// console.warn(containerWidget.containerType, containerWidget.type, containerWidget);
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "subsystem_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
+
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								Topic.publish("/navigate", {
+									href: "/view/PathwaySummary/?features=" + ids.join(','),
+									target: "blank"
+								});
+							});
+
+							return;
+							break;
+						
+						default:
+							// feature_data or spgene_data
+							ids = selection.map(function(sel){
+								return sel['feature_id']
+							});
+							break;
 					}
+
+					Topic.publish("/navigate", {
+
+
+
+						href: "/view/PathwaySummary/?features=" + featureIds.map(function(x){
+							return x.feature_id;
+						}).join(",");
+						target: "blank"
+					});
+				},
+				false
+
+			],
+
+			// END PathwaySummary -----------------------------------------------------
+			// BEGIN ViewGenomeItem -----------------------------------------------------
+
+			[
+				"ViewGenomeItem",
+				"MultiButton fa icon-selection-Genome fa-2x",
+				{
+					label: "GENOME",
+					validTypes: ["subsystems_gene"],
+					multiple: false,
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["subsystem_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				},
+				false
+			],
+
+			// END ViewGenomeItem -----------------------------------------------------
+			// BEGIN ViewFASTA -----------------------------------------------------
+
+			[
+				"ViewFASTA",
+				"fa icon-fasta fa-2x",
+				{
+					label: "FASTA",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["subsystems_gene"],
+					max: 5000,
+					tooltip: "View FASTA Data",
+					tooltipDialog: viewFASTATT,
+					validContainerTypes: ["subsystem_data"]
+				},
+				function(selection){
+					// console.log("view FASTA")
+					viewFASTATT.selection = selection;
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ViewFASTA.button,
+						orient: ["below"]
+					});
 				},
 				false
 			]
+
+			// END ViewFASTA -----------------------------------------------------
+
+
+
 		]),
 		onSetState: function(attr, oldState, state){
 			if(!state){
