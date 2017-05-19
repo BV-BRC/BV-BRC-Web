@@ -19,11 +19,11 @@ define([
 		extraSearch: ["genome_id"],
 		queryExpr: "*${0}*",
 		queryFilter: "",
-		resultFields: ["genome_id", "genome_name", "strain", "public", "owner"],
+		resultFields: ["genome_id", "genome_name", "strain", "public", "owner", "reference_genome"],
 		includePrivate: true,
 		includePublic: true,
-		includeReference: true,
-		includeRepresentative: true,
+		referenceOnly: false,
+		representativeOnly: false,
 		pageSize: 25,
 		highlightMatch: "all",
 		autoComplete: false,
@@ -89,13 +89,13 @@ define([
 			this._setQueryFilter();
 		},
 
-		_setIncludeReferenceAttr: function(val){
-			this.includeReference = val;
+		_setReferenceOnlyAttr: function(val){
+			this.referenceOnly = val;
 			this._setQueryFilter();
 		},
 
-		_setIncludeRepresentativeAttr: function(val){
-			this.includeRepresentative = val;
+		_setRepresentativeOnlyAttr: function(val){
+			this.representativeOnly = val;
 			this._setQueryFilter();
 		},
 
@@ -113,10 +113,13 @@ define([
 
 				// this block should include all 4 combinations of selection of reference
 				// and representative; both unchecked means you get nothing!
-				if (!this.includeRepresentative) {
+                if (this.representativeOnly && this.referenceOnly){
+                    queryFilterComponents.push("or(eq(reference_genome,%22Reference%22),eq(reference_genome,%22Representative%22))");
+                }
+                else if (this.referenceOnly) {
 					queryFilterComponents.push("eq(reference_genome,%22Reference%22)");
 				}
-				if (!this.includeReference) {
+                else if (this.representativeOnly) {
 					queryFilterComponents.push("eq(reference_genome,%22Representative%22)");
 				}
 
@@ -169,24 +172,24 @@ define([
 			// reference genomes
 			var referenceDiv = domConstr.create('div', {});
 			domConstr.place(referenceDiv, dfc, "last");
-			var referenceCB = new Checkbox({checked: true})
+			var referenceCB = new Checkbox({checked: false})
 			referenceCB.on("change", lang.hitch(this, function(val){
 				console.log("Toggle Reference Genomes to " + val);
-				this.set("includeReference", val);
+				this.set("referenceOnly", val);
 			}));
 			domConstr.place(referenceCB.domNode, referenceDiv, "first");
-			domConstr.create("span", {innerHTML: "Reference Genomes"}, referenceDiv);
+			domConstr.create("span", {innerHTML: "Reference Filter"}, referenceDiv);
 
 			// representative genomes
 			var representativeDiv = domConstr.create('div', {});
 			domConstr.place(representativeDiv, dfc, "last");
-			var representativeCB = new Checkbox({checked: true})
+			var representativeCB = new Checkbox({checked: false})
 			representativeCB.on("change", lang.hitch(this, function(val){
 				console.log("Toggle Representative Genomes to " + val);
-				this.set("includeRepresentative", val);
+				this.set("representativeOnly", val);
 			}));
 			domConstr.place(representativeCB.domNode, representativeDiv, "first");
-			domConstr.create("span", {innerHTML: "Representative Genomes"}, representativeDiv);
+			domConstr.create("span", {innerHTML: "Representative Filter"}, representativeDiv);
 
 			var filterTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
@@ -214,8 +217,17 @@ define([
 			else{
 				label += "<i class='fa fa-1x'> &nbsp; </i>&nbsp;";
 			}
+            
+            if(item.reference_genome == "Reference"){
+                label += "[Ref] ";
+            }
 
-			label += item.genome_name;
+            else if(item.reference_genome == "Representative"){
+                label += "[Rep] ";
+            }
+			
+            label += item.genome_name;
+
 			var strainAppended = false;
 			if(item.strain){
 				strainAppended = (item.genome_name.indexOf(item.strain, item.genome_name.length - item.strain.length) !== -1);
