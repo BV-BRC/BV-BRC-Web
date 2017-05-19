@@ -43,11 +43,13 @@ define([
 			var out = [];
 
 			// gather all of the keys present in the selected objects and remove any undefined entries
-			var key_set = [];
+			var key_set = new Set();
 			var clean_selection = [];
 			selection.forEach(function(obj){
 				if (obj){
-					key_set = new Set([...key_set, ...Object.keys(obj)]);
+					//key_set = new Set([...key_set, ...Object.keys(obj)]);
+					var keys = new Set(Object.keys(obj));
+					key_set.forEach(keys.add, keys);
 					clean_selection.push(obj);
 				}
 			});
