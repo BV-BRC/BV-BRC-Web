@@ -1,40 +1,75 @@
 {
-  "name": "swfobject-amd",
-  "description": "SWFObject is a free, open-source tool for embedding swf content in websites. This version is a seperate fork for developers that know their stuff.",
-  "main": "swfobject.js",
-  "version": "2.3.1",
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/HenningM/swfobject-amd.git"
-  },
-  "devDependencies": {
-    "uglify-js": "*"
-  },
-  "gitHead": "c265c8037cc714931de0c85c0a8a3383adab6f67",
-  "bugs": {
-    "url": "https://github.com/HenningM/swfobject-amd/issues"
-  },
-  "homepage": "https://github.com/HenningM/swfobject-amd",
-  "_id": "swfobject-amd@2.3.1",
-  "scripts": {},
-  "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
+  "_args": [
+    [
+      {
+        "raw": "swfobject-amd@~2.3.1",
+        "scope": null,
+        "escapedName": "swfobject-amd",
+        "name": "swfobject-amd",
+        "rawSpec": "~2.3.1",
+        "spec": ">=2.3.1 <2.4.0",
+        "type": "range"
+      },
+      "/Users/zreyn/Documents/workspace/p3_web"
+    ]
+  ],
   "_from": "swfobject-amd@>=2.3.1 <2.4.0",
-  "_npmVersion": "2.1.18",
+  "_id": "swfobject-amd@2.3.1",
+  "_inCache": true,
+  "_location": "/swfobject-amd",
   "_nodeVersion": "0.10.21",
   "_npmUser": {
     "name": "henningm",
     "email": "henning@morud.org"
   },
+  "_npmVersion": "2.1.18",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "swfobject-amd@~2.3.1",
+    "scope": null,
+    "escapedName": "swfobject-amd",
+    "name": "swfobject-amd",
+    "rawSpec": "~2.3.1",
+    "spec": ">=2.3.1 <2.4.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz",
+  "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
+  "_shrinkwrap": null,
+  "_spec": "swfobject-amd@~2.3.1",
+  "_where": "/Users/zreyn/Documents/workspace/p3_web",
+  "bugs": {
+    "url": "https://github.com/HenningM/swfobject-amd/issues"
+  },
+  "dependencies": {},
+  "description": "SWFObject is a free, open-source tool for embedding swf content in websites. This version is a seperate fork for developers that know their stuff.",
+  "devDependencies": {
+    "uglify-js": "*"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
+    "tarball": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
+  },
+  "gitHead": "c265c8037cc714931de0c85c0a8a3383adab6f67",
+  "homepage": "https://github.com/HenningM/swfobject-amd",
+  "main": "swfobject.js",
   "maintainers": [
     {
       "name": "henningm",
       "email": "henning@morud.org"
     }
   ],
-  "dist": {
-    "shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
-    "tarball": "http://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
+  "name": "swfobject-amd",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/HenningM/swfobject-amd.git"
   },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
+  "scripts": {},
+  "version": "2.3.1"
 }
