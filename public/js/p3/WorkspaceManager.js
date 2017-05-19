@@ -71,8 +71,7 @@ define([
 		},
 
 		create: function(obj, createUploadNode, overwrite){
-			var _self = this;
-			// console.log("WorkspaceManager.create(): ", obj);
+			var self = this;
 			if(obj.path.charAt(obj.path.length - 1) != "/"){
 				obj.path = obj.path + "/";
 			}
@@ -83,13 +82,12 @@ define([
 				overwrite: overwrite
 			}]), function(results){
 				var res;
-				// console.log("Create Results: ", results);
 				if(!results[0][0] || !results[0][0]){
 					throw new Error("Error Creating Object");
 				}else{
 					var r = results[0][0];
 					Topic.publish("/refreshWorkspace", {});
-					return _self.metaListToObj(r);
+					return self.metaListToObj(r);
 				}
 			});
 		},
@@ -226,43 +224,16 @@ define([
 				Topic.publish("/refreshWorkspace", {});
 			});
 		},
-		deleteFolder: function(paths, force){
-			if(!paths){
-				throw new Error("Invalid Path(s) to delete");
-			}
-			if(!(paths instanceof Array)){
-				paths = [paths];
-			}
-			if(paths.indexOf("home") >= 0){
-				throw new Error("Cannot delete your 'home' Workspace");
-			}
-			return Deferred.when(this.api("Workspace.delete", [{
-				objects: paths,
-				deleteDirectories: true,
-				force: force
-			}]), function(results){
-				Topic.publish("/refreshWorkspace", {});
-				Topic.publish("/Notification", {message: "Folder Removed", type: "message"});
-			}, function(err) {
-				console.log('error ', errror)
-				Topic.publish("/Notification", {message: paths.length + " items could not be deleted", type: "error"});
-			});
-		},
 
-		deleteObject: function(paths, deleteFolders, force){
-
+		deleteObjects: function(paths, deleteFolders, force){
 			var self = this;
-			if(!paths){
-				throw new Error("Invalid Path(s) to delete");
-			}
-			if(!(paths instanceof Array)){
-				paths = [paths];
-			}
+			if(!paths) throw new Error("Invalid Path(s) to delete");
 
-			console.log('called delete object!', paths.filter(function(p){ p.indexOf("home") >= 0}) )
-			if(paths.filter(function(p){ return p.indexOf("home") >= 0}).length) {
-				throw new Error("Cannot delete your 'home' Workspace");
-			}
+			// ensure is array
+			paths = Array.isArray(paths) ? paths : [paths];
+
+			// throw error for any special folder
+			self.omitSpecialFolders(paths, 'delete');
 
 			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
 				objects: paths,
@@ -270,7 +241,7 @@ define([
 				deleteDirectories: deleteFolders
 			}]), function(results){
 				Topic.publish("/Notification", {
-					message: paths.length + (paths.length > 1 ? ' items' : ' item') + " removed",
+					message: paths.length + (paths.length > 1 ? ' items' : ' item') + " deleted",
 					type: "message"
 				});
 				Topic.publish("/refreshWorkspace", {});
@@ -440,7 +411,9 @@ define([
 		},
 
 		move: function(paths, dest){
-			var _self = this;
+			var self = this;
+
+			self.omitSpecialFolders(paths, 'move')
 
 			var srcDestPaths = paths.map(function(path){
 				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
@@ -452,7 +425,6 @@ define([
 					move: true
 				}]),
 				function(res){
-					console.log('server res', res)
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {
 						message: "Moved contents of "+ paths.length + (paths.length ? " items" : 'item'),
@@ -464,10 +436,12 @@ define([
 
 
 		rename: function(path, newName){
-			var _self = this;
+			var self = this;
+
+			self.omitSpecialFolders([path], 'rename');
 
 			if(path.split('/').length <= 3) {
-				return _self.renameWorkspace(path, newName)
+				return self.renameWorkspace(path, newName)
 			}
 
 			// ensure path doesn't already exist
@@ -491,19 +465,21 @@ define([
 		},
 
 		renameWorkspace: function(path, newName){
-			var _self = this;
+			var self = this;
+
+			self.omitSpecialFolders([path], 'rename');
+
 			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
 
 			if (path == newPath) {
 				throw Error("The name " + newName + " already exists!  Please pick a unique name.")
-				return null
 			}
 
 			console.log('attemtping to create workspace')
 			return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
 				console.log('attempting to move (copy) workspace')
 
-				return Deferred.when(_self.api("Workspace.copy", [{
+				return Deferred.when(self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
 						recursive: true,
 						move: true
@@ -513,10 +489,7 @@ define([
 						Topic.publish("/Notification", {message: "File renamed", type: "message"});
 						return res;
 					}))
-
 			 })
-
-
 		},
 
 		getObjects: function(paths, metadataOnly){
@@ -732,6 +705,40 @@ define([
 
 			return btn;
 		},
+
+		omitSpecialFolders: function(paths, operation){
+			paths = Array.isArray(paths) ? paths : [paths];
+
+			//  regect home workspaces (must check for anybody's home)
+			var isHome = paths.filter(function(p){
+				var parts = p.split('/');
+				return parts.length == 3 && parts[2] == 'home'
+			}).length;
+
+			if(isHome) {
+				throw new Error("Your <i>home</i> workspace is a special workspace which cannot be "+operation+"d.");
+			}
+
+			// also reject these home folders
+			var unacceptedFolders = [
+				"Genome Groups",
+				"Feature Groups",
+				"Experiments",
+				"Experiment Groups"
+			];
+
+			var unacceptedPaths = paths.filter(function(p){
+				if(p.split('/')[2] == 'home' && unacceptedFolders.indexOf(p.split('/')[3]) != -1) return true;
+			});
+
+			if(unacceptedPaths.length) {
+				throw new Error(
+					"You cannot "+operation+" any of the following special folders:<br><br>"+
+					'<i>' + unacceptedFolders.join('<br>') + '</i>'
+				);
+			}
+		},
+
 		_userWorkspacesSetter: function(val){
 			Topic.publish("/userWorkspaces", val);
 			this.userWorkspaces = val;

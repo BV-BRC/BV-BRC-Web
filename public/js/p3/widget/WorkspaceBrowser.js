@@ -251,8 +251,6 @@ define([
 				multiple: false,
 				tooltip: "View Genome. Press and Hold for more options.",
 				pressAndHold: function(selection, button, opts, evt){
-					// console.log("PressAndHold");
-					// console.log("Selection: ", selection, selection[0])
 					popup.open({
 						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
 						around: button,
@@ -271,7 +269,6 @@ define([
 				validTypes: WorkspaceManager.downloadTypes,
 				tooltip: "Download"
 			}, function(selection){
-				// console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, false);
 
@@ -287,7 +284,6 @@ define([
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				// console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
@@ -303,13 +299,11 @@ define([
 				tooltip: "Download Table",
 				tooltipDialog: downloadTT
 			}, function(selection){
-				// console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
 					around: this._actions.DownloadTable.button,
 					orient: ["below"]
 				});
-
 			}, false);
 
 			var downloadTTSelect = new TooltipDialog({
@@ -345,7 +339,6 @@ define([
 				tooltip: "Download Selection",
 				tooltipDialog: downloadTTSelect
 			}, function(selection){
-				// console.log("Download Table", selection);
 				if(selection.length == 1){
 					popup.open({
 						popup: this._actions.SelectDownloadTable.options.tooltipDialog,
@@ -372,8 +365,6 @@ define([
 				tooltip: "Download Results",
 				tooltipDialog: downloadTTSelectFile
 			}, lang.hitch(this.browserHeader, function(selection){
-				// console.log("Download Table", selection);
-				// console.log("this._actions: ", this._actions);
 				this._actions.SelectDownloadSeqComparison.selection = selection[0];
 				if(selection.length == 1){
 					popup.open({
@@ -390,7 +381,6 @@ define([
 				outputFiles.some(function(t){
 					var fname = t[0];
 					if(fname.indexOf(rel) >= 0){
-						// console.log("DOWNLOAD: ", fname);
 						WorkspaceManager.downloadFile(fname);
 						return true;
 					}
@@ -405,7 +395,6 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
-				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid});
 
@@ -428,7 +417,6 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
-				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {
 					href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"
@@ -441,7 +429,6 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
-				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=browser"});
 
@@ -453,7 +440,6 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Upload to Folder"
 			}, function(selection){
-				// console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
 			}, self.path.split('/').length > 3);
 
@@ -462,8 +448,6 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Create Folder"
 			}, function(sel){
-				console.log('selection', sel)
-
 				// selection may not be set if top level.
 				var path = sel ? sel[0].path + sel[0].name : '/' + window.App.user.id;
 				Topic.publish("/openDialog", {
@@ -493,9 +477,7 @@ define([
 
 			on(viewFASTATT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				// console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
-				// console.log("selection: ", selection);
 				popup.close(viewFASTATT);
 				var idType = "feature_id";
 
@@ -628,7 +610,6 @@ define([
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
 			}, function(selection){
-				// console.log("View Gene List", selection);
 				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
 						return s.path;
 					});
@@ -642,8 +623,6 @@ define([
 				validContainerTypes: ["experiment"],
 				tooltip: "View Experiment Gene List"
 			}, function(selection){
-				// console.log("this.currentContainerType: ", this.currentContainerType, this);
-				// console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
 				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
 						return s.pid;
@@ -780,6 +759,7 @@ define([
 				},
 				false);
 
+			/* Assuming we want to allow deletion of all types for now
 			this.actionPanel.addAction("DeleteItem", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: true,
@@ -792,7 +772,6 @@ define([
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
-					// console.log('s: ', s, s.data);
 					return s.path || s.data.path;
 				});
 				var conf = "Are you sure you want to delete" +
@@ -802,14 +781,20 @@ define([
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						WorkspaceManager.deleteObject(objs, true, false);
+						var prom = WorkspaceManager.deleteObject(objs, true, false);
+						Deferred.when(prom, function(){
+							self.activePanel.clearSelection();
+						}, function(e){
+							console.log('e', e)
+						})
 					}
 				});
 				dlg.startup();
 				dlg.show();
 			}, false);
+			*/
 
-			this.actionPanel.addAction("DeleteFolder", "fa icon-trash-o fa-2x", {
+			this.actionPanel.addAction("Delete", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: false,
 				multiple: true,
@@ -818,8 +803,19 @@ define([
 			}, function(selection){
 				var objs = selection.map(function(o){ return o.path; });
 
-				var isWorkspace = self.path.split('/').length < 3;
+				// omit special any folders
+				try{
+					WorkspaceManager.omitSpecialFolders(objs, 'delete');
+				}catch(e){
+					new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't delete that...",
+						style: "width: 250px !important;"
+					}).show();
+					return;
+				}
 
+				var isWorkspace = self.path.split('/').length < 3;
 				var conf = "Are you sure you want to delete " +
 					(objs.length > 1 ? "these" : "this") +
 					(isWorkspace ? ' workspace' : ' folder') +
@@ -829,9 +825,10 @@ define([
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						var prom = WorkspaceManager.deleteObject(objs, true, true);
-						//Deferred.when(prom, function(result)
-
+						var prom = WorkspaceManager.deleteObjects(objs, true, true);
+						Deferred.when(prom, function(){
+							self.activePanel.clearSelection();
+						})
 					}
 				})
 				dlg.startup()
@@ -855,9 +852,29 @@ define([
 				validTypes: ["*"],
 				tooltip: "Rename folders or objects",
 			}, function(selection){
-
 				var path = selection[0].path;
-				self.renameDialog(path)
+
+				// omit special any folders
+				try{
+					WorkspaceManager.omitSpecialFolders(path, 'rename');
+				}catch(e){
+					new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't rename that...",
+						style: "width: 250px !important;"
+					}).show();
+					return;
+				}
+
+				try{
+					self.renameDialog(path)
+				}catch(e){
+					var d = new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't rename that...",
+						style: "width: 250px !important;"
+					}).show();
+				}
 			}, false);
 
 			this.actionPanel.addAction("Copy", "fa icon-files-o fa-2x", {
@@ -867,10 +884,12 @@ define([
 				validTypes: ["*"],
 				tooltip: "Copy selected objects",
 			}, function(selection){
+				var paths = selection.map(function(obj){ return obj.path });
 
 				// open object selector to get destination
 				var objSelector = new WSObjectSelector({
-					allowUpload: false
+					allowUpload: false,
+					//autoSelectParent: true
 				});
 				objSelector.set('type', ['folder']);
 				objSelector.title = "Copy contents of " + selection.length +
@@ -882,8 +901,6 @@ define([
 
 				// on selection, do the copy
 				objSelector.onSelection = function(destPath){
-					var paths = selection.map(function(obj){ return obj.path });
-
 					var prom = WorkspaceManager.copy(paths, destPath);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
@@ -901,6 +918,19 @@ define([
 				validTypes: ["*"],
 				tooltip: "Move selected objects",
 			}, function(selection){
+				var paths = selection.map(function(obj){ return obj.path });
+
+				// omit special any folders
+				try{
+					WorkspaceManager.omitSpecialFolders(paths, 'move');
+				}catch(e){
+					new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't move that...",
+						style: "width: 250px !important;"
+					}).show();
+					return;
+				}
 
 				// open object selector to get destination
 				var objSelector = new WSObjectSelector({
@@ -915,7 +945,6 @@ define([
 				objSelector.set('path', '/'+window.App.user.id);
 
 				objSelector.onSelection = function(destPath){
-					var paths = selection.map(function(obj){ return obj.path });
 					var prom = WorkspaceManager.move(paths, destPath);
 
 					Deferred.when(prom, function(){
@@ -967,12 +996,13 @@ define([
 				onConfirm: function(evt){
 					var _self = this;
 
-					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value'))
+					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value')){
 						var d = new Dialog({
 							content: "Please pick a new name.",
 							title: "Oh no!",
 							style: "width: 250px !important;"
 						}).show();
+					}
 
 					var prom = WorkspaceManager.rename(path, nameInput.get('value'))
 					Deferred.when(prom, function(res){

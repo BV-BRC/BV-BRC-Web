@@ -30,7 +30,7 @@ define([
 		placeHolder: "",
 		allowUpload: true,  	  // whether or not to add the upload button
 		title: "Choose or Upload a Workspace Object",
-		//autoSelectParent: false,  // if true, the folder currently being viewed is selected by default
+		autoSelectParent: false,  // if true, the folder currently being viewed is selected by default
 		reset: function(){
 			this.searchBox.set('value', '');
 		},
@@ -530,7 +530,7 @@ define([
 				_self.set('selection', "");
 			});
 
-			/*
+
 			if(this.autoSelectParent){
 
 				_self.set("selection", {
@@ -538,7 +538,7 @@ define([
 					name: _self.path.slice(_self.path.lastIndexOf('/')+1)
 				});
 			}
-			*/
+
 
 			return grid
 
