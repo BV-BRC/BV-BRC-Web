@@ -5,7 +5,7 @@ define([
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip", "../widget/UserSelector",
+	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip", "../widget/UserSelector",
 	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "./WorkspaceObjectSelector",
 
 	"dojo/NodeList-traverse"
@@ -16,7 +16,7 @@ define([
 	ActionBar, Deferred, WorkspaceManager, lang,
 	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
 	popup, IDMappingTemplate, xhr, Select,
-	ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog, UserSelector,
+	ContainerActionBar, GroupExplore, PerspectiveToolTipDialog, UserSelector,
 	Button, Formatter, TextBox, WSObjectSelector){
 	return declare([BorderContainer], {
 		baseClass: "WorkspaceBrowser",
@@ -796,9 +796,9 @@ define([
 
 			this.actionPanel.addAction("Delete", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
-				allowMultiTypes: false,
+				allowMultiTypes: true,
 				multiple: true,
-				validTypes: ["folder"],
+				validTypes: ["*"],
 				tooltip: "Delete Folder"
 			}, function(selection){
 				var objs = selection.map(function(o){ return o.path; });
@@ -1021,6 +1021,10 @@ define([
 					})
 				}
 			})
+
+			dlg.okButton.on('click', function(){
+				console.log('there was a click!')
+			})
 			dlg.startup()
 			dlg.show();
 		},
@@ -1195,7 +1199,6 @@ define([
 					}))
 				})
 			}
-
 
 			dlg.startup()
 			dlg.show();
@@ -1385,6 +1388,8 @@ define([
 				});
 				d.show();
 			}));
+
+
 		},
 
 		getQuery: function(obj){

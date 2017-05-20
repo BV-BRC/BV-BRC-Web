@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
-	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager",
+	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager", "./Confirmation", './Uploader', "dijit/form/Select",
 	"dojo/topic", '../WorkspaceManager', "dojo/promise/all"
 ], function(declare, WidgetBase, on,
 			domClass, domConstr, WorkspaceGrid,
-			Deferred, domGeometry, JobManager,
+			Deferred, domGeometry, JobManager, Confirmation, Uploader, Select,
 			Topic, WorkspaceManager, all){
 	return declare([WorkspaceGrid], {
 		"disabled": false,
@@ -142,6 +142,10 @@ define([
 			this._items = items;
 			this.renderArray(items);
 			// this.refresh();
+
+
+			// initialize drag and drop
+			if(!this.dndZone) this.initDragAndDrop();
 		},
 
 		refreshWorkspace: function(){
@@ -198,6 +202,90 @@ define([
 				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
 				// }
 			});
+		},
+
+		// enables drag and drop on data browser
+		initDragAndDrop: function(){
+			var self = this;
+
+			// treat explorer view as drag and drop zone
+			this.dndZone = document.getElementsByClassName('WorkspaceExplorerView')[0];
+			this.dndZone.addEventListener('dragover', onDragOver);
+			this.dndZone.addEventListener("dragleave", onDragLeave);
+			this.dndZone.addEventListener('drop', onDragDrop);
+
+
+			function upload(files) {
+				var uploader = new Uploader();
+
+				// build type selector
+				var knownTypes = uploader.knownTypes;
+
+				var options = []
+				Object.keys(knownTypes).forEach(function(t){
+					options.push({disabled: false, label: knownTypes[t].label, value: t});
+				})
+
+				var typeSelector = new Select({
+					name: "typeSelector",
+					style: { width: '200px' },
+					options: options
+				})
+
+				var content = domConstr.toDom('<div>Select an object type to proceed:</div>');
+				domConstr.place(typeSelector.domNode, content)
+
+				// have user select the type before being brought to uploader
+				var dlg = new Confirmation({
+					title: 'Uploading '+ files.length + (files.length > 1 ? ' Files' : ' File') +'...',
+					content: content,
+					cancelLabel: false,
+					okLabel: 'Next ➜',
+					style: { width: '300px' },
+					onConfirm: function(evt){
+						Topic.publish("/openDialog", {
+							type: "Upload",
+							params: {
+								path: self.path,
+								dndFiles: files,
+								dndType: typeSelector.get('value')
+							}
+						});
+					}
+				}).show();
+
+				self.dndZone.classList.remove("dnd-active");
+			}
+
+			function onDragLeave(e) {
+				if (e.target.className.indexOf("dnd-active") != -1)
+					self.dndZone.classList.remove("dnd-active");
+			}
+
+			function onDragOver(e) {
+				e.stopPropagation();
+				e.preventDefault();
+
+				// only allow drag and drop in folders
+				if(self.path.split('/').length < 3) return;
+
+				self.dndZone.classList.add("dnd-active");
+				e.dataTransfer.dropEffect = 'copy';
+			}
+
+			function onDragDrop(e) {
+				e.stopPropagation();
+				e.preventDefault();
+
+				// only allow drag and drop in folders
+				if(self.path.split('/').length < 3) return;
+
+				if ( e.target['className'] == "dnd-active" )
+					self.dndZone.classList.remove("dnd-active");
+
+				var files = e.dataTransfer.files; // Array of all files
+				upload(files);
+			}
 		},
 
 		_setPath: function(val){
