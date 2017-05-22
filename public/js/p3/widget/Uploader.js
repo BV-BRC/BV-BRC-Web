@@ -99,7 +99,7 @@ define([
 
 			// remove existing container as long as not adding multiple rows,
 			// since createUploadTable is called on each file change
-			// Note: this should probably be refactored
+			// Note: this could probably be refactored
 			// to always leave the header in place
 			if (!this.multiple) {
 				domConstruct.empty(this.fileTableContainer);
@@ -225,7 +225,7 @@ define([
 				this.validate();
 			}
 
-			this.initDragAndDrop();
+			//this.initDragAndDrop();
 		},
 		initDragAndDrop: function(){
 			var self = this;

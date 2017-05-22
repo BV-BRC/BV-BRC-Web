@@ -1,5 +1,5 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang", "dojo/query", "dojo/dom-class",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceObjectSelector.html",
 	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
@@ -7,7 +7,7 @@ define([
 	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
 	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
 	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect", "dijit/form/Select"
-], function(declare, WidgetBase, on, lang,
+], function(declare, WidgetBase, on, lang, query, domClass,
 			domClass, Templated, WidgetsInTemplate,
 			Template, Dialog, HasDropDown, ContentPane, TextBox,
 			Grid, domConstr, WorkspaceManager, Memory,
@@ -75,6 +75,7 @@ define([
 		},
 
 		_setPathAttr: function(val){
+			var self = this;
 			this.path = val;
 			if(this.grid){
 				this.grid.set('path', val);
@@ -87,8 +88,21 @@ define([
 				this.currentPathNode.innerHTML = "Folder: " +
 				val;
 			}
+
+			// hide/show new workspace/folder icons
+			if(self.selectionPane){
+				if(this.path.split('/').length < 3){
+					domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
+					domClass.remove(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
+				}else{
+					domClass.remove(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
+					domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
+				}
+			}
+
 			this.cancelRefresh();
 			this.refreshWorkspaceItems();
+
 		},
 		_setTypeAttr: function(type){
 			if(!(type instanceof Array)){
@@ -149,6 +163,7 @@ define([
 			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
 
+
 			var buttonContainer = domConstr.create("div", {
 				style: {
 					"font-size": ".85em",
@@ -156,11 +171,16 @@ define([
 					"float": "right",
 					"text-align": "right"
 				},
-				innerHTML: (this.path.split('/').length <= 3 ?
-						   '<i rel="createWS" class="fa icon-drive-o fa-2x" style="vertical-align: bottom;"></i>&nbsp;' :
-						   '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;"></i>&nbsp;')+
-						   (this.allowUpload ? '<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i>' : '')
+				innerHTML: (this.allowUpload ? '<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i> ' : '')+
+						   '<i rel="createWS" class="fa icon-add-workspace fa-2x" style="vertical-align: bottom;"></i>'+
+						   '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;"></i>'
+
 			}, wrap);
+
+			if(this.path.split('/').length < 3)
+				domClass.toggle(query('[rel="createFolder"]', wrap)[0], 'dijitHidden')
+			else
+				domClass.toggle(query('[rel="createWS"]', wrap)[0], 'dijitHidden')
 
 			return wrap;
 		},
@@ -179,19 +199,23 @@ define([
 		openChooser: function(){
 			var _self = this;
 
-			if(this.disabled || this.dialog){
-				return;
+			if(this.disabled) return;
+
+			// if dialog is already built, just show it
+			if(this.dialog){
+				this.dialog.flip("front");
+				this.dialog.show();
 			}
 
 			this.dialog = new Dialog({
 				title: this.title,
 				draggable: true
 			});
-			var frontBC = new BorderContainer({style: {width: "700px", height: "500px"}});
+			var frontBC = new BorderContainer({style: {width: "805px", height: "575px"}});
 			var backBC = new BorderContainer({
 				style: {
-					width: "700px",
-					height: "500px",
+					width: "805px",
+					height: "575px",
 					margin: "0",
 					padding: "0px"
 				}
@@ -204,6 +228,7 @@ define([
 				content: this.createSelectedPane(),
 				style: "border:0px;"
 			});
+			this.selectionPane = selectionPane;
 
 			var viewSelector = new Select({
 				name: "togglePublic",
@@ -333,7 +358,6 @@ define([
 
 			this.dialog.flip("front");
 			this.dialog.show();
-
 
 		},
 
