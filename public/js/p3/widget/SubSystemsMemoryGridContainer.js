@@ -265,11 +265,6 @@ define([
 					}
 				},
 				function(selection, container){
-
-					console.log("foo");
-
-					///container.state.genome_ids
-
 					var query = "and(in(genome_id,(" + container.state.genome_ids.join(',') + ")),in(subsystem_id,(" + selection.map(function(s){
 						return s.subsystem_id;
 					}).join(',') + ")))&select(feature_id)&limit(25000)";
@@ -307,57 +302,36 @@ define([
 					validContainerTypes: ["subsystem_data"]
 				},
 				function(selection, containerWidget){
-
-					// console.warn(containerWidget.containerType, containerWidget.type, containerWidget);
 					var ids = [];
-					switch(containerWidget.containerType){
-						case "subsystem_data":
-							var familyIds = selection.map(function(d){
-								return d['family_id']
-							});
-							var genomeIds = containerWidget.state.genome_ids;
-							var familyIdName = containerWidget.pfState.familyType + "_id";
-
-							when(request.post(this.apiServer + '/genome_feature/', {
-								handleAs: 'json',
-								headers: {
-									'Accept': "application/json",
-									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-									'X-Requested-With': null,
-									'Authorization': (window.App.authorizationToken || "")
-								},
-								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
-							}), function(response){
-								ids = response.map(function(d){
-									return d['feature_id']
-								});
-								Topic.publish("/navigate", {
-									href: "/view/PathwaySummary/?features=" + ids.join(','),
-									target: "blank"
-								});
-							});
-
-							return;
-							break;
-						
-						default:
-							// feature_data or spgene_data
-							ids = selection.map(function(sel){
-								return sel['feature_id']
-							});
-							break;
+					var queryContext = containerWidget.grid.store.state.search;
+					if(containerWidget.grid.store.state.hashParams.filter != "false" && containerWidget.grid.store.state.hashParams.filter != undefined){
+						queryContext += "&" + containerWidget.grid.store.state.hashParams.filter;
 					}
 
-					Topic.publish("/navigate", {
+					var subsystem_ids = selection.map(function(d){
+						return d['subsystem_id']
+					});
 
-						href: "/view/PathwaySummary/?features=" + featureIds.map(function(x){
-							return x.feature_id;
-						}).join(","),
-						target: "blank"
+					when(request.post(this.apiServer + '/subsystem/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: "and(in(subsystem_id,(" + subsystem_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+					}), function(response){
+						ids = response.map(function(d){
+							return d['feature_id']
+						});
+						Topic.publish("/navigate", {
+							href: "/view/PathwaySummary/?features=" + ids.join(','),
+							target: "blank"
+						});
 					});
 				},
 				false
-
 			],
 
 			// END PathwaySummary -----------------------------------------------------
@@ -384,11 +358,16 @@ define([
 
 					}
 				},
-				function(selection){
+				function(selection, container){
+
+					if(container.type !== "genes"){
+						return;
+					}
 					var sel = selection[0];
-					// console.log("sel: ", sel)
-					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					Topic.publish("/navigate", {
+						href: "/view/Genome/" + sel.genome_id,
+						target: "blank"
+					});
 				},
 				false
 			],
