@@ -16,6 +16,30 @@ define([
 		}
 	});
 
+	on(viewFASTATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewFASTATT.selection;
+		delete viewFASTATT.selection;
+		var idType;
+
+		var ids = sel.map(function(d, idx){
+			if(!idType){
+				if(d['feature_id']){
+					idType = "feature_id";
+				}else if(d['patric_id']){
+					idType = "patric_id"
+				}else if(d['alt_locus_tag']){
+					idType = "alt_locus_tag";
+				}
+				// console.log("SET ID TYPE TO: ", idType)
+			}
+
+			return d[idType];
+		});
+
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
+	});
+
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
