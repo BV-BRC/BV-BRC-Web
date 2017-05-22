@@ -431,8 +431,9 @@ function(locale, domConstruct, domClass, Tooltip){
 			if(obj.global_permission !== 'n') return 'Public';
 
 			var users = []
+			// ignore global permisssion and workaround this https://github.com/PATRIC3/Workspace/issues/54
 			userPerms.forEach(function(perm){
-				if(perm[0] == 'global_permission') return;
+				if(perm[0] == 'global_permission' || perm[1] == 'n') return;
 				users.push(perm[0])
 			})
 
@@ -441,27 +442,12 @@ function(locale, domConstruct, domClass, Tooltip){
 					(users.length ? users.length+1 + ' member' + (users.length+1 > 1 ? 's' : '' ) : 'Only me') +
 				'</span>';
 
-			//new Tooltip({
-			//	connectId: [obj.id],
-			//	label: "value <b>45</b>"
-			//});
-
-			/*
-			var html = '';
-			userPerms.forEach(function(perm){
-				if (perm[0] == 'global_permission') return;
-				html +=
-					'<span class="userPermIcon" style="background: ' + colorHash(perm[0]) + ';">' +
-						perm[0][0] +
-					'</span> '
-			})
-			*/
-
 			return html;
 		},
 
 		permissionMap: function(perm){
 			var mapping = {
+				'n': 'No access',
 				'r': 'Can view',
 				'w': 'Can edit',
 				'a': 'Admin'
