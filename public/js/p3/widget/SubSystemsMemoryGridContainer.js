@@ -267,13 +267,13 @@ define([
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFeatureItem",
-				"MultiButton fa icon-selection-Feature fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
-					label: "FEATURE",
+					label: "FEATURES",
 					validTypes: ["*"],
 					multiple: true,
 					max: 10,
-					tooltip: "Switch to Feature View. Press and Hold for more options.",
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["subsystem_data"],
 					pressAndHold: function(selection, button, opts, evt){
 						console.log("PressAndHold");

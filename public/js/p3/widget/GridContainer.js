@@ -406,8 +406,7 @@ define([
 					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
 				},
 				false
-			],
-			[
+			], [
 				"ViewFeatureItems",
 				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
@@ -523,9 +522,7 @@ define([
 					});
 				},
 				false
-			],
-
-			[
+			], [
 				"ViewGenomeItem",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{
