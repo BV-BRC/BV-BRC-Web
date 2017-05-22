@@ -1148,7 +1148,15 @@ define([
 				content: form,
 				style: { width: '700px'},
 				onConfirm: function(evt){
-					Topic.publish('/refreshWorkspace')
+					Topic.publish('/refreshWorkspace');
+
+					// refresh list in detail panel
+					self.activePanel.clearSelection();
+					//self.itemDetailPanel.set("selection", []); //
+					//setTimeout(function(){
+					//	self.itemDetailPanel.set("selection", [selection]); //
+					//}, 1000)
+
 				}
 			})
 

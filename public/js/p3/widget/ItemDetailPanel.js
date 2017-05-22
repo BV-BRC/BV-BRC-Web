@@ -182,23 +182,27 @@ define([
 
 							// add owner's priv
 							if(item.user_permission == 'o')
-								rows.push(window.App.user.id.split('@')[0] + ' (Me) - Owner');
+								rows.push(window.App.user.id.split('@')[0] + ' (me) - Owner');
 							else
 								rows.push(item.owner_id + ' - Owner');
 
-							// add all other privs, ignoring global
+							// add all other privs, ignoring global permisssion
+							// and workaround this https://github.com/PATRIC3/Workspace/issues/54
 							val.forEach(function(perm){
 								if (perm[0] == 'global_permission') return;
 								rows.push(perm[0] + ' - ' + formatter.permissionMap(perm[1]));
 							})
 
+							// edit perms btn
 							var editBtn = domConstruct.toDom('<a>Edit</a>');
-							on(editBtn, 'click', _self.openPermEditor)
+							on(editBtn, 'click', function() {
+								_self.openPermEditor(item);
+							})
 
 							domConstruct.empty(node);
-							domConstruct.place(
-								'<b>Workspace Members</b> ', node)
+							domConstruct.place('<b>Workspace Members</b> ', node)
 
+							// only show edit button if user has the right permissions
 							if(item.path.split('/').length <= 3 && ['o', 'a'].indexOf(item.user_permission) != -1)
 								domConstruct.place(editBtn, node)
 
@@ -261,8 +265,10 @@ define([
 			}));
 			this.inherited(arguments);
 		},
-		openPermEditor: function(){
-			Topic.publish("/openUserPerms", this.item );
+
+		// opens works permission editor for given item
+		openPermEditor: function(item){
+			Topic.publish("/openUserPerms", item);
 		},
 
 		saveType: function(val, val2){
