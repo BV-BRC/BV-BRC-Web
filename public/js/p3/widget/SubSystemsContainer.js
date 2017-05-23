@@ -118,21 +118,21 @@ define([
 				apiServer: this.apiServer,
 				// defaultFilter: this.defaultFilter,
 				store: subsystemsStore,
-				facetFields: ["class", "subclass"],
+				facetFields: ["class", "subclass", "active"],
 				columns: {
 					"Selection Checkboxes": selector({unhidable: true}),
-					id: {label: 'ID', field: 'id', hidden: true},
-					subsystem_id: {label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
-					class: {label: "Class", field: "class"},
-					subclass: {label: 'Subclass', field: 'subclass'},
-					subsystem_name: {label: 'Subsystem Name', field: 'subsystem_name'},
-					genome_count: {label: 'Genome Count', field: 'genome_count'},
-					gene_count: {label: 'Gene Count', field: 'gene_count'},
-					role_count: {label: 'Role Count', field: 'role_count'},
-					active: {label: "Active", field: "active"}
+					id: 				{label: 'ID', field: 'id', hidden: true},
+					subsystem_id: 		{label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
+					class: 				{label: "Class", field: "class"},
+					subclass: 			{label: 'Subclass', field: 'subclass'},
+					subsystem_name: 	{label: 'Subsystem Name', field: 'subsystem_name'},
+					genome_count: 		{label: 'Genome Count', field: 'genome_count'},
+					gene_count: 		{label: 'Gene Count', field: 'gene_count'},
+					role_count: 		{label: 'Role Count', field: 'role_count'},
+					active: 			{label: "Active", field: "active"}
 				},
 				queryOptions: {
-					sort: [{attribute: "id"}]
+					sort: [{attribute: "subsystem_name"}]
 				},
 				enableFilterPanel: true,
 				visible: true
@@ -148,20 +148,20 @@ define([
 				facetFields: ["class", "subclass", "active", "subsystem_name"],
 				columns: {
 					"Selection Checkboxes": selector({unhidable: true}),
-					id: {label: 'ID', field: 'id', hidden: true},
-					subsystem_id: {label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
-					class: {label: "Class", field: "class"},
-					subclass: {label: 'Subclass', field: 'subclass'},
-					subsystem_name: {label: 'Subsystem Name', field: 'subsystem_name'},
-					role_id: {label: "Role ID", field: "role_id", hidden: true},
-					role_name: {label: "Role Name", field: "role_name"},
-					active: {label: "Active", field: "active"},
-					patric_id: {label: "Patric ID", field: "patric_id"},
-					gene: {label: "Gene", field: "gene"},
-					product: {label: "Product", field: "product"}
+					id: 				{label: 'ID', field: 'id', hidden: true},
+					subsystem_id: 		{label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
+					class: 				{label: "Class", field: "class"},
+					subclass: 			{label: 'Subclass', field: 'subclass'},
+					subsystem_name: 	{label: 'Subsystem Name', field: 'subsystem_name'},
+					role_id: 			{label: "Role ID", field: "role_id", hidden: true},
+					role_name: 			{label: "Role Name", field: "role_name"},
+					active: 			{label: "Active", field: "active"},
+					patric_id: 			{label: "Patric ID", field: "patric_id"},
+					gene: 				{label: "Gene", field: "gene"},
+					product: 			{label: "Product", field: "product"}
 				},
 				queryOptions: {
-					sort: [{attribute: "id"}]
+					sort: [{attribute: "subsystem_name"}]
 				},
 				enableFilterPanel: true,
 				visible: true

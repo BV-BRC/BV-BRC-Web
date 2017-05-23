@@ -265,6 +265,7 @@ define([
 			]
 		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
+			
 			[
 				"ViewFeatureItem",
 				"MultiButton fa icon-selection-FeatureList fa-2x",
@@ -309,11 +310,7 @@ define([
 					});
 				},
 				false
-			],
-
-			// BEGIN PathwaySummary -----------------------------------------------------
-
-			[
+			], [
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
 				{
@@ -356,12 +353,7 @@ define([
 					});
 				},
 				false
-			],
-
-			// END PathwaySummary -----------------------------------------------------
-			// BEGIN ViewGenomeItem -----------------------------------------------------
-
-			[
+			], [
 				"ViewGenomeItem",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{
@@ -394,12 +386,7 @@ define([
 					});
 				},
 				false
-			],
-
-			// END ViewGenomeItem -----------------------------------------------------
-			// BEGIN ViewFASTA -----------------------------------------------------
-
-			[
+			], [
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -424,10 +411,6 @@ define([
 				},
 				false
 			]
-
-			// END ViewFASTA -----------------------------------------------------
-
-
 
 		]),
 		onSetState: function(attr, oldState, state){
