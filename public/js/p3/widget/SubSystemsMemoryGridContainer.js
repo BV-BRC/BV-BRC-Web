@@ -267,7 +267,7 @@ define([
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			
 			[
-				"ViewFeatureItem",
+				"ViewFeatureItems",
 				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
@@ -290,24 +290,32 @@ define([
 					}
 				},
 				function(selection, container){
-					var query = "and(in(genome_id,(" + container.state.genome_ids.join(',') + ")),in(subsystem_id,(" + selection.map(function(s){
-						return s.subsystem_id;
-					}).join(',') + ")))&select(feature_id)&limit(25000)";
+					//subsystem tab
+					if (selection[0].document_type === "subsystems_subsystem") {
+						var query = "and(in(genome_id,(" + container.state.genome_ids.join(',') + ")),in(subsystem_id,(" + selection.map(function(s){
+							return s.subsystem_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
 
-					when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/json",
-							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': (window.App.authorizationToken || "")
-						},
-						data: query
-					}), function(featureIds){
-						Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds.map(function(x){
-							return x.feature_id;
-						}).join(",") + "))#view_tab=features", target: "blank"});
-					});
+						when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
+							handleAs: 'json',
+							headers: {
+								'Accept': "application/json",
+								'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							data: query
+						}), function(featureIds){
+							Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds.map(function(x){
+								return x.feature_id;
+							}).join(",") + "))#view_tab=features", target: "blank"});
+						});
+					} 
+					//gene tab - selection has id already
+					else if (selection[0].document_type === "subsystems_gene") {
+						Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + selection[0].feature_id + "))#view_tab=features", target: "blank"});
+					}
+					
 				},
 				false
 			], [

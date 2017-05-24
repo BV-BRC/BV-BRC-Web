@@ -101,6 +101,7 @@ define([
 			}
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
+			var subsystemsOverviewStore = this.subsystemsStore = new SubSystemMemoryStore({type: "subsystems_overview"});
 			var subsystemsStore = this.subsystemsStore = new SubSystemMemoryStore({type: "subsystems"});
 			var geneSubsystemsStore = this.geneSubsystemsStore = new SubSystemMemoryStore({type: "genes"});
 
@@ -110,6 +111,32 @@ define([
 				"class": "TextTabButtons"
 			});
 
+			this.subsystemsOverviewGrid = new SubSystemsGridContainer({
+				title: "Subsystems Overview",
+				type: "subsystems_overview",
+				// state: this.state,
+				apiServer: this.apiServer,
+				// defaultFilter: this.defaultFilter,
+				store: subsystemsOverviewStore,
+				//facetFields: ["class", "subclass", "active"],
+				columns: {
+					"Selection Checkboxes": selector({unhidable: true}),
+					id: 				{label: 'ID', field: 'id', hidden: true},
+					subsystem_id: 		{label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
+					class: 				{label: "Class", field: "class"},
+					subclass: 			{label: 'Subclass', field: 'subclass'},
+					subsystem_name: 	{label: 'Subsystem Name', field: 'subsystem_name'},
+					genome_count: 		{label: 'Genome Count', field: 'genome_count'},
+					gene_count: 		{label: 'Gene Count', field: 'gene_count'},
+					role_count: 		{label: 'Role Count', field: 'role_count'},
+					active: 			{label: "Active", field: "active"}
+				},
+				queryOptions: {
+					sort: [{attribute: "subsystem_name"}]
+				},
+				enableFilterPanel: true,
+				visible: true
+			});
 
 			this.subsystemsGrid = new SubSystemsGridContainer({
 				title: "Subsystems",
@@ -169,6 +196,8 @@ define([
 
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
+
+			this.tabContainer.addChild(this.subsystemsOverviewGrid);
 			this.tabContainer.addChild(this.subsystemsGrid);
 			this.tabContainer.addChild(this.genesGrid);
 			
