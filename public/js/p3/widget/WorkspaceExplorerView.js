@@ -127,7 +127,8 @@ define([
 					return !!x
 				});
 
-				if(parts.length > 1){
+				// don't add parrent folder link for ASM workshop ('/public/PATRIC@patricbrc.org/home')
+				if(parts.length > 1 && _self.path != '/public/PATRIC@patricbrc.org/home'){
 					parts.pop();
 
 					var parentPath = parts[0] == 'public' ? "/"+parts.slice(1).join('/') : "/"+parts.join('/');

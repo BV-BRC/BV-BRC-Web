@@ -199,7 +199,7 @@ define([
 							value: "mine",
 							selected:  _self.path.split('/')[1] != 'public'
 						},{
-							label: "Public Workspaces",
+							label: "Public PATRIC Workspace",
 							value: "public",
 							selected:  _self.path.split('/')[1] == 'public'
 						}
@@ -211,7 +211,7 @@ define([
 						var home = '/'+window.App.user.id+'/home';
 						_self.set('path', home);
 					}else if(val == 'public'){
-						_self.set('path', '/public/')
+						_self.set('path', '/public/PATRIC@patricbrc.org/home')
 					}
 				})
 
