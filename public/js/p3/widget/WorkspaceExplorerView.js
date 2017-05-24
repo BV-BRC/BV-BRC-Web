@@ -12,6 +12,7 @@ define([
 		path: "/",
 		types: null,
 		containerType: "folder",
+		onlyWritable: false, 	// only lists writable workspaces
 		_setTypes: function(val){
 			if(!(val instanceof Array)){
 				this.types = [val];
@@ -52,27 +53,31 @@ define([
 				var prom2 = WorkspaceManager.listSharedWithUser(userID);
 			}
 
+			// join permissions with objects
 			return all([prom1, prom2]).then(function(results){
 				var res = results[0];
 
 				// join 'shared with me' data if needed
 				if(isUserTopLevel) res = res.concat(results[1]);
 
-
 				var paths = res.map(function(obj) { return obj.path; });
-				var prom2 = WorkspaceManager.listPermissions(paths)
+				var prom2 = WorkspaceManager.listPermissions(paths);
 				return Deferred.when(prom2, function(permHash){
+
+					if(_self.onlyWritable){
+						res = res.filter(function(o){
+							return !(o.user_permission == 'r' || o.user_permission == 'n')
+						})
+					}
 
 					res.forEach(function(obj){
 						obj.permissions = permHash[obj.path]
 					})
 
-
 					if(_self.types){
 						res = res.filter(function(r){
 							return (r && r.type && (_self.types.indexOf(r.type) >= 0))
 						})
-
 					}
 					// console.log("self.sort: ", _self.sort, _self.queryOptions);
 					var sort = _self.get('sort');
@@ -80,7 +85,7 @@ define([
 						sort = _self.queryOptions.sort;
 					}
 
-					// console.log('sort: ', sort);
+
 
 					res.sort(function(a, b){
 						var s = sort[0];
@@ -156,6 +161,7 @@ define([
 					return !!x;
 				});
 
+				// add parent folder if not top level or if not owner
 				if(parts.length > 1){
 					parts.pop();
 

@@ -128,8 +128,12 @@ iframe  {
 }
 .dijitToasterContainer .dijitToasterContent {
     background-color: #313131;
-    color: #8cea00; /*rgb(250,250,250);*/
+    color: #8cea00;
     padding: 1em;
+}
+
+.dijitToasterContainer .default {
+    color: #fff;
 }
 
 .dijitToasterError .dijitToasterContent {

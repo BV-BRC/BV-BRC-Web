@@ -1,5 +1,5 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang", "dojo/query", "dojo/dom-class",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang", "dojo/query",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceObjectSelector.html",
 	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
@@ -7,7 +7,7 @@ define([
 	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
 	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
 	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect", "dijit/form/Select"
-], function(declare, WidgetBase, on, lang, query, domClass,
+], function(declare, WidgetBase, on, lang, query,
 			domClass, Templated, WidgetsInTemplate,
 			Template, Dialog, HasDropDown, ContentPane, TextBox,
 			Grid, domConstr, WorkspaceManager, Memory,
@@ -30,7 +30,9 @@ define([
 		placeHolder: "",
 		allowUpload: true,  	  // whether or not to add the upload button
 		title: "Choose or Upload a Workspace Object",
-		autoSelectParent: false,  // if true, the folder currently being viewed is selected by default
+		autoSelectParent: false,    // if true, the folder currently being viewed is selected by default
+		onlyWritable: false,	    // only list writable workspaces
+		selectionText: "Selection", // the text used beside "selected" indicator
 		reset: function(){
 			this.searchBox.set('value', '');
 		},
@@ -85,8 +87,7 @@ define([
 			}
 
 			if(this.currentPathNode){
-				this.currentPathNode.innerHTML = "Folder: " +
-				val;
+				this.currentPathNode.innerHTML = val;
 			}
 
 			// hide/show new workspace/folder icons
@@ -102,6 +103,14 @@ define([
 
 			this.cancelRefresh();
 			this.refreshWorkspaceItems();
+
+			// auto select the current folder if option is given
+			if(this.autoSelectParent){
+				self.set("selection", {
+					path: self.path,
+					name: self.path.slice(self.path.lastIndexOf('/')+1)
+				});
+			}
 
 		},
 		_setTypeAttr: function(type){
@@ -135,17 +144,30 @@ define([
 			this.selection = val;
 
 			// ensures item is in store (for public workspaces),
-			// this is more efficient that recursively grabing all public objects of a certain type
+			// this is more efficient than recursively grabing all public objects of a certain type
 			try{
 				this.store.add(this.selection)
 			} catch(e){}
 
-			//console.log("this.selection: ", this.selection);
+			// ensure there is a dom node put selection info in
+			if(!this.selValNode) return;
+
+			// give help text for auto selecting parent folder
+			var isCurrentlyViewed = (
+				this.autoSelectParent &&
+				this.type.length == 1 &&
+				this.type[0] == 'folder' &&
+				val.name == this.path.slice(val.path.lastIndexOf('/')+1)
+			);
+
 			if(!val){
-				this.selValNode.innerHTML = "None.";
+				this.selValNode.innerHTML =
+					'<span class="selectedDest"><b>' + this.selectionText + ':</b> None.</span>';
 				this.okButton.set('disabled', true);
 			}else{
-				this.selValNode.innerHTML = val.name;
+				this.selValNode.innerHTML = '<span class="selectedDest"><b>' +
+					 this.selectionText + ':</b> ' +
+					 val.name + (isCurrentlyViewed ? ' (currently viewed)' : '') + '<span>';
 				this.okButton.set('disabled', false);
 			}
 		},
@@ -159,9 +181,16 @@ define([
 
 		createSelectedPane: function(){
 			var wrap = domConstr.create("div", {});
-			this.currentPathNode = domConstr.create("div", {innerHTML: "Folder: " + this.path}, wrap);
-			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
-			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
+			this.currentPathNode = domConstr.create("div", {
+				innerHTML: this.path,
+				style: {margin: '5px 0 0 0'}
+			}, wrap);
+			//domConstr.place('<br>', wrap)
+			//var sel = domConstr.create("span", {innerHTML: '<b>Selection: </b>', style: "text-align: right"}, wrap);
+			this.selValNode = domConstr.create('div', {
+				innerHTML: '<span class="selectedDest"><b>' + this.selectionText + ':</b> None.</span>',
+				style: {margin: '5px 0', float: 'left'}
+			}, wrap);
 
 
 			var buttonContainer = domConstr.create("div", {
@@ -459,13 +488,14 @@ define([
 		},
 		createGrid: function() {
 
-			var _self = this;
+			var self = this;
 
 			var grid =  new Grid({
 				region: "center",
 				path: this.path,
 				selectionMode: "single",
 				deselectOnRefresh: true,
+				onlyWritable: self.onlyWritable,
 				types: this.type ? (["folder"].concat(this.type)) : false,
 				columns: {
 					type: {
@@ -521,13 +551,13 @@ define([
 				if(!name){
 					return;
 				}
-				Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
-					_self.grid.refreshWorkspace();
-					_self.refreshWorkspaceItems();
+				Deferred.when(WorkspaceManager.createFolder(self.path + "/" + name), function(){
+					self.grid.refreshWorkspace();
+					self.refreshWorkspaceItems();
 				});
 			});
 			grid.allowSelect = function(row){
-				if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
+				if(row.data.type && (self.type.indexOf(row.data.type) >= 0)){
 					return true;
 				}
 				return false;
@@ -535,34 +565,32 @@ define([
 
 			grid.on("ItemDblClick", function(evt){
 				if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
-					_self.set('path', evt.item_path);
+					self.set('path', evt.item_path);
 				}else{
-					if(_self.selection){
-						_self.set('value', _self.selection.path);
-						_self.dialog.hide()
+					if(self.selection){
+						self.set('value', self.selection.path);
+						self.dialog.hide()
 					}
 				}
 			});
 
 			grid.on("select", function(evt){
 				var row = evt.rows[0];
-				_self.set("selection", row.data);
-				console.log('row.data', row.data)
+				self.set("selection", row.data);
 			});
 
 			grid.on("deselect", function(evt){
-				_self.set('selection', "");
+				// This is causing flickering.  Is it really safe to remove it?  Seems to be.
+				//self.set('selection', "");
 			});
 
 
 			if(this.autoSelectParent){
-
-				_self.set("selection", {
-					path: _self.path,
-					name: _self.path.slice(_self.path.lastIndexOf('/')+1)
+				self.set("selection", {
+					path: self.path,
+					name: self.path.slice(self.path.lastIndexOf('/')+1)
 				});
 			}
-
 
 			return grid
 

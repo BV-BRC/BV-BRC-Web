@@ -388,7 +388,23 @@ define([
 				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
 			})
 
-			return Deferred.when(_self.api("Workspace.copy", [{
+			// if copying to workspace level, need to create the folders first
+			// see latter of: https://github.com/PATRIC3/Workspace/issues/53
+			if(dest.split('/').length < 3){
+				var newWSPaths = paths.map(function(path){
+					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
+				})
+
+				var prom = this.api("Workspace.create", [{objects: newWSPaths }]);
+			}
+
+			Topic.publish("/Notification", {
+				message: "<span class='default'>Copying " + paths.length + " items...</span>",
+			});
+
+			return Deferred.when(prom, function(res){
+
+				return Deferred.when(_self.api("Workspace.copy", [{
 					objects: srcDestPaths,
 					recursive: true,
 					move: false
@@ -408,6 +424,7 @@ define([
 						type: "error",
 					});
 				})
+			})
 		},
 
 		move: function(paths, dest){
@@ -419,7 +436,23 @@ define([
 				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
 			})
 
-			return Deferred.when(_self.api("Workspace.copy", [{
+			// if moving to workspace level, need to create the folders first
+			// see latter of: https://github.com/PATRIC3/Workspace/issues/53
+			console.log('dest', dest)
+			if(dest.split('/').length < 3){
+				var newWSPaths = paths.map(function(path){
+					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
+				})
+
+				var prom = this.api("Workspace.create", [{objects: newWSPaths }]);
+			}
+
+			Topic.publish("/Notification", {
+				message: "<span class='default'>Moving " + paths.length + " items...</span>"
+			});
+
+			return Deferred.when(prom, function(res){
+				return Deferred.when(self.api("Workspace.copy", [{
 					objects: srcDestPaths,
 					recursive: true,
 					move: true
@@ -432,6 +465,7 @@ define([
 					});
 					return res;
 				})
+			})
 		},
 
 

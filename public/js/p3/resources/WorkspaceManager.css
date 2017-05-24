@@ -376,6 +376,12 @@ th.dgrid-cell.wsItemType {
 	color: #fff;
 }
 
+.selectedDest{
+	background: #366998;
+    color: #fff;
+	padding: 3px 5px;
+}
+
 .dataItemSelection,
 .workspaceItemSelection,
 .multipleItemSelection,
