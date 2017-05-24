@@ -286,7 +286,7 @@ define([
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+				window.open(window.App.dataServiceURL + "/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
 
@@ -322,7 +322,7 @@ define([
 				var dataType = type === "genome_group" ? "genome" : "genome_feature";
 				var currentQuery = self.getQuery(selection[0]);
 
-				var urlStr = "/api/" + dataType + "/" + currentQuery + "&http_authorization=" +
+				var urlStr = window.App.dataServiceURL + "/" + dataType + "/" + currentQuery + "&http_authorization=" +
 					encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true";
 
 				// cursorMark requires a sort on an unique key
