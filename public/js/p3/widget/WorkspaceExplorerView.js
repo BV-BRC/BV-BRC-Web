@@ -127,7 +127,7 @@ define([
 					return !!x
 				});
 
-				// don't add parrent folder link for ASM workshop ('/public/PATRIC@patricbrc.org/home')
+				// don't add parent folder link for ASM workshop ('/public/PATRIC@patricbrc.org/home')
 				if(parts.length > 1 && _self.path != '/public/PATRIC@patricbrc.org/home'){
 					parts.pop();
 
