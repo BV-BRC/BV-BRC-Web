@@ -20,6 +20,7 @@ define([
 		defaultPath: "",
 		startingRows: 11,
 		initConditions: 5,
+		initContrasts: 8,
 		maxConditions: 10,
 		conditionStore: null,
         hostGenomes: {"9606.33":"","6239.6":"","7955.5":"","7227.4":"","9031.4":"","9544.2":"","10090.24":"","9669.1":"","10116.5":"","9823.5":""},
@@ -35,6 +36,7 @@ define([
 
 			this.addedLibs = {counter: 0};
 			this.addedCond = {counter: 0};
+			this.addedContrast = {counter: 0};
 			//these objects map dojo attach points to desired alias for ingestAttachPoint function
 			//key is attach point array of values is alias
 			//if there is no alias the key in the resulting object will be the same name as attach point
@@ -67,6 +69,7 @@ define([
 			//create help dialog for infobutton's with infobuttoninfo div's
 			this.emptyTable(this.libsTable, this.startingRows);
 			this.emptyTable(this.condTable, this.initConditions);
+			this.emptyTable(this.contrastTable, this.initContrasts);
 
 			//adjust validation for each of the attach points associated with read files
 			Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function(attachname){
@@ -103,12 +106,18 @@ define([
 				this.numCondWidget.set('value', Number(1));
 				this.destroyLibRow(query_id = true, id_type = "design");
 				dojo.addClass(this.condTable, "disabled");
+				this.numContrastWidget.set('value', Number(1));
+				this.destroyLibRow(query_id = true, id_type = "contrast");
+				dojo.addClass(this.contrastTable, "disabled");
 			}
 			else{
 				// this.block_condition.hide();
 				this.numCondWidget.set('value', Number(this.addedCond.counter));
 				this.destroyLibRow(query_id = false, id_type = "design");
 				dojo.removeClass(this.condTable, "disabled");
+				this.numContrastWidget.set('value', Number(this.addedContrast.counter));
+				this.destroyLibRow(query_id = false, id_type = "contrast");
+				dojo.removeClass(this.contrastTable, "disabled");
 			}
 		},
 
@@ -412,6 +421,52 @@ define([
 			}
 			this.condition_paired.set("store", this.conditionStore);
 			this.condition_single.set("store", this.conditionStore);
+		},
+		
+        onAddContrast: function(){
+			console.log("Create New Row", domConstruct);
+			var lrec = {};
+			var toIngest = this.conditionToAttachPt;
+			var disable = !this.exp_design.checked;
+			var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+			var conditionSize = this.conditionStore.data.length;
+			if(this.addedCond.counter < this.maxConditions){
+				this.updateConditionStore(record = lrec, remove = false);
+			}
+			//make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
+			if(chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length){
+				lrec["icon"] = this.getConditionIcon();
+				var tr = this.condTable.insertRow(0);
+				var td = domConstruct.create('td', {"class": "textcol conditiondata", innerHTML: ""}, tr);
+				td.libRecord = lrec;
+				td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName() + "</div>";
+				var tdinfo = domConstruct.create("td", {"class": "iconcol", innerHTML: lrec["icon"]}, tr);
+				var td2 = domConstruct.create("td", {
+					"class": "iconcol",
+					innerHTML: "<i class='fa icon-x fa-1x' />"
+				}, tr);
+				if(this.addedCond.counter < this.initConditions){
+					this.condTable.deleteRow(-1);
+				}
+
+				var handle = on(td2, "click", lang.hitch(this, function(evt){
+					console.log("Delete Row");
+					domConstruct.destroy(tr);
+					this.updateConditionStore(record = lrec, remove = true);
+					this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
+					if(this.addedCond.counter < this.maxConditions){
+						var ntr = this.condTable.insertRow(-1);
+						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+					}
+					this.condition_single.reset();
+					this.condition_paired.reset();
+					handle.remove();
+					this.destroyLibRow(query_id = lrec["condition"], id_type = "condition");
+				}));
+				this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
+			}
 		},
 
 		onAddSingle: function(){
