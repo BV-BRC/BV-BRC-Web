@@ -18,15 +18,17 @@ define("p3/widget/PerspectiveToolTip", [
 		subsections: {
 			"Genome": [
 				{label: "Overview", link: "overview"},
+				{label: "AMR Phenotypes", link: "amr"},
 				{label: "Phylogeny", link: "phylogeny"},
-				{label: "Browser", link: "browser"},
+				{label: "Genome Browser", link: "browser"},
 				{label: "Circular Viewer", link: "circular"},
 				{label: "Sequences", link: "sequences"},
 				{label: "Features", link: "features"},
 				{label: "Specialty Genes", link: "specialtyGenes"},
 				{label: "Protein Families", link: "proteinFamilies"},
 				{label: "Pathways", link: "pathways"},
-				{label: "Transcriptomics", link: "transcriptomics"}
+				{label: "Transcriptomics", link: "transcriptomics"},
+				{label: "Interactions", link: "interactions"}
 			],
 			"GenomeList": [
 				{label: "Overview", link: "overview"},
@@ -62,9 +64,11 @@ define("p3/widget/PerspectiveToolTip", [
 			],
 			"Feature": [
 				{label: "Overview", link: "overview"},
-				{label: "Browser", link: "genomeBrowser"},
+				{label: "Genome Browser", link: "genomeBrowser"},
+				{label: "Compare Region Viewer", link: "compareRegionViewer"},
 				{label: "Transcriptomics", link: "transcriptomics"},
-				{label: "Correlated Genes", link: "correlatedGenes"}
+				{label: "Correlated Genes", link: "correlatedGenes"},
+				{label: "Interactions", link: "interactions"}
 			],
 			"FeatureList": [
 				{label: "Overview", link: "overview"},

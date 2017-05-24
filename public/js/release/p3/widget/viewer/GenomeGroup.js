@@ -1,14 +1,14 @@
 define("p3/widget/viewer/GenomeGroup", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/topic",
-	"./TabViewerBase", "./_GenomeList",
+	"./TabViewerBase", "./_GenomeList", "../AMRPanelGridContainer",
 	"../GenomeListOverview", "../GroupGenomeGridContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
 	"../PathwaysContainer", "../TranscriptomicsContainer"
 
 ], function(declare, lang,
 			Topic,
-			TabViewerBase, GenomeList,
+			TabViewerBase, GenomeList, AMRPanelGridContainer,
 			Overview, GroupGenomeGridContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
 			PathwaysContainer, TranscriptomicsContainer){
@@ -51,6 +51,8 @@ define("p3/widget/viewer/GenomeGroup", [
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 
 			var activeTab = this[active];
+
+			console.log("ACTIVE TAB : ", active, activeTab);
 
 			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
@@ -119,6 +121,14 @@ define("p3/widget/viewer/GenomeGroup", [
 				state: this.state,
 				disable: false
 			});
+
+			this.amr = new AMRPanelGridContainer({
+				title: "AMR Phenotypes",
+				id: this.viewer.id + "_" + "amr",
+				disabled: false,
+				state: this.state
+			});
+
 			this.features = new FeatureGridContainer({
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
@@ -150,6 +160,7 @@ define("p3/widget/viewer/GenomeGroup", [
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomes);
 			this.viewer.addChild(this.sequences);
+			this.viewer.addChild(this.amr);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);

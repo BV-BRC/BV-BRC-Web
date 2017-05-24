@@ -63,6 +63,9 @@ define("p3/widget/AMRPanelMetaSummary", [
 			var chartData = [];
 			var tableData = [];
 
+			var baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+			var linkBase = (window.location.href).split(baseUrl)[1].replace(window.location.hash, '');
+
 			antibiotic_data.forEach(function(d){
 				var antibiotic = d.value;
 				if(d.pivot){
@@ -85,7 +88,6 @@ define("p3/widget/AMRPanelMetaSummary", [
 					});
 
 					var phenotypes = ["Resistant", "Susceptible", "Intermediate"];
-					var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, '');
 
 					chartData.push({
 						label: antibiotic,

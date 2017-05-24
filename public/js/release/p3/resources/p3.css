@@ -14328,6 +14328,10 @@ div.appsublabel {
 .dgrid-cell.field-gene {
     width: 8%;
 }
+.dgrid-cell.field-go {
+    width: 8%;
+	text-align: left;    
+}
 .dgrid-cell.field-family_id {
     width: 12%;
 }
@@ -14558,6 +14562,7 @@ div.appsublabel {
     margin-bottom: 6px;
     padding: 10px 0 7px 0;
     border-bottom: 1px solid #afafaf;
+    overflow: hidden;
 }
 .DataItemHeader > span {
     vertical-align: middle;

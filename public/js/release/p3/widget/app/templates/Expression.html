@@ -41,6 +41,34 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="appRow">
+                                <div class="halfAppRow">
+                                    <label>Genome Type</label><br>
+                                    <select data-dojo-type="dijit/form/Select" name="host" style="width:100%"
+                                            required="true">
+                                        <option selected="true" value="false">Bacteria or Archaea</option>
+                                        <option value="true">Eukaryotic host</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="appRow">
+                                <div class="halfAppRow">
+                                    <label>Source ID Type</label><br>
+                                    <select data-dojo-type="dijit/form/Select" name="source_id_type" style="width:100%"
+                                            required="true">
+                                        <option selected="true" value="patric_id">PATRIC ID</option>
+                                        <option value="feature_id">PATRIC Feature ID</option>
+                                        <option value="gi">NCBI GI Number</option>
+                                        <option value="gene_id">NCBI Gene ID</option>
+                                        <option value="protein_id">NCBI Protein ID</option>
+                                        <option value="refseq_locus_tag">Refseq Locus Tag</option>
+                                        <option value="alt_locus_tag">Alt. Locus Tag</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="appRow">
                                 <div class="text-align:left;">
                                     <label>Target Genome</label><br>

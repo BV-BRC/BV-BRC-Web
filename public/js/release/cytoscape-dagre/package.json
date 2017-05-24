@@ -10,23 +10,23 @@
         "spec": ">=1.3.0 <2.0.0",
         "type": "range"
       },
-      "/Users/dmachi/work/PATRIC/p3_web"
+      "/Users/zreyn/Documents/workspace/p3_web"
     ]
   ],
   "_from": "cytoscape-dagre@>=1.3.0 <2.0.0",
-  "_id": "cytoscape-dagre@1.3.0",
+  "_id": "cytoscape-dagre@1.5.0",
   "_inCache": true,
   "_location": "/cytoscape-dagre",
-  "_nodeVersion": "5.9.0",
+  "_nodeVersion": "7.3.0",
   "_npmOperationalInternal": {
     "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/cytoscape-dagre-1.3.0.tgz_1462462969490_0.9532219832763076"
+    "tmp": "tmp/cytoscape-dagre-1.5.0.tgz_1491336782882_0.32873378065414727"
   },
   "_npmUser": {
-    "name": "maxkfranz",
-    "email": "maxkfranz@gmail.com"
+    "name": "cytoscape",
+    "email": "cytoscapenpm@gmail.com"
   },
-  "_npmVersion": "3.7.3",
+  "_npmVersion": "4.1.1",
   "_phantomChildren": {},
   "_requested": {
     "raw": "cytoscape-dagre@^1.3.0",
@@ -40,15 +40,17 @@
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-1.3.0.tgz",
-  "_shasum": "d66d362ae1ea733f60c2f0ffae5ffb06f1f612c7",
+  "_resolved": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-1.5.0.tgz",
+  "_shasum": "0bbb6b116f31f035d5cf79361dab4d10cf7ab42c",
   "_shrinkwrap": null,
   "_spec": "cytoscape-dagre@^1.3.0",
-  "_where": "/Users/dmachi/work/PATRIC/p3_web",
+  "_where": "/Users/zreyn/Documents/workspace/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-dagre/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dagre": "~0.7.4"
+  },
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js ",
   "devDependencies": {
     "gulp": "^3.8.8",
@@ -61,10 +63,10 @@
   },
   "directories": {},
   "dist": {
-    "shasum": "d66d362ae1ea733f60c2f0ffae5ffb06f1f612c7",
-    "tarball": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-1.3.0.tgz"
+    "shasum": "0bbb6b116f31f035d5cf79361dab4d10cf7ab42c",
+    "tarball": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-1.5.0.tgz"
   },
-  "gitHead": "d727c3414141444d6a3b64d9e939ebc803aef03a",
+  "gitHead": "f38b774fe854203984e04040a5aab53ad16f2859",
   "homepage": "https://github.com/cytoscape/cytoscape.js-dagre",
   "keywords": [
     "cytoscape",
@@ -74,6 +76,10 @@
   "main": "cytoscape-dagre.js",
   "maintainers": [
     {
+      "name": "cytoscape",
+      "email": "cytoscapenpm@gmail.com"
+    },
+    {
       "name": "maxkfranz",
       "email": "maxkfranz@gmail.com"
     }
@@ -81,8 +87,7 @@
   "name": "cytoscape-dagre",
   "optionalDependencies": {},
   "peerDependencies": {
-    "dagre": "~0.7.4",
-    "cytoscape": "^2.4.0"
+    "cytoscape": "^2.4.0 || ^3.0.0"
   },
   "readme": "ERROR: No README data found!",
   "repository": {
@@ -92,5 +97,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.3.0"
+  "version": "1.5.0"
 }

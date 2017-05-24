@@ -432,7 +432,11 @@ define([
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "),ne(feature_type,source))&select(feature_id,patric_id,refseq_locus_tag,strand,feature_type,start,end,na_length,gene,product)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
-				if(data.length === 0) return;
+				if(data.length === 0) {
+					// remove Loading message
+					domClass.add(this.sgViewerNode.parentNode, "hidden");
+					return;
+				}
 
 				var firstStartPosition = Math.max(data[0].start, rangeStart);
 				var lastEndPosition = Math.min(data[data.length - 1].end, rangeEnd);

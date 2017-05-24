@@ -38,6 +38,8 @@ return declare( [BlockBased, ExportMixin, CodonTable],
     constructor: function( args ) {
         this._charMeasurements = {};
         this._codonTable = this.generateCodonTable(lang.mixin(this.defaultCodonTable,this.config.codonTable));
+        this._codonStarts = this.config.codonStarts || this.defaultStarts
+        this._codonStops = this.config.codonStops || this.defaultStops
     },
 
     _defaultConfig: function() {
@@ -45,7 +47,10 @@ return declare( [BlockBased, ExportMixin, CodonTable],
             maxExportSpan: 500000,
             showForwardStrand: true,
             showReverseStrand: true,
-            showTranslation: true 
+            showTranslation: true,
+            showColor: true,
+            seqType: 'dna',
+            proteinColorScheme: 'taylor'
         };
     },
     _exportFormats: function() {
@@ -91,7 +96,6 @@ return declare( [BlockBased, ExportMixin, CodonTable],
             this.store.getReferenceSequence(
                 {
                     ref: this.refSeq.name,
-                    seqChunkSize: this.refSeq.seqChunkSize,
                     start: leftExtended,
                     end: rightExtended
                 },
@@ -148,11 +152,11 @@ return declare( [BlockBased, ExportMixin, CodonTable],
         // make a table to contain the sequences
         var charSize = this.getCharacterMeasurements('sequence');
         var bigTiles = scale > charSize.w + 4; // whether to add .big styles to the base tiles
-
+        var seqNode;
         if( this.config.showReverseStrand || this.config.showForwardStrand )
-            var seqNode = dom.create(
+            seqNode = dom.create(
                 "table", {
-                    className: "sequence" + (bigTiles ? ' big' : ''),
+                    className: "sequence" + (bigTiles ? ' big' : '') + (this.config.showColor ? '' : ' nocolor'),
                     style: { width: "100%" }
                 }, block.domNode);
 
@@ -198,10 +202,11 @@ return declare( [BlockBased, ExportMixin, CodonTable],
         for( var i = 0; i < seqSliced.length; i += 3 ) {
             var nextCodon = seqSliced.slice(i, i + 3);
             var aminoAcid = this._codonTable[nextCodon] || this.nbsp;
-            translated = translated + aminoAcid;
+            translated += aminoAcid;
         }
 
         translated = reverse ? translated.split("").reverse().join("") : translated; // Flip the translated seq for left-to-right rendering
+        var orientedSeqSliced = reverse ? seqSliced.split("").reverse().join("") : seqSliced
 
         var charSize = this.getCharacterMeasurements("aminoAcid");
         var bigTiles = scale > charSize.w + 4; // whether to add .big styles to the base tiles
@@ -232,7 +237,18 @@ return declare( [BlockBased, ExportMixin, CodonTable],
 
         for( var i=0; i<translated.length; i++ ) {
             var aminoAcidSpan = document.createElement('td');
+            var originalCodon = orientedSeqSliced.slice(3 * i, 3 * i + 3)
+            originalCodon = reverse ? originalCodon.split("").reverse().join("") : originalCodon;
             aminoAcidSpan.className = 'aminoAcid aminoAcid_'+translated.charAt(i).toLowerCase();
+
+            // However, if it's known to be a start/stop, apply those CSS classes instead.
+            if (this._codonStarts.indexOf(originalCodon.toUpperCase()) != -1) {
+                aminoAcidSpan.className = 'aminoAcid aminoAcid_start'
+            }
+            if (this._codonStops.indexOf(originalCodon.toUpperCase()) != -1) {
+                aminoAcidSpan.className = 'aminoAcid aminoAcid_stop'
+            }
+
             aminoAcidSpan.style.width = charWidth;
             if( drawChars ) {
                 aminoAcidSpan.innerHTML = translated.charAt( i );
@@ -253,9 +269,13 @@ return declare( [BlockBased, ExportMixin, CodonTable],
         var container  = document.createElement('tr');
         var charWidth = 100/(end-start)+"%";
         var drawChars = scale >= charSize.w;
+        var baseClassDefault = 'base';
+        if(this.config.seqType === 'protein'){
+            baseClassDefault += ' aaScheme_' + this.config.proteinColorScheme;
+        }
         for( var i=0; i<seq.length; i++ ) {
             var base = document.createElement('td');
-            base.className = 'base base_'+seq.charAt(i).toLowerCase();
+            base.className = baseClassDefault + ' base_'+seq.charAt(i).toLowerCase();
             base.style.width = charWidth;
             if( drawChars ) {
                 base.innerHTML = seq.charAt(i);
@@ -325,6 +345,14 @@ return declare( [BlockBased, ExportMixin, CodonTable],
                   checked: !! this.config.showTranslation,
                   onClick: function(event) {
                       track.config.showTranslation = this.checked;
+                      track.changed();
+                  }
+                },
+                { label: 'Show color',
+                  type: 'dijit/CheckedMenuItem',
+                  checked: !! this.config.showColor,
+                  onClick: function(event) {
+                      track.config.showColor = this.checked;
                       track.changed();
                   }
                 }
