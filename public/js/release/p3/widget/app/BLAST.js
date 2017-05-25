@@ -433,7 +433,7 @@ define("p3/widget/app/BLAST", [
 				return;
 			}
 			if(!this.hasSingleFastaSequence(val)){
-				this.sequence_message.innerHTML = 'please provide only one nucleotide or protein sequence';
+				this.sequence_message.innerHTML = 'PATRIC BLAST accepts only one sequence at a time. Please provide only one sequence.';
 				return;
 			}
 			this.sequence_message.innerHTML = '';

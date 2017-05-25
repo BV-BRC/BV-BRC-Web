@@ -103,15 +103,15 @@ define("p3/widget/BlastResultGridContainer", [
 
 					switch(this.type){
 						case "genome_feature":
-							headers = ["Genome", "Genome ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Length (NT)", "Length (AA)", "ALN Length", "Identity", "Query cover", "Subject cover", "Score", "E value"];
+							headers = ["Genome", "Genome ID", "PATRIC ID", "RefSeq Locus Tag", "Gene", "Product", "Length (NT)", "Length (AA)", "ALN Length", "Identity", "Query cover", "Subject cover", "Hit from", "Hit to", "Score", "E value"];
 							content = data.map(function(row){
-								return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row.function), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.bitscore, row.evalue];
+								return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row.function), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
 							});
 							break;
 						case "genome_sequence":
-							headers = ["Genome", "Genome ID", "Accession", "Description", "Product", "Identity", "Query cover", "Subject cover", "ALN Length", "Score", "E value"];
+							headers = ["Genome", "Genome ID", "Accession", "Description", "Product", "Identity", "Query cover", "Subject cover", "Hit from", "Hit to", "ALN Length", "Score", "E value"];
 							content = data.map(function(row){
-								return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row.function), row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
+								return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row.function), row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.length, row.bitscore, row.evalue];
 							});
 							break;
 						case "specialty_genes":
