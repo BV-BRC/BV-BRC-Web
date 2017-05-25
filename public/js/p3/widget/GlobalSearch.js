@@ -30,10 +30,10 @@ define([
 				}
 
 				console.log("Search Filter: ", searchFilter, "searchOption=", searchOption);
-				query = query.replace(/'/g,"").replace(/:/g, " ");
-				
+				query = query.replace(/'/g, "").replace(/:/g, " ");
+
 				var q = searchToQuery(query);
-				
+
 				if (searchOption == "option_or") {
 					q = searchToQueryWithOr(query);
 				}
@@ -45,19 +45,11 @@ define([
 				}
 
 				console.log("Search query q=: ", q);
-							
+
 				var clear = false;
 				switch(searchFilter){
-					case "amr":
-						Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
-						clear = true;
-						break;
 					case "everything":
 						Topic.publish("/navigate", {href: "/search/?" + q});
-						clear = true;
-						break;
-					case "pathways":
-						Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
 						clear = true;
 						break;
 					case "sp_genes":
@@ -80,6 +72,10 @@ define([
 						Topic.publish("/navigate", {href: "/view/TaxonList/?" + q});
 						clear = true;
 						break;
+					case "antibiotic":
+						Topic.publish("/navigate", {href: "/view/AntibioticList/?" + q});
+						clear = true;
+						break;
 					default:
 						console.log("Do Search: ", searchFilter, query);
 				}
@@ -89,7 +85,7 @@ define([
 					// this.searchInput.set("value", '');
 				// }
 
-				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
+				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 
 				if(window.ga){
 					window.ga('send', 'pageview', '/search?keyword=' + encodeURIComponent(query) + "&cat=" + searchFilter);
@@ -105,7 +101,7 @@ define([
 			if(!query || !query.match(/[a-z0-9]/i)){
 				return;
 			}
-			
+
 			var q = searchToQuery(query);
 			if (searchOption == "option_or") {
 				q = searchToQueryWithOr(query);

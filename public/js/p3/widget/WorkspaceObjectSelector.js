@@ -235,6 +235,7 @@ define([
 				return;
 			}
 
+
 			this.dialog = new Dialog({
 				title: this.title,
 				draggable: true
@@ -248,6 +249,33 @@ define([
 					padding: "0px"
 				}
 			});
+
+			var viewSelector = new Select({
+				name: "togglePublic",
+				style: { width: '100px' },
+				options: [
+					{
+						label: "My Workspaces",
+						value: "mine",
+						selected:  _self.path.split('/')[1] != 'public'
+					},{
+						label: "Public Workspaces",
+						value: "public",
+						selected:  _self.path.split('/')[1] == 'public'
+					}
+				]
+			})
+
+			viewSelector.on('change', function(val){
+				if(val == 'mine') {
+					var home = '/'+window.App.user.id+'/home';
+					_self.set('path', home);
+				}else if(val == 'public'){
+					_self.set('path', '/public/')
+				}
+			})
+
+			domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
 
 			domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
 
