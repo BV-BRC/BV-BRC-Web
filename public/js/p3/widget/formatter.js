@@ -407,7 +407,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		// takes an array of form [{label: "", value: ""} ... ]
 		// or a autoLabel hash and producs a simple key/value table
 		keyValueTable: function(spec){
-			console.log('spec!')
+
 			var table = ['<table class="p3basic striped" id="data-table"><tbody>'];
 			if (spec instanceof Array) {
 				for(var i = 0; i < spec.length; i++){
