@@ -15,7 +15,7 @@ define([
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
 		path: "",
-		dndFiles: null, 	// accept files for drag and drop upload
+		dndFiles: null, 	// accept files for drag and drop upload; if given, file list is initialized with these
 		dndType: null,
 		overwrite: false,
 		multiple: false,
@@ -52,24 +52,20 @@ define([
 		},
 
 		onUploadTypeChanged: function(val){
-			// console.log("Upload type changed: ", val);
 			var formats = this.knownTypes[val].formats;
-			// console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML = formats.join(", ");
 
 			var description = this.knownTypes[val].description;
 
 			if(!this.showAllFormats.get('value')){
-				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
 			}else{
-				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
 				if(formats == "*.*"){
 					domClass.add(this.fileFilterContainer, "dijitHidden");
 				}else{
 					domClass.remove(this.fileFilterContainer, "dijitHidden");
 				}
-				// console.log("set formats to: ", formats.join(","));
+
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
@@ -81,15 +77,11 @@ define([
 			}
 		},
 		onChangeShowAllFormats: function(val){
-			console.log("Show All Formats: ", val);
 			if(!val){
-				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
 			}else{
 				var type = this.uploadType.get('value');
-				console.log("uploadType value: ", type);
 				var formats = this.knownTypes[this.uploadType.get('value')].formats;
-				console.log("uploadType: ", this.uploadType.get('value'));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
@@ -169,15 +161,14 @@ define([
 		},
 
 		startup: function(){
-			if(this._started){
-				return;
-			}
+			var _self = this;
+
+			if(this._started) return;
 
 			this.inherited(arguments);
 			var state = this.get("state")
 			this.createNewFileInput();
 
-			var _self = this;
 			Object.keys(this.knownTypes).filter(function(t){
 				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
 			}).forEach(function(t){
@@ -209,7 +200,6 @@ define([
 			}
 
 			this.watch("state", function(prop, val, val2){
-				// console.log("Upload Form State: ", prop, val, val2);
 				if(val2 == "Incomplete" || val2 == "Error"){
 					this.saveButton.set("disabled", true);
 				}else{
@@ -225,8 +215,13 @@ define([
 				this.validate();
 			}
 
-			//this.initDragAndDrop();
+			// wait to digest template
+			setTimeout(function(){
+				_self.initDragAndDrop();
+			})
 		},
+
+		// drag and drop for drop area
 		initDragAndDrop: function(){
 			var self = this;
 
@@ -414,7 +409,7 @@ define([
 		},
 
 		onCancel: function(evt){
-			console.log("Cancel/Close Dialog", evt)
+			// console.log("Cancel/Close Dialog", evt)
 			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		},
 		resize: function(changeSize, resultSize){

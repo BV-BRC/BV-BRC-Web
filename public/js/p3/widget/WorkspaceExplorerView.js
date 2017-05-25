@@ -1,18 +1,19 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/query",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
 	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager", "./Confirmation", './Uploader', "dijit/form/Select",
 	"dojo/topic", '../WorkspaceManager', "dojo/promise/all"
-], function(declare, WidgetBase, on,
+], function(declare, WidgetBase, on, query,
 			domClass, domConstr, WorkspaceGrid,
 			Deferred, domGeometry, JobManager, Confirmation, Uploader, Select,
 			Topic, WorkspaceManager, all){
 	return declare([WorkspaceGrid], {
-		"disabled": false,
+		disabled: false,
 		path: "/",
 		types: null,
 		containerType: "folder",
-		onlyWritable: false, 	// only lists writable workspaces
+		onlyWritable: false, 		// only lists writable workspaces
+		allowDragAndDrop: true,		// whether or not to allow drag and drop
 		_setTypes: function(val){
 			if(!(val instanceof Array)){
 				this.types = [val];
@@ -55,39 +56,48 @@ define([
 
 			// join permissions with objects
 			return all([prom1, prom2]).then(function(results){
-				var res = results[0];
+				var objs = results[0];
 
 				// join 'shared with me' data if needed
-				if(isUserTopLevel) res = res.concat(results[1]);
+				if(isUserTopLevel) objs = objs.concat(results[1]);
 
-				var paths = res.map(function(obj) { return obj.path; });
+				var paths = objs.map(function(obj) { return obj.path; });
 				var prom2 = WorkspaceManager.listPermissions(paths);
 				return Deferred.when(prom2, function(permHash){
 
+					// empty folder notice
+					if(!objs.length){
+						_self.addEmptyFolderDiv();
+					}else{
+						_self.rmEmptyFolderDiv();
+					}
+
+					// option to filter only writable thing
 					if(_self.onlyWritable){
-						res = res.filter(function(o){
+						objs = objs.filter(function(o){
 							return !(o.user_permission == 'r' || o.user_permission == 'n')
 						})
 					}
 
-					res.forEach(function(obj){
+					// join permissions to each obj
+					objs.forEach(function(obj){
 						obj.permissions = permHash[obj.path]
 					})
 
+					// option to filter by types
 					if(_self.types){
-						res = res.filter(function(r){
+						objs = objs.filter(function(r){
 							return (r && r.type && (_self.types.indexOf(r.type) >= 0))
 						})
 					}
-					// console.log("self.sort: ", _self.sort, _self.queryOptions);
+
+					// sorting
 					var sort = _self.get('sort');
 					if(!sort || sort.length == 0){
 						sort = _self.queryOptions.sort;
 					}
 
-
-
-					res.sort(function(a, b){
+					objs.sort(function(a, b){
 						var s = sort[0];
 						if(s.descending){
 							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
@@ -95,10 +105,9 @@ define([
 							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 						}
 					});
-					return res;
+					return objs;
 				})
 
-				return res;
 			}, function(err){
 				console.log("Error Loading Workspace:", err);
 				_self.showError(err);
@@ -137,20 +146,18 @@ define([
 			var list = [item].concat(items);
 			this.render(this.path, list);
 			this._items = items;
-//			console.log("Cell: ", this.cell("untitled","name"));
-//			var row = this.row(0);
+
 			var cell = this.cell(0, "name");
 			this.edit(cell);
 		},
+
 		render: function(val, items){
 			this.refresh();
 			this._items = items;
 			this.renderArray(items);
-			// this.refresh();
-
 
 			// initialize drag and drop
-			if(!this.dndZone) this.initDragAndDrop();
+			if(this.allowDragAndDrop && !this.dndZone) this.initDragAndDrop();
 		},
 
 		refreshWorkspace: function(){
@@ -162,13 +169,25 @@ define([
 				});
 
 				// add parent folder if not top level or if not owner
-				if(parts.length > 1){
+				var user = window.App.user.id;
+				var isSharedWS = (
+					_self.path.split('/').length == 3 &&
+					parts[0] != user &&
+					parts[0] != 'public'
+				);
+
+				if(parts.length > 1 || isSharedWS){
 					parts.pop();
 
-					var parentPath = parts[0] == 'public' ? "/"+parts.slice(1).join('/') : "/"+parts.join('/');
-						parentPath = (parts[0] == 'public' && parentPath.split('/').length < 3) ? '/' : parentPath;
+					if(isSharedWS){
+						var parentPath = '/' + user;
+					}else{
+						var parentPath = parts[0] == 'public' ? "/"+parts.slice(1).join('/') : "/" + parts.join('/');
+							parentPath = (parts[0] == 'public' && parentPath.split('/').length < 3) ? '/' : parentPath;
+					}
+
 					var p = {
-						name: "Parent Folder",
+						name: (isSharedWS ? "Back to my workspaces" : "Parent folder"),
 						path: parentPath,
 						type: "parentfolder",
 						id: parentPath,
@@ -210,6 +229,32 @@ define([
 			});
 		},
 
+		// gives notice that folder is empty and user could use drag n drop.
+		addEmptyFolderDiv: function(){
+			// needed since listWorkspacEContents is called twice on url load
+			var exists = query('.emptyFolderNotice', this.domNode)[0];
+			if(exists) return;
+
+			var n = domConstr.create('div', {
+				'class': 'emptyFolderNotice',
+				style: {
+					position: 'relative',
+					padding: '10px',
+					margin: '300px auto auto',
+					width: '40%',
+					textAlign: 'center',
+					color: '#777',
+					fontSize: '1.2em'
+				},
+				innerHTML: '<b>This folder is empty.</b>'+
+						(this.allowDragAndDrop ? '<br>Drag and drop files onto this window to start an upload.' : '')
+			}, this.domNode);
+		},
+
+		rmEmptyFolderDiv: function(){
+			domConstr.destroy(query('.emptyFolderNotice', this.domNode)[0]);
+		},
+
 		// enables drag and drop on data browser
 		initDragAndDrop: function(){
 			var self = this;
@@ -234,11 +279,11 @@ define([
 
 				var typeSelector = new Select({
 					name: "typeSelector",
-					style: { width: '200px' },
+					style: { width: '200px', marginBottom: '25px' },
 					options: options
 				})
 
-				var content = domConstr.toDom('<div>Select an object type to proceed:</div>');
+				var content = domConstr.toDom('<div>Select an object type for these files:</div>');
 				domConstr.place(typeSelector.domNode, content)
 
 				// have user select the type before being brought to uploader
@@ -246,9 +291,30 @@ define([
 					title: 'Uploading '+ files.length + (files.length > 1 ? ' Files' : ' File') +'...',
 					content: content,
 					cancelLabel: false,
-					okLabel: 'Next ➜',
+					okLabel: 'Start Upload',
 					style: { width: '300px' },
 					onConfirm: function(evt){
+						// upload the files
+						var defs = [];
+						Object.keys(files).forEach(function(key){
+							var f = files[key];
+							var prom = uploader.uploadFile(f, self.path, typeSelector.get('value'));
+							defs.push(Deferred.when(prom, function(res){
+								return true;
+							}));
+						})
+						dlg.destroy();
+					}
+				})
+
+				// add option to add more files (with different type)
+				if(self.allowDnDAddMoreFiles){
+					var addFilesBtn = domConstr.create("div", {
+						style: { float: 'left', paddingTop: '7px' },
+						innerHTML: '<a>add more files...</a>'
+					}, content);
+
+					on(addFilesBtn, 'click', function(){
 						Topic.publish("/openDialog", {
 							type: "Upload",
 							params: {
@@ -257,9 +323,13 @@ define([
 								dndType: typeSelector.get('value')
 							}
 						});
-					}
-				}).show();
+						dlg.destroy();
+					})
+				}
 
+				dlg.show();
+
+				// remove hover styling
 				self.dndZone.classList.remove("dnd-active");
 			}
 

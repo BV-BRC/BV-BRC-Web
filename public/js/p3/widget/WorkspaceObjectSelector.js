@@ -28,11 +28,11 @@ define([
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
-		allowUpload: true,  	  // whether or not to add the upload button
+		allowUpload: true,  	    	// whether or not to add the upload button
 		title: "Choose or Upload a Workspace Object",
-		autoSelectParent: false,    // if true, the folder currently being viewed is selected by default
-		onlyWritable: false,	    // only list writable workspaces
-		selectionText: "Selection", // the text used beside "selected" indicator
+		autoSelectParent: false,   		// if true, the folder currently being viewed is selected by default
+		onlyWritable: false,	    	// only list writable workspaces
+		selectionText: "Selection", 	// the text used beside "selected" indicator
 		reset: function(){
 			this.searchBox.set('value', '');
 		},
@@ -228,12 +228,11 @@ define([
 		openChooser: function(){
 			var _self = this;
 
-			if(this.disabled) return;
-
 			// if dialog is already built, just show it
 			if(this.dialog){
 				this.dialog.flip("front");
 				this.dialog.show();
+				return;
 			}
 
 			this.dialog = new Dialog({
@@ -277,7 +276,7 @@ define([
 
 			viewSelector.on('change', function(val){
 				if(val == 'mine') {
-					var home = '/'+window.App.user.id+'/home';
+					var home = '/'+window.App.user.id;
 					_self.set('path', home);
 				}else if(val == 'public'){
 					_self.set('path', '/public/')
@@ -322,11 +321,12 @@ define([
 						_self.dialog.flip();
 						break;
 					case "createFolder":
-						// console.log("Create Folder", _self.grid.row(0));
 						var element = _self.grid.row(0).element;
-						// console.log("element: ", element);
 						_self.grid.addNewFolder({id: "untitled"});
-
+						break;
+					case "createWS":
+						var element = _self.grid.row(0).element;
+						_self.grid.addNewFolder({id: "untitled"});
 						break;
 				}
 			});
@@ -496,6 +496,7 @@ define([
 				selectionMode: "single",
 				deselectOnRefresh: true,
 				onlyWritable: self.onlyWritable,
+				allowDragAndDrop: false,
 				types: this.type ? (["folder"].concat(this.type)) : false,
 				columns: {
 					type: {
