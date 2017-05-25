@@ -258,6 +258,8 @@ define([
 					"genome_id": m.genome_id,
 					"genome_name": m.genome_name,
 					"function": m.function,
+					"hit_from": hit.hsps[0].hit_from,
+					"hit_to": hit.hsps[0].hit_to,
 					"detail": {
 						"match_count": m.match_count || 0,
 						"matches": identical[target_id] || [],
