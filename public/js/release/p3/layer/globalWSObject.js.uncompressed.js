@@ -16746,7 +16746,7 @@ define([
 			}));
 		},
 
-		getObjectsByType: function(types, showHidden){
+		getObjectsByType: function(types, showHidden, specialPath){
 			var _self = this;
 			types = (types instanceof Array) ? types : [types];
 			// console.log("Get ObjectsByType: ", types);
@@ -16754,21 +16754,18 @@ define([
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
 				var _self = this;
 
-				var path = current.path;
+				var path = specialPath || current.path;
 				return Deferred.when(this.api("Workspace.ls", [{
-					paths: [current.path],
+					paths: [path],
 					excludeDirectories: false,
 					excludeObjects: false,
 					query: {type: types},
 					recursive: true
 				}]), function(results){
-					//console.log("getObjectsByType Results: ", results);
 					if(!results[0] || !results[0][path]){
 						return [];
 					}
 					var res = results[0][path];
-
-					//console.log("array res", res);
 
 					res = res.map(function(r){
 						return _self.metaListToObj(r);
@@ -16925,7 +16922,7 @@ define([
 
 		},
 
-		getFolderContents: function(path, showHidden, recursive){
+		getFolderContents: function(path, showHidden, recursive, filterPublic){
 			var _self = this;
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
@@ -16950,6 +16947,16 @@ define([
 
 						return true;
 					});
+
+					// if getting "public" workspaces, filter out writeable and owner workspaces
+					if(filterPublic){
+						res = res.filter(function(r){
+							if(r.global_permission == 'w') return false;
+							else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+							return true;
+						})
+					}
+
 					//console.log("Final getFolderContents()", res)
 					return res;
 				},

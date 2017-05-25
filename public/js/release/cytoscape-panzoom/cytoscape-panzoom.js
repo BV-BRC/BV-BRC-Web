@@ -579,7 +579,9 @@ SOFTWARE.
 
   if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
     module.exports = register;
-  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
+  }
+
+  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
     define('cytoscape-panzoom', function(){
       return register;
     });

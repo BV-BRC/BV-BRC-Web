@@ -119,11 +119,7 @@ SOFTWARE.
           }
         }
 
-        nodes.positions(function(node, i){
-          // Perform 2.x and 1.x backwards compatibility check
-          if( isNumber(node) ){
-            node = i;
-          }
+        nodes.positions(function(i, node){
           var scratch = node.scratch().cola;
           var retPos;
 
@@ -277,10 +273,7 @@ SOFTWARE.
         var node = this;
         var scrCola = node.scratch().cola;
         var pos = node.position();
-        var nodeIsTarget = e.cyTarget === node || e.target === node;
-
-        if( !nodeIsTarget ){ return; }
-
+        
         switch( e.type ){
           case 'grab':
             adaptor.dragstart( scrCola );
@@ -291,7 +284,7 @@ SOFTWARE.
             break;
           case 'position':
             // only update when different (i.e. manual .position() call or drag) so we don't loop needlessly
-            if( scrCola.px !== pos.x - bb.x1 || scrCola.py !== pos.y - bb.y1 ){
+            if( scrCola.x !== pos.x - bb.x1 || scrCola.y !== pos.y - bb.y1 ){
               scrCola.px = pos.x - bb.x1;
               scrCola.py = pos.y - bb.y1;
               adaptor.resume();
@@ -537,10 +530,10 @@ SOFTWARE.
   };
 
   if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
-    module.exports = function( cytoscape, cola ){
-      register( cytoscape, cola || require('webcola') );
-    };
-  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
+    module.exports = register;
+  }
+
+  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
     define('cytoscape-cola', function(){
       return register;
     });

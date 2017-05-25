@@ -181,9 +181,8 @@ SOFTWARE.
         }
       };
 
-      nodes.layoutPositions(layout, options, function( ele ){
-        ele = typeof ele === "object" ? ele : this;
-        var dModel = ele.scratch().dagre;
+      nodes.layoutPositions(layout, options, function(){
+        var dModel = this.scratch().dagre;
 
         return constrainPos({
           x: dModel.x,
@@ -199,10 +198,10 @@ SOFTWARE.
   };
 
   if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
-    module.exports = function( cytoscape, dagre ){
-      register( cytoscape, dagre || require('dagre') );
-    };
-  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
+    module.exports = register;
+  }
+
+  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
     define('cytoscape-dagre', function(){
       return register;
     });
