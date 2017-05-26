@@ -247,7 +247,7 @@ define([
 					fontSize: '1.2em'
 				},
 				innerHTML: '<b>This folder is empty.</b>'+
-						(this.allowDragAndDrop ? '<br>Drag and drop files onto this window to start an upload.' : '')
+					(this.allowDragAndDrop ? '<br>Drag and drop files onto this window to start an upload.' : '')
 			}, this.domNode);
 		},
 
@@ -308,24 +308,22 @@ define([
 				})
 
 				// add option to add more files (with different type)
-				if(self.allowDnDAddMoreFiles){
-					var addFilesBtn = domConstr.create("div", {
-						style: { float: 'left', paddingTop: '7px' },
-						innerHTML: '<a>add more files...</a>'
-					}, content);
+				var addFilesBtn = domConstr.create("div", {
+					style: { float: 'left', paddingTop: '7px' },
+					innerHTML: '<a>add more files...</a>'
+				}, content);
 
-					on(addFilesBtn, 'click', function(){
-						Topic.publish("/openDialog", {
-							type: "Upload",
-							params: {
-								path: self.path,
-								dndFiles: files,
-								dndType: typeSelector.get('value')
-							}
-						});
-						dlg.destroy();
-					})
-				}
+				on(addFilesBtn, 'click', function(){
+					Topic.publish("/openDialog", {
+						type: "Upload",
+						params: {
+							path: self.path,
+							dndFiles: files,
+							dndType: typeSelector.get('value')
+						}
+					});
+					dlg.destroy();
+				})
 
 				dlg.show();
 
