@@ -1,18 +1,17 @@
 <div class="GlobalSearch">
 	<table style="width:100%;">
 		<tbody>
-			<tr>	
+			<tr>
 				<td style="width:120px">
 					<span data-dojo-attach-point="searchFilter" data-dojo-type="dijit/form/Select" style="display:inline-block;width:100%">
 						<option selected="true" value="everything">All Data Types</option>
 						<option value="genomes">Genomes</option>
-						<option value="genome_features">Genome Features</option>
+						<option value="genome_features">Genomic Features</option>
 						<option value="sp_genes">Specialty Genes</option>
 						<option value="taxonomy">Taxa</option>
 						<option value="transcriptomics_experiments">Transcriptomics Experiments</option>
-						<!--<option value="amr">Antibiotic Resistance</option>
-						<option value="sp_genes">Specialty Genes</option>
-						<option value="pathways">Pathways</option>
+						<option value="antibiotic">Antibiotic</option>
+						<!--
 						<option value="workspaces">Workspaces</option>-->
 					</span>
 				</td>
@@ -20,7 +19,7 @@
 					<input data-dojo-type="dijit/form/TextBox" data-dojo-attach-event="onChange:onInputChange,keypress:onKeypress" data-dojo-attach-point="searchInput" style="width:100%;"/>
 				</td>
 				<td style="width:1em;padding:2px;font-size:1em;"><i class="fa fa-1x icon-search-plus" data-dojo-attach-event="click:onClickAdvanced" title="Advanced Search"/></td>
-				<td style="width:1em;padding:2px;font-size:1em;"><i class='fa fa-1x icon-question-circle-o DialogButton' rel='help:/misc/GlobalSearchOptions' title="Select search options from the dropdown list. Click to view the help information"/></td>			
+				<td style="width:1em;padding:2px;font-size:1em;"><i class='fa fa-1x icon-question-circle-o DialogButton' rel='help:/misc/GlobalSearchOptions' title="Select search options from the dropdown list. Click to view the help information"/></td>
 				<td style="width:50px">
 					<span data-dojo-attach-point="searchOption" data-dojo-type="dijit/form/Select" style="display:inline-block;width:100%">
 						<option selected="true" value="option_and">All terms</option>
