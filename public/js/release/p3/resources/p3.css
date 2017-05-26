@@ -15266,9 +15266,10 @@ div.appsublabel {
   padding: 20px;
 }
 #dlp-features-data .data-box-lg  {
-  float: left;
+  display: inline-flex;
+  flex-direction: column;
   width: 400px;
-  height: 320x;
+  height: 320px !important;
   margin: 0 5px 5px 0;
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
