@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./SubSystemsMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/SubSystemMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector"
+	"../store/SubSystemMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector", "./SubSystemsPieGraphContainer"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			SubSystemsGridContainer, ContentPane, GridContainer, TooltipDialog,
-			SubSystemMemoryStore, domConstruct, topic, selector){
+			SubSystemMemoryStore, domConstruct, topic, selector, SubSystemsPieGraphContainer){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -111,26 +111,13 @@ define([
 				"class": "TextTabButtons"
 			});
 
-			this.subsystemsOverviewGrid = new SubSystemsGridContainer({
+			this.subsystemsOverviewGrid = new SubSystemsPieGraphContainer({
 				title: "Subsystems Overview",
 				type: "subsystems_overview",
 				// state: this.state,
 				apiServer: this.apiServer,
-				// defaultFilter: this.defaultFilter,
 				store: subsystemsOverviewStore,
-				//facetFields: ["class", "subclass", "active"],
-				columns: {
-					"Selection Checkboxes": selector({unhidable: true}),
-					id: 				{label: 'ID', field: 'id', hidden: true},
-					subsystem_id: 		{label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
-					class: 				{label: "Class", field: "class"},
-					subclass: 			{label: 'Subclass', field: 'subclass'},
-					subsystem_name: 	{label: 'Subsystem Name', field: 'subsystem_name'},
-					genome_count: 		{label: 'Genome Count', field: 'genome_count'},
-					gene_count: 		{label: 'Gene Count', field: 'gene_count'},
-					role_count: 		{label: 'Role Count', field: 'role_count'},
-					active: 			{label: "Active", field: "active"}
-				},
+				facetFields: ["class"],
 				queryOptions: {
 					sort: [{attribute: "subsystem_name"}]
 				},
@@ -202,7 +189,7 @@ define([
 			this.tabContainer.addChild(this.genesGrid);
 			
 			topic.subscribe(this.id + "_TabContainer-selectChild", lang.hitch(this, function(page){
-				page.set('state', this.state)
+				page.set('state', this.state);
 			}));
 
 			this._firstView = true;

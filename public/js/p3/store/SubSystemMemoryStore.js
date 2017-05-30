@@ -108,6 +108,21 @@ define([
 
 		queryTypes: {
 
+			subsystems_overview: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "subsystem_id",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							role_count: "unique(role_id)"
+						}
+					}
+				}
+			})) + ")",
+
 			subsystems: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
@@ -198,7 +213,8 @@ define([
 				var props = {
 					"subsystems": "subsystem_id",
 					"roleid": "role_id",
-					"genes": 'feature_id'
+					"genes": 'feature_id',
+					"subsystems_overview": "subsystem_id"
 				};
 
 				//flat queries return a different data format

@@ -1250,13 +1250,22 @@ define([
 
 			});
 
-			if(this.containerActionBar){
-				this.addChild(this.containerActionBar);
+ 			if(this.containerActionBar){
+				//The PieChart container does not have a sidebar
+				if(this.containerType != "subsystems_overview_data") {
+					this.addChild(this.containerActionBar);
+				};
+				
 				this.containerActionBar.set("currentContainer", this);
 			}
+
+			//The PieChart container does not have a sidebar
+			if(this.containerType != "subsystems_overview_data") {
+				this.addChild(this.selectionActionBar);
+				this.addChild(this.itemDetailPanel);
+			};
 			this.addChild(this.grid);
-			this.addChild(this.selectionActionBar);
-			this.addChild(this.itemDetailPanel);
+			
 
 			this.setupActions();
 			this.listen();
@@ -1270,34 +1279,17 @@ define([
 
 		listen: function(){
 			this.grid.on("select", lang.hitch(this, function(evt){
-				// console.log("Selected: ", evt);
-				// if (evt.grid.allSelected){
-				// 	console.log("All Items Selected");
-				// 	this.getAllSelection(evt.grid.query);
-				// }else{
+
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-					// console.log("rownum: ", rownum);
-					// console.log("Row: ", evt.grid.row(rownum).data);
 					var row = evt.grid.row(rownum);
-					// console.log("Row: ", rownum)
 					if(row.data){
 						return row.data;
 					}else if (this.grid && this.grid._unloadedData) {
-						// console.log("No Row: ", rownum)
 						return this.grid._unloadedData[rownum];
-						// var data = {};
-						// // console.log("_self.grid.primaryKey", this.grid.primaryKey);
-						// data[this.grid.primaryKey]=rownum;
-						// // console.log("    DATA: ", data)
-						// return data;
 					}
 				}), this);
-
-				// console.log("GridContainer SEL: ", sel)
-				// console.log("selection: ", sel);
 				this.selectionActionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel);
-				// }
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
@@ -1308,18 +1300,14 @@ define([
 				}
 				else{
 					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						// console.log("rownum: ", rownum);
-						// console.log("Row: ", evt.grid.row(rownum).data);
 						return evt.grid.row(rownum).data;
 					}));
 				}
-				// console.log("selection: ", sel);
 				this.selectionActionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel);
 			}));
 
 			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
-				// console.log("toggleFilters");
 				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel();
 					this.filterPanel.region = "top";
@@ -1328,7 +1316,6 @@ define([
 					this.addChild(this.filterPanel);
 				}
 				else if(this.filterPanel){
-					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
 						this.filterPanel.set("minimized", false);
 						this.filterPanel.resize({
