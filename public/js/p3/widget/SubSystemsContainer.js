@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./SubSystemsMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/SubSystemMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector", "./SubSystemsPieGraphContainer"
+	"../store/SubSystemMemoryStore", "../store/SubSystemPieChartMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector", "./SubSystemsPieGraphContainer"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			SubSystemsGridContainer, ContentPane, GridContainer, TooltipDialog,
-			SubSystemMemoryStore, domConstruct, topic, selector, SubSystemsPieGraphContainer){
+			SubSystemMemoryStore, SubSystemPieChartMemoryStore, domConstruct, topic, selector, SubSystemsPieGraphContainer){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -101,7 +101,7 @@ define([
 			}
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
-			var subsystemsOverviewStore = this.subsystemsStore = new SubSystemMemoryStore({type: "subsystems_overview"});
+			var subsystemsOverviewStore = this.subsystemsStore = new SubSystemPieChartMemoryStore({type: "subsystems_overview"});
 			var subsystemsStore = this.subsystemsStore = new SubSystemMemoryStore({type: "subsystems"});
 			var geneSubsystemsStore = this.geneSubsystemsStore = new SubSystemMemoryStore({type: "genes"});
 

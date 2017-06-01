@@ -50,15 +50,16 @@ define([
 				if(this._loaded){
 					this._loaded = false;
 					delete this._loadingDeferred;
-					this.loadData();
+					return this.loadData();
 				}else{
 					if(this._loadingDeferred){
-						var curDef = this._loadingDeferred;
-						when(this.loadData(), function(r){
-							curDef.resolve(r);
-						})
+						// var curDef = this._loadingDeferred;
+						// when(this.loadData(), function(r){
+						// 	curDef.resolve(r);
+						// })
+						return this._loadingDeferred;
 					}else{
-						this.loadData();
+						return this.loadData();
 					}
 				}
 			}
@@ -108,23 +109,18 @@ define([
 
 		queryTypes: {
 
-			subsystems: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			subsystems_overview: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
-						field: "subsystem_id",
+						field: "class",
 						limit: -1,
 						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							role_count: "unique(role_id)"
+							gene_count: "unique(feature_id)"
 						}
 					}
 				}
-			})) + ")",
-
-			genes: "&group((field,subsystem_id),(format,simple),(ngroups,false),(limit,25000),(facet,false))"
-			
+			})) + ")"
 
 		},
 		buildQuery: function(){
@@ -182,6 +178,7 @@ define([
 			var q = this.buildQuery();
 
 			var _self = this;
+
 			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
 				handleAs: 'json',
 				headers: {
@@ -196,87 +193,40 @@ define([
 
 				var docs = [];
 				var props = {
-					"subsystems": "subsystem_id",
-					"roleid": "role_id",
-					"genes": 'feature_id',
 					"subsystems_overview": "subsystem_id"
 				};
 
 				//flat queries return a different data format
 				if ( response && response.grouped && response.facets ) {
-					//subsystems tab
-					if ( response.grouped[props[this.type]] ){
-						var ds = response.grouped[props[this.type]].doclist.docs;
-						var buckets = response.facets.stat.buckets;
-						var map = {};
-						buckets.forEach(function(b){
-							map[b["val"]] = b;
-							delete b["val"];
-						});
-						docs = ds.map(function(doc){
-							var p = props[this.type];
-							var pv = doc[p];
-							lang.mixin(doc, map[pv] || {});
-
-							switch(this.type){
-								case "subsystems":
-									doc.document_type = "subsystems_subsystem";
-									break;
-								case "subsystems_overview":
-									doc.document_type = "subsystems_overview";
-									break;
-								case "roleid":
-									break;
-								case "genes":
-									doc.document_type = "subsystems_gene";
-									break;
-								default:
-									break;
-							}
-						
-							return doc;
-						}, this);
-
-						_self.setData(docs);
-						_self._loaded = true;
-						return true;
-
-					} else {
-						console.error("Unable to Process Response: ", response);
-						_self.setData([]);
-						_self._loaded = true;
-						return false;
-					}
-
-				} else if ( response ) {
-					// genes tab
-					var ds = response.grouped.subsystem_id.doclist.docs;
-					docs = ds.map(function(doc){
 					
-						switch(this.type){
-							case "subsystems":
-								doc.document_type = "subsystems_subsystem";
-								break;
-							case "roleid":
-								break;
-							case "genes":
-								doc.document_type = "subsystems_gene";
-								break;
-							default:
-								break;
-						}
-					
-						return doc;
-					}, this);
+					//var ds = response.grouped[props[this.type]].doclist.docs;
+					var buckets = response.facets.stat.buckets;
+					//var map = {};
+					// buckets.forEach(function(b){
+					// 	map[b["val"]] = b;
+					// 	delete b["val"];
+					// });
+					// docs = ds.map(function(doc){
+					// 	var p = props[this.type];
+					// 	var pv = doc[p];
+					// 	lang.mixin(doc, map[pv] || {});
 
-					_self.setData(docs);
+					// 	switch(this.type){
+					// 		case "subsystems_overview":
+					// 			doc.document_type = "subsystems_overview";
+					// 			break;
+					// 		default:
+					// 			break;
+					// 	}
+					
+					// 	return doc;
+					// }, this);
+
+					_self.setData(buckets);
 					_self._loaded = true;
 					return true;
-				} else {
-					console.error("Unable to Process Response: ", response);
-					_self.setData([]);
-					_self._loaded = true;
-					return false;
+
+
 				}
 				
 			}), lang.hitch(this, function(err){
