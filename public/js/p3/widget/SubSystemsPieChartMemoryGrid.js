@@ -53,33 +53,26 @@ define([
 
 			this.state = state;
 
-			if(ov != nv){
-				if(!this.store){
-					this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-				}else{
-					this.store.set("state", lang.mixin({}, state));
-				}
-					var that = this;
-
-					Deferred.when(this.store.query(), function(data) {
-						console.log(data)
-						that.drawGraph(data);
-					});
-				// }
-				// this.refresh()
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				// this.refresh()
+				this.store.set("state", lang.mixin({}, state));
 			}
+			
+			var that = this;
+
+			Deferred.when(this.store.query(), function(data) {
+				that.drawGraph(data);
+			});
+	
 		},
 
 		drawGraph: function(pieChartData) {
-			console.log(pieChartData);
-
-			var width = 1000;
-			var height = 1000;
+			var width = 700;
+			var height = 700;
 			var radius = Math.min(width, height) / 2;
 
-			var color = d3.scaleOrdinal(d3.schemeCategory20);
+			var color = d3.scale.category20();
 
 			var svg = d3.select('#subsystemspiechart')
 	          .append('svg')
@@ -89,11 +82,11 @@ define([
 	          .attr('transform', 'translate(' + (width / 2) +
 	            ',' + (height / 2) + ')');
 
-	        var arc = d3.arc()
+	        var arc = d3.svg.arc()
 	          .innerRadius(0)
 	          .outerRadius(radius);
 
-	        var pie = d3.pie()
+	        var pie = d3.layout.pie()
 	          .value(function(d) { return d.count; })
 	          .sort(null);
 
@@ -103,10 +96,8 @@ define([
 	          .append('path')
 	          .attr('d', arc)
 	          .attr('fill', function(d) {
-	            return color(d.pieChartData.val);
+	            return color(d.data.val);
 	        });
-	    // }
-
 		},
 
 
