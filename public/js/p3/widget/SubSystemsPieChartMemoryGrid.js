@@ -105,9 +105,8 @@ define([
 	          .append('path')
 	          .attr('d', arc)
 	          .attr('fill', function(d) {
-	            return color(d.data.val);
+	            return color(d.data.val + " (" + d.data.count + ")");
 	        });
-
 
 	        var margin = {top: 20, right: 100, bottom: 30, left: 60};
 
