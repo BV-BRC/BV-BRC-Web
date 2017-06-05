@@ -410,15 +410,13 @@ define([
 					move: false
 				}]),
 				function(res){
-					console.log('server res', res)
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {
-						message: "Copied contents of "+ paths.length + (paths.length ? " items" : 'item'),
+						message: "Copied contents of "+ paths.length + (paths.length > 1 ? " items" : 'item'),
 						type: "message"
 					});
 					return res;
 				}, function(err){
-					console.log('the error', err)
 					Topic.publish("/Notification", {
 						message: "Copy failed",
 						type: "error",
@@ -460,7 +458,7 @@ define([
 				function(res){
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {
-						message: "Moved contents of "+ paths.length + (paths.length ? " items" : 'item'),
+						message: "Moved contents of "+ paths.length + (paths.length > 1 ? " items" : 'item'),
 						type: "message"
 					});
 					return res;

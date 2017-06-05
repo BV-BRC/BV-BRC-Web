@@ -247,7 +247,7 @@ define([
 					fontSize: '1.2em'
 				},
 				innerHTML: '<b>This folder is empty.</b>'+
-					(this.allowDragAndDrop ? '<br>Drag and drop files onto this window to start an upload.' : '')
+					(this.allowDragAndDrop ? '<br>Drag and drop files onto this window to upload.' : '')
 			}, this.domNode);
 		},
 
@@ -283,7 +283,9 @@ define([
 					options: options
 				})
 
-				var content = domConstr.toDom('<div>Select an object type for these files:</div>');
+				var content = domConstr.toDom(
+					'<div>Select an object type for these files:</div>'
+				);
 				domConstr.place(typeSelector.domNode, content)
 
 				// have user select the type before being brought to uploader
@@ -308,6 +310,8 @@ define([
 				})
 
 				// add option to add more files (with different type)
+				// (not in use for now)
+				/*
 				var addFilesBtn = domConstr.create("div", {
 					style: { float: 'left', paddingTop: '7px' },
 					innerHTML: '<a>add more files...</a>'
@@ -324,6 +328,7 @@ define([
 					});
 					dlg.destroy();
 				})
+				*/
 
 				dlg.show();
 

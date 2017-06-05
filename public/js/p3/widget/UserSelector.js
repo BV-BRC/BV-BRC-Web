@@ -109,7 +109,8 @@ define([
 		},*/
 
 		getSelected: function(){
-			return this.attr('value') + '@patricbrc.org';
+			var username = this.attr('value')
+			return username.length ?  username + '@patricbrc.org' : null;
 		},
 
 		labelFunc: function(item, store){

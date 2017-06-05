@@ -861,7 +861,7 @@ define([
 					new Dialog({
 						content: e.toString(),
 						title: "Sorry, you can't rename that...",
-						style: "width: 250px !important;"
+						style: "width: 250px;"
 					}).show();
 					return;
 				}
@@ -872,7 +872,7 @@ define([
 					var d = new Dialog({
 						content: e.toString(),
 						title: "Sorry, you can't rename that...",
-						style: "width: 250px !important;"
+						style: "width: 250px;"
 					}).show();
 				}
 			}, false);
@@ -903,9 +903,32 @@ define([
 
 				// on selection, do the copy
 				objSelector.onSelection = function(destPath){
+					// only allow folders to be copied to top level
+					var fileCount = selection.filter(function(o){ return o.type != 'folder' }).length
+					if(fileCount && destPath.split('/').length == 2){
+						new Dialog({
+							content: "Sorry, you cannot copy objects to the top level, <i>"+destPath+"</i>",
+							title: "Oh no!",
+							style: "width: 250px;"
+						}).show();
+						return;
+					}
+
 					var prom = WorkspaceManager.copy(paths, destPath);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
+					}, function(e){
+						var msg = /_ERROR_(.*)_ERROR_/g.exec(e)[1];
+
+						if(msg.indexOf('overwrite flag is not set') != -1){
+							msg = "Can not overwrite " + msg.split(' ')[2]
+						}
+
+						new Dialog({
+							content: msg,
+							title: "Move failed",
+							style: "width: 250px;"
+						}).show();
 					})
 				}
 
@@ -929,7 +952,7 @@ define([
 					new Dialog({
 						content: e.toString(),
 						title: "Sorry, you can't move that...",
-						style: "width: 250px !important;"
+						style: "width: 250px;"
 					}).show();
 					return;
 				}
@@ -950,10 +973,32 @@ define([
 				objSelector.set('path', '/'+window.App.user.id);
 
 				objSelector.onSelection = function(destPath){
-					var prom = WorkspaceManager.move(paths, destPath);
+					// only allow folders to be copied to top level
+					var fileCount = selection.filter(function(o){ return o.type != 'folder' }).length
+					if(fileCount && destPath.split('/').length == 2){
+						new Dialog({
+							content: "Sorry, you cannot move objects to the top level, <i>"+destPath+"</i>",
+							title: "Oh no!",
+							style: "width: 250px;"
+						}).show();
+						return;
+					}
 
+					var prom = WorkspaceManager.move(paths, destPath);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
+					}, function(e){
+						var msg = /_ERROR_(.*)_ERROR_/g.exec(e)[1];
+
+						if(msg.indexOf('overwrite flag is not set') != -1){
+							msg = "Can not overwrite " + msg.split(' ')[2]
+						}
+
+						new Dialog({
+							content: msg,
+							title: "Move failed",
+							style: "width: 250px;"
+						}).show();
 					})
 				}
 
@@ -1002,7 +1047,7 @@ define([
 					var _self = this;
 
 					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value')){
-						var d = new Dialog({
+						new Dialog({
 							content: "Please pick a new name.",
 							title: "Oh no!",
 							style: "width: 250px !important;"
@@ -1018,7 +1063,7 @@ define([
 						self.itemDetailPanel.set('selection', []);
 						_self.hideAndDestroy();
 					}, function(error){
-						var d = new Dialog({
+						new Dialog({
 							content: error.toString(),
 							title: "Oh no!",
 							style: "width: 250px !important;"
@@ -1027,9 +1072,9 @@ define([
 				}
 			})
 
-			dlg.okButton.on('click', function(){
-				console.log('there was a click!')
-			})
+			//dlg.okButton.on('click', function(){
+				//console.log('there was a click!')
+			//})
 			dlg.startup()
 			dlg.show();
 		},
@@ -1046,7 +1091,6 @@ define([
 
 			function rmUser(userId){
 				userPerms = userPerms.filter(function(perm){ return userId != perm.user });
-				console.log('users after', userPerms)
 			}
 
 			function addUser(userId, perm){
@@ -1073,7 +1117,7 @@ define([
 
 			var form = domConstruct.toDom('<div class="userPermForm">')
 			var currentUsers = domConstruct.toDom(
-				'<table class="currentUsers p3basic striped">'+
+				'<table class="currentUsers p3basic striped" style="margin-bottom: 10px;">'+
 					'<thead>'+
 						'<tr>'+
 							'<th>User Name'+
@@ -1086,10 +1130,8 @@ define([
 							'<td>&nbsp;'
 			);
 
-			// user's name
-			var userSelector = new UserSelector({
-				name: "user",
-			})
+			// user search box
+			var userSelector = new UserSelector({name: "user"})
 
 			// user's permission
 			var permSelect = new Select({
@@ -1116,7 +1158,7 @@ define([
 					var userId = userSelector.getSelected();
 						perm = permSelect.attr('value')
 
-					if (!userId.length) return;
+					if (!userId) return;
 
 					// don't add already existing users
 					if(findUser(userId)) return;
@@ -1157,11 +1199,6 @@ define([
 
 					// refresh list in detail panel
 					self.activePanel.clearSelection();
-					//self.itemDetailPanel.set("selection", []); //
-					//setTimeout(function(){
-					//	self.itemDetailPanel.set("selection", [selection]); //
-					//}, 1000)
-
 				}
 			})
 
