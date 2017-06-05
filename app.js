@@ -151,8 +151,6 @@ app.use("/js/" + package.version + "/", [
 		}
 	}),
 ]);
-app.use("/js/msa/", express.static(path.join(__dirname, 'node_modules/msa/dist/')));
-app.use("/js/msa/node_modules/", express.static(path.join(__dirname, 'node_modules/msa/node_modules/')));
 app.use("/js/swfobject/", express.static(path.join(__dirname, 'node_modules/swfobject-amd/')));
 app.use("/js/", express.static(path.join(__dirname, 'public/js/')));
 app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
