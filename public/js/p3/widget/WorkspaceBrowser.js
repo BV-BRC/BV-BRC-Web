@@ -443,7 +443,7 @@ define([
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
 			}, self.path.split('/').length > 3);
 
-			var addFolderBtn = this.browserHeader.addAction("CreateFolder", "fa icon-folder-plus fa-2x", {
+			this.browserHeader.addAction("CreateFolder", "fa icon-folder-plus fa-2x", {
 				label: "ADD FOLDER",
 				validTypes: ["folder"],
 				tooltip: "Create Folder"
@@ -454,6 +454,29 @@ define([
 					type: "CreateFolder",
 					params: path
 				});
+			}, self.path.split('/').length > 3);
+
+			this.browserHeader.addAction("ShowHidden", (window.App.showHiddenFiles ? "fa icon-eye-slash" : "fa icon-eye") , {
+				label: "SHOW HIDDEN",
+				multiple: true,
+				validTypes: ["folder"],
+				tooltip: "Show hidden folders/files"
+			}, function(selection){
+				window.App.showHiddenFiles = !window.App.showHiddenFiles;
+
+				// change icon/text based on state
+				var icon = query('[rel="ShowHidden"] .fa', this.domNode)[0],
+					text = query('[rel="ShowHidden"] .ActionButtonText', this.domNode)[0];
+
+				domClass.toggle(icon, "icon-eye-slash");
+				domClass.toggle(icon, "icon-eye");
+
+				if(window.App.showHiddenFiles)
+					domAttr.set(text, "textContent", "HIDE HIDDEN");
+				else
+					domAttr.set(text, "textContent", "SHOW HIDDEN");
+
+				Topic.publish("/refreshWorkspace", {});
 			}, self.path.split('/').length > 3);
 
 			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-add-workspace fa-2x", {

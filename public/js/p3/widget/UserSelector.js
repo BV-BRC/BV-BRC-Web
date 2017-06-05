@@ -1,12 +1,12 @@
 define([
 	"dijit/form/FilteringSelect", "dojo/_base/declare",  "dojo/topic",
 	"dojo/store/JsonRest", "dojo/dom-construct", "dijit/TooltipDialog",
-	"dojo/on", "dijit/popup", "dojo/_base/lang", "dojo/dom-construct",
+	"dojo/on", "dijit/popup", "dojo/_base/lang",
 	"dijit/form/CheckBox", "dojo/string", "dojo/when", "dijit/form/_AutoCompleterMixin",
 	"../util/PathJoin",
 ], function(FilteringSelect, declare, Topic,
 			Store, domConstr, TooltipDialog,
-			on, popup, lang, domConstr, Checkbox,
+			on, popup, lang, Checkbox,
 			string, when, AutoCompleterMixin,
 			PathJoin){
 

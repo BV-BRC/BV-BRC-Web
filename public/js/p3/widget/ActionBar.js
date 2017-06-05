@@ -82,7 +82,7 @@ define([
 				var validTypes = act.options.validTypes || [];
 
 				// if top level "workspace", hide 'create folder' and upload
-				if(sel[0] && 'isWorkspace' in sel[0] && (an === "CreateFolder" || an === "Upload")){
+				if(sel[0] && 'isWorkspace' in sel[0] && ["CreateFolder", "Upload", "ShowHidden"].indexOf(an) !== -1){
 					return false;
 				}
 

@@ -167,7 +167,7 @@ define([
 			}else{
 				this.selValNode.innerHTML = '<span class="selectedDest"><b>' +
 					 this.selectionText + ':</b> ' +
-					 val.name + (isCurrentlyViewed ? ' (currently viewed)' : '') + '<span>';
+					 val.name + (isCurrentlyViewed ? ' (currently viewing)' : '') + '<span>';
 				this.okButton.set('disabled', false);
 			}
 		},
