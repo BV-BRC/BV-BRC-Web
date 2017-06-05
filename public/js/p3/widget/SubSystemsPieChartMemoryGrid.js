@@ -8,33 +8,16 @@ define([
 			xhr, lang, Grid, formatter, Store, request,
 			aspect, selector, when, d3, Stateful){
 	return declare([Stateful], {
-		// region: "center",
-		// query: (this.query || ""),
-		// apiToken: window.App.authorizationToken,
-		// apiServer: window.App.dataServiceURL,
 		store: null,
-		// dataModel: "subsystem",
-		// primaryKey: "id",
-		// selectionModel: "extended",
-		// loadingMessage: "Loading subsystems.  This may take several minutes...",
-		// deselectOnRefresh: true,
-		// subsystem_data: {},
-		// fullSelectAll: true,
-		// state: null,
-
-		// _setApiServer: function(server){
-		// 	this.apiServer = server;
-		// },
 
 		constructor: function(){
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
+		subsystemMaxNumToDisplay: 8,
+
 		onSetState: function(attr, oldState, state){
-
-
-			// var oldState = this.get('state');
 
 			var ov, nv;
 			if(oldState){
@@ -62,15 +45,41 @@ define([
 			var that = this;
 
 			Deferred.when(this.store.query(), function(data) {
-				that.drawGraph(data);
+				that.drawGraphAndTree(data);
 			});
-	
 		},
 
-		drawGraph: function(pieChartData) {
-			var width = 700;
-			var height = 700;
-			var radius = Math.min(width, height) / 2;
+		//subsystemData is returned in descending order by count. This code depends on that. 
+		scrubSubSystemData: function(subsystemData) {
+			if (this.subsystemMaxNumToDisplay >= subsystemData.length) {
+				return subsystemData;
+			} else {
+				var scrubbedSubsystemData = subsystemData.splice(0, this.subsystemMaxNumToDisplay);
+				var subsystemsOtherCategory = {};
+				subsystemsOtherCategory.val = "Other";
+				subsystemsOtherCategory.count = 0;
+
+				for (var i = 0; i < subsystemData.length; i++) {
+					subsystemsOtherCategory.count += subsystemData[i].count;
+				};
+
+				scrubbedSubsystemData.push(subsystemsOtherCategory);
+				return scrubbedSubsystemData;
+			}
+		},
+
+		//function is coupled because color data is used across circle and tree to match
+		//color data is rendered via d3 library programmatically
+		drawGraphAndTree: function(subsystemData) {
+
+ 			var scrubbedSubsystemData = this.scrubSubSystemData(subsystemData);
+
+			var width = 1300;
+			var height = 800;
+			var radius = Math.min(width, height) / 2 - 50;
+
+			var legendRectSize = 18;
+        	var legendSpacing = 4;
 
 			var color = d3.scale.category20();
 
@@ -79,8 +88,8 @@ define([
 	          .attr('width', width)
 	          .attr('height', height)
 	          .append('g')
-	          .attr('transform', 'translate(' + (width / 2) +
-	            ',' + (height / 2) + ')');
+	          .attr('transform', 'translate(' + (height / 2 + 100) +
+	            ',' + (height / 2 + 50) + ')');
 
 	        var arc = d3.svg.arc()
 	          .innerRadius(0)
@@ -91,49 +100,47 @@ define([
 	          .sort(null);
 
 	        var path = svg.selectAll('path')
-	          .data(pie(pieChartData))
+	          .data(pie(scrubbedSubsystemData))
 	          .enter()
 	          .append('path')
 	          .attr('d', arc)
 	          .attr('fill', function(d) {
 	            return color(d.data.val);
 	        });
+
+
+	        var margin = {top: 20, right: 100, bottom: 30, left: 60};
+
+			var legendHolder = svg.append('g')
+			  // translate the holder to the right side of the graph
+			  .attr('transform', "translate(" + (margin.left + radius) + ",0)")
+
+	        var subsystemslegend = legendHolder.selectAll('.subsystemslegend')
+	            .data(color.domain())
+	            .enter()
+	            .append('g')
+	            .attr('class', 'subsystemslegend')
+	            //.style('padding-left', '300px;')
+	            .attr('transform', function(d, i) {
+	              var height = legendRectSize + legendSpacing;
+	              var offset =  height * color.domain().length / 2;
+	              var horz = -2 * legendRectSize;
+	              var vert = i * height - offset;
+	              return 'translate(' + horz + ',' + vert + ')';
+            });
+
+          	subsystemslegend.append('rect')
+          		.attr("x", 0)
+	            .attr('width', legendRectSize)
+	            .attr('height', legendRectSize)                                   
+	            .style('fill', color)
+	            .style('stroke', color);
+            
+          	subsystemslegend.append('text')
+	            .attr('x', legendRectSize + legendSpacing)
+	            .attr('y', legendRectSize - legendSpacing)
+	            .text(function(d) { return d; });
 		},
-
-
-
-		// _setVisibleAttr: function(visible){
-		// 	this.visible = visible;
-
-		// 	if(this.visible && !this._firstView){
-		// 		this.onFirstView();
-		// 	}
-
-		// 	if(this.viewer){
-		// 		this.viewer.set('visible', true);
-
-		// 		// this.service.get_palette('compare_region', function(palette){
-		// 		// 	this.compare_regions.set_palette(palette);
-		// 		// }.bind(this));
-		// 	}
-		// },
-
-		// onFirstView: function(){
-		// 	if(this._firstView){
-		// 		return;
-		// 	}
-
-		// 	this.viewer = new ContentPane({
-		// 		region: "center",
-		// 		content: "<div id='subsystemspiechart'></div>",
-		// 		style: "padding:0"
-		// 	})
-		// 	this.addChild(this.viewer);
-
-		// 	this.inherited(arguments);
-		// 	this._firstView = true;
-		// },
-
 
 		createStore: function(server, token, state){
 			if(this.store){

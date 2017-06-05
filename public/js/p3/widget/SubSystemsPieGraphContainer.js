@@ -32,10 +32,6 @@ define([
 
 			if(this.viewer){
 				this.viewer.set('visible', true);
-
-				// this.service.get_palette('compare_region', function(palette){
-				// 	this.compare_regions.set_palette(palette);
-				// }.bind(this));
 			}
 		},
 
@@ -44,14 +40,21 @@ define([
 				return;
 			}
 
-			this.viewer = new ContentPane({
-				region: "center",
+			this.piechartviewer = new ContentPane({
+				region: "left",
 				content: "<div id='subsystemspiechart'></div>",
 				style: "padding:0"
-			})
+			});
+
+			// this.legendviewer = new ContentPane({
+			// 	region: "right",
+			// 	content: "<div id='subsystemslegend'></div>",
+			// 	style: "margin-right:100px; float:right"
+			// })
 
 			// this.chart = new SubSystemsPieChartGrid(this.viewer.domNode)
-			this.addChild(this.viewer);
+			this.addChild(this.piechartviewer);
+			//this.addChild(this.legendviewer);
 			this.chart = new SubSystemsPieChartGrid();
 
 			this.watch("state", lang.hitch(this, "onSetState"));

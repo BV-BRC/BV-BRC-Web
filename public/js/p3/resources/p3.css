@@ -1218,4 +1218,9 @@ body footer.main-footer ul.left {
 }
 
 .center-text {
-    text-align: center; }
+    text-align: center; 
+}
+
+.subsystemslegend {
+    font-size: 15px;
+}
