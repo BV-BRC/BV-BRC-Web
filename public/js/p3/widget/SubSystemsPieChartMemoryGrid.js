@@ -47,7 +47,7 @@ define([
 			var that = this;
 
 			Deferred.when(this.store.query(), function(data) {
-				that.drawGraphAndTree(data);
+				that.drawGraphAndLegend(data);
 			});
 		},
 
@@ -72,7 +72,7 @@ define([
 
 		//function is coupled because color data is used across circle and tree to match
 		//color data is rendered via d3 library programmatically
-		drawGraphAndTree: function(subsystemData) {
+		drawGraphAndLegend: function(subsystemData) {
 
  			var scrubbedSubsystemData = this.scrubSubSystemData(subsystemData);
 
@@ -93,6 +93,13 @@ define([
 	          .attr('transform', 'translate(' + (height / 2 + 100) +
 	            ',' + (height / 2 + 50) + ')');
 
+	        d3.select('#subsystemspiechart svg')
+			  .append("text")
+			  .attr("x", 500)             
+			  .attr("y", 50)
+			  .attr("text-anchor", "middle")  
+			  .text(this.state.genome.genome_name);
+
 	        var arc = d3.svg.arc()
 	          .innerRadius(0)
 	          .outerRadius(radius);
@@ -110,7 +117,7 @@ define([
 	            return color(d.data.val + " (" + d.data.count + ")");
 	        });
 
-	        var margin = {top: 20, right: 100, bottom: 30, left: 60};
+	        var margin = {left: 60};
 
 			var legendHolder = svg.append('g')
 			  // translate the holder to the right side of the graph
