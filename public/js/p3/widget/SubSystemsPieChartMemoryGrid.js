@@ -9,12 +9,14 @@ define([
 			aspect, selector, when, d3, Stateful){
 	return declare([Stateful], {
 		store: null,
+		subsystemSvg: null,
 
 		constructor: function(){
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
+		// x + "Other" as aggregation of what is left over
 		subsystemMaxNumToDisplay: 8,
 
 		onSetState: function(attr, oldState, state){
@@ -139,6 +141,22 @@ define([
 	            .attr('x', legendRectSize + legendSpacing)
 	            .attr('y', legendRectSize - legendSpacing)
 	            .text(function(d) { return d; });
+
+	        this.setSubsystemPieGraph();
+		},
+
+		setSubsystemPieGraph: function () {
+
+			var html = d3.select("svg")
+		        .attr("title", "svg_title")
+		        .attr("version", 1.1)
+		        .attr("xmlns", "http://www.w3.org/2000/svg")
+		        .node().parentNode.innerHTML;
+			this.subsystemSvg = html;
+		},
+
+		getSubsystemPieGraph: function() {
+			return this.subsystemSvg;
 		},
 
 		createStore: function(server, token, state){

@@ -3,16 +3,30 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", 
 	"dojo/query", "dojo/request", "dojo/dom-construct", "dojo/dom-style", 
 	"dojo/dom-class", "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "./FilterContainerActionBar",
-	"./GridContainer", "./SubSystemsPieChartMemoryGrid"
+	"./GridContainer", "./SubSystemsPieChartMemoryGrid", "FileSaver"
 ], function(declare, lang, on, Topic, 
 			query, request, domConstruct, domStyle, 
 			domClass, BorderContainer, ContentPane, ContainerActionBar,
-			GridContainer, SubSystemsPieChartGrid){
+			GridContainer, SubSystemsPieChartMemoryGrid, saveAs){
 
 	return declare([BorderContainer], {
 		gutters: false,
 		visible: false,
 		state: null,
+
+		containerActions: [
+			
+			[
+				"Print Map",
+				"fa icon-print fa-2x",
+				{label: "Print", multiple: false, validTypes: ["*"]},
+				function(){
+					var svg = this.chart.getSubsystemPieGraph();
+					saveAs(new Blob([svg], {type: 'image/svg+xml'}), "PATRIC_subsystem_overview.svg");
+				},
+				true
+			]
+		],
 
 		onSetState: function(attr, oldState, state){
 			if(!state){
@@ -40,22 +54,24 @@ define([
 				return;
 			}
 
+			this.containerActionBar = new ContainerActionBar({
+				baseClass: "BrowserHeader",
+				region: "top"
+			});
+
+			this.containerActions.forEach(function(a){
+				this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+			}, this);
+			this.addChild(this.containerActionBar);
+
 			this.piechartviewer = new ContentPane({
 				region: "left",
 				content: "<div id='subsystemspiechart'></div>",
 				style: "padding:0"
 			});
 
-			// this.legendviewer = new ContentPane({
-			// 	region: "right",
-			// 	content: "<div id='subsystemslegend'></div>",
-			// 	style: "margin-right:100px; float:right"
-			// })
-
-			// this.chart = new SubSystemsPieChartGrid(this.viewer.domNode)
 			this.addChild(this.piechartviewer);
-			//this.addChild(this.legendviewer);
-			this.chart = new SubSystemsPieChartGrid();
+			this.chart = new SubSystemsPieChartMemoryGrid();
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
