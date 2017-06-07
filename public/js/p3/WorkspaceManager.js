@@ -399,7 +399,7 @@ define([
 			}
 
 			Topic.publish("/Notification", {
-				message: "<span class='default'>Copying " + paths.length + " items...</span>",
+				message: "<span class='default'>Copying " + paths.length + " items...</span>"
 			});
 
 			return Deferred.when(prom, function(res){
@@ -419,7 +419,7 @@ define([
 				}, function(err){
 					Topic.publish("/Notification", {
 						message: "Copy failed",
-						type: "error",
+						type: "error"
 					});
 				})
 			})
@@ -641,7 +641,7 @@ define([
 		listSharedWithUser: function(path){
 			var _self = this;
 			return Deferred.when(this.api("Workspace.ls", [{
-					paths: ['/'],
+					paths: ['/']
 				}]), function(results){
 					var allWS = results[0]['/'];
 
@@ -684,7 +684,7 @@ define([
 			var _self = this;
 			return Deferred.when(this.api("Workspace.set_permissions", [{
 				path: path,
-				new_global_permission: permission,
+				new_global_permission: permission
 			}]), function(res) {
 				return res;
 			},
@@ -698,7 +698,7 @@ define([
 		listPermissions: function(paths){
 			var _self = this;
 			return Deferred.when(this.api("Workspace.list_permissions", [{
-				objects: Array.isArray(paths) ? paths : [paths],
+				objects: Array.isArray(paths) ? paths : [paths]
 			}]), function(res) {
 				return Array.isArray(paths) ? res[0] : res[0][paths];
 			},

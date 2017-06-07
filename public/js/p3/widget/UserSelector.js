@@ -3,7 +3,7 @@ define([
 	"dojo/store/JsonRest", "dojo/dom-construct", "dijit/TooltipDialog",
 	"dojo/on", "dijit/popup", "dojo/_base/lang",
 	"dijit/form/CheckBox", "dojo/string", "dojo/when", "dijit/form/_AutoCompleterMixin",
-	"../util/PathJoin",
+	"../util/PathJoin"
 ], function(FilteringSelect, declare, Topic,
 			Store, domConstr, TooltipDialog,
 			on, popup, lang, Checkbox,

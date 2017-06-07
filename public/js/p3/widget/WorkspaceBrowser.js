@@ -486,7 +486,7 @@ define([
 			}, function(sel){
 
 				Topic.publish("/openDialog", {
-					type: "CreateWorkspace",
+					type: "CreateWorkspace"
 				});
 			},  self.path.split('/').length < 3);
 
@@ -865,7 +865,7 @@ define([
 				allowMultiTypes: false,
 				multiple: false,
 				validTypes: ["folder"],
-				tooltip: "Share Folder",
+				tooltip: "Share Folder"
 			}, function(selection){
 				self.userPermDialog(selection[0])
 			}, false);
@@ -873,7 +873,7 @@ define([
 			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
 				label: "RENAME",
 				validTypes: ["*"],
-				tooltip: "Rename folders or objects",
+				tooltip: "Rename folders or objects"
 			}, function(selection){
 				var path = selection[0].path;
 
@@ -905,7 +905,7 @@ define([
 				allowMultiTypes: true,
 				multiple: true,
 				validTypes: ["*"],
-				tooltip: "Copy selected objects",
+				tooltip: "Copy selected objects"
 			}, function(selection){
 				var paths = selection.map(function(obj){ return obj.path });
 
@@ -964,7 +964,7 @@ define([
 				allowMultiTypes: true,
 				multiple: true,
 				validTypes: ["*"],
-				tooltip: "Move selected objects",
+				tooltip: "Move selected objects"
 			}, function(selection){
 				var paths = selection.map(function(obj){ return obj.path });
 
@@ -1167,7 +1167,7 @@ define([
 						selected: true
 					},{
 						label: "Can edit",
-						value: "w",
+						value: "w"
 					}
 				]
 			})

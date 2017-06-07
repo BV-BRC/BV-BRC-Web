@@ -183,13 +183,13 @@ define([
 			var wrap = domConstr.create("div", {});
 			this.currentPathNode = domConstr.create("div", {
 				innerHTML: this.path,
-				style: {margin: '5px 0 0 0'}
+				style: {'margin': '5px 0 0 0'}
 			}, wrap);
 			//domConstr.place('<br>', wrap)
 			//var sel = domConstr.create("span", {innerHTML: '<b>Selection: </b>', style: "text-align: right"}, wrap);
 			this.selValNode = domConstr.create('div', {
 				innerHTML: '<span class="selectedDest"><b>' + this.selectionText + ':</b> None.</span>',
-				style: {margin: '5px 0', float: 'left'}
+				style: {'margin': '5px 0', 'float': 'left'}
 			}, wrap);
 
 
