@@ -16,11 +16,11 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "idx",
+		idProperty: "id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
-		genome_ids: null,
-		type: "pathway",
+		genome_ids: null, 
+		type: "subsystem",
 		onSetState: function(attr, oldVal, state){
 
 			var ov, nv;
@@ -107,52 +107,25 @@ define([
 		},
 
 		queryTypes: {
-			pathway: "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+
+			subsystems: "&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
-						field: "pathway_id",
+						field: "subsystem_id",
 						limit: -1,
 						facet: {
 							genome_count: "unique(genome_id)",
 							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
+							role_count: "unique(role_id)"
 						}
 					}
 				}
 			})) + ")",
 
-			ecnumber: "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-			"&json(facet," + encodeURIComponent(JSON.stringify({
-				stat: {
-					field: {
-						field: "ec_number",
-						limit: -1,
-						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
-						}
-					}
-				}
-			})) + ")",
-			genes: "&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-			"&json(facet," + encodeURIComponent(JSON.stringify({
-				stat: {
-					field: {
-						field: "feature_id",
-						limit: -1,
-						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
-						}
-					}
-				}
-			})) + ")"
+			genes: "&group((field,subsystem_id),(format,simple),(ngroups,false),(limit,25000),(facet,false))"
+			
+
 		},
 		buildQuery: function(){
 			var q = [];
@@ -209,7 +182,7 @@ define([
 			var q = this.buildQuery();
 
 			var _self = this;
-			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
@@ -223,62 +196,89 @@ define([
 
 				var docs = [];
 				var props = {
-					"pathway": "pathway_id",
-					"ecnumber": "ec_number",
-					"genes": 'feature_id'
+					"subsystems": "subsystem_id",
+					"roleid": "role_id",
+					"genes": 'feature_id',
+					"subsystems_overview": "subsystem_id"
 				};
-				if(response && response.grouped && response.grouped[props[this.type]]){
-					var ds = response.grouped[props[this.type]].doclist.docs;
-					var buckets = response.facets.stat.buckets;
-					var map = {};
-					buckets.forEach(function(b){
-						map[b["val"]] = b;
-						delete b["val"];
-					});
 
+				//flat queries return a different data format
+				if ( response && response.grouped && response.facets ) {
+					//subsystems tab
+					if ( response.grouped[props[this.type]] ){
+						var ds = response.grouped[props[this.type]].doclist.docs;
+						var buckets = response.facets.stat.buckets;
+						var map = {};
+						buckets.forEach(function(b){
+							map[b["val"]] = b;
+							delete b["val"];
+						});
+						docs = ds.map(function(doc){
+							var p = props[this.type];
+							var pv = doc[p];
+							lang.mixin(doc, map[pv] || {});
+
+							switch(this.type){
+								case "subsystems":
+									doc.document_type = "subsystems_subsystem";
+									break;
+								case "subsystems_overview":
+									doc.document_type = "subsystems_overview";
+									break;
+								case "roleid":
+									break;
+								case "genes":
+									doc.document_type = "subsystems_gene";
+									break;
+								default:
+									break;
+							}
+						
+							return doc;
+						}, this);
+
+						_self.setData(docs);
+						_self._loaded = true;
+						return true;
+
+					} else {
+						console.error("Unable to Process Response: ", response);
+						_self.setData([]);
+						_self._loaded = true;
+						return false;
+					}
+
+				} else if ( response ) {
+					// genes tab
+					var ds = response.grouped.subsystem_id.doclist.docs;
 					docs = ds.map(function(doc){
-						var p = props[this.type];
-						var pv = doc[p];
-						lang.mixin(doc, map[pv] || {});
-						if(doc.genome_ec && doc.genome_count){
-							doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
-						}else{
-							doc.ec_cons = 0;
-						}
-						if(doc.gene_count && doc.genome_count){
-							doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
-						}else{
-							doc.gene_cons = 0;
-						}
-
-						// compose index key
+					
 						switch(this.type){
-							case "pathway":
-								doc.idx = doc.pathway_id;
+							case "subsystems":
+								doc.document_type = "subsystems_subsystem";
 								break;
-							case "ecnumber":
-								doc.idx = doc.pathway_id + "_" + doc.ec_number;
+							case "roleid":
 								break;
 							case "genes":
-								doc.idx = doc.feature_id;
-								doc.document_type = "genome_feature";
+								doc.document_type = "subsystems_gene";
 								break;
 							default:
 								break;
 						}
+					
 						return doc;
 					}, this);
 
 					_self.setData(docs);
 					_self._loaded = true;
 					return true;
-
-				}else{
+				} else {
 					console.error("Unable to Process Response: ", response);
 					_self.setData([]);
 					_self._loaded = true;
 					return false;
 				}
+				
 			}), lang.hitch(this, function(err){
 				console.error("Error Loading Data: ", err);
 				_self.setData([]);
@@ -288,5 +288,7 @@ define([
 
 			return this._loadingDeferred;
 		}
+
+		
 	})
 });

@@ -585,6 +585,69 @@ define([
 			return div;
 		},
 
+		"subsystem_data": function(item, options){
+			options = options || {};
+
+			var columns;
+
+			// property set in SubSystemMemoryStore.js
+			if (item.document_type === "subsystems_gene") {
+				columns = [
+					{
+						name: 'Class',
+						text: 'class'
+					}, {
+						name: 'Subclass',
+						text: 'subclass'
+					}, {
+						name: 'Subsystem Name',
+						text: 'subsystem_name'
+					}, {
+						name: 'Role Name',
+						text: 'role_name'
+					}, {
+						name: 'Active',
+						text: 'active'
+					}
+					, {
+						name: 'Patric ID',
+						text: 'patric_id'
+					}, {
+						name: 'Gene',
+						text: 'gene'
+					}, {
+						name: 'Product',
+						text: 'product'
+					}
+				]
+			} else if (item.document_type === "subsystems_subsystem") {
+				columns = [
+					{
+						name: 'Class',
+						text: 'class'
+					}, {
+						name: 'Subclass',
+						text: 'subclass'
+					}, {
+						name: 'Subsystem Name',
+						text: 'subsystem_name'
+					}, {
+						name: 'Role Name',
+						text: 'role_name'
+					}, {
+						name: 'Active',
+						text: 'active'
+					}
+				]
+			}
+
+			var div = domConstruct.create("div");
+			displayHeader(div, item.subsystem_name, "fa icon-git-pull-request fa-2x", "/view/Subsystems/" + item.subsystem_id, options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
 		"proteinfamily_data": function(item, options){
 			options = options || {};
 

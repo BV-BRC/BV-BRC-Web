@@ -322,7 +322,7 @@ define([
 					tooltip: "Download Selection",
 					max: 5000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "subsystem_data"]
 				},
 				function(selection, container){
 					// console.log("this.currentContainerType: ", this.containerType);
@@ -406,8 +406,7 @@ define([
 					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
 				},
 				false
-			],
-			[
+			], [
 				"ViewFeatureItems",
 				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
@@ -417,7 +416,7 @@ define([
 					min: 2,
 					max: 5000,
 					tooltip: "Switch to Feature List View. Press and Hold for more options.",
-					validContainerTypes: ["feature_data", "transcriptomics_gene_data", "spgene_data"],
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data", "spgene_data", "subsystem_data"],
 					pressAndHold: function(selection, button, opts, evt){
 						console.log("PressAndHold");
 						console.log("Selection: ", selection, selection[0])
@@ -523,9 +522,7 @@ define([
 					});
 				},
 				false
-			],
-
-			[
+			], [
 				"ViewGenomeItem",
 				"MultiButton fa icon-selection-Genome fa-2x",
 				{
@@ -1025,7 +1022,7 @@ define([
 					requireAuth: true,
 					max: 10000,
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data", "subsystem_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
@@ -1039,7 +1036,7 @@ define([
 
 					if(containerWidget.containerType == "genome_data"){
 						type = "genome_group";
-					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data"){
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data" || containerWidget.containerType == "subsystem_data"){
 						type = "feature_group";
 					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
 						type = "experiment_group";
@@ -1253,13 +1250,22 @@ define([
 
 			});
 
-			if(this.containerActionBar){
-				this.addChild(this.containerActionBar);
+ 			if(this.containerActionBar){
+				//The PieChart container does not have a sidebar
+				if(this.containerType != "subsystems_overview_data") {
+					this.addChild(this.containerActionBar);
+				};
+				
 				this.containerActionBar.set("currentContainer", this);
 			}
+
+			//The PieChart container does not have a sidebar
+			if(this.containerType != "subsystems_overview_data") {
+				this.addChild(this.selectionActionBar);
+				this.addChild(this.itemDetailPanel);
+			};
 			this.addChild(this.grid);
-			this.addChild(this.selectionActionBar);
-			this.addChild(this.itemDetailPanel);
+			
 
 			this.setupActions();
 			this.listen();
@@ -1273,34 +1279,17 @@ define([
 
 		listen: function(){
 			this.grid.on("select", lang.hitch(this, function(evt){
-				// console.log("Selected: ", evt);
-				// if (evt.grid.allSelected){
-				// 	console.log("All Items Selected");
-				// 	this.getAllSelection(evt.grid.query);
-				// }else{
+
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-					// console.log("rownum: ", rownum);
-					// console.log("Row: ", evt.grid.row(rownum).data);
 					var row = evt.grid.row(rownum);
-					// console.log("Row: ", rownum)
 					if(row.data){
 						return row.data;
 					}else if (this.grid && this.grid._unloadedData) {
-						// console.log("No Row: ", rownum)
 						return this.grid._unloadedData[rownum];
-						// var data = {};
-						// // console.log("_self.grid.primaryKey", this.grid.primaryKey);
-						// data[this.grid.primaryKey]=rownum;
-						// // console.log("    DATA: ", data)
-						// return data;
 					}
 				}), this);
-
-				// console.log("GridContainer SEL: ", sel)
-				// console.log("selection: ", sel);
 				this.selectionActionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel);
-				// }
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
@@ -1311,18 +1300,14 @@ define([
 				}
 				else{
 					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						// console.log("rownum: ", rownum);
-						// console.log("Row: ", evt.grid.row(rownum).data);
 						return evt.grid.row(rownum).data;
 					}));
 				}
-				// console.log("selection: ", sel);
 				this.selectionActionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel);
 			}));
 
 			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
-				// console.log("toggleFilters");
 				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel();
 					this.filterPanel.region = "top";
@@ -1331,7 +1316,6 @@ define([
 					this.addChild(this.filterPanel);
 				}
 				else if(this.filterPanel){
-					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
 						this.filterPanel.set("minimized", false);
 						this.filterPanel.resize({
@@ -1359,8 +1343,8 @@ define([
 			this.selectionActions.forEach(function(a){
 				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 			}, this);
-
 		},
+		
 		startup: function(){
 			if(this._started){
 				return;
