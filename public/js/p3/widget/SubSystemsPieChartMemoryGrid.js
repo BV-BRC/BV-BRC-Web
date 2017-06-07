@@ -155,7 +155,7 @@ define([
 				.style("position", "absolute")
 				.style("z-index", "10")
 				.style("visibility", "hidden")
-				.text(val);  
+				//.text(val);  
 
 			// path.on('mouseover', function(d) {
 			// 	tooltip.select('.label').html(d.data.val);
