@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/SubSystemPieChartMemoryStore", "dojo/request",
-	"dojo/aspect", "./GridSelector", "dojo/when", "d3/d3", "dojo/Stateful"
+	"dojo/aspect", "./GridSelector", "dojo/when", "d3/d3", "dojo/Stateful", "dojo/topic"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect, selector, when, d3, Stateful){
+			aspect, selector, when, d3, Stateful, Topic){
 	return declare([Stateful], {
 		store: null,
 		subsystemSvg: null,
@@ -97,7 +97,7 @@ define([
 			  .append("text")
 			  .attr("x", 500)             
 			  .attr("y", 50)
-			  .attr("text-anchor", "middle")  
+			  .attr("text-anchor", "middle")
 			  .text(this.state.genome.genome_name);
 
 	        var arc = d3.svg.arc()
@@ -113,6 +113,9 @@ define([
 	          .enter()
 	          .append('path')
 	          .attr('d', arc)
+	          .on("mouseover", function(d){return tooltip.style("visibility", "visible");})
+			  .on("mousemove", function(d){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+			  .on("mouseout", function(d){return tooltip.style("visibility", "hidden");})
 	          .attr('fill', function(d) {
 	            return color(d.data.val + " (" + d.data.count + ")");
 	        });
@@ -120,7 +123,6 @@ define([
 	        var margin = {left: 60};
 
 			var legendHolder = svg.append('g')
-			  // translate the holder to the right side of the graph
 			  .attr('transform', "translate(" + (margin.left + radius) + ",0)")
 
 	        var subsystemslegend = legendHolder.selectAll('.subsystemslegend')
@@ -128,7 +130,6 @@ define([
 	            .enter()
 	            .append('g')
 	            .attr('class', 'subsystemslegend')
-	            //.style('padding-left', '300px;')
 	            .attr('transform', function(d, i) {
 	              var height = legendRectSize + legendSpacing;
 	              var offset =  height * color.domain().length / 2;
@@ -148,6 +149,23 @@ define([
 	            .attr('x', legendRectSize + legendSpacing)
 	            .attr('y', legendRectSize - legendSpacing)
 	            .text(function(d) { return d; });
+
+	        var tooltip = d3.select("body")
+				.append("div")
+				.style("position", "absolute")
+				.style("z-index", "10")
+				.style("visibility", "hidden")
+				.text(val);  
+
+			// path.on('mouseover', function(d) {
+			// 	tooltip.select('.label').html(d.data.val);
+			// 	tooltip.select('.count').html(d.data.count);
+			// 	tooltip.style('display', 'block');
+			// });                               
+
+			// path.on('mouseout', function(d) { 
+			// 	tooltip.style('display', 'none');
+			// }); 	
 
 	        this.setSubsystemPieGraph();
 		},

@@ -14,11 +14,29 @@ define([
 		visible: false,
 		state: null,
 
+		constructor: function(){
+			Topic.subscribe("subsystemsPieChartGraph", lang.hitch(this, function(){
+				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "other":
+						console.log("foo");
+						//this.tabContainer.selectChild(this.mainGridContainer);
+						break;
+					
+					default:
+						console.log("foo");
+						//this.tabContainer.selectChild(this.mainGridContainer);
+						break;
+				}
+			}));
+		},
+
 		containerActions: [
-			
 			[
 				"Print Map",
-				"fa icon-print fa-2x",
+				"fa icon-print fa-3x",
 				{label: "Print", multiple: false, validTypes: ["*"]},
 				function(){
 					var svg = this.chart.getSubsystemPieGraph();
