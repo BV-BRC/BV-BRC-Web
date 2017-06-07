@@ -436,7 +436,7 @@ function(locale, domConstruct, domClass, Tooltip){
 			// ignore global permisssion and workaround this https://github.com/PATRIC3/Workspace/issues/54
 			userPerms.forEach(function(perm){
 				if(perm[0] == 'global_permission' || perm[1] == 'n') return;
-				users.push(perm[0])
+				users.push(perm[0]);
 			})
 
 			var html =

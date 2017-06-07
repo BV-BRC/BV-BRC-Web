@@ -82,7 +82,11 @@ define([
 					// determine if workspace and if actually shared
 					// Todo(nc): move logic to api method
 					if(t == "folder" && item.path.split('/').length <= 3){
-						t = item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
+						if(item.global_permission != 'n'){
+							t = 'publicWorkspace'
+						}else{
+							t = item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
+						}
 					}
 
 					switch(t){
