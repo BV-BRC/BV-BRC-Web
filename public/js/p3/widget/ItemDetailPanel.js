@@ -80,6 +80,7 @@ define([
 					var t = item.document_type || item.type;
 
 					// determine if workspace and if actually shared
+					// Todo(nc): move logic to api method
 					if(t == "folder" && item.path.split('/').length <= 3){
 						t = item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
 					}
@@ -96,6 +97,10 @@ define([
 						case "sharedWorkspace":
 							domClass.add(_self.typeIcon, "fa icon-shared-workspace fa-2x")
 							currentIcon = "fa icon-shared-workspace fa-2x";
+							break;
+						case "publicWorkspace":
+							domClass.add(_self.typeIcon, "fa icon-globe fa-2x")
+							currentIcon = "fa icon-globe fa-2x";
 							break;
 						//case "contigs":
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")

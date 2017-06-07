@@ -436,7 +436,6 @@ define([
 
 			// if moving to workspace level, need to create the folders first
 			// see latter of: https://github.com/PATRIC3/Workspace/issues/53
-			console.log('dest', dest)
 			if(dest.split('/').length < 3){
 				var newWSPaths = paths.map(function(path){
 					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
@@ -507,10 +506,7 @@ define([
 				throw Error("The name " + newName + " already exists!  Please pick a unique name.")
 			}
 
-			console.log('attemtping to create workspace')
 			return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
-				console.log('attempting to move (copy) workspace')
-
 				return Deferred.when(self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
 						recursive: true,
@@ -669,12 +665,26 @@ define([
 		},
 
 		setPermissions: function(path, permissions){
-
 			var _self = this;
 			return Deferred.when(this.api("Workspace.set_permissions", [{
 				path: path,
 				permissions: permissions
 
+			}]), function(res) {
+				return res;
+			},
+
+			function(err){
+				//console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
+		},
+
+		setPublicPermission: function(path, permission){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.set_permissions", [{
+				path: path,
+				new_global_permission: permission,
 			}]), function(res) {
 				return res;
 			},
@@ -804,6 +814,11 @@ define([
 		},
 		_currentPathSetter: function(val){
 			this.currentPath = val;
+		},
+
+		//Todo(nc): generic error
+		showError: function(e){
+
 		},
 
 		init: function(apiUrl, token, userId){

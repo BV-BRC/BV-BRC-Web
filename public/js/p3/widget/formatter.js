@@ -346,7 +346,9 @@ function(locale, domConstruct, domClass, Tooltip){
 				case "workspace":
 					return '<i class="fa icon-hdd-o fa-1x" title="Workspace" />';
 				case "sharedWorkspace":
-					return '<i class="fa icon-shared-workspace fa-1x" title="Workspace" />';
+					return '<i class="fa icon-shared-workspace fa-1x" title="Shared Workspace" />';
+				case "publicWorkspace":
+					return '<i class="fa icon-globe fa-1x" title="Shared Workspace" />';
 				case "contigs":
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />';
 				case "fasta":

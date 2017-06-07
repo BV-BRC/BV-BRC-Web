@@ -4,7 +4,7 @@ define([
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
-	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
+	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select", "dijit/form/CheckBox",
 	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip", "../widget/UserSelector",
 	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "./WorkspaceObjectSelector",
 
@@ -15,7 +15,7 @@ define([
 	WorkspaceExplorerView, Topic, ItemDetailPanel,
 	ActionBar, Deferred, WorkspaceManager, lang,
 	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-	popup, IDMappingTemplate, xhr, Select,
+	popup, IDMappingTemplate, xhr, Select, CheckBox,
 	ContainerActionBar, GroupExplore, PerspectiveToolTipDialog, UserSelector,
 	Button, Formatter, TextBox, WSObjectSelector){
 	return declare([BorderContainer], {
@@ -1218,6 +1218,14 @@ define([
 				content: form,
 				style: { width: '700px'},
 				onConfirm: function(evt){
+					this.hideAndDestroy();
+					Topic.publish('/refreshWorkspace');
+
+					// refresh list in detail panel
+					self.activePanel.clearSelection();
+				},
+				onCancel: function() {	// also do updates on close checkbox
+					this.hideAndDestroy();
 					Topic.publish('/refreshWorkspace');
 
 					// refresh list in detail panel
@@ -1225,9 +1233,42 @@ define([
 				}
 			})
 
-			// create current permission table
+			/*
+		     * create current permission tables
+			 */
 			var prom = WorkspaceManager.listPermissions(folderPath);
 			Deferred.when(prom, function(perms){
+				// global perm
+				var globalPerm = perms.filter(function(perm){ return perm[0] == 'global_permission' })[0][1]
+				var isPublic = globalPerm != 'n';
+
+				var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
+				var cb = new CheckBox({
+					id: "publicCB",
+					name: "checkBox",
+					value: "isPublic",
+					checked: isPublic,
+					onChange: function(e){
+						var self = this;
+						var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
+						Deferred.when(prom, function(res){
+						}, function(e){
+							alert('oh no, something has went wrong!')
+						})
+
+					}
+				})
+				cb.placeAt(checkBox);
+				checkBox.appendChild(domConstruct.create('label', {
+					'for': 'publicCB',
+					'innerHTML': " Publicly Readable"
+				}))
+
+				domConstruct.place(checkBox, form, "first");
+
+
+
+				// user perms
 				perms.forEach(function(perm){
 					// server sometimes returns 'none' permissions, so ignore them.
 					if(perm[0] == 'global_permission' || perm[1] == 'n') return;

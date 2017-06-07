@@ -50,8 +50,8 @@ define([
 			this.hide();
 			var _self = this;
 			setTimeout(function(){
-				_self.destroy();
-			}, 2000);
+				_self.destroyRecursive();
+			}, 1000);
 		}
 	});
 

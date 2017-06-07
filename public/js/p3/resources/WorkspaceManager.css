@@ -483,18 +483,11 @@ th.dgrid-cell.wsItemType {
 	margin-right: 3px;
 }
 
-
-.fa-rotate-90 {
-  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
-  -webkit-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
-  transform: rotate(90deg);
-}
-.fa-rotate-180 {
-  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
-  -webkit-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
-  transform: rotate(180deg);
+.userPermForm .publicCheckBox{
+	padding: 10px;
+	background: #f5f5f5;
+	border: 1px dashed #aaa;
+	margin-bottom: 20px;
 }
 
 

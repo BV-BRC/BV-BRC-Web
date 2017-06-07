@@ -15,6 +15,9 @@ define([
 					if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
 						return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
 					}else if(item.type == "folder" && item.path.split('/').length <= 3){
+						var globalPerm = item.permissions.filter(function(perm){ return perm[0] == 'global_permission' })[0][1];
+						if(globalPerm != 'n') return 'publicWorkspace';
+
 						// determine if shared or not
 						return item.permissions.length > 1 ? 'sharedWorkspace' :'workspace';
 					}
