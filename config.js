@@ -46,7 +46,7 @@ var defaults = {
 		"brcdownloads": "http://brcdownloads.patricbrc.org"
 	}
 };
-
+	
 var config_filename = "p3-web.conf";
 var config_file = __dirname + "/" + config_filename;
 if (!fs.statSync(config_file))
