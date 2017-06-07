@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ItemDetailPanel.html", "dojo/_base/lang", "./formatter", "dojo/dom-style",
-	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter"
+	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter", "dojo/topic"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, lang, formatter, domStyle,
-			WorkspaceManager, domConstruct, query, DataItemFormatter){
+			WorkspaceManager, domConstruct, query, DataItemFormatter, Topic){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		baseClass: "ItemDetailPanel",
 		disabled: false,
@@ -36,8 +36,6 @@ define([
 			var currentIcon;
 
 			this.watch("containerWidget", lang.hitch(this, function(prop, oldVal, containerWidget){
-
-				// console.log("set containerWidget", containerWidget);
 
 				if(oldVal && oldVal.containerType){
 					domClass.remove(this.domNode, oldVal.containerType);
@@ -80,10 +78,33 @@ define([
 					domClass.remove(this.domNode, "dataItem");
 
 					var t = item.document_type || item.type;
+
+					// determine if workspace and if actually shared
+					// Todo(nc): move logic to api method
+					if(t == "folder" && item.path.split('/').length <= 3){
+						if(item.global_permission != 'n'){
+							t = 'publicWorkspace'
+						}else{
+							t = item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
+						}
+					}
+
 					switch(t){
 						case "folder":
 							domClass.add(_self.typeIcon, "fa icon-folder fa-2x")
 							currentIcon = "fa icon-folder fa-2x";
+							break;
+						case "workspace":
+							domClass.add(_self.typeIcon, "fa icon-hdd-o fa-2x")
+							currentIcon = "fa icon-hdd-o fa-2x";
+							break;
+						case "sharedWorkspace":
+							domClass.add(_self.typeIcon, "fa icon-shared-workspace fa-2x")
+							currentIcon = "fa icon-shared-workspace fa-2x";
+							break;
+						case "publicWorkspace":
+							domClass.add(_self.typeIcon, "fa icon-globe fa-2x")
+							currentIcon = "fa icon-globe fa-2x";
 							break;
 						//case "contigs":
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
@@ -163,8 +184,42 @@ define([
 								_self[key + "Node"].set('disabled', true);
 								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "none");
 							}
-						}
-						else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						}else if(key == "permissions"){
+							var node = _self[key + "Node"];
+
+							var rows = []
+
+							// add owner's priv
+							if(item.user_permission == 'o')
+								rows.push(window.App.user.id.split('@')[0] + ' (me) - Owner');
+							else
+								rows.push(item.owner_id + ' - Owner');
+
+							// add all other privs, ignoring global permisssion
+							// and workaround this https://github.com/PATRIC3/Workspace/issues/54
+							val.forEach(function(perm){
+								if (perm[0] == 'global_permission') return;
+								rows.push(perm[0] + ' - ' + formatter.permissionMap(perm[1]));
+							})
+
+							// edit perms btn
+							var editBtn = domConstruct.toDom('<a>Edit</a>');
+							on(editBtn, 'click', function() {
+								_self.openPermEditor(item);
+							})
+
+							domConstruct.empty(node);
+							domConstruct.place('<b>Workspace Members</b> ', node)
+
+							// only show edit button if user has the right permissions
+							if(item.path.split('/').length <= 3 && ['o', 'a'].indexOf(item.user_permission) != -1)
+								domConstruct.place(editBtn, node)
+
+							domConstruct.place('<br>' +
+								rows.join('<br>')
+							, node);
+
+						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
 							_self[this.property_aliases[key] + "Node"].innerHTML = val;
 						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
 							_self[this.property_aliases[key] + "Widget"].set("value", val);
@@ -218,6 +273,11 @@ define([
 				}
 			}));
 			this.inherited(arguments);
+		},
+
+		// opens works permission editor for given item
+		openPermEditor: function(item){
+			Topic.publish("/openUserPerms", item);
 		},
 
 		saveType: function(val, val2){

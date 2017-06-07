@@ -1,10 +1,11 @@
 define([
 	"dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 	"dojo/_base/Deferred", "dojo/topic", "./jsonrpc", "dojo/Stateful",
-	"dojo/promise/all"
-], function(xhr, declare, lang,
-			Deferred, Topic, RPC, Stateful,
-			All){
+	"dojo/promise/all", "dijit/Dialog", "dijit/form/Button", "dojo/dom-construct"
+], function(
+	xhr, declare, lang,
+	Deferred, Topic, RPC, Stateful,
+	All, Dialog, Button, domConstruct){
 
 	var WorkspaceManager = (declare([Stateful], {
 		userWorkspaces: null,
@@ -27,7 +28,7 @@ define([
 					return "/" + [this.userId, "home", "Experiment Groups"].join("/");
 
 				default:
-					return "/" + [this.userId, "home"].join("/");
+					return "/" + this.userId;
 			}
 		},
 		_userWorkspacesGetter: function(){
@@ -70,8 +71,7 @@ define([
 		},
 
 		create: function(obj, createUploadNode, overwrite){
-			var _self = this;
-			// console.log("WorkspaceManager.create(): ", obj);
+			var self = this;
 			if(obj.path.charAt(obj.path.length - 1) != "/"){
 				obj.path = obj.path + "/";
 			}
@@ -82,13 +82,12 @@ define([
 				overwrite: overwrite
 			}]), function(results){
 				var res;
-				// console.log("Create Results: ", results);
 				if(!results[0][0] || !results[0][0]){
 					throw new Error("Error Creating Object");
 				}else{
 					var r = results[0][0];
 					Topic.publish("/refreshWorkspace", {});
-					return _self.metaListToObj(r);
+					return self.metaListToObj(r);
 				}
 			});
 		},
@@ -193,30 +192,21 @@ define([
 
 		},
 
-		createFolder: function(paths){
+		createFolder: function(path){
 			var _self = this;
-			if(!paths){
-				throw new Error("Invalid Path(s) to delete");
-			}
-			if(!(paths instanceof Array)){
-				paths = [paths];
-			}
-			var objs = paths.map(function(p){
-				return [p, "Directory"]
-			})
-			return Deferred.when(this.api("Workspace.create", [{objects: objs}]), lang.hitch(this, function(results){
-				var res;
+			if(!path) throw new Error("Invalid Path to create");
 
-				if(!results[0][0] || !results[0][0]){
-					Topic.publish("/Notification", {message: "Error Creating Folder", type: "error", duration: 0});
-					throw new Error("Error Creating Folder");
+			return Deferred.when(this.api("Workspace.create", [{
+					objects: [[path, "Directory"]]
+				}]), function(results){
+
+				var createdPath = results[0][0];
+				if(!createdPath){
+					throw new Error("Please try a new name.");
 				}else{
-					var r = results[0][0];
-					Topic.publish("/refreshWorkspace", {});
-					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
-					return _self.metaListToObj(r);
+					return _self.metaListToObj(createdPath);
 				}
-			}));
+			});
 		},
 		updateMetadata: function(path, userMeta, type){
 			var data = [path, userMeta || {}, type || undefined];
@@ -234,52 +224,51 @@ define([
 				Topic.publish("/refreshWorkspace", {});
 			});
 		},
-		deleteFolder: function(paths, force){
-			if(!paths){
-				throw new Error("Invalid Path(s) to delete");
-			}
-			if(!(paths instanceof Array)){
-				paths = [paths];
-			}
-			if(paths.indexOf("home") >= 0){
-				throw new Error("Cannot delete your 'home' Workspace");
-			}
-			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
-				objects: paths,
-				deleteDirectories: true,
-				force: force
-			}]), function(results){
-				Topic.publish("/refreshWorkspace", {});
-				Topic.publish("/Notification", {message: "Folder Removed", type: "message"});
-			});
-		},
 
-		deleteObject: function(paths, deleteFolders, force){
-			if(!paths){
-				throw new Error("Invalid Path(s) to delete");
-			}
-			if(!(paths instanceof Array)){
-				paths = [paths];
-			}
-			if(paths.indexOf("home") >= 0){
-				throw new Error("Cannot delete your 'home' Workspace");
-			}
+		deleteObjects: function(paths, deleteFolders, force){
+			var self = this;
+			if(!paths) throw new Error("Invalid Path(s) to delete");
+
+			// ensure is array
+			paths = Array.isArray(paths) ? paths : [paths];
+
+			// throw error for any special folder
+			self.omitSpecialFolders(paths, 'delete');
 
 			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
 				objects: paths,
 				force: force,
 				deleteDirectories: deleteFolders
 			}]), function(results){
-				Topic.publish("/Notification", {message: paths.length + " objects removed", type: "message"});
+				Topic.publish("/Notification", {
+					message: paths.length + (paths.length > 1 ? ' items' : ' item') + " deleted",
+					type: "message"
+				});
 				Topic.publish("/refreshWorkspace", {});
+			}, function(err) {
+				console.log('error ', err)
+				var btn = self.errorDetailsBtn();
+
+				var msg = domConstruct.toDom('<span>' + paths.length + " items could not be deleted");
+				domConstruct.place(btn.domNode, msg, 'last')
+				console.log('msg', msg)
+
+				Topic.publish("/Notification", {
+					message: msg,
+					type: "error"
+				});
 			});
 		},
 
 		createWorkspace: function(name){
-			//console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
 			return Deferred.when(this.createFolder("/" + this.userId + "/" + name + "/"), lang.hitch(this, function(workspace){
 				if(name == "home"){
-					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path + "/Feature Groups", workspace.path + "/Experiments", workspace.path + "/Experiment Groups"]), function(){
+					return Deferred.when(this.createFolder([
+							workspace.path + "/Genome Groups",
+							workspace.path + "/Feature Groups",
+							workspace.path + "/Experiments",
+							workspace.path + "/Experiment Groups"
+						]), function(){
 						Topic.publish("/Notification", {
 							message: "New workspace '" + name + "' created",
 							type: "message"
@@ -287,6 +276,8 @@ define([
 						return workspace
 					})
 				}
+
+				return workspace
 			}));
 		},
 
@@ -352,6 +343,7 @@ define([
 				throw new Error("Invalid Path(s) to delete");
 			}
 			path = decodeURIComponent(path);
+
 			// console.log('getObjects: ', path, "metadata_only:", metadataOnly);
 			return Deferred.when(this.api("Workspace.get", [{
 				objects: [path],
@@ -387,6 +379,145 @@ define([
 				return res;
 			});
 
+		},
+		copy: function(paths, dest){
+			var _self = this;
+
+			// copy contents into folders of same name, but whatever parent path is choosen
+			var srcDestPaths = paths.map(function(path){
+				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
+			})
+
+			// if copying to workspace level, need to create the folders first
+			// see latter of: https://github.com/PATRIC3/Workspace/issues/53
+			if(dest.split('/').length < 3){
+				var newWSPaths = paths.map(function(path){
+					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
+				})
+
+				var prom = this.api("Workspace.create", [{objects: newWSPaths }]);
+			}
+
+			Topic.publish("/Notification", {
+				message: "<span class='default'>Copying " + paths.length + " items...</span>",
+			});
+
+			return Deferred.when(prom, function(res){
+
+				return Deferred.when(_self.api("Workspace.copy", [{
+					objects: srcDestPaths,
+					recursive: true,
+					move: false
+				}]),
+				function(res){
+					Topic.publish("/refreshWorkspace", {});
+					Topic.publish("/Notification", {
+						message: "Copied contents of "+ paths.length + (paths.length > 1 ? " items" : 'item'),
+						type: "message"
+					});
+					return res;
+				}, function(err){
+					Topic.publish("/Notification", {
+						message: "Copy failed",
+						type: "error",
+					});
+				})
+			})
+		},
+
+		move: function(paths, dest){
+			var self = this;
+
+			self.omitSpecialFolders(paths, 'move')
+
+			var srcDestPaths = paths.map(function(path){
+				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
+			})
+
+			// if moving to workspace level, need to create the folders first
+			// see latter of: https://github.com/PATRIC3/Workspace/issues/53
+			if(dest.split('/').length < 3){
+				var newWSPaths = paths.map(function(path){
+					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
+				})
+
+				var prom = this.api("Workspace.create", [{objects: newWSPaths }]);
+			}
+
+			Topic.publish("/Notification", {
+				message: "<span class='default'>Moving " + paths.length + " items...</span>"
+			});
+
+			return Deferred.when(prom, function(res){
+				return Deferred.when(self.api("Workspace.copy", [{
+					objects: srcDestPaths,
+					recursive: true,
+					move: true
+				}]),
+				function(res){
+					Topic.publish("/refreshWorkspace", {});
+					Topic.publish("/Notification", {
+						message: "Moved contents of "+ paths.length + (paths.length > 1 ? " items" : 'item'),
+						type: "message"
+					});
+					return res;
+				})
+			})
+		},
+
+
+		rename: function(path, newName){
+			var self = this;
+
+			self.omitSpecialFolders([path], 'rename');
+
+			if(path.split('/').length <= 3) {
+				return self.renameWorkspace(path, newName)
+			}
+
+			// ensure path doesn't already exist
+			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
+			return Deferred.when(this.getObjects(newPath, true),
+				function(response){
+					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+				}, function(err){
+
+					return Deferred.when(_self.api("Workspace.copy", [{
+						objects: [[path, newPath]],
+						recursive: true,
+						move: true
+					}],
+					function(res){
+						Topic.publish("/refreshWorkspace", {});
+						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+						return res;
+					}))
+				})
+		},
+
+		renameWorkspace: function(path, newName){
+			var self = this;
+
+			self.omitSpecialFolders([path], 'rename');
+
+			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
+
+			if (path == newPath) {
+				throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+			}
+
+			return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
+				return Deferred.when(self.api("Workspace.copy", [{
+						objects: [[path, newPath]],
+						recursive: true,
+						move: true
+					}],
+					function(res){
+						Topic.publish("/refreshWorkspace", {});
+						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+						return res;
+					}))
+			 })
 		},
 
 		getObjects: function(paths, metadataOnly){
@@ -473,14 +604,11 @@ define([
 					includeSubDirs: false,
 					recursive: recursive ? true : false
 				}]), function(results){
-					//console.log("path: ", path);
 
 					if(!results[0] || !results[0][path]){
 						return [];
 					}
 					var res = results[0][path];
-
-					//console.log("array res", res);
 
 					res = res.map(function(r){
 						return _self.metaListToObj(r);
@@ -496,12 +624,11 @@ define([
 					if(filterPublic){
 						res = res.filter(function(r){
 							if(r.global_permission == 'w') return false;
-							else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+							else if(r.global_permission == 'n') return false;
 							return true;
 						})
 					}
 
-					//console.log("Final getFolderContents()", res)
 					return res;
 				},
 
@@ -509,6 +636,77 @@ define([
 					//console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
+		},
+
+		listSharedWithUser: function(path){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.ls", [{
+					paths: ['/'],
+				}]), function(results){
+					var allWS = results[0]['/'];
+
+					// transform to human friendly
+					allWS = allWS.map(function(r){ return _self.metaListToObj(r); })
+
+					// filter out public and owner's folders (silly, I know)
+					var sharedWithUser = allWS.filter(function(r){
+						if(r.global_permission !== 'n') return false;
+						else if(r.user_permission == 'o' && r.global_permission == 'n') return false;
+						return true;
+					})
+
+
+					return sharedWithUser;
+				},
+
+				function(err){
+					_self.showError(err);
+				})
+		},
+
+		setPermissions: function(path, permissions){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.set_permissions", [{
+				path: path,
+				permissions: permissions
+
+			}]), function(res) {
+				return res;
+			},
+
+			function(err){
+				//console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
+		},
+
+		setPublicPermission: function(path, permission){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.set_permissions", [{
+				path: path,
+				new_global_permission: permission,
+			}]), function(res) {
+				return res;
+			},
+
+			function(err){
+				//console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
+		},
+
+		listPermissions: function(paths){
+			var _self = this;
+			return Deferred.when(this.api("Workspace.list_permissions", [{
+				objects: Array.isArray(paths) ? paths : [paths],
+			}]), function(res) {
+				return Array.isArray(paths) ? res[0] : res[0][paths];
+			},
+
+			function(err){
+				//console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
 		},
 
 		metaListToObj: function(list){
@@ -526,6 +724,59 @@ define([
 				user_permission: list[9],
 				global_permission: list[10],
 				timestamp: Date.parse(list[3])
+			}
+		},
+
+		errorDetailsBtn: function(){
+
+			var btn = new Button({
+				label: "Details",
+				//disabled: true,
+				onClick: function(){
+					new Dialog({
+						title: "Group Comparison",
+						style: "width: 1250px !important; height: 750px !important;",
+						onHide: function(){
+							dlg.destroy()
+						}
+					}).startup()
+					dlg.show()
+				}
+			})
+
+			return btn;
+		},
+
+		omitSpecialFolders: function(paths, operation){
+			paths = Array.isArray(paths) ? paths : [paths];
+
+			//  regect home workspaces (must check for anybody's home)
+			var isHome = paths.filter(function(p){
+				var parts = p.split('/');
+				return parts.length == 3 && parts[2] == 'home'
+			}).length;
+
+			if(isHome) {
+				throw new Error("Your <i>home</i> workspace is a special workspace which cannot be "+operation+"d.");
+			}
+
+			// also reject these home folders
+			var unacceptedFolders = [
+				"Genome Groups",
+				"Feature Groups",
+				"Experiments",
+				"Experiment Groups"
+			];
+
+			var unacceptedPaths = paths.filter(function(p){
+				if(p.split('/')[2] == 'home' && unacceptedFolders.indexOf(p.split('/')[3]) != -1) return true;
+			});
+
+			if(unacceptedPaths.length) {
+				throw new Error(
+					"You cannot "+operation+" any of the following special folders:<br><br>"+
+					'<i>' + unacceptedFolders.join('<br>') + '</i>'
+				);
 			}
 		},
 
@@ -563,6 +814,11 @@ define([
 		},
 		_currentPathSetter: function(val){
 			this.currentPath = val;
+		},
+
+		//Todo(nc): generic error
+		showError: function(e){
+
 		},
 
 		init: function(apiUrl, token, userId){
