@@ -28,7 +28,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			//console.log("setSelection sel", sel[0], sel.length);
+
 			this.selection = sel;
 
 			var valid;
@@ -37,9 +37,8 @@ define([
 				return !!x;
 			}).forEach(function(s){
 				var type = s.document_type || s.type;
-				//console.log("Checking s: ", type, s);
+
 				if(!type){
-					// console.log("MISSING TYPE: ", s);
 					return;
 				}
 				if(type == "job_result"){
@@ -61,7 +60,10 @@ define([
 				//console.log("isMultiTyped: ", multiTypedSelection);
 				valid = Object.keys(this._actions).filter(function(an){
 					//console.log("Check action: ", an, this._actions[an].options);
-					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
+					return this._actions[an] && this._actions[an].options &&
+						(this._actions[an].options.multiple &&
+						((this._actions[an].options.ignoreDataType || !multiTypedSelection ||
+						(multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
 				}, this);
 
 				//console.log("multiselect valid: ", valid)
@@ -74,23 +76,41 @@ define([
 			}
 
 			var types = Object.keys(selectionTypes);
-			//console.log("Filtering for Types: ", types);
+
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
-				//console.log("validTypes for action : ",an, " validTypes=", validTypes);
-				//console.log("validTypes sel[0].source : ",sel[0].source);
-				if(sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence"){
+
+				// if top level "workspace", hide 'create folder' and upload
+				if(sel[0] && 'isWorkspace' in sel[0] && ["CreateFolder", "Upload", "ShowHidden"].indexOf(an) !== -1){
 					return false;
 				}
 
-				if(act.options.min && (sel.length < act.options.min )){
+				// if not top level "workspace", hide 'create workspace'
+				else if (sel[0] && !('isWorkspace' in sel[0]) && ["CreateWorkspace"].indexOf(an) !== -1){
 					return false;
 				}
 
-				if(act.options.max && (sel.length > act.options.max )){
+				// don't allow sharing on folders
+				else if (sel[0] && sel[0].path.split('/').length > 3 && ["ShareFolder"].indexOf(an) !== -1){
 					return false;
 				}
+
+				// if public or not owner, hide ability for upload, create folder, delete, share
+				else if(sel[0] &&  ('isPublic' in sel[0] || sel[0].owner_id !== window.App.user.id) &&
+					["Upload", "CreateFolder", "Delete", "ShareFolder", "Move", "Rename"].indexOf(an) !== -1) {
+					return false;
+				}
+				else if(sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence"){
+					return false;
+				}
+				else if(act.options.min && (sel.length < act.options.min )){
+					return false;
+				}
+				else if(act.options.max && (sel.length > act.options.max )){
+					return false;
+				}
+
 
 				var validContainerTypes = act.options.validContainerTypes || null;
 
@@ -132,11 +152,11 @@ define([
 				connectId: this.domNode,
 				selector: ".ActionButtonWrapper",
 				getContent: function(matched){
-					//console.log("Matched: ", matched);
+
 					var rel = matched.attributes.rel.value;
-					//console.log("REL: ", rel);
+
 					if(_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
-						//console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+
 						return _self._actions[rel].options.tooltip
 					}else if(matched.attributes.title && matched.attributes.title.value){
 						return matched.attributes.title.value;
@@ -193,7 +213,6 @@ define([
 		},
 
 		addAction: function(name, classes, opts, fn, enabled, target){
-			// console.log("Add Action: ", name, classes, opts,enabled);
 			target = target || this.containerNode;
 			var wrapper = domConstruct.create("div", {
 				"class": (enabled ? "" : "dijitHidden ") + "ActionButtonWrapper",
@@ -209,18 +228,14 @@ define([
 				var _self = this;
 				var timer;
 				on(wrapper, "mousedown", function(evt){
-					// console.log("Handle Press MouseDownAction");
-
 					var cancelClick = false;
 
 					timer = setTimeout(function(){
 						cancelClick = true;
-						// console.log("Selection in ActionBar: ", _self.selection, _self);
 						opts.pressAndHold(_self.get("selection"), wrapper, opts, evt);
 					}, 800)
 
 					on.once(wrapper, "click", function(clickEvt){
-						// console.log("Cancel Click: ", cancelClick)
 						if(timer){
 							clearTimeout(timer);
 						}
@@ -239,6 +254,9 @@ define([
 				action: fn,
 				button: wrapper
 			};
+
+			// return the wrapper for use.
+			return target;
 		}
 	});
 });

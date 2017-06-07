@@ -15,6 +15,8 @@ define([
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
 		path: "",
+		dndFiles: null, 	// accept files for drag and drop upload; if given, file list is initialized with these
+		dndType: null,
 		overwrite: false,
 		multiple: false,
 		types: false,
@@ -50,24 +52,20 @@ define([
 		},
 
 		onUploadTypeChanged: function(val){
-			// console.log("Upload type changed: ", val);
 			var formats = this.knownTypes[val].formats;
-			// console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML = formats.join(", ");
 
 			var description = this.knownTypes[val].description;
 
 			if(!this.showAllFormats.get('value')){
-				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
 			}else{
-				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
 				if(formats == "*.*"){
 					domClass.add(this.fileFilterContainer, "dijitHidden");
 				}else{
 					domClass.remove(this.fileFilterContainer, "dijitHidden");
 				}
-				// console.log("set formats to: ", formats.join(","));
+
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
@@ -79,15 +77,11 @@ define([
 			}
 		},
 		onChangeShowAllFormats: function(val){
-			console.log("Show All Formats: ", val);
 			if(!val){
-				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
 			}else{
 				var type = this.uploadType.get('value');
-				console.log("uploadType value: ", type);
 				var formats = this.knownTypes[this.uploadType.get('value')].formats;
-				console.log("uploadType: ", this.uploadType.get('value'));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
@@ -97,7 +91,7 @@ define([
 
 			// remove existing container as long as not adding multiple rows,
 			// since createUploadTable is called on each file change
-			// Note: this should probably be refactored
+			// Note: this could probably be refactored
 			// to always leave the header in place
 			if (!this.multiple) {
 				domConstruct.empty(this.fileTableContainer);
@@ -149,33 +143,32 @@ define([
 			domConstruct.create("td", {style: {"text-align": "right"}}, row);
 		},
 
-		createNewFileInput: function(){
+		createNewFileInput: function(oldFiles){
 			if(this.fileInput){
-				if(!this._previousFileInputs){
-					this._previousFileInputs = [];
+				if(!this._previousFiles){
+					this._previousFiles = [];
 				}
 				if(this.inputHandler){
 					this.inputHandler.remove();
 				}
 				domStyle.set(this.fileInput, "display", "none");
-				this._previousFileInputs.push(this.fileInput);
+				this._previousFiles.push(oldFiles || this.fileInput.files);
 			}
 
 			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
 			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
 			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
-
 		},
+
 		startup: function(){
-			if(this._started){
-				return;
-			}
+			var _self = this;
+
+			if(this._started) return;
 
 			this.inherited(arguments);
 			var state = this.get("state")
 			this.createNewFileInput();
 
-			var _self = this;
 			Object.keys(this.knownTypes).filter(function(t){
 				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
 			}).forEach(function(t){
@@ -198,7 +191,6 @@ define([
 
 			if(!this.path){
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
-					console.log("CURRENT PATH: ", path);
 					_self.set('path', path);
 				});
 			}
@@ -208,7 +200,6 @@ define([
 			}
 
 			this.watch("state", function(prop, val, val2){
-				// console.log("Upload Form State: ", prop, val, val2);
 				if(val2 == "Incomplete" || val2 == "Error"){
 					this.saveButton.set("disabled", true);
 				}else{
@@ -216,7 +207,56 @@ define([
 				}
 			});
 			this.createUploadTable(true);
+
+			// if activated via drag and drop, initialize with those files
+			if(this.dndFiles) {
+				this.fileUploadButton.innerHTML = 'Select more files'
+				this.onFileSelectionChange(null, this.dndFiles);
+				this.validate();
+			}
+
+			// wait to digest template
+			setTimeout(function(){
+				_self.initDragAndDrop();
+			})
 		},
+
+		// drag and drop for drop area
+		initDragAndDrop: function(){
+			var self = this;
+
+			// add dnd events
+			this.dndZone = document.getElementById('dnd-zone');
+			this.dndZone.addEventListener('dragover', onDragOver);
+			this.dndZone.addEventListener("dragleave", onDragLeave);
+			this.dndZone.addEventListener('drop', onDragDrop);
+
+			function onDragLeave(e) {
+				if (e.target.className.indexOf("dnd-active") != -1)
+					self.dndZone.classList.remove("dnd-active");
+			}
+
+			function onDragOver(e) {
+				e.stopPropagation();
+				e.preventDefault();
+
+				self.dndZone.classList.add("dnd-active");
+				e.dataTransfer.dropEffect = 'copy';
+			}
+
+			function onDragDrop(e) {
+				e.stopPropagation();
+				e.preventDefault();
+				if ( e.target['className'] == "dnd-active" )
+					self.dndZone.classList.remove("dnd-active");
+
+				var files = e.dataTransfer.files; // Array of all files
+
+				self.onFileSelectionChange(null, files);
+				self.validate();
+			}
+		},
+
 		validate: function(){
 			var valid = this.inherited(arguments);
 			var validFiles = []
@@ -228,7 +268,7 @@ define([
 			}
 
 			if(valid){
-				this.saveButton.set("disabled", false)
+				this.saveButton.set("disabled", false);
 			}else{
 				this.saveButton.set("disabled", true);
 			}
@@ -269,11 +309,12 @@ define([
 
 		},
 		resetUploadTable: function() {
-			console.log('called restUploadTable')
 			domConstruct.destroy(this.uploadTable);
 			delete this.uploadTable;
 		},
-		onFileSelectionChange: function(evt){
+
+		// accepts evt (from input object) or FileList (from drag and drop),
+		onFileSelectionChange: function(evt, /* FileList */ files){
 
 			// remove the "none" row when adding files
 			domConstruct.destroy( Query(".noneSelected", this.uploadTable)[0] );
@@ -284,14 +325,21 @@ define([
 			// only recreate upload table header
 			this.createUploadTable(false);
 
-			var files = evt.target.files;
+			var files = files ? files : evt.target.files;
+			this.buildFileTable(files);
+
+			// Note: this is all kind of crazy complicated?
+			this.createNewFileInput(files);
+		},
+
+		buildFileTable: function(files){
 			var _self = this;
 			Object.keys(files).forEach(function(idx){
 				var file = files[idx];
 				if(file && file.name && file.size){
 					var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
 					domAttr.set(row, "data-filename", file.name);
-					domAttr.set(row, "data-filetype", _self.uploadType.get('value'));
+					domAttr.set(row, "data-filetype", _self.dndType || _self.uploadType.get('value'));
 					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
 					var typeNode = domConstruct.create("td", {innerHTML: _self.uploadType.get("value")}, row);
 					var sizeNode = domConstruct.create("td", {innerHTML: file.size}, row);
@@ -310,9 +358,8 @@ define([
 					}));
 				}
 			}, this);
-
-			this.createNewFileInput();
 		},
+
 
 		onSubmit: function(evt){
 			var _self = this;
@@ -328,20 +375,22 @@ define([
 			var defs = [];
 			var wsFiles = []
 
-			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
-				Object.keys(FI.files).forEach(lang.hitch(this, function(key){
-					var f = FI.files[key];
+			var allFiles = this.dndFiles ? [this.dndFiles] : this._previousFiles;
+
+			allFiles.forEach(function(fileHash){
+				Object.keys(fileHash).forEach(function(key){
+					var f = fileHash[key];
 					if(f.name){
-						console.log(" f.name: ", f.name);
 						inputFiles[f.name] = f;
 					}
-				}));
-			}));
+				});
+			});
 
 			Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
 
 				if(tr && domAttr.get(tr, "data-filename")){
 					var f = inputFiles[domAttr.get(tr, "data-filename")];
+
 					if(f.name){
 						defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
 							wsFiles.push(res);
@@ -352,8 +401,6 @@ define([
 			}));
 
 			All(defs).then(function(results){
-				console.log("UPLOAD Create WS files results: ", wsFiles);
-
 				// create fresh upload table when uploads are commplete
 				_self.createUploadTable(true);
 
@@ -362,7 +409,7 @@ define([
 		},
 
 		onCancel: function(evt){
-			console.log("Cancel/Close Dialog", evt)
+			// console.log("Cancel/Close Dialog", evt)
 			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		},
 		resize: function(changeSize, resultSize){

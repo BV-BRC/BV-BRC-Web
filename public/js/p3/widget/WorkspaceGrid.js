@@ -14,6 +14,12 @@ define([
 				get: function(item){
 					if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
 						return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+					}else if(item.type == "folder" && item.path.split('/').length <= 3){
+						if(item.global_permission != 'n')
+							return 'publicWorkspace';
+
+						// determine if shared or not
+						return item.permissions.length > 1 ? 'sharedWorkspace' :'workspace';
 					}
 					return item.type;
 				},
@@ -51,12 +57,17 @@ define([
 				formatter: formatter.baseUsername,
 				hidden: false
 			},
+			sharedWith: {
+				label: "Members",
+				field: "_item",
+				formatter: formatter.usersFormatter
+			},
 			creation_time: {
 				label: "Created",
 				field: "creation_time",
 				className: "wsItemCreationTime",
 				formatter: formatter.date
-			}/*,
+			},/*,
 
 			userMeta: {
 				label: "User Metadata",

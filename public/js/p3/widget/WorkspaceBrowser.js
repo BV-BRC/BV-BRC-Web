@@ -4,15 +4,20 @@ define([
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
-	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid", "./PerspectiveToolTip"
+	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select", "dijit/form/CheckBox",
+	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip", "../widget/UserSelector",
+	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "./WorkspaceObjectSelector",
 
-], function(declare, BorderContainer, on, query,
-			domClass, ContentPane, domConstruct, domAttr,
-			WorkspaceExplorerView, Topic, ItemDetailPanel,
-			ActionBar, Deferred, WorkspaceManager, lang,
-			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid, PerspectiveToolTipDialog){
+	"dojo/NodeList-traverse"
+], function(
+	declare, BorderContainer, on, query,
+	domClass, ContentPane, domConstruct, domAttr,
+	WorkspaceExplorerView, Topic, ItemDetailPanel,
+	ActionBar, Deferred, WorkspaceManager, lang,
+	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
+	popup, IDMappingTemplate, xhr, Select, CheckBox,
+	ContainerActionBar, GroupExplore, PerspectiveToolTipDialog, UserSelector,
+	Button, Formatter, TextBox, WSObjectSelector){
 	return declare([BorderContainer], {
 		baseClass: "WorkspaceBrowser",
 		disabled: false,
@@ -22,6 +27,8 @@ define([
 		design: "sidebar",
 		splitter: false,
 		startup: function(){
+			var self = this;
+
 			if(this._started){
 				return;
 			}
@@ -40,7 +47,6 @@ define([
 				layoutPriority: 3
 			});
 
-			var self = this;
 			this.actionPanel.addAction("ToggleItemDetail", "fa icon-chevron-circle-right fa-2x", {
 				label: "HIDE",
 				persistent: true,
@@ -245,8 +251,6 @@ define([
 				multiple: false,
 				tooltip: "View Genome. Press and Hold for more options.",
 				pressAndHold: function(selection, button, opts, evt){
-					// console.log("PressAndHold");
-					// console.log("Selection: ", selection, selection[0])
 					popup.open({
 						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
 						around: button,
@@ -265,7 +269,6 @@ define([
 				validTypes: WorkspaceManager.downloadTypes,
 				tooltip: "Download"
 			}, function(selection){
-				// console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, false);
 
@@ -281,7 +284,6 @@ define([
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				// console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
@@ -297,13 +299,11 @@ define([
 				tooltip: "Download Table",
 				tooltipDialog: downloadTT
 			}, function(selection){
-				// console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
 					around: this._actions.DownloadTable.button,
 					orient: ["below"]
 				});
-
 			}, false);
 
 			var downloadTTSelect = new TooltipDialog({
@@ -339,7 +339,6 @@ define([
 				tooltip: "Download Selection",
 				tooltipDialog: downloadTTSelect
 			}, function(selection){
-				// console.log("Download Table", selection);
 				if(selection.length == 1){
 					popup.open({
 						popup: this._actions.SelectDownloadTable.options.tooltipDialog,
@@ -350,7 +349,9 @@ define([
 
 			}, false);
 
-			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
+			var dtsfc = '<div>Download Job Results:</div>'+
+						'<div class="wsActionTooltip" rel="circos.svg">SVG Image</div>'+
+						'<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
 			var downloadTTSelectFile = new TooltipDialog({
 				content: dtsfc, onMouseLeave: function(){
 					popup.close(downloadTTSelect);
@@ -364,8 +365,6 @@ define([
 				tooltip: "Download Results",
 				tooltipDialog: downloadTTSelectFile
 			}, lang.hitch(this.browserHeader, function(selection){
-				// console.log("Download Table", selection);
-				// console.log("this._actions: ", this._actions);
 				this._actions.SelectDownloadSeqComparison.selection = selection[0];
 				if(selection.length == 1){
 					popup.open({
@@ -378,13 +377,10 @@ define([
 
 			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader, function(evt){
 				var rel = evt.target.attributes.rel.value;
-//				console.log("REL: ", rel);
-//				console.log("SELECTION: ", this._actions.SelectDownloadSeqComparison.selection);
 				var outputFiles = this._actions.SelectDownloadSeqComparison.selection.autoMeta.output_files;
 				outputFiles.some(function(t){
 					var fname = t[0];
 					if(fname.indexOf(rel) >= 0){
-						// console.log("DOWNLOAD: ", fname);
 						WorkspaceManager.downloadFile(fname);
 						return true;
 					}
@@ -399,7 +395,6 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
-				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid});
 
@@ -422,9 +417,10 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
-				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"});
+				Topic.publish("/navigate", {
+					href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"
+				});
 			}, false);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
@@ -433,7 +429,6 @@ define([
 				validTypes: ["GenomeAnnotation"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
-				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=browser"});
 
@@ -445,21 +440,58 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Upload to Folder"
 			}, function(selection){
-				// console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
-			}, true);
+			}, self.path.split('/').length > 3);
 
-			this.browserHeader.addAction("Create Folder", "fa icon-folder-plus fa-2x", {
+			this.browserHeader.addAction("CreateFolder", "fa icon-folder-plus fa-2x", {
 				label: "ADD FOLDER",
-				multiple: true,
 				validTypes: ["folder"],
 				tooltip: "Create Folder"
-			}, function(selection){
-				// console.log("CREATE FOLDER", selection[0].path);
-				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
-			}, true);
+			}, function(sel){
+				// selection may not be set if top level.
+				var path = sel ? sel[0].path + sel[0].name : '/' + window.App.user.id;
+				Topic.publish("/openDialog", {
+					type: "CreateFolder",
+					params: path
+				});
+			}, self.path.split('/').length > 3);
 
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
+			this.browserHeader.addAction("ShowHidden", (window.App.showHiddenFiles ? "fa icon-eye-slash" : "fa icon-eye") , {
+				label: "SHOW HIDDEN",
+				multiple: true,
+				validTypes: ["folder"],
+				tooltip: "Show hidden folders/files"
+			}, function(selection){
+				window.App.showHiddenFiles = !window.App.showHiddenFiles;
+
+				// change icon/text based on state
+				var icon = query('[rel="ShowHidden"] .fa', this.domNode)[0],
+					text = query('[rel="ShowHidden"] .ActionButtonText', this.domNode)[0];
+
+				domClass.toggle(icon, "icon-eye-slash");
+				domClass.toggle(icon, "icon-eye");
+
+				if(window.App.showHiddenFiles)
+					domAttr.set(text, "textContent", "HIDE HIDDEN");
+				else
+					domAttr.set(text, "textContent", "SHOW HIDDEN");
+
+				Topic.publish("/refreshWorkspace", {});
+			}, self.path.split('/').length > 3);
+
+			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-add-workspace fa-2x", {
+				label: "NEW WS",
+				validTypes: ["folder"],
+				tooltip: "Create Workspace"
+			}, function(sel){
+
+				Topic.publish("/openDialog", {
+					type: "CreateWorkspace",
+				});
+			},  self.path.split('/').length < 3);
+
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>'+
+					  '<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
 					popup.close(viewFASTATT);
@@ -468,9 +500,7 @@ define([
 
 			on(viewFASTATT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
-				// console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
-				// console.log("selection: ", selection);
 				popup.close(viewFASTATT);
 				var idType = "feature_id";
 
@@ -603,7 +633,6 @@ define([
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
 			}, function(selection){
-				// console.log("View Gene List", selection);
 				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
 						return s.path;
 					});
@@ -617,8 +646,6 @@ define([
 				validContainerTypes: ["experiment"],
 				tooltip: "View Experiment Gene List"
 			}, function(selection){
-				// console.log("this.currentContainerType: ", this.currentContainerType, this);
-				// console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
 				var url = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
 						return s.pid;
@@ -755,15 +782,19 @@ define([
 				},
 				false);
 
-			this.actionPanel.addAction("DeleteItem", "fa icon-trash fa-2x", {
+			/* Assuming we want to allow deletion of all types for now
+			this.actionPanel.addAction("DeleteItem", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: true,
 				multiple: true,
-				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"],
+				validTypes: [
+					"genome_group", "feature_group", "experiment_group", "job_result",
+					"unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata",
+					"DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"
+				],
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
-					// console.log('s: ', s, s.data);
 					return s.path || s.data.path;
 				});
 				var conf = "Are you sure you want to delete" +
@@ -773,38 +804,235 @@ define([
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						WorkspaceManager.deleteObject(objs, true, false);
+						var prom = WorkspaceManager.deleteObject(objs, true, false);
+						Deferred.when(prom, function(){
+							self.activePanel.clearSelection();
+						}, function(e){
+							console.log('e', e)
+						})
 					}
 				});
 				dlg.startup();
 				dlg.show();
 			}, false);
+			*/
 
-			this.actionPanel.addAction("DeleteFolder", "fa icon-trash fa-2x", {
+			this.actionPanel.addAction("Delete", "fa icon-trash-o fa-2x", {
 				label: "DELETE",
-				allowMultiTypes: false,
+				allowMultiTypes: true,
 				multiple: true,
-				validTypes: ["folder"],
+				validTypes: ["*"],
 				tooltip: "Delete Folder"
 			}, function(selection){
-				var objs = selection.map(function(s){
-					console.log('s: ', s, s.data);
-					return s.path || s.data.path;
-				});
-				var conf = "Are you sure you want to delete" +
-					((objs.length > 1) ? " these folders" : " this folder") +
-					" and its contents from your workspace?"
+				var objs = selection.map(function(o){ return o.path; });
+
+				// omit special any folders
+				try{
+					WorkspaceManager.omitSpecialFolders(objs, 'delete');
+				}catch(e){
+					new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't delete that...",
+						style: "width: 250px !important;"
+					}).show();
+					return;
+				}
+
+				var isWorkspace = self.path.split('/').length < 3;
+				var conf = "Are you sure you want to delete " +
+					(objs.length > 1 ? "these" : "this") +
+					(isWorkspace ? ' workspace' : ' folder') +
+					(objs.length > 1 ? "s" : "") +
+					" and its contents?"
 
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						WorkspaceManager.deleteObject(objs, true, true);
+						var prom = WorkspaceManager.deleteObjects(objs, true, true);
+						Deferred.when(prom, function(){
+							self.activePanel.clearSelection();
+						})
 					}
 				})
 				dlg.startup()
 				dlg.show();
 
 			}, false);
+
+
+			this.actionPanel.addAction("ShareFolder", "fa icon-user-plus fa-2x", {
+				label: "SHARE",
+				allowMultiTypes: false,
+				multiple: false,
+				validTypes: ["folder"],
+				tooltip: "Share Folder",
+			}, function(selection){
+				self.userPermDialog(selection[0])
+			}, false);
+
+			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
+				label: "RENAME",
+				validTypes: ["*"],
+				tooltip: "Rename folders or objects",
+			}, function(selection){
+				var path = selection[0].path;
+
+				// omit special any folders
+				try{
+					WorkspaceManager.omitSpecialFolders(path, 'rename');
+				}catch(e){
+					new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't rename that...",
+						style: "width: 250px;"
+					}).show();
+					return;
+				}
+
+				try{
+					self.renameDialog(path)
+				}catch(e){
+					var d = new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't rename that...",
+						style: "width: 250px;"
+					}).show();
+				}
+			}, false);
+
+			this.actionPanel.addAction("Copy", "fa icon-files-o fa-2x", {
+				label: "COPY",
+				allowMultiTypes: true,
+				multiple: true,
+				validTypes: ["*"],
+				tooltip: "Copy selected objects",
+			}, function(selection){
+				var paths = selection.map(function(obj){ return obj.path });
+
+				// open object selector to get destination
+				var objSelector = new WSObjectSelector({
+					allowUpload: false,
+					autoSelectParent: true,
+					onlyWritable: true,
+					selectionText: 'Destination'
+				});
+				objSelector.set('type', ['folder']);
+				objSelector.title = "Copy contents of " + selection.length +
+									(selection.length ? " items" : " item") +
+									" to...";
+
+				// always set to user's root
+				objSelector.set('path', '/'+window.App.user.id);
+
+				// on selection, do the copy
+				objSelector.onSelection = function(destPath){
+					// only allow folders to be copied to top level
+					var fileCount = selection.filter(function(o){ return o.type != 'folder' }).length
+					if(fileCount && destPath.split('/').length == 2){
+						new Dialog({
+							content: "Sorry, you cannot copy objects to the top level, <i>"+destPath+"</i>",
+							title: "Oh no!",
+							style: "width: 250px;"
+						}).show();
+						return;
+					}
+
+					var prom = WorkspaceManager.copy(paths, destPath);
+					Deferred.when(prom, function(){
+						self.activePanel.clearSelection();
+					}, function(e){
+						var msg = /_ERROR_(.*)_ERROR_/g.exec(e)[1];
+
+						if(msg.indexOf('overwrite flag is not set') != -1){
+							msg = "Can not overwrite " + msg.split(' ')[2]
+						}
+
+						new Dialog({
+							content: msg,
+							title: "Move failed",
+							style: "width: 250px;"
+						}).show();
+					})
+				}
+
+				objSelector.openChooser();
+			}, false);
+
+
+			this.actionPanel.addAction("Move", "fa icon-arrow-right fa-2x", {
+				label: "MOVE",
+				allowMultiTypes: true,
+				multiple: true,
+				validTypes: ["*"],
+				tooltip: "Move selected objects",
+			}, function(selection){
+				var paths = selection.map(function(obj){ return obj.path });
+
+				// omit special any folders
+				try{
+					WorkspaceManager.omitSpecialFolders(paths, 'move');
+				}catch(e){
+					new Dialog({
+						content: e.toString(),
+						title: "Sorry, you can't move that...",
+						style: "width: 250px;"
+					}).show();
+					return;
+				}
+
+				// open object selector to get destination
+				var objSelector = new WSObjectSelector({
+					allowUpload: false,
+					autoSelectParent: true,
+					onlyWritable: true,
+					selectionText: 'Destination'
+				});
+				objSelector.set('type', ['folder']);
+				objSelector.title = "Move contents of " + selection.length +
+									(selection.length ? " items" : " item") +
+									" to...";
+
+				// always set to user's root
+				objSelector.set('path', '/'+window.App.user.id);
+
+				objSelector.onSelection = function(destPath){
+					// only allow folders to be copied to top level
+					var fileCount = selection.filter(function(o){ return o.type != 'folder' }).length
+					if(fileCount && destPath.split('/').length == 2){
+						new Dialog({
+							content: "Sorry, you cannot move objects to the top level, <i>"+destPath+"</i>",
+							title: "Oh no!",
+							style: "width: 250px;"
+						}).show();
+						return;
+					}
+
+					var prom = WorkspaceManager.move(paths, destPath);
+					Deferred.when(prom, function(){
+						self.activePanel.clearSelection();
+					}, function(e){
+						var msg = /_ERROR_(.*)_ERROR_/g.exec(e)[1];
+
+						if(msg.indexOf('overwrite flag is not set') != -1){
+							msg = "Can not overwrite " + msg.split(' ')[2]
+						}
+
+						new Dialog({
+							content: msg,
+							title: "Move failed",
+							style: "width: 250px;"
+						}).show();
+					})
+				}
+
+				objSelector.openChooser();
+			}, false);
+
+			// listen for opening user permisssion dialog
+			Topic.subscribe('/openUserPerms', function(selection){
+				self.userPermDialog(selection);
+			})
+
 
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
@@ -818,7 +1046,276 @@ define([
 			this.addChild(this.browserHeader);
 
 			this.inherited(arguments);
+		},
 
+		renameDialog: function(path){
+			var self = this;
+			var conf = '';
+
+			var currentName = path.slice(path.lastIndexOf('/')+1);
+			var nameInput = new TextBox({
+				name: "name",
+				value: currentName,
+				style: { width: '500px'},
+				placeHolder: "Enter your new name..."
+			});
+
+			var dlg = new Confirmation({
+				title: "Rename <i>"+path+'</i>',
+				content: nameInput.domNode,
+				okLabel: 'Rename',
+				closeOnOK: false,
+				style: { width: '600px' },
+				onConfirm: function(evt){
+					var _self = this;
+
+					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value')){
+						new Dialog({
+							content: "Please pick a new name.",
+							title: "Oh no!",
+							style: "width: 250px !important;"
+						}).show();
+					}
+
+					var prom = WorkspaceManager.rename(path, nameInput.get('value'))
+					Deferred.when(prom, function(res){
+						Topic.publish("/refreshWorkspace", {});
+						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+
+						self.actionPanel.set("selection", []);
+						self.itemDetailPanel.set('selection', []);
+						_self.hideAndDestroy();
+					}, function(error){
+						new Dialog({
+							content: error.toString(),
+							title: "Oh no!",
+							style: "width: 250px !important;"
+						}).show();
+					})
+				}
+			})
+
+			//dlg.okButton.on('click', function(){
+				//console.log('there was a click!')
+			//})
+			dlg.startup()
+			dlg.show();
+		},
+
+		userPermDialog: function(selection){
+			var self = this;
+
+			var folderPath = selection.path;
+
+			/**
+			 * Data model and data model helpers
+			 */
+			var userPerms = [];
+
+			function rmUser(userId){
+				userPerms = userPerms.filter(function(perm){ return userId != perm.user });
+			}
+
+			function addUser(userId, perm){
+				var alreadyExists = findUser(userId);
+				if(alreadyExists) return false;
+
+				userPerms.push({
+					user: userId,
+					permission: perm
+				});
+
+				return true;
+			}
+
+			function findUser(userId){
+				return userPerms.find(function(perm){ return userId == perm.user });
+			}
+
+
+			/**
+			 * Build the form and events
+			 */
+			var ownerId = Formatter.baseUsername(selection.owner_id);
+
+			var form = domConstruct.toDom('<div class="userPermForm">')
+			var currentUsers = domConstruct.toDom(
+				'<table class="currentUsers p3basic striped" style="margin-bottom: 10px;">'+
+					'<thead>'+
+						'<tr>'+
+							'<th>User Name'+
+							'<th>Permission'+
+							'<th>&nbsp;'+
+					'<tbody>'+
+						'<tr>'+
+							'<td><i>'+ selection.owner_id.split('@')[0] + ' ' + (ownerId == 'me' ? '(me)': '')+'</i>'+
+							'<td>Owner'+
+							'<td>&nbsp;'
+			);
+
+			// user search box
+			var userSelector = new UserSelector({name: "user"})
+
+			// user's permission
+			var permSelect = new Select({
+				name: "perm",
+				style: { width: '100px', margin: '0 10px' },
+				options: [
+					{
+						label: "Can view",
+						value: "r",
+						selected: true
+					},{
+						label: "Can edit",
+						value: "w",
+					}
+				]
+			})
+
+			// add user's permission button
+			// Note: on click, the user is added server side.
+			var addUserBtn = new Button({
+				label: "Add User",
+				//disabled: true,
+				onClick: function(){
+					var userId = userSelector.getSelected();
+						perm = permSelect.attr('value')
+
+					if (!userId) return;
+
+					// don't add already existing users
+					if(findUser(userId)) return;
+
+					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
+					Deferred.when(prom, lang.hitch(this, function(result) {
+						//console.log('adding user to dom', userId, perm)
+						dojo.place(
+							'<tr>'+
+								'<td data-user="'+userId+'">'+userId+
+								'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
+								'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
+							query('tbody', currentUsers)[0]
+						);
+
+						reinitDeleteEvents();
+
+						// reset filter select
+						userSelector.reset();
+					}))
+				}
+			});
+
+			domConstruct.place(currentUsers, form, "first")
+			domConstruct.place(userSelector.domNode, form)
+			domConstruct.place(permSelect.domNode, form, "last")
+			domConstruct.place(addUserBtn.domNode, form, "last")
+
+			// open form in dialog
+			var dlg = new Confirmation({
+				title: "Edit Sharing",
+				okLabel: "Done",
+				cancelLabel: false,
+				content: form,
+				style: { width: '700px'},
+				onConfirm: function(evt){
+					this.hideAndDestroy();
+					Topic.publish('/refreshWorkspace');
+
+					// refresh list in detail panel
+					self.activePanel.clearSelection();
+				},
+				onCancel: function() {	// also do updates on close checkbox
+					this.hideAndDestroy();
+					Topic.publish('/refreshWorkspace');
+
+					// refresh list in detail panel
+					self.activePanel.clearSelection();
+				}
+			})
+
+			/*
+		     * create current permission tables
+			 */
+			var prom = WorkspaceManager.listPermissions(folderPath);
+			Deferred.when(prom, function(perms){
+				// global perm
+				var globalPerm = perms.filter(function(perm){ return perm[0] == 'global_permission' })[0][1]
+				var isPublic = globalPerm != 'n';
+
+				var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
+				var cb = new CheckBox({
+					id: "publicCB",
+					name: "checkBox",
+					value: "isPublic",
+					checked: isPublic,
+					onChange: function(e){
+						var self = this;
+						var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
+						Deferred.when(prom, function(res){
+						}, function(e){
+							alert('oh no, something has went wrong!')
+						})
+
+					}
+				})
+				cb.placeAt(checkBox);
+				checkBox.appendChild(domConstruct.create('label', {
+					'for': 'publicCB',
+					'innerHTML': " Publicly Readable"
+				}))
+
+				domConstruct.place(checkBox, form, "first");
+
+
+
+				// user perms
+				perms.forEach(function(perm){
+					// server sometimes returns 'none' permissions, so ignore them.
+					if(perm[0] == 'global_permission' || perm[1] == 'n') return;
+
+					userPerms.push({
+						user: perm[0],
+						permission: perm[1]
+					})
+
+					dojo.place(
+						'<tr>'+
+							'<td data-user="'+perm[0]+'">'+perm[0]+
+							'<td data-perm="'+perm[1]+'">'+Formatter.permissionMap(perm[1])+
+							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
+						query('tbody', currentUsers)[0]
+					);
+				})
+
+				// event for deleting users
+				reinitDeleteEvents();
+			})
+
+
+			function reinitDeleteEvents(){
+				query('tbody .icon-trash-o', currentUsers).on('click', function(){
+					var _self = this;
+					var userRow = query(this).parents('tr')[0],
+						userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');
+
+					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, 'n']]);
+					Deferred.when(prom, lang.hitch(this, function(result){
+						domConstruct.destroy(userRow)
+
+						rmUser(userId);
+					}, function(err){
+						var parts = err.split("_ERROR_");
+						var d = new Dialog({
+							content: parts[1] || parts[0],
+							title: "Error deleting user: "+userId,
+							style: "width: 250px !important;"
+						}).show();
+					}))
+				})
+			}
+
+			dlg.startup()
+			dlg.show();
 		},
 
 		_setPathAttr: function(val){
@@ -834,14 +1331,17 @@ define([
 
 			if(parts[0] == 'public') {
 				if (parts.length == 1){
-					obj = {metadata: {type: "folder"}, type: "folder", path: "/"}
+					obj = {metadata: {type: "folder"}, type: "folder", path: "/", isPublic: true}
 				}else{
 					var val = '/' + val.split('/').slice(2).join('/');
 					obj = WorkspaceManager.getObject(val, true)
 				}
 			}else if(!parts[1]){
-				obj = {metadata: {type: "folder"}}
+				obj = {metadata: {type: "folder"}, type: "folder", path: "/" + window.App.user.id, isWorkspace: true}
 			}else{
+				//if(val[val.length - 1] == "/"){
+				//	ws = ws.substr(0, ws.length - 1)
+				//}
 				obj = WorkspaceManager.getObject(val, true)
 			}
 			Deferred.when(obj, lang.hitch(this, function(obj){
@@ -851,6 +1351,7 @@ define([
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
+
 				switch(obj.type){
 					case "folder":
 						panelCtor = WorkspaceExplorerView;
@@ -930,6 +1431,7 @@ define([
 								if(sel.length > 0){
 									this.addChild(this.actionPanel);
 								}
+
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
 							}));
@@ -1000,6 +1502,8 @@ define([
 				});
 				d.show();
 			}));
+
+
 		},
 
 		getQuery: function(obj){
