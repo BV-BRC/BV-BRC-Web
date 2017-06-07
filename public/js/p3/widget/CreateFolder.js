@@ -44,7 +44,7 @@ define([
 					on.emit(_self.domNode, "dialogAction", {action: "close", navigate: path, bubbles: true});
 
 					Topic.publish("/Notification", {
-						message: "Folder Created",
+						message: "Folder Created"
 					});
 
 				}, function(err){
