@@ -4,28 +4,29 @@ define("p3/widget/AdvancedSearch", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
 	"dojo/dom-class", "./viewer/Base", "./Button", "dijit/registry", "dojo/_base/lang",
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
-	"dijit/layout/ContentPane","dojo/request","../util/QueryToSearchInput","./GlobalSearch",
-	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin","dojo/text!./templates/AdvancedSearch.html",
+	"dijit/layout/ContentPane", "dojo/request", "../util/QueryToSearchInput", "./GlobalSearch",
+	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/AdvancedSearch.html",
 	"../util/searchToQuery"
 ], function(declare, WidgetBase, on, domConstruct,
-			domClass,base, Button, Registry, lang,
+			domClass, base, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
-			ContentPane,Request,queryToSearchInput,GlobalSearch,
-			TemplatedMixin, WidgetsInTemplate,Template,
+			ContentPane, Request, queryToSearchInput, GlobalSearch,
+			TemplatedMixin, WidgetsInTemplate, Template,
 			searchToQuery
 ){
-	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate], {
+	return declare([WidgetBase, TemplatedMixin, WidgetsInTemplate], {
 		"baseClass": "AdvancedSearch",
 		"disabled": false,
 		state: null,
 		templateString: Template,
-		searchTypes: ["genome","genome_feature", "taxonomy","sp_gene","transcriptomics_experiment"],
+		searchTypes: ["genome", "genome_feature", "taxonomy", "sp_gene", "transcriptomics_experiment", "antibiotics"],
 		labelsByType: {
 			"genome": "Genomes",
 			"genome_feature": "Genomic Features",
 			"taxonomy": "Taxonomy",
 			"sp_gene": "Specialty Genes",
-			"transcriptomics_experiment": "Transcriptomics Experiments"
+			"transcriptomics_experiment": "Transcriptomics Experiments",
+			"antibiotics": "Antibiotics"
 		},
 
 		advancedSearchDef: {
@@ -37,68 +38,75 @@ define("p3/widget/AdvancedSearch", [
 					{field: "isolation_country", label: "Isolation Country", type: "orText"},
 					{field: "host_name", label: "Host Name", type: "orText"},
 					{field: "collection_date", label: "Collection Date", type: "orText"},
-					{field: "completion_date", label: "Completion Date", type: "orText"},		
+					{field: "completion_date", label: "Completion Date", type: "orText"}
 				]
 			},
 
 			"features": {
 				fields: [
 					{field: "feature_type", label: "Feature Type", type: "select", values: []},
-					{field: "annotation", label: "Annotation", type: "select", values: ["all", "PATRIC","RefSeq"]}
+					{field: "annotation", label: "Annotation", type: "select", values: ["all", "PATRIC", "RefSeq"]}
 				]
 			},
 
 			"sp_genes": {
 				fields: [
 					{field: "property", label: "Property", type: "checkboxes", values: ["Antibiotic Resistance", "Drug Target", "Human Homolog", "Virulence Factor"]},
-					{field: "evidence", label: "Evidence", type: "checkboxes", values: ["Literature","BLASTP"]}
+					{field: "evidence", label: "Evidence", type: "checkboxes", values: ["Literature", "BLASTP"]}
 				]
 			}
 		},
 
 		_generateLink: {
-			"genome": function(docs,total){
+			"genome": function(docs, total){
 				console.log("Genome Link Generator: ", docs, total)
 				if (total==1){
-					return ['/view/Genome/',docs[0].genome_id,"#view_tab=overview"].join("");
+					return ['/view/Genome/', docs[0].genome_id, "#view_tab=overview"].join("");
 				}else{
-					return ['/view/GenomeList/?',this.state.search,"#view_tab=genomes"].join("");
+					return ['/view/GenomeList/?', this.state.search, "#view_tab=genomes"].join("");
 				}
 			},
-			"genome_feature": function(docs,total){
+			"genome_feature": function(docs, total){
 				if (total==1){
-					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
+					return ['/view/Feature/', docs[0].feature_id, "#view_tab=overview"].join("");
 				}else{
-					return ['/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score"].join("");
+					return ['/view/FeatureList/?', this.state.search, "#view_tab=features&defaultSort=-score"].join("");
 				}
 			},
-			"taxonomy": function(docs,total){
+			"taxonomy": function(docs, total){
 				if (total==1){
-					return ['/view/Taxonomy/',docs[0].taxon_id,"#view_tab=overview"].join("");
+					return ['/view/Taxonomy/', docs[0].taxon_id, "#view_tab=overview"].join("");
 				}else{
-					return ['/view/TaxonList/?',this.state.search,"#view_tab=taxons"].join("");
+					return ['/view/TaxonList/?', this.state.search, "#view_tab=taxons"].join("");
 				}
 			},
 
-			"sp_gene": function(docs,total){
+			"sp_gene": function(docs, total){
 				if (total==1){
-					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
+					return ['/view/Feature/', docs[0].feature_id, "#view_tab=overview"].join("");
 				}else{
-					return ['/view/SpecialtyGeneList/?',this.state.search,"#view_tab=specialtyGenes"].join("");
+					return ['/view/SpecialtyGeneList/?', this.state.search, "#view_tab=specialtyGenes"].join("");
 				}
 			},
-			"transcriptomics_experiment": function(docs,total){
+			"transcriptomics_experiment": function(docs, total){
 				if (total==1){
-					return ['/view/ExperimentComparison/',docs[0].eid, "#view_tab=overview"].join("");
+					return ['/view/ExperimentComparison/', docs[0].eid, "#view_tab=overview"].join("");
 				}else{
-					return ['/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments"].join("");
+					return ['/view/TranscriptomicsExperimentList/?', this.state.search, "#view_tab=experiments"].join("");
+				}
+			},
+			"antibiotics": function(docs, total){
+				if (total==1){
+					return ['/view/Antibiotic/', docs[0].eid].join("");
+				}else{
+					return ['/view/AntibioticList/?', this.state.search].join("");
 				}
 			}
 		},
 
-		generateLink: function(type,docs,total){
+		generateLink: function(type, docs, total){
 			console.log("Generate Link: ", type, docs, total)
-			return this._generateLink[type].apply(this,[docs,total]);
+			return this._generateLink[type].apply(this, [docs, total]);
 		},
 
 		_setStateAttr: function(state){
@@ -106,7 +114,7 @@ define("p3/widget/AdvancedSearch", [
 			this._set("state", state);
 		},
 
-		onSetState: function(attr,oldval,state){
+		onSetState: function(attr, oldval, state){
 			console.log("onSetState: ", state.search);
 
 			if (state.search){
@@ -115,14 +123,14 @@ define("p3/widget/AdvancedSearch", [
 
 			}else{
 				this.searchBox.set("value", "");
-				this.viewer.set("content","");
+				this.viewer.set("content", "");
 
 			}
 		},
 		searchResults: null,
 
-		formatgenome: function(docs,total){
-			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
+		formatgenome: function(docs, total){
+			var out=["<div class=\"searchResultsContainer genomeResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/GenomeList/?', this.state.search, "#view_tab=genomes", '">Genomes&nbsp;(', total, ")</div></a>"];
 
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
@@ -132,13 +140,13 @@ define("p3/widget/AdvancedSearch", [
 				if (doc.plasmids && doc.plasmids > 0){
 					out.push("<span>" + doc.plasmids + " Plasmids</span>");
 				}
-	
+
 				if (doc.contigs && doc.contigs > 0){
 					if (doc.plasmids) { out.push(" | "); }
 					out.push("<span>" + doc.contigs + " Contigs</span>");
 				}
 
-				out.push("</div>");	
+				out.push("</div>");
 
 				out.push("<div class='resultInfo'>");
 				if (doc.date_inserted){
@@ -170,8 +178,8 @@ define("p3/widget/AdvancedSearch", [
 			return out.join("");
 		},
 
-		formatgenome_feature: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/FeatureList/?',this.state.search,"#view_tab=features&defaultSort=-score",'">Genomic Features&nbsp;(', total, ")</div> </a>"];
+		formatgenome_feature: function(docs, total){
+			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/FeatureList/?', this.state.search, "#view_tab=features&defaultSort=-score", '">Genomic Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
@@ -183,15 +191,15 @@ define("p3/widget/AdvancedSearch", [
 				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
 
 				if (doc.patric_id){
-					out.push("&nbsp;|&nbsp;" + doc.patric_id);					
+					out.push("&nbsp;|&nbsp;" + doc.patric_id);
 				}
 
 				if (doc.refseq_locus_tag){
-					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);					
+					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);
 				}
 
 				if (doc.alt_locus_tag){
-					out.push("&nbsp;|&nbsp;" + doc.alt_locus_tag);					
+					out.push("&nbsp;|&nbsp;" + doc.alt_locus_tag);
 				}
 
 				out.push("</div>");
@@ -202,8 +210,8 @@ define("p3/widget/AdvancedSearch", [
 		},
 
 
-		formatsp_gene: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" ref="/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false",'">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+		formatsp_gene: function(docs, total){
+			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" ref="/view/FeatureList/?', this.state.search, "#view_tab=features&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
@@ -215,11 +223,11 @@ define("p3/widget/AdvancedSearch", [
 				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
 
 				if (doc.refseq_locus_tag){
-					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);					
+					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);
 				}
 
 				if (doc.alt_locus_tag){
-					out.push("&nbsp;|&nbsp;" + doc.alt_locus_tag);					
+					out.push("&nbsp;|&nbsp;" + doc.alt_locus_tag);
 				}
 
 				out.push("</div>");
@@ -229,15 +237,15 @@ define("p3/widget/AdvancedSearch", [
 			return out.join("");
 		},
 
-		formattranscriptomics_experiment: function(docs,total){
+		formattranscriptomics_experiment: function(docs, total){
 			console.log("formattranscriptomics_experiment docs: ", docs);
 			var out;
 			if (total==1){
-				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/',docs[0].eid,"#view_tab=overview",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
+				out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, "#view_tab=overview", '">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
 			} else if (total>1) {
-				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];			
+				out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?', this.state.search, "#view_tab=experiments", '">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
 			}
-			
+
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/ExperimentComparison/" + doc.eid + "#view_tab=overview'>" + doc.title + "</a>");
@@ -271,15 +279,32 @@ define("p3/widget/AdvancedSearch", [
 			return out.join("");
 		},
 
-		formattaxonomy: function(docs,total){
-			var q = this.state.search; 
+		formattaxonomy: function(docs, total){
+			var q = this.state.search;
 			console.log("format taxonomy q: ", q);
-			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a class="navigationLink" href="/view/TaxonList/?',q,'">Taxa</a>&nbsp;(', total, ")</div>"];
-			
+			var out=["<div class=\"searchResultsContainer taxonomyResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/TaxonList/?', q, '">Taxa</a>&nbsp;(', total, ")</div>"];
+
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Taxonomy/" + doc.taxon_id + "'>" + doc.taxon_name + "</a></div>");
 				out.push("<div class='resultInfo'>" + doc.genomes +  " Genomes</div>");
+				out.push("</div>")
+			})
+			out.push("</div>");
+
+			console.log("Taxonomy Format: ", out.join(""));
+			return out.join("");
+		},
+
+		formatantibiotics: function(docs, total){
+			var q = this.state.search;
+			console.log("format antibiotics q: ", q);
+			var out=["<div class=\"searchResultsContainer antibioticsResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/AntibioticList/?', q, '">Antibiotic</a>&nbsp;(', total, ")</div>"];
+
+			docs.forEach(function(doc){
+				out.push("<div class='searchResult'>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Antibiotic/?eq(antibiotic_name," + doc.antibiotic_name + ")'>" + doc.antibiotic_name + "</a></div>");
+				out.push("<div class='resultInfo'>" + doc.description[0] +  "</div>");
 				out.push("</div>")
 			})
 			out.push("</div>");
@@ -306,14 +331,14 @@ define("p3/widget/AdvancedSearch", [
 					var out=[];
 					foundContent=true;
 					if (this["format" + type]){
-						singleResults[type] = this["format" + type](docs,total);
+						singleResults[type] = this["format" + type](docs, total);
 						out.push(singleResults[type])
 					}
 					content.push(out.join(""));
 				}
 
 
-			},this)
+			}, this)
 
 			var keys = Object.keys(resultCounts).sort();
 
@@ -321,12 +346,12 @@ define("p3/widget/AdvancedSearch", [
 
 			for (var i =0; i<keys.length;i+=3){
 				out.push("<tr>");
-				out.push("<td><a class=\"navigationLink\"  href=\"" + this.generateLink(keys[i],resultCounts[keys[i]].docs,resultCounts[keys[i]].total) + "\">" + this.labelsByType[keys[i]] + ": " + resultCounts[keys[i]].total + "</a></td>");
+				out.push("<td><a class=\"navigationLink\"  href=\"" + this.generateLink(keys[i], resultCounts[keys[i]].docs, resultCounts[keys[i]].total) + "\">" + this.labelsByType[keys[i]] + ": " + resultCounts[keys[i]].total + "</a></td>");
 				if (keys[i+1]){
-					out.push("<td><a class=\"navigationLink\" href=\"" + this.generateLink(keys[i+1],resultCounts[keys[i+1]].docs,resultCounts[keys[i+1]].total)  + "\">" + this.labelsByType[keys[i+1]] + ": " + resultCounts[keys[i+1]].total + "</a></td>");
+					out.push("<td><a class=\"navigationLink\" href=\"" + this.generateLink(keys[i+1], resultCounts[keys[i+1]].docs, resultCounts[keys[i+1]].total)  + "\">" + this.labelsByType[keys[i+1]] + ": " + resultCounts[keys[i+1]].total + "</a></td>");
 				} else { out.push("<td></td>"); }
 				if (keys[i+2]){
-					out.push("<td><a class=\"navigationLink\" href=\"" + this.generateLink(keys[i+2],resultCounts[keys[i+2]].docs,resultCounts[keys[i+2]].total)  + "\">" + this.labelsByType[keys[i+2]] + ": " + resultCounts[keys[i+2]].total + "</a></td>");
+					out.push("<td><a class=\"navigationLink\" href=\"" + this.generateLink(keys[i+2], resultCounts[keys[i+2]].docs, resultCounts[keys[i+2]].total)  + "\">" + this.labelsByType[keys[i+2]] + ": " + resultCounts[keys[i+2]].total + "</a></td>");
 				}else { out.push("<td></td>"); }
 				out.push("</tr>")
 			}
@@ -340,7 +365,7 @@ define("p3/widget/AdvancedSearch", [
 
 			if (this.viewer){
 				//if (foundContent){
-					this.viewer.innerHTML=out.join("");
+				this.viewer.innerHTML=out.join("");
 				//}else{
 				//	this.viewer.set("content", "No Results Found.")
 				//}
@@ -405,7 +430,7 @@ define("p3/widget/AdvancedSearch", [
 
 		// 	this.searchBox.on("keypress", lang.hitch(this,"onKeyPress"));
 
-		
+
 		// 	this.viewer = new ContentPane({
 		// 		region: "center",
 		// 		content: "Searching...."
@@ -418,9 +443,9 @@ define("p3/widget/AdvancedSearch", [
 		onKeyPress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchBox.get('value');
-				query = query.replace(/'/g,"").replace(/:/g, " ");
+				query = query.replace(/'/g, "").replace(/:/g, " ");
 				if (!query){
-					this.viewer.set("content","");
+					this.viewer.set("content", "");
 				}
 
 				Topic.publish("/navigate", {href: "/search/?" + searchToQuery(query)});

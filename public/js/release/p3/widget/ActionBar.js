@@ -31,7 +31,6 @@ define("p3/widget/ActionBar", [
 			//console.log("setSelection sel", sel[0], sel.length);
 			this.selection = sel;
 
-//			return;
 			var valid;
 			var selectionTypes = {};
 			sel.filter(function(x){
@@ -59,7 +58,7 @@ define("p3/widget/ActionBar", [
 			//console.log("_actions: ", this._actions);
 			if(sel.length > 1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
-//				//console.log("isMultiTyped: ", multiTypedSelection);	
+				//console.log("isMultiTyped: ", multiTypedSelection);
 				valid = Object.keys(this._actions).filter(function(an){
 					//console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
@@ -187,9 +186,9 @@ define("p3/widget/ActionBar", [
 				domClass.remove(t, "depressed");
 			});
 
-//			on(this.domNode, ".ActionButton:mouseover", function(evt){
-//				//console.log("mouseover evt: ", evt.target);
-//			});	
+			//on(this.domNode, ".ActionButton:mouseover", function(evt){
+			//console.log("mouseover evt: ", evt.target);
+			//});
 
 		},
 

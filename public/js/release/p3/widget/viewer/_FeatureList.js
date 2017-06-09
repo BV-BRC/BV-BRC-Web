@@ -138,7 +138,7 @@ define("p3/widget/viewer/_FeatureList", [
 		},
 
 		onSetTotalFeatures: function(attr, oldVal, newVal){
-			this.totalCountNode.innerHTML = " ( " + newVal + " Genome Features ) ";
+			this.totalCountNode.innerHTML = " ( " + newVal + " Genomic Features ) ";
 		},
 
 		hideWarning: function(){

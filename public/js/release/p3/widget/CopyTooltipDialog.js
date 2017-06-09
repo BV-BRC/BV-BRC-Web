@@ -43,22 +43,25 @@ define("p3/widget/CopyTooltipDialog", [
 			var out = [];
 
 			// gather all of the keys present in the selected objects and remove any undefined entries
-			var key_set = [];
+			var key_set = new Set();
 			var clean_selection = [];
 			selection.forEach(function(obj){
 				if (obj){
-					key_set = new Set([...key_set, ...Object.keys(obj)]);
+					var keys = new Set(Object.keys(obj));
+					keys.forEach(function (key){
+						key_set.add(key);
+					});
 					clean_selection.push(obj);
 				}
 			});
 
 			// construct the header
 			var header = [];
-			for (let key of key_set.keys()){
+			key_set.forEach(function(key){
 				if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 					header.push(key);
 				}
-			}
+			});
 
 			// if we want the header, push it to the array
 			if (includeHeader){
@@ -69,7 +72,7 @@ define("p3/widget/CopyTooltipDialog", [
 			clean_selection.forEach(function(obj){
 				var io = [];
 
-				for (let key of key_set.keys()){
+				key_set.forEach(function(key){
 					// decide if we should include this column
 					if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 						// push it to the array
@@ -79,7 +82,8 @@ define("p3/widget/CopyTooltipDialog", [
 							io.push(obj[key]);
 						}
 					}
-				}
+				});
+
 				out.push(io.join("\t"));
   		});
 			return out.join("\n");

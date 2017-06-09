@@ -23,25 +23,47 @@ define("p3/widget/ContainerActionBar", [
 		},
 
 		generatePathLinks: function(path){
-			var parts = path.split("/");
+			// strip out /public/
+			var parts = path.replace(/\/+/g, '/').split("/");
+			if(parts[1] == 'public'){
+				parts.splice(1, 1);
+			}
+
 			if(parts[0] == ""){
 				parts.shift();
 			}
 			var len = parts.length;
 			var out = ["<span class='wsBreadCrumb'>"];
 			var bp = ["workspace"];
-			// console.log("parts: ", parts);
+
+			var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public' ? true : false;
+			if (path == '/public/') {
+				out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>')
+			}else if(isPublic){
+				out.push('<i class="icon-globe"></i> '+
+					'<a class="navigationLink perspective" href="/'+bp.join("/")+'/public">Public Workspaces</a>'+
+					' <i class="icon-caret-right"></i> ')
+			}
+
+
 			parts.forEach(function(p, idx){
 				if(idx == (parts.length - 1)){
 					out.push(p + "&nbsp;");
 					return;
 				}
+
+				// don't create links for top level path of public path
+				if(isPublic && idx == 0){
+					out.push('<b class="perspective">' + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + '</b> / ');
+					return;
+				};
+
 				out.push("<a class='navigationLink' href='");
 				bp.push(p);
 				out.push("/" + bp.join("/"));
-				out.push("'>" + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + "</a>&nbsp;/&nbsp;");
+				out.push("'>" + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + "</a> / ");
 			});
-			//out.push("<span>" + parts.join("/") + "</span>");
+
 			return out.join("");
 		},
 
