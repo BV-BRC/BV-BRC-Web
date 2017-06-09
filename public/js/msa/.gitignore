@@ -1,0 +1,14 @@
+node_modules
+.DS_Store
+coverage
+tmp
+test/all_test.js
+test/perf/all.js
+.sass-cache
+lib
+bower_components/
+.bundle
+.gems
+.idea
+dummy
+npm-debug.log
