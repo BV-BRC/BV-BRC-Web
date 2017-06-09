@@ -1,5 +1,5 @@
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/_base/lang",
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/_base/lang", "dojo/request",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/topic",
 	"../GenomeOverview",
 	"dojo/request", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
@@ -8,7 +8,7 @@ define([
 	"../TranscriptomicsContainer", "../InteractionContainer", "../GenomeGridContainer",
 	"../AMRPanelGridContainer",
 	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish", "dijit/Dialog"
-], function(declare, TabViewerBase, on, lang,
+], function(declare, TabViewerBase, on, lang, xhr,
 			domClass, ContentPane, domConstruct, Topic,
 			GenomeOverview,
 			xhr, FeatureGridContainer, SpecialtyGeneGridContainer,
@@ -220,6 +220,38 @@ define([
 							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
 					}
+
+					if(active == "features" && this.state && this.state.genome_ids){
+						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))";
+						// console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
+						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
+							headers: {
+								accept: "application/json",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							handleAs: "json"
+						}).then(lang.hitch(this, function(genome_data){
+							console.log("genome_data = ", genome_data);
+							var i=0;
+							var filter = ""; 
+							for (i=0; i<genome_data.length; i++){							
+								if (genome_data[i].taxon_lineage_ids.length>2 && genome_data[i].taxon_lineage_ids[1] == "2759"){
+									filter = 'eq(feature_type,%22CDS%22)';
+								}
+							}
+							activeQueryState = lang.mixin({}, this.state, {
+								search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
+								hashParams: lang.mixin({}, this.state.hashParams, {
+									filter: filter
+								})
+							});
+							if(activeQueryState){
+								activeTab.set("state", activeQueryState);
+							}							
+						}));
+					}
+
 
 					if(activeQueryState){
 						// console.log("Active Query State: ", activeQueryState);
