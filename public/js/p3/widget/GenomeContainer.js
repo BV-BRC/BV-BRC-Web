@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./PathwaysGridContainer", "./SubSystemsGridContainer", "dijit/layout/ContentPane", "dijit/TooltipDialog",
+	"dijit/layout/ContentPane", "dijit/TooltipDialog",
 	"./FilterContainerActionBar", "./GenomeGridContainer", "./GridContainer", "./SequenceGridContainer"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
-			PathwaysGridContainer, SubSystemsGridContainer, ContentPane, TooltipDialog,
+			ContentPane, TooltipDialog,
 			FilterContainerActionBar, GenomeGridContainer, GridContainer, SequenceGridContainer){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({

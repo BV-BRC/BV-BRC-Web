@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./SubSystemsMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/SubSystemMemoryStore", "../store/SubSystemPieChartMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector", "./SubSystemsPieGraphContainer"
+	"../store/SubSystemMemoryStore", "../store/SubsystemPieChartMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector", "./SubSystemsPieGraphContainer"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			SubSystemsGridContainer, ContentPane, GridContainer, TooltipDialog,
