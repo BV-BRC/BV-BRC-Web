@@ -21,7 +21,7 @@ define([
 		fullSelectAll: true,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
-			class: 				{label: "Class", field: "class"},
+			"class": 				{label: "Class", field: "class"},
 			subclass: 			{label: 'Subclass', field: 'subclass'},
 			subsystem_id: 		{label: 'Subsystem ID', field: 'subsystem_id', hidden: true},
 			subsystem_name: 	{label: 'Subsystem Name', field: 'subsystem_name'},
