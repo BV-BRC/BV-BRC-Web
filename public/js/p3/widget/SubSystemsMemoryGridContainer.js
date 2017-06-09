@@ -198,7 +198,7 @@ define([
 
 							data.forEach(function(row){
 								content.push([
-									row.class, 
+									row['class'], 
 									JSON.stringify(row.subclass), 
 									row.subsystem_id, 
 									JSON.stringify(row.subsystem_name), 
@@ -232,7 +232,7 @@ define([
 
 							data.forEach(function(row){
 								content.push([
-									row.class, 
+									row['class'], 
 									JSON.stringify(row.subclass), 
 									row.subsystem_id, 
 									JSON.stringify(row.subsystem_name), 
