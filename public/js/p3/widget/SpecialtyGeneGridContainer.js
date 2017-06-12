@@ -17,7 +17,7 @@ define([
 
 	return declare([GridContainer], {
 		containerType: "spgene_data",
-		facetFields: ["property", "source", "evidence", "classification", "antibiotics"],
+		facetFields: ["property", "source", "evidence", "classification", "antibiotics_class", "antibiotics"],
 		maxGenomeCount: 10000,
 		dataModel: "sp_gene",
 		getFilterPanel: function(opts){
