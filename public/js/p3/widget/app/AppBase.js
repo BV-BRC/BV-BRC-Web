@@ -169,12 +169,6 @@ define([
 			}else{
 				console.log("Form is incomplete");
 			}
-
-			Topic.publish("/Notification", {
-				message: "Your annotation job has been queued",
-				type: "message"
-			});
-
 		},
 
 		onCancel: function(evt){
