@@ -1,29 +1,10 @@
-<% var services = [
-    {name: "Genome Assembly", href: "/app/Assembly"},
-    {name: "Genome Annotation", href: "/app/Annotation"},
-    {name: "BLAST", href: "/app/BLAST"},
-    {name: "Variation Analysis", href: "/app/Variation"},
-    {name: "RNA-Seq Analysis", href: "/app/Rnaseq"},
-    {name: "Protein Family Sorter", href: "/app/ProteinFamily"},
-    {name: "Proteome Comparison", href: "/app/SeqComparison"},
-    {name: "Comparative Pathways", href: "/app/ComparativePathway"},
-    {name: "Metabolic Reconstruction", href: "/app/Reconstruct"}
-] %>
 <% var flows = [
-    {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"},
-    {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"},
-//    {name: "NEW PATRIC WEBSITE", secondary: "OFFICIAL RELEASE", rel: "carousel_newsite", background: "#34698e"},
-    {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"},
-    {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
+    {name: "PATRIC Workshop", secondary: "ARGONNE, IL", rel: "carousel_workshop", background: "#34698e"}
+    , {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
+    , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
+    , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
+    // , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
 ] %>
-<% var workShops = [
-    /*{
-        publishDate: new Date(),
-        title: "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
-        summary: "Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Cras justo odio, dapibus ac facilisis in, egestas eget quam."
-    }*/
-] %>
-
 
 <div class="home">
 
@@ -37,22 +18,24 @@
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
 
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_100k"
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop"
                      class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-100000-Genomes.png">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Crosses 100,000 Genomes Mark</h2>
-                        <!--<h3 class="xl highlight-f upper far">PATRIC Workshop</h3>-->
+                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/2012_Duke_UNC1_SMALL.png">
+                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h2>
+                        <h3 class="xl highlight-f upper far">@ Argonne National Laboratory</h3>
                         <br/>
-                        <p style="line-height:15.6px">In the May 2017 release, PATRIC has added over 7,700 new genomes,
-                         bringing the total number of public genomes in PATRIC to approximately 105,000. This is a notable milestone
-                         for the project considering that the database contained only 400 bacterial genomes at the end of 2009 when
-                         PATRIC launched the all bacteria Bioinformatics Resource Center. The full list of available bacterial genomes
-                         can be accessed from the <a href="/view/Taxonomy/2#view_tab=genomes">Genomes Tab for all bacteria</a> in the PATRIC website.</p>
+                        <p>The PATRIC/RAST teams will be offering a tutorial on 2017-August 14-16, at Argonne National Laboratory
+                        in the suburbs of Chicago, IL. The workshop will run for three days, with the third day optional and devoted solely to participants working
+                         on their own problems with help from the PATRIC/RAST team members. Included will be genome assembly, annotation, comparative analysis,
+                         and variation, as well as metabolic model construction, RNA-Seq analysis, Tn-seq analysis, and phylogenetic tree construction.  Registration
+                         information is available <a href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/" target="_blank">HERE</a>,
+                         and the planned agenda is available <a href="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-ANL-Workshop-August-2017.pdf">HERE</a>.
+                         The workshop will be limited to 35 people on a first-come, first-served basis.</p>
                         <br>
                         <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5184/patric-may-2017-release-brings-total-genomes-to-over-100000-and-includes-21-host-response-data-sets/"
+                              href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/"
                               target="_blank">More Information</a></p>
                         <br><br>
                     </div>
@@ -79,28 +62,26 @@
                     </div>
                 </div>
 
-                <% /*
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_newsite"
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_100k"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
-                        <h2 class="xxxl sans-alternate upper highlight-e">New PATRIC Website Release</h2>
-                        <h3 class="xl highlight-f upper far">Welcome to the new version of the PATRIC Website</h3>
+                        <img class="right"
+                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-100000-Genomes.png">
+                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Crosses 100,000 Genomes Mark</h2>
                         <br/>
-                        <p>Updates to the website include layout changes, more consistency in using PATRIC tools and
-                            data, streamlined operations, and other enhancements. Data stored in private workspaces (for
-                            registered users) is available from the new site - no data or user account migration is
-                            necessary. A QuickStart video, available from the Help menu at the top of the page, provides
-                            a brief overview of the new layout and features. You can also contact us from the Help /
-                            Provide Feedback menu option if you have issues. We will maintain the prior version of the
-                            website at <a href="https://www.legacy.patricbrc.org" target="_blank">https://www.legacy.patricbrc.org</a>
-                            for approximately 2 months. </p>
-                        <br><br>
+                        <p>In the May 2017 release, PATRIC has added over 7,700 new genomes,
+                         bringing the total number of public genomes in PATRIC to approximately 105,000. This is a notable milestone
+                         for the project considering that the database contained only 400 bacterial genomes at the end of 2009 when
+                         PATRIC launched the all bacteria Bioinformatics Resource Center. The full list of available bacterial genomes
+                         can be accessed from the <a href="/view/Taxonomy/2#view_tab=genomes">Genomes Tab for all bacteria</a> in the PATRIC website.</p>
+                        <br>
                         <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="https://www.legacy.patricbrc.org/">Legacy Site</a></p>
+                              href="http://enews.patricbrc.org/5184/patric-may-2017-release-brings-total-genomes-to-over-100000-and-includes-21-host-response-data-sets/"
+                              target="_blank">More Information</a></p>
                         <br><br>
                     </div>
                 </div>
-                */ %>
+
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_ar"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
@@ -341,7 +322,6 @@
                              style="width:100%;margin:0px;"></div>
                         <div style="text-align:right;"><a class="navigationLink" href="/view/Taxonomy/2">Explore All
                                 Genera</a></div>
-                        <% include workshops %>
                     </td>
 
                 </tr>
