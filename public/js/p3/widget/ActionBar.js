@@ -92,7 +92,7 @@ define([
 				}
 
 				// don't allow sharing on folders
-				else if (sel[0] && sel[0].path.split('/').length > 3 && ["ShareFolder"].indexOf(an) !== -1){
+				else if (sel[0] && ('path' in sel[0]) && sel[0].path.split('/').length > 3 && ["ShareFolder"].indexOf(an) !== -1){
 					return false;
 				}
 
