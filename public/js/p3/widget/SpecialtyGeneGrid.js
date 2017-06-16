@@ -31,11 +31,35 @@ define([
 			product: {label: "Product", field: "product", hidden: false},
 			"function": {label: "Function", field: "function", hidden: true},
 			classification: {label: "Classification", field: "classification", hidden: true},
+			antibiotics_class: {label: "Antibiotics Class", field: "antibiotics_class", hidden: true},
+			antibiotics: {label: "Antibiotics", field: "antibiotics", hidden: true},
 			pubmed: {label: "Pubmed", field: "pmid", hidden: false},
 			subj_coverage: {label: "Subject Coverage", field: "subject_coverage", hidden: true},
 			query_coverage: {label: "Query Coverage", field: "query_coverage", hidden: true},
 			identity: {label: "Identity", field: "identity", hidden: false},
 			evalue: {label: "E-value", field: "e_value", hidden: false}
+		},
+		_setQuery: function(query){
+			this.inherited(arguments);
+			this.updateColumnHiddenState(query);
+		},
+		updateColumnHiddenState: function(query){
+			// console.log("updateColumnHiddenState: ", query);
+			if (this._updatedColumnHiddenState){
+				return;
+			}
+			var _self = this;
+			if(!query){
+				return;
+			}
+
+			if(query.match(/eq\(property,%22Antibiotic%20Resistance%22\)/)){
+				_self.toggleColumnHiddenState('property', true);
+			}else{
+				_self.toggleColumnHiddenState('property', false);
+			}
+
+			this._updatedColumnHiddenState=true;
 		},
 		startup: function(){
 			var _self = this;

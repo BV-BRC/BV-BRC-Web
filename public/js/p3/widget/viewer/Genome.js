@@ -5,7 +5,7 @@ define([
 	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
-	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer",
+	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer", 
 	"../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
@@ -22,6 +22,7 @@ define([
 		genome_id: "",
 		perspectiveLabel: "Genome View",
 		perspectiveIconClass: "icon-selection-Genome",
+		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
 			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
@@ -67,6 +68,40 @@ define([
 						activeTab.set("state", lang.mixin({}, this.state));
 					}
 					break;
+				case "features":
+					//console.log("this.state ", this.state);
+					if(this.state && this.state.genome_ids){
+						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))";
+						//console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
+						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
+							headers: {
+								accept: "application/json",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							handleAs: "json"
+						}).then(lang.hitch(this, function(genome_data){
+							//console.log("genome_data = ", genome_data);
+							var i=0;
+							var filter = ""; 
+							for (i=0; i<genome_data.length; i++){							
+								if (genome_data[i].taxon_lineage_ids.length>2 && genome_data[i].taxon_lineage_ids[1] == "2759"){
+									filter = 'eq(feature_type,%22CDS%22)';
+								}
+							}
+							activeQueryState = lang.mixin({}, this.state, {
+								search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
+								hashParams: lang.mixin({}, this.state.hashParams, {
+									filter: filter
+								})
+							});
+							if(activeQueryState){
+								activeTab.set("state", activeQueryState);
+							}
+						}));
+					}					
+					break;
+
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;

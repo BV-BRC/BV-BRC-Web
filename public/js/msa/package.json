@@ -1,0 +1,132 @@
+{
+  "name": "msa",
+  "description": "Display multiple sequences",
+  "version": "0.4.16",
+  "homepage": "http://github.com/wilzbach/msa",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wilzbach/msa"
+  },
+  "contributors": [
+    {
+      "name": "Sebastian Wilzbach",
+      "email": "sebi.wilzbach@gmail.com",
+      "url": "http://sebi.wilzba.ch"
+    },
+    {
+      "name": "Tatyana Goldberg",
+      "email": "goldberg@rostlab.org",
+      "url": "http://rostlab.org/~goldberg/"
+    },
+    {
+      "name": "Guy Yachdav",
+      "email": "yachdav@rostlab.org",
+      "url": "https://www.linkedin.com/in/gyachdav"
+    }
+  ],
+  "author": "Sebastian Wilzbach <sebi.wilzbach@gmail.com>",
+  "dependencies": {
+    "backbone-childs": "^1.0.3",
+    "backbone-thin": "^1.0.8",
+    "backbone-viewj": "^1.0.1",
+    "biojs-events": "^0.0.4",
+    "biojs-io-clustal": "0.x",
+    "biojs-io-fasta": "0.x",
+    "biojs-io-gff": "0.x",
+    "biojs-model": "^0.0.2",
+    "biojs-vis-seqlogo": "^0.0.11",
+    "blueimp_canvastoblob": "^1.0.0",
+    "browser-saveas": "^1.0.0",
+    "dom-helper": "^1.0.0",
+    "jbone": "^1.1.2",
+    "koala-js": "^1.0.7",
+    "menu-builder": "^0.0.7",
+    "mouse-pos": "^1.0.3",
+    "msa-colorschemes": "^1.0.8",
+    "msa-seqtools": "^0.1.8",
+    "stat.seqs": "^0.1.20",
+    "underscore": "^1.6.0",
+    "xhr": "^1.17.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-core": "^6.4.5",
+    "babel-loader": "^6.2.1",
+    "babel-preset-es2015": "^6.3.13",
+    "biojs-io-newick": "git://github.com/wilzbach/biojs-io-newick",
+    "chai": "^1.9.1",
+    "css-loader": "^0.23.1",
+    "gulp": "^3.8.7",
+    "gulp-chmod": "^1.1.0",
+    "gulp-concat": "^2.3.4",
+    "gulp-gzip": "0.0.8",
+    "gulp-minify-css": "^0.3.7",
+    "gulp-mocha": "^0.5.2",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^0.3.1",
+    "mkdirp-then": "^1.1.1",
+    "mocha": "^1.21.4",
+    "msa-tnt": "^0.1.7",
+    "prunner": "^1.0.0",
+    "sinon": "^1.12.1",
+    "sniper": "^0.2.16",
+    "style-loader": "^0.13.0",
+    "through2": "^0.6.3",
+    "tnt.tree": "0.0.10",
+    "uglify-js": "~2.4.15",
+    "webpack": "^1.12.12"
+  },
+  "keywords": [
+    "bio",
+    "biojs",
+    "galaxy-vis",
+    "msa",
+    "alignment",
+    "sequence"
+  ],
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo 'temporarily disabled'",
+    "prepublish": "./node_modules/webpack/bin/webpack.js -p && gulp build && babel -d lib src --presets es2015",
+    "build": "./node_modules/webpack/bin/webpack.js -p && gulp build",
+    "sniper": "./node_modules/sniper/bin/sniper .",
+    "watch": "./node_modules/webpack/bin/webpack.js -w",
+    "w": "prunner 'npm run sniper' 'npm run watch'"
+  },
+  "license": "Apache-2.0",
+  "browserify": {
+    "exclude": [
+      "biojs-io-newick",
+      "msa-tnt"
+    ]
+  },
+  "biojs": {
+    "registryHeight": "400",
+    "screenshot": "screenshot.png",
+    "logo": "/logo.png",
+    "eventInstance": "m.g"
+  },
+  "sniper": {
+    "noBrowserify": true,
+    "buildJS": [
+      "http://cdn.bio.sh.s3.eu-central-1.amazonaws.com/msa/latest/msa.min.gz.js"
+    ],
+    "js": [
+      "dist/msa.js"
+    ],
+    "css": [
+      "css/msa.css"
+    ],
+    "snippets": [
+      "snippets"
+    ],
+    "first": "fer1"
+  },
+  "galaxy": {
+    "datatypes": [
+      "sequence.Fasta",
+      "sequences",
+      "msa.clustal"
+    ]
+  }
+}

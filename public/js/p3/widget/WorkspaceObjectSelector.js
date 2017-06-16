@@ -445,10 +445,8 @@ define([
 					owner: {
 						label: "Owner",
 						field: "owner_id",
-						className: "wsItemCreationTime",
-						formatter: function(blah) {
-							return blah.split('@')[0];
-						},
+						className: "wsItemOwnerId",
+						formatter: formatter.baseUsername,
 						hidden: false
 					},
 					creation_time: {
