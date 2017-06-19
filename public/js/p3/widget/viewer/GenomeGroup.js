@@ -65,40 +65,6 @@ define([
 					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,GenomeGroup(" + groupPath + "))"}));
 					break;
 
-				case "features":
-					//console.log("this.state ", this.state);
-					if(this.state && this.state.genome_ids){
-						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))";
-						//console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
-						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
-							headers: {
-								accept: "application/json",
-								'X-Requested-With': null,
-								'Authorization': (window.App.authorizationToken || "")
-							},
-							handleAs: "json"
-						}).then(lang.hitch(this, function(genome_data){
-							//console.log("genome_data = ", genome_data);
-							var i=0;
-							var filter = ""; 
-							for (i=0; i<genome_data.length; i++){							
-								if (genome_data[i].taxon_lineage_ids.length>2 && genome_data[i].taxon_lineage_ids[1] == "2759"){
-									filter = 'eq(feature_type,%22CDS%22)';
-								}
-							}
-							activeQueryState = lang.mixin({}, this.state, {
-								search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
-								hashParams: lang.mixin({}, this.state.hashParams, {
-									filter: filter
-								})
-							});
-							if(activeQueryState){
-								activeTab.set("state", activeQueryState);
-							}
-						}));
-					}					
-					break;
-
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
@@ -109,6 +75,35 @@ define([
 						if(activeTab._firstView){
 							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
+					}
+
+					// special case for host genomes
+					if(active == "features" && this.state && this.state.genome_ids && !this.state.hashParams.filter){
+						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))&select(taxon_lineage_ids)";
+						// console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
+						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
+							headers: {
+								accept: "application/json",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							handleAs: "json"
+						}).then(lang.hitch(this, function(genome_data){
+
+							if (genome_data.some(function(el, idx, arr){
+								return el.taxon_lineage_ids.indexOf("2759") > -1;
+							})) {
+
+								activeQueryState = lang.mixin({}, this.state, {
+									search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
+									hashParams: lang.mixin({}, this.state.hashParams, {
+										filter: 'eq(feature_type,%22CDS%22)'
+									})
+								});
+							}
+
+							activeTab.set("state", activeQueryState);
+						}));
 					}
 
 					if(activeQueryState){
