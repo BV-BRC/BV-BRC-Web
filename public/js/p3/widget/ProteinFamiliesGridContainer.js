@@ -216,6 +216,26 @@ define([
 				},
 				false
 			], [
+				"MultipleSeqAlignmentFeatures",
+				"fa icon-alignment fa-2x",
+				{
+					label: "MSA",
+					ignoreDataType: true,
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+					}).join(',') + ")))";
+
+					Topic.publish("/navigate", {href: "/view/MSA/?" + query, target: "blank"});
+				},
+				false
+			], [
 				"ViewProteinFamiliesMembers",
 				"fa icon-group fa-2x",
 				{
