@@ -482,7 +482,7 @@ define([
 					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
 				}, function(err){
 
-					return Deferred.when(_self.api("Workspace.copy", [{
+					return Deferred.when(self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
 						recursive: true,
 						move: true
