@@ -25,7 +25,7 @@ define([
 		var sel = viewFASTATT.selection;
 		delete viewFASTATT.selection;
 
-		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel});
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel, target: "blank"});
 	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
@@ -230,7 +230,7 @@ define([
 
 					query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
 							return s.family_id;
-					}).join(',') + ")))";
+						}).join(',') + ")))";
 
 					Topic.publish("/navigate", {href: "/view/MSA/?" + query, target: "blank"});
 				},
