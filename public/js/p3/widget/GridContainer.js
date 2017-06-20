@@ -11,6 +11,13 @@ define([
 			Topic, query, ContentPane, IDMappingTemplate,
 			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
 		  CopyTooltipDialog){
+	
+    var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
+	var viewMSATT = new TooltipDialog({
+		content: mmc, onMouseLeave: function(){
+			popup.close(viewMSATT);
+		}
+	});
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
@@ -18,6 +25,22 @@ define([
 			popup.close(viewFASTATT);
 		}
 	});
+
+
+
+	on(viewMSATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewMSATT.selection;
+        var ids = sel.map(function(d){
+            return d['feature_id'];
+        });
+		delete viewMSATT.selection;
+		var idType;
+
+		Topic.publish("/navigate", {href: "/view/MSA/"+ rel +"/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
+	});
+
+
 
 	on(viewFASTATT.domNode, "click", function(evt){
 		var rel = evt.target.attributes.rel.value;
@@ -661,16 +684,20 @@ define([
 					multiple: true,
 					max: 200,
 					validTypes: ["*"],
+                    tooltipDialog: viewMSATT,
 					tooltip: "Multiple Sequence Alignment",
 					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					// console.log("MSA Selection: ", selection);
-					var ids = selection.map(function(d){
-						return d['feature_id'];
-					});
+                    viewMSATT.selection = selection;
+                    popup.open({
+                        popup: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
+                        around: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.button,
+                        orient: ["below"]
+                    });
 					// console.log("OPEN MSA VIEWER");
-					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
+					//Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
 
 				},
 				false
