@@ -3,13 +3,14 @@ define([
 	"dojo/dom-class", "dojo/query", "dojo/dom-style", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
 	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
-	"./ExternalItemFormatter", "./AdvancedDownload"
-
+	"./ExternalItemFormatter", "./AdvancedDownload", "dijit/form/TextBox", "dijit/form/Form", "./Confirmation",
+	"./InputList", "dijit/form/SimpleTextarea", "dijit/form/DateTextBox", './MetaEditor'
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domQuery, domStyle, Template, domConstruct,
 			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
-			ExternalItemFormatter, AdvancedDownload){
+			ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
+			InputList, TextArea, DateTextBox, MetaEditor){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
@@ -53,14 +54,37 @@ define([
 		},
 
 		"createSummary": function(genome){
+			var self = this;
 			domConstruct.empty(this.genomeSummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), this.genomeSummaryNode, "first");
 			domConstruct.empty(this.pubmedSummaryNode);
 			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
+
+			// domConstruct.place(inputList.domNode, this.genomeSummaryNode, "first");
+
+			if(genome.owner == window.App.user.id){
+				var editBtn = domConstruct.toDom(
+					'<a style="float: right; margin-top: 15px;">'+
+						'<i class="icon-pencil"></i> Edit'+
+					'</a>');
+
+				on(editBtn, 'click', function(){
+					var tableNames = DataItemFormatter(genome, "genome_meta_table_names", {}),
+						spec = DataItemFormatter(genome, "genome_meta_spec", {});
+
+					var editor = new MetaEditor({
+						tableNames: tableNames,
+						spec: spec,
+						data: genome
+					})
+					editor.startup();
+					editor.show();
+				})
+				domConstruct.place(editBtn, this.genomeSummaryNode, "first");
+			}
 		},
 
 		onAddGenome: function(){
-
 			if(!window.App.user || !window.App.user.id){
 				Topic.publish("/login");
 				return;
@@ -84,7 +108,6 @@ define([
 		},
 
 		onDownload: function(){
-
 			var dialog = new Dialog({title: "Download"});
 			var advDn = new AdvancedDownload({selection: [this.genome], containerType: "genome_data"});
 			domConstruct.place(advDn.domNode, dialog.containerNode);
