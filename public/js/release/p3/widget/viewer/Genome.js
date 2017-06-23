@@ -5,7 +5,7 @@ define("p3/widget/viewer/Genome", [
 	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
-	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer", 
+	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer",
 	"../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
@@ -69,37 +69,23 @@ define("p3/widget/viewer/Genome", [
 					}
 					break;
 				case "features":
-					//console.log("this.state ", this.state);
-					if(this.state && this.state.genome_ids){
-						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))";
-						//console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
-						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
-							headers: {
-								accept: "application/json",
-								'X-Requested-With': null,
-								'Authorization': (window.App.authorizationToken || "")
-							},
-							handleAs: "json"
-						}).then(lang.hitch(this, function(genome_data){
-							//console.log("genome_data = ", genome_data);
-							var i=0;
-							var filter = ""; 
-							for (i=0; i<genome_data.length; i++){							
-								if (genome_data[i].taxon_lineage_ids.length>2 && genome_data[i].taxon_lineage_ids[1] == "2759"){
-									filter = 'eq(feature_type,%22CDS%22)';
-								}
+					// check whether genome is a host genome and set default filter condition
+					if(this.state.genome){
+						if(!this.state.hashParams.filter){
+							var taxon_lineage_ids = this.state.genome.taxon_lineage_ids;
+							if (taxon_lineage_ids.indexOf("2759") > -1){
+
+								activeQueryState = lang.mixin({}, this.state, {
+									search: "eq(genome_id," + this.state.genome.genome_id + ")",
+									hashParams: lang.mixin({}, this.state.hashParams, {
+										filter: 'eq(feature_type,%22CDS%22)'
+									})
+								});
 							}
-							activeQueryState = lang.mixin({}, this.state, {
-								search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
-								hashParams: lang.mixin({}, this.state.hashParams, {
-									filter: filter
-								})
-							});
-							if(activeQueryState){
-								activeTab.set("state", activeQueryState);
-							}
-						}));
-					}					
+						}
+
+						activeTab.set("state", activeQueryState);
+					}
 					break;
 
 				case "transcriptomics":
@@ -168,7 +154,7 @@ define("p3/widget/viewer/Genome", [
 
 			// check host genomes. remove the circular viewer tab if it's a host genome
 			if(genome && genome.taxon_lineage_ids){
-			    // console.log("this genome: ", genome);
+				// console.log("this genome: ", genome);
 				if (genome.taxon_lineage_ids.length>1 && genome.taxon_lineage_ids[1] == "2759"){
 					this.viewer.removeChild(this.circular);
 				}
@@ -266,8 +252,7 @@ define("p3/widget/viewer/Genome", [
 
 			this.features = new FeatureGridContainer({
 				title: "Features",
-				id: this.viewer.id + "_" + "features",
-				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+				id: this.viewer.id + "_" + "features"
 			});
 
 			this.browser = new GenomeBrowser({
