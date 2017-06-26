@@ -40,15 +40,15 @@ define([
 
 			// if viewing all public workspaces, just create header
 			if (path == '/public/') {
-				out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>')
+				out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>');
 
-			// if viewing a specific public workspace, create bread crumbs
+			// if viewing a specific public workspace, create bread crumbs with additional url params
 			}else if(isPublic){
 				out.push('<i class="icon-globe"></i> '+
 					'<a class="navigationLink perspective" href="/'+bp.join("/")+'/public">Public Workspaces</a>'+
-					' <i class="icon-caret-right"></i> ')
+					' <i class="icon-caret-right"></i> ');
+				bp.push('public', parts[0]);
 			}
-
 
 			parts.forEach(function(part, idx){
 				if(idx == (parts.length - 1)){
