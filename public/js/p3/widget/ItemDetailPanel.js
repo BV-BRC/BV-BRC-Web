@@ -193,13 +193,16 @@ define([
 							if(item.user_permission == 'o')
 								rows.push(window.App.user.id.split('@')[0] + ' (me) - Owner');
 							else
-								rows.push(item.owner_id + ' - Owner');
+								rows.push(formatter.baseUsername(item.owner_id) + ' - Owner');
 
 							// add all other privs, ignoring global permisssion
 							// and workaround this https://github.com/PATRIC3/Workspace/issues/54
 							val.forEach(function(perm){
 								if (perm[0] == 'global_permission') return;
-								rows.push(perm[0] + ' - ' + formatter.permissionMap(perm[1]));
+								var isOwner = (perm[0] == window.App.user.id);
+								var user = perm[0].split('@')[0];
+
+								rows.push((isOwner ? user + ' (me)' : user) + ' - ' + formatter.permissionMap(perm[1]));
 							})
 
 							// edit perms btn

@@ -1139,6 +1139,11 @@ define([
 			var ownerId = Formatter.baseUsername(selection.owner_id);
 
 			var form = domConstruct.toDom('<div class="userPermForm">')
+			domConstruct.place(
+				'<h4 style="margin-bottom: 5px;">'+
+					'Share with specific users'+
+				'</h4>'
+			, form);
 			var currentUsers = domConstruct.toDom(
 				'<table class="currentUsers p3basic striped" style="margin-bottom: 10px;">'+
 					'<thead>'+
@@ -1154,7 +1159,7 @@ define([
 			);
 
 			// user search box
-			var userSelector = new UserSelector({name: "user"})
+			var userSelector = new UserSelector({name: "user"});
 
 			// user's permission
 			var permSelect = new Select({
@@ -1175,7 +1180,7 @@ define([
 			// add user's permission button
 			// Note: on click, the user is added server side.
 			var addUserBtn = new Button({
-				label: "Add User",
+				label: '<i class="fa icon-plus"></i> Add User',
 				//disabled: true,
 				onClick: function(){
 					var userId = userSelector.getSelected();
@@ -1212,11 +1217,11 @@ define([
 
 			// open form in dialog
 			var dlg = new Confirmation({
-				title: "Edit Sharing",
+				title: "Share with others",
 				okLabel: "Done",
 				cancelLabel: false,
 				content: form,
-				style: { width: '700px'},
+				style: { width: '500px'},
 				onConfirm: function(evt){
 					this.hideAndDestroy();
 					Topic.publish('/refreshWorkspace');
@@ -1234,11 +1239,12 @@ define([
 			})
 
 			/*
-		     * create current permission tables
+		     * list current permissions
 			 */
 			var prom = WorkspaceManager.listPermissions(folderPath);
 			Deferred.when(prom, function(perms){
-				// global perm
+
+				// add global permission toggle
 				var globalPerm = perms.filter(function(perm){ return perm[0] == 'global_permission' })[0][1]
 				var isPublic = globalPerm != 'n';
 
@@ -1249,13 +1255,11 @@ define([
 					value: "isPublic",
 					checked: isPublic,
 					onChange: function(e){
-						var self = this;
 						var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
 						Deferred.when(prom, function(res){
 						}, function(e){
 							alert('oh no, something has went wrong!')
 						})
-
 					}
 				})
 				cb.placeAt(checkBox);
@@ -1264,9 +1268,12 @@ define([
 					'innerHTML': " Publicly Readable"
 				}))
 
-				domConstruct.place(checkBox, form, "first");
-
-
+				domConstruct.place(checkBox, form, 'first');
+				domConstruct.place(
+					'<h4 style="margin-bottom: 5px;">'+
+						'Share with everybody'+
+					'</h4>',
+				form, 'first');
 
 				// user perms
 				perms.forEach(function(perm){
@@ -1280,7 +1287,7 @@ define([
 
 					dojo.place(
 						'<tr>'+
-							'<td data-user="'+perm[0]+'">'+perm[0]+
+							'<td data-user="'+perm[0]+'">'+Formatter.baseUsername(perm[0])+
 							'<td data-perm="'+perm[1]+'">'+Formatter.permissionMap(perm[1])+
 							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
 						query('tbody', currentUsers)[0]
