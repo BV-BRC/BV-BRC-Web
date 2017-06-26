@@ -39,7 +39,8 @@ define([
 			// ignore "/public/"
 			// "/public/..." isn't a real path, just used in urls for state
 			var parts = ws.replace(/\/+/g, '/').split('/');
-			if(parts[1] == 'public'){
+			var isPublic = parts[1] == 'public';
+			if(isPublic){
 				parts.splice(1, 1);
 				ws = parts.join('/');
 			}
@@ -67,7 +68,7 @@ define([
 
 					// empty folder notice
 					if(!objs.length){
-						_self.addEmptyFolderDiv();
+						_self.addEmptyFolderDiv(isPublic);
 					}else{
 						_self.rmEmptyFolderDiv();
 					}
@@ -230,8 +231,8 @@ define([
 		},
 
 		// gives notice that folder is empty and user could use drag n drop.
-		addEmptyFolderDiv: function(){
-			// needed since listWorkspacEContents is called twice on url load
+		addEmptyFolderDiv: function(isPublic){
+			// needed since listWorkspaceContents is called twice on url load
 			var exists = query('.emptyFolderNotice', this.domNode)[0];
 			if(exists) return;
 
@@ -247,7 +248,7 @@ define([
 					fontSize: '1.2em'
 				},
 				innerHTML: '<b>This folder is empty.</b>'+
-					(this.allowDragAndDrop ? '<br>Drag and drop files onto this window to upload.' : '')
+					(this.allowDragAndDrop && !isPublic ? '<br>Drag and drop files onto this window to upload.' : '')
 			}, this.domNode);
 		},
 
