@@ -216,7 +216,7 @@ define([
 								domConstruct.place(editBtn, node)
 
 							domConstruct.place('<br>' +
-								rows.join('<br>')
+								rows.join('<br>') + '<br><br>'
 							, node);
 
 						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
