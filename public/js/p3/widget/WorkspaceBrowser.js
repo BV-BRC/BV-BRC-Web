@@ -1141,7 +1141,7 @@ define([
 			var form = domConstruct.toDom('<div class="userPermForm">')
 			domConstruct.place(
 				'<h4 style="margin-bottom: 5px;">'+
-					'Share with specific users'+
+					'Share with Specific Users'+
 				'</h4>'
 			, form);
 			var currentUsers = domConstruct.toDom(
@@ -1196,7 +1196,7 @@ define([
 						//console.log('adding user to dom', userId, perm)
 						dojo.place(
 							'<tr>'+
-								'<td data-user="'+userId+'">'+userId+
+								'<td data-user="'+userId+'">'+Formatter.baseUsernameI(userId)+
 								'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
 								'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
 							query('tbody', currentUsers)[0]
@@ -1210,14 +1210,14 @@ define([
 				}
 			});
 
-			domConstruct.place(currentUsers, form, "first")
+			domConstruct.place(currentUsers, form)
 			domConstruct.place(userSelector.domNode, form)
 			domConstruct.place(permSelect.domNode, form, "last")
 			domConstruct.place(addUserBtn.domNode, form, "last")
 
 			// open form in dialog
 			var dlg = new Confirmation({
-				title: "Share with others",
+				title: "Edit Sharing",
 				okLabel: "Done",
 				cancelLabel: false,
 				content: form,
@@ -1271,7 +1271,7 @@ define([
 				domConstruct.place(checkBox, form, 'first');
 				domConstruct.place(
 					'<h4 style="margin-bottom: 5px;">'+
-						'Share with everybody'+
+						'Share with Everybody'+
 					'</h4>',
 				form, 'first');
 

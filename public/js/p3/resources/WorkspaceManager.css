@@ -492,6 +492,10 @@ th.dgrid-cell.wsItemType {
 	margin-right: 3px;
 }
 
+.userPermForm{
+	margin: 0 0 20px 0;
+}
+
 .userPermForm .publicCheckBox{
 	padding: 10px;
 	background: #f5f5f5;
