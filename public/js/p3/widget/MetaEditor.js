@@ -101,14 +101,14 @@ define([
 						input = new DateTextBox({
 							value: data[item.text],
 							name: item.text,
-							style: {width: '275px'},
+							style: {width: '275px'}
 						})
 					}else if(item.multiValued){
 						input = new InputList({
 							type: item.type,
 							name: item.text,
 							values:  data[item.text] || [],
-							placeHolder: item.editable ? "Enter " + item.name + "..." : '-',
+							placeHolder: item.editable ? "Enter " + item.name + "..." : '-'
 						})
 					}else if(item.type == 'textarea'){
 						input = new TextArea({
