@@ -13,13 +13,13 @@ define([
 	return declare([FilteringSelect, AutoCompleterMixin], {
 		apiServiceUrl: window.App.accountURL,
 		//promptMessage: 'Select a user...',
-		missingMessage: 'Select a user...',
+		missingMessage: 'Search for a user...',
 		placeHolder: 'Search for a user...',
 		searchAttr: "id",
-		extraSearch: ["name"],
+		extraSearch: ["first_name", "last_name"],
 		queryExpr: "re:%5e${0}",
 		queryFilter: "",
-		resultFields: ["name", "id"],
+		resultFields: ["id", "name"],
 		includePrivate: true,
 		includePublic: true,
 		pageSize: 25,
@@ -36,11 +36,15 @@ define([
 					idProperty: "id",
 					headers: {accept: "application/json", "Authorization": (window.App.authorizationToken || "")}
 				});
-
 			}
 
 			var orig = this.store.query;
 			this.store.query = lang.hitch(this.store, function(query, options){
+				// not sure why this handle is being called multiple times, besides the queryExpr regex
+				var q = query[_self.searchAttr].toString();
+				if(q.indexOf('re:') != -1 && q.length < 8){
+					return;
+				}
 
 				var q = "";
 				if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
@@ -109,7 +113,7 @@ define([
 		},*/
 
 		getSelected: function(){
-			var username = this.attr('value')
+			var username = this.attr('value');
 			return username.length ?  username + '@patricbrc.org' : null;
 		},
 

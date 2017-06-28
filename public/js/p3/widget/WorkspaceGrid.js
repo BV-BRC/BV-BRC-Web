@@ -60,6 +60,7 @@ define([
 			sharedWith: {
 				label: "Members",
 				field: "_item",
+				className: "wsItemMembers",
 				formatter: formatter.usersFormatter
 			},
 			creation_time: {

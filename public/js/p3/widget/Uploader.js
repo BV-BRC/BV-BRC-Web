@@ -208,7 +208,7 @@ define([
 			});
 			this.createUploadTable(true);
 
-			// if activated via drag and drop, initialize with those files
+			// if activated via drag and drop, initialize with those files (not currently used)
 			if(this.dndFiles) {
 				this.fileUploadButton.innerHTML = 'Select more files'
 				this.onFileSelectionChange(null, this.dndFiles);

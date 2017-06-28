@@ -161,18 +161,26 @@ color:#fff;font-weight:600;background:#34698e;
 	white-space: nowrap;
 }
 
-th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreationTime, th.dgrid-cell.wsItemOwnerId {
+th.dgrid-cell.wsItemName,
+th.dgrid-cell.wsItemSize,
+th.dgrid-cell.wsItemCreationTime,
+th.dgrid-cell.wsItemOwnerId,
+th.dgrid-cell.wsItemMembers {
 	border-right: 1px solid #C0C0C0;
 }
 th.dgrid-cell.wsItemType {
 	border-right: 0;
 	padding-left: 0;
 }
-.dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
+.dgrid-cell.wsItemName,
+.dgrid-cell.wsItemSize,
+.dgrid-cell.wsItemCreationTime,
+.dgrid-cell.wsItemOwnerId {
 	padding-left:10px;
 }
 
-.wsItemOwnerId {
+.wsItemOwnerId,
+.wsItemMembers {
 	width: 90px;
 }
 
@@ -180,9 +188,10 @@ th.dgrid-cell.wsItemType {
 	width: 150px;
 }
 
-.wsItemCreationTime {
+.wsItemCreationTime{
 	width: 150px;
 }
+
 .JobStatusButton,
 .UploadStatusButton {
 	position: relative;
@@ -481,6 +490,10 @@ th.dgrid-cell.wsItemType {
 	border-radius: 3px;
 	font-size: .8em;
 	margin-right: 3px;
+}
+
+.userPermForm{
+	margin: 0 0 20px 0;
 }
 
 .userPermForm .publicCheckBox{

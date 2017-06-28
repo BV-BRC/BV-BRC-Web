@@ -255,7 +255,7 @@ define([
 				style: { width: '100px' },
 				options: [
 					{
-						label: "My Workspaces",
+						label: "Workspaces",
 						value: "mine",
 						selected:  _self.path.split('/')[1] != 'public'
 					},{
