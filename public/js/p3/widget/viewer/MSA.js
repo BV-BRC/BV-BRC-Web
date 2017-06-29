@@ -5,7 +5,7 @@ define([
 	"dojo/request", "dojo/_base/lang", "dojo/when",
 	"../ActionBar", "../FilterContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
-	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup",
+	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup", "../PerspectiveToolTip",
 	"dijit/Dialog", "../ItemDetailPanel", "dojo/query", "FileSaver"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
@@ -14,11 +14,12 @@ define([
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
 			MenuItem, TooltipDialog, popup,
-			SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs){
+			SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs){
 
 	var schemes = [{
-		name: "Zappo", id: "zappo"
-	},
+			name: "Zappo", 
+			id: "zappo"
+		},
 		{
 			name: "Taylor",
 			id: "taylor"
@@ -641,7 +642,149 @@ define([
 					dlg.show();
 				},
 				false
-			], [
+			], 
+			[
+				"ViewFeatureItem",
+				"MultiButton fa icon-selection-Feature fa-2x",
+				{
+					label: "FEATURE",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
+							around: button,
+							orient: ["below"]
+						});
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview", target: "blank"});
+				},
+				false
+			],
+			[
+				"ViewFeatureItems",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
+				{
+					label: "FEATURES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					max: 5000,
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "FeatureList",
+								perspectiveUrl: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+									return x.feature_id;
+								}).join(",") + "))"
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {
+						href: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+							return x.feature_id;
+						}).join(",") + "))",
+						target: "blank"
+					});
+				},
+				false
+			], 
+			[
+				"ViewGenomeItem",
+				"MultiButton fa icon-selection-Genome fa-2x",
+				{
+					label: "GENOME",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Genome",
+								perspectiveUrl: "/view/Genome/" + selection[0].genome_id
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id, target: "blank"});
+				},
+				false
+			],
+			[
+				"ViewGenomeItems",
+				"MultiButton fa icon-selection-GenomeList fa-2x",
+				{
+					label: "GENOMES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					max: 1000,
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						var map = {};
+						selection.forEach(function(sel){
+							if(!map[sel.genome_id]){
+								map[sel.genome_id] = true
+							}
+						})
+						var genome_ids = Object.keys(map);
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "GenomeList",
+								perspectiveUrl: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var map = {};
+					selection.forEach(function(sel){
+						if(!map[sel.genome_id]){
+							map[sel.genome_id] = true
+						}
+					})
+					var genome_ids = Object.keys(map);
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))", target: "blank"});
+				},
+				false
+			],
+			[
 				"Snapshot",
 				"fa icon-download fa-2x",
 				{
