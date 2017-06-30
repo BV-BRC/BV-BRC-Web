@@ -81,6 +81,46 @@ define([
 			id: "foo"
 		}];
 
+
+	var filters = [{
+			name: "Hide columns by threshold (>=)", 
+			id: "hide_col_threshold_greater"
+		},
+		{
+			name: "Hide columns by threshold (<=)",
+			id: "hide_col_threshold_less"
+		},
+		{
+			name: "Hide columns by gaps (>=)",
+			id: "hide_col_gaps_greater"
+		},
+		{
+			name: "Hide columns by gaps (<=)",
+			id: "hide_col_gaps_less"
+		},
+		/* to be implemented in the future
+		{
+			name: "Hide seqs by identity (>=)",
+			id: "hide_seq_identity_greater"
+		},
+		{
+			name: "Hide seqs by identity (<=)",
+			id: "hide_seq_identity_less"
+		},
+		{
+			name: "Hide seqs by gaps (>=)",
+			id: "hide_seq_gaps_greater"
+		},
+		{
+			name: "Hide seqs by gaps (<=)",
+			id: "hide_seq_gaps_less"
+		},
+		*/
+		{
+			name: "Reset",
+			id: "reset"
+		}];
+
 	//var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
 	//noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
 	//m.addView("menu", defMenu);
@@ -90,6 +130,11 @@ define([
 
 	schemes.forEach(lang.hitch(this, function(scheme){
 		colorMenuDivs.push('<div class="wsActionTooltip"  rel="' + scheme.id + '">' + scheme.name + '</div>');
+	}));
+
+	var filterMenuDivs = [];
+	filters.forEach(lang.hitch(this, function(filters){
+		filterMenuDivs.push('<div class="wsActionTooltip"  rel="' + filters.id + '">' + filters.name + '</div>');
 	}));
 
 	var colorMenu = new TooltipDialog({
@@ -110,6 +155,13 @@ define([
 		content: "",
 		onMouseLeave: function(){
 			popup.close(idMenu);
+		}
+	});
+
+	var filterMenu = new TooltipDialog({
+		content: filterMenuDivs.join(""),
+		onMouseLeave: function(){
+			popup.close(filterMenu);
 		}
 	});
 
@@ -361,6 +413,7 @@ define([
 
 			// init msa
 			var m = new msa.msa(opts);
+			// console.log("m ", m);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
@@ -401,6 +454,93 @@ define([
 				popup.close(idMenu);
 			}));
 
+			on(filterMenu.domNode, "click", lang.hitch(this, function(evt){
+				var rel = evt.target.attributes.rel.value;
+				var sel = filterMenu.selection;
+				delete filterMenu.selection;
+				const maxLen = m.seqs.getMaxLength();
+				// console.log("maxLen=", maxLen);
+				const conserv = m.g.stats.scale(m.g.stats.conservation());
+				const end = maxLen - 1;
+
+				switch(rel){
+				case "hide_col_threshold_greater":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						if (conserv[i] >= threshold) {
+						  hidden.push(i);
+						}
+					}
+					m.g.columns.set("hidden", hidden);				
+					break;
+					
+				case "hide_col_threshold_less":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						if (conserv[i] <= threshold) {
+						  hidden.push(i);
+						}
+					}
+					m.g.columns.set("hidden", hidden);				
+					break;
+
+				case "hide_col_gaps_greater":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						var gaps = 0;
+						var total = 0;
+						m.seqs.each((el) => {
+						  if (el.get('seq')[i] === "-") { gaps++; }
+						  return total++;
+						});
+						const gapContent = gaps / total;
+						if (gapContent >= threshold) {
+						  hidden.push(i);
+						}
+					}
+					m.g.columns.set("hidden", hidden);				
+					break;
+
+				case "hide_col_gaps_less":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						var gaps = 0;
+						var total = 0;
+						m.seqs.each((el) => {
+						  if (el.get('seq')[i] === "-") { gaps++; }
+						  return total++;
+						});
+						const gapContent = gaps / total;
+						if (gapContent <= threshold) {
+						  hidden.push(i);
+						}
+					}
+					m.g.columns.set("hidden", hidden);				
+					break;
+
+				case "reset":
+					m.g.columns.set("hidden", []);
+					m.seqs.each((el) => {
+						if (el.get('hidden')) {
+							return el.set('hidden', false);
+						}
+					});
+					break;
+
+				default:
+					break;
+				}
+				popup.close(filterMenu);
+			}));
+			
 			on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
 				var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
 				var sel = snapMenu.selection;
@@ -598,6 +738,31 @@ define([
 					popup.open({
 						popup: this.selectionActionBar._actions.IDSelection.options.tooltipDialog,
 						around: this.selectionActionBar._actions.IDSelection.button,
+						orient: ["below"]
+					});
+				},
+				true
+			],
+			[
+				"FilterSelection",
+				"fa icon-filter fa-2x",
+				{
+					label: "Filter",
+					persistent: true,
+					validTypes: ["*"],
+					validContainerTypes: ["*"],
+					tooltip: "Show hide columns",
+					tooltipDialog: filterMenu,
+					ignoreDataType: true
+				},
+				function(selection){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+					filterMenu.selection = selection;
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.FilterSelection.options.tooltipDialog,
+						around: this.selectionActionBar._actions.FilterSelection.button,
 						orient: ["below"]
 					});
 				},
