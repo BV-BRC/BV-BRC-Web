@@ -1180,7 +1180,7 @@ define([
 			// add user's permission button
 			// Note: on click, the user is added server side.
 			var addUserBtn = new Button({
-				label: '<i class="fa icon-plus"></i> Add User',
+				label: '<i class="icon-plus"></i> Add User',
 				//disabled: true,
 				onClick: function(){
 					var userId = userSelector.getSelected();
@@ -1196,7 +1196,7 @@ define([
 						//console.log('adding user to dom', userId, perm)
 						dojo.place(
 							'<tr>'+
-								'<td data-user="'+userId+'">'+Formatter.baseUsernameI(userId)+
+								'<td data-user="'+userId+'">'+Formatter.baseUsername(userId)+
 								'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
 								'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
 							query('tbody', currentUsers)[0]
