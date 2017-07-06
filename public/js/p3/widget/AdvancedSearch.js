@@ -209,10 +209,10 @@ define([
 
 
 		formatsp_gene: function(docs, total){
-			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" ref="/view/FeatureList/?', this.state.search, "#view_tab=features&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, "#view_tab=specialtyGenes&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SpecialtyGeneList/" + doc.feature_id + "'>" + doc.product + "</a>");
 				if (doc.gene) {  out.push(" | " + doc.gene ); }
 				out.push("</div>");
 
