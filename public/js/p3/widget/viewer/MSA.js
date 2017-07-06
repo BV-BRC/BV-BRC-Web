@@ -463,6 +463,9 @@ define([
 				const conserv = m.g.stats.scale(m.g.stats.conservation());
 				const end = maxLen - 1;
 
+				// console.log("msa_models=", msa_models);
+				// console.log("m=", m);
+				
 				switch(rel){
 				case "hide_col_threshold_greater":
 					var threshold = prompt("Enter threshold (in percent)", 20);
@@ -473,7 +476,11 @@ define([
 						  hidden.push(i);
 						}
 					}
-					m.g.columns.set("hidden", hidden);				
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
 					break;
 					
 				case "hide_col_threshold_less":
@@ -485,7 +492,11 @@ define([
 						  hidden.push(i);
 						}
 					}
-					m.g.columns.set("hidden", hidden);				
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
 					break;
 
 				case "hide_col_gaps_greater":
@@ -504,7 +515,11 @@ define([
 						  hidden.push(i);
 						}
 					}
-					m.g.columns.set("hidden", hidden);				
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
 					break;
 
 				case "hide_col_gaps_less":
@@ -523,7 +538,11 @@ define([
 						  hidden.push(i);
 						}
 					}
-					m.g.columns.set("hidden", hidden);				
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
 					break;
 
 				case "reset":
@@ -533,6 +552,10 @@ define([
 							return el.set('hidden', false);
 						}
 					});
+					treeDiv.setAttribute("style", "padding-top:106px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:0px;");
+					m.g.vis.set("seqlogo", true);
 					break;
 
 				default:
