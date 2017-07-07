@@ -92,12 +92,25 @@ define([
 
 			// hide/show new workspace/folder icons
 			if(self.selectionPane){
-				if(this.path.split('/').length < 3){
+				var parts = this.path.split('/');
+
+				// if public
+				if(parts[1] == 'public'){
+					domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
+					domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
+					domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
+
+				// if usual workspace
+				}else if(parts.length < 3){
 					domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
 					domClass.remove(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
+					domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
+
+				// else, is usual folder
 				}else{
 					domClass.remove(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
 					domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
+					domClass.remove(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
 				}
 			}
 
@@ -206,10 +219,13 @@ define([
 
 			}, wrap);
 
-			if(this.path.split('/').length < 3)
-				domClass.toggle(query('[rel="createFolder"]', wrap)[0], 'dijitHidden')
-			else
-				domClass.toggle(query('[rel="createWS"]', wrap)[0], 'dijitHidden')
+			if(this.path.split('/').length <= 3){
+				domClass.add(query('[rel="createFolder"]', wrap)[0], 'dijitHidden');
+				domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden');
+			}else{
+				domClass.add(query('[rel="createWS"]', wrap)[0], 'dijitHidden');
+				domClass.remove(query('[rel="upload"]', wrap)[0], 'dijitHidden');
+			}
 
 			return wrap;
 		},
@@ -268,7 +284,7 @@ define([
 
 			viewSelector.on('change', function(val){
 				if(val == 'mine') {
-					var home = '/'+window.App.user.id+'/home';
+					var home = '/'+window.App.user.id; //+'home';
 					_self.set('path', home);
 				}else if(val == 'public'){
 					_self.set('path', '/public/')
@@ -506,6 +522,9 @@ define([
 							if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
 								return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
 							}else if(item.type == "folder" && item.path.split('/').length <= 3){
+								if(item.global_permission != 'n')
+									return 'publicWorkspace';
+
 								// determine if shared or not
 								return item.permissions.length > 1 ? 'sharedWorkspace' :'workspace';
 							}

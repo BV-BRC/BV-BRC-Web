@@ -786,6 +786,7 @@ define([
 		},
 
 		_currentWorkspaceGetter: function(){
+
 			if(!this.currentWorkspace){
 				this.currentWorkspace = Deferred.when(this.get('userWorkspaces'), lang.hitch(this, function(cws){
 					if(!cws || cws.length < 1){
@@ -795,13 +796,17 @@ define([
 					return cws[0];
 				}))
 			}
-			return this.currentWorkspace;
+			// return this.currentWorkspace;
+
+			// just return user's top level
+			return {path: "/" + this.userId + "/"};
 		},
 		_currentWorkspaceSetter: function(val){
 			this.currentWorkspace = val;
 		},
 
 		_currentPathGetter: function(){
+
 			if(!this.currentPath){
 				this.currentPath = Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function(cws){
 					this.currentPath = cws.path;
