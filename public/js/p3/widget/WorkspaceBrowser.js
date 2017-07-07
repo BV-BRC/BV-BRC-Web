@@ -1490,9 +1490,10 @@ define([
 						return decodeURIComponent(c)
 					});
 					var workspace = parts[0] + "/" + parts[1];
-					// console.log("Publish to ActiveWorkspace:", workspace, val)
-					WorkspaceManager.set("currentPath", val);
-//					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
+
+					// don't set current path in workspace manager for now
+					// WorkspaceManager.set("currentPath", val);
+
 
 					// console.log("Set Browser Heade	 Path: ", this.path);
 					if (this.browserHeader)
