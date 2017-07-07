@@ -297,17 +297,20 @@ define([
 		formatantibiotics: function(docs, total){
 			var q = this.state.search;
 			console.log("format antibiotics q: ", q);
+			// console.log("format antibiotics doc: ", docs);
 			var out=["<div class=\"searchResultsContainer antibioticsResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/AntibioticList/?', q, '">Antibiotic</a>&nbsp;(', total, ")</div>"];
 
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Antibiotic/?eq(antibiotic_name," + doc.antibiotic_name + ")'>" + doc.antibiotic_name + "</a></div>");
-				out.push("<div class='resultInfo'>" + doc.description[0] +  "</div>");
+				if (doc.description){
+					out.push("<div class='resultInfo'>" + doc.description[0] +  "</div>");
+				}
 				out.push("</div>")
 			})
 			out.push("</div>");
 
-			console.log("Taxonomy Format: ", out.join(""));
+			console.log("Antibiotics Format: ", out.join(""));
 			return out.join("");
 		},
 
