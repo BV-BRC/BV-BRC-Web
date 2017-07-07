@@ -5,7 +5,7 @@ define([
 	"dojo/request", "dojo/_base/lang", "dojo/when",
 	"../ActionBar", "../FilterContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
-	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup",
+	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup", "../PerspectiveToolTip",
 	"dijit/Dialog", "../ItemDetailPanel", "dojo/query", "FileSaver"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
@@ -14,11 +14,12 @@ define([
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
 			MenuItem, TooltipDialog, popup,
-			SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs){
+			SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs){
 
 	var schemes = [{
-		name: "Zappo", id: "zappo"
-	},
+			name: "Zappo", 
+			id: "zappo"
+		},
 		{
 			name: "Taylor",
 			id: "taylor"
@@ -80,6 +81,46 @@ define([
 			id: "foo"
 		}];
 
+
+	var filters = [{
+			name: "Hide columns by threshold (>=)", 
+			id: "hide_col_threshold_greater"
+		},
+		{
+			name: "Hide columns by threshold (<=)",
+			id: "hide_col_threshold_less"
+		},
+		{
+			name: "Hide columns by gaps (>=)",
+			id: "hide_col_gaps_greater"
+		},
+		{
+			name: "Hide columns by gaps (<=)",
+			id: "hide_col_gaps_less"
+		},
+		/* to be implemented in the future
+		{
+			name: "Hide seqs by identity (>=)",
+			id: "hide_seq_identity_greater"
+		},
+		{
+			name: "Hide seqs by identity (<=)",
+			id: "hide_seq_identity_less"
+		},
+		{
+			name: "Hide seqs by gaps (>=)",
+			id: "hide_seq_gaps_greater"
+		},
+		{
+			name: "Hide seqs by gaps (<=)",
+			id: "hide_seq_gaps_less"
+		},
+		*/
+		{
+			name: "Reset",
+			id: "reset"
+		}];
+
 	//var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
 	//noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
 	//m.addView("menu", defMenu);
@@ -89,6 +130,11 @@ define([
 
 	schemes.forEach(lang.hitch(this, function(scheme){
 		colorMenuDivs.push('<div class="wsActionTooltip"  rel="' + scheme.id + '">' + scheme.name + '</div>');
+	}));
+
+	var filterMenuDivs = [];
+	filters.forEach(lang.hitch(this, function(filters){
+		filterMenuDivs.push('<div class="wsActionTooltip"  rel="' + filters.id + '">' + filters.name + '</div>');
 	}));
 
 	var colorMenu = new TooltipDialog({
@@ -109,6 +155,13 @@ define([
 		content: "",
 		onMouseLeave: function(){
 			popup.close(idMenu);
+		}
+	});
+
+	var filterMenu = new TooltipDialog({
+		content: filterMenuDivs.join(""),
+		onMouseLeave: function(){
+			popup.close(filterMenu);
 		}
 	});
 
@@ -360,6 +413,7 @@ define([
 
 			// init msa
 			var m = new msa.msa(opts);
+			// console.log("m ", m);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
@@ -400,6 +454,116 @@ define([
 				popup.close(idMenu);
 			}));
 
+			on(filterMenu.domNode, "click", lang.hitch(this, function(evt){
+				var rel = evt.target.attributes.rel.value;
+				var sel = filterMenu.selection;
+				delete filterMenu.selection;
+				const maxLen = m.seqs.getMaxLength();
+				// console.log("maxLen=", maxLen);
+				const conserv = m.g.stats.scale(m.g.stats.conservation());
+				const end = maxLen - 1;
+
+				// console.log("msa_models=", msa_models);
+				// console.log("m=", m);
+				
+				switch(rel){
+				case "hide_col_threshold_greater":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						if (conserv[i] >= threshold) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+					
+				case "hide_col_threshold_less":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						if (conserv[i] <= threshold) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
+				case "hide_col_gaps_greater":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						var gaps = 0;
+						var total = 0;
+						m.seqs.each((el) => {
+						  if (el.get('seq')[i] === "-") { gaps++; }
+						  return total++;
+						});
+						const gapContent = gaps / total;
+						if (gapContent >= threshold) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
+				case "hide_col_gaps_less":
+					var threshold = prompt("Enter threshold (in percent)", 20);
+					threshold = threshold / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						var gaps = 0;
+						var total = 0;
+						m.seqs.each((el) => {
+						  if (el.get('seq')[i] === "-") { gaps++; }
+						  return total++;
+						});
+						const gapContent = gaps / total;
+						if (gapContent <= threshold) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
+				case "reset":
+					m.g.columns.set("hidden", []);
+					m.seqs.each((el) => {
+						if (el.get('hidden')) {
+							return el.set('hidden', false);
+						}
+					});
+					treeDiv.setAttribute("style", "padding-top:106px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:0px;");
+					m.g.vis.set("seqlogo", true);
+					break;
+
+				default:
+					break;
+				}
+				popup.close(filterMenu);
+			}));
+			
 			on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
 				var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
 				var sel = snapMenu.selection;
@@ -603,6 +767,31 @@ define([
 				true
 			],
 			[
+				"FilterSelection",
+				"fa icon-filter fa-2x",
+				{
+					label: "Filter",
+					persistent: true,
+					validTypes: ["*"],
+					validContainerTypes: ["*"],
+					tooltip: "Show hide columns",
+					tooltipDialog: filterMenu,
+					ignoreDataType: true
+				},
+				function(selection){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+					filterMenu.selection = selection;
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.FilterSelection.options.tooltipDialog,
+						around: this.selectionActionBar._actions.FilterSelection.button,
+						orient: ["below"]
+					});
+				},
+				true
+			],
+			[
 				"AddGroup",
 				"fa icon-object-group fa-2x",
 				{
@@ -641,7 +830,149 @@ define([
 					dlg.show();
 				},
 				false
-			], [
+			], 
+			[
+				"ViewFeatureItem",
+				"MultiButton fa icon-selection-Feature fa-2x",
+				{
+					label: "FEATURE",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Feature",
+								perspectiveUrl: "/view/Feature/" + selection[0].feature_id
+							}),
+							around: button,
+							orient: ["below"]
+						});
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview", target: "blank"});
+				},
+				false
+			],
+			[
+				"ViewFeatureItems",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
+				{
+					label: "FEATURES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					max: 5000,
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "FeatureList",
+								perspectiveUrl: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+									return x.feature_id;
+								}).join(",") + "))"
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {
+						href: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+							return x.feature_id;
+						}).join(",") + "))",
+						target: "blank"
+					});
+				},
+				false
+			], 
+			[
+				"ViewGenomeItem",
+				"MultiButton fa icon-selection-Genome fa-2x",
+				{
+					label: "GENOME",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "Genome",
+								perspectiveUrl: "/view/Genome/" + selection[0].genome_id
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id, target: "blank"});
+				},
+				false
+			],
+			[
+				"ViewGenomeItems",
+				"MultiButton fa icon-selection-GenomeList fa-2x",
+				{
+					label: "GENOMES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					max: 1000,
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["*"],
+					pressAndHold: function(selection, button, opts, evt){
+						var map = {};
+						selection.forEach(function(sel){
+							if(!map[sel.genome_id]){
+								map[sel.genome_id] = true
+							}
+						})
+						var genome_ids = Object.keys(map);
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "GenomeList",
+								perspectiveUrl: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var map = {};
+					selection.forEach(function(sel){
+						if(!map[sel.genome_id]){
+							map[sel.genome_id] = true
+						}
+					})
+					var genome_ids = Object.keys(map);
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))", target: "blank"});
+				},
+				false
+			],
+			[
 				"Snapshot",
 				"fa icon-download fa-2x",
 				{
