@@ -21,7 +21,7 @@ define([
 		defaultPath: "",
 		startingRows: 13,
 		libCreated: 0,
-		srrValidationUrl: "http://www.ebi.ac.uk/ena/data/view/{0}&display=xml",
+		srrValidationUrl: "https://www.ebi.ac.uk/ena/data/view/{0}&display=xml",
 
 		constructor: function(){
 
@@ -118,6 +118,7 @@ define([
 
 			this._started = true;
 		},
+
 		getValues: function(){
 			if(typeof String.prototype.startsWith != 'function'){
 				String.prototype.startsWith = function(str){
@@ -343,16 +344,18 @@ define([
 
 		onAddSRR: function(){
 			var accession = this.srr_accession.get('value');
-			console.log("updateSRR", accession, accession.substr(0, 3))
+			// console.log("updateSRR", accession, accession.substr(0, 3))
 			if(accession.substr(0, 3) !== 'SRR'){
 				return false;
 			}
 
 			// TODO: validate and populate title
 			// SRR5121082
+			this.srr_accession.set('disabled', true);
 			xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
 			.then(lang.hitch(this, function(xml_resp){
 				resp = xmlParser.parse(xml_resp).documentElement;
+				this.srr_accession.set('disabled', false);
 				try {
 					title = resp.children[0].childNodes[3].innerHTML;
 
