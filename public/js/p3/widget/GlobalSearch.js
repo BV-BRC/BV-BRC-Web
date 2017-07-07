@@ -126,7 +126,7 @@ define([
 			var q = processQuery(query, searchOption);
 
 			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
-			this.searchInput.set("value", '');
+			// this.searchInput.set("value", '');
 		},
 		onInputChange: function(val){
 
