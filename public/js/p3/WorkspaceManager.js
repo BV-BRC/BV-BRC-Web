@@ -479,7 +479,7 @@ define([
 			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
 			return Deferred.when(this.getObjects(newPath, true),
 				function(response){
-					throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+					throw Error("The name <i>" + newName + "</i> already exists!  Please pick a unique name.")
 				}, function(err){
 
 					return Deferred.when(self.api("Workspace.copy", [{
@@ -503,7 +503,7 @@ define([
 			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
 
 			if (path == newPath) {
-				throw Error("The name " + newName + " already exists!  Please pick a unique name.")
+				throw Error("The name <i>" + newName + "</i> already exists!  Please pick a unique name.");
 			}
 
 			return Deferred.when(this.api("Workspace.create", [{objects: [[newPath, "Directory"]] }]), function(response){
@@ -517,7 +517,7 @@ define([
 						Topic.publish("/Notification", {message: "File renamed", type: "message"});
 						return res;
 					}))
-			 })
+			})
 		},
 
 		getObjects: function(paths, metadataOnly){
