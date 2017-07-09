@@ -769,7 +769,8 @@ define([
 			];
 
 			var unacceptedPaths = paths.filter(function(p){
-				if(p.split('/')[2] == 'home' && unacceptedFolders.indexOf(p.split('/')[3]) != -1) return true;
+				var parts = p.split('/');
+				if(parts.length == 4 && parts[2] == 'home' && unacceptedFolders.indexOf(parts[3]) != -1) return true;
 			});
 
 			if(unacceptedPaths.length) {
