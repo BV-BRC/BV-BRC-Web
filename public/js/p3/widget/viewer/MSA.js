@@ -413,7 +413,7 @@ define([
 
 			// init msa
 			var m = new msa.msa(opts);
-			// console.log("m ", m);
+		 	console.log("m ", m);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
@@ -573,6 +573,9 @@ define([
 				}
 				else if(rel == "msa-txt"){
 					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
+				}
+				else if(rel == "msa-fasta"){
+					msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
 				}
 				else if(rel == "tree-svg"){
 					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_msa_tree.svg");
@@ -1017,6 +1020,7 @@ define([
 						alt: "tree_newick.txt"
 					});*/
 					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">' + "MSA txt" + '</div>');
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-fasta">' + "MSA fasta" + '</div>');
 					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + "Tree svg" + '</div>');
 					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + "Tree newick" + '</div>');
 
