@@ -873,7 +873,7 @@ define([
 			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
 				label: "RENAME",
 				validTypes: ["*"],
-				tooltip: "Rename folders or objects"
+				tooltip: "Rename the selected item"
 			}, function(selection){
 				var path = selection[0].path;
 
@@ -931,7 +931,7 @@ define([
 					if(fileCount && destPath.split('/').length == 2){
 						new Dialog({
 							content: "Sorry, you cannot copy objects to the top level, <i>"+destPath+"</i>",
-							title: "Oh no!",
+							title: "Sorry!",
 							style: "width: 250px;"
 						}).show();
 						return;
@@ -1001,7 +1001,7 @@ define([
 					if(fileCount && destPath.split('/').length == 2){
 						new Dialog({
 							content: "Sorry, you cannot move objects to the top level, <i>"+destPath+"</i>",
-							title: "Oh no!",
+							title: "Sorry!",
 							style: "width: 250px;"
 						}).show();
 						return;
@@ -1056,7 +1056,7 @@ define([
 			var nameInput = new TextBox({
 				name: "name",
 				value: currentName,
-				style: { width: '500px'},
+				style: { width: '400px'},
 				placeHolder: "Enter your new name..."
 			});
 
@@ -1065,39 +1065,43 @@ define([
 				content: nameInput.domNode,
 				okLabel: 'Rename',
 				closeOnOK: false,
-				style: { width: '600px' },
+				style: { width: '500px' },
 				onConfirm: function(evt){
 					var _self = this;
 
-					if (path.slice(path.lastIndexOf('/')+1) == nameInput.get('value')){
-						new Dialog({
-							content: "Please pick a new name.",
-							title: "Oh no!",
-							style: "width: 250px !important;"
-						}).show();
-					}
+					try{
+						var prom;
+						var newName = nameInput.get('value');
+						if(path.split('/').length <= 3) {
+							prom =  WorkspaceManager.renameWorkspace(path, newName)
+						}else{
+							prom = WorkspaceManager.rename(path, nameInput.get('value'))
+						}
 
-					var prom = WorkspaceManager.rename(path, nameInput.get('value'))
-					Deferred.when(prom, function(res){
-						Topic.publish("/refreshWorkspace", {});
-						Topic.publish("/Notification", {message: "File renamed", type: "message"});
+						Deferred.when(prom, function(res){
+							Topic.publish("/refreshWorkspace", {});
+							Topic.publish("/Notification", {message: "File renamed", type: "message"});
 
-						self.actionPanel.set("selection", []);
-						self.itemDetailPanel.set('selection', []);
-						_self.hideAndDestroy();
-					}, function(error){
+							self.actionPanel.set("selection", []);
+							self.itemDetailPanel.set('selection', []);
+							_self.hideAndDestroy();
+						}, function(error){
+							new Dialog({
+								content:  "The name <i>" + newName + "</i> already exists!  Please pick a unique name.",
+								title: "Sorry!",
+								style: "width: 400px;"
+							}).show();
+						})
+					}catch(error){
 						new Dialog({
 							content: error.toString(),
-							title: "Oh no!",
-							style: "width: 250px !important;"
+							title: "Sorry!",
+							style: "width: 400px !important;"
 						}).show();
-					})
+					}
 				}
 			})
 
-			//dlg.okButton.on('click', function(){
-				//console.log('there was a click!')
-			//})
 			dlg.startup()
 			dlg.show();
 		},

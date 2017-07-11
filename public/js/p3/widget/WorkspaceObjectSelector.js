@@ -98,19 +98,25 @@ define([
 				if(parts[1] == 'public'){
 					domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
 					domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
-					domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
+
+					if(this.allowUpload)
+						domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
 
 				// if usual workspace
 				}else if(parts.length < 3){
 					domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
 					domClass.remove(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
-					domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
+
+					if(this.allowUpload)
+						domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
 
 				// else, is usual folder
 				}else{
 					domClass.remove(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
 					domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
-					domClass.remove(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
+
+					if(this.allowUpload)
+						domClass.remove(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden');
 				}
 			}
 
@@ -221,10 +227,12 @@ define([
 
 			if(this.path.split('/').length <= 3){
 				domClass.add(query('[rel="createFolder"]', wrap)[0], 'dijitHidden');
-				domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden');
+				if(this.allowUpload)
+					domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden');
 			}else{
 				domClass.add(query('[rel="createWS"]', wrap)[0], 'dijitHidden');
-				domClass.remove(query('[rel="upload"]', wrap)[0], 'dijitHidden');
+				if(this.allowUpload)
+					domClass.remove(query('[rel="upload"]', wrap)[0], 'dijitHidden');
 			}
 
 			return wrap;
