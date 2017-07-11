@@ -211,10 +211,10 @@ define("p3/widget/AdvancedSearch", [
 
 
 		formatsp_gene: function(docs, total){
-			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" ref="/view/FeatureList/?', this.state.search, "#view_tab=features&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, "#view_tab=specialtyGenes&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SpecialtyGeneList/" + doc.feature_id + "'>" + doc.product + "</a>");
 				if (doc.gene) {  out.push(" | " + doc.gene ); }
 				out.push("</div>");
 
@@ -299,17 +299,20 @@ define("p3/widget/AdvancedSearch", [
 		formatantibiotics: function(docs, total){
 			var q = this.state.search;
 			console.log("format antibiotics q: ", q);
+			// console.log("format antibiotics doc: ", docs);
 			var out=["<div class=\"searchResultsContainer antibioticsResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/AntibioticList/?', q, '">Antibiotic</a>&nbsp;(', total, ")</div>"];
 
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Antibiotic/?eq(antibiotic_name," + doc.antibiotic_name + ")'>" + doc.antibiotic_name + "</a></div>");
-				out.push("<div class='resultInfo'>" + doc.description[0] +  "</div>");
+				if (doc.description){
+					out.push("<div class='resultInfo'>" + doc.description[0] +  "</div>");
+				}
 				out.push("</div>")
 			})
 			out.push("</div>");
 
-			console.log("Taxonomy Format: ", out.join(""));
+			console.log("Antibiotics Format: ", out.join(""));
 			return out.join("");
 		},
 
