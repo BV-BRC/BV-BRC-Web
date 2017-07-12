@@ -230,22 +230,25 @@ define([
 				}
 				console.log("W Params: ", params, "W type: ", type);;
 				var w = _self.loadPanel(type, params);
-				Deferred.when(w, function(w){
-					if(!_self.dialog){
-						_self.nmDialog = new NMDialog({parseOnLoad: false, title: w.title});
-					}else{
-						_self.nmDialog.set('title', w.title);
-					}
-					_self.nmDialog.set('content', '');
-					domConstruct.place(w.domNode, _self.nmDialog.containerNode);
-					w.on("ContentReady", function(){
-						_self.nmDialog.resize();
-						_self.nmDialog._position();
-					})
-					w.startup();
-					_self.nmDialog.show();
-				});
 
+				if (_self.nmDialog && _self.nmDialog.open == true) {
+					// console.log("in destroy", _self.nmDialog);
+					_self.nmDialog.open = false;
+					_self.nmDialog.destroy();
+				} else {
+					Deferred.when(w, function(w){
+						// console.log("create new NMDialog");
+						_self.nmDialog = new NMDialog({parseOnLoad: false, title: w.title});
+						_self.nmDialog.set('content', '');
+						domConstruct.place(w.domNode, _self.nmDialog.containerNode);
+						w.on("ContentReady", function(){
+							_self.nmDialog.resize();
+							_self.nmDialog._position();
+						})
+						w.startup();
+						_self.nmDialog.show();
+					});
+				}
 				// console.log("Open Dialog", type);
 			});
 
