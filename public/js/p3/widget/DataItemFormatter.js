@@ -658,7 +658,8 @@ define([
 				mini: true
 			}, {
 				name: 'Genome ID',
-				text: 'genome_id'
+				text: 'genome_id',
+				link: "/view/Genome/"
 			}, {
 				name: 'Accession',
 				text: 'accession'
