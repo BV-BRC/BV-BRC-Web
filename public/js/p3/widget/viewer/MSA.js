@@ -835,6 +835,30 @@ define([
 				false
 			], 
 			[
+				"MultipleSeqAlignmentFeatures",
+				"fa icon-alignment fa-2x",
+				{
+					label: "MSA",
+					ignoreDataType: true,
+					min: 2,
+					multiple: true,
+					max: 200,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["*"]
+				},
+				function(selection){
+					// console.log("MSA Selection: ", selection);
+					var ids = selection.map(function(d){
+						return d['feature_id'];
+					});
+					// console.log("OPEN MSA VIEWER");
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
+
+				},
+				false
+			],
+			[
 				"ViewFeatureItem",
 				"MultiButton fa icon-selection-Feature fa-2x",
 				{
