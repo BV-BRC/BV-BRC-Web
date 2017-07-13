@@ -1122,7 +1122,7 @@ define([
 			return div;
 		},
 		"genome_meta_table_names": function(){
-			return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
+			return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
 		},
 
 		"genome_meta_spec": function(){
@@ -1417,7 +1417,7 @@ define([
 						isList: true
 					}],
 
-				'Others': [{
+				'Other': [{
 						name: 'Comments',
 						text: 'comments',
 						editable: true,
