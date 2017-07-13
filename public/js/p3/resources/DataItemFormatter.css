@@ -46,6 +46,12 @@
     word-break: break-all;
 }
 
+.DataItemSectionNotFound {
+    font-style: italic;
+    color: #888;
+    padding: 0 4px 0 10px;
+}
+
 .ExperimentComparison .DataItemProperty {
     width: 210px;
 }

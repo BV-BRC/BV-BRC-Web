@@ -1468,13 +1468,26 @@ define([
 				domConstruct.place(header, tbody);
 			}
 
+			var rowCount = 0;
 			meta_data[section].forEach(function(column){
 				var row = renderProperty(column, item, options);
 				if(row){
 					domConstruct.place(row, tbody);
+					rowCount++;
 				}
 			})
+
+			// if no data found, say so
+			if(!rowCount && !mini)
+				renderNoInfoFound(section, tbody)
 		})
+	}
+
+	function renderNoInfoFound(sectionName, parent){
+		domConstruct.create("span", {
+			'innerHTML': 'None available',
+			'class': 'DataItemSectionNotFound'
+		}, parent);
 	}
 
 	function displayDetail(item, columns, parent, options){
@@ -1488,7 +1501,6 @@ define([
 			}
 		})
 	}
-
 
 	function renderProperty(column, item, options){
 		var key = column.text;
