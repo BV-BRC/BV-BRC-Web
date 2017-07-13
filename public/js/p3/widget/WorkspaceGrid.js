@@ -143,9 +143,12 @@ define([
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				// console.log("ItemDblClick (row): ", row.data.path);
+				// console.log("ItemDblClick (row): ", row.data.path, _self.path);
+
+				var path = _self.path.split('/')[1] == 'public' ? '/public'+row.data.path : row.data.path;
+
 				on.emit(_self.domNode, "ItemDblClick", {
-					item_path: row.data.path,
+					item_path: path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
@@ -164,8 +167,10 @@ define([
 				evt.preventDefault();
 				evt.stopPropagation();
 				// console.log("ItemDblClick (icon): ", row.data.path);
+				var path = _self.path.split('/')[1] == 'public' ? '/public'+row.data.path : row.data.path;
+
 				on.emit(_self.domNode, "ItemDblClick", {
-					item_path: row.data.path,
+					item_path: path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
@@ -176,7 +181,6 @@ define([
 			//Topic.publish("/select", []);
 
 			this.on("dgrid-select", function(evt){
-
 				setTimeout(function(){
 					var newEvt = {
 						rows: evt.rows,

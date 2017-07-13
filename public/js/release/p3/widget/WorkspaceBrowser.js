@@ -99,7 +99,7 @@ define("p3/widget/WorkspaceBrowser", [
 					q = "or(" + q.join(",") + ")";
 					Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
 				}
-			});
+			}, false);
 
 			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
@@ -132,7 +132,7 @@ define("p3/widget/WorkspaceBrowser", [
 					q = "or(" + q.join(",") + ")";
 					Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
 				}
-			});
+			}, false);
 
 			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-selection-Genome fa-2x", {
 				label: "GENOME",
@@ -152,7 +152,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 				var sel = selection[0];
 				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("ViewFeatureGroup", "MultiButton fa icon-selection-FeatureList fa-2x", {
 				label: "VIEW",
@@ -238,7 +238,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 				var sel = selection[0];
 				Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-selection-Genome fa-2x", {
 				label: "GENOME",
@@ -259,7 +259,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 				var sel = selection[0];
 				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
 				label: "DWNLD",
@@ -269,7 +269,7 @@ define("p3/widget/WorkspaceBrowser", [
 			}, function(selection){
 				// console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
-			}, true);
+			}, false);
 
 			var dfc = '<div>Download Table As...</div>'+
 					  '<div class="wsActionTooltip" rel="text/tsv">Text</div>'+
@@ -288,7 +288,7 @@ define("p3/widget/WorkspaceBrowser", [
 				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+				window.open(window.App.dataServiceURL + "/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
 
@@ -306,7 +306,7 @@ define("p3/widget/WorkspaceBrowser", [
 					orient: ["below"]
 				});
 
-			}, true);
+			}, false);
 
 			var downloadTTSelect = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
@@ -324,7 +324,7 @@ define("p3/widget/WorkspaceBrowser", [
 				var dataType = type === "genome_group" ? "genome" : "genome_feature";
 				var currentQuery = self.getQuery(selection[0]);
 
-				var urlStr = "/api/" + dataType + "/" + currentQuery + "&http_authorization=" +
+				var urlStr = window.App.dataServiceURL + "/" + dataType + "/" + currentQuery + "&http_authorization=" +
 					encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true";
 
 				// cursorMark requires a sort on an unique key
@@ -350,7 +350,7 @@ define("p3/widget/WorkspaceBrowser", [
 					});
 				}
 
-			}, true);
+			}, false);
 
 			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
 			var downloadTTSelectFile = new TooltipDialog({
@@ -376,7 +376,7 @@ define("p3/widget/WorkspaceBrowser", [
 						orient: ["below"]
 					});
 				}
-			}), true);
+			}), false);
 
 			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader, function(evt){
 				var rel = evt.target.attributes.rel.value;
@@ -405,7 +405,7 @@ define("p3/widget/WorkspaceBrowser", [
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid});
 
-			}, true);
+			}, false);
 
 			this.browserHeader.addAction("ViewModel", "fa icon-eye fa-2x", {
 				label: "VIEW",
@@ -416,7 +416,7 @@ define("p3/widget/WorkspaceBrowser", [
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				window.open(url, "_blank");
-			}, true);
+			}, false);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeCDS", "fa icon-genome-features-cds fa-2x", {
 				label: "CDS",
@@ -427,7 +427,7 @@ define("p3/widget/WorkspaceBrowser", [
 				// console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))"});
-			}, true);
+			}, false);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
@@ -439,7 +439,7 @@ define("p3/widget/WorkspaceBrowser", [
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				Topic.publish("/navigate", {href: "/view/Genome/" + gid + "#view_tab=browser"});
 
-			}, true);
+			}, false);
 
 			this.browserHeader.addAction("Upload", "fa icon-upload fa-2x", {
 				label: "UPLOAD",
@@ -499,7 +499,7 @@ define("p3/widget/WorkspaceBrowser", [
 				});
 				// console.log("popup viewFASTA", selection);
 
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("MultipleSeqAlignment", "fa icon-alignment fa-2x", {
 				label: "MSA",
@@ -524,7 +524,7 @@ define("p3/widget/WorkspaceBrowser", [
 					Topic.publish("/navigate", {href: "/portal/portal/patric/MSA?cType=&cId=&pk=" + results});
 				});
 
-			}, true);
+			}, false);
 
 			var idMappingTTDialog = new TooltipDialog({
 				content: IDMappingTemplate, onMouseLeave: function(){
@@ -574,7 +574,7 @@ define("p3/widget/WorkspaceBrowser", [
 					orient: ["below"]
 				});
 				// console.log("popup idmapping", selection);
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("Pathway Summary", "fa icon-git-pull-request fa-2x", {
 				label: "PATHWAY",
@@ -599,7 +599,7 @@ define("p3/widget/WorkspaceBrowser", [
 					Topic.publish("/navigate", {href: "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results});
 				});
 
-			}, true);
+			}, false);
 /* */
 			this.actionPanel.addAction("ExperimentGeneList", "fa icon-list-unordered fa-2x", {
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
@@ -610,7 +610,7 @@ define("p3/widget/WorkspaceBrowser", [
 						return s.path;
 					});
 				Topic.publish("/navigate", {href: url});
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("ExperimentGeneList3", "fa icon-list-unordered fa-2x", {
 				label: "GENES",
@@ -626,7 +626,7 @@ define("p3/widget/WorkspaceBrowser", [
 						return s.pid;
 					});
 				Topic.publish("/navigate", {href: url});
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("ExperimentGeneList2", "fa icon-list-unordered fa-2x", {
 				label: "GENES",
@@ -656,7 +656,7 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 
 				Topic.publish("/navigate", {href: url});
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("RemoveItem", "fa icon-x fa-2x", {
 				label: "REMOVE",
@@ -696,7 +696,7 @@ define("p3/widget/WorkspaceBrowser", [
 				dlg.startup();
 				dlg.show();
 
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {
 				label: "SPLIT",
@@ -723,7 +723,7 @@ define("p3/widget/WorkspaceBrowser", [
 				stg.startup();
 				dlg.startup();
 				dlg.show();
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("GroupExplore", "fa icon-venn_circles fa-2x", {
 					label: "VennDiag",
@@ -780,7 +780,7 @@ define("p3/widget/WorkspaceBrowser", [
 				});
 				dlg.startup();
 				dlg.show();
-			}, true);
+			}, false);
 
 			this.actionPanel.addAction("DeleteFolder", "fa icon-trash fa-2x", {
 				label: "DELETE",
@@ -806,7 +806,7 @@ define("p3/widget/WorkspaceBrowser", [
 				dlg.startup()
 				dlg.show();
 
-			}, true);
+			}, false);
 
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
@@ -833,12 +833,15 @@ define("p3/widget/WorkspaceBrowser", [
 			});
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
-			// console.log("Workspace: ", workspace, parts[1], val)
-			// if (!window.App.user || !window.App.user.id){
-			// 	Topic.publish("/login");
-			// 	return;
-			// }
-			if(!parts[1]){
+
+			if(parts[0] == 'public') {
+				if (parts.length == 1){
+					obj = {metadata: {type: "folder"}, type: "folder", path: "/"}
+				}else{
+					var val = '/' + val.split('/').slice(2).join('/');
+					obj = WorkspaceManager.getObject(val, true)
+				}
+			}else if(!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
 				obj = WorkspaceManager.getObject(val, true)
@@ -846,13 +849,10 @@ define("p3/widget/WorkspaceBrowser", [
 			Deferred.when(obj, lang.hitch(this, function(obj){
 
 				if(this.browserHeader){
-					// console.log("Set BrowserHeader selection: ", [obj]);
 					this.browserHeader.set("selection", [obj]);
-
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
-				// console.log("Browse to Type: ", obj.type, obj);
 				switch(obj.type){
 					case "folder":
 						panelCtor = WorkspaceExplorerView;
@@ -904,7 +904,6 @@ define("p3/widget/WorkspaceBrowser", [
 					// console.log("FileViewer Ctor params: ", params);
 				}
 
-				// console.log("params.query: ", params.query);
 				Deferred.when(panelCtor, lang.hitch(this, function(Panel){
 					// console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
 					if(!this.activePanel || !(this.activePanel instanceof Panel)){
@@ -914,8 +913,11 @@ define("p3/widget/WorkspaceBrowser", [
 						// console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
-						this.actionPanel.set("currentContainerWidget", newPanel);
-						this.itemDetailPanel.set("containerWidget", newPanel);
+
+						if (this.actionPanel) {
+							this.actionPanel.set("currentContainerWidget", newPanel);
+							this.itemDetailPanel.set("containerWidget", newPanel);
+						}
 
 						if(newPanel.on){
 							newPanel.on("select", lang.hitch(this, function(evt){
@@ -970,7 +972,7 @@ define("p3/widget/WorkspaceBrowser", [
 						this.activePanel = newPanel;
 					}else{
 						this.activePanel.set('path', this.path);
-						if(this.activePanel.clearSelection){
+						if(this.activePaneal && 'clearSelection' in this.activePaneal){
 							this.activePanel.clearSelection();
 						}
 					}
@@ -985,8 +987,9 @@ define("p3/widget/WorkspaceBrowser", [
 					WorkspaceManager.set("currentPath", val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
-					// console.log("Set Browser Header Path: ", this.path);
-					this.browserHeader.set("path", this.path)
+					// console.log("Set Browser Heade	 Path: ", this.path);
+					if (this.browserHeader)
+						this.browserHeader.set("path", this.path);
 				}));
 
 			}), lang.hitch(this, function(err){

@@ -26,6 +26,9 @@ define([
 				name: domName
 			};
 			var target = document.getElementById("flashTarget");
+			// add alternative text for instruction on enable flash player
+			target.setAttribute("class", "msg-box-below-topnav");
+			target.innerHTML = "If you don't see heatmap image, you need to enable Adobe flash player. <a href='https://helpx.adobe.com/search.html#q=enable%20flash%20player%20for&t=All&sort=relevancy&f:@CommonProduct=[Flash%20Player]' target='_blank'>Click here for instructions.</a>"
 			// binding flash functions
 			window.flashReady = lang.hitch(this, "flashReady");
 			window.flashRequestsData = lang.hitch(this, "flashRequestsData");

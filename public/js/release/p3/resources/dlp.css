@@ -362,7 +362,7 @@
   margin: 0 0 37px 0;
 }
 #dlp-genomes-chart .top-5 {
-  shape-rendering: crispEdges; 
+  shape-rendering: crispEdges;
 }
 #dlp-genomes-chart .top-5 .chart {
   height: 232px;
@@ -410,6 +410,16 @@
   width: 173px;
   height: 278px;
   margin: 0 5px;
+  background:#d8e0e5;
+  border: #c0cbcf 1px solid;
+  padding: 20px;
+}
+#dlp-features-data .data-box-lg  {
+  display: inline-flex;
+  flex-direction: column;
+  width: 400px;
+  height: 320px !important;
+  margin: 0 5px 5px 0;
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
   padding: 20px;
@@ -497,7 +507,7 @@
   cursor: text;
 }
 #dlp-proteinfamilies-dist-genera nav li {
-  margin-right: 1em; 
+  margin-right: 1em;
 }
 #dlp-proteinfamily-dist .genome-list {
   height: 405px;

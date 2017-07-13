@@ -37,6 +37,19 @@ a.HelpLink:active {
 	padding:2px;
 	color: #134d75;
 }
+.wsBreadCrumb > .icon-globe {
+	position: relative;
+	font-size:1.4em;
+	top: 3px;
+	color: #333;
+}
+.wsBreadCrumb > .icon-caret-right {
+	position: relative;
+	top: 2px;
+}
+.wsBreadCrumb .perspective {
+	color: #333;
+}
 .wsActionTooltip {
 	padding: 2px;
 }

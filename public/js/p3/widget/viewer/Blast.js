@@ -125,7 +125,9 @@ define([
 					length: {label: 'ALN Length', field: "length"},
 					identity: {label: 'Identity (%)', field: "pident"},
 					q_coverage: {label: 'Query cover (%)', field: "query_coverage"},
-					s_coverage: {label: 'Subject cover (%', field: "subject_coverage"},
+					s_coverage: {label: 'Subject cover (%)', field: "subject_coverage"},
+					hit_from: {label: 'Hit from', field: "hit_from", hidden: true},
+					hit_to: {label: 'Hit to', field: "hit_to", hidden: true},
 					score: {label: 'Score', field: 'bitscore'},
 					evalue: {label: 'E value', field: 'evalue'}
 				}
@@ -153,6 +155,8 @@ define([
 					identity: {label: 'Identity (%)', field: "pident"},
 					q_coverage: {label: 'Query cover (%)', field: "query_coverage"},
 					s_coverage: {label: 'Subject cover (%', field: "subject_coverage"},
+					hit_from: {label: 'Hit from', field: "hit_from", hidden: true},
+					hit_to: {label: 'Hit to', field: "hit_to", hidden: true},
 					length: {label: 'Length', field: "length"},
 					score: {label: 'Score', field: 'bitscore'},
 					evalue: {label: 'E value', field: 'evalue'}

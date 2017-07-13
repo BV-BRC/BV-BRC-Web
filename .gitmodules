@@ -26,8 +26,8 @@
 [submodule "public/js/util"]
 	path = public/js/util
 	url = https://github.com/dojo/util.git
-[submodule "node_modules/msa"]
-	path = node_modules/msa
+[submodule "public/js/msa"]
+	path = public/js/msa
 	url = https://github.com/aswarren/msa.git
 [submodule "public/js/jbrowse"]
 	path = public/js/jbrowse.repo

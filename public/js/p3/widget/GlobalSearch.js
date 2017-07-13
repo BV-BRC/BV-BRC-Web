@@ -10,6 +10,40 @@ define([
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
 			searchToQuery, searchToQueryWithOr, searchToQueryWithQuoteOr, searchToQueryWithQuoteAnd
 ){
+
+	function processQuery(query, searchOption){
+		//console.log("processQuery query: ", query, "searchOption: ", searchOption);	
+		query = query.replace(/'/g, "").replace(/:/g, " ");
+					
+		var keywords = query.split(/\s/);
+		// console.log("keywords", keywords);
+		
+		// Add quotes for IDs: handle fig id (e.g. fig|83332.12.peg.1),  genome id (e.g. 83332.12), EC number (e.g. 2.1.1.1), other ids with number.number, number only, IDs ending with numbers (at least 1 digit). 		
+		for (var i=0; i<keywords.length; i++){
+			if (keywords[i].charAt(0) != '"' && keywords[i].charAt(keywords[i].length-1) != '"'){ // if not already quoted
+				// if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/^[0-9]+$/) != null || keywords[i].match(/[0-9]+$/) != null){
+				if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/[0-9]+$/) != null){
+					keywords[i] = '"' + keywords[i] + '"';
+				}
+			}				
+		}
+		query = keywords.join(" ");
+
+		var q = searchToQuery(query);
+
+		if (searchOption == "option_or") {
+			q = searchToQueryWithOr(query);
+		}
+		else if (searchOption == "option_or2") {
+			q = searchToQueryWithQuoteOr(query);
+		}
+		else if (searchOption == "option_and2") {
+			q = searchToQueryWithQuoteAnd(query);
+		}
+		
+		return q;
+	}
+	
 	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
 		"baseClass": "GlobalSearch",
@@ -30,34 +64,13 @@ define([
 				}
 
 				console.log("Search Filter: ", searchFilter, "searchOption=", searchOption);
-				query = query.replace(/'/g,"").replace(/:/g, " ");
-				
-				var q = searchToQuery(query);
-				
-				if (searchOption == "option_or") {
-					q = searchToQueryWithOr(query);
-				}
-				else if (searchOption == "option_or2") {
-					q = searchToQueryWithQuoteOr(query);
-				}
-				else if (searchOption == "option_and2") {
-					q = searchToQueryWithQuoteAnd(query);
-				}
-
+				var q = processQuery(query, searchOption);
 				console.log("Search query q=: ", q);
-							
+
 				var clear = false;
 				switch(searchFilter){
-					case "amr":
-						Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
-						clear = true;
-						break;
 					case "everything":
 						Topic.publish("/navigate", {href: "/search/?" + q});
-						clear = true;
-						break;
-					case "pathways":
-						Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
 						clear = true;
 						break;
 					case "sp_genes":
@@ -80,6 +93,10 @@ define([
 						Topic.publish("/navigate", {href: "/view/TaxonList/?" + q});
 						clear = true;
 						break;
+					case "antibiotic":
+						Topic.publish("/navigate", {href: "/view/AntibioticList/?" + q});
+						clear = true;
+						break;
 					default:
 						console.log("Do Search: ", searchFilter, query);
 				}
@@ -89,7 +106,7 @@ define([
 					// this.searchInput.set("value", '');
 				// }
 
-				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
+				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 
 				if(window.ga){
 					window.ga('send', 'pageview', '/search?keyword=' + encodeURIComponent(query) + "&cat=" + searchFilter);
@@ -105,21 +122,11 @@ define([
 			if(!query || !query.match(/[a-z0-9]/i)){
 				return;
 			}
-			
-			var q = searchToQuery(query);
-			if (searchOption == "option_or") {
-				q = searchToQueryWithOr(query);
-			}
-			else if (searchOption == "option_or2") {
-				q = searchToQueryWithQuoteOr(query);
-			}
-			else if (searchOption == "option_and2") {
-				q = searchToQueryWithQuoteAnd(query);
-			}
 
+			var q = processQuery(query, searchOption);
 
 			Topic.publish("/navigate", {href: "/search/" + (q?("?"+q):"")});
-			this.searchInput.set("value", '');
+			// this.searchInput.set("value", '');
 		},
 		onInputChange: function(val){
 

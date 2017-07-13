@@ -6,15 +6,14 @@ define([
 	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
 	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
-	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect"
-
+	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect", "dijit/form/Select"
 ], function(declare, WidgetBase, on, lang,
 			domClass, Templated, WidgetsInTemplate,
 			Template, Dialog, HasDropDown, ContentPane, TextBox,
 			Grid, domConstr, WorkspaceManager, Memory,
 			Uploader, BorderContainer, domAttr,
 			Button, Deferred, CheckBox, Topic,
-			registry, editor, formatter, FilteringSelect){
+			registry, editor, formatter, FilteringSelect, Select){
 
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		baseClass: "WorkspaceObjectSelector",
@@ -73,10 +72,8 @@ define([
 		},
 
 		_setPathAttr: function(val){
-			console.log("_setPathAttr: ", val);
 			this.path = val;
 			if(this.grid){
-				console.log("set Grid Path: ", val);
 				this.grid.set('path', val);
 			}
 			if(this.uploader){
@@ -84,7 +81,8 @@ define([
 			}
 
 			if(this.currentPathNode){
-				this.currentPathNode.innerHTML = "Folder: " + val;
+				this.currentPathNode.innerHTML = "Folder: " +
+				val;
 			}
 			this.cancelRefresh();
 			this.refreshWorkspaceItems();
@@ -106,9 +104,10 @@ define([
 				if(refresh){
 					this.refreshWorkspaceItems()
 				}else{
-					this.searchBox.set('value', value);
+					this.searchBox.set('value', this.value);
 				}
 			}
+
 		},
 
 		_getValueAttr: function(value){
@@ -117,7 +116,14 @@ define([
 
 		_setSelectionAttr: function(val){
 			this.selection = val;
-			console.log("this.selection: ", this.selection);
+
+			// ensures item is in store (for public workspaces),
+			// this is more efficient that recursively grabing all public objects of a certain type
+			try{
+				this.store.add(this.selection)
+			} catch(e){}
+
+			//console.log("this.selection: ", this.selection);
 			if(!val){
 				this.selValNode.innerHTML = "None.";
 				this.okButton.set('disabled', true);
@@ -166,11 +172,11 @@ define([
 			if(!this.dialog){
 				var _self = this;
 				this.dialog = new Dialog({title: "Choose or Upload a Workspace Object", draggable: true});
-				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});
+				var frontBC = new BorderContainer({style: {width: "700px", height: "500px"}});
 				var backBC = new BorderContainer({
 					style: {
-						width: "500px",
-						height: "400px",
+						width: "700px",
+						height: "500px",
 						margin: "0",
 						padding: "0px"
 					}
@@ -183,12 +189,40 @@ define([
 					content: this.createSelectedPane(),
 					style: "border:0px;"
 				});
+
+ 				var viewSelector = new Select({
+					name: "togglePublic",
+					style: { width: '100px' },
+					options: [
+						{
+							label: "My Workspaces",
+							value: "mine",
+							selected:  _self.path.split('/')[1] != 'public'
+						},{
+							label: "Public PATRIC Workspace",
+							value: "public",
+							selected:  _self.path.split('/')[1] == 'public'
+						}
+					]
+				})
+
+				viewSelector.on('change', function(val){
+					if(val == 'mine') {
+						var home = '/'+window.App.user.id+'/home';
+						_self.set('path', home);
+					}else if(val == 'public'){
+						_self.set('path', '/public/PATRIC@patricbrc.org/home')
+					}
+				})
+
+				domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
+
 				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
 				var span = domConstr.create("span", {style: {"float": 'left'}});
 				domConstr.place(span, buttonsPane.containerNode, "first");
 				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
 				this.showUnspecifiedWidget.on("change", function(val){
-					console.log("changed showUnspecifiedwidget: ", val);
+					// console.log("changed showUnspecifiedwidget: ", val);
 					_self.set("showUnspecified", val);
 				});
 				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
@@ -203,10 +237,12 @@ define([
 					if(_self.selection){
 						_self.set("value", _self.selection.path);
 					}
+
 					_self.dialog.hide();
 				});
 				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
 				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
+
 
 				on(selectionPane.domNode, "i:click", function(evt){
 					// console.log("Click: ", evt);
@@ -225,96 +261,20 @@ define([
 					}
 				});
 				// var _self = this;
-				var grid = this.grid = new Grid({
-					region: "center",
-					path: this.path,
-					selectionMode: "single",
-					deselectOnRefresh: true,
-					types: this.type ? (["folder"].concat(this.type)) : false,
-					columns: {
-						type: {
-							label: "",
-							get: function(item){
-								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
-									return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
-								}
-								return item.type;
-							},
-							className: "wsItemType",
-							formatter: formatter.wsItemType,
-							unhidable: true
-						},
-						name: editor({
-							label: "Name",
-							field: "name",
-							className: "wsItemName",
-							canEdit: function(obj, val){
-								return obj.id == 'untitled';
-							},
-							autoSave: true,
-							editOn: "click",
-							editor: TextBox,
-							editorArgs: {placeHolder: "Untitled Folder", trim: true}
-						}),
-						creation_time: {
-							label: "Created",
-							field: "creation_time",
-							className: "wsItemCreationTime",
-							formatter: formatter.date
-						}
-					}
-				});
-				_self.grid.on("dgrid-datachange", function(evt){
-					var name = evt.value;
-					if(!name){
-						return;
-					}
-					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
-						_self.grid.refreshWorkspace();
-						_self.refreshWorkspaceItems();
-					});
-				});
-				grid.allowSelect = function(row){
-					if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
-						return true;
-					}
-					return false;
-				};
 
-				grid.on("ItemDblClick", function(evt){
-					if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
-						_self.set('path', evt.item_path);
-					}else{
-						if(_self.selection){
-							_self.set('value', _self.selection.path);
-							_self.dialog.hide()
-						}
-					}
-					console.log("ItemDblClick for chooser: ", evt);
-					//	var row = evt.rows[0];
-					//	var data = row.data;
-					//	console.log("selected: ", data);
-				});
-
-				grid.on("select", function(evt){
-					var row = evt.rows[0];
-					_self.set("selection", row.data);
-				});
-
-				grid.on("deselect", function(evt){
-					_self.set('selection', "");
-				});
+				var grid = this.grid = this.createGrid();
 
 				frontBC.addChild(selectionPane);
 				frontBC.addChild(grid);
 				frontBC.addChild(buttonsPane);
 				frontBC.startup();
+
+
 				var backhead = new ContentPane({
 					region: "top",
 					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
 				});
 				on(backhead.domNode, "span:click", function(evt){
-					console.log("Click: ", evt);
 					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
 						case "flip":
@@ -332,7 +292,7 @@ define([
 				});
 
 				on(uploader.domNode, "dialogAction", function(evt){
-					console.log("Uploader Dialog Action: ", evt);
+					// console.log("Uploader Dialog Action: ", evt);
 					if(evt.files && evt.files[0] && evt.action == "close"){
 						var file = evt.files[0];
 						_self.set("selection", file);
@@ -348,7 +308,7 @@ define([
 				backBC.addChild(backhead);
 				backBC.addChild(uploader);
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
-				var _self = this;
+
 
 			}
 			this.dialog.flip("front");
@@ -373,10 +333,9 @@ define([
 					return b.timestamp - a.timestamp;
 				});
 
-				var store = new Memory({data: items, idProperty: "path"});
+				this.store = new Memory({data: items, idProperty: "path"});
 
-				// console.log("SearchBox: ", this.searchBox, "THIS: ", this);
-				this.searchBox.set("store", store);
+				this.searchBox.set("store", this.store);
 				if(this.value){
 					this.searchBox.set('value', this.value);
 				}
@@ -387,19 +346,18 @@ define([
 			this.onChange(value);
 			this.validate(true);
 		},
-		onChange: function(){
+		onChange: function(value){
 		},
 		startup: function(){
 			if(this._started){
 				return;
 			}
-			console.log("call getObjectsByType(); ", this.type);
+			// console.log("call getObjectsByType(); ", this.type);
 			this.inherited(arguments);
 
 			var _self = this;
 			if(!this.path){
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
-					console.log("CURRENT PATH: ", path);
 					_self.set('path', path);
 					_self.refreshWorkspaceItems();
 				});
@@ -448,6 +406,101 @@ define([
 			}
 
 			return isValid;
+		},
+		createGrid: function() {
+
+			var _self = this;
+
+			var grid =  new Grid({
+				region: "center",
+				path: this.path,
+				selectionMode: "single",
+				deselectOnRefresh: true,
+				types: this.type ? (["folder"].concat(this.type)) : false,
+				columns: {
+					type: {
+						label: "",
+						get: function(item){
+							if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
+								return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+							}
+							return item.type;
+						},
+						className: "wsItemType",
+						formatter: formatter.wsItemType,
+						unhidable: true
+					},
+					name: editor({
+						label: "Name",
+						field: "name",
+						className: "wsItemName",
+						canEdit: function(obj, val){
+							return obj.id == 'untitled';
+						},
+						autoSave: true,
+						editOn: "click",
+						editor: TextBox,
+						editorArgs: {placeHolder: "Untitled Folder", trim: true}
+					}),
+					owner: {
+						label: "Owner",
+						field: "owner_id",
+						className: "wsItemOwnerId",
+						formatter: formatter.baseUsername,
+						hidden: false
+					},
+					creation_time: {
+						label: "Created",
+						field: "creation_time",
+						className: "wsItemCreationTime",
+						formatter: formatter.date
+					}
+				}
+			});
+
+			grid.on("dgrid-datachange", function(evt){
+				var name = evt.value;
+				if(!name){
+					return;
+				}
+				Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
+					_self.grid.refreshWorkspace();
+					_self.refreshWorkspaceItems();
+				});
+			});
+			grid.allowSelect = function(row){
+				if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
+					return true;
+				}
+				return false;
+			};
+
+			grid.on("ItemDblClick", function(evt){
+				if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
+					_self.set('path', evt.item_path);
+				}else{
+					if(_self.selection){
+						_self.set('value', _self.selection.path);
+						_self.dialog.hide()
+					}
+				}
+				// console.log("ItemDblClick for chooser: ", evt);
+				//	var row = evt.rows[0];
+				//	var data = row.data;
+				//	console.log("selected: ", data);
+			});
+
+			grid.on("select", function(evt){
+				var row = evt.rows[0];
+				_self.set("selection", row.data);
+			});
+
+			grid.on("deselect", function(evt){
+				_self.set('selection', "");
+			});
+
+			return grid
+
 		}
 	});
 });

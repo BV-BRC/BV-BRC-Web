@@ -1,17 +1,17 @@
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/_base/lang",
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/_base/lang", "dojo/request",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/topic",
 	"../GenomeOverview",
-	"dojo/request", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
+	"../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionContainer", "../GenomeGridContainer",
 	"../AMRPanelGridContainer",
 	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish", "dijit/Dialog"
-], function(declare, TabViewerBase, on, lang,
+], function(declare, TabViewerBase, on, lang, xhr,
 			domClass, ContentPane, domConstruct, Topic,
 			GenomeOverview,
-			xhr, FeatureGridContainer, SpecialtyGeneGridContainer,
+			FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
@@ -134,7 +134,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			console.log("QueryToEnglish Content: ", content, newVal);
+			// console.log("QueryToEnglish Content: ", content, newVal);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + "</div>");
 			this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
 		},
@@ -220,6 +220,36 @@ define([
 							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
 					}
+
+					// special case for host genomes
+					if(active == "features" && this.state && this.state.genome_ids && !this.state.hashParams.filter){
+						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))&select(taxon_lineage_ids)";
+						// console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
+						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
+							headers: {
+								accept: "application/json",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							handleAs: "json"
+						}).then(lang.hitch(this, function(genome_data){
+
+							if (genome_data.some(function(el, idx, arr){
+								return el.taxon_lineage_ids.indexOf("2759") > -1;
+							})) {
+
+								activeQueryState = lang.mixin({}, this.state, {
+									search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
+									hashParams: lang.mixin({}, this.state.hashParams, {
+										filter: 'eq(feature_type,%22CDS%22)'
+									})
+								});
+							}
+
+							activeTab.set("state", activeQueryState);
+						}));
+					}
+
 
 					if(activeQueryState){
 						// console.log("Active Query State: ", activeQueryState);

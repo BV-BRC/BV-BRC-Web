@@ -86,8 +86,7 @@ define("p3/widget/WorkspaceFilenameValidationTextBox", [
 				this.set('invalidMessage', "This name contains invalid characters: '" + match[0] + "'")
 				return false;
 			}
-			console.log("ExternalCheck: ", this.externalCheck);
-			console.log("Val: ", val, "ExternalCheckVal: ", this.externalCheckValue)
+
 			if(this.externalCheckValue && val == this.externalCheckValue){
 				if(this.externalCheck == "exists"){
 					return false;

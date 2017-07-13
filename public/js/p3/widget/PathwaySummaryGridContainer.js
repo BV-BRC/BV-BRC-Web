@@ -1,10 +1,10 @@
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
-	"dijit/popup", "dijit/TooltipDialog",
-	"./PathwaySummaryGrid", "./GridContainer"
-], function(declare, lang, on, Topic,
-			popup, TooltipDialog,
-			PathwaySummaryGrid, GridContainer){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./SelectionToGroup",
+	"./PathwaySummaryGrid", "./GridContainer", "./PerspectiveToolTip"
+], function(declare, lang, on, Topic, domConstruct,
+			Dialog, popup, TooltipDialog, SelectionToGroup,
+			PathwaySummaryGrid, GridContainer, PerspectiveToolTipDialog){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
@@ -79,6 +79,92 @@ define([
 					}).join("&");
 					// console.log(params);
 					Topic.publish("/navigate", {href: "/view/PathwayMap/?" + params, target: "blank"});
+				},
+				false
+			], [
+				"ViewFeatureItems",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
+				{
+					label: "FEATURES",
+					validTypes: ["*"],
+					multiple: true,
+					//min: 1,
+					max: 5000,
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
+					validContainerTypes: ["pathway_summary_data"],
+					pressAndHold: function(selection, button, opts, evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({
+								perspective: "FeatureList",
+								perspectiveUrl: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
+									return x.feature_ids;
+								}).join(",") + "))"
+							}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var ids = selection.map(function(d){
+						return d['feature_ids'];
+					});
+					Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + ids.join(",") + "))"});
+				},
+				false
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 10000,
+					tooltip: "Copy selection to a new or existing feature group",
+					validContainerTypes: ["pathway_summary_data"],
+				},
+				function(selection, containerWidget){
+					// console.log("Add Items to Group", selection);
+					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var type = "feature_group";
+					var ids = selection.map(function(d){
+						return d['feature_ids'];
+					});
+					//construct an array, each element is an object with "feature_id" as property
+					var features = [];
+					ids.forEach(function(s){
+					  s.forEach(function(d){
+							features.push({feature_id: d});
+						})
+				  });
+					//remove duplicate features
+					var feature_map = {};
+					features.forEach(function(feature){
+            feature_map[feature.feature_id] = true;
+          });
+					var features_filtered = Object.keys(feature_map).map(function(feature){
+            return {feature_id: feature}
+          });
+					var stg = new SelectionToGroup({
+						selection: features_filtered,
+						type: type,
+						path: containerWidget.get("path")
+					});
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						}, 2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();
 				},
 				false
 			]
