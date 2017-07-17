@@ -6,8 +6,8 @@
  * Supports the following input types:
  * 		- text
  * 		- textarea
- * 		- multivalued
  * 		- date
+ * 		- isList: for any of the above types
  *
  * Inputs
  * 		 spec - Spec for form.  Should be a hash with table names as keys.
@@ -15,7 +15,8 @@
  * 						table1: [{
  * 							name: 'human readable name',
  * 							text: 'some_key_to_data',
- * 							type: (text|textarea|multivalued|date)
+ * 							type: (text|textarea|date)
+ * 							isList: (true|false)
  * 						}, ...]
  * 					...
  * 					}
@@ -36,25 +37,26 @@
 
 define([
     "dojo", "dojo/_base/declare", "dijit/_WidgetBase", "dojo/dom-construct",
-    "dijit/form/Form", "dijit/form/TextBox", "./Confirmation",
+    "dijit/form/Form", "dijit/form/TextBox", "./Confirmation", "dojo/request",
      "dijit/form/SimpleTextarea", "dijit/form/DateTextBox", "./InputList"
 ],function(
     dojo, declare, WidgetBase, dom,
-    Form, TextBox, Confirmation,
+    Form, TextBox, Confirmation, Request,
     TextArea, DateTextBox, InputList
 ){
 	return declare([WidgetBase], {
+		// required widget inputs
+		dataId: null,    // The unique ID to edit (i.e., a genome id)
         spec: {},		 // Spec for form.  Should be a hash with table names as keys.
         tableNames: [],	 // The data to be edited is organized into groups, ordered by these names.
         data: {},		 // (Current) data repreentation for the form.
 
+		// default api config
+		apiUrl: window.App.dataAPI+'genome/',
+
 		_inputs: [],	 // UI input objects
- 		constructor: function(){
-
-		},
-		postCreate: function(){
-
-		},
+ 		constructor: function(){},
+		postCreate: function(){},
 		startup: function(){
 			if(this._started){
 				return;
@@ -103,7 +105,7 @@ define([
 							name: item.text,
 							style: {width: '275px'}
 						})
-					}else if(item.multiValued){
+					}else if(item.isList){
 						input = new InputList({
 							type: item.type,
 							name: item.text,
@@ -148,8 +150,8 @@ define([
 				okLabel: "Save",
 				style: {width: '800px', height: '80%', overflow: 'scroll'},
 				content: form,
+				closeOnOK: false,
 				onConfirm: function(){
-					this.hideAndDestroy();
 					self.onSave(inputs)
 				},
 				onCancel: function(){
@@ -168,24 +170,48 @@ define([
 		/**
 		 * handling for when "save" button is clicked
 		 */
-		onSave: function(inputs){
-			var json = this.getSolrJSON()
+		onSave: function(){
+			var self = this;
+			var json = this.getJsonPatch();
 
-			new Confirmation({
-				title: "This is just a demo",
-				content: 'This is just a demo.  The following would be sent to server:<br>' +
-						'<pre>'+JSON.stringify(json, null, 4)+'</pre>'
-			}).show()
+			self.dialog.okButton.setDisabled(true)
+			self.dialog.okButton.set('label', 'saving...');
+
+			Request.post(this.apiUrl + this.dataId, {
+				data: JSON.stringify(json),
+				headers: {
+					"content-type": "application/jsonpatch+json",
+					"authorization": window.App.authorizationToken
+				}
+			}).then(function(res){
+				self.onSuccess(res);
+				self.dialog.hideAndDestroy();
+			})
+		},
+
+		/**
+		 * success callback method for after save request has been made
+		 */
+		onSuccess: function(){
+			// can be overridden
+		},
+
+		/**
+		 * fail callback method for after save request has been made
+		 */
+		onFail: function(){
+			// can be overridden
 		},
 
 		/**
 		 * returns key/value pair of form based on spec names
 		 */
 		getValues: function(){
+
 			var state = {};
 			this._inputs.forEach(function(input){
-				var key = input.get('name'),
-					value = input.get('value');
+				var key = input.name,
+					value = input.value;
 
 				state[key] = (value == '' ? null : value);
 			})
@@ -193,19 +219,23 @@ define([
 			return state;
 		},
 
-		_getValue: function(){
+		/**
+		 * support MetaEditor.get('value') as well
+		 */
+		_getValueAttr: function(){
 			return this.getValues();
 		},
 
 		/**
-		 * takes form data and puts into neccessary JSON format for Solr
+		 * Takes form data and puts into neccessary JSON format for Solr
+		 * Note: not used, in favor of data api
 		 */
 		getSolrJSON: function(){
 			var hash = this.getValues();
 
 			var json = [];
 			Object.keys(hash).forEach(function(key){
-    			var value = hash[key]
+    			var value = hash[key];
 
 				var obj = {};
 				obj[key] = {set: value};
@@ -213,6 +243,59 @@ define([
 			})
 
 			return json;
+		},
+
+		/**
+		 * Takes form data and puts into neccessary JSON format for data api (json patch format)
+		 *
+		 * returns json of form:
+		 * 	[{
+		 * 		op: “add”,
+		 * 		path: “/comments”,
+		 * 		value: "whatever string/list/value/etc"
+		 * 	}]
+		 */
+		getJsonPatch: function(){
+			var self = this;
+
+			var hash = this.getValues();
+			var editableList = this.getEditableList();
+
+			var json = [];
+			Object.keys(hash).forEach(function(key){
+				var value = hash[key];
+
+				// skip anything that is not editable
+				if(editableList.indexOf(key) == -1) return;
+
+				// add appropriate operation to json patch
+				var op = {
+					op: "add",
+					path: '/'+key,
+					value: value ? value : null
+				}
+
+				json.push(op)
+			})
+
+			return json;
+		},
+
+		/**
+		 * returns a list of the editable fields (based off the spec)
+		 */
+		getEditableList: function(){
+			var self = this;
+
+			var editableList = [];
+			Object.keys(this.spec).forEach(function(tableName) {
+				var items = self.spec[tableName];
+				items.forEach(function(item){
+					if(!item.editable) return;
+					editableList.push(item.text);
+				})
+			})
+			return editableList;
 		}
 
 	});
