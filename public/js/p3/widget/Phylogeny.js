@@ -116,7 +116,12 @@ define([
 				var sel = snapMenu.selection;
 				delete snapMenu.selection;
 				if(rel == "tree-svg"){
-					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_phylogeny_tree.svg");
+					// console.log("this...",this);
+					// console.log("this.tree.svgContainer[0]...",this.tree.svgContainer[0]);
+					// console.log("this.tree.svgContainer[0][0].outerHTML...",this.tree.svgContainer[0][0].outerHTML);
+					// console.log("[query(svg)[0]...",query("svg")[0]);
+					// saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_phylogeny_tree.svg"); // there are multiple svg images from other tabs that may affect this
+					saveAs(new Blob([this.tree.svgContainer[0][0].outerHTML]), "PATRIC_phylogeny_tree.svg");
 				}
 				else if(rel == "tree-newick"){
 					saveAs(new Blob([this.newick]), "PATRIC_phylogeny_tree.nwk");
