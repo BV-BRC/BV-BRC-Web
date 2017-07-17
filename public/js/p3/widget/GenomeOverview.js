@@ -59,7 +59,8 @@ define([
 			domConstruct.empty(self.genomeSummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), self.genomeSummaryNode, "first");
 
-			if(genome.owner == window.App.user.id){
+			// if user owns genome, add edit button
+			if(window.App.user && genome.owner == window.App.user.id){
 				var editBtn = domConstruct.toDom(
 					'<a style="float: right; margin-top: 15px;">'+
 						'<i class="icon-pencil"></i> Edit'+
