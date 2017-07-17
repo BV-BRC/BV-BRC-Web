@@ -73,6 +73,7 @@ define([
 						tableNames: tableNames,
 						spec: spec,
 						data: genome,
+						dataId: genome.genome_id,
 						onSuccess: function(){
 							// get new genome meta
 							xhr.get(PathJoin(self.apiServiceUrl, "genome", genome.genome_id), {
