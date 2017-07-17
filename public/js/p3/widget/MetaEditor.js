@@ -36,11 +36,11 @@
  */
 
 define([
-    "dojo", "dojo/_base/declare", "dijit/_WidgetBase", "dojo/dom-construct",
+    "dojo", "dojo/_base/declare", "dijit/_WidgetBase", "dojo/dom-construct", "dojo/on",
     "dijit/form/Form", "dijit/form/TextBox", "./Confirmation", "dojo/request",
      "dijit/form/SimpleTextarea", "dijit/form/DateTextBox", "./InputList"
 ],function(
-    dojo, declare, WidgetBase, dom,
+    dojo, declare, WidgetBase, dom, on,
     Form, TextBox, Confirmation, Request,
     TextArea, DateTextBox, InputList
 ){
@@ -142,9 +142,7 @@ define([
 			dom.place('<br><br>', form.domNode);
 
 
-			/**
-			 * put form in dialog
-			 */
+			// put form in dialog
 			self.dialog = new Confirmation({
 				title: "Edit Metadata",
 				okLabel: "Save",
@@ -158,6 +156,13 @@ define([
 					this.hideAndDestroy();
 				}
 			})
+
+			// disable save button until change
+			self.dialog.okButton.setDisabled(true);
+			var formEvent = on(form, "change", function(evt) {
+				self.dialog.okButton.setDisabled(false);
+				formEvent.remove();
+			});
 
 			self.dialog.startup();
 			self.dialog.show();
@@ -174,7 +179,7 @@ define([
 			var self = this;
 			var json = this.getJsonPatch();
 
-			self.dialog.okButton.setDisabled(true)
+			self.dialog.okButton.setDisabled(true);
 			self.dialog.okButton.set('label', 'saving...');
 
 			Request.post(this.apiUrl + this.dataId, {
@@ -207,7 +212,6 @@ define([
 		 * returns key/value pair of form based on spec names
 		 */
 		getValues: function(){
-
 			var state = {};
 			this._inputs.forEach(function(input){
 				var key = input.name,
