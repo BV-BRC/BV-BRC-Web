@@ -1122,7 +1122,7 @@ define([
 			return div;
 		},
 		"genome_meta_table_names": function(){
-			return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
+			return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
 		},
 
 		"genome_meta_spec": function(){
@@ -1168,7 +1168,7 @@ define([
 						name: 'Other Typing',
 						text: 'other_typing',
 						editable: true,
-						multiValued: true
+						isList: true
 					}, {
 						name: 'Culture Collection',
 						text: 'culture_collection',
@@ -1181,12 +1181,12 @@ define([
 						name: 'Antimicrobial Resistance',
 						text: 'antimicrobial_resistance',
 						editable: true,
-						multiValued: true
+						isList: true
 					}, {
 						name: 'Antimicrobial Resistance Evidence',
 						text: 'antimicrobial_resistance_evidence',
 						editable: true,
-						multiValued: true
+						isList: true
 					}, {
 						name: 'Reference Genome',
 						text: 'reference_genome'
@@ -1340,7 +1340,7 @@ define([
 						name: 'Other Environmental',
 						text: 'other_environmental',
 						editable: true,
-						multiValued: true
+						isList: true
 					}],
 
 				'Host Info': [{
@@ -1371,7 +1371,7 @@ define([
 						name: 'Other Clinical',
 						text: 'other_clinical',
 						editable: true,
-						multiValued: true
+						isList: true
 					}],
 
 				'Phenotype Info': [{
@@ -1414,21 +1414,21 @@ define([
 						name: 'Disease',
 						text: 'disease',
 						editable: true,
-						multiValued: true
+						isList: true
 					}],
 
-				'Others': [{
+				'Other': [{
 						name: 'Comments',
 						text: 'comments',
 						editable: true,
 						type: 'textarea',
-						multiValued: true
+						isList: true
 					}, {
 						name: 'Additional Metadata',
 						text: 'additional_metadata',
 						editable: true,
 						type: 'textarea',
-						multiValued: true
+						isList: true
 					}]
 			}
 
@@ -1443,6 +1443,8 @@ define([
 		var titleDiv = domConstruct.create("div", {
 			"class": "DataItemHeader"
 		}, parent);
+
+		domConstruct.create("hr", {}, parent);
 
 		// span icon
 		domConstruct.create("span", {"class": iconClass}, titleDiv);
@@ -1466,17 +1468,29 @@ define([
 				domConstruct.place(header, tbody);
 			}
 
+			var rowCount = 0;
 			meta_data[section].forEach(function(column){
 				var row = renderProperty(column, item, options);
 				if(row){
 					domConstruct.place(row, tbody);
+					rowCount++;
 				}
 			})
+
+			// if no data found, say so
+			if(!rowCount && !mini)
+				renderNoInfoFound(section, tbody)
 		})
 	}
 
-	function displayDetail(item, columns, parent, options){
+	function renderNoInfoFound(sectionName, parent){
+		domConstruct.create("span", {
+			'innerHTML': 'None available',
+			'class': 'DataItemSectionNotFound'
+		}, parent);
+	}
 
+	function displayDetail(item, columns, parent, options){
 		var table = domConstruct.create("table", {}, parent);
 		var tbody = domConstruct.create("tbody", {}, table);
 
@@ -1495,7 +1509,13 @@ define([
 		var mini = options && options.mini || false;
 
 		if(key && item[key] && !column.data_hide){
-			if(multiValued){
+			if(column.isList){
+				var tr = domConstruct.create("tr", {});
+				var td = domConstruct.create("td", {colspan: 2}, tr);
+
+				domConstruct.place(renderMultiData(label, item[key]), td);
+				return tr;
+			}else if(multiValued){
 				var tr = domConstruct.create("tr", {});
 				var td = domConstruct.create("td", {colspan: 2}, tr);
 
@@ -1551,6 +1571,21 @@ define([
 		}
 		return table;
 	}
+
+	function renderMultiData(label, data){
+		var table = domConstruct.create("table", {"class": "p3table"});
+		var tr = domConstruct.create("tr", {}, table);
+		domConstruct.create("td", {"class": "DataItemProperty", innerHTML: label}, tr);
+
+		var ul = domConstruct.create("ul", null, tr);
+		for (var i = 0, len = data.length; i < len; i++){
+			var val = data[i];
+			domConstruct.create("li", {"class": "DataItemValue", innerHTML: val}, ul);
+		}
+
+		return table;
+	}
+
 
 	return function(item, type, options){
 

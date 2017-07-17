@@ -1,6 +1,7 @@
 define([
     "dojo", "dojo/_base/declare", "dijit/_WidgetBase", "dojo/dom-construct",
-    "dijit/form/TextBox", "dijit/form/SimpleTextarea", "dijit/form/Button", "dojo/on", "dojo/query", "dojo/NodeList-traverse"
+    "dijit/form/TextBox", "dijit/form/SimpleTextarea", "dijit/form/Button", "dojo/on",
+    "dojo/query", "dojo/NodeList-traverse"
 ],function(
     dojo, declare, WidgetBase, dom,
     TextBox, TextArea, Button, on, query
@@ -39,13 +40,15 @@ define([
             // startup
 		},
 
-        _getValue: function(){
+        _getValueAttr: function(){
             // return list of all input data, plus whatever is in "new item" input
-            return this._listItems.concat(this._currentNewValue);
+            return this._listItems
+                .concat(this._currentNewValue)
+                .filter(function(v){ return v != ''  });
         },
 
-        _getName: function(){
-            // return list of all input data, plus whatever is in "new item" input
+        _getNameAttr: function(){
+            // returns the name of the input set
             return this.name;
         },
 
@@ -98,6 +101,7 @@ define([
              * add item to data model
              */
             this._listItems.push(item);
+            this.value = this._listItems;
         },
 
         /**

@@ -27,7 +27,7 @@ define([
 			}
 		},
 
-		"_setGenomeAttr": function(genome){
+		_setGenomeAttr: function(genome){
 			if(this.genome && (this.genome.genome_id == genome.genome_id)){
 				// console.log("Genome ID Already Set")
 				return;
@@ -35,6 +35,7 @@ define([
 			this.genome = genome;
 
 			this.createSummary(genome);
+			this.createPubMed(genome)
 
 			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
@@ -53,16 +54,13 @@ define([
 			}
 		},
 
-		"createSummary": function(genome){
+		createSummary: function(genome){
 			var self = this;
-			domConstruct.empty(this.genomeSummaryNode);
-			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), this.genomeSummaryNode, "first");
-			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
+			domConstruct.empty(self.genomeSummaryNode);
+			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), self.genomeSummaryNode, "first");
 
-			// domConstruct.place(inputList.domNode, this.genomeSummaryNode, "first");
-
-			if(genome.owner == window.App.user.id){
+			// if user owns genome, add edit button
+			if(window.App.user && genome.owner == window.App.user.id){
 				var editBtn = domConstruct.toDom(
 					'<a style="float: right; margin-top: 15px;">'+
 						'<i class="icon-pencil"></i> Edit'+
@@ -75,13 +73,39 @@ define([
 					var editor = new MetaEditor({
 						tableNames: tableNames,
 						spec: spec,
-						data: genome
+						data: genome,
+						dataId: genome.genome_id,
+						onSuccess: function(){
+							// get new genome meta
+							xhr.get(PathJoin(self.apiServiceUrl, "genome", genome.genome_id), {
+								headers: {
+									accept: "application/json",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								handleAs: "json"
+							}).then(lang.hitch(this, function(genome){
+								self.createSummary(genome);
+
+								// notify user
+								Topic.publish("/Notification", {
+									message: "genome meta updated",
+									type: "message"
+								});
+							}));
+
+						}
 					})
 					editor.startup();
 					editor.show();
 				})
 				domConstruct.place(editBtn, this.genomeSummaryNode, "first");
 			}
+		},
+
+		createPubMed: function(genome){
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 
 		onAddGenome: function(){
