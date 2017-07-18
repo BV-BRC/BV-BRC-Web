@@ -211,8 +211,7 @@ define([
 				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
 				name: 'gi',
-				text: 'gi',
-				link: 'http://www.ncbi.nlm.nih.gov/protein/'
+				text: 'gi'
 			}];
 
 			section['Genome'] = [{
@@ -447,7 +446,6 @@ define([
 			}, {
 				name: 'GI',
 				text: 'gi',
-				link: 'http://www.ncbi.nlm.nih.gov/protein/',
 				mini: true
 			}, {
 				name: 'Product',
@@ -692,8 +690,7 @@ define([
 				text: 'plasmid'
 			}, {
 				name: 'GI',
-				text: 'gi',
-				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
+				text: 'gi'
 			}, {
 				name: 'Taxon ID',
 				text: 'taxon_id',
