@@ -89,7 +89,7 @@ define([
 
 								// notify user
 								Topic.publish("/Notification", {
-									message: "genome meta updated",
+									message: "genome metadata updated",
 									type: "message"
 								});
 							}));
