@@ -1521,8 +1521,12 @@ define([
 
 				domConstruct.place(renderDataTable(item[key]), td);
 				return tr;
-			}
-			else if(!mini || column.mini){
+			}else if(column.type == 'date'){
+				var d = new Date(item[key]);
+				var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear() ;
+
+				return renderRow(label, dateStr)
+			}else if(!mini || column.mini){
 				var l = evaluateLink(column.link, item[key], item);
 				return renderRow(label, l);
 			}
