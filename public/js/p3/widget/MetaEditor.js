@@ -121,7 +121,10 @@ define([
 						input = new DateTextBox({
 							value: data[item.text],
 							name: item.text,
-							style: {width: '275px'}
+							style: {width: '275px'},
+							onChange: function(){
+								self.dialog.okButton.setDisabled(false);
+							}
 						})
 					}else if(item.isList){
 						input = new InputList({
@@ -130,7 +133,6 @@ define([
 							values:  data[item.text] || [],
 							placeHolder: item.editable ? "Enter " + item.name + "..." : '-',
 							onChange: function(){
-								console.log('there was a change')
 								self.dialog.okButton.setDisabled(false);
 							}
 						})
@@ -154,7 +156,6 @@ define([
 
 					// disable save button
 					on.once(input, "keyup", function(evt) {
-						console.log('there was change')
 						self.dialog.okButton.setDisabled(false);
 					});
 
