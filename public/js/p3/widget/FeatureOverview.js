@@ -140,6 +140,7 @@ define([
 											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
 										default:
+											sourceLink = val;
 											break;
 									}
 									node.innerHTML = sourceLink;
