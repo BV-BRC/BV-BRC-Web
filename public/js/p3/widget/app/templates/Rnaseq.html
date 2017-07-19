@@ -34,9 +34,9 @@
                                 <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe"
                                         style="width:300px" required="true"
                                         data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                                    <option value="Rockhopper">Rockhopper</option>
                                     <option value="RNA-Rocket">Tuxedo</option>
                                     <option value="Host">Host HISAT2</option>
+                                    <option value="Rockhopper">Rockhopper</option>
                                 </select>
                             </div>
                             <div class="appRow">
@@ -201,6 +201,25 @@
                                     <i class="fa icon-info-circle fa"></i>
                                 </div>
                                 <br>
+                            </div>
+                            <div class="appRow">
+                                <div class="appRowSegment" style="text-align: left;">
+                                    <label class="paramlabel">Condition 1</label><br>
+                                    <select data-dojo-type="dijit/form/FilteringSelect" name="contrast_cd1"
+                                            data-dojo-attach-point="contrast_cd1" style="width:250px" required="false"
+                                            data-dojo-props="labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
+                                    </select>
+                                </div>
+                                <div class="appRowSegment" style="text-align: left">
+                                    <label class="paramlabel">Condition 2</label><br>
+                                    <select data-dojo-type="dijit/form/FilteringSelect" name="contrast_cd2"
+                                            data-dojo-attach-point="contrast_cd2" style="width:250px" required="false"
+                                            data-dojo-props="labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
+                                    </select>
+                                </div>
+                                <div style="width:10%;display:inline-block;margin-left:10px"><i
+                                        data-dojo-attach-event="click:onAddContrast"
+                                        class="fa icon-plus-circle fa-lg"></i></div>
                             </div>
                             <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
                                 <table class="librarytable disabled" frame="box" data-dojo-attach-point="contrastTable"
