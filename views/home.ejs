@@ -1,9 +1,8 @@
 <% var flows = [
-    {name: "PATRIC Workshop", secondary: "ARGONNE, IL", rel: "carousel_workshop", background: "#34698e"}
-    , {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
+    {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
-    // , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
+    , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
 ] %>
 
 <div class="home">
@@ -17,7 +16,7 @@
             <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
-
+<!--
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop"
                      class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
@@ -40,9 +39,9 @@
                         <br><br>
                     </div>
                 </div>
-
+-->
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_icsb"
-                     class="CarouselContent showOnLoad dijitHidden">
+                     class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
                              src="/patric/images/carousel/workshop_ICSB_2017.png" style="height:179px">
@@ -103,7 +102,7 @@
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper"><img class="right"
-                                              src="http://enews.patricbrc.org/wp-content/uploads/2013/05/Mycobacterium_tuberculosis_14313982_1.jpg">
+                                              src="/patric/images/carousel/Mycobacterium_tuberculosis.jpg">
                         <h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2>
                         <h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3>
                         <p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This
