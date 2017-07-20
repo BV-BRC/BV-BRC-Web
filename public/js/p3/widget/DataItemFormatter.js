@@ -1485,7 +1485,7 @@ define([
 
 	function renderNoInfoFound(sectionName, parent){
 		domConstruct.create("tr", {
-			'innerHTML': '<td></td><td class="DataItemSectionNotFound">None available</td>',
+			'innerHTML': '<td></td><td class="DataItemSectionNotFound">None available</td>'
 		}, parent);
 	}
 
