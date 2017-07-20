@@ -66,6 +66,16 @@ a.HelpLink:active {
 	cursor: pointer;
 }
 
+.objSelectorActionIcon{
+	cursor: pointer;
+	vertical-align: bottom;
+	margin-left: 3px;
+}
+
+.objSelectorActionIcon:hover{
+	color: #000;
+}
+
 .idMappingTable td:hover{
 background:#d2d2d2;
 cursor: pointer;

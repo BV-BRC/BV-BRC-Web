@@ -5,14 +5,14 @@ define([
 	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
 	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
-	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
+	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic", "dijit/Tooltip",
 	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect", "dijit/form/Select"
 ], function(declare, WidgetBase, on, lang, query,
 			domClass, Templated, WidgetsInTemplate,
 			Template, Dialog, HasDropDown, ContentPane, TextBox,
 			Grid, domConstr, WorkspaceManager, Memory,
 			Uploader, BorderContainer, domAttr,
-			Button, Deferred, CheckBox, Topic,
+			Button, Deferred, CheckBox, Topic, Tooltip,
 			registry, editor, formatter, FilteringSelect, Select){
 
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
@@ -212,6 +212,39 @@ define([
 			}, wrap);
 
 
+			// create workspace button
+			var createWSBtn = domConstr.create('i', {
+				'rel': 'createWS',
+				'class': "icon-add-workspace objSelectorActionIcon fa-2x"
+			})
+			on(createWSBtn, 'click', function(){
+				Topic.publish("/openDialog", {
+					type: "CreateWorkspace"
+				});
+			})
+			new Tooltip({
+				connectId: createWSBtn,
+				label: "Create Workspace",
+				position: ['above']
+			})
+
+			// create folder button
+			var createFolderBtn = domConstr.create('i', {
+				'rel': 'createFolder',
+				'class': "icon-folder-plus objSelectorActionIcon fa-2x"
+			})
+			on(createFolderBtn, 'click', function(){
+				Topic.publish("/openDialog", {
+					type: "CreateFolder",
+					params: self.path
+				});
+			})
+			new Tooltip({
+				connectId: createFolderBtn,
+				label: "Create Folder",
+				position: ['above']
+			});
+
 			var buttonContainer = domConstr.create("div", {
 				style: {
 					"font-size": ".85em",
@@ -219,11 +252,29 @@ define([
 					"float": "right",
 					"text-align": "right"
 				},
-				innerHTML: (this.allowUpload ? '<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i> ' : '')+
-						   '<i rel="createWS" class="fa icon-add-workspace fa-2x" style="vertical-align: bottom;"></i>'+
-						   '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;"></i>'
-
+				innerHTML: ''
 			}, wrap);
+
+
+			// upload button, if needed
+			if(this.allowUpload){
+				var uploadBtn = domConstr.create('i', {
+					'rel': 'upload',
+					'class': "icon-upload objSelectorActionIcon fa-2x"
+				})
+				var uploadTooltip = new Tooltip({
+					connectId: uploadBtn,
+					label: "Upload to current folder",
+					position: ['above']
+				});
+				on(uploadBtn, 'click', function(){
+					uploadTooltip.close();
+				})
+				domConstr.place(uploadBtn, buttonContainer);
+			}
+
+			domConstr.place(createWSBtn, buttonContainer);
+			domConstr.place(createFolderBtn, buttonContainer);
 
 			if(this.path.split('/').length <= 3){
 				domClass.add(query('[rel="createFolder"]', wrap)[0], 'dijitHidden');
@@ -315,7 +366,6 @@ define([
 			domConstr.place(span, buttonsPane.containerNode, "first");
 			this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
 			this.showUnspecifiedWidget.on("change", function(val){
-				// console.log("changed showUnspecifiedwidget: ", val);
 				_self.set("showUnspecified", val);
 			});
 			domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
@@ -339,12 +389,12 @@ define([
 
 
 			on(selectionPane.domNode, "i:click", function(evt){
-				// console.log("Click: ", evt);
 				var rel = domAttr.get(evt.target, "rel");
 				switch(rel){
 					case "upload":
 						_self.dialog.flip();
 						break;
+					/*  testing without inline ws/folder creation
 					case "createFolder":
 						var element = _self.grid.row(0).element;
 						_self.grid.addNewFolder({id: "untitled"});
@@ -353,6 +403,7 @@ define([
 						var element = _self.grid.row(0).element;
 						_self.grid.addNewFolder({id: "untitled"});
 						break;
+					*/
 				}
 			});
 			// var _self = this;
