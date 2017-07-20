@@ -83,19 +83,19 @@ define([
 
 
 	var filters = [{
-			name: "Hide columns by threshold (>=)", 
+			name: "Hide columns by % conservation (>=)", 
 			id: "hide_col_threshold_greater"
 		},
 		{
-			name: "Hide columns by threshold (<=)",
+			name: "Hide columns by % conservation (<=)",
 			id: "hide_col_threshold_less"
 		},
 		{
-			name: "Hide columns by gaps (>=)",
+			name: "Hide columns by % gaps (>=)",
 			id: "hide_col_gaps_greater"
 		},
 		{
-			name: "Hide columns by gaps (<=)",
+			name: "Hide columns by % gaps (<=)",
 			id: "hide_col_gaps_less"
 		},
 		/* to be implemented in the future
@@ -394,14 +394,14 @@ define([
 			//this.tree.setTree(this.data.tree);
 
 			var idMenuDivs = [];
-			this.tree.addLabels(this.alt_labels["genome_name"], "Organism Names");
-			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Organism Names" + '">' + "Organism Names" + '</div>');
-			this.tree.addLabels(this.alt_labels["patric_id"], "PATRIC ID");
-			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "PATRIC ID" + '">' + "PATRIC ID" + '</div>');
+			this.tree.addLabels(this.alt_labels["genome_name"], "Genome Name");
+			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Genome Name" + '">' + "Genome Name" + '</div>');
+			this.tree.addLabels(this.alt_labels["patric_id"], "Gene ID");
+			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Gene ID" + '">' + "Gene ID" + '</div>');
 			idMenu.set("content", idMenuDivs.join(""));
 
 			this.tree.startup();
-			this.tree.selectLabels("Organism Names");
+			this.tree.selectLabels("Genome Name");
 			this.tree.update();
 
 			Object.keys(rearrangeSeqs).forEach(lang.hitch(this, function(fid){
