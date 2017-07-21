@@ -162,7 +162,11 @@ define([
 					conditionStatus[conditionId].setStatus(status);
 				}, this);
 
-				this.pfState.genomeFilterStatus = conditionStatus;
+				this.pfState = lang.mixin({}, this.pfState, {
+					genomeFilterStatus: conditionStatus,
+					clusterColumnOrder: []
+				})
+
 				Topic.publish(this.topicId, "applyConditionFilter", this.pfState);
 			}));
 
