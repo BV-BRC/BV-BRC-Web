@@ -12,7 +12,7 @@ define([
 				sortedData[newIdx] = this.data[i];
 				this.index[this.data[i][this.idProperty]] = newIdx;
 			}
-			this.data = sortedData;
+			this.data = sortedData.filter(function(el){ return el !== undefined});
 		}
 	});
 });
