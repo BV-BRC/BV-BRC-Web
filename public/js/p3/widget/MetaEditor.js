@@ -80,6 +80,24 @@ define([
 			var content = dom.toDom('<div>');
 			var form = new Form();
 
+			// put form in dialog
+			self.dialog = new Confirmation({
+				title: "Edit Metadata",
+				okLabel: "Save",
+				style: {width: '800px', height: '80%', overflow: 'scroll'},
+				content: form,
+				closeOnOK: false,
+				onConfirm: function(){
+					self.onSave(inputs)
+				},
+				onCancel: function(){
+					this.hideAndDestroy();
+				}
+			})
+
+			// disable save button until change
+			self.dialog.okButton.setDisabled(true);
+
             // organize table specs according to tableNames list
 			var tableSpecs = tableNames.map(function(name){ return spec[name] });
 
@@ -103,14 +121,20 @@ define([
 						input = new DateTextBox({
 							value: data[item.text],
 							name: item.text,
-							style: {width: '275px'}
+							style: {width: '275px'},
+							onChange: function(){
+								self.dialog.okButton.setDisabled(false);
+							}
 						})
 					}else if(item.isList){
 						input = new InputList({
 							type: item.type,
 							name: item.text,
 							values:  data[item.text] || [],
-							placeHolder: item.editable ? "Enter " + item.name + "..." : '-'
+							placeHolder: item.editable ? "Enter " + item.name + "..." : '-',
+							onChange: function(){
+								self.dialog.okButton.setDisabled(false);
+							}
 						})
 					}else if(item.type == 'textarea'){
 						input = new TextArea({
@@ -129,6 +153,12 @@ define([
 							disabled: item.editable ? false : true
 						});
 					}
+
+					// disable save button
+					on.once(input, "keyup", function(evt) {
+						self.dialog.okButton.setDisabled(false);
+					});
+
 					self._inputs.push(input);
 
 					var tr = dom.place('<tr>', tbody);
@@ -140,29 +170,6 @@ define([
 			})
 
 			dom.place('<br><br>', form.domNode);
-
-
-			// put form in dialog
-			self.dialog = new Confirmation({
-				title: "Edit Metadata",
-				okLabel: "Save",
-				style: {width: '800px', height: '80%', overflow: 'scroll'},
-				content: form,
-				closeOnOK: false,
-				onConfirm: function(){
-					self.onSave(inputs)
-				},
-				onCancel: function(){
-					this.hideAndDestroy();
-				}
-			})
-
-			// disable save button until change
-			self.dialog.okButton.setDisabled(true);
-			var formEvent = on(form, "change", function(evt) {
-				self.dialog.okButton.setDisabled(false);
-				formEvent.remove();
-			});
 
 			self.dialog.startup();
 			self.dialog.show();
@@ -214,7 +221,7 @@ define([
 		getValues: function(){
 			var state = {};
 			this._inputs.forEach(function(input){
-				var key = input.name,
+				var key = input.get('name'),
 					value = input.value;
 
 				state[key] = (value == '' ? null : value);

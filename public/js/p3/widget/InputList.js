@@ -38,13 +38,14 @@ define([
 
 		startup: function(){
             // startup
-		},
+        },
+
+        onChange: function(evt){
+            // can override
+        },
 
         _getValueAttr: function(){
-            // return list of all input data, plus whatever is in "new item" input
-            return this._listItems
-                .concat(this._currentNewValue)
-                .filter(function(v){ return v != ''  });
+            return this.value;
         },
 
         _getNameAttr: function(){
@@ -69,7 +70,6 @@ define([
                     value: item,
                     style: {
                         width: self.options.width,
-                        //height: '75px',
                         margin: '2px 5px 2px 0'
                     }
                 });
@@ -82,6 +82,9 @@ define([
                     }
                 });
             }
+
+            on(textBox, 'keyup', function(evt){ self.onChange(evt) });
+
             dom.place(textBox.domNode, line)
 
             var rmBtn = dom.toDom('<i class="fa icon-remove"></i>');
@@ -91,6 +94,10 @@ define([
 
                 dom.destroy(row);
                 self._listItems.splice(rowNum, 1); // remove item from data model
+                this.value = this._listItems;
+
+                // call back event
+                self.onChange();
             })
             dom.place(rmBtn, line);
 
@@ -131,6 +138,10 @@ define([
                 });
             }
 
+            on(newItemInput, 'keyup', function(evt){
+                self.onChange(evt);
+            })
+
             dom.place(newItemInput.domNode, line);
 
 			var addBtn = new Button({
@@ -150,7 +161,9 @@ define([
                 else addBtn.setDisabled(true);
 
                 // save current value
-                self._currentNewValue = newItemInput.get('value');
+                self._currentNewValue = value;
+                self.value = self._listItems.concat(self._currentNewValue);
+                self.onChange();
             });
             dom.place(line, this.domNode);
         }
