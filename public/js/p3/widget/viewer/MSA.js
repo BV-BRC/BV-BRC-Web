@@ -91,12 +91,20 @@ define([
 			id: "hide_col_threshold_less"
 		},
 		{
+			name: "Hide columns by % conservation (between)",
+			id: "hide_col_threshold_between"
+		},
+		{
 			name: "Hide columns by % gaps (>=)",
 			id: "hide_col_gaps_greater"
 		},
 		{
 			name: "Hide columns by % gaps (<=)",
 			id: "hide_col_gaps_less"
+		},
+		{
+			name: "Hide columns by % gaps (between)",
+			id: "hide_col_gaps_between"
 		},
 		/* to be implemented in the future
 		{
@@ -499,6 +507,24 @@ define([
 					m.g.vis.set("seqlogo", false);
 					break;
 
+				case "hide_col_threshold_between":
+					var threshold1 = prompt("Enter minimum threshold (in percent)", 20);
+					var threshold2 = prompt("Enter maximum threshold (in percent)", 80);
+					threshold1 = threshold1 / 100;
+					threshold2 = threshold2 / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						if (conserv[i] >= threshold1 && conserv[i] <= threshold2) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
 				case "hide_col_gaps_greater":
 					var threshold = prompt("Enter threshold (in percent)", 20);
 					threshold = threshold / 100;
@@ -535,6 +561,31 @@ define([
 						});
 						const gapContent = gaps / total;
 						if (gapContent <= threshold) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
+				case "hide_col_gaps_between":
+					var threshold1 = prompt("Enter minimum threshold (in percent)", 20);
+					var threshold2 = prompt("Enter maximum threshold (in percent)", 80);
+					threshold1 = threshold1 / 100;
+					threshold2 = threshold2 / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						var gaps = 0;
+						var total = 0;
+						m.seqs.each((el) => {
+						  if (el.get('seq')[i] === "-") { gaps++; }
+						  return total++;
+						});
+						const gapContent = gaps / total;
+						if (gapContent >= threshold1 && gapContent <= threshold2) {
 						  hidden.push(i);
 						}
 					}
