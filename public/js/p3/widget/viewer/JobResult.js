@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../../WorkspaceManager", "dojo/_base/lang",
-	"dojo/dom-attr","../WorkspaceExplorerView"
+	"dojo/dom-attr","../WorkspaceExplorerView", "dijit/Dialog"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, WorkspaceManager, lang,
-			domAttr, WorkspaceExplorerView){
+			domAttr, WorkspaceExplorerView, Dialog){
 	return declare([BorderContainer], {
 		"baseClass": "ExperimentViewer",
 		"disabled": false,
@@ -31,6 +31,18 @@ define([
 			// console.log("[JobResult] Output Files: ", this.data.autoMeta.output_files);
 			var _self = this;
 
+			// check to see if there's a hidden .folder with the actual data
+			WorkspaceManager.getObject(this._hiddenPath, true).otherwise(function(err) {
+				new Dialog({
+					content: "No output from this job was found in the <i>'."+_self.data.name+"'</i> folder. "
+								  +"If you moved the job result file from another location, please ensure you "
+									+"have also moved the accomanying folder to this location.",
+					title: "Error Loading Job Result",
+					style: "width: 300px !important;"
+				}).show();
+			});
+
+			// get the contents directly from the hidden folder, since metadata may be stale after a move
 			WorkspaceManager.getFolderContents(this._hiddenPath, true, true)
 				.then(function(objs){
 					//console.log("[JobResult] objects: ", objs);

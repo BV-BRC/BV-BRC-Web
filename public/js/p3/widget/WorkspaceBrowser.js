@@ -548,6 +548,19 @@ define([
 
 			}, false);
 
+			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
+				label: "BROWSER",
+				multiple: false,
+				validTypes: ["RNASeq", "TnSeq"],
+				tooltip: "View tracks in genome browser.",
+			}, function(selection){
+				console.log("View Tracks: ", selection[0]);
+				var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
+				var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+				Topic.publish("/navigate", {href: "/view/Genome/"+genomeId+"#"+urlQueryParams});
+
+			}, false);
+
 			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
@@ -1470,6 +1483,10 @@ define([
 								case "GenomeAnnotation":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
+								case "RNASeq":
+								case "TnSeq":
+										d = "p3/widget/viewer/Seq";
+										break;
 							}
 						}
 						panelCtor = window.App.getConstructor(d);
