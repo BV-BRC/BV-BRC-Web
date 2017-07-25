@@ -552,7 +552,7 @@ define([
 				label: "BROWSER",
 				multiple: false,
 				validTypes: ["RNASeq", "TnSeq"],
-				tooltip: "View tracks in genome browser.",
+				tooltip: "View tracks in genome browser."
 			}, function(selection){
 				console.log("View Tracks: ", selection[0]);
 				var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
