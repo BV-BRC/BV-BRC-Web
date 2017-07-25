@@ -199,6 +199,7 @@ define([
 		},
 
 		createSelectedPane: function(){
+			var self = this;
 			var wrap = domConstr.create("div", {});
 			this.currentPathNode = domConstr.create("div", {
 				innerHTML: this.path,
