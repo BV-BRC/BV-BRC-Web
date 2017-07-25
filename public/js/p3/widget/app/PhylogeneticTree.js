@@ -6,7 +6,7 @@ define([
 ], function(declare, on, domClass,
 			Template, AppBase, domConstruct, registry,
 			lang, domReady, query, dom, Dialog,
-			WorkspaceManager,when){
+			WorkspaceManager, when){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
 		templateString: Template,
@@ -73,14 +73,14 @@ define([
 					var attachType = "genomes_genomegroup";
 					var inDuplicate = this.checkDuplicate(cur_value, "in", attachType);
 					var outDuplicate = this.checkDuplicate(cur_value, "out", attachType);
-          success = success * inDuplicate * outDuplicate;
+					success = success * inDuplicate * outDuplicate;
 				}
 				else if(attachname == "in_genome_id" || attachname == "out_genome_id"){
 					cur_value = this[attachname].value;
 					var attachType = "genome_id";
 					var inDuplicate = this.checkDuplicate(cur_value, "in", attachType);
 					var outDuplicate = this.checkDuplicate(cur_value, "out", attachType);
-          success = success * inDuplicate * outDuplicate;
+					success = success * inDuplicate * outDuplicate;
 				}
 				else{
 					cur_value = this[attachname].value;
@@ -118,17 +118,17 @@ define([
 			return (success);
 		},
 
-    checkDuplicate: function (cur_value, groupTypePrefix, attachType){
-      var success = 1;
+		checkDuplicate: function(cur_value, groupTypePrefix, attachType){
+			var success = 1;
 			var genomeIds = [];
 			var genomeList = query("."+groupTypePrefix+"GroupGenomeData");
 			genomeList.forEach(function(item){
 					genomeIds.push(item.genomeRecord[groupTypePrefix+"_"+attachType]);
-			});
+				});
 			if(genomeIds.length > 0 && genomeIds.indexOf(cur_value) > -1) {//found duplicate
 				success = 0;
 			}
-      return success;
+			return success;
 		},
 
 		makeGenomeName: function(groupType){
@@ -170,12 +170,12 @@ define([
 			this[groupType+'NumGenomes'].set('value', Number(this[groupType].addedNum));
 		},
 
-    onAddInGroupGenome: function () {
-		  var groupType = "inGroup";
+		onAddInGroupGenome: function(){
+			var groupType = "inGroup";
 			this.onAddGenome(groupType);
 		},
 
-		onAddOutGroupGenome: function () {
+		onAddOutGroupGenome: function(){
 			var groupType = "outGroup";
 			this.onAddGenome(groupType);
 		},
@@ -199,7 +199,7 @@ define([
 					this[groupType+'GenomeTable'].deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this, function(evt){
-          console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
+				// console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
 					domConstruct.destroy(tr);
 					this.decreaseGenome(groupType, newGenomeIds);
 					if(this[groupType].addedNum < this.startingRows){
@@ -215,14 +215,14 @@ define([
 			//console.log(lrec);
 		},
 
-    onAddInGroupGenomeGroup: function(){
+		onAddInGroupGenomeGroup: function(){
 			var groupType = "inGroup";
-      this.onAddGenomeGroup(groupType);
+			this.onAddGenomeGroup(groupType);
 		},
 
 		onAddOutGroupGenomeGroup: function(){
 			var groupType = "outGroup";
-      this.onAddGenomeGroup(groupType);
+			this.onAddGenomeGroup(groupType);
 		},
 
 		onAddGenomeGroup: function(groupType){
@@ -232,7 +232,7 @@ define([
 			//console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			var path = lrec[this[groupType].genomeGroupToAttachPt];
-			when(WorkspaceManager.getObject(path), lang.hitch(this,function(res){
+			when(WorkspaceManager.getObject(path), lang.hitch(this, function(res){
 				if(typeof res.data == "string"){
 					res.data = JSON.parse(res.data);
 				}
@@ -282,7 +282,7 @@ define([
 			if(this.validate()){
 				var values = this.getValues();
 				//console.log("values: ", values);
-        if(values["in_genome_ids"].length >=3 && values["out_genome_ids"].length >=1){
+				if(values["in_genome_ids"].length >=3 && values["out_genome_ids"].length >=1){
 					domClass.add(this.domNode, "Working");
 					domClass.remove(this.domNode, "Error");
 					domClass.remove(this.domNode, "Submitted");
@@ -327,20 +327,20 @@ define([
 			var values = this.inherited(arguments);
 			//remove duplicate genomes
 			var inGroupGenomesFiltered = [];
-			this.inGroup.addedList.forEach(function(id) {
+			this.inGroup.addedList.forEach(function(id){
 				if(inGroupGenomesFiltered.indexOf(id)  == -1) {
 					inGroupGenomesFiltered.push(id);
 				}
 			});
 			var outGroupGenomesFiltered = [];
-			this.outGroup.addedList.forEach(function(id) {
+			this.outGroup.addedList.forEach(function(id){
 				if(outGroupGenomesFiltered.indexOf(id)  == -1) {
 					outGroupGenomesFiltered.push(id);
 				}
 			});
 
 			ptb_values["in_genome_ids"] = inGroupGenomesFiltered;
-      ptb_values["out_genome_ids"] = outGroupGenomesFiltered;
+			ptb_values["out_genome_ids"] = outGroupGenomesFiltered;
 			ptb_values["output_path"] = values["output_path"];
 			ptb_values["output_file"] = values["output_file"];
 			ptb_values["full_tree_method"] = values["full_tree_method"];
