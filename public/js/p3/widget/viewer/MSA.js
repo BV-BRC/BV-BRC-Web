@@ -192,6 +192,7 @@ define([
 		phylogram: false,
 		maxSequences: 500,
 		numSequences: 0,
+		featureData: null,
 		selection: null,
 		onSetLoading: function(attr, oldVal, loading){
 			if(loading){
@@ -199,7 +200,7 @@ define([
 			}
 		},
 		checkSequenceCount: function(query){
-			var q = query + "&limit(1)";
+			var q = query + "&limit(500)";
 			var def = new Deferred();
 			var url = PathJoin(this.apiServiceUrl, "genome_feature") + "/";
 			console.log("CheckSeqCount URL: ", url);
@@ -213,10 +214,12 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(res){
-				console.log("Check Res: ", res.response.numFound)
-				if(res && res.response && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
+				// console.log("Check Res: ", res.response)
+				// console.log("Check Res: ", res.response.numFound)
+				if(res && res.response && res.response.docs && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
 					console.log("  Amount OK")
 					this.numSequences = res.response.numFound;
+					this.featureData = res.response.docs;
 					def.resolve(res.response.numFound);
 					return;
 				}
@@ -255,7 +258,27 @@ define([
 			var cur = this.selection.map(lang.hitch(this, function(selected){
 				return this.dataMap[selected.id];
 			}));
+			// console.log("dataMap", this.dataMap);
+			// console.log("data", this.data);
+			// console.log("cur", cur);
+			// console.log("this.itemDetailPanel", this.itemDetailPanel);
 			this.selectionActionBar._setSelectionAttr(cur);
+			var self = this;
+			if (cur.length==1){
+				var curr_selection = cur[0].feature_id;
+				// console.log("curr_selection", curr_selection);
+				this.featureData.forEach(function(sel){
+					// console.log("sel", sel);
+					// console.log("this.itemDetailPanel", self.itemDetailPanel);
+					if (sel.feature_id == curr_selection) {
+						self.itemDetailPanel.set('containerWidget', {containerType: 'feature_data'});
+						self.itemDetailPanel.set('selection', [sel]);	
+					}
+				})
+
+			} else {
+				this.itemDetailPanel.set('selection', cur);
+			}
 		},
 
 		createDataMap: function(){
@@ -713,10 +736,11 @@ define([
 				region: "right",
 				style: "width:300px",
 				splitter: true,
-				layoutPriority: 1
+				layoutPriority: 1,
+				containerWidget: this
 			});
 			this.addChild(this.selectionActionBar);
-			//this.addChild(this.itemDetailPanel);
+			this.addChild(this.itemDetailPanel);
 			this.itemDetailPanel.startup();
 			this.setupActions();
 		},
@@ -739,7 +763,7 @@ define([
 					if(children.some(function(child){
 							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
 						}, this)){
-						// console.log("Remove Item Detail Panel");
+						console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
 						console.log("Button Node: ", button)
 
@@ -1066,7 +1090,8 @@ define([
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
 					var snapMenuDivs = [];
-					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
+					// disable downloding MSA png as the png does not give the species or tell you where in the alignment it is.
+					// snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
 					/*var encodedTree = window.btoa(unescape(encodeURIComponent(Query("svg")[0].outerHTML)));
 
 					var e = domConstruct.create("a", {
