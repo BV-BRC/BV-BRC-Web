@@ -810,6 +810,7 @@ define([
 			this.inherited(arguments);
 			this._started = true;
 			this.set("facetFields", this.facetFields);
+						
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
 			if(this.state){

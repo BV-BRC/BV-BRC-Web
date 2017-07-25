@@ -276,6 +276,13 @@ define([
 				"generateDownloadFromStore": true,
 				tableData: true
 			},
+			"subsystem_data": {
+				pk: "subsystem_id",
+				dataType: "subsystem",
+				"label": "Subsystem",
+				"generateDownloadFromStore": true,
+				tableData: true
+			},
 			"gene_expression_data": {
 				dataType: "transcriptomics_gene",
 				pk: "id",
