@@ -589,6 +589,69 @@ define([
 			return div;
 		},
 
+		"subsystem_data": function(item, options){
+			options = options || {};
+
+			var columns;
+
+			// property set in SubSystemMemoryStore.js
+			if (item.document_type === "subsystems_gene") {
+				columns = [
+					{
+						name: 'Class',
+						text: 'class'
+					}, {
+						name: 'Subclass',
+						text: 'subclass'
+					}, {
+						name: 'Subsystem Name',
+						text: 'subsystem_name'
+					}, {
+						name: 'Role Name',
+						text: 'role_name'
+					}, {
+						name: 'Active',
+						text: 'active'
+					}
+					, {
+						name: 'Patric ID',
+						text: 'patric_id'
+					}, {
+						name: 'Gene',
+						text: 'gene'
+					}, {
+						name: 'Product',
+						text: 'product'
+					}
+				]
+			} else if (item.document_type === "subsystems_subsystem") {
+				columns = [
+					{
+						name: 'Class',
+						text: 'class'
+					}, {
+						name: 'Subclass',
+						text: 'subclass'
+					}, {
+						name: 'Subsystem Name',
+						text: 'subsystem_name'
+					}, {
+						name: 'Role Name',
+						text: 'role_name'
+					}, {
+						name: 'Active',
+						text: 'active'
+					}
+				]
+			}
+
+			var div = domConstruct.create("div");
+			displayHeader(div, item.subsystem_name, "fa icon-git-pull-request fa-2x", "/view/Subsystems/" + item.subsystem_id, options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
 		"proteinfamily_data": function(item, options){
 			options = options || {};
 
@@ -1101,244 +1164,8 @@ define([
 		"genome_data": function(item, options){
 			options = options || {};
 
-			var metadataGenomeSummaryID = ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
-			var metadataGenomeSummaryValue = {};
-			metadataGenomeSummaryValue['Organism Info'] = [{
-				name: 'Genome ID',
-				text: 'genome_id',
-				mini: true
-			}, {
-				name: 'Genome Name',
-				text: 'genome_name',
-				mini: true
-			}, {
-				name: 'NCBI Taxon ID',
-				text: 'taxon_id',
-				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-			}, {
-				name: 'Genome Status',
-				text: 'genome_status',
-				mini: true
-			}, {
-				name: 'Strain',
-				text: 'strain'
-			}, {
-				name: 'Serovar',
-				text: 'serovar'
-			}, {
-				name: 'Biovar',
-				text: 'biovar'
-			}, {
-				name: 'Pathovar',
-				text: 'pathovar'
-			}, {
-				name: 'MLST',
-				text: 'mlst'
-			}, {
-				name: 'Other Typing',
-				text: 'other_typing'
-			}, {
-				name: 'Culture Collection',
-				text: 'culture_collection'
-			}, {
-				name: 'Type Strain',
-				text: 'type_strain'
-			}, {
-				name: 'Antimicrobial Resistance',
-				text: 'antimicrobial_resistance'
-			}, {
-				name: 'Antimicrobial Resistance Evidence',
-				text: 'antimicrobial_resistance_evidence'
-			}, {
-				name: 'Reference Genome',
-				text: 'reference_genome'
-			}];
-
-			metadataGenomeSummaryValue['Project Info'] = [{
-				name: 'Sequencing Center',
-				text: 'sequencing_centers'
-			}, {
-				name: 'Completion Date',
-				text: 'completion_date'
-			}, {
-				name: 'Publication',
-				text: 'publication',
-				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
-			}, {
-				name: 'BioProject Accession',
-				text: 'bioproject_accession',
-				link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
-				mini: true
-			}, {
-				name: 'BioSample Accession',
-				text: 'biosample_accession',
-				link: 'http://www.ncbi.nlm.nih.gov/biosample/',
-				mini: true
-			}, {
-				name: 'Assembly Accession',
-				text: 'assembly_accession',
-				link: 'http://www.ncbi.nlm.nih.gov/assembly/'
-			}, {
-				name: "SRA Accession",
-				text: "sra_accession",
-				link: function(obj){
-					return lang.replace('<a href="http://www.ncbi.nlm.nih.gov/sra/?term={1}" target="_blank">{0}</a>',
-						[obj['sra_accession'], obj['sra_accession'].split(',').join("+OR+")]);
-				}
-			}, {
-				name: 'GenBank Accessions',
-				text: 'genbank_accessions',
-				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
-			}, {
-				name: 'RefSeq Accessions',
-				text: 'refseq_accessions',
-				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
-			}];
-
-			metadataGenomeSummaryValue['Sequence Info'] = [{
-				name: 'Sequencing Status',
-				text: 'sequencing_status'
-			}, {
-				name: 'Sequencing Platform',
-				text: 'sequencing_platform'
-			}, {
-				name: 'Sequencing Depth',
-				text: 'sequencing_depth'
-			}, {
-				name: 'Assembly Method',
-				text: 'assembly_method'
-			}, {
-				name: 'Chromosomes',
-				text: 'chromosomes'
-			}, {
-				name: 'Plasmids',
-				text: 'plasmids'
-			}, {
-				name: 'Contigs',
-				text: 'contigs'
-			}, {
-				name: 'Sequences',
-				text: 'sequences',
-				link: function(obj){
-					return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.sequences}</a>', {obj: obj});
-				}
-			}, {
-				name: 'Genome Length',
-				text: 'genome_length'
-			}, {
-				name: 'GC Content',
-				text: 'gc_content'
-			}, {
-				name: 'PATRIC CDS',
-				text: 'patric_cds',
-				link: function(obj){
-					return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">{obj.patric_cds}</a>', {obj: obj});
-				}
-			}, {
-				name: 'RefSeq CDS',
-				text: 'refseq_cds'
-			}];
-
-			metadataGenomeSummaryValue['Isolate Info'] = [{
-				name: 'Isolation Site',
-				text: 'isolation_site'
-			}, {
-				name: 'Isolation Source',
-				text: 'isolation_source'
-			}, {
-				name: 'Isolation Comments',
-				text: 'isolation_comments'
-			}, {
-				name: 'Collection Year',
-				text: 'collection_year'
-			}, {
-				name: 'Collection Date',
-				text: 'collection_date'
-			}, {
-				name: 'Isolation Country',
-				text: 'isolation_country'
-			}, {
-				name: 'Geographic Location',
-				text: 'geographic_location'
-			}, {
-				name: 'Latitude',
-				text: 'latitude'
-			}, {
-				name: 'Longitude',
-				text: 'longitude'
-			}, {
-				name: 'Altitude',
-				text: 'altitude'
-			}, {
-				name: 'Depth',
-				text: 'depth'
-			}, {
-				name: 'Other Environmental',
-				text: 'other_environmental'
-			}];
-
-			metadataGenomeSummaryValue['Host Info'] = [{
-				name: 'Host Name',
-				text: 'host_name'
-			}, {
-				name: 'Host Gender',
-				text: 'host_gender'
-			}, {
-				name: 'Host Age',
-				text: 'host_age'
-			}, {
-				name: 'Host Health',
-				text: 'host_health'
-			}, {
-				name: 'Body Sample Site',
-				text: 'body_sample_site'
-			}, {
-				name: 'Body Sample Subsite',
-				text: 'body_sample_subsite'
-			}, {
-				name: 'Other Clinical',
-				text: 'other_clinical'
-			}];
-
-			metadataGenomeSummaryValue['Phenotype Info'] = [{
-				name: 'Gram Stain',
-				text: 'gram_stain'
-			}, {
-				name: 'Cell Shape',
-				text: 'cell_shape'
-			}, {
-				name: 'Motility',
-				text: 'motility'
-			}, {
-				name: 'Sporulation',
-				text: 'sporulation'
-			}, {
-				name: 'Temperature Range',
-				text: 'temperature_range'
-			}, {
-				name: 'Optimal Temperature',
-				text: 'optimal_temperature'
-			}, {
-				name: 'Salinity',
-				text: 'salinity'
-			}, {
-				name: 'Oxygen Requirement',
-				text: 'oxygen_requirement'
-			}, {
-				name: 'Habitat',
-				text: 'habitat'
-			}, {
-				name: 'Disease',
-				text: 'disease'
-			}];
-
-			metadataGenomeSummaryValue['Others'] = [{
-				name: 'Comments',
-				text: 'comments'
-			}, {
-				name: 'Additional Metadata',
-				text: 'additional_metadata'
-			}];
+			var metadataGenomeSummaryID = this.genome_meta_table_names();
+			var metadataGenomeSummaryValue = this.genome_meta_spec();
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
@@ -1354,13 +1181,331 @@ define([
 			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, div, options);
 
 			return div;
+		},
+		"genome_meta_table_names": function(){
+			return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+		},
+
+		"genome_meta_spec": function(){
+			var spec = {
+				'Organism Info': [{
+						name: 'Genome ID',
+						text: 'genome_id',
+						mini: true
+					}, {
+						name: 'Genome Name',
+						text: 'genome_name',
+						mini: true
+					}, {
+						name: 'NCBI Taxon ID',
+						text: 'taxon_id',
+						link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+					}, {
+						name: 'Genome Status',
+						text: 'genome_status',
+						mini: true,
+						editable: true
+					}, {
+						name: 'Strain',
+						text: 'strain',
+						editable: true
+					}, {
+						name: 'Serovar',
+						text: 'serovar',
+						editable: true
+					}, {
+						name: 'Biovar',
+						text: 'biovar',
+						editable: true
+					}, {
+						name: 'Pathovar',
+						text: 'pathovar',
+						editable: true
+					}, {
+						name: 'MLST',
+						text: 'mlst',
+						editable: true
+					}, {
+						name: 'Other Typing',
+						text: 'other_typing',
+						editable: true,
+						isList: true
+					}, {
+						name: 'Culture Collection',
+						text: 'culture_collection',
+						editable: true
+					}, {
+						name: 'Type Strain',
+						text: 'type_strain',
+						editable: true
+					}, {
+						name: 'Antimicrobial Resistance',
+						text: 'antimicrobial_resistance',
+						editable: true,
+						isList: true
+					}, {
+						name: 'Antimicrobial Resistance Evidence',
+						text: 'antimicrobial_resistance_evidence',
+						editable: true,
+						isList: true
+					}, {
+						name: 'Reference Genome',
+						text: 'reference_genome'
+					}],
+
+				'Project Info': [{
+						name: 'Sequencing Center',
+						text: 'sequencing_centers'
+					}, {
+						name: 'Completion Date',
+						text: 'completion_date',
+						editable: true,
+						type: 'date'
+					}, {
+						name: 'Publication',
+						text: 'publication',
+						link: 'http://www.ncbi.nlm.nih.gov/pubmed/',
+						editable: true
+					}, {
+						name: 'BioProject Accession',
+						text: 'bioproject_accession',
+						link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
+						mini: true,
+						editable: true
+					}, {
+						name: 'BioSample Accession',
+						text: 'biosample_accession',
+						link: 'http://www.ncbi.nlm.nih.gov/biosample/',
+						mini: true,
+						editable: true
+					}, {
+						name: 'Assembly Accession',
+						text: 'assembly_accession',
+						link: 'http://www.ncbi.nlm.nih.gov/assembly/',
+						editable: true
+					}, {
+						name: "SRA Accession",
+						text: "sra_accession",
+						link: function(obj){
+							return lang.replace('<a href="http://www.ncbi.nlm.nih.gov/sra/?term={1}" target="_blank">{0}</a>',
+								[obj['sra_accession'], obj['sra_accession'].split(',').join("+OR+")]);
+						},
+						editable: true
+					}, {
+						name: 'GenBank Accessions',
+						text: 'genbank_accessions',
+						link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+						editable: true
+					}, {
+						name: 'RefSeq Accessions',
+						text: 'refseq_accessions',
+						link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+						editable: true
+					}],
+
+				'Sequence Info': [{
+						name: 'Sequencing Status',
+						text: 'sequencing_status',
+						editable: true
+					}, {
+						name: 'Sequencing Platform',
+						text: 'sequencing_platform',
+						editable: true
+					}, {
+						name: 'Sequencing Depth',
+						text: 'sequencing_depth',
+						editable: true
+					}, {
+						name: 'Assembly Method',
+						text: 'assembly_method',
+						editable: true
+					}, {
+						name: 'Chromosomes',
+						text: 'chromosomes'
+					}, {
+						name: 'Plasmids',
+						text: 'plasmids'
+					}, {
+						name: 'Contigs',
+						text: 'contigs'
+					}, {
+						name: 'Sequences',
+						text: 'sequences',
+						link: function(obj){
+							return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.sequences}</a>', {obj: obj});
+						}
+					}, {
+						name: 'Genome Length',
+						text: 'genome_length'
+					}, {
+						name: 'GC Content',
+						text: 'gc_content'
+					}, {
+						name: 'PATRIC CDS',
+						text: 'patric_cds',
+						link: function(obj){
+							return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">{obj.patric_cds}</a>', {obj: obj});
+						}
+					}, {
+						name: 'RefSeq CDS',
+						text: 'refseq_cds'
+					}],
+
+				'Isolate Info': [{
+						name: 'Isolation Site',
+						text: 'isolation_site',
+						editable: true
+					}, {
+						name: 'Isolation Source',
+						text: 'isolation_source',
+						editable: true,
+						type: 'textarea'
+					}, {
+						name: 'Isolation Comments',
+						text: 'isolation_comments',
+						editable: true
+					}, {
+						name: 'Collection Year',
+						text: 'collection_year',
+						editable: true
+					}, {
+						name: 'Collection Date',
+						text: 'collection_date',
+						editable: true,
+						type: 'date'
+					}, {
+						name: 'Isolation Country',
+						text: 'isolation_country',
+						editable: true
+					}, {
+						name: 'Geographic Location',
+						text: 'geographic_location',
+						editable: true
+					}, {
+						name: 'Latitude',
+						text: 'latitude',
+						editable: true
+					}, {
+						name: 'Longitude',
+						text: 'longitude',
+						editable: true
+					}, {
+						name: 'Altitude',
+						text: 'altitude',
+						editable: true
+					}, {
+						name: 'Depth',
+						text: 'depth',
+						editable: true
+					}, {
+						name: 'Other Environmental',
+						text: 'other_environmental',
+						editable: true,
+						isList: true
+					}],
+
+				'Host Info': [{
+						name: 'Host Name',
+						text: 'host_name',
+						editable: true
+					}, {
+						name: 'Host Gender',
+						text: 'host_gender',
+						editable: true
+					}, {
+						name: 'Host Age',
+						text: 'host_age',
+						editable: true
+					}, {
+						name: 'Host Health',
+						text: 'host_health',
+						editable: true
+					}, {
+						name: 'Body Sample Site',
+						text: 'body_sample_site',
+						editable: true
+					}, {
+						name: 'Body Sample Subsite',
+						text: 'body_sample_subsite',
+						editable: true
+					}, {
+						name: 'Other Clinical',
+						text: 'other_clinical',
+						editable: true,
+						isList: true
+					}],
+
+				'Phenotype Info': [{
+						name: 'Gram Stain',
+						text: 'gram_stain',
+						editable: true
+					}, {
+						name: 'Cell Shape',
+						text: 'cell_shape',
+						editable: true
+					}, {
+						name: 'Motility',
+						text: 'motility',
+						editable: true
+					}, {
+						name: 'Sporulation',
+						text: 'sporulation',
+						editable: true
+					}, {
+						name: 'Temperature Range',
+						text: 'temperature_range',
+						editable: true
+					}, {
+						name: 'Optimal Temperature',
+						text: 'optimal_temperature',
+						editable: true
+					}, {
+						name: 'Salinity',
+						text: 'salinity',
+						editable: true
+					}, {
+						name: 'Oxygen Requirement',
+						text: 'oxygen_requirement',
+						editable: true
+					}, {
+						name: 'Habitat',
+						text: 'habitat',
+						editable: true
+					}, {
+						name: 'Disease',
+						text: 'disease',
+						editable: true,
+						isList: true
+					}],
+
+				'Other': [{
+						name: 'Comments',
+						text: 'comments',
+						editable: true,
+						type: 'textarea',
+						isList: true
+					}, {
+						name: 'Additional Metadata',
+						text: 'additional_metadata',
+						editable: true,
+						type: 'textarea',
+						isList: true
+					}]
+			}
+
+			return spec;
 		}
+
 	};
 
 	function displayHeader(parent, label, iconClass, url, options){
 		var linkTitle = options && options.linkTitle || false;
 
-		var titleDiv = domConstruct.create("div", {"class": "DataItemHeader"}, parent);
+		var titleDiv = domConstruct.create("div", {
+			"class": "DataItemHeader"
+		}, parent);
+
+		domConstruct.create("hr", {}, parent);
 
 		// span icon
 		domConstruct.create("span", {"class": iconClass}, titleDiv);
@@ -1384,17 +1529,28 @@ define([
 				domConstruct.place(header, tbody);
 			}
 
+			var rowCount = 0;
 			meta_data[section].forEach(function(column){
 				var row = renderProperty(column, item, options);
 				if(row){
 					domConstruct.place(row, tbody);
+					rowCount++;
 				}
 			})
+
+			// if no data found, say so
+			if(!rowCount && !mini)
+				renderNoInfoFound(section, tbody)
 		})
 	}
 
-	function displayDetail(item, columns, parent, options){
+	function renderNoInfoFound(sectionName, parent){
+		domConstruct.create("tr", {
+			'innerHTML': '<td></td><td class="DataItemSectionNotFound">None available</td>'
+		}, parent);
+	}
 
+	function displayDetail(item, columns, parent, options){
 		var table = domConstruct.create("table", {}, parent);
 		var tbody = domConstruct.create("tbody", {}, table);
 
@@ -1413,14 +1569,24 @@ define([
 		var mini = options && options.mini || false;
 
 		if(key && item[key] && !column.data_hide){
-			if(multiValued){
+			if(column.isList){
+				var tr = domConstruct.create("tr", {});
+				var td = domConstruct.create("td", {colspan: 2}, tr);
+
+				domConstruct.place(renderMultiData(label, item[key]), td);
+				return tr;
+			}else if(multiValued){
 				var tr = domConstruct.create("tr", {});
 				var td = domConstruct.create("td", {colspan: 2}, tr);
 
 				domConstruct.place(renderDataTable(item[key]), td);
 				return tr;
-			}
-			else if(!mini || column.mini){
+			}else if(column.type == 'date'){
+				var d = new Date(item[key]);
+				var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear() ;
+
+				return renderRow(label, dateStr)
+			}else if(!mini || column.mini){
 				var l = evaluateLink(column.link, item[key], item);
 				return renderRow(label, l);
 			}
@@ -1469,6 +1635,21 @@ define([
 		}
 		return table;
 	}
+
+	function renderMultiData(label, data){
+		var table = domConstruct.create("table", {"class": "p3table"});
+		var tr = domConstruct.create("tr", {}, table);
+		domConstruct.create("td", {"class": "DataItemProperty", innerHTML: label}, tr);
+
+		var ul = domConstruct.create("ul", null, tr);
+		for (var i = 0, len = data.length; i < len; i++){
+			var val = data[i];
+			domConstruct.create("li", {"class": "DataItemValue", innerHTML: val}, ul);
+		}
+
+		return table;
+	}
+
 
 	return function(item, type, options){
 

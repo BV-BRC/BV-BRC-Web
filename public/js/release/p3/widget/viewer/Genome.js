@@ -22,6 +22,7 @@ define("p3/widget/viewer/Genome", [
 		genome_id: "",
 		perspectiveLabel: "Genome View",
 		perspectiveIconClass: "icon-selection-Genome",
+		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
 			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
@@ -67,6 +68,26 @@ define("p3/widget/viewer/Genome", [
 						activeTab.set("state", lang.mixin({}, this.state));
 					}
 					break;
+				case "features":
+					// check whether genome is a host genome and set default filter condition
+					if(this.state.genome){
+						if(!this.state.hashParams.filter){
+							var taxon_lineage_ids = this.state.genome.taxon_lineage_ids;
+							if (taxon_lineage_ids.indexOf("2759") > -1){
+
+								activeQueryState = lang.mixin({}, this.state, {
+									search: "eq(genome_id," + this.state.genome.genome_id + ")",
+									hashParams: lang.mixin({}, this.state.hashParams, {
+										filter: 'eq(feature_type,%22CDS%22)'
+									})
+								});
+							}
+						}
+
+						activeTab.set("state", activeQueryState);
+					}
+					break;
+
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;
@@ -133,7 +154,7 @@ define("p3/widget/viewer/Genome", [
 
 			// check host genomes. remove the circular viewer tab if it's a host genome
 			if(genome && genome.taxon_lineage_ids){
-			    // console.log("this genome: ", genome);
+				// console.log("this genome: ", genome);
 				if (genome.taxon_lineage_ids.length>1 && genome.taxon_lineage_ids[1] == "2759"){
 					this.viewer.removeChild(this.circular);
 				}
@@ -231,8 +252,7 @@ define("p3/widget/viewer/Genome", [
 
 			this.features = new FeatureGridContainer({
 				title: "Features",
-				id: this.viewer.id + "_" + "features",
-				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+				id: this.viewer.id + "_" + "features"
 			});
 
 			this.browser = new GenomeBrowser({

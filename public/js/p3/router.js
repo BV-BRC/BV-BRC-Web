@@ -74,6 +74,8 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"
 				this._handlePathChange(href, state || {})
 			}else if(state){
 				window.history.replaceState(state || {});
+				//I would like to change the above method to the following in a separate PR
+				//window.history.replaceState(state || {}, "route", href);
 			}
 		},
 

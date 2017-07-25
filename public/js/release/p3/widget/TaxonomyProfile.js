@@ -40,6 +40,12 @@ define("p3/widget/TaxonomyProfile", [
 			var genomeFreqMap = data.facet_counts.facet_fields.genome_id;
 			var genomeIds = Object.keys(genomeFreqMap);
 
+			if (genomeIds.length > 1000){
+				this.set('data', []);
+				this.loadingNode.innerHTML = "Taxonomy Profile is supported up to 1000 genomes.";
+				return;
+			}
+
 			xhr.post(PathJoin(this.apiServiceUrl, "/genome/") + "/", {
 				handleAs: "json",
 				headers: {

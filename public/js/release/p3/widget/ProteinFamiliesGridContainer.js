@@ -25,7 +25,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		var sel = viewFASTATT.selection;
 		delete viewFASTATT.selection;
 
-		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel});
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel, target: "blank"});
 	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
@@ -213,6 +213,26 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 						around: this.selectionActionBar._actions.ViewFASTA.button,
 						orient: ["below"]
 					});
+				},
+				false
+			], [
+				"MultipleSeqAlignmentFeatures",
+				"fa icon-alignment fa-2x",
+				{
+					label: "MSA",
+					ignoreDataType: true,
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))";
+
+					Topic.publish("/navigate", {href: "/view/MSA/?" + query, target: "blank"});
 				},
 				false
 			], [

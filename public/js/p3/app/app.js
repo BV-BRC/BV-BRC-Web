@@ -128,7 +128,7 @@ define([
 						window.location.reload();
 						break;
 //						self.accessToken = msg.accessToken;
-//						self.user = msg.userProfile;	
+//						self.user = msg.userProfile;
 //						domClass.add(document.body, "Authenticated");
 //						break;
 				}
@@ -261,7 +261,6 @@ define([
 			});
 
 			Topic.subscribe("/openDialog", function(msg){
-				// console.log("OpenDialog: ", msg);
 				var type = msg.type
 				var params = msg.params || {};
 				var w = _self.loadPanel(type, params);
@@ -393,7 +392,7 @@ define([
 		},
 		loadPanel: function(id, params, callback){
 			var def = new Deferred();
-			console.log("Load Panel", id, params);
+			console.log("Load Panel!", id, params);
 			var p = this.panels[id];
 			if(!p.params){
 				p.params = {};
@@ -538,7 +537,7 @@ define([
 					// }
 
 					// if (instance.resize){
-					// 	 instance.resize(); 
+					// 	 instance.resize();
 					// }
 					return;
 				}

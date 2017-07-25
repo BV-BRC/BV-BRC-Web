@@ -1,13 +1,13 @@
 define("p3/widget/viewer/GenomeGroup", [
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/topic",
+	"dojo/topic", "dojo/request", "../../util/PathJoin",
 	"./TabViewerBase", "./_GenomeList", "../AMRPanelGridContainer",
 	"../GenomeListOverview", "../GroupGenomeGridContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
 	"../PathwaysContainer", "../TranscriptomicsContainer"
 
 ], function(declare, lang,
-			Topic,
+			Topic, xhr, PathJoin,
 			TabViewerBase, GenomeList, AMRPanelGridContainer,
 			Overview, GroupGenomeGridContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
@@ -75,6 +75,35 @@ define("p3/widget/viewer/GenomeGroup", [
 						if(activeTab._firstView){
 							Topic.publish(activeTab.topicId, "showMainGrid");
 						}
+					}
+
+					// special case for host genomes
+					if(active == "features" && this.state && this.state.genome_ids && !this.state.hashParams.filter){
+						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))&select(taxon_lineage_ids)";
+						// console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
+						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
+							headers: {
+								accept: "application/json",
+								'X-Requested-With': null,
+								'Authorization': (window.App.authorizationToken || "")
+							},
+							handleAs: "json"
+						}).then(lang.hitch(this, function(genome_data){
+
+							if (genome_data.some(function(el, idx, arr){
+								return el.taxon_lineage_ids.indexOf("2759") > -1;
+							})) {
+
+								activeQueryState = lang.mixin({}, this.state, {
+									search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
+									hashParams: lang.mixin({}, this.state.hashParams, {
+										filter: 'eq(feature_type,%22CDS%22)'
+									})
+								});
+							}
+
+							activeTab.set("state", activeQueryState);
+						}));
 					}
 
 					if(activeQueryState){

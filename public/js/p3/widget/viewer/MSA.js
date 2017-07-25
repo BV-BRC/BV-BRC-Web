@@ -190,6 +190,7 @@ define([
 		dataStats: {"_formatterType": "msa_details"},
 		tree: null,
 		phylogram: false,
+        alignType: "protein",
 		maxSequences: 500,
 		numSequences: 0,
 		featureData: null,
@@ -395,6 +396,12 @@ define([
 			opts.seqs = msa_models.seqs;
 			opts.el = msaDiv;
 			opts.bootstrapMenu = false;
+            if (this.alignType == "protein"){
+                opts.colorscheme = {"scheme":"taylor"};
+            }
+            else if (this.alignType == "dna"){
+                opts.colorscheme = {"scheme":"nucleotide"};
+            }
 			opts.vis = {
 				conserv: false,
 				overviewbox: false,
@@ -711,9 +718,11 @@ define([
 			this.set('loading', true);
 			if(this.state && this.state.search){
 				var q = this.state.search + "&limit(" + this.maxSequences + ")";
-
+                if (this.state.pathname.indexOf("dna") !== -1){
+                    this.alignType = "dna";
+                }
 				console.log("RUN MSA Against: ", q)
-				return when(window.App.api.data("multipleSequenceAlignment", [q]), lang.hitch(this, function(res){
+				return when(window.App.api.data("multipleSequenceAlignment", [q, this.alignType]), lang.hitch(this, function(res){
 					console.log("MSA Results: ", res);
 					this.set('loading', false);
 					this.set('data', res);
