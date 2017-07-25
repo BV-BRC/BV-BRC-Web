@@ -838,8 +838,8 @@ define([
 			}
 			// return this.currentWorkspace;
 
-			// just return user's top level
-			return {path: "/" + this.userId + "/"};
+			// just return user's home
+			return {path: "/" + this.userId + "/home"};
 		},
 		_currentWorkspaceSetter: function(val){
 			this.currentWorkspace = val;
