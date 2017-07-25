@@ -166,13 +166,15 @@ define("p3/widget/viewer/Genome", [
 
 		onSetState: function(attr, oldState, state){
 
+			if(!state){
+				return;
+			}
+
 			var parts = state.pathname.split("/");
 			this.set("genome_id", parts[parts.length - 1]);
 			state.genome_id = parts[parts.length - 1];
 			state.genome_ids = [state.genome_id];
-			if(!state){
-				return;
-			}
+
 
 			// console.log("Genome: ", state.genome, state.genome_id)
 
@@ -216,7 +218,11 @@ define("p3/widget/viewer/Genome", [
 				}
 			}
 
-			this.setActivePanelState();
+			if(!oldState){
+				return;
+			} else {
+				this.setActivePanelState();
+			}
 
 			// console.log("viewer/Genome onSetState() after set genome_id")
 		},
@@ -277,9 +283,13 @@ define("p3/widget/viewer/Genome", [
 			this.pathways = new PathwaysContainer({
 				apiServer: this.apiServiceUrl,
 				title: "Pathways",
-				id: this.viewer.id + "_" + "pathways",
-				state: this.state
+				id: this.viewer.id + "_" + "pathways"
 			});
+
+			// this.subsystems = new SubSystemsContainer({
+			// 	title: "Subsystems",
+			// 	id: this.viewer.id + "_" + "subsystems"
+			// })
 
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
@@ -309,6 +319,7 @@ define("p3/widget/viewer/Genome", [
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
+			// this.viewer.addChild(this.subsystems);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.interactions);
 		}

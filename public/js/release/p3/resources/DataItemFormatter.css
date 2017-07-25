@@ -4,7 +4,6 @@
     font-weight: bold;
     margin-bottom: 6px;
     padding: 10px 0 7px 0;
-    border-bottom: 1px solid #afafaf;
     overflow: hidden;
 }
 .DataItemHeader > span {
@@ -23,18 +22,27 @@
     border-bottom: 1px solid #afafaf;
 }
 .DataItemSectionHead {
-    background: #efefef;
-    padding: 5px 3px;
-    font-weight: bold;
+    background: #f2f2f2;
+    padding: 3px 5px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    font-size: 13px;
 }
 .DataItemProperty {
     vertical-align: top;
     padding: 0 4px 0 10px;
     width: 30%;
+    font-weight: bold;
 }
 .DataItemValue {
     vertical-align: top;
     word-break: break-all;
+}
+.DataItemSectionNotFound {
+    font-style: italic;
+    color: #888;
+    padding: 0 4px 0 10px;
 }
 .ExperimentComparison .DataItemProperty {
     width: 210px;

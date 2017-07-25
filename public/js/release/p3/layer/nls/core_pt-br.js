@@ -7,9 +7,9 @@ define('p3/layer/nls/core_pt-br',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"O valor inserido não é válido.","missingMessage":"Este valor é necessário.","rangeMessage":"Este valor está fora do intervalo. ","_localized":{}}
-,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 tri","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":".","percentFormat":"#,##0%","decimalFormat-long":"000 trilhões","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"O valor inserido não é válido.","missingMessage":"Este valor é necessário.","rangeMessage":"Este valor está fora do intervalo. ","_localized":{}}
 ,
 'dijit/form/nls/ComboBox':{"previousMessage":"Opções anteriores","nextMessage":"Mais opções","_localized":{}}
 ,

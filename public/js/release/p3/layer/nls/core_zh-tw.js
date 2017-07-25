@@ -7,9 +7,9 @@ define('p3/layer/nls/core_zh-tw',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"輸入的值無效。","missingMessage":"必須提供此值。","rangeMessage":"此值超出範圍。","_localized":{}}
-,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000T","currencySpacing-afterCurrency-insertBetween":" ","nan":"非數值","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":",","percentFormat":"#,##0%","decimalFormat-long":"000兆","decimalFormat":"#,##0.###","decimal":".","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","$locale":"zh-hant-tw","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"輸入的值無效。","missingMessage":"必須提供此值。","rangeMessage":"此值超出範圍。","_localized":{}}
 ,
 'dijit/form/nls/ComboBox':{"previousMessage":"前一個選擇項","nextMessage":"其他選擇項","_localized":{}}
 ,

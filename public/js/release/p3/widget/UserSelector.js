@@ -1,25 +1,25 @@
 define("p3/widget/UserSelector", [
 	"dijit/form/FilteringSelect", "dojo/_base/declare",  "dojo/topic",
 	"dojo/store/JsonRest", "dojo/dom-construct", "dijit/TooltipDialog",
-	"dojo/on", "dijit/popup", "dojo/_base/lang", "dojo/dom-construct",
+	"dojo/on", "dijit/popup", "dojo/_base/lang",
 	"dijit/form/CheckBox", "dojo/string", "dojo/when", "dijit/form/_AutoCompleterMixin",
-	"../util/PathJoin",
+	"../util/PathJoin"
 ], function(FilteringSelect, declare, Topic,
 			Store, domConstr, TooltipDialog,
-			on, popup, lang, domConstr, Checkbox,
+			on, popup, lang, Checkbox,
 			string, when, AutoCompleterMixin,
 			PathJoin){
 
 	return declare([FilteringSelect, AutoCompleterMixin], {
 		apiServiceUrl: window.App.accountURL,
 		//promptMessage: 'Select a user...',
-		missingMessage: 'Select a user...',
+		missingMessage: 'Search for a user...',
 		placeHolder: 'Search for a user...',
 		searchAttr: "id",
-		extraSearch: ["name"],
+		extraSearch: ["first_name", "last_name"],
 		queryExpr: "re:%5e${0}",
 		queryFilter: "",
-		resultFields: ["name", "id"],
+		resultFields: ["id", "name"],
 		includePrivate: true,
 		includePublic: true,
 		pageSize: 25,
@@ -30,20 +30,22 @@ define("p3/widget/UserSelector", [
 		constructor: function(){
 			var _self = this;
 			if(!this.store){
-			//https://user.patricbrc.org/user/?or(eq(last_name,re:%5eMac),eq(first_name,re:%5eMac))&http_accept=application/json
+			    //https://user.patricbrc.org/user/?or(eq(last_name,re:%5eMac),eq(first_name,re:%5eMac))&http_accept=application/json
 				this.store = new Store({
 					target: PathJoin(this.apiServiceUrl, "user") + "/",
 					idProperty: "id",
 					headers: {accept: "application/json", "Authorization": (window.App.authorizationToken || "")}
 				});
-
 			}
 
 			var orig = this.store.query;
 			this.store.query = lang.hitch(this.store, function(query, options){
-				//console.log('query', query, options)
+				// not sure why this handle is being called multiple times, besides the queryExpr regex
+				var q = query[_self.searchAttr].toString();
+				if(q.indexOf('re:') != -1 && q.length < 8){
+					return;
+				}
 
-				// console.log("Store Headers: ", _self.store.headers);
 				var q = "";
 				if(query[_self.searchAttr] && query[_self.searchAttr] != ""){
 					if(_self.extraSearch){
@@ -64,12 +66,13 @@ define("p3/widget/UserSelector", [
 					q += _self.queryFilter
 				}
 
+				// only select what is in  _self.resultFields
 				if(_self.resultFields && _self.resultFields.length > 0){
 					q += "&select(" + _self.resultFields.join(",") + ")";
 				}
 
 				q += "&limit("+_self.pageSize+")";
-				// console.log("Q: ", q);
+
 				return orig.apply(_self.store, [q, options]);
 			});
 		},
@@ -103,73 +106,20 @@ define("p3/widget/UserSelector", [
 		postCreate: function(){
 			this.inherited(arguments);
 
-			/*
-			this.filterButton = domConstr.create("i", {
-				"class": "fa icon-filter fa-1x",
-				style: {"float": "left", "font-size": "1.2em", "margin": "2px"}
-			});
-			domConstr.place(this.filterButton, this.domNode, "first");
-
-
-			var dfc = domConstr.create("div");
-			domConstr.create("div", {innerHTML: "Include in Search", style: {"font-weight": 900}}, dfc);
-
-			var publicDiv = domConstr.create('div', {});
-			domConstr.place(publicDiv, dfc, "last");
-			var publicCB = new Checkbox({checked: true})
-			publicCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Public Genomes to " + val);
-				this.set("includePublic", val);
-			}));
-
-			domConstr.place(publicCB.domNode, publicDiv, "first");
-			domConstr.create("span", {innerHTML: "Public Genomes"}, publicDiv);
-
-			var privateDiv = domConstr.create('div', {});
-			domConstr.place(privateDiv, dfc, "last");
-			var privateCB = new Checkbox({checked: true})
-			privateCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Private Genomes to " + val);
-				this.set("includePrivate", val);
-			}));
-			domConstr.place(privateCB.domNode, privateDiv, "first");
-			domConstr.create("span", {innerHTML: "My Genomes"}, privateDiv);
-
-			var filterTT = new TooltipDialog({
-				content: dfc, onMouseLeave: function(){
-					popup.close(filterTT);
-				}
-			})
-
-			on(this.filterButton, "click", lang.hitch(this, function(){
-				popup.open({
-					popup: filterTT,
-					around: this.domNode,
-					orient: ["below"]
-				});
-			}));
-			*/
 		},
 
 		/*isValid: function(){
 			return (!this.required || this.get('displayedValue') != "");
 		},*/
 
-		getSelected: function() {
-			return this.attr('value');
+		getSelected: function(){
+			var username = this.attr('value');
+			return username.length ?  username + '@patricbrc.org' : null;
 		},
+
 		labelFunc: function(item, store){
-
-			//console.log('item', item)
 			var label = item.id + ('name' in item ? ' <<i>' + item.name + '</i>>' : '');
-
 			return label;
-		},
-		onChange: function(userName){
-            console.log('there was a change:', userName)
-			Topic.publish("/addUserPermission", {id: userName});
-        }
-
-
+		}
 	});
 });

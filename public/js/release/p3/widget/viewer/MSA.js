@@ -83,20 +83,28 @@ define("p3/widget/viewer/MSA", [
 
 
 	var filters = [{
-			name: "Hide columns by threshold (>=)", 
+			name: "Hide columns by % conservation (>=)", 
 			id: "hide_col_threshold_greater"
 		},
 		{
-			name: "Hide columns by threshold (<=)",
+			name: "Hide columns by % conservation (<=)",
 			id: "hide_col_threshold_less"
 		},
 		{
-			name: "Hide columns by gaps (>=)",
+			name: "Hide columns by % conservation (between)",
+			id: "hide_col_threshold_between"
+		},
+		{
+			name: "Hide columns by % gaps (>=)",
 			id: "hide_col_gaps_greater"
 		},
 		{
-			name: "Hide columns by gaps (<=)",
+			name: "Hide columns by % gaps (<=)",
 			id: "hide_col_gaps_less"
+		},
+		{
+			name: "Hide columns by % gaps (between)",
+			id: "hide_col_gaps_between"
 		},
 		/* to be implemented in the future
 		{
@@ -182,8 +190,10 @@ define("p3/widget/viewer/MSA", [
 		dataStats: {"_formatterType": "msa_details"},
 		tree: null,
 		phylogram: false,
+        alignType: "protein",
 		maxSequences: 500,
 		numSequences: 0,
+		featureData: null,
 		selection: null,
 		onSetLoading: function(attr, oldVal, loading){
 			if(loading){
@@ -191,7 +201,7 @@ define("p3/widget/viewer/MSA", [
 			}
 		},
 		checkSequenceCount: function(query){
-			var q = query + "&limit(1)";
+			var q = query + "&limit(500)";
 			var def = new Deferred();
 			var url = PathJoin(this.apiServiceUrl, "genome_feature") + "/";
 			console.log("CheckSeqCount URL: ", url);
@@ -205,10 +215,12 @@ define("p3/widget/viewer/MSA", [
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(res){
-				console.log("Check Res: ", res.response.numFound)
-				if(res && res.response && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
+				// console.log("Check Res: ", res.response)
+				// console.log("Check Res: ", res.response.numFound)
+				if(res && res.response && res.response.docs && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
 					console.log("  Amount OK")
 					this.numSequences = res.response.numFound;
+					this.featureData = res.response.docs;
 					def.resolve(res.response.numFound);
 					return;
 				}
@@ -247,7 +259,27 @@ define("p3/widget/viewer/MSA", [
 			var cur = this.selection.map(lang.hitch(this, function(selected){
 				return this.dataMap[selected.id];
 			}));
+			// console.log("dataMap", this.dataMap);
+			// console.log("data", this.data);
+			// console.log("cur", cur);
+			// console.log("this.itemDetailPanel", this.itemDetailPanel);
 			this.selectionActionBar._setSelectionAttr(cur);
+			var self = this;
+			if (cur.length==1){
+				var curr_selection = cur[0].feature_id;
+				// console.log("curr_selection", curr_selection);
+				this.featureData.forEach(function(sel){
+					// console.log("sel", sel);
+					// console.log("this.itemDetailPanel", self.itemDetailPanel);
+					if (sel.feature_id == curr_selection) {
+						self.itemDetailPanel.set('containerWidget', {containerType: 'feature_data'});
+						self.itemDetailPanel.set('selection', [sel]);	
+					}
+				})
+
+			} else {
+				this.itemDetailPanel.set('selection', cur);
+			}
 		},
 
 		createDataMap: function(){
@@ -364,6 +396,12 @@ define("p3/widget/viewer/MSA", [
 			opts.seqs = msa_models.seqs;
 			opts.el = msaDiv;
 			opts.bootstrapMenu = false;
+            if (this.alignType == "protein"){
+                opts.colorscheme = {"scheme":"taylor"};
+            }
+            else if (this.alignType == "dna"){
+                opts.colorscheme = {"scheme":"nucleotide"};
+            }
 			opts.vis = {
 				conserv: false,
 				overviewbox: false,
@@ -394,14 +432,14 @@ define("p3/widget/viewer/MSA", [
 			//this.tree.setTree(this.data.tree);
 
 			var idMenuDivs = [];
-			this.tree.addLabels(this.alt_labels["genome_name"], "Organism Names");
-			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Organism Names" + '">' + "Organism Names" + '</div>');
-			this.tree.addLabels(this.alt_labels["patric_id"], "PATRIC ID");
-			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "PATRIC ID" + '">' + "PATRIC ID" + '</div>');
+			this.tree.addLabels(this.alt_labels["genome_name"], "Genome Name");
+			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Genome Name" + '">' + "Genome Name" + '</div>');
+			this.tree.addLabels(this.alt_labels["patric_id"], "Gene ID");
+			idMenuDivs.push('<div class="wsActionTooltip" rel="' + "Gene ID" + '">' + "Gene ID" + '</div>');
 			idMenu.set("content", idMenuDivs.join(""));
 
 			this.tree.startup();
-			this.tree.selectLabels("Organism Names");
+			this.tree.selectLabels("Genome Name");
 			this.tree.update();
 
 			Object.keys(rearrangeSeqs).forEach(lang.hitch(this, function(fid){
@@ -413,7 +451,7 @@ define("p3/widget/viewer/MSA", [
 
 			// init msa
 			var m = new msa.msa(opts);
-			// console.log("m ", m);
+		 	console.log("m ", m);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
@@ -499,6 +537,24 @@ define("p3/widget/viewer/MSA", [
 					m.g.vis.set("seqlogo", false);
 					break;
 
+				case "hide_col_threshold_between":
+					var threshold1 = prompt("Enter minimum threshold (in percent)", 20);
+					var threshold2 = prompt("Enter maximum threshold (in percent)", 80);
+					threshold1 = threshold1 / 100;
+					threshold2 = threshold2 / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						if (conserv[i] >= threshold1 && conserv[i] <= threshold2) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
 				case "hide_col_gaps_greater":
 					var threshold = prompt("Enter threshold (in percent)", 20);
 					threshold = threshold / 100;
@@ -545,6 +601,31 @@ define("p3/widget/viewer/MSA", [
 					m.g.vis.set("seqlogo", false);
 					break;
 
+				case "hide_col_gaps_between":
+					var threshold1 = prompt("Enter minimum threshold (in percent)", 20);
+					var threshold2 = prompt("Enter maximum threshold (in percent)", 80);
+					threshold1 = threshold1 / 100;
+					threshold2 = threshold2 / 100;
+					var hidden = [];
+					for (var i = 0; i <= end; i++) {
+						var gaps = 0;
+						var total = 0;
+						m.seqs.each((el) => {
+						  if (el.get('seq')[i] === "-") { gaps++; }
+						  return total++;
+						});
+						const gapContent = gaps / total;
+						if (gapContent >= threshold1 && gapContent <= threshold2) {
+						  hidden.push(i);
+						}
+					}
+					treeDiv.setAttribute("style", "padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+					this.tree.update();
+					cell2.setAttribute("style", "padding-top:105px;");
+					m.g.columns.set("hidden", hidden);
+					m.g.vis.set("seqlogo", false);
+					break;
+
 				case "reset":
 					m.g.columns.set("hidden", []);
 					m.seqs.each((el) => {
@@ -573,6 +654,9 @@ define("p3/widget/viewer/MSA", [
 				}
 				else if(rel == "msa-txt"){
 					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
+				}
+				else if(rel == "msa-fasta"){
+					msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
 				}
 				else if(rel == "tree-svg"){
 					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_msa_tree.svg");
@@ -634,9 +718,11 @@ define("p3/widget/viewer/MSA", [
 			this.set('loading', true);
 			if(this.state && this.state.search){
 				var q = this.state.search + "&limit(" + this.maxSequences + ")";
-
+                if (this.state.pathname.indexOf("dna") !== -1){
+                    this.alignType = "dna";
+                }
 				console.log("RUN MSA Against: ", q)
-				return when(window.App.api.data("multipleSequenceAlignment", [q]), lang.hitch(this, function(res){
+				return when(window.App.api.data("multipleSequenceAlignment", [q, this.alignType]), lang.hitch(this, function(res){
 					console.log("MSA Results: ", res);
 					this.set('loading', false);
 					this.set('data', res);
@@ -659,10 +745,11 @@ define("p3/widget/viewer/MSA", [
 				region: "right",
 				style: "width:300px",
 				splitter: true,
-				layoutPriority: 1
+				layoutPriority: 1,
+				containerWidget: this
 			});
 			this.addChild(this.selectionActionBar);
-			//this.addChild(this.itemDetailPanel);
+			this.addChild(this.itemDetailPanel);
 			this.itemDetailPanel.startup();
 			this.setupActions();
 		},
@@ -685,7 +772,7 @@ define("p3/widget/viewer/MSA", [
 					if(children.some(function(child){
 							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
 						}, this)){
-						// console.log("Remove Item Detail Panel");
+						console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
 						console.log("Button Node: ", button)
 
@@ -831,6 +918,30 @@ define("p3/widget/viewer/MSA", [
 				},
 				false
 			], 
+			[
+				"MultipleSeqAlignmentFeatures",
+				"fa icon-alignment fa-2x",
+				{
+					label: "MSA",
+					ignoreDataType: true,
+					min: 2,
+					multiple: true,
+					max: 200,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["*"]
+				},
+				function(selection){
+					// console.log("MSA Selection: ", selection);
+					var ids = selection.map(function(d){
+						return d['feature_id'];
+					});
+					// console.log("OPEN MSA VIEWER");
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
+
+				},
+				false
+			],
 			[
 				"ViewFeatureItem",
 				"MultiButton fa icon-selection-Feature fa-2x",
@@ -988,7 +1099,8 @@ define("p3/widget/viewer/MSA", [
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
 					var snapMenuDivs = [];
-					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
+					// disable downloding MSA png as the png does not give the species or tell you where in the alignment it is.
+					// snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
 					/*var encodedTree = window.btoa(unescape(encodeURIComponent(Query("svg")[0].outerHTML)));
 
 					var e = domConstruct.create("a", {
@@ -1017,6 +1129,7 @@ define("p3/widget/viewer/MSA", [
 						alt: "tree_newick.txt"
 					});*/
 					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">' + "MSA txt" + '</div>');
+					snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-fasta">' + "MSA fasta" + '</div>');
 					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + "Tree svg" + '</div>');
 					snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + "Tree newick" + '</div>');
 

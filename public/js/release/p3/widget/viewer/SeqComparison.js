@@ -24,11 +24,17 @@ define("p3/widget/viewer/SeqComparison", [
 		_appLabel: "",
 		_resultMetaTypes: {},
 		_autoLabels: {},
+		getComparisonId: function(){
+			return (this.data.path + this.data.name);
+		},
+		isSummaryView: function(){
+			return true;
+		},
 		_setDataAttr: function(data){
 			this.data = data;
-			console.log("job result viewer data: ", data);
+			// console.log("job result viewer data: ", data);
 			var paths = this.data.autoMeta.output_files.filter(function(o){
-				console.log("o[0]:", o[0]);
+				// console.log("o[0]:", o[0]);
 				return (o[0].indexOf("circos_final.html") >= 0) || (o[0].indexOf("circos.svg") >= 0) || (o[0].indexOf("genome_comparison.json") >= 0)
 
 			}).map(function(o){
@@ -37,18 +43,18 @@ define("p3/widget/viewer/SeqComparison", [
 
 			WorkspaceManager.getObjects(paths, true).then(lang.hitch(this, function(objs){
 				this._resultObjects = objs;
-				console.log("got objects: ", objs);
+				// console.log("got objects: ", objs);
 				this.refresh();
 			}));
 
 		},
 		refresh: function(){
 			if(this.data){
-				console.log("view resultsObjects:  ", this._resultObjects);
+				// console.log("view resultsObjects:  ", this._resultObjects);
 				this._resultObjects.some(function(obj){
 					if(obj.name == "circos_final.html"){
 						WorkspaceManager.getObject(obj.path + obj.name).then(lang.hitch(this, function(obj){
-							console.log("Circos HTML Object: ", obj);
+							// console.log("Circos HTML Object: ", obj);
 							this.viewer.set("content", obj.data);
 						}));
 					}
