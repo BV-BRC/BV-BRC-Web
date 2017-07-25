@@ -14,7 +14,21 @@ define([
 		token: "",
 		apiUrl: "",
 		userId: "",
-		downloadTypes: ["contigs", "reads", "unspecified", "diffexp_experiment", "diffexp_mapping", "diffexp_sample", "diffexp_expression", "diffexp_input_data"],
+		downloadTypes: ["bam", "biochemistry", "contigs", "csv",
+		"de_novo_assembled_transcripts", "diffexp_experiment", "diffexp_expression",
+		"diffexp_input_data", "diffexp_input_metadata", "diffexp_mapping",
+		"diffexp_sample", "doc", "docx", "embl", "experiment_group", "fba",
+		"feature_dna_fasta", "feature_group", "feature_protein_fasta",
+		"feature_table", "genbank_file", "genome",
+		"genome_annotation_result", "genome_comparison_table", "genome_group",
+		"gff", "gif", "html", "job_result", "jpg", "json", "mapping", "media",
+		"model", "model_edit", "modeltemplate", "pdf", "png", "ppt",
+		"pptx", "proteomics_experiment", "reads", "rxnprobs", "string", "svg",
+		"tar_gz", "transcriptomics_experiment", "transcripts", "txt", "unspecified",
+		"vcf", "wig", "xls", "xlsx", "zip", "contigset"],
+		viewableTypes: ["txt", "html", "json", "csv", "diffexp_experiment",
+		"diffexp_expression", "diffexp_mapping", "diffexp_sample",
+		"diffexp_input_data", "diffexp_input_metadata", "svg", "gif", "png", "jpg"],
 
 		getDefaultFolder: function(type){
 			switch(type){
@@ -352,6 +366,8 @@ define([
 				if(!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]){
 					throw new Error("Object not found: ");
 				}
+
+				//console.log('[WorkspaceManager] results:', results);
 				// console.log("results[0]", results[0]);
 				var meta = {
 					name: results[0][0][0][0],
@@ -375,6 +391,29 @@ define([
 					metadata: meta,
 					data: results[0][0][1]
 				};
+
+				if(meta.link_reference){
+					var headers = {
+						"X-Requested-With": null
+					};
+					if(window.App.authorizationToken){
+						headers.Authorization = "OAuth " + window.App.authorizationToken;
+					}
+
+					var d = xhr.get(meta.link_reference + "?download", {
+						headers: headers
+					});
+
+					return Deferred.when(d, function(data){
+						return {
+							metadata: meta,
+							data: data
+						}
+					}, function(err){
+						console.error("Error Retrieving data object from shock :", err, meta.link_reference);
+					});
+				}
+
 				// console.log("getObjects() res", res);
 				return res;
 			});

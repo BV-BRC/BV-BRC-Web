@@ -13,9 +13,9 @@ define([
 		file: null,
 
 		_setFileAttr: function(val){
-
+			//console.log('[File] _setFileAttr:', val);
 			if(!val){
-				this.file = {}, this.filepath = "";
+				this.file = {}, this.filepath = "", this.url = "";
 				return;
 			}
 			if(typeof val == "string"){
@@ -32,12 +32,14 @@ define([
 			}
 		},
 		_setFilepathAttr: function(val){
+			//console.log('[File] _setFilepathAttr:', val);
 			this.filepath = val;
 			var _self = this;
 			return Deferred.when(WS.getObject(val, true), function(meta){
 				_self.file = {metadata: meta}
 				_self.refresh();
 			});
+
 		},
 		startup: function(){
 			if(this._started){
@@ -88,40 +90,64 @@ define([
 				return;
 			}
 
-			if(!this.file.data && this.file.metadata.size && (this.file.metadata.size > 1000000)){
-				var content = this.formatFileMetaData();
-				this.file.data = 'Unloaded Content';
-				this.viewer.set('content', content);
-				return;
-			}else if(!this.file.data){
-				this.viewer.set("Content", "<div>Loading file content...</div>");
-				return Deferred.when(WS.getObject(this.filepath, false), function(obj){
+			//console.log('[File] file:', this.file);
+			var viewable = false;
+			if(WS.viewableTypes.indexOf(this.file.metadata.type) >= 0){
+				viewable = true;
+			}
+			//console.log('[File] viewable?:', viewable);
+
+			if(!this.file.data && viewable && this.file.metadata.size <= 10000000) {
+				// get the object to display
+				Deferred.when(WS.getObject(this.filepath, false), function(obj){
+					//console.log('[File] obj:', obj);
 					_self.set("file", obj);
 				});
 			}
 
+			if(!this.url && viewable){
+				// get the download url
+				Deferred.when(WS.getDownloadUrls(this.filepath), function(url){
+					//console.log('[File] url:', url);
+					_self.set("url", url);
+				});
+			}
+
 			if(this.file && this.file.metadata){
-				if(this.file.metadata.type == "unspecified"){
+				if (viewable) {
+					//this.viewer.set('content', this.formatFileMetaData() + "<pre>" + this.file.data + "</pre>");
+					this.viewer.set('content', this.formatFileMetaData());
 
-					if(this.file.metadata.name.match(/\.json/)){
-
-						if(typeof this.file.data != "string"){
-							this.file.data = JSON.stringify(this.file.data, null, 4);
-						}else{
-							this.file.data = JSON.stringify(JSON.parse(this.file.data), null, 4)
+					if (this.file.data) {
+						var childContent = '</br>';
+						switch(this.file.metadata.type){
+							case "html":
+								//console.log('[File] type: html');
+								childContent = this.file.data;
+								break;
+							case "json":
+							case "diffexp_experiment":
+							case "diffexp_expression":
+							case "diffexp_mapping":
+							case "diffexp_sample":
+								//console.log('[File] type: json');
+								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null),null,2)  + "</pre>";
+								break;
+							case "svg":
+							case "gif":
+							case "png":
+							case "jpg":
+							case "txt":
+							default:
+								//console.log('[File] type: txt/img');
+								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + this.file.data + '</pre>';
+								break;
 						}
-
-						this.viewer.set('content', this.formatFileMetaData + "<pre>" + this.file.data + "</pre>");
-						return;
+						this.viewer.addChild(new ContentPane({content: childContent, region: "center"}));
 					}
-					if(this.file.metadata.name.match(/\.txt/)){
-
-						this.viewer.set('content', this.formatFileMetaData + "<pre>" + this.file.data + "</pre>");
-						return;
-					}
+				} else {
+					this.viewer.set('content', this.formatFileMetaData());
 				}
-				this.viewer.set('content', this.formatFileMetaData + "<pre>" + this.file.data + "</pre>");
-
 			}
 		}
 	});

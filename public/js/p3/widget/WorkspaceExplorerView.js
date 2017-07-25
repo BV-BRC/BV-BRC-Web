@@ -26,6 +26,7 @@ define([
 			sort: [{attribute: "name", descending: false}]
 		},
 		listWorkspaceContents: function(ws){
+			// console.log("[WorkspaceExplorerView] listWorkspaceContents()")
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
