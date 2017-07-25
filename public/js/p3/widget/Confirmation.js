@@ -11,6 +11,7 @@ define([
 		content: "Are you sure?",
 		okLabel: "OK",
 		cancelLabel: "Cancel",
+		closeOnOK: true,
 		postCreate: function(){
 			this.inherited(arguments);
 			var buttonContainer = domConstr.create("div", {style: {"text-align": "right"}});
@@ -28,29 +29,29 @@ define([
 		},
 		onConfirm: function(){
 		},
-		_onCancel: function(){
-			this.onCancel();
-			this.hide();
-			var _self = this;
-			setTimeout(function(){
-				_self.destroy();
-			}, 2000);
+		_onCancel: function(evt){
+			this.onCancel(evt);
+			this.hideAndDestroy()
 		},
 		_onSubmit: function(evt){
 			evt.preventDefault();
 			evt.stopPropagation();
 
-			this.onConfirm();
-			this.hide();
-			var _self = this;
-			setTimeout(function(){
-				_self.destroy();
-			}, 2000);
+			this.onConfirm(evt);
 
+			if(!this.closeOnOK) return;
+
+			this.hideAndDestroy()
 		},
 		startup: function(){
 			this.inherited(arguments);
-//			this.set('content', content);
+		},
+		hideAndDestroy: function(){
+			this.hide();
+			var _self = this;
+			setTimeout(function(){
+				_self.destroyRecursive();
+			}, 1000);
 		}
 	});
 
