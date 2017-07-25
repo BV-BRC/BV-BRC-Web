@@ -1526,24 +1526,20 @@ define([
 									this.itemDetailPanel.set("selection", []);
 								}else{
 									var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-										// console.log("rownum: ", rownum);
-										// console.log("Row: ", evt.grid.row(rownum).data);
 										return evt.grid.row(rownum).data;
 									}));
 								}
-								// console.log("selection: ", sel);
+
 								this.actionPanel.set("selection", sel);
 								this.itemDetailPanel.set('selection', sel);
 							}));
 
 							newPanel.on("ItemDblClick", lang.hitch(this, function(evt){
-								// console.log("ItemDblClick: ", evt);
 								if(evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)){
 									Topic.publish("/navigate", {href: "/workspace" + evt.item_path})
 									this.actionPanel.set("selection", []);
 									this.itemDetailPanel.set("selection", []);
-									// console.log("SHOW LOADING STATUS SOMEHOW");
-									//newPanel.clearSelection();
+									newPanel.clearSelection();
 								}else{
 									console.log("non-navigable type, todo: show info panel when dblclick");
 								}
