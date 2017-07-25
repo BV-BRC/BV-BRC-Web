@@ -343,7 +343,7 @@ define([
 
 			viewSelector.on('change', function(val){
 				if(val == 'mine') {
-					var home = '/'+window.App.user.id; //+'home';
+					var home = '/'+window.App.user.id + '/home/';
 					_self.set('path', home);
 				}else if(val == 'public'){
 					_self.set('path', '/public/')
