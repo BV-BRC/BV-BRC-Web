@@ -66,6 +66,7 @@ define("phyloview/TreeNavSVG", [
     this.colorSpecies = customOptions.colorSpecies;
     this.colorGenus = customOptions.colorGenus;
     this.containerName=containerName;
+    this.idToHeight = {};
 
     // Calculate total nodes, max label length
 
@@ -110,10 +111,11 @@ define("phyloview/TreeNavSVG", [
         this.tree = d3.layout.tree()
             .sort(null)
             .size([size.height, size.width - this.maxLabelLength*this.fontWidthForMargin])
-            .children(function(d)
+            .children(lang.hitch(this,function(d)
             {
+                this.idToHeight[d.id]=d.py;
                 return (!d.c || d.c.length === 0) ? null : d.c;
-            });
+            }));
 
         this.tipToColors  = this.getTipColors(this.colorGenus, this.colorSpecies);
 
@@ -528,9 +530,9 @@ define("phyloview/TreeNavSVG", [
             }
             return r;
         })
-        .style("stroke-width", "10")
-        .style("stroke", "white")
-        .style("opacity", "0.1")
+        .style("stroke-width", "1")
+        .style("stroke", "black")
+        .style("fill-opacity", "0")
         .on("click", this.click)
         .on("mouseover", this.hover)
         .on("mouseout", this.mouseout)
@@ -546,6 +548,7 @@ define("phyloview/TreeNavSVG", [
             return r;
         })
         .style("stroke-linejoin", "round")
+        .style("fill-opacity", "0")
         .on("click", this.click)
         .on("mouseover", this.hover)
         .on("mouseout", this.mouseout)
