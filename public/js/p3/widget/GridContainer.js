@@ -372,7 +372,7 @@ define([
 				false
 			], [
 				"CopySelection",
-				"fa icon-copy3 fa-2x",
+				"fa icon-clipboard2 fa-2x",
 				{
 					label: "COPY",
 					multiple: true,
