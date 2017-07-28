@@ -9,8 +9,9 @@ define([
 		baseClass: "FileViewer",
 		disabled: false,
 		containerType: "file",
-		filepath: null,
 		file: null,
+		viewable: false,
+		url: null,
 
 		_setFileAttr: function(val){
 			//console.log('[File] _setFileAttr:', val);
@@ -39,7 +40,6 @@ define([
 				_self.file = {metadata: meta}
 				_self.refresh();
 			});
-
 		},
 		startup: function(){
 			if(this._started){
@@ -50,16 +50,29 @@ define([
 			this.viewer = new ContentPane({region: "center"});
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
-			this.refresh();
 
-			this.on("i:click", function(evt){
-				var rel = domAttr.get(evt.target, 'rel');
-				if(rel){
-					WS.downloadFile(rel);
-				}else{
-					console.warn("link not found: ", rel);
-				}
+			var _self = this;
+			Deferred.when(WS.getDownloadUrls(_self.filepath), function(url){
+					_self.url = url;
 			});
+
+			if(WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000){
+				this.viewable = true;
+			}
+			// console.log('[File] viewable?:', this.viewable);
+
+			if(!this.file.data && this.viewable) {
+				// get the object to display
+				var _self = this;
+				Deferred.when(WS.getObject(this.filepath, false), function(obj){
+					// console.log('[File] obj:', obj);
+					_self.set("file", obj);
+				}).then(function(){
+					_self.refresh();
+				});
+			}
+
+			this.refresh();
 		},
 
 		formatFileMetaData: function(){
@@ -69,7 +82,7 @@ define([
 				var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + " file</b>: " + fileMeta.name + '</h3>';
 
 				if(WS.downloadTypes.indexOf(fileMeta.type) >= 0){
-					content += ' <i class="fa icon-download pull-left fa-2x" rel="' + this.filepath + '"></i>';
+					content += '<a href='+this.url+'><i class="fa icon-download pull-left fa-2x"></i></a>';
 				}
 
 				var formatLabels = formatter.autoLabel("fileView", fileMeta);
@@ -90,39 +103,15 @@ define([
 				return;
 			}
 
-			//console.log('[File] file:', this.file);
-			var viewable = false;
-			if(WS.viewableTypes.indexOf(this.file.metadata.type) >= 0){
-				viewable = true;
-			}
-			//console.log('[File] viewable?:', viewable);
-
-			if(!this.file.data && viewable && this.file.metadata.size <= 10000000) {
-				// get the object to display
-				Deferred.when(WS.getObject(this.filepath, false), function(obj){
-					//console.log('[File] obj:', obj);
-					_self.set("file", obj);
-				});
-			}
-
-			if(!this.url && viewable){
-				// get the download url
-				Deferred.when(WS.getDownloadUrls(this.filepath), function(url){
-					//console.log('[File] url:', url);
-					_self.set("url", url);
-				});
-			}
-
 			if(this.file && this.file.metadata){
-				if (viewable) {
-					//this.viewer.set('content', this.formatFileMetaData() + "<pre>" + this.file.data + "</pre>");
+				if (this.viewable) {
 					this.viewer.set('content', this.formatFileMetaData());
 
 					if (this.file.data) {
 						var childContent = '</br>';
 						switch(this.file.metadata.type){
 							case "html":
-								//console.log('[File] type: html');
+								// console.log('[File] type: html');
 								childContent = this.file.data;
 								break;
 							case "json":
@@ -130,7 +119,7 @@ define([
 							case "diffexp_expression":
 							case "diffexp_mapping":
 							case "diffexp_sample":
-								//console.log('[File] type: json');
+								// console.log('[File] type: json');
 								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null),null,2)  + "</pre>";
 								break;
 							case "svg":
@@ -139,11 +128,13 @@ define([
 							case "jpg":
 							case "txt":
 							default:
-								//console.log('[File] type: txt/img');
+								// console.log('[File] type: txt/img');
 								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + this.file.data + '</pre>';
 								break;
 						}
 						this.viewer.addChild(new ContentPane({content: childContent, region: "center"}));
+					} else {
+						this.viewer.addChild(new ContentPane({content: '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>', region: "center"}));
 					}
 				} else {
 					this.viewer.set('content', this.formatFileMetaData());
