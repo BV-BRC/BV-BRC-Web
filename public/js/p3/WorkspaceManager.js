@@ -348,7 +348,8 @@ define([
 		downloadFile: function(path){
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
 				// console.log("download Urls: ", urls);
-				window.open(urls[0]);
+				//window.open(urls[0]); // window.open can be blocked by pop-up blockers
+				window.location.assign(urls[0]);
 			});
 		},
 
