@@ -11,7 +11,7 @@ define([
 			Topic, query, ContentPane, IDMappingTemplate,
 			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
 		  CopyTooltipDialog){
-	
+
     var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
 	var viewMSATT = new TooltipDialog({
 		content: mmc, onMouseLeave: function(){
@@ -378,7 +378,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					ignoreDataType: true,
-					tooltip: "Copy Selection to Clipboard. Press and Hold for more options.",
+					tooltip: "Copy Selection to Clipboard.",
 					tooltipDialog: copySelectionTT,
 					max: 5000,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
@@ -1282,7 +1282,7 @@ define([
 				if(this.containerType != "subsystems_overview_data") {
 					this.addChild(this.containerActionBar);
 				};
-				
+
 				this.containerActionBar.set("currentContainer", this);
 			}
 
@@ -1292,7 +1292,7 @@ define([
 				this.addChild(this.itemDetailPanel);
 			};
 			this.addChild(this.grid);
-			
+
 
 			this.setupActions();
 			this.listen();
@@ -1371,7 +1371,7 @@ define([
 				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 			}, this);
 		},
-		
+
 		startup: function(){
 			if(this._started){
 				return;
