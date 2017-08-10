@@ -25,6 +25,7 @@ define([
 		disabled: false,
 		required: false,
 		showUnspecified: false,
+		showHidden: false,
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
@@ -56,6 +57,17 @@ define([
 				this.grid.set('types', this.type);
 			}
 		},
+
+		_setShowHiddenAttr: function(val){
+			this.showHidden = val;
+
+			console.log("set showHidden: ", val);
+
+			if(this.grid){
+				this.grid.set('showHiddenFiles', val);
+			}
+		},
+
 
 		_setDisabledAttr: function(val){
 			this.disabled = val;
@@ -371,6 +383,21 @@ define([
 			});
 			domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
 			domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
+
+			domConstr.create("br", {}, buttonsPane.containerNode);
+
+			var span2 = domConstr.create("span", {style: {"float": 'left'}});
+			domConstr.place(span2, buttonsPane.containerNode, "last");
+			this.showHiddenWidget = new CheckBox({value: this.showHidden, checked: this.showHidden});
+			this.showHiddenWidget.on("change", function(val){
+				_self.set("showHidden", val);
+			});
+			domConstr.place(this.showHiddenWidget.domNode, span2, "first");
+			domConstr.create("span", {innerHTML: "Show hidden files and folders"}, span2);
+
+
+
+
 			var cancelButton = new Button({label: "Cancel"});
 			cancelButton.on('click', function(){
 				_self.dialog.hide();
@@ -385,8 +412,8 @@ define([
 				_self.onSelection(_self.selection.path);
 				_self.dialog.hide();
 			});
+			domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
 			domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
-			domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "first");
 
 
 			on(selectionPane.domNode, "i:click", function(evt){
@@ -574,6 +601,7 @@ define([
 				deselectOnRefresh: true,
 				onlyWritable: self.onlyWritable,
 				allowDragAndDrop: false,
+				showHiddenFiles: this.showHidden,
 				types: this.type ? (["folder"].concat(this.type)) : false,
 				columns: {
 					type: {

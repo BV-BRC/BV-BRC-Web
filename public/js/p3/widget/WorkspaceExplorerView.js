@@ -25,6 +25,14 @@ define([
 		queryOptions: {
 			sort: [{attribute: "name", descending: false}]
 		},
+
+		showHiddenFiles: window.App && window.App.showHiddenFiles,
+
+		_setShowHiddenFiles: function(val){
+			this.showHiddenFiles = val;
+			this.refreshWorkspace();
+		},
+
 		listWorkspaceContents: function(ws){
 			// console.log("[WorkspaceExplorerView] listWorkspaceContents()")
 			var _self = this;
@@ -47,7 +55,7 @@ define([
 			}
 
 			var filterPublic =  ws == '/' ? true : false;
-			var prom1 = WorkspaceManager.getFolderContents(ws, window.App && window.App.showHiddenFiles, null, filterPublic);
+			var prom1 = WorkspaceManager.getFolderContents(ws, this.showHiddenFiles, null, filterPublic);
 
 			// if listing user's top level, included 'shared with me' as well
 			var userID = window.App.user.id;
