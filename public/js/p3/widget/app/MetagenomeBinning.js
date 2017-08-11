@@ -65,26 +65,17 @@ define([
 
 			switch (this.input_mode){
 				case "paired_read":
-					var chkPassed = this.ingestAttachPoints(["read1", "read2"], {});
-					if(chkPassed){
-						assembly_values["paired_end_libs"] = ["read1", "read2"].map(function(rec){
-							return this[rec].searchBox.value;
-						}, this);
-					}
+					assembly_values["paired_end_libs"] = ["read1", "read2"].map(function(rec){
+						return this[rec].searchBox.value;
+					}, this);
 					break;
 
 				case "sra":
-					var chkPassed = this.ingestAttachPoints(['srr_accession'], {});
-					if(chkPassed){
-						assembly_values["srr_ids"] = srrAccessions;
-					}
+					assembly_values["srr_ids"] = srrAccessions;
 					break;
 
 				case "contigs":
-					var chkPassed = this.ingestAttachPoints(['contigs'], {});
-					if(chkPassed){
-						assembly_values["contigs"] = "";//TODO
-					}
+					assembly_values["contigs"] = this.contig.searchBox.value;
 					break;
 
 				default:
@@ -202,10 +193,10 @@ define([
 			if (this.read1.searchBox.value && this.read2.searchBox.value) {
 				this.input_mode = "paired_read";
 			}
-			else if (this.srr_accession.get('value')){
-				this.input_mode = "sra";
-				// this.validateSRR();
-			}
+			// else if (this.srr_accession.get('value')){
+			// 	this.input_mode = "sra";
+			// 	// this.validateSRR();
+			// }
 			else if (this.contig.searchBox.value){
 				this.input_mode = "contigs"
 			}
