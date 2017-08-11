@@ -250,6 +250,7 @@ define([
 			this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + "</div>");
 		},
 		onSetData: function(attr, oldVal, data){
+			// console.log("data", data);
 			this.createDataMap();
 			this.render();
 		},
@@ -285,6 +286,8 @@ define([
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
+			var fasta = "";			
+			var tree_newick = this.data.tree;
 			this.alt_labels = {"genome_name": {}, "patric_id": {}};
 			this.dataStats["idType"] = null;
 			this.dataStats["numFeatures"] = 0;
@@ -292,15 +295,26 @@ define([
 			this.dataStats["minLength"] = 1000000;
 			this.dataStats["maxLength"] = 0;
 			this.dataStats["genomeIDs"] = {};
+			// console.log("this.data ", this.data);
+			// console.log("this.dataMap ", this.dataMap);
 			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
 					var match;
 					var headerInfo = regex.exec(line);
 					var record = {sequence: []};
+					// console.log("headerInfo ", headerInfo);
 					if(!(headerInfo[1] in this.dataMap)){
 						geneID = headerInfo[1];
-						clustal.push(geneID + "\t");
+						if (this.data.map[geneID]["patric_id"]) {
+							clustal.push(this.data.map[geneID]["patric_id"] + "\t");
+							tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID]["patric_id"]);
+							fasta = fasta + ">" + this.data.map[geneID]["patric_id"] + "\n";
+						} else {
+							clustal.push(this.data.map[geneID]["refseq_locus_tag"]+ "\t");
+							tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID]["refseq_locus_tag"]);
+							fasta = fasta + ">" + this.data.map[geneID]["refseq_locus_tag"] + "\n";
+						}
 						this.dataStats["numFeatures"] += 1;
 						if(geneID.startsWith("fig|")){
 							record["patric_id"] = geneID;
@@ -338,6 +352,7 @@ define([
 				else if(line.trim() != "" && geneID in this.dataMap){
 					this.dataMap[geneID].sequence.push(line);
 					clustal[clustal.length - 1] = clustal[clustal.length - 1] + line;
+					fasta = fasta + line + "\n";
 				}
 				else{
 					geneID = null;
@@ -352,7 +367,13 @@ define([
 				}
 			}));
 			this.dataStats.clustal = clustal.join("\n");
-
+			this.dataStats.tree_newick = tree_newick;
+			this.dataStats.fasta = fasta;
+			// console.log("this.dataStats ", this.dataStats);
+			// console.log("this.dataMap ", this.dataMap);
+			// console.log("this.data ", this.data);
+			// console.log("fasta ", fasta);
+			
 		},
 
 		createViewerData: function(){
@@ -451,7 +472,7 @@ define([
 
 			// init msa
 			var m = new msa.msa(opts);
-		 	console.log("m ", m);
+		 	// console.log("m ", m);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
@@ -656,13 +677,15 @@ define([
 					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
 				}
 				else if(rel == "msa-fasta"){
-					msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
+					// msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
+					// console.log("this.dataStats.fasta ", this.dataStats.fasta);
+					saveAs(new Blob([this.dataStats.fasta]), "PATRIC_msa.fasta");
 				}
 				else if(rel == "tree-svg"){
 					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_msa_tree.svg");
 				}
 				else if(rel == "tree-newick"){
-					saveAs(new Blob([this.data.tree]), "PATRIC_msa_tree.nwk");
+					saveAs(new Blob([this.dataStats.tree_newick]), "PATRIC_msa_tree.nwk");
 				}
 				popup.close(snapMenu);
 			}));
@@ -715,6 +738,7 @@ define([
 
 		doAlignment: function(){
 			console.log("doAlignment()");
+			// console.log("this.state.search ", this.state.search);
 			this.set('loading', true);
 			if(this.state && this.state.search){
 				var q = this.state.search + "&limit(" + this.maxSequences + ")";
