@@ -1642,9 +1642,13 @@ define("p3/widget/DataItemFormatter", [
 		domConstruct.create("td", {"class": "DataItemProperty", innerHTML: label}, tr);
 
 		var ul = domConstruct.create("ul", null, tr);
-		for (var i = 0, len = data.length; i < len; i++){
-			var val = data[i];
-			domConstruct.create("li", {"class": "DataItemValue", innerHTML: val}, ul);
+		if (typeof data == "object"){
+			for (var i = 0, len = data.length; i < len; i++){
+				var val = data[i];
+				domConstruct.create("li", {"class": "DataItemValue", innerHTML: val}, ul);
+			}
+		} else if (typeof data == "string"){
+			domConstruct.create("li", {"class": "DataItemValue", innerHTML: data}, ul);
 		}
 
 		return table;
