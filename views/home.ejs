@@ -1,9 +1,8 @@
 <% var flows = [
-    {name: "PATRIC Workshop", secondary: "ARGONNE, IL", rel: "carousel_workshop", background: "#34698e"}
-    , {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
+    {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
-    // , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
+    , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
 ] %>
 
 <div class="home">
@@ -17,12 +16,12 @@
             <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
-
+<!--
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop"
                      class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/2012_Duke_UNC1_SMALL.png">
+                             src="/patric/images/carousel/workshop_ANL_2017.png">
                         <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h2>
                         <h3 class="xl highlight-f upper far">@ Argonne National Laboratory</h3>
                         <br/>
@@ -40,12 +39,12 @@
                         <br><br>
                     </div>
                 </div>
-
+-->
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_icsb"
-                     class="CarouselContent showOnLoad dijitHidden">
+                     class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/05/ICSB-2017-logo.png" style="height:179px">
+                             src="/patric/images/carousel/workshop_ICSB_2017.png" style="height:179px">
                         <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop <br/>@ ICSB 2017</h2>
                         <h3 class="xl highlight-f upper far">PATRIC Workshop</h3>
                         <p>PATRIC will be hosting a 1-day workshop entitled "The PATRIC Bioinformatics Resource Center for 'Omics Data Analysis,"
@@ -66,7 +65,7 @@
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-100000-Genomes.png">
+                             src="/patric/images/carousel/PATRIC-100000-Genomes.png">
                         <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Crosses 100,000 Genomes Mark</h2>
                         <br/>
                         <p>In the May 2017 release, PATRIC has added over 7,700 new genomes,
@@ -85,7 +84,7 @@
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_ar"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
-                        <img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2014/05/AR_carousel.jpg">
+                        <img class="right" src="/patric/images/carousel/AR_carousel.jpg">
                         <h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2>
                         <h3 class="xl highlight-f upper far">for Infectious Disease Research</h3>
                         <p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics
@@ -103,7 +102,7 @@
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper"><img class="right"
-                                              src="http://enews.patricbrc.org/wp-content/uploads/2013/05/Mycobacterium_tuberculosis_14313982_1.jpg">
+                                              src="/patric/images/carousel/Mycobacterium_tuberculosis.jpg">
                         <h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2>
                         <h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3>
                         <p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This
@@ -202,7 +201,7 @@
                                         <li class="clear">
                                             <figure class="figure-right">
                                                 <a href="/app/Assembly">
-                                                    <img src="http://enews.patricbrc.org/wp-content/uploads/2015/03/Assembly-thumb-100x75.png"
+                                                    <img src="/patric/images/home/assembly.png"
                                                          alt="Genome Assembly">
                                                 </a>
                                             </figure>
@@ -217,7 +216,7 @@
                                         <li class="clear">
                                             <figure class="figure-right">
                                                 <a href="/app/ProteinFamily">
-                                                    <img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/protein_family_sorter_for_homepage_tool.png"
+                                                    <img src="/patric/images/home/protein_family_sorter.png"
                                                          alt="Protein Family Sorter">
                                                 </a>
                                             </figure>
@@ -236,7 +235,7 @@
                                         <li class="clear">
                                             <figure class="figure-right">
                                                 <a href="/view/Taxonomy/2#view_tab=genomes">
-                                                    <img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/collage-100x75-05.png"
+                                                    <img src="/patric/images/home/genome_metadata.png"
                                                          alt="Genome Metadata">
                                                 </a>
                                             </figure>
@@ -256,7 +255,7 @@
                                     <ul class="no-decoration no-underline-links">
                                         <li class="clear">
                                             <figure class="figure-right"><a href="/app/Annotation"><img
-                                                            src="http://enews.patricbrc.org/wp-content/uploads/2012/05/Genome-Annotation-thumb-100x70.png"
+                                                            src="/patric/images/home/genome_annotation.png"
                                                             alt="Genome Annotation"></a></figure>
                                             <h4 class="bold"><a href="/app/Annotation">Genome Annotation</a></h4>
                                             <p>The Genome Annotation Service is a fully-automated pipeline for
@@ -266,7 +265,7 @@
                                                     service.</em></p></li>
                                         <li class="clear">
                                             <figure class="figure-right"><a href="/app/ComparativePathway"><img
-                                                            src="http://enews.patricbrc.org/wp-content/uploads/2012/03/comparative_pathways_for_homepage_tool.png"
+                                                            src="/patric/images/home/comparative_pathways.png"
                                                             alt="Comparative Pathway Tool"></a></figure>
                                             <h4 class="bold"><a href="/app/ComparativePathway">Comparative Pathway
                                                     Tool</a></h4>
@@ -278,7 +277,7 @@
                                         <li class="clear">
                                             <figure class="figure-right"><a
                                                         href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics"><img
-                                                            src="http://enews.patricbrc.org/wp-content/uploads/2013/06/gene_page_homepage_tool.jpg"
+                                                            src="/patric/images/home/gene_page_transcriptomics.jpg"
                                                             alt="Gene Page Transcriptomics"></a></figure>
                                             <h4 class="bold"><a
                                                         href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics">Gene

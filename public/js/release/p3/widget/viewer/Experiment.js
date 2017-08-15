@@ -11,10 +11,16 @@ define("p3/widget/viewer/Experiment", [
 		"query": null,
 		data: null,
 		containerType: "experiment",
+		getExperimentId: function(){
+			return (this.data.path + this.data.name);
+		},
+		isSummaryView: function(){
+			return true;
+		},
 		_setDataAttr: function(data){
 			this.data = data;
 			var paths = this.data.autoMeta.output_files.filter(function(f){
-				console.log("Filtering f: ", f);
+				// console.log("Filtering f: ", f);
 				if(f instanceof Array){
 					var path = f[0];
 				}else{
@@ -35,7 +41,7 @@ define("p3/widget/viewer/Experiment", [
 			});
 			paths.sort();
 
-			console.log("Experiment Sub Paths: ", paths);
+			// console.log("Experiment Sub Paths: ", paths);
 
 			WorkspaceManager.getObjects(paths).then(lang.hitch(this, function(objs){
 				objs.forEach(function(obj){

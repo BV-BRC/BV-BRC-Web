@@ -1,14 +1,14 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
-	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
+	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog", "dijit/form/Button",
 	"../util/PathJoin", "dgrid/Grid",
 	"./DataItemFormatter", "./ExternalItemFormatter", "./formatter",
 	"./D3SingleGeneViewer", "./SelectionToGroup"
 
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
-			WidgetBase, Templated, Dialog,
+			WidgetBase, Templated, Dialog, Button,
 			PathJoin, Grid,
 			DataItemFormatter, ExternalItemFormatter, formatter,
 			D3SingleGeneViewer, SelectionToGroup){
@@ -56,16 +56,6 @@ define([
 		_setStaticLinksAttr: function(feature){
 
 			domConstruct.empty(this.externalLinkNode);
-
-			// if(feature.hasOwnProperty('patric_id')){
-			// 	var linkSEEDViewer = "http://pubseed.theseed.org/?page=Annotation&feature=" + feature.patric_id;
-			// 	var seed = domConstruct.create("a", {
-			// 		href: linkSEEDViewer,
-			// 		innerHTML: "The SEED Viewer",
-			// 		target: "_blank"
-			// 	}, this.externalLinkNode);
-			// 	domConstruct.place("<br>", seed, "after");
-			// }
 
 			if(feature.hasOwnProperty('aa_sequence')){
 				var linkCDDSearch = "http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E";
@@ -140,6 +130,7 @@ define([
 											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
 										default:
+											sourceLink = val;
 											break;
 									}
 									node.innerHTML = sourceLink;
@@ -326,9 +317,124 @@ define([
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "Pathways", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: pwLink || '-'}, htr);
+		},
+		_setFeatureStructureAttr: function(structure){
 
-			// TODO: implement structure
-			// TODO: implement protein interaction
+			domConstruct.empty(this.structureNode);
+			var table = domConstruct.create("table", {"class": "p3basic striped far2x"}, this.structureNode);
+			var thead = domConstruct.create("thead", {}, table);
+
+			var headTr = domConstruct.create("tr", {}, thead);
+			domConstruct.create("th", {innerHTML: "Source", scope: "col"}, headTr);
+			domConstruct.create("th", {innerHTML: "Target", scope: "col"}, headTr);
+			domConstruct.create("th", {innerHTML: "Selection Criteria", scope: "col"}, headTr);
+			domConstruct.create("th", {innerHTML: "Status", scope: "col"}, headTr);
+			domConstruct.create("th", {innerHTML: "Clone Available", scope: "col"}, headTr);
+			domConstruct.create("th", {innerHTML: "Protein Available", scope: "col"}, headTr);
+
+			var tbody = domConstruct.create("tbody", {}, table);
+
+			for (var i = 0, l = structure.length; i < l; i++){
+				var htr = domConstruct.create("tr", {}, tbody);
+
+				var cellTarget = lang.replace('<a href="https://apps.sbri.org/SSGCIDTargetStatus/Target/{0}" target="_blank">{0}</a>', [structure[i]['target_id']]);
+				var cellSelection = structure[i]['selection_criteria'] || '&nbsp;';
+				// TODO: query for PDB IDs and link to viewer
+				var cellStatus = structure[i]['target_status'] || '&nbsp;';
+				var cellClone = structure[i]['has_clones'] === 'T' ? 'Yes' : 'No';
+				var cellProtein = structure[i]['has_proteins'] === 'T' ? 'Yes' : 'No';
+
+				domConstruct.create("td", {innerHTML: '<a href="http://www.ssgcid.org" target="_blank">SSGCID</a>'}, htr);
+				domConstruct.create("td", {innerHTML: cellTarget}, htr);
+				domConstruct.create("td", {innerHTML: cellSelection}, htr);
+				domConstruct.create("td", {innerHTML: cellStatus}, htr);
+				domConstruct.create("td", {innerHTML: cellClone}, htr);
+				domConstruct.create("td", {innerHTML: cellProtein}, htr);
+			}
+		},
+		_setFeatureStructureSubmissionFormAttr: function(){
+
+			domConstruct.empty(this.structureNode);
+
+			var regexSsgcid = "/Mycobacterium|Bartonella|Brucella|Ehrlichia|Rickettsia|Burkholderia|Borrelia|Anaplasma/";
+			var regexCsgid = "/Bacillus|Listeria|Staphylococcus|Streptococcus|Clostridium|Coxiella|Escherichia|Francisella|Salmonella|Shigella|Vibrio|Yersinia|Campylobacter|Helicobacter/";
+
+			// look up genusName
+			var url = PathJoin(this.apiServiceUrl, "genome/?eq(genome_id," + this.feature.genome_id + ")&select(genus)&limit(1)");
+			xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
+				if(data.length === 0) return;
+
+				var genusName = data[0]['genus'];
+
+				if (regexSsgcid.match(genusName)){
+
+					new Button({
+						label: "Submit a request for structure determination to SSGCID",
+						onClick: lang.hitch(this, function(){
+							this.onSubmitStructureRequest('ssgcid')
+						})
+					}, this.structureNode).startup();
+
+				} else if (regexCsgid.match(genusName)){
+
+					new Button({
+						label: "Submit a request for structure determination to CSGID",
+						onClick: lang.hitch(this, function(){
+							this.onSubmitStructureRequest('csgid')
+						})
+					}, this.structureNode).startup();
+
+				} else {
+					// not supported
+					domConstruct.create("div", {innerHTML: "Not supported by SSGCID/CSGID"}, this.structureNode);
+				}
+			}));
+		},
+		onSubmitStructureRequest: function(center){
+
+			var actionUrl, method, featureNaSequence, featureAaSequence;
+			if(center === 'ssgcid'){
+				actionUrl = "https://apps.sbri.org/SSGCIDCommTargReq/Default.aspx";
+				method = "POST";
+				featureNaSequence = this.feature.na_sequence;
+				featureAaSequence = this.feature.aa_sequence;
+
+			} else {
+				actionUrl = "http://csgid-submissions.org/CSGIDSubmissionPortal/?gid=" + this.feature.protein_id;
+				method = "GET";
+				featureNaSequence = '';
+				featureAaSequence = '';
+			}
+
+			var form = domConstruct.create("form", {"method": method, "action": actionUrl}, this.structureRequestNode);
+
+			// attrs
+			var feature_id = this.feature.feature_id;
+			var callbackUrl = '/view/Feature/' + feature_id;
+			var genomeName = this.feature.genome_name;
+			var featureProduct = this.feature.product;
+
+			var refseqLocusTag = this.feature.refseq_locus_tag || '';
+			var refseqProteinId = this.feature.protein_id || '';
+			var refseqGiNumber = this.feature.gi || '';
+			var uniprotKbAccession = this.uniprotkb_accessions || '';
+
+
+			// hidden fields
+			domConstruct.create("input", {"type": "hidden", "name": "patric_feature_id", value: feature_id}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "patric_callback_url", value: callbackUrl}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "genome_name", value: genomeName}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "product", value: featureProduct}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "dna_sequence", value: featureNaSequence}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "protein_sequence", value: featureAaSequence}, form);
+
+			domConstruct.create("input", {"type": "hidden", "name": "refseq_locus_tag", value: refseqLocusTag}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "refseq_protein_id", value: refseqProteinId}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "refseq_gi_number", value: refseqGiNumber}, form);
+			domConstruct.create("input", {"type": "hidden", "name": "uniprot_accession", value: uniprotKbAccession}, form);
+
+			// console.log(form);
+			form.submit();
 		},
 		_setFeatureSummaryAttr: function(feature){
 			domConstruct.empty(this.featureSummaryNode);
@@ -391,7 +497,7 @@ define([
 
 					if(data.length === 0) return;
 
-					var uniprotKbAccessions = data.map(function(d){
+					var uniprotKbAccessions = this.uniprotkb_accessions = data.map(function(d){
 						return d.uniprotkb_accession;
 					});
 
@@ -403,19 +509,6 @@ define([
 					}));
 				}));
 			}
-
-			// get related feature list
-			// if(this.feature.pos_group != null){
-			// 	xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)", {
-			// 		handleAs: "json",
-			// 		headers: {"Accept": "application/solr+json"}
-			// 	}).then(lang.hitch(this, function(data){
-			//
-			// 		if(data.length === 0) return;
-			// 		var relatedFeatures = data.response.docs;
-			// 		this.set("relatedFeatureList", relatedFeatures);
-			// 	}));
-			// }
 
 			// specialty gene
 			var spgUrl = PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,pmid,subject_coverage,query_coverage,identity,e_value)");
@@ -456,6 +549,19 @@ define([
 					if(data.length === 0) return;
 
 					this.set("featureComments", data);
+				}));
+			}
+
+			// feature structure
+			if(this.feature.patric_id){
+				var url = PathJoin(this.apiServiceUrl, "/misc_niaid_sgc/?eq(gene_symbol_collection," + encodeURIComponent("\"PATRIC_ID:" + this.feature.patric_id + "\"") + ")");
+				xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
+					if(data.length === 0){
+						this.set('featureStructureSubmissionForm');
+						return;
+					};
+
+					this.set("featureStructure", data);
 				}));
 			}
 

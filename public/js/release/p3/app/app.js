@@ -128,7 +128,7 @@ define("p3/app/app", [
 						window.location.reload();
 						break;
 //						self.accessToken = msg.accessToken;
-//						self.user = msg.userProfile;	
+//						self.user = msg.userProfile;
 //						domClass.add(document.body, "Authenticated");
 //						break;
 				}
@@ -230,22 +230,25 @@ define("p3/app/app", [
 				}
 				console.log("W Params: ", params, "W type: ", type);;
 				var w = _self.loadPanel(type, params);
-				Deferred.when(w, function(w){
-					if(!_self.dialog){
-						_self.nmDialog = new NMDialog({parseOnLoad: false, title: w.title});
-					}else{
-						_self.nmDialog.set('title', w.title);
-					}
-					_self.nmDialog.set('content', '');
-					domConstruct.place(w.domNode, _self.nmDialog.containerNode);
-					w.on("ContentReady", function(){
-						_self.nmDialog.resize();
-						_self.nmDialog._position();
-					})
-					w.startup();
-					_self.nmDialog.show();
-				});
 
+				if (_self.nmDialog && _self.nmDialog.open == true) {
+					// console.log("in destroy", _self.nmDialog);
+					_self.nmDialog.open = false;
+					_self.nmDialog.destroy();
+				} else {
+					Deferred.when(w, function(w){
+						// console.log("create new NMDialog");
+						_self.nmDialog = new NMDialog({parseOnLoad: false, title: w.title});
+						_self.nmDialog.set('content', '');
+						domConstruct.place(w.domNode, _self.nmDialog.containerNode);
+						w.on("ContentReady", function(){
+							_self.nmDialog.resize();
+							_self.nmDialog._position();
+						})
+						w.startup();
+						_self.nmDialog.show();
+					});
+				}
 				// console.log("Open Dialog", type);
 			});
 
@@ -258,7 +261,6 @@ define("p3/app/app", [
 			});
 
 			Topic.subscribe("/openDialog", function(msg){
-				// console.log("OpenDialog: ", msg);
 				var type = msg.type
 				var params = msg.params || {};
 				var w = _self.loadPanel(type, params);
@@ -390,7 +392,7 @@ define("p3/app/app", [
 		},
 		loadPanel: function(id, params, callback){
 			var def = new Deferred();
-			console.log("Load Panel", id, params);
+			console.log("Load Panel!", id, params);
 			var p = this.panels[id];
 			if(!p.params){
 				p.params = {};
@@ -535,7 +537,7 @@ define("p3/app/app", [
 					// }
 
 					// if (instance.resize){
-					// 	 instance.resize(); 
+					// 	 instance.resize();
 					// }
 					return;
 				}

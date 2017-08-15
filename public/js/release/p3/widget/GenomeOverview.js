@@ -5,13 +5,14 @@ define("p3/widget/GenomeOverview", [
 	"dojo/dom-class", "dojo/query", "dojo/dom-style", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
 	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
-	"./ExternalItemFormatter", "./AdvancedDownload"
-
+	"./ExternalItemFormatter", "./AdvancedDownload", "dijit/form/TextBox", "dijit/form/Form", "./Confirmation",
+	"./InputList", "dijit/form/SimpleTextarea", "dijit/form/DateTextBox", './MetaEditor'
 ], function(declare, lang, on, xhr, Topic,
 			domClass, domQuery, domStyle, Template, domConstruct,
 			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
-			ExternalItemFormatter, AdvancedDownload){
+			ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
+			InputList, TextArea, DateTextBox, MetaEditor){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
@@ -28,7 +29,7 @@ define("p3/widget/GenomeOverview", [
 			}
 		},
 
-		"_setGenomeAttr": function(genome){
+		_setGenomeAttr: function(genome){
 			if(this.genome && (this.genome.genome_id == genome.genome_id)){
 				// console.log("Genome ID Already Set")
 				return;
@@ -36,6 +37,7 @@ define("p3/widget/GenomeOverview", [
 			this.genome = genome;
 
 			this.createSummary(genome);
+			this.createPubMed(genome)
 
 			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
@@ -54,15 +56,61 @@ define("p3/widget/GenomeOverview", [
 			}
 		},
 
-		"createSummary": function(genome){
-			domConstruct.empty(this.genomeSummaryNode);
-			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), this.genomeSummaryNode, "first");
+		createSummary: function(genome){
+			var self = this;
+			domConstruct.empty(self.genomeSummaryNode);
+			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), self.genomeSummaryNode, "first");
+
+			// if user owns genome, add edit button
+			if(window.App.user && genome.owner == window.App.user.id){
+				var editBtn = domConstruct.toDom(
+					'<a style="float: right; margin-top: 15px;">'+
+						'<i class="icon-pencil"></i> Edit'+
+					'</a>');
+
+				on(editBtn, 'click', function(){
+					var tableNames = DataItemFormatter(genome, "genome_meta_table_names", {}),
+						spec = DataItemFormatter(genome, "genome_meta_spec", {});
+
+					var editor = new MetaEditor({
+						tableNames: tableNames,
+						spec: spec,
+						data: genome,
+						dataId: genome.genome_id,
+						onSuccess: function(){
+							// get new genome meta
+							xhr.get(PathJoin(self.apiServiceUrl, "genome", genome.genome_id), {
+								headers: {
+									accept: "application/json",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								handleAs: "json"
+							}).then(lang.hitch(this, function(genome){
+								self.createSummary(genome);
+
+								// notify user
+								Topic.publish("/Notification", {
+									message: "genome metadata updated",
+									type: "message"
+								});
+							}));
+
+						}
+					})
+					editor.startup();
+					editor.show();
+				})
+				domConstruct.place(editBtn, this.genomeSummaryNode, "first");
+			}
+		},
+
+		createPubMed: function(genome){
 			domConstruct.empty(this.pubmedSummaryNode);
 			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 
 		onAddGenome: function(){
-
 			if(!window.App.user || !window.App.user.id){
 				Topic.publish("/login");
 				return;
@@ -86,7 +134,6 @@ define("p3/widget/GenomeOverview", [
 		},
 
 		onDownload: function(){
-
 			var dialog = new Dialog({title: "Download"});
 			var advDn = new AdvancedDownload({selection: [this.genome], containerType: "genome_data"});
 			domConstruct.place(advDn.domNode, dialog.containerNode);

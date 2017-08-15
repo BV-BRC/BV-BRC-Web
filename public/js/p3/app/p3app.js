@@ -184,14 +184,15 @@ define([
 					newState[prop] = params.state[prop]
 				}
 
-				var path = params.params[0] || ("/" + _self.user.id + "/home/");
+				var path = params.params[0] || ("/" + _self.user.id ); //  + "/home/")
 				var parts = path.split("/");
 
 				if(path.replace(/\/+/g, '') == 'public'){
 					path = '/public/';
 				}else if(parts.length < 3){
-					path = ("/" + _self.user.id + "/home/");
+					path = ("/" + _self.user.id );  //+ "/home/"
 				}
+
 				newState.widgetClass = "p3/widget/WorkspaceManager";
 				newState.value = path;
 				newState.set = "path";
@@ -318,7 +319,7 @@ define([
 
 			// },2000);
 
-			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
+			this.toaster = new Toaster({positionDirection: "bl-up", messageTopic: "/Notification", duration: 3000});
 			// this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
 			// this.leftDrawer.startup();
 

@@ -94,14 +94,14 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 					case "applyConditionFilter":
 						this.pfState = value;
 						this.conditionFilter();
-						this.currentData = this.getHeatmapData();
+						var currentData = this.getHeatmapData();
 						Topic.publish(this.topicId, "updatePfState", this.pfState);
-						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
+						Topic.publish(this.topicId, "updateHeatmapData", currentData);
 						break;
 					case "requestHeatmapData":
 						this.pfState = value;
-						this.currentData = this.getHeatmapData();
-						Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
+						var currentData = this.getHeatmapData();
+						Topic.publish(this.topicId, "updateHeatmapData", currentData);
 						break;
 					default:
 						break;
@@ -478,6 +478,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 				res.response.docs.forEach(function(doc){
 					var fId = doc[familyIdName];
+					if (fId === "") return;
 
 					if(!familyIdSet.hasOwnProperty(fId)){
 						familyIdSet[fId] = idx;
@@ -520,15 +521,15 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				var adjustedFamilyOrder = highlighted.concat(leftOver);
 
 				// clusterRow/ColumnOrder assumes corrected axises
-				this.pfState.clusterColumnOrder = adjustedFamilyOrder;
+				var pfState = lang.mixin({}, this.pfState, {clusterColumnOrder: adjustedFamilyOrder});
 
 				// update main grid
-				Topic.publish(this.topicId, "updatePfState", this.pfState);
+				Topic.publish(this.topicId, "updatePfState", pfState);
 				Topic.publish(this.topicId, "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
-				this.currentData = this.getHeatmapData();
-				Topic.publish(this.topicId, "updateHeatmapData", this.currentData);
+				var currentData = this.getHeatmapData();
+				Topic.publish(this.topicId, "updateHeatmapData", currentData);
 			}));
 		}
 	});

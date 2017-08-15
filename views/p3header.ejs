@@ -3,7 +3,7 @@
         {name: "Acinetobacter", href: "/view/Taxonomy/469#view_tab=overview"},
         {name: "Bacillus", href: "/view/Taxonomy/1386#view_tab=overview"},
         {name: "Bartonella", href: "/view/Taxonomy/773#view_tab=overview"},
-        {name: "Borrelia", href: "/view/Taxonomy/138#view_tab=overview"},
+        {name: "Borreliella", href: "/view/Taxonomy/64895#view_tab=overview"},
         {name: "Brucella", href: "/view/Taxonomy/234#view_tab=overview"},
         {name: "Burkholderia", href: "/view/Taxonomy/32008#view_tab=overview"},
         {name: "Campylobacter", href: "/view/Taxonomy/194#view_tab=overview"},
@@ -133,12 +133,12 @@
                             <div class="ShowWithAuth">
                                 <div><i class="fa icon-caret-down fa-1x noHoverIcon"
                                         style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                            class="navigationLink" id="YourWorkspaceLink">Your
-                                        Workspaces</a></div>
+                                            class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
 
                                 <div id="YourWorkspaces">
                                 </div>
 
+                                <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
 
                                 <!--<div id="PublicWorkspaces">
                                 </div> -->
@@ -158,12 +158,12 @@
                             </div>
                         </div>
                         <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                            <div>
-                                <a class="navigationLink" href="/job/">Your Jobs</a>
+
+    				        <div>
+                                <a class="navigationLink" href="/job/">My Jobs</a>
                             </div>
                             <div>
-                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">Your
-                                    Genomes</a></span>
+                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a></span>
                             </div>
                         </div>
                     </div>
@@ -185,6 +185,7 @@
                                 </div>
                                 <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis</a></div>
+                                <div><a class="navigationLink" href="/app/PhylogeneticTree">Phylogenetic Tree</a></div>
                             </div>
                             <p></p>
                             <div class="menuHeader">Transcriptomics</div>
@@ -231,7 +232,7 @@
             </div>
 
         </div>
-        <div style="padding: 6px 10px 2px 2px; width: 120px; flex: 0.7">
+        <div style="padding: 6px 10px 2px 2px; width: 120px; flex-grow: 0.85">
             <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden"
                    data-dojo-type="p3/widget/GlobalSearch"/>
         </div>

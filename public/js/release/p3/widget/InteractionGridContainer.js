@@ -112,7 +112,7 @@ define("p3/widget/InteractionGridContainer", [
 								row.interactor_b, row.interactor_type_b, '"' + row.interactor_desc_b + '"',
 								row.domain_b, row.taxon_id_b, row.genome_id_b, row.genome_name_b, row.refseq_locus_tag_b, row.gene_b,
 								row.category, '"' + row.interaction_type + '"', '"' + row.detection_method + '"', '"' + row.evidence + '"',
-								'"' + (row.pmid || []).join(",") + '"', '"' + row.source_db + '"', '"' + row.source_id + '"', row.score].join(DELIMITER));
+								'"' + (row.pmid || []).join(",") + '"', '"' + row.source_db + '"', '"' + (row.source_id || '') + '"', row.score].join(DELIMITER));
 						});
 
 						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_interactions.' + ext);

@@ -3,11 +3,11 @@ require({cache:{
 define("p3/widget/app/AppBase", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector",
+	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector", "dojo/topic",
 	"dijit/Dialog", "dojo/request", "dojo/dom-construct", "dojo/query", "dijit/TooltipDialog", "dijit/popup", "dijit/registry", "dojo/dom"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, WorkspaceObjectSelector,
+			Template, FormMixin, WorkspaceObjectSelector, Topic,
 			Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -171,7 +171,6 @@ define("p3/widget/app/AppBase", [
 			}else{
 				console.log("Form is incomplete");
 			}
-
 		},
 
 		onCancel: function(evt){

@@ -1,14 +1,14 @@
 require({cache:{
-'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div>\n\n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\n        <div class=\"experiment containerContentSection\">\n            <div class=\"tip\">\n\n                <div class='tipHeader'>\n                    <span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: purple;\"></span>\n                </div>\n                <div>Significant by z-score: abs(z-score) &gt;= 2. Significant by log ratio: abs(log ratio) &gt;=1.</div>\n            </div>\n        </div>\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">\n\t\t\tType: <div class=\"ItemDetailAttributeValue\"\n\t\t\t\t\tdata-dojo-attach-event=\"onChange:saveType\"\n\t\t\t\t\tdata-dojo-attach-point=\"typeNode\"\n\t\t\t\t\tdata-dojo-type=\"dijit/InlineEditBox\"\n\t\t\t\t\tdata-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{options:[]}\"\n\t\t\t\t\tvalue=\"\"\n\t\t\t\t\tdisabled=\"true\"></div>\n\t\t</div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div>\n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n"}});
+'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div>\n\n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\n        <div class=\"experiment containerContentSection\">\n            <div class=\"tip\">\n\n                <div class='tipHeader'>\n                    <span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: purple;\"></span>\n                </div>\n                <div>Significant by z-score: abs(z-score) &gt;= 2. Significant by log ratio: abs(log ratio) &gt;=1.</div>\n            </div>\n        </div>\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">\n\t\t\tType: <div class=\"ItemDetailAttributeValue\"\n\t\t\t\t\tdata-dojo-attach-event=\"onChange:saveType\"\n\t\t\t\t\tdata-dojo-attach-point=\"typeNode\"\n\t\t\t\t\tdata-dojo-type=\"dijit/InlineEditBox\"\n\t\t\t\t\tdata-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{options:[]}\"\n\t\t\t\t\tvalue=\"\"\n\t\t\t\t\tdisabled=\"true\"></div>\n\t\t</div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\n\t\t<br><br>\n\n\t\t<div class=\"ItemDetailAttribute\">\n\t\t\t<span data-dojo-attach-point=\"permissionsNode\"></span>\n\t\t</div>\n\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div>\n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n"}});
 define("p3/widget/ItemDetailPanel", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ItemDetailPanel.html", "dojo/_base/lang", "./formatter", "dojo/dom-style",
-	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter"
+	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter", "dojo/topic"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, lang, formatter, domStyle,
-			WorkspaceManager, domConstruct, query, DataItemFormatter){
+			WorkspaceManager, domConstruct, query, DataItemFormatter, Topic){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		baseClass: "ItemDetailPanel",
 		disabled: false,
@@ -38,8 +38,6 @@ define("p3/widget/ItemDetailPanel", [
 			var currentIcon;
 
 			this.watch("containerWidget", lang.hitch(this, function(prop, oldVal, containerWidget){
-
-				// console.log("set containerWidget", containerWidget);
 
 				if(oldVal && oldVal.containerType){
 					domClass.remove(this.domNode, oldVal.containerType);
@@ -82,10 +80,33 @@ define("p3/widget/ItemDetailPanel", [
 					domClass.remove(this.domNode, "dataItem");
 
 					var t = item.document_type || item.type;
+
+					// determine if workspace and if actually shared
+					// Todo(nc): move logic to api method
+					if(t == "folder" && item.path.split('/').length <= 3){
+						if(item.global_permission != 'n'){
+							t = 'publicWorkspace'
+						}else{
+							t = item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
+						}
+					}
+
 					switch(t){
 						case "folder":
 							domClass.add(_self.typeIcon, "fa icon-folder fa-2x")
 							currentIcon = "fa icon-folder fa-2x";
+							break;
+						case "workspace":
+							domClass.add(_self.typeIcon, "fa icon-hdd-o fa-2x")
+							currentIcon = "fa icon-hdd-o fa-2x";
+							break;
+						case "sharedWorkspace":
+							domClass.add(_self.typeIcon, "fa icon-shared-workspace fa-2x")
+							currentIcon = "fa icon-shared-workspace fa-2x";
+							break;
+						case "publicWorkspace":
+							domClass.add(_self.typeIcon, "fa icon-globe fa-2x")
+							currentIcon = "fa icon-globe fa-2x";
 							break;
 						//case "contigs":
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
@@ -165,8 +186,45 @@ define("p3/widget/ItemDetailPanel", [
 								_self[key + "Node"].set('disabled', true);
 								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "none");
 							}
-						}
-						else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						}else if(key == "permissions"){
+							var node = _self[key + "Node"];
+
+							var rows = []
+
+							// add owner's priv
+							if(item.user_permission == 'o')
+								rows.push(window.App.user.id.split('@')[0] + ' (me) - Owner');
+							else
+								rows.push(formatter.baseUsername(item.owner_id) + ' - Owner');
+
+							// add all other privs, ignoring global permisssion
+							// and workaround this https://github.com/PATRIC3/Workspace/issues/54
+							val.forEach(function(perm){
+								if (perm[0] == 'global_permission') return;
+								var isOwner = (perm[0] == window.App.user.id);
+								var user = perm[0].split('@')[0];
+
+								rows.push((isOwner ? user + ' (me)' : user) + ' - ' + formatter.permissionMap(perm[1]));
+							})
+
+							// edit perms btn
+							var editBtn = domConstruct.toDom('<a>Edit</a>');
+							on(editBtn, 'click', function() {
+								_self.openPermEditor(item);
+							})
+
+							domConstruct.empty(node);
+							domConstruct.place('<b>Workspace Members</b> ', node)
+
+							// only show edit button if user has the right permissions
+							if(item.path.split('/').length <= 3 && ['o', 'a'].indexOf(item.user_permission) != -1)
+								domConstruct.place(editBtn, node)
+
+							domConstruct.place('<br>' +
+								rows.join('<br>') + '<br><br>'
+							, node);
+
+						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
 							_self[this.property_aliases[key] + "Node"].innerHTML = val;
 						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
 							_self[this.property_aliases[key] + "Widget"].set("value", val);
@@ -220,6 +278,11 @@ define("p3/widget/ItemDetailPanel", [
 				}
 			}));
 			this.inherited(arguments);
+		},
+
+		// opens works permission editor for given item
+		openPermEditor: function(item){
+			Topic.publish("/openUserPerms", item);
 		},
 
 		saveType: function(val, val2){

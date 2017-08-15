@@ -28,7 +28,7 @@ a.HelpLink:active {
 }
 .wsBreadCrumbContainer {
 	display: inline-block;
-	margin: 12px 0 0 8px;
+	margin: 12px 0 12px 8px;
 }
 .wsBreadCrumb {
 	font-size:1.2em;
@@ -56,6 +56,14 @@ a.HelpLink:active {
 .wsActionTooltip:hover{
 	background:#d2d2d2;
 	cursor: pointer;
+}
+.objSelectorActionIcon{
+	cursor: pointer;
+	vertical-align: bottom;
+	margin-left: 3px;
+}
+.objSelectorActionIcon:hover{
+	color: #000;
 }
 .idMappingTable td:hover{
 background:#d2d2d2;
@@ -138,23 +146,31 @@ color:#fff;font-weight:600;background:#34698e;
 .wsItemName {
 	white-space: nowrap;
 }
-th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreationTime, th.dgrid-cell.wsItemOwnerId {
+th.dgrid-cell.wsItemName,
+th.dgrid-cell.wsItemSize,
+th.dgrid-cell.wsItemCreationTime,
+th.dgrid-cell.wsItemOwnerId,
+th.dgrid-cell.wsItemMembers {
 	border-right: 1px solid #C0C0C0;
 }
 th.dgrid-cell.wsItemType {
 	border-right: 0;
 	padding-left: 0;
 }
-.dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
+.dgrid-cell.wsItemName,
+.dgrid-cell.wsItemSize,
+.dgrid-cell.wsItemCreationTime,
+.dgrid-cell.wsItemOwnerId {
 	padding-left:10px;
 }
-.wsItemOwnerId {
+.wsItemOwnerId,
+.wsItemMembers {
 	width: 90px;
 }
 .wsItemSize {
 	width: 150px;
 }
-.wsItemCreationTime {
+.wsItemCreationTime{
 	width: 150px;
 }
 .JobStatusButton,
@@ -319,6 +335,11 @@ th.dgrid-cell.wsItemType {
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
 }
+.selectedDest{
+	background: #366998;
+    color: #fff;
+	padding: 3px 5px;
+}
 .dataItemSelection,
 .workspaceItemSelection,
 .multipleItemSelection,
@@ -398,4 +419,33 @@ th.dgrid-cell.wsItemType {
 	border:#d3d3d3 1px solid;
 	display:inline-block;
 	margin: 0 4px 0 0;
+}
+.userPermIcon {
+	background: #444;
+	color: #fff;
+	padding: 5px;
+	border-radius: 3px;
+	font-size: .8em;
+	margin-right: 3px;
+}
+.userPermForm{
+	margin: 0 0 20px 0;
+}
+.userPermForm .publicCheckBox{
+	padding: 10px;
+	background: #f5f5f5;
+	border: 1px dashed #aaa;
+	margin-bottom: 20px;
+}
+.dnd-active:before {
+    content: " ";
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0, 136, 10, 0.37);
+    z-index: 9999;
+	box-sizing: border-box;
+    border: 7px solid rgba(73, 187, 71, 5);
 }
