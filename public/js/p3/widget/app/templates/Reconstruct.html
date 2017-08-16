@@ -79,11 +79,19 @@
 
                 <div class="appRow">
                     <div class="appField">
+                        <label>Output Folder</label>
+                        <div data-dojo-attach-point="output_pathWidget"
+                             data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%"
+                             required="true"
+                             data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Reconstruction Results',missingMessage:'Output Folder must be selected.'"
+                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
+
+
                         <label>Output Name</label>
-                        <div data-dojo-attach-point="output_nameWidget"
-                             data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-                             style="width:100%"
-                             data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your model',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+                        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                                name="output_file" data-dojo-attach-point="output_file"
+                                style="width:85%" required="true"
+                                data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
                     </div>
                 </div>
 

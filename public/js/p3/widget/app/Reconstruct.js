@@ -32,10 +32,9 @@ define([
 
 			this.inherited(arguments);
 			this.mediaSelector.set("selected", "Complete");
-			/*
+
 			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-			_self.WorkspaceObjectSelector.set('value', _self.defaultPath);
-			*/
+			_self.output_pathWidget.set('value', _self.defaultPath);
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
@@ -43,14 +42,12 @@ define([
 			var gID = values.genome;
 			values.genome = 'PATRICSOLR:' + gID;
 			values.fulldb = (values.fulldb && values.fulldb.length) ? 1 : 0;
-			values.output_path = WorkspaceManager.getDefaultFolder() + '/models';
 
 			if(values.output_file === '')
 				values.output_file = gID + '_model';
 
 			var mediaItem = this.mediaSelector.store.get(this.mediaSelector.get('value'));
 			values.media = mediaItem.path;
-			console.log("mediaItem: ", mediaItem);
 
 			console.log('Running reconstruct with', values)
 			return values;
