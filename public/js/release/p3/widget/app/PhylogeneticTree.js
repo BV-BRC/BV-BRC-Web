@@ -243,7 +243,15 @@ define("p3/widget/app/PhylogeneticTree", [
 						var newGenomeIds =  res.data.id_list["genome_id"];
 					}
 				}
-				//console.log("newGenomeIds = ", newGenomeIds);
+				//display a notice if adding new genome group exceeds maximum allowed number
+				var count = this[groupType].addedNum +newGenomeIds.length;
+				if(count > this[groupType].maxGenomes){
+					var msg = "Sorry, you can only add up to "+this[groupType].maxGenomes+" genomes";
+					msg += " in "+groupType[0].toUpperCase()+groupType.substring(1).toLowerCase();
+					msg += " and you are trying to select "+count + ".";
+					new Dialog({title: "Notice", content: msg}).show();
+				}
+        //console.log("newGenomeIds = ", newGenomeIds);
 				if(chkPassed && this[groupType].addedNum < this[groupType].maxGenomes
 					&& newGenomeIds.length > 0
 					&& this[groupType].addedNum +newGenomeIds.length <= this[groupType].maxGenomes){
