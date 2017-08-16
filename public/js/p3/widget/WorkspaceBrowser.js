@@ -437,6 +437,11 @@ define([
 				tooltip: "View Model @ ModelSEED.org"
 			}, function(selection){
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
+
+				// adjust path for legacy modelseed
+				var parts = path.split('/')
+				path = parts.slice(0, -1).join('/') + '/.'+ parts.slice(-1)[0]
+
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				window.open(url, "_blank");
 			}, false);
