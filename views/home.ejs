@@ -1,5 +1,5 @@
 <% var flows = [
-    {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
+    {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
     , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
@@ -16,46 +16,24 @@
             <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
-<!--
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop"
+
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_service"
                      class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
-                             src="/patric/images/carousel/workshop_ANL_2017.png">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h2>
-                        <h3 class="xl highlight-f upper far">@ Argonne National Laboratory</h3>
-                        <br/>
-                        <p>The PATRIC/RAST teams will be offering a tutorial on 2017-August 14-16, at Argonne National Laboratory
-                        in the suburbs of Chicago, IL. The workshop will run for three days, with the third day optional and devoted solely to participants working
-                         on their own problems with help from the PATRIC/RAST team members. Included will be genome assembly, annotation, comparative analysis,
-                         and variation, as well as metabolic model construction, RNA-Seq analysis, Tn-seq analysis, and phylogenetic tree construction.  Registration
-                         information is available <a href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/" target="_blank">HERE</a>,
-                         and the planned agenda is available <a href="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-ANL-Workshop-August-2017.pdf">HERE</a>.
-                         The workshop will be limited to 35 people on a first-come, first-served basis.</p>
+                             src="/patric/images/carousel/new_services.png" style="padding-top:40px">
+                        <h2 class="xxxl sans-alternate upper highlight-e">New Services and Data</h2>
+                        <h3 class="xl highlight-f upper far">Recent Release</h3>
+                        <b><a href="/app/PhylogeneticTree" target="_blank">Phylogenetic Tree Builder</a></b> constructs custom phylogenetic trees using conserved protein sequences.
+                        <br><b><a href="/app/Tnseq" target="_blank">Tn-Seq Analysis</a></b> aligns reads and measures essentiality of Tn-seq data using the TRANSIT software.
+                        <br><b><a href="/app/GenomeDistance" target="_blank">Similar Genome Finder</a></b> finds the closest related genomes to selected genome or FASTA file using MInHash.
+                        <br><b><a href="/view/Feature/RefSeq.83332.12.NC_000962.CDS.2726806.2727339.fwd#view_tab=compareRegionViewer" target="_blank">Compare Region Viewer</a></b> displays flanking regions of user selected genomes for a particular gene.
+                        <br><b><a href="/view/Taxonomy/1763#view_tab=amr&amp;filter=and(eq(antibiotic,Amikacin),eq(resistant_phenotype,Susceptible))" target="_blank">AMR Phenotype Data</a></b> provides AMR phenotype and measurement method for list of genomes.
+                        <br><b><a href="/view/DataType/AntibioticResistance" target="_blank">Antibiotic Database</a></b> provides antibiotic name, description, chemical structure, mechanism, and pharmacology.
+                        <br>
                         <br>
                         <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/"
-                              target="_blank">More Information</a></p>
-                        <br><br>
-                    </div>
-                </div>
--->
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_icsb"
-                     class="CarouselContent showOnLoad dijitVisible">
-                    <div class="wrapper">
-                        <img class="right"
-                             src="/patric/images/carousel/workshop_ICSB_2017.png" style="height:179px">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop <br/>@ ICSB 2017</h2>
-                        <h3 class="xl highlight-f upper far">PATRIC Workshop</h3>
-                        <p>PATRIC will be hosting a 1-day workshop entitled "The PATRIC Bioinformatics Resource Center for 'Omics Data Analysis,"
-                        at the 18th International Conference on Systems Biology (ICSB 2017) on August 6, 2017 on the Virginia Tech University campus in Blacksburg, VA.
-                        The workshop will cover PATRIC's analysis pipelines, which include genome assembly and annotation, RNA-Seq analysis, variation analysis,
-                        and tools for comparative genomic analysis.  PATRIC provides researchers with the ability to analyze their private data directly
-                        with any of the available public data. The registration page for ICSB is <a href="http://www.cpe.vt.edu/icsb2017/registration.html" target="_blank">HERE</a>,
-                        and registration is open until August 3, 2017.</p>
-                        <br>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5175/patric-workshop-at-iscb-2017-at-virginia-tech-august-6-2017/"
+                              href="http://enews.patricbrc.org/5202/patric-july-2017-release-features-over-3900-new-genomes-and-new-functionality-and-data-including-a-new-phylogenetic-tree-building-service-and-enhancements-to-multiple-services-and-tools/"
                               target="_blank">More Information</a></p>
                         <br><br>
                     </div>
