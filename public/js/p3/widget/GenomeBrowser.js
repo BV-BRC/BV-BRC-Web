@@ -324,7 +324,8 @@ define([
 				.replace(/^([a-z]*)0+/, '$1')
 				.replace(/^(\d+)$/, 'chr$1')
 				.replace(/^accn\|/, '')
-                .replace(/^sid\|\d+\|accn\|/,'');
+                .replace(/^sid\|\d+\|accn\|/,'')
+                .replace(/^[[:ascii:]]+\|accn\|/,'');
 
 			return refname;
 		},
