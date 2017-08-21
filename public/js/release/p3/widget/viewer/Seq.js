@@ -117,24 +117,16 @@ define("p3/widget/viewer/Seq", [
 
         var track;
         // the first track gets some extra fields
-        if (tracks.length < 1) {
-          track = {
-            'style': {'height':200},
-            'scale':'log',
-            'variance_band': 'true',
-            'label': t.keyAndLabel,
-            'key': t.keyAndLabel,
-            'type': t.trackType,
-            'store': t.store
-          };
-        } else {
-          track = {
-            'type': t.trackType,
-            'key': t.keyAndLabel,
-            'store': t.store,
-            'label': t.keyAndLabel
-          };
-        }
+        track = {
+          //'scale':'log',
+          //'variance_band': 'true',
+					'displayMode': 'compact',
+          'label': t.keyAndLabel,
+          'key': t.keyAndLabel,
+          'type': t.trackType,
+          'store': t.store
+        };
+
         tracks.push(track);
         labels.push(t.keyAndLabel);
 

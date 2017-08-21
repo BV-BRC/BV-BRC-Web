@@ -1,5 +1,5 @@
 <% var flows = [
-    {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
+    {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
     , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
@@ -16,46 +16,24 @@
             <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
-<!--
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop"
+
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_service"
                      class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
-                             src="/patric/images/carousel/workshop_ANL_2017.png">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h2>
-                        <h3 class="xl highlight-f upper far">@ Argonne National Laboratory</h3>
-                        <br/>
-                        <p>The PATRIC/RAST teams will be offering a tutorial on 2017-August 14-16, at Argonne National Laboratory
-                        in the suburbs of Chicago, IL. The workshop will run for three days, with the third day optional and devoted solely to participants working
-                         on their own problems with help from the PATRIC/RAST team members. Included will be genome assembly, annotation, comparative analysis,
-                         and variation, as well as metabolic model construction, RNA-Seq analysis, Tn-seq analysis, and phylogenetic tree construction.  Registration
-                         information is available <a href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/" target="_blank">HERE</a>,
-                         and the planned agenda is available <a href="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-ANL-Workshop-August-2017.pdf">HERE</a>.
-                         The workshop will be limited to 35 people on a first-come, first-served basis.</p>
+                             src="/patric/images/carousel/new_services.png" alt="New Services and Data" style="padding-top:40px">
+                        <h2 class="xxxl sans-alternate upper highlight-e">New Services and Data</h2>
+                        <h3 class="xl highlight-f upper far">Recent Release</h3>
+                        <b><a href="/app/PhylogeneticTree" target="_blank">Phylogenetic Tree Builder</a></b> constructs custom phylogenetic trees using conserved protein sequences.
+                        <br><b><a href="/app/Tnseq" target="_blank">Tn-Seq Analysis</a></b> aligns reads and measures essentiality of Tn-seq data using the TRANSIT software.
+                        <br><b><a href="/app/GenomeDistance" target="_blank">Similar Genome Finder</a></b> finds the closest related genomes to selected genome or FASTA file using MInHash.
+                        <br><b><a href="/view/Feature/RefSeq.83332.12.NC_000962.CDS.2726806.2727339.fwd#view_tab=compareRegionViewer" target="_blank">Compare Region Viewer</a></b> displays flanking regions of user selected genomes for a particular gene.
+                        <br><b><a href="/view/Taxonomy/1763#view_tab=amr&amp;filter=and(eq(antibiotic,Amikacin),eq(resistant_phenotype,Susceptible))" target="_blank">AMR Phenotype Data</a></b> provides AMR phenotype and measurement method for list of genomes.
+                        <br><b><a href="/view/DataType/AntibioticResistance" target="_blank">Antibiotic Database</a></b> provides antibiotic name, description, chemical structure, mechanism, and pharmacology.
+                        <br>
                         <br>
                         <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/"
-                              target="_blank">More Information</a></p>
-                        <br><br>
-                    </div>
-                </div>
--->
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_icsb"
-                     class="CarouselContent showOnLoad dijitVisible">
-                    <div class="wrapper">
-                        <img class="right"
-                             src="/patric/images/carousel/workshop_ICSB_2017.png" style="height:179px">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop <br/>@ ICSB 2017</h2>
-                        <h3 class="xl highlight-f upper far">PATRIC Workshop</h3>
-                        <p>PATRIC will be hosting a 1-day workshop entitled "The PATRIC Bioinformatics Resource Center for 'Omics Data Analysis,"
-                        at the 18th International Conference on Systems Biology (ICSB 2017) on August 6, 2017 on the Virginia Tech University campus in Blacksburg, VA.
-                        The workshop will cover PATRIC's analysis pipelines, which include genome assembly and annotation, RNA-Seq analysis, variation analysis,
-                        and tools for comparative genomic analysis.  PATRIC provides researchers with the ability to analyze their private data directly
-                        with any of the available public data. The registration page for ICSB is <a href="http://www.cpe.vt.edu/icsb2017/registration.html" target="_blank">HERE</a>,
-                        and registration is open until August 3, 2017.</p>
-                        <br>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5175/patric-workshop-at-iscb-2017-at-virginia-tech-august-6-2017/"
+                              href="http://enews.patricbrc.org/5202/patric-july-2017-release-features-over-3900-new-genomes-and-new-functionality-and-data-including-a-new-phylogenetic-tree-building-service-and-enhancements-to-multiple-services-and-tools/"
                               target="_blank">More Information</a></p>
                         <br><br>
                     </div>
@@ -65,7 +43,7 @@
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
-                             src="/patric/images/carousel/PATRIC-100000-Genomes.png">
+                             src="/patric/images/carousel/PATRIC-100000-Genomes.png" alt="PATRIC crosses 100,000 genomes mark">
                         <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Crosses 100,000 Genomes Mark</h2>
                         <br/>
                         <p>In the May 2017 release, PATRIC has added over 7,700 new genomes,
@@ -84,7 +62,7 @@
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_ar"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
-                        <img class="right" src="/patric/images/carousel/AR_carousel.jpg">
+                        <img class="right" src="/patric/images/carousel/AR_carousel.jpg" alt="Antibiotic Resistance Data">
                         <h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2>
                         <h3 class="xl highlight-f upper far">for Infectious Disease Research</h3>
                         <p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics
@@ -102,7 +80,7 @@
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper"><img class="right"
-                                              src="/patric/images/carousel/Mycobacterium_tuberculosis.jpg">
+                                              src="/patric/images/carousel/Mycobacterium_tuberculosis.jpg" alt="Supporting the TB research community">
                         <h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2>
                         <h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3>
                         <p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This
@@ -150,40 +128,32 @@
                             </h2>
                             <ul class="no-decoration no-underline-links">
                                 <li class="first">
-                                    <figure><a href="/view/DataType/Genomes"><img
-                                                    src="/patric/images/dlp-hp-genomes.png" alt="Genomes"></a>
+                                    <figure><a href="/view/DataType/Genomes"><i class="home_dlp home_dlp_genomes" alt="Genomes"></i></a>
                                         <figcaption>GENOMES</figcaption>
                                     </figure>
                                 </li>
                                 <li>
-                                    <figure><a href="/view/DataType/GenomicFeatures"><img
-                                                    src="/patric/images/dlp-hp-features.png" alt="Genomic Features"></a>
+                                    <figure><a href="/view/DataType/GenomicFeatures"><i class="home_dlp home_dlp_features" alt="Genomic Features"></i></a>
                                         <figcaption>GENOMIC FEATURES</figcaption>
                                     </figure>
                                 </li>
                                 <li>
-                                    <figure><a href="/view/DataType/SpecialtyGenes"><img
-                                                    src="/patric/images/dlp-hp-specialtygenes.png"
-                                                    alt="Specialty Genes"></a>
+                                    <figure><a href="/view/DataType/SpecialtyGenes"><i class="home_dlp home_dlp_specialtygenes" alt="Specialty Genes"></i></a>
                                         <figcaption>SPECIALTY GENES</figcaption>
                                     </figure>
                                 </li>
                                 <li>
-                                    <figure><a href="/view/DataType/ProteinFamilies"><img
-                                                    src="/patric/images/dlp-hp-proteins.png" alt="Protein Families"></a>
+                                    <figure><a href="/view/DataType/ProteinFamilies"><i class="home_dlp home_dlp_proteins" alt="Protein Families"></i></a>
                                         <figcaption>PROTEIN FAMILIES</figcaption>
                                     </figure>
                                 </li>
                                 <li>
-                                    <figure><a href="/view/DataType/Pathways"><img
-                                                    src="/patric/images/dlp-hp-pathways.png" alt="Pathways"></a>
+                                    <figure><a href="/view/DataType/Pathways"><i class="home_dlp home_dlp_pathways" alt="Pathways"></i></a>
                                         <figcaption>PATHWAYS</figcaption>
                                     </figure>
                                 </li>
                                 <li class="last">
-                                    <figure><a href="/view/DataType/Transcriptomics"><img
-                                                    src="/patric/images/dlp-hp-transcriptomics.png"
-                                                    alt="Transcriptomic Experiments"></a>
+                                    <figure><a href="/view/DataType/Transcriptomics"><i class="home_dlp home_dlp_transcriptomics" alt="Transcriptomic Experiments"></i></a>
                                         <figcaption>TRANSCRIPTOMICS</figcaption>
                                     </figure>
                                 </li>
@@ -201,8 +171,7 @@
                                         <li class="clear">
                                             <figure class="figure-right">
                                                 <a href="/app/Assembly">
-                                                    <img src="/patric/images/home/assembly.png"
-                                                         alt="Genome Assembly">
+                                                    <i class="home_wcid home_wcid-assembly" alt="Genome Assembly"></i>
                                                 </a>
                                             </figure>
                                             <h4 class="bold"><a href="/app/Assembly">Genome Assembly</a></h4>
@@ -216,8 +185,7 @@
                                         <li class="clear">
                                             <figure class="figure-right">
                                                 <a href="/app/ProteinFamily">
-                                                    <img src="/patric/images/home/protein_family_sorter.png"
-                                                         alt="Protein Family Sorter">
+                                                    <i class="home_wcid home_wcid-protein_family_sorter" alt="Protein Family Sorter"></i>
                                                 </a>
                                             </figure>
                                             <h4 class="bold">
@@ -235,8 +203,7 @@
                                         <li class="clear">
                                             <figure class="figure-right">
                                                 <a href="/view/Taxonomy/2#view_tab=genomes">
-                                                    <img src="/patric/images/home/genome_metadata.png"
-                                                         alt="Genome Metadata">
+                                                    <i class="home_wcid home_wcid-genome_metadata" alt="Genome Metadata"></i>
                                                 </a>
                                             </figure>
                                             <h4 class="bold">
@@ -254,9 +221,8 @@
                                 <div class="column last">
                                     <ul class="no-decoration no-underline-links">
                                         <li class="clear">
-                                            <figure class="figure-right"><a href="/app/Annotation"><img
-                                                            src="/patric/images/home/genome_annotation.png"
-                                                            alt="Genome Annotation"></a></figure>
+                                            <figure class="figure-right"><a href="/app/Annotation"><i class="home_wcid home_wcid-genome_annotation"
+                                                            alt="Genome Annotation"></i></a></figure>
                                             <h4 class="bold"><a href="/app/Annotation">Genome Annotation</a></h4>
                                             <p>The Genome Annotation Service is a fully-automated pipeline for
                                                 annotating bacterial and archaeal genomes using RAST (Rapid Annotation
@@ -264,9 +230,8 @@
                                                     must have a PATRIC user account and be logged in to use this
                                                     service.</em></p></li>
                                         <li class="clear">
-                                            <figure class="figure-right"><a href="/app/ComparativePathway"><img
-                                                            src="/patric/images/home/comparative_pathways.png"
-                                                            alt="Comparative Pathway Tool"></a></figure>
+                                            <figure class="figure-right"><a href="/app/ComparativePathway"><i class="home_wcid home_wcid-comparative_pathways"
+                                                            alt="Comparative Pathway Tool"></i></a></figure>
                                             <h4 class="bold"><a href="/app/ComparativePathway">Comparative Pathway
                                                     Tool</a></h4>
                                             <p>Supports comparison of consistently annotated metabolic pathways across
@@ -276,9 +241,9 @@
                                                 genomes across the set of EC numbers within a selected pathway.</p></li>
                                         <li class="clear">
                                             <figure class="figure-right"><a
-                                                        href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics"><img
-                                                            src="/patric/images/home/gene_page_transcriptomics.jpg"
-                                                            alt="Gene Page Transcriptomics"></a></figure>
+                                                        href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics">
+                                                        <i class="home_wcid home_wcid-gene_page_transcriptomics"
+                                                            alt="Gene Page Transcriptomics"></i></a></figure>
                                             <h4 class="bold"><a
                                                         href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics">Gene
                                                     Page Transcriptomics</a></h4>
