@@ -24,19 +24,17 @@ SOFTWARE.
 
   // registers the extension on a cytoscape lib ref
   var register = function( cytoscape, $ ){
-    if( !cytoscape ){ return; } // can't register if cytoscape unspecified
+    if( !cytoscape || !$ ){ return; } // can't register if cytoscape or jquery unspecified
 
     $.fn.cyPanzoom = $.fn.cytoscapePanzoom = function( options ){
-      panzoom.apply( this, [ options, $ ] );
+      panzoom.apply( this, [ options, cytoscape, $ ] );
 
       return this; // chainability
     };
 
     // if you want a core extension
     cytoscape('core', 'panzoom', function( options ){ // could use options object, but args are up to you
-      var cy = this;
-
-      panzoom.apply( cy.container(), [ options, $ ] );
+      panzoom.apply( this, [ options, cytoscape, $ ] );
 
       return this; // chainability
     });
@@ -69,13 +67,14 @@ SOFTWARE.
     resetIcon: 'fa fa-expand'
   };
 
-  var panzoom = function( params, $ ){
+  var panzoom = function( params, cytoscape, $ ){
+    var cyRef = this;
     var options = $.extend(true, {}, defaults, params);
     var fn = params;
 
     var functions = {
       destroy: function(){
-        var $this = $(this);
+        var $this = $(cyRef.container());
         var $pz = $this.find(".cy-panzoom");
 
         $pz.data('winbdgs').forEach(function( l ){
@@ -83,7 +82,7 @@ SOFTWARE.
         });
 
         $pz.data('cybdgs').forEach(function( l ){
-          $this.cytoscape('get').off( l.evt, l.fn );
+          cyRef.off( l.evt, l.fn );
         });
 
         $pz.remove();
@@ -92,8 +91,9 @@ SOFTWARE.
       init: function(){
         var browserIsMobile = 'ontouchstart' in window;
 
-        return $(this).each(function(){
+        return $(cyRef.container()).each(function(){
           var $container = $(this);
+          $container.cytoscape = cytoscape;
 
           var winbdgs = [];
           var $win = $(window);
@@ -118,12 +118,11 @@ SOFTWARE.
           };
 
           var cybdgs = [];
-          var cy = $container.cytoscape('get');
 
           var cyOn = function( evt, fn ){
             cybdgs.push({ evt: evt, fn: fn });
 
-            cy.on( evt, fn );
+            cyRef.on( evt, fn );
           };
 
           var cyOff = function( evt, fn ){
@@ -136,7 +135,7 @@ SOFTWARE.
               }
             }
 
-            cy.off( evt, fn );
+            cyRef.off( evt, fn );
           };
 
           var $panzoom = $('<div class="cy-panzoom"></div>');
@@ -253,9 +252,8 @@ SOFTWARE.
           }
 
           function calculateZoomCenterPoint(){
-            var cy = $container.cytoscape("get");
-            var pan = cy.pan();
-            var zoom = cy.zoom();
+            var pan = cyRef.pan();
+            var zoom = cyRef.zoom();
 
             zx = $container.width()/2;
             zy = $container.height()/2;
@@ -275,13 +273,11 @@ SOFTWARE.
 
           var zx, zy;
           function zoomTo(level){
-            var cy = $container.cytoscape("get");
-
             if( !zooming ){ // for non-continuous zooming (e.g. click slider at pt)
               calculateZoomCenterPoint();
             }
 
-            cy.zoom({
+            cyRef.zoom({
               level: level,
               renderedPosition: { x: zx, y: zy }
             });
@@ -303,7 +299,7 @@ SOFTWARE.
 
             positionIndicator(pan);
             panInterval = setInterval(function(){
-              $container.cytoscape("get").panBy(pan);
+              cyRef.panBy(pan);
             }, options.panSpeed);
           };
 
@@ -419,8 +415,7 @@ SOFTWARE.
           });
 
           function positionSliderFromZoom(){
-            var cy = $container.cytoscape("get");
-            var z = cy.zoom();
+            var z = cyRef.zoom();
             var zmin = options.minZoom;
             var zmax = options.maxZoom;
 
@@ -490,10 +485,9 @@ SOFTWARE.
                 return;
               }
 
-              var cy = $container.cytoscape("get");
               var doZoom = function(){
-                var zoom = cy.zoom();
-                var lvl = cy.zoom() * factor;
+                var zoom = cyRef.zoom();
+                var lvl = cyRef.zoom() * factor;
 
                 if( lvl < options.minZoom ){
                   lvl = options.minZoom;
@@ -533,15 +527,14 @@ SOFTWARE.
               return;
             }
 
-            var cy = $container.cytoscape("get");
-            var elesToFit = options.fitSelector?cy.elements(options.fitSelector):cy.elements();
-            
+            var elesToFit = options.fitSelector?cyRef.elements(options.fitSelector):cyRef.elements();
+
             if( elesToFit.size() === 0 ){
-              cy.reset();
+              cyRef.reset();
             } else {
               var animateOnFit = typeof options.animateOnFit === 'function' ? options.animateOnFit.call() : options.animateOnFit;
               if(animateOnFit){
-                cy.animate({
+                cyRef.animate({
                   fit: {
                     eles: elesToFit,
                     padding: options.fitPadding
@@ -551,9 +544,9 @@ SOFTWARE.
                 });
               }
               else{
-                cy.fit( elesToFit, options.fitPadding );
+                cyRef.fit( elesToFit, options.fitPadding );
               }
-              
+
             }
 
             return false;
@@ -578,10 +571,10 @@ SOFTWARE.
 
 
   if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
-    module.exports = register;
-  }
-
-  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
+    module.exports = function( cytoscape, jquery ){
+      register( cytoscape, jquery || require('jquery') );
+    }
+  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
     define('cytoscape-panzoom', function(){
       return register;
     });
