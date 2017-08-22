@@ -4,6 +4,7 @@ node_modules/
 .DS_Store
 dump.rdb
 npm-debug.log
+package-lock.json
 public/js/release/build-report.txt
 .idea/
 .vscode/

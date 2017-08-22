@@ -41,6 +41,7 @@ SOFTWARE.
       // general layout options
       fit: true, // whether to fit to viewport
       padding: 30, // fit padding
+      spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
       animate: false, // whether to transition the node positions
       animationDuration: 500, // duration of animation in ms if enabled
       animationEasing: undefined, // easing of animation if enabled
@@ -181,8 +182,9 @@ SOFTWARE.
         }
       };
 
-      nodes.layoutPositions(layout, options, function(){
-        var dModel = this.scratch().dagre;
+      nodes.layoutPositions(layout, options, function( ele ){
+        ele = typeof ele === "object" ? ele : this;
+        var dModel = ele.scratch().dagre;
 
         return constrainPos({
           x: dModel.x,
@@ -198,10 +200,10 @@ SOFTWARE.
   };
 
   if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
-    module.exports = register;
-  }
-
-  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
+    module.exports = function( cytoscape, dagre ){
+      register( cytoscape, dagre || require('dagre') );
+    };
+  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
     define('cytoscape-dagre', function(){
       return register;
     });

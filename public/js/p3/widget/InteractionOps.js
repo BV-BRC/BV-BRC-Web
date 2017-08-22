@@ -84,7 +84,7 @@ define([], function(){
 			var nodeCount = 0;
 			cy.elements().bfs({
 				roots: node,
-				visit: function(i, depth, v, e, u){
+				visit: function(v, e, u, i, depth){
 					visitedArr.push(v);
 					v.connectedEdges().forEach(function(e){
 						visitedArr.push(e);

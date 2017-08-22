@@ -210,6 +210,7 @@ define([
 
 		formatsp_gene: function(docs, total){
 			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, "#view_tab=specialtyGenes&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+			// console.log("formatsp_gene, docs: ", docs);
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SpecialtyGeneList/" + doc.feature_id + "'>" + doc.product + "</a>");
@@ -218,7 +219,11 @@ define([
 
 				out.push("<div class='resultInfo'>" + doc.genome_name +  "</div>");
 
-				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
+				out.push("<div class='resultInfo'>" + doc.property + " | " + doc.source);
+
+				if (doc.evidence){
+					out.push("&nbsp;|&nbsp;" + doc.evidence);
+				}
 
 				if (doc.refseq_locus_tag){
 					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);

@@ -14930,6 +14930,79 @@ div.appsublabel {
     margin-right: 0;
     width: 311px;
 }
+.home_wcid {
+    background-image: url(/patric/images/home/home-what-can-i-do.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+.home_wcid-assembly {
+    width: 100px;
+    height: 75px;
+    background-position: -5px -5px;
+}
+.home_wcid-comparative_pathways {
+    width: 100px;
+    height: 75px;
+    background-position: -115px -5px;
+}
+.home_wcid-gene_page_transcriptomics {
+    width: 100px;
+    height: 75px;
+    background-position: -5px -90px;
+}
+.home_wcid-genome_annotation {
+    width: 100px;
+    height: 75px;
+    background-position: -115px -90px;
+}
+.home_wcid-genome_metadata {
+    width: 100px;
+    height: 75px;
+    background-position: -225px -5px;
+}
+.home_wcid-protein_family_sorter {
+    width: 100px;
+    height: 75px;
+    background-position: -225px -90px;
+}
+.home_dlp {
+    background-image: url(/patric/images/home/home-dlp-icons.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+i.home_dlp {
+    margin: auto;
+}
+.home_dlp_features {
+    width: 61px;
+    height: 33px;
+    background-position: -5px -5px;
+}
+.home_dlp_genomes {
+    width: 64px;
+    height: 64px;
+    background-position: -76px -5px;
+}
+.home_dlp_pathways {
+    width: 62px;
+    height: 42px;
+    background-position: -5px -79px;
+}
+.home_dlp_proteins {
+    width: 68px;
+    height: 56px;
+    background-position: -77px -79px;
+}
+.home_dlp_specialtygenes {
+    width: 54px;
+    height: 48px;
+    background-position: -150px -5px;
+}
+.home_dlp_transcriptomics {
+    width: 37px;
+    height: 47px;
+    background-position: -155px -63px;
+}
 .patric .dlp {
   width: 967px;
   margin: 5px auto 0 auto;
