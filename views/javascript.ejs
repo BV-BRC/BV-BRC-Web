@@ -9,18 +9,21 @@
     }
 </script>
 <script type="text/javascript" src="/js/msa/dist/msa.min.js"></script>
+<script src="/js/bundle/bundle.js"></script>
+<!-- // use bundle.js
 <script type="text/javascript" src="/js/cytoscape/dist/cytoscape.min.js"></script>
 <script type="text/javascript" src="/js/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="/js/webcola/WebCola/cola.min.js"></script>
 <script type="text/javascript" src="/js/dagre/dist/dagre.min.js"></script>
 <script type="text/javascript" src="/js/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>
+-->
 <script type="text/javascript" src="/js/clipboard-js/clipboard.min.js"></script>
 <% if (request && request.production){ %>
     <script src="/js/<%- request.package.version %>/dojo/dojo.js"></script>
     <script>
         require(<%- JSON.stringify(request.productionLayers) %>, function(){
 <% } else { %>
-    <script src = "/js/dojo/dojo.js"></script>
+    <script src="/js/dojo/dojo.js"></script>
     <script>
 <% } %>
         require(["<%= request.applicationModule %>"], function(App){
