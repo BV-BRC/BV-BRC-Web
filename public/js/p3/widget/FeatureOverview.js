@@ -65,7 +65,7 @@ define([
 						dispSequenceID.push(feature['alt_locus_tag']);
 					}
 					if(feature['refseq_locus_tag']){
-						dispSequenceID.push("|");
+						dispSequenceID.push(" ");
 						dispSequenceID.push(feature['refseq_locus_tag']);
 					}
 					if(feature['product']){

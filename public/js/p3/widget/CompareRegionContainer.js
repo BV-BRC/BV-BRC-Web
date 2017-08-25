@@ -134,7 +134,8 @@ define([
 				return;
 			}
 
-			this.service = new SEEDClient(window.App.compareregionServiceURL);
+			var auth = window.App.user ? {'token': window.App.authorizationToken} : null;
+			this.service = new SEEDClient(window.App.compareregionServiceURL, auth);
 
 			this.viewer = new ContentPane({
 				region: "center"
