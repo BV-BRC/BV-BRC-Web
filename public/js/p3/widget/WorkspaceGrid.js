@@ -9,7 +9,7 @@ define([
 			Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox){
 	return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
 		columns: {
-			"type": {
+			type: {
 				label: "",
 				get: function(item){
 					if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
@@ -27,7 +27,7 @@ define([
 				formatter: formatter.wsItemType,
 				unhidable: true
 			},
-			"name": editor({
+			name: editor({
 				label: "Name",
 				field: "name",
 				className: "wsItemName",
@@ -49,7 +49,6 @@ define([
 				hidden: false,
 				formatter: formatter.objectOrFileSize
 			},
-
 			owner_id: {
 				label: "Owner",
 				field: "owner_id",
