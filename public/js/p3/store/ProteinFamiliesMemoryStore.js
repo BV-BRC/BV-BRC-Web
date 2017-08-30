@@ -121,7 +121,7 @@ define([
 			var gfs = this.pfState.genomeFilterStatus;
 
 			// var tsStart = window.performance.now();
-			var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+			var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").split("~").map(function(k){ return k.trim(); });
 
 			data.forEach(function(family){
 
