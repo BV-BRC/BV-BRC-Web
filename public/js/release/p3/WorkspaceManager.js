@@ -27,7 +27,7 @@ define("p3/WorkspaceManager", [
 		"transcriptomics_experiment", "transcripts", "txt", "unspecified", "vcf",
 		"vcf_gz", "wig", "xls", "xlsx", "zip", "contigset"],
 		viewableTypes: ["txt", "html", "json", "csv", "diffexp_experiment",
-		"diffexp_expression", "diffexp_mapping", "diffexp_sample",
+		"diffexp_expression", "diffexp_mapping", "diffexp_sample", "pdf",
 		"diffexp_input_data", "diffexp_input_metadata", "svg", "gif", "png", "jpg"],
 
 		getDefaultFolder: function(type){
