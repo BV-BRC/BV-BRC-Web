@@ -56,7 +56,7 @@ define([
 				paths: [p],
 				includeSubDirs: false,
 				Recursive: false
-			}]), lang.hitch(this, function(results){
+			}]), function(results){
 				var res;
 				if(!results[0] || !results[0][p]){
 					res = []
@@ -67,20 +67,19 @@ define([
 				}
 
 				if(res.length > 0){
-					this.set("userWorkspaces", res);
+					_self.set("userWorkspaces", res);
 					Topic.publish("/refreshWorkspace", {});
 					return res;
 				}
-
-				return Deferred.when(this.createWorkspace("home"), lang.hitch(this, function(hws){
-					this.userWorkspaces = [hws];
+				return Deferred.when(_self.createWorkspace("home"), function(hws){
+					_self.set('userWorkspaces', [hws]);
 					return [hws];
 				}, function(err){
 					console.error("Error Creating User's home workspace: ", err);
-					// console.error("Unable to create user's 'home' workspace: ", err);
 					return [];
-				}));
-			}));
+				})
+			});
+
 			return this.userWorkspaces;
 		},
 
@@ -89,7 +88,7 @@ define([
 			if(obj.path.charAt(obj.path.length - 1) != "/"){
 				obj.path = obj.path + "/";
 			}
-			// console.log("Workspace.create: ", obj.path, obj.path + obj.name, "Overwrite: ", overwrite);
+
 			return Deferred.when(this.api("Workspace.create", [{
 				objects: [[(obj.path + obj.name), (obj.type || "unspecified"), obj.userMeta || {}, (obj.content || "")]],
 				createUploadNodes: createUploadNode,
@@ -206,15 +205,21 @@ define([
 
 		},
 
-		createFolder: function(path){
+		createFolder: function(paths){
 			var _self = this;
-			if(!path) throw new Error("Invalid Path to create");
+			if(!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if(!(paths instanceof Array)){
+				paths = [paths];
+			}
+			var objs = paths.map(function(p){
+				return [p, "Directory"]
+			})
 
-			return Deferred.when(this.api("Workspace.create", [{
-					objects: [[path, "Directory"]]
-				}]), function(results){
-
+			return Deferred.when(this.api("Workspace.create", [{objects: objs}]), function(results){
 				var createdPath = results[0][0];
+
 				if(!createdPath){
 					throw new Error("Please try a new name.");
 				}else{
@@ -260,12 +265,10 @@ define([
 				});
 				Topic.publish("/refreshWorkspace", {});
 			}, function(err) {
-				console.log('error ', err)
 				var btn = self.errorDetailsBtn();
 
 				var msg = domConstruct.toDom('<span>' + paths.length + " items could not be deleted");
 				domConstruct.place(btn.domNode, msg, 'last')
-				console.log('msg', msg)
 
 				Topic.publish("/Notification", {
 					message: msg,
@@ -275,7 +278,9 @@ define([
 		},
 
 		createWorkspace: function(name){
-			return Deferred.when(this.createFolder("/" + this.userId + "/" + name + "/"), lang.hitch(this, function(workspace){
+			var path = "/" + this.userId + "/" + name + "/";
+
+			return Deferred.when(this.createFolder(path), lang.hitch(this, function(workspace){
 				if(name == "home"){
 					return Deferred.when(this.createFolder([
 							workspace.path + "/Genome Groups",
@@ -287,11 +292,12 @@ define([
 							message: "New workspace '" + name + "' created",
 							type: "message"
 						});
-						return workspace
+
+						return workspace;
 					})
 				}
 
-				return workspace
+				return workspace;
 			}));
 		},
 
@@ -368,8 +374,6 @@ define([
 					throw new Error("Object not found: ");
 				}
 
-				//console.log('[WorkspaceManager] results:', results);
-				// console.log("results[0]", results[0]);
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -715,7 +719,6 @@ define([
 			},
 
 			function(err){
-				//console.log("Error Loading Workspace:", err);
 				_self.showError(err);
 			})
 		},
@@ -730,7 +733,6 @@ define([
 			},
 
 			function(err){
-				//console.log("Error Loading Workspace:", err);
 				_self.showError(err);
 			})
 		},
@@ -744,7 +746,6 @@ define([
 			},
 
 			function(err){
-				//console.log("Error Loading Workspace:", err);
 				_self.showError(err);
 			})
 		},
@@ -827,7 +828,6 @@ define([
 		},
 
 		_currentWorkspaceGetter: function(){
-
 			if(!this.currentWorkspace){
 				this.currentWorkspace = Deferred.when(this.get('userWorkspaces'), lang.hitch(this, function(cws){
 					if(!cws || cws.length < 1){
