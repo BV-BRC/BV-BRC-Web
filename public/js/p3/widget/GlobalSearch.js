@@ -13,22 +13,33 @@ define([
 
 	function processQuery(query, searchOption){
 		//console.log("processQuery query: ", query, "searchOption: ", searchOption);	
+		// replace some special characters
 		query = query.replace(/'/g, "").replace(/:/g, " ");
-					
-		var keywords = query.split(/\s/);
-		// console.log("keywords", keywords);
-		
-		// Add quotes for IDs: handle fig id (e.g. fig|83332.12.peg.1),  genome id (e.g. 83332.12), EC number (e.g. 2.1.1.1), other ids with number.number, number only, IDs ending with numbers (at least 1 digit). 		
-		for (var i=0; i<keywords.length; i++){
-			if (keywords[i].charAt(0) != '"' && keywords[i].charAt(keywords[i].length-1) != '"'){ // if not already quoted
-				// if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/^[0-9]+$/) != null || keywords[i].match(/[0-9]+$/) != null){
-				if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/[0-9]+$/) != null){
-					keywords[i] = '"' + keywords[i] + '"';
-				}
-			}				
-		}
-		query = keywords.join(" ");
+		// console.log("query", query);
+		query =  query.replace(/\(\+\)/g, " ").replace(/\(-\)/g, " ").replace(/,|\+|-|=|<|>|\\|\//g, " ");
+		// console.log("query", query);	
 
+		if (query.charAt(0) == '"' && query.match(/\(|\)|\[|\]|\{|\}/)){
+			query =  query.replace(/\"/g, "");
+		}
+
+		if (query.charAt(0) != '"' || query.match(/\(|\)|\[|\]|\{|\}/)) {
+			
+			// keywords should not include {}, [] or () characters
+			var keywords = query.split(/\s|\(|\)|\[|\]|\{|\}/);
+			// console.log("keywords", keywords);
+		
+			// Add quotes for IDs: handle fig id (e.g. fig|83332.12.peg.1),  genome id (e.g. 83332.12), EC number (e.g. 2.1.1.1), other ids with number.number, number only, IDs ending with numbers (at least 1 digit). 		
+			for (var i=0; i<keywords.length; i++){
+				if (keywords[i].charAt(0) != '"' && keywords[i].charAt(keywords[i].length-1) != '"'){ // if not already quoted
+					// if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/^[0-9]+$/) != null || keywords[i].match(/[0-9]+$/) != null){
+					if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/[0-9]+$/) != null){
+						keywords[i] = '"' + keywords[i] + '"';
+					}
+				}				
+			}
+			query = keywords.join(" ");
+		}
 		var q = searchToQuery(query);
 
 		if (searchOption == "option_or") {
