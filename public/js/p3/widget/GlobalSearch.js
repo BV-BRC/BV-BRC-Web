@@ -16,13 +16,20 @@ define([
 		// replace some special characters
 		query = query.replace(/'/g, "").replace(/:/g, " ");
 		// console.log("query", query);
+		
+		// replace special words/characters: (+), (-), +, - , <, >, /, \ with a space as they are causing solr query problems when included in the keywords  
 		query =  query.replace(/\(\+\)/g, " ").replace(/\(-\)/g, " ").replace(/,|\+|-|=|<|>|\\|\//g, " ");
 		// console.log("query", query);	
 
+		// When query phrase is quoted, the whole phrase should be search as one keyword unless it contains (), {}, []
+		// e.g. "EC 2.1.1.1" should be search as "EC 3.2.1.1" not "EC AND 3.2.1.1"
+		// However if user specify "amylase (EC 3.2.1.1)", "amylase (EC 3.2.1.1)" can not be submitted as solr query as it contains ()
 		if (query.charAt(0) == '"' && query.match(/\(|\)|\[|\]|\{|\}/)){
 			query =  query.replace(/\"/g, "");
 		}
 
+		// This handles special implementation of doing exact search for possible ids such as fig id, EC number etc.
+		// When these id patterns are detected, quotes will be added for them in the search term
 		if (query.charAt(0) != '"' || query.match(/\(|\)|\[|\]|\{|\}/)) {
 			
 			// keywords should not include {}, [] or () characters
