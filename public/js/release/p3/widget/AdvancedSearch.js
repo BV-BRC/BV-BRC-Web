@@ -215,7 +215,7 @@ define("p3/widget/AdvancedSearch", [
 			// console.log("formatsp_gene, docs: ", docs);
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SpecialtyGeneList/" + doc.feature_id + "'>" + doc.product + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
 				if (doc.gene) {  out.push(" | " + doc.gene ); }
 				out.push("</div>");
 

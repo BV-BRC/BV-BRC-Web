@@ -43,9 +43,49 @@ define("p3/widget/Uploader", [
 				formats: [".csv", ".txt", ".xls", ".xlsx"]
 			},
 			feature_protein_fasta: {
-				label: "feature_protein_fasta",
+				label: "Feature Protein FASTA",
 				formats: [".fa", ".fasta", ".faa"],
 				description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."
+			},
+			txt: {
+				label: "Plain Text",
+				formats: [".txt"],
+				description: "A plain text file."
+			},
+			pdf: {
+				label: "PDF",
+				formats: [".pdf"],
+				description: "A pdf file."
+			},
+			json: {
+				label: "JSON",
+				formats: [".json"],
+				description: "A json file."
+			},
+			csv: {
+				label: "CSV",
+				formats: [".csv"],
+				description: "A CSV (comma separated values) file."
+			},
+			jpg: {
+				label: "JPEG Image",
+				formats: [".jpg", ".jpeg"],
+				description: "A JPEG image file."
+			},
+			svg: {
+				label: "SVG Image",
+				formats: [".svg"],
+				description: "A SVG image file."
+			},
+			gif: {
+				label: "GIF Image",
+				formats: [".gif"],
+				description: "A GIF image file."
+			},
+			png: {
+				label: "PNG Image",
+				formats: [".jpg", ".jpeg"],
+				description: "A PNG image file."
 			}
 		},
 		_setPathAttr: function(val){

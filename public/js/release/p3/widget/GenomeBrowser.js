@@ -321,10 +321,13 @@ define("p3/widget/GenomeBrowser", [
 				.replace(/^chro?m?(osome)?/, 'chr')
 				.replace(/^co?n?ti?g/, 'ctg')
 				.replace(/^scaff?o?l?d?/, 'scaffold')
-				.replace(/^([a-z]*)0+/, '$1')
 				.replace(/^(\d+)$/, 'chr$1')
 				.replace(/^accn\|/, '')
-                .replace(/^sid\|\d+\|accn\|/,'');
+                .replace(/^sid\|\d+\|accn\|/,'') // handle legacy PATRIC format
+                .replace(/^.+\|accn\|/,'') //handle crazy rockhopper id requirements
+                .replace(/\|$/g,''); //handle crazy rockhopper id requirements
+                //not sure what this was for but it was causing problems when loweringCase with ID like "JEZL01000001" turning to jezl1000001
+                //              .replace(/^([a-z]*)0+/, '$1')
 
 			return refname;
 		},

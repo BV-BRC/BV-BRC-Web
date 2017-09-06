@@ -21,9 +21,9 @@ define([
 		queryFilter: "",
 		resultFields: ["genome_id", "genome_name", "strain", "public", "owner", "reference_genome"],
 		includePrivate: true,
-		includePublic: true,
-		referenceOnly: false,
-		representativeOnly: false,
+		includeOtherPublic: true,
+		referenceOnly: true,
+		representativeOnly: true,
 		pageSize: 25,
 		highlightMatch: "all",
 		autoComplete: false,
@@ -79,8 +79,8 @@ define([
 			});
 		},
 
-		_setIncludePublicAttr: function(val){
-			this.includePublic = val;
+		_setIncludeOtherPublicAttr: function(val){
+			this.includeOtherPublic = val;
 			this._setQueryFilter();
 		},
 
@@ -103,36 +103,47 @@ define([
 				var queryFilterComponents = []
 
 				// this block should include all 4 combinations of selection of public
-				// and private; both unchecked means you get nothing!
-				if (!this.includePublic) {
-					queryFilterComponents.push("eq(public," + this.includePublic + ")");
-				}
-				if (!this.includePrivate) {
-					queryFilterComponents.push("eq(public," + !this.includePrivate + ")");
-				}
-
-				// this block should include all 4 combinations of selection of reference
-				// and representative; both unchecked means you get nothing!
-                if (this.representativeOnly && this.referenceOnly){
-                    queryFilterComponents.push("or(eq(reference_genome,%22Reference%22),eq(reference_genome,%22Representative%22))");
+				// and private;
+				// will use logic OR for selections
+				
+			    if (this.includeOtherPublic && this.representativeOnly && this.referenceOnly) {
+					queryFilterComponents.push("eq(public,true)");
+			    }     
+			    else if (this.representativeOnly && this.referenceOnly){
+                    queryFilterComponents.push("and(or(eq(reference_genome,%22Reference%22),eq(reference_genome,%22Representative%22)),eq(public,true))");
                 }
+                else if (this.includeOtherPublic && this.referenceOnly) {
+                    queryFilterComponents.push("and(not(reference_genome,%22Representative%22),eq(public,true))");
+				}
+                else if (this.includeOtherPublic && this.representativeOnly) {
+                    queryFilterComponents.push("and(not(reference_genome,%22Reference%22),eq(public,true))");
+				}
                 else if (this.referenceOnly) {
-					queryFilterComponents.push("eq(reference_genome,%22Reference%22)");
+					queryFilterComponents.push("and(eq(reference_genome,%22Reference%22),eq(public,true))");
 				}
                 else if (this.representativeOnly) {
-					queryFilterComponents.push("eq(reference_genome,%22Representative%22)");
+					queryFilterComponents.push("and(eq(reference_genome,%22Representative%22),eq(public,true))");
+				}
+                else if (this.includeOtherPublic) {
+                    queryFilterComponents.push("and(not(reference_genome,%22Reference%22),not(reference_genome,%22Representative%22), eq(public,true))");
 				}
 
+				if (this.includePrivate) {
+					queryFilterComponents.push("eq(public,false)");
+				}
+
+				// if the user accidentally unchecks everything, we'll provide all genomes
+				
 				// assemble the query filter
 				if (queryFilterComponents.length == 0) {
 					this.queryFilter = "";
 				} else if (queryFilterComponents.length == 1) {
 					this.queryFilter = queryFilterComponents.join("")
 				} else {
-					this.queryFilter = "&and(" + queryFilterComponents.join(",") + ")";
+					this.queryFilter = "&or(" + queryFilterComponents.join(",") + ")";
 				}
 
-				console.log("Query Filter set to: " + this.queryFilter);
+				// console.log("Query Filter set to: " + this.queryFilter);
 		},
 
 		postCreate: function(){
@@ -146,50 +157,54 @@ define([
 			//var dfc = '<div>Filter Genomes</div><div class="wsActionTooltip" rel="Public">Public</div><div class="wsActionTooltip" rel="private">My Genomes</div>'
 			var dfc = domConstr.create("div");
 			domConstr.create("div", {innerHTML: "Include in Search", style: {"font-weight": 900}}, dfc);
-
-			// public genomes
-			var publicDiv = domConstr.create('div', {});
-			domConstr.place(publicDiv, dfc, "last");
-			var publicCB = new Checkbox({checked: true})
-			publicCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Public Genomes to " + val);
-				this.set("includePublic", val);
-			}));
-			domConstr.place(publicCB.domNode, publicDiv, "first");
-			domConstr.create("span", {innerHTML: "Public Genomes"}, publicDiv);
-
-			// private genomes
-			var privateDiv = domConstr.create('div', {});
-			domConstr.place(privateDiv, dfc, "last");
-			var privateCB = new Checkbox({checked: true})
-			privateCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Private Genomes to " + val);
-				this.set("includePrivate", val);
-			}));
-			domConstr.place(privateCB.domNode, privateDiv, "first");
-			domConstr.create("span", {innerHTML: "My Genomes"}, privateDiv);
+			domConstr.create("div", {innerHTML: "Public Genomes:", style: {"font-weight": 900}}, dfc);
 
 			// reference genomes
 			var referenceDiv = domConstr.create('div', {});
 			domConstr.place(referenceDiv, dfc, "last");
-			var referenceCB = new Checkbox({checked: false})
+			var referenceCB = new Checkbox({checked: true, style: {"margin-left": "10px"}})
 			referenceCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Reference Genomes to " + val);
+				// console.log("Toggle Reference Genomes to " + val);
 				this.set("referenceOnly", val);
 			}));
 			domConstr.place(referenceCB.domNode, referenceDiv, "first");
-			domConstr.create("span", {innerHTML: "Reference Filter"}, referenceDiv);
+			domConstr.create("span", {innerHTML: "Reference Genomes"}, referenceDiv);
 
 			// representative genomes
 			var representativeDiv = domConstr.create('div', {});
 			domConstr.place(representativeDiv, dfc, "last");
-			var representativeCB = new Checkbox({checked: false})
+			var representativeCB = new Checkbox({checked: true, style: {"margin-left": "10px"}})
 			representativeCB.on("change", lang.hitch(this, function(val){
-				console.log("Toggle Representative Genomes to " + val);
+				// console.log("Toggle Representative Genomes to " + val);
 				this.set("representativeOnly", val);
 			}));
 			domConstr.place(representativeCB.domNode, representativeDiv, "first");
-			domConstr.create("span", {innerHTML: "Representative Filter"}, representativeDiv);
+			domConstr.create("span", {innerHTML: "Representative Genomes"}, representativeDiv);
+			
+			// Other public genomes
+			var otherPublicDiv = domConstr.create('div', {});
+			domConstr.place(otherPublicDiv, dfc, "last");
+
+			var otherPublicCB = new Checkbox({checked: true, style: {"margin-left": "10px"}})
+			otherPublicCB.on("change", lang.hitch(this, function(val){
+				// console.log("Toggle Other Public Genomes to " + val);
+				this.set("includeOtherPublic", val);
+			}));
+			domConstr.place(otherPublicCB.domNode, otherPublicDiv, "first");
+			domConstr.create("span", {innerHTML: "All Other Public Genomes"}, otherPublicDiv);
+
+			// private genomes
+			domConstr.create("div", {innerHTML: "Private Genomes:", style: {"font-weight": 900}}, dfc);
+			var privateDiv = domConstr.create('div', {});
+			domConstr.place(privateDiv, dfc, "last");
+
+			var privateCB = new Checkbox({checked: true, style: {"margin-left": "10px"}})
+			privateCB.on("change", lang.hitch(this, function(val){
+				// console.log("Toggle Private Genomes to " + val);
+				this.set("includePrivate", val);
+			}));
+			domConstr.place(privateCB.domNode, privateDiv, "first");
+			domConstr.create("span", {innerHTML: "My Genomes"}, privateDiv);
 
 			var filterTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){

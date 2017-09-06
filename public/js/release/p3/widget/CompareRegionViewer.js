@@ -634,7 +634,7 @@ define("p3/widget/CompareRegionViewer", [
 			var feature_info = [
 				["PATRIC_ID", feature.fid],
 				["Product", feature["function"]],
-				["Location", feature.beg + "..." + feature.end + " (" + feature.size + "bp, " + feature.strand + ")"]];
+				["Location", feature.beg + "..." + feature.end + " (" + feature.size + "bp, " + (feature.strand || '') + ")"]];
 
 			return feature_info.map(function(line){
 				return line.join(": ");

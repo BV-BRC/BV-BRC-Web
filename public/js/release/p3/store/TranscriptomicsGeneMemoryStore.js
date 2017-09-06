@@ -75,7 +75,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			var gfs = this.tgState.comparisonFilterStatus;
 
 			// var tsStart = window.performance.now();
-			var keywordRegex = this.tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+			var keywordRegex = this.tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").split("~").map(function(k){ return k.trim(); });
 
 			data.forEach(function(gene){
 
