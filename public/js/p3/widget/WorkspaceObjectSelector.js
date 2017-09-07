@@ -328,7 +328,7 @@ define([
 				title: this.title,
 				draggable: true
 			});
-			var frontBC = new BorderContainer({style: {width: "805px", height: "575px"}});
+			var frontBC = new BorderContainer({style: {width: "805px", height: "650px"}});
 			var backBC = new BorderContainer({
 				style: {
 					width: "805px",
@@ -591,7 +591,6 @@ define([
 			return isValid;
 		},
 		createGrid: function() {
-
 			var self = this;
 
 			var grid =  new Grid({
@@ -634,6 +633,16 @@ define([
 						editor: TextBox,
 						editorArgs: {placeHolder: "Untitled Folder", trim: true}
 					}),
+					size: {
+						label: "Size",
+						field: "size",
+						get: function(item){
+							return item;
+						},
+						className: "wsItemSize",
+						hidden: false,
+						formatter: formatter.objectOrFileSize
+					},
 					owner: {
 						label: "Owner",
 						field: "owner_id",
@@ -644,6 +653,7 @@ define([
 					sharedWith: {
 						label: "Members",
 						field: "_item",
+						className: "wsItemMembers",
 						formatter: formatter.usersFormatter
 					},
 					creation_time: {
@@ -701,8 +711,7 @@ define([
 				});
 			}
 
-			return grid
-
+			return grid;
 		}
 	});
 });
