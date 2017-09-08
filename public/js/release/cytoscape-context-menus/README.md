@@ -8,9 +8,13 @@ A Cytoscape.js extension to provide context menu around elements and core instan
 
 ![Image of extension](example.png)
 
+## Demo
+
+Click [here](https://rawgit.com/iVis-at-Bilkent/cytoscape.js-context-menus/master/demo.html) (simple) or [here](https://rawgit.com/iVis-at-Bilkent/cytoscape.js-context-menus/master/demo-customized.html) (customized) or [here](https://rawgit.com/iVis-at-Bilkent/cytoscape.js-context-menus/master/demo-show-hide-menuitem.html) (with different menu items) for demos
+
 ## Dependencies
 
- * Cytoscape.js ^2.7.0
+ * Cytoscape.js ^2.7.0 || ^3.0.0
  * jQuery ^1.7.0 || ^2.0.0 || ^3.0.0
 
 
@@ -48,7 +52,9 @@ var options = {
     menuItems: [/*
       {
         id: 'remove', // ID of menu item
-        title: 'remove', // Title of menu item
+        content: 'remove', // Display content of menu item
+        tooltipText: 'remove', // Tooltip text for menu item
+        image: {src : "remove.svg", width : 12, height : 12, x : 6, y : 4}, // menu icon
         // Filters the elements to have this menu item on cxttap
         // If the selector is not truthy no elements will have this menu item on cxttap
         selector: 'node, edge', 
@@ -62,7 +68,8 @@ var options = {
       },
       {
         id: 'hide',
-        title: 'hide',
+        content: 'hide',
+        tooltipText: 'hide',
         selector: 'node, edge',
         onClickFunction: function () {
           console.log('hide element');
@@ -71,7 +78,9 @@ var options = {
       },
       {
         id: 'add-node',
-        title: 'add node',
+        content: 'add node',
+        tooltipText: 'add node',
+        image: {src : "add.svg", width : 12, height : 12, x : 6, y : 4},
         selector: 'node',
         coreAsWell: true,
         onClickFunction: function () {
