@@ -1,8 +1,9 @@
 <% var flows = [
-    {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
+    {name: "PATRIC Workshop", secondary: "ARGONNE, IL", rel: "carousel_workshop", background: "#34698e"}
+    , {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
-    , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
+    //, {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
 ] %>
 
 <div class="home">
@@ -17,8 +18,28 @@
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
 
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_service"
-                     class="CarouselContent showOnLoad dijitVisible">
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop" class="CarouselContent showOnLoad dijitVisible">
+                    <div class="wrapper">
+                        <img class="right"
+                             src="/patric/images/carousel/workshop_ANL_Aug_2017.jpg" alt="PATRIC Workshop">
+                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h2>
+                        <h3 class="xl highlight-f upper far">@ Argonne National Laboratory</h3>
+                        <p>The PATRIC/RAST teams will be offering a tutorial on 2017-November 14-16, at Argonne National Laboratory
+                        in the suburbs of Chicago, IL. The workshop will run for three days, with the third day optional and devoted solely to participants working
+                        on their own problems with help from the PATRIC/RAST team members. Included will be genome assembly, annotation, comparative analysis,
+                        and variation, as well as metabolic model construction, RNA-Seq analysis, Tn-seq analysis, and phylogenetic tree construction.  Registration
+                        information is available <a href="http://enews.patricbrc.org/5207/patricrast-workshop-at-argonne-national-laboratory-november-14-16-2017/" target="_blank">HERE</a>.
+                        The workshop will be limited to 35 people on a first-come, first-served basis.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="http://enews.patricbrc.org/5207/patricrast-workshop-at-argonne-national-laboratory-november-14-16-2017/"
+                              target="_blank">More Information</a></p>
+                        <br><br>
+                    </div>
+                </div>
+
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_service" class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
                              src="/patric/images/carousel/new_services.png" alt="New Services and Data" style="padding-top:40px">
@@ -31,11 +52,9 @@
                         <br><b><a href="/view/Taxonomy/1763#view_tab=amr&amp;filter=and(eq(antibiotic,Amikacin),eq(resistant_phenotype,Susceptible))" target="_blank">AMR Phenotype Data</a></b> provides AMR phenotype and measurement method for list of genomes.
                         <br><b><a href="/view/DataType/AntibioticResistance" target="_blank">Antibiotic Database</a></b> provides antibiotic name, description, chemical structure, mechanism, and pharmacology.
                         <br>
-                        <br>
                         <p><a class="button upper sans-alternate largest highlight avoid-arrow"
                               href="http://enews.patricbrc.org/5202/patric-july-2017-release-features-over-3900-new-genomes-and-new-functionality-and-data-including-a-new-phylogenetic-tree-building-service-and-enhancements-to-multiple-services-and-tools/"
                               target="_blank">More Information</a></p>
-                        <br><br>
                     </div>
                 </div>
 
@@ -76,7 +95,7 @@
                               href="/view/DataType/AntibioticResistance">Explore Data</a></p>
                     </div>
                 </div>
-
+<!--
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper"><img class="right"
@@ -93,7 +112,7 @@
                               href="/view/Taxonomy/1763#view_tab=overview">Visit TB@PATRIC</a></p>
                     </div>
                 </div>
-
+-->
             </div>
         </div>
     </div>
