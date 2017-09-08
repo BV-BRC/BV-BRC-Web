@@ -345,7 +345,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max: 5000,
+					max: 10000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "subsystem_data"]
 				},
