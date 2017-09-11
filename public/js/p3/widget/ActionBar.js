@@ -76,7 +76,6 @@ define([
 			}
 
 			var types = Object.keys(selectionTypes);
-
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
@@ -97,7 +96,7 @@ define([
 				}
 
 				// if public or not owner, hide ability for upload, create folder, delete, share
-				else if(sel[0] &&  ('isPublic' in sel[0] || (window.App.user && sel[0].owner_id !== window.App.user.id)) &&
+				else if(sel[0] &&  ('isPublic' in sel[0] || ['r', 'n'].indexOf(sel[0].user_permissions) !== -1) &&
 					["Upload", "CreateFolder", "Delete", "ShareFolder", "Move", "Rename"].indexOf(an) !== -1) {
 					return false;
 				}

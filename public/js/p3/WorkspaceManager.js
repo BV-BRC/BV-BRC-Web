@@ -750,6 +750,10 @@ define([
 			})
 		},
 
+		hasPermission: function(user, perm) {
+
+		},
+
 		metaListToObj: function(list){
 			return {
 				id: list[4],
