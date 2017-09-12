@@ -145,7 +145,8 @@ define([
 			this.inherited(arguments);
 			var _self = this;
 			this.containerNode = this.domNode;
-			dom.setSelectable(this.domNode, false);
+			// dallow text to be highlighted/copied
+			// dom.setSelectable(this.domNode, false);
 
 			var tooltip = new Tooltip({
 				connectId: this.domNode,
