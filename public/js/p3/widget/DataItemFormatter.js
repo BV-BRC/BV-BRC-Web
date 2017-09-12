@@ -132,9 +132,18 @@ define([
 			displayDetail(item, columns, div, options);
 
 			var stpDiv = domConstruct.create("div", {}, div);
-			var stddlg = new TitlePane({title: "Standard Output", style: "margin-bottom:5px;", open: false}, stpDiv);
+			var stddlg = new TitlePane({
+				title: "Standard Output",
+				style: "margin-bottom:5px;",
+				open: false
+			}, stpDiv);
+
 			var tpDiv = domConstruct.create("div", {}, div);
-			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
+			var dlg = new TitlePane({
+				title: "Error Output",
+				open: false
+			}, tpDiv);
+
 			dlg.watch("open", function(attr, oldVal, open){
 				if(!open){
 					return;
@@ -142,7 +151,7 @@ define([
 				JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
 					console.log("JOB DETAIL: ", detail);
 					if(detail.stderr){
-						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
+						dlg.set("content", "<pre style='overflow: scroll;'>" + detail.stderr + "</pre>");
 					}else{
 						dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
@@ -159,7 +168,7 @@ define([
 				JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
 					console.log("JOB DETAIL: ", detail);
 					if(detail.stdout){
-						stddlg.set("content", "<pre>" + detail.stdout + "</pre>");
+						stddlg.set("content", "<pre style='overflow: scroll;'>" + detail.stdout + "</pre>");
 					}else{
 						stddlg.set("content", "Unable to retreive STDOUT of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
