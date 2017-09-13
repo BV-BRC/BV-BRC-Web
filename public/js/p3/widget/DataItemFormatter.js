@@ -1,8 +1,11 @@
 define([
 	"dojo/_base/lang", "dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
-	"dijit/form/Button", "../JobManager", "dijit/TitlePane", "./formatter"
-], function(lang, locale, domConstruct, domClass,
-			Button, JobManager, TitlePane, formatter){
+	"dijit/form/Button", "../JobManager", "dijit/TitlePane", "./formatter", "dojo/on",
+	"dojo/query", "dojo/NodeList-traverse"
+], function(
+	lang, locale, domConstruct, domClass,
+	Button, JobManager, TitlePane, formatter, on,
+	query){
 
 	var formatters = {
 		"default": function(item, options){
@@ -1511,40 +1514,56 @@ define([
 
 	function displayStdoutPanels(parent, item) {
 		var stpDiv = domConstruct.create("div", {}, parent);
+		var stdTitle = "Standard Output";
 		var stddlg = new TitlePane({
-			title: "Standard Output",
+			title: stdTitle,
 			style: "margin-bottom:5px;",
 			open: false
 		}, stpDiv);
 
 		var tpDiv = domConstruct.create("div", {}, parent);
+		var stderrTitle = "Error Output";
 		var dlg = new TitlePane({
-			title: "Error Output",
+			title: stderrTitle,
 			open: false
 		}, tpDiv);
 
-		dlg.watch("open", function(attr, oldVal, open){
-			if(!open){
-				return;
+		// add copy to clipboard button
+		var icon = '<i class="icon-clipboard2 pull-right"></i>';
+		var copyBtn = new Button({
+			label: icon,
+			style: {
+				float: 'right',
+				padding: 0
+			},
+			onClick: function(e) {
+				e.stopPropagation();
+				var self = this;
+
+				// get text
+				var pane = query(self.domNode).parents('.dijitTitlePane')[0];
+				var content = query('pre', pane)[0].innerText;
+
+				// copy contents
+				clipboard.copy(content);
+
+				self.set('label', "copied");
+				setTimeout(function() {
+					self.set('label', icon);
+				}, 2000);
 			}
-			JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
-				console.log("JOB DETAIL: ", detail);
-				if(detail.stderr){
-					dlg.set("content", "<pre style='overflow: scroll;'>" + detail.stderr + "</pre>");
-				}else{
-					dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
-				}
+		})
 
-			}, function(err){
-				dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
-			});
-		});
-
+		// on stdout panel open
 		stddlg.watch("open", function(attr, oldVal, open){
 			if(!open){
 				return;
 			}
+
 			JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
+				var titleBar = query('.dijitTitlePaneTextNode',  stddlg.domNode)[0];
+				domConstruct.place(copyBtn.domNode, titleBar)
+
 				console.log("JOB DETAIL: ", detail);
 				if(detail.stdout){
 					stddlg.set("content", "<pre style='overflow: scroll;'>" + detail.stdout + "</pre>");
@@ -1553,7 +1572,29 @@ define([
 				}
 
 			}, function(err){
-				stddlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				stddlg.set("content", "No standard output for this task found.<br>");
+			});
+		});
+
+		// on error panel open
+		dlg.watch("open", function(attr, oldVal, open){
+			if(!open){
+				return;
+			}
+
+			JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
+				var titleBar = query('.dijitTitlePaneTextNode',  dlg.domNode)[0];
+				domConstruct.place(copyBtn.domNode, titleBar)
+
+				console.log("JOB DETAIL: ", detail);
+				if(detail.stderr){
+					dlg.set("content", "<pre style='overflow: scroll;'>" + detail.stderr + "</pre>");
+				}else{
+					dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+				}
+
+			}, function(err){
+				dlg.set("content", "No standard error for this task found.<br>");
 			});
 		});
 	}
