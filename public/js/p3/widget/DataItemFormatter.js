@@ -1533,8 +1533,8 @@ define([
 		var copyBtn = new Button({
 			label: icon,
 			style: {
-				float: 'right',
-				padding: 0
+				'float': 'right',
+				'padding': 0
 			},
 			onClick: function(e) {
 				e.stopPropagation();
