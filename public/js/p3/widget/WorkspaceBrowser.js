@@ -476,7 +476,7 @@ define([
 				tooltip: "Upload to Folder"
 			}, function(selection){
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
-			}, self.path.split('/').length > 3);
+			}, false);
 
 			this.browserHeader.addAction("CreateFolder", "fa icon-folder-plus fa-2x", {
 				label: "ADD FOLDER",
@@ -512,7 +512,7 @@ define([
 					domAttr.set(text, "textContent", "SHOW HIDDEN");
 
 				Topic.publish("/refreshWorkspace", {});
-			}, self.path.split('/').length > 3);
+			}, false);
 
 			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-add-workspace fa-2x", {
 				label: "NEW WS",

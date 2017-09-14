@@ -406,6 +406,8 @@ define([
 			evt.preventDefault();
 			evt.stopPropagation();
 
+			domAttr.set(this.saveButton, 'disabled', true);
+
 			if(!_self.path){
 				console.error("Missing Path for Upload: ", _self.path);
 				return;
