@@ -1,28 +1,29 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class","dgrid/Grid","../store/TaxonomyJsonRest",
-	"dojo/request", "dojo/_base/lang","dgrid/extensions/DijitRegistry",
-	"dojo/when","dojo/_base/lang"
-], function(declare, WidgetBase, on,
-			domClass, Grid,Store,
-			xhr, lang, dgridRegistry,
-			when,lang
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/when",
+	"dgrid/Grid", "dgrid/extensions/DijitRegistry",
+	"../store/TaxonomyJsonRest"
+
+], function(declare, lang,
+			domClass, when,
+			Grid, dgridRegistry,
+			Store
 ){
 
 	var store = new Store({});
 
-	return declare([Grid,dgridRegistry], {
+	return declare([Grid, dgridRegistry], {
 		dataModel: "taxonomy",
 		store: store,
-		query: "&eq(taxon_rank,genus)&sort(-genomes)",
+		query: "&eq(taxon_rank,genus)&sort(-genomes)&select(taxon_id,taxon_name,genomes)",
 		count: 10,
 		postCreate: function(){
 			this.inherited(arguments);
-			domClass.add(this.domNode,"dgrid-autoheight");
+			domClass.add(this.domNode, "dgrid-autoheight");
 		},
 		startup: function(){
 			this.inherited(arguments);
-			when(this.store.query(this.query + "&limit(" + this.count + ")"), lang.hitch(this,function(results){
+			when(this.store.query(this.query + "&limit(" + this.count + ")"), lang.hitch(this, function(results){
 				// console.log("Results: ", results)
 				this.renderArray(results);
 			}))
@@ -31,9 +32,9 @@ define([
 		columns: [{
 			label: "Name",
 			field: "taxon_name",
-                        renderCell: function(obj, val, node){
-                                node.innerHTML ='<a class="navigationLink" href="/view/Taxonomy/' + obj.taxon_id + '">' + obj.taxon_name +  "</a>"
-                        }
+			renderCell: function(obj, val, node){
+				node.innerHTML ='<a class="navigationLink" href="/view/Taxonomy/' + obj.taxon_id + '">' + obj.taxon_name +  "</a>"
+			}
 		}, {
 			label: "Genomes",
 			field: "genomes"

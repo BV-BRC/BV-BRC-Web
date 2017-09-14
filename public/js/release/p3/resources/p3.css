@@ -13442,7 +13442,7 @@ th.dgrid-cell.wsItemType {
 	width: 90px;
 }
 .wsItemSize {
-	width: 150px;
+	width: 100px;
 }
 .wsItemCreationTime{
 	width: 150px;
@@ -15716,7 +15716,7 @@ i.home_dlp {
 .HelpContent SECTION {
 	padding: 4px;
 }
-#cy-context-menus-cxt-menu {
+.cy-context-menus-cxt-menu {
     display:none;
     z-index:1000;
     position:absolute;
@@ -15732,7 +15732,7 @@ i.home_dlp {
     padding: 3px 20px;
     position:relative;
     margin:0;
-    background-color:#F2F2F2;
+    background-color:#f8f8f8;
     font-weight:normal;
     font-size: 12px;
     white-space:nowrap;
@@ -15752,11 +15752,8 @@ i.home_dlp {
     background-image: none;
     cursor: pointer;
 }
-.cy-context-menus-cxt-menuitem[title]:before {
-    content:attr(title);
-}
-.cy-context-menus-cxt-menuitem:not([title]):before {
-    content:"\2630";
+.cy-context-menus-cxt-menuitem[content]:before {
+    content:attr(content);
 }
 .cy-context-menus-divider {
   border-bottom:1px solid #A0A0A0;

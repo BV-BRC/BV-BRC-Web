@@ -395,7 +395,12 @@ define("p3/widget/AdvancedSearch", [
 						break;
 				}
 
-				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
+				if (type == "genome_feature") {
+					// for genome features, sort by annotation first then by scores so as to show PATRIC features first
+					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+annotation,-score)" }				
+				} else {
+					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
+				}
 			})
 
 			console.log("SEARCH: ", q);
