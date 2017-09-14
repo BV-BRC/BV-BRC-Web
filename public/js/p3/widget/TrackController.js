@@ -382,12 +382,15 @@ define([
 			// 	new Dialog({content: "Track Settings not yet Implemented", title: "Track Settings"}).show();
 
 			// })
+			// disabled the remove button for future implementation
+			/*
 			if(!event.isReferenceTrack){
 				domConstruct.create("i", {
 					'class': "fa icon-close fa-2x" + (event.isReferenceTrack ? " disabled" : ""),
 					style: {margin: "2px"}
 				}, td);
 			}
+			*/
 		}
 
 	});
