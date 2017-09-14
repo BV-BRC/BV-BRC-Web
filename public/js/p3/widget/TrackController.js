@@ -132,7 +132,7 @@ define([
 				var reader = new FileReader();
 				reader.onload = function(){
 					//console.log(this.result);
-					var lines = this.result.split('\n');
+					var lines = this.result.trim().split(/[\r\n]/g);
 					if(lines){
 						lines.map(function(item){
 							tabs = item.split('\t');
@@ -382,12 +382,15 @@ define([
 			// 	new Dialog({content: "Track Settings not yet Implemented", title: "Track Settings"}).show();
 
 			// })
+			// disabled the remove button for future implementation
+			/*
 			if(!event.isReferenceTrack){
 				domConstruct.create("i", {
 					'class': "fa icon-close fa-2x" + (event.isReferenceTrack ? " disabled" : ""),
 					style: {margin: "2px"}
 				}, td);
 			}
+			*/
 		}
 
 	});
