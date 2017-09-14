@@ -9,7 +9,7 @@ define([
 			Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox){
 	return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
 		columns: {
-			"type": {
+			type: {
 				label: "",
 				get: function(item){
 					if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
@@ -27,7 +27,7 @@ define([
 				formatter: formatter.wsItemType,
 				unhidable: true
 			},
-			"name": editor({
+			name: editor({
 				label: "Name",
 				field: "name",
 				className: "wsItemName",
@@ -49,7 +49,6 @@ define([
 				hidden: false,
 				formatter: formatter.objectOrFileSize
 			},
-
 			owner_id: {
 				label: "Owner",
 				field: "owner_id",
@@ -155,7 +154,6 @@ define([
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				// console.log("ItemDblClick (row): ", row.data.path, _self.path);
 
 				var path = _self.path.split('/')[1] == 'public' ? '/public'+row.data.path : row.data.path;
 
@@ -178,7 +176,7 @@ define([
 				var row = _self.row(evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				// console.log("ItemDblClick (icon): ", row.data.path);
+
 				var path = _self.path.split('/')[1] == 'public' ? '/public'+row.data.path : row.data.path;
 
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -206,7 +204,6 @@ define([
 			});
 
 			this.on("dgrid-deselect", function(evt){
-
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
