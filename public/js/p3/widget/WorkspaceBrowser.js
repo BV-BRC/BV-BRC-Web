@@ -556,7 +556,7 @@ define([
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
-				validTypes: ["RNASeq", "TnSeq"],
+				validTypes: ["RNASeq", "TnSeq", "Variation"],
 				tooltip: "View tracks in genome browser."
 			}, function(selection){
 				console.log("View Tracks: ", selection[0]);
@@ -1488,6 +1488,7 @@ define([
 								case "GenomeAnnotation":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
+                                case "Variation":
 								case "RNASeq":
 								case "TnSeq":
 										d = "p3/widget/viewer/Seq";
