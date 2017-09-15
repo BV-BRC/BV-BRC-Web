@@ -157,7 +157,8 @@ define([
 					s_coverage: {label: 'Subject cover (%', field: "subject_coverage"},
 					hit_from: {label: 'Hit from', field: "hit_from", hidden: true},
 					hit_to: {label: 'Hit to', field: "hit_to", hidden: true},
-					length: {label: 'Length', field: "length"},
+					q_length: {label: 'Query Length', field: "q_length"},
+					length: {label: 'Sub Length', field: "length"},
 					score: {label: 'Score', field: 'bitscore'},
 					evalue: {label: 'E value', field: 'evalue'}
 				}

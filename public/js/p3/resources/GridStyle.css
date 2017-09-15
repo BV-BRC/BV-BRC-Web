@@ -30,7 +30,7 @@
 
 .dgrid-cell.field-go {
     width: 8%;
-	text-align: left;    
+	text-align: left;
 }
 
 /* protein family grid */
@@ -202,11 +202,15 @@
 .blast_result .dgrid-column-s_coverage,
 .blast_result .dgrid-column-na_length,
 .blast_result .dgrid-column-aa_length,
-.blast_result .dgrid-column-length,
 .blast_result .dgrid-column-score,
 .blast_result .dgrid-column-evalue {
     width: 4%;
     text-align: center;
+}
+.blast_result .dgrid-column-q_length,
+.blast_result .dgrid-column-length {
+    width: 5%;
+    text-align: right;
 }
 
 .blast_result .collapsed .detail {
