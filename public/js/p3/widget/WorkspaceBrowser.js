@@ -497,8 +497,8 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Show hidden folders/files"
 			}, function(selection){
-				self.activePanel.set('showHiddenFiles', !window.App.showHiddenFiles);
 				window.App.showHiddenFiles = !window.App.showHiddenFiles;
+				self.activePanel.set('showHiddenFiles', window.App.showHiddenFiles);
 
 				// change icon/text based on state
 				var icon = query('[rel="ShowHidden"] .fa', this.domNode)[0],
