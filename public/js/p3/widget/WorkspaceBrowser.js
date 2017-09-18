@@ -497,6 +497,7 @@ define([
 				validTypes: ["folder"],
 				tooltip: "Show hidden folders/files"
 			}, function(selection){
+				self.activePanel.set('showHiddenFiles', !window.App.showHiddenFiles);
 				window.App.showHiddenFiles = !window.App.showHiddenFiles;
 
 				// change icon/text based on state
@@ -510,8 +511,6 @@ define([
 					domAttr.set(text, "textContent", "HIDE HIDDEN");
 				else
 					domAttr.set(text, "textContent", "SHOW HIDDEN");
-
-				Topic.publish("/refreshWorkspace", {});
 			}, false);
 
 			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-add-workspace fa-2x", {
