@@ -108,29 +108,29 @@ define([
 				function(selection){
 					var sel = selection[0];
 
-                    try {
-                        var content =
-                            "\n[Please feel free to add any additional information regarding this issue here.]\n\n\n" +
-                            "********************** JOB INFO *************************\n\n" +
-                            "Job ID: " + sel.id + '\n' +
-                            "Job Status: " + sel.status + '\n' +
-                            "App Name: " + sel.app + '\n\n' +
-                            "Stdout: " + sel.awe_stdout_shock_node +'\n' +
-                            "Stderr: " + sel.awe_stderr_shock_node +'\n\n' +
-                            "Submit Time: " + sel.submit_time + '\n' +
-                            "Start Time: " + sel.submit_time + '\n' +
-                            "Completed Time: " + sel.submit_time +'\n\n' +
-                            "Paremeters:" + JSON.stringify(sel.parameters, null, 4) + '\n';
-                    } catch (e) {
-                        var content = "There was an issue fetching some of job info.  Error: " + e
-                    }
+					try {
+						var content =
+							"\n[Please feel free to add any additional information regarding this issue here.]\n\n\n" +
+							"********************** JOB INFO *************************\n\n" +
+							"Job ID: " + sel.id + '\n' +
+							"Job Status: " + sel.status + '\n' +
+							"App Name: " + sel.app + '\n\n' +
+							"Stdout: " + sel.awe_stdout_shock_node +'\n' +
+							"Stderr: " + sel.awe_stderr_shock_node +'\n\n' +
+							"Submit Time: " + sel.submit_time + '\n' +
+							"Start Time: " + sel.submit_time + '\n' +
+							"Completed Time: " + sel.submit_time +'\n\n' +
+							"Paremeters:" + JSON.stringify(sel.parameters, null, 4) + '\n';
+					} catch (e) {
+						var content = "There was an issue fetching some of job info.  Error: " + e
+					}
 
 					Topic.publish("/openDialog", {
 						type: "reportProblem",
 						params: {
-                            issueText: content,
-                            issueSubject: 'Reporting Issue with ' + sel.app
-                        }
+							issueText: content,
+							issueSubject: 'Reporting Issue with ' + sel.app
+						}
 					});
 				},
 				false
