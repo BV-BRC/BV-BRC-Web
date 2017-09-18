@@ -23,6 +23,10 @@ define([
 		pathLabel: "Upload file to: ",
 		buttonLabel: "Select Files",
 		typeLabel: "Upload type: ",
+		style: {
+			height: "520px",
+			overflow: "scroll"
+		},
 		knownTypes: {
 			unspecified: {label: "Unspecified", formats: ["*.*"]},
 			contigs: {
