@@ -566,10 +566,10 @@ define([
 				multiple: true,
 				validTypes: ["*"],
 				validContainerTypes: ["experiment_group"],
-				tooltip: "Copy selection to a new or existing group"
+				tooltip: "Add selection to a new or existing group"
 			}, function(selection, containerWidget){
 				// console.log("Add Items to Group", selection);
-				var dlg = new Dialog({title: "Copy Selection to Group"});
+				var dlg = new Dialog({title: "Add selected items to group"});
 				var stg = new SelectionToGroup({
 					selection: selection,
 					type: containerWidget.containerType,
