@@ -95,6 +95,45 @@ define([
 					Topic.publish("/navigate", {href: "/workspace" + sel.parameters.output_path + "/" + sel.parameters.output_file});
 				},
 				false
+			], [
+				"ReportIssue",
+				"MultiButton fa icon-commenting-o fa-2x",
+				{
+					label: "REPORT<br>ISSUE...",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Report an Issue with this Job",
+					validContainerTypes: ["*"]
+				},
+				function(selection){
+					var sel = selection[0];
+
+                    try {
+                        var content =
+                            "\n[Please feel free to add any additional information regarding this issue here.]\n\n\n" +
+                            "********************** JOB INFO *************************\n\n" +
+                            "Job ID: " + sel.id + '\n' +
+                            "Job Status: " + sel.status + '\n' +
+                            "App Name: " + sel.app + '\n\n' +
+                            "Stdout: " + sel.awe_stdout_shock_node +'\n' +
+                            "Stderr: " + sel.awe_stderr_shock_node +'\n\n' +
+                            "Submit Time: " + sel.submit_time + '\n' +
+                            "Start Time: " + sel.submit_time + '\n' +
+                            "Completed Time: " + sel.submit_time +'\n\n' +
+                            "Paremeters:" + JSON.stringify(sel.parameters, null, 4) + '\n';
+                    } catch (e) {
+                        var content = "There was an issue fetching some of job info.  Error: " + e
+                    }
+
+					Topic.publish("/openDialog", {
+						type: "reportProblem",
+						params: {
+                            issueText: content,
+                            issueSubject: 'Reporting Issue with ' + sel.app
+                        }
+					});
+				},
+				false
 			]
 		],
 
