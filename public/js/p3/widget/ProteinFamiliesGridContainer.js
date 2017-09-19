@@ -264,7 +264,7 @@ define([
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 100,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["proteinfamily_data"]
 				},
 				function(selection){
@@ -284,7 +284,7 @@ define([
 						data: query
 					}), function(featureIds){
 
-						var dlg = new Dialog({title: "Copy Selection to Group"});
+						var dlg = new Dialog({title: "Add selected items to group"});
 						var stg = new SelectionToGroup({
 							selection: featureIds,
 							type: "feature_group",

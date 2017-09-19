@@ -14,6 +14,7 @@ define([
 		containerType: "folder",
 		onlyWritable: false, 		// only lists writable workspaces
 		allowDragAndDrop: true,		// whether or not to allow drag and drop
+		showHiddenFiles: false,
 		_setTypes: function(val){
 			if(!(val instanceof Array)){
 				this.types = [val];
@@ -25,8 +26,6 @@ define([
 		queryOptions: {
 			sort: [{attribute: "name", descending: false}]
 		},
-
-		showHiddenFiles: window.App && window.App.showHiddenFiles,
 
 		_setShowHiddenFiles: function(val){
 			this.showHiddenFiles = val;

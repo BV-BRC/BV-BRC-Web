@@ -456,7 +456,7 @@ define([
 			var btnAddToWorkspace = new Button({
 				label: 'Add Proteins to Group',
 				onClick: function(){
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 
 					var stg = new SelectionToGroup({
 						selection: geneIds,
