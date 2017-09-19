@@ -17,6 +17,7 @@ define([
 		dataModel: "sp_gene",
 		primaryKey: "id",
 		deselectOnRefresh: true,
+		selectAllFields: ["patric_id", "genome_id", "feature_id"],
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
