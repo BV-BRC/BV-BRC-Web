@@ -79,7 +79,7 @@ define([
                         o.type = extension;
                     }
                 }
-          if (_self.streamableTypes.indexOf(o.type) >= 0 || _self.streamableTypes.indexOf(extension) && !o.name.endsWith(".bai")) {
+          if (_self.streamableTypes.indexOf(o.type) >= 0 && !o.name.endsWith(".bai")) {
           var jBrowseTrackType;
           var jBrowseStoreType;
           var record;
