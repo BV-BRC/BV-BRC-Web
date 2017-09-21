@@ -115,12 +115,15 @@ define([
 							"Job ID: " + sel.id + '\n' +
 							"Job Status: " + sel.status + '\n' +
 							"App Name: " + sel.app + '\n\n' +
-							"Stdout: " + sel.awe_stdout_shock_node +'\n' +
-							"Stderr: " + sel.awe_stderr_shock_node +'\n\n' +
+							"Stdout: " + window.App.serviceAPI + '/task_info/' +sel.id + '/stdout' +'\n' +
+							"Stderr: " + window.App.serviceAPI + '/task_info/' +sel.id + '/stderr' +'\n\n' +
 							"Submit Time: " + sel.submit_time + '\n' +
 							"Start Time: " + sel.submit_time + '\n' +
 							"Completed Time: " + sel.submit_time +'\n\n' +
-							"Paremeters:" + JSON.stringify(sel.parameters, null, 4) + '\n';
+							"Paremeters:\n" +
+							"{code}\n" +
+							JSON.stringify(sel.parameters, null, 4) +
+							'\n{code}\n';
 					} catch (e) {
 						var content = "There was an issue fetching some of job info.  Error: " + e
 					}
