@@ -1457,6 +1457,14 @@ define([
 						editable: true,
 						type: 'textarea',
 						isList: true
+					}, {
+						name: 'Insert Date',
+						text: 'date_inserted',
+						type: 'date',
+					}, {
+						name: 'Last Modified',
+						text: 'date_modified',
+						type: 'date',
 					}]
 			}
 
