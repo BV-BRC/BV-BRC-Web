@@ -96,7 +96,10 @@ define([
 				}
 
 				// if public or not owner, hide ability for upload, create folder, delete, share
-				else if(sel[0] &&  ('isPublic' in sel[0] || ['r', 'n'].indexOf(sel[0].user_permissions) !== -1) &&
+				else if(sel[0] && (
+						'isPublic' in sel[0] ||
+						['r', 'n'].indexOf(sel[0].user_permissions) !== -1 ||
+						(sel[0].global_permission == 'r' && window.App.user.id != sel[0].owner_id) ) &&
 					["Upload", "CreateFolder", "Delete", "ShareFolder", "Move", "Rename"].indexOf(an) !== -1) {
 					return false;
 				}

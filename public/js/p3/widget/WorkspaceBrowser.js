@@ -854,8 +854,8 @@ define([
 						}
 
 						new Dialog({
-							content: msg,
 							title: "Move failed",
+							content: msg,
 							style: "width: 250px;"
 						}).show();
 					})
