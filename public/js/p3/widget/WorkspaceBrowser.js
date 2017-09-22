@@ -743,7 +743,8 @@ define([
 				validTypes: ["*"],
 				tooltip: "Copy selected objects"
 			}, function(selection){
-				var paths = selection.map(function(obj){ return obj.path });
+				var paths = selection.map(function(obj){ return obj.path }),
+					types = selection.map(function(obj){ return obj.type });
 
 				// open object selector to get destination
 				var objSelector = new WSObjectSelector({
@@ -773,20 +774,25 @@ define([
 						return;
 					}
 
-					var prom = WorkspaceManager.copy(paths, destPath);
+					var prom = WorkspaceManager.copy(paths, destPath, types);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
 					}, function(e){
+
+						Topic.publish("/Notification", {
+							message: "Copy failed",
+							type: "error"
+						});
 						var msg = /_ERROR_(.*)_ERROR_/g.exec(e)[1];
 
 						if(msg.indexOf('overwrite flag is not set') != -1){
-							msg = "Can not overwrite " + msg.split(' ')[2]
+							var re = /object (.+) and overwrite/g;
+							msg = "Can not overwrite " + re.exec(msg)[1];
 						}
 
 						new Dialog({
 							content: msg,
-							title: "Move failed",
-							style: "width: 250px;"
+							title: "Copy failed",
 						}).show();
 					})
 				}
