@@ -1310,11 +1310,21 @@ define([
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
-						this.grid.selectedData[rownum] = row.data;
+						if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
+							if(!this.grid.selectedData["primaryKey"]){
+							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+							}
+							this.grid.selectedData[rownum] = row.data;
+						}
+						else{
+							this.grid.selectedData = {};
+						  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+						  this.grid.selectedData[rownum] = row.data;
+					  }
 						return row.data;
-					}else if (this.grid && this.grid._unloadedData) {
+					}else if(this.grid && this.grid._unloadedData){
 						return this.grid._unloadedData[rownum];
-					}else if(this.grid && this.grid.selectedData) {
+					}else if(this.grid && this.grid.selectedData){
 						return this.grid.selectedData[rownum];
 					}
 				}), this);
