@@ -1310,12 +1310,12 @@ define([
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
-						this.grid.selectedData[this.primaryKey] = row.data;
+						this.grid.selectedData[rownum] = row.data;
 						return row.data;
 					}else if (this.grid && this.grid._unloadedData) {
 						return this.grid._unloadedData[rownum];
 					}else if(this.grid && this.grid.selectedData) {
-						return this.grid.selectedData[this.primaryKey];
+						return this.grid.selectedData[rownum];
 					}
 				}), this);
 				this.selectionActionBar.set("selection", sel);
