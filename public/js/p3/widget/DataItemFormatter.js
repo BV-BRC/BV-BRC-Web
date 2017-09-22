@@ -1460,11 +1460,11 @@ define([
 					}, {
 						name: 'Insert Date',
 						text: 'date_inserted',
-						type: 'date',
+						type: 'date'
 					}, {
 						name: 'Last Modified',
 						text: 'date_modified',
-						type: 'date',
+						type: 'date'
 					}]
 			}
 
