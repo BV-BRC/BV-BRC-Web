@@ -7,7 +7,9 @@ define([
 			lang,domConstruct){
 	return declare([Base], {
 		dataModel: "genome_feature",
+		primaryKey: "feature_id",
 		limit: 25000,
+		type: "dna",
 		onSetState: function(attr, oldVal, state){
 			var parts = state.pathname.split("/");
 			var type = "dna";
@@ -52,46 +54,27 @@ define([
 		},
 
 		startup: function(){
-			// var query;
 			if(this._started){
 				return;
 			}
-			// if(this.state && this.state.search){
-			// 	query = this.state.search;
-			// 	var parts = this.state.pathname.split("/");
-			// 	var type = "dna";
-			// 	if(parts && (parts.length > 2) && parts[parts.length - 2]){
-			// 		type = parts[parts.length - 2];
-			// 	}
-			// }
-
-			this.header = new ContentPane({
+			var parts = this.state.pathname.split("/");
+			if(parts && (parts.length > 2) && parts[parts.length - 2]){
+				this.type = parts[parts.length - 2];
+			}
+      this.header = new ContentPane({
 				content: '<div style="padding: 4px;text-align:right;border:1px solid #ddd;"><i class="fa icon-download fa-2x"></i></div>',
 				region: "top",
 				style: "padding:4px;"
 			});
 
 			on(this.header.domNode, ".icon-download:click", lang.hitch(this,function(evt){
-					console.log("Download FASTA Clicked",evt);
-
+					//console.log("Download FASTA Clicked",evt);
+					var query = this.state.search + "&sort(+" + this.primaryKey + ")&limit(" + this.limit + ")";
 					var baseUrl = PathJoin(this.apiServiceUrl, this.dataModel) + "/";
-
-					var query = this.state.search + "&limit(" + this.limit + ")"; 
-
-					baseUrl = baseUrl + "?" + query;
-
-
+					baseUrl = baseUrl + "?http_download=true&http_accept=application/" + this.type +"+fasta";
 					if(window.App.authorizationToken){
-						baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) 
+						baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
 					}
-
-					baseUrl = baseUrl + "&http_accept=application/dna+fasta";
-
-
-					window.open(baseUrl);
-
-					return;
-
 					var form = domConstruct.create("form", {
 						style: "display: none;",
 						id: "downloadForm",

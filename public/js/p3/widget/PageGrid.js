@@ -58,6 +58,7 @@ define([
 			selfAccept: false,
 			copyOnly: true
 		},
+		selectedData: {},
 
 		row: function(target){
 			// summary:
@@ -131,11 +132,11 @@ define([
 				return;
 			}
 			var _self = this;
-			
+
 			// console.log("this.hiderToggleNode: ", this.hiderToggleNode);
 			// add hint for the show/hide column button
 			this.hiderToggleNode.title = "Click to show or hide columns";
-			
+
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
