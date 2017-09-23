@@ -793,7 +793,7 @@ define([
 
 						new Dialog({
 							content: msg,
-							title: "Copy failed",
+							title: "Copy failed"
 						}).show();
 					})
 				}
