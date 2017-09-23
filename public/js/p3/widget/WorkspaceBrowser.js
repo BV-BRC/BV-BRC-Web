@@ -660,7 +660,8 @@ define([
 				validTypes: ["*"],
 				tooltip: "Delete Folder"
 			}, function(selection){
-				var objs = selection.map(function(o){ return o.path; });
+				var objs = selection.map(function(o){ return o.path; }),
+					types = selection.map(function(o){ return o.type; });
 
 				// omit special any folders
 				try{
@@ -684,7 +685,7 @@ define([
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						var prom = WorkspaceManager.deleteObjects(objs, true, true);
+						var prom = WorkspaceManager.deleteObjects(objs, true, true, types);
 						Deferred.when(prom, function(){
 							self.activePanel.clearSelection();
 						})
@@ -710,8 +711,9 @@ define([
 				label: "RENAME",
 				validTypes: ["*"],
 				tooltip: "Rename the selected item"
-			}, function(selection){
-				var path = selection[0].path;
+			}, function(sel){
+				var path = sel[0].path,
+					isJob = sel[0].type === 'job_result';
 
 				// omit special any folders
 				try{
@@ -726,7 +728,7 @@ define([
 				}
 
 				try{
-					self.renameDialog(path)
+					self.renameDialog(path, isJob)
 				}catch(e){
 					var d = new Dialog({
 						content: e.toString(),
@@ -778,7 +780,6 @@ define([
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
 					}, function(e){
-
 						Topic.publish("/Notification", {
 							message: "Copy failed",
 							type: "error"
@@ -808,7 +809,8 @@ define([
 				validTypes: ["*"],
 				tooltip: "Move selected objects"
 			}, function(selection){
-				var paths = selection.map(function(obj){ return obj.path });
+				var paths = selection.map(function(obj){ return obj.path }),
+					types = selection.map(function(obj){ return obj.type });
 
 				// omit special any folders
 				try{
@@ -849,7 +851,7 @@ define([
 						return;
 					}
 
-					var prom = WorkspaceManager.move(paths, destPath);
+					var prom = WorkspaceManager.move(paths, destPath, types);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
 					}, function(e){
@@ -890,7 +892,7 @@ define([
 			this.inherited(arguments);
 		},
 
-		renameDialog: function(path){
+		renameDialog: function(path, isJob){
 			var self = this;
 			var conf = '';
 
@@ -917,7 +919,7 @@ define([
 						if(path.split('/').length <= 3) {
 							prom =  WorkspaceManager.renameWorkspace(path, newName)
 						}else{
-							prom = WorkspaceManager.rename(path, nameInput.get('value'))
+							prom = WorkspaceManager.rename(path, nameInput.get('value'), isJob)
 						}
 
 						Deferred.when(prom, function(res){
