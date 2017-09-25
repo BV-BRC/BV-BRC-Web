@@ -121,19 +121,17 @@
 
     <div style="margin:0px;padding:0px;background: #5a8621;margin-bottom:4px; box-shadow:0px 0px 96px -23px rgba(0,0,0,0.75);z-index:1000;position: relative;">
         <div style="margin:auto;width:925px;padding:0px;">
-            <table style="width:100%" cellspacing="0" cellpadding="0">
-                <tbody>
-                <tr>
+            <div style="display:table">
+                <div style="display:table-row">
                     <% flows.forEach(function(svc, index) { %>
-                    <td style="width:25%" class="HomeServiceLink<% if (index < 1) { %> selected <% } %>"
+                    <div style="display:table-cell; width:231px;" class="HomeServiceLink<% if (index < 1) { %> selected <% } %>"
                         rel="<%- svc.rel %>">
                         <H3 class="highlight-b"><%- svc.name %></H3>
                         <H4><%- svc.secondary %></H4>
-                    </td>
+                    </div>
                     <% }) %>
-                </tr>
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -144,8 +142,7 @@
                     <td style="vertical-align:top;width:70%;">
 
                         <article class="dlp-hp">
-                            <h2 class="wp-headline section-title section-title-b"><span class="wrap"><span class="wrap">Browse Data</span></span>
-                            </h2>
+                            <h2 class="wp-headline section-title section-title-b"><span class="wrap">Browse Data</span></h2>
                             <ul class="no-decoration no-underline-links">
                                 <li class="first">
                                     <figure>
