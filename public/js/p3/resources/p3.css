@@ -1232,7 +1232,7 @@ body footer.main-footer ul.left {
 }
 
 .center-text {
-    text-align: center; 
+    text-align: center;
 }
 
 .subsystemslegend {
@@ -1252,4 +1252,16 @@ body footer.main-footer ul.left {
     top: 95px;
     width: 80px;
     z-index: 10;
+}
+
+/* accessibility utils */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
