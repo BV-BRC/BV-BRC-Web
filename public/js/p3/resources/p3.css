@@ -1149,12 +1149,10 @@ footer.main-footer .container {
   overflow: hidden;
 }
 footer.main-footer .container .column {
-  display: inline;
   float: left;
   width: 229px;
   border-left: #547f9d 1px solid;
-  margin-right: -1px;
-  font-weight: 100;
+  min-height: 143px
 }
 * html body footer.main-footer .container .column {
   overflow-x: hidden;
@@ -1162,15 +1160,6 @@ footer.main-footer .container .column {
 body footer.main-footer .container .column .wrapper {
   overflow: hidden;
   padding: 0 15px;
-}
-  body footer.main-footer .container .column.last {
-  display: inline;
-  float: left;
-  margin-right: 0;
-  width: 229px;
-}
-* html body footer.main-footer .container .column.last {
-  overflow-x: hidden;
 }
 body footer.main-footer ul.left {
   width: 99px;
