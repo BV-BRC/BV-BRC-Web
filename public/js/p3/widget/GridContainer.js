@@ -1335,12 +1335,20 @@ define([
 			this.grid.on("deselect", lang.hitch(this, function(evt){
 				var sel = [];
 				if(!evt.selected){
+					this.grid.selectedData = {};
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
 					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						return evt.grid.row(rownum).data;
+						var row = evt.grid.row(rownum);
+						if(row.data){
+							return row.data;
+						}else if(this.grid && this.grid._unloadedData){
+							return this.grid._unloadedData[rownum];
+						}else if(this.grid && this.grid.selectedData){
+							return this.grid.selectedData[rownum];
+						}
 					}));
 				}
 				this.selectionActionBar.set("selection", sel);
