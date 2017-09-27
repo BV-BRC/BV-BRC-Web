@@ -31,7 +31,7 @@
     var isProd = request.applicationOptions.appLabel == "";
     %>
 
-    <div class="P3Header" style="display: flex">
+    <div class="P3Header" style="display: flex" role="heading" aria-level="1">
         <div style="width: 220px;">
             <a href="/">
                 <img class="p3LogoImage" src="/patric/images/patric_logo_bg.png" alt="PATRIC Logo"/>
@@ -48,11 +48,12 @@
                         <div class="menuItems">
                             <% for (var i = 0; i < servicesMiddle;i++){ %>
                             <div>
-                                        <span class="menuItem half"><a class="navigationLink"
-                                                                       href="<%- services[i].href %>"><%- services[i].name %></a></span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
+                                </span>
                                 <span class="menuItem half">
                                     <% if (services[servicesMiddle + i]) { %>
-                                    <a class="navigationLink"
+                                    <a class="navigationLink" title="<%- services[servicesMiddle + i].name %> overview"
                                        href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
                                     <% } %>
                                 </span>
@@ -60,11 +61,15 @@
                             <% } %>
                             <br>
                             <div>
-                                <span class="menuItem half"><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></span>
-                                <span class="menuItem half"><a class="navigationLink"
-                                                               href="/view/Taxonomy/2157">All Archaea</a></span>
-                                <span class="menuItem half"><a class="navigationLink"
-                                                               href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes">Eukaryotic Hosts</a></span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                </span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
+                                </span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                                        title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
                             </div>
                         </div>
                     </div>
