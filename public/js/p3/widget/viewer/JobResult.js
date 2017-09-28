@@ -2,18 +2,16 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../../WorkspaceManager", "dojo/_base/lang",
-	"dojo/dom-attr", /*"dijit/TitlePane",*/ "../WorkspaceExplorerView", "dijit/Dialog"
+	"dojo/dom-attr", "../WorkspaceExplorerView", "dijit/Dialog"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, WorkspaceManager, lang,
-			domAttr, WorkspaceExplorerView, Dialog
-		/*,TitlePane*/){
+			domAttr, WorkspaceExplorerView, Dialog){
 	return declare([BorderContainer], {
 		"baseClass": "ExperimentViewer",
 		"disabled": false,
 		"query": null,
 		data: null,
-		//params: null,
 		containerType: "job_result",
 		_resultType: null,
 		_jobOut: {
@@ -109,17 +107,17 @@ define([
 						//this._jobOut[prop]["value"]=this.data.autoMeta[prop];
 						var tableLabel = this._jobOut[prop].hasOwnProperty("label") ? this._jobOut[prop]["label"] : prop;
 						var tableValue = this._jobOut[prop].hasOwnProperty("format") ? this._jobOut[prop]["format"](this.data.autoMeta[prop]) : this.data.autoMeta[prop];
-						// if(prop == 'parameters') {
-						// 	this.params = new TitlePane({
-						// 		title: "Parameters",
-						// 		style: "margin-bottom:5px;",
-						// 		open: false,
-						// 		content: tableValue
-						// 	});
-						// 	job_output.push('<tr class="alt"><td class="last" colspan=2><div id="param-div"></div></td></tr>');
-						//} else {
+						if(prop == 'parameters') {
+							// this.params = new TitlePane({
+							// 	title: "Parameters",
+							// 	style: "margin-bottom:5px;",
+							// 	open: false,
+							// 	content: tableValue
+							// });
+							job_output.push('<tr class="alt"><td class="last" colspan=2><div id="param-div" data-dojo-type="dijit/TitlePane" data-dojo-props="title: \'Paramaters\', open:false">'+tableValue+'</div></td></tr>');
+						} else {
 							job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._jobOut[prop]["label"] + '</b></th><td class="last">' + tableValue + "</td></tr>");
-						//}
+						}
 					}
 				}, this);
 			}
@@ -135,8 +133,6 @@ define([
 
 			output.push("</div>");
 			this.viewHeader.set("content", output.join(""));
-			//domConstruct.place(this.params.domNode, "param-div");
-			//domConstruct.byId("param-div").appendChild(this.params.domNode);
 			this.resize();
 		},
 		startup: function(){
