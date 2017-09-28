@@ -2,25 +2,33 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../../WorkspaceManager", "dojo/_base/lang",
-	"dojo/dom-attr","../WorkspaceExplorerView", "dijit/Dialog"
+	"dojo/dom-attr", /*"dijit/TitlePane",*/ "../WorkspaceExplorerView", "dijit/Dialog"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, WorkspaceManager, lang,
-			domAttr, WorkspaceExplorerView, Dialog){
+			domAttr, WorkspaceExplorerView, Dialog
+		/*,TitlePane*/){
 	return declare([BorderContainer], {
 		"baseClass": "ExperimentViewer",
 		"disabled": false,
 		"query": null,
 		data: null,
+		//params: null,
 		containerType: "job_result",
 		_resultType: null,
 		_jobOut: {
+			"id": {"label": "Job ID"},
 			"start_time": {"label": "Start time", "format": formatter.epochDate},
-			"elapsed_time": {"label": "Run time", "format": formatter.runTime},
 			"end_time": {"label": "End time", "format": formatter.epochDate},
-			"parameters": {"label": "Parameters", "format": function(d){ return '<pre style="font-size:.8em;">' + JSON.stringify(d,null,2) + "</pre>"}}
+			"elapsed_time": {"label": "Run time", "format": formatter.runTime},
+			"parameters": {"label": "Parameters", "format": function(d){
+				if(d.hasOwnProperty('ustring')){
+				    d['ustring'] = JSON.parse(d['ustring'])
+				}
+				return '<pre style="font-size:.8em; overflow: scroll;">' + JSON.stringify(d,null,2) + "</pre>"
+			}}
 		},
-		_jobOrder: ["start_time", "end_time", "elapsed_time", "parameters"],
+		_jobOrder: ["id", "start_time", "end_time", "elapsed_time", "parameters"],
 		_appLabel: "",
 		_resultMetaTypes: {},
 		_autoLabels: {},
@@ -101,7 +109,17 @@ define([
 						//this._jobOut[prop]["value"]=this.data.autoMeta[prop];
 						var tableLabel = this._jobOut[prop].hasOwnProperty("label") ? this._jobOut[prop]["label"] : prop;
 						var tableValue = this._jobOut[prop].hasOwnProperty("format") ? this._jobOut[prop]["format"](this.data.autoMeta[prop]) : this.data.autoMeta[prop];
-						job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._jobOut[prop]["label"] + '</b></th><td class="last">' + tableValue + "</td></tr>");
+						// if(prop == 'parameters') {
+						// 	this.params = new TitlePane({
+						// 		title: "Parameters",
+						// 		style: "margin-bottom:5px;",
+						// 		open: false,
+						// 		content: tableValue
+						// 	});
+						// 	job_output.push('<tr class="alt"><td class="last" colspan=2><div id="param-div"></div></td></tr>');
+						//} else {
+							job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._jobOut[prop]["label"] + '</b></th><td class="last">' + tableValue + "</td></tr>");
+						//}
 					}
 				}, this);
 			}
@@ -117,6 +135,8 @@ define([
 
 			output.push("</div>");
 			this.viewHeader.set("content", output.join(""));
+			//domConstruct.place(this.params.domNode, "param-div");
+			//domConstruct.byId("param-div").appendChild(this.params.domNode);
 			this.resize();
 		},
 		startup: function(){
@@ -124,7 +144,7 @@ define([
 				return;
 			}
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({content: "Loading data from "+this.data.name+" job file.  If you have moved your job result, please ensure you have also moved the ."+this.data.name+" folder to this directory as well.", region: "top", style:"width:90%;height:40%;"});
+			this.viewHeader = new ContentPane({content: "Loading data from "+this.data.name+" job file.  If you have moved your job result, please ensure you have also moved the ."+this.data.name+" folder to this directory as well.", region: "top", style:"width:90%;height:30%;"});
 			//this.viewer= new ContentPane({content: "", region: "center"});
 			this.viewer = new WorkspaceExplorerView({region: "center", path: this._hiddenPath});
 			// console.log("[JobResult] WSV: ", this.viewer);
