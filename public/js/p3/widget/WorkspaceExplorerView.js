@@ -16,11 +16,12 @@ define([
 		allowDragAndDrop: true,		// whether or not to allow drag and drop
 		showHiddenFiles: false,
 		_setTypes: function(val){
-			if(!(val instanceof Array)){
-				this.types = [val];
+			if(val){
+				this.types = Array.isArray(val) ? val : [val];
 			}else{
-				this.types = val;
+				this.types = null;
 			}
+
 			this.refreshWorkspace();
 		},
 		queryOptions: {
@@ -29,11 +30,10 @@ define([
 
 		_setShowHiddenFiles: function(val){
 			this.showHiddenFiles = val;
-			this.refreshWorkspace();
+			// don't refresh
 		},
 
 		listWorkspaceContents: function(ws){
-			// console.log("[WorkspaceExplorerView] listWorkspaceContents()")
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
