@@ -3,12 +3,12 @@ define([
 	"dojo/_base/lang", "dojo/mouse",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class", "dojo/when", "./ColumnsGenome"
+	"./AdvancedDownload", "dojo/dom-class", "dojo/when"
 ], function(declare, on, domConstruct,
 			lang, Mouse,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
-			AdvancedDownload, domClass, when, ColumnsGenome){
+			AdvancedDownload, domClass, when){
 
 	return declare([TooltipDialog], {
 		containerType: "",
