@@ -157,6 +157,7 @@ define([
 					// disable save button
 					on.once(input, "keyup", function(evt) {
 						self.dialog.okButton.setDisabled(false);
+						self.dialog.okButton.set('label', 'Save');
 					});
 
 					self._inputs.push(input);
@@ -239,7 +240,7 @@ define([
 
 		/**
 		 * Takes form data and puts into neccessary JSON format for Solr
-		 * Note: not used, in favor of data api
+		 * Note: this is not used.  getJsonPatch is being used with the data api
 		 */
 		getSolrJSON: function(){
 			var hash = this.getValues();
