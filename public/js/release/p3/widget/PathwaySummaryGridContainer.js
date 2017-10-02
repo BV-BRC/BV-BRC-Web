@@ -125,12 +125,12 @@ define("p3/widget/PathwaySummaryGridContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing feature group",
+					tooltip: "Add selection to a new or existing feature group",
 					validContainerTypes: ["pathway_summary_data"],
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_group";
 					var ids = selection.map(function(d){
 						return d['feature_ids'];

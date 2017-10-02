@@ -1050,12 +1050,12 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data", "subsystem_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type;
 
 					if(!containerWidget){
@@ -1312,9 +1312,22 @@ define("p3/widget/GridContainer", [
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
+						if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
+							if(!this.grid.selectedData["primaryKey"]){
+							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+							}
+							this.grid.selectedData[rownum] = row.data;
+						}
+						else{
+							this.grid.selectedData = {};
+						  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+						  this.grid.selectedData[rownum] = row.data;
+					  }
 						return row.data;
-					}else if (this.grid && this.grid._unloadedData) {
+					}else if(this.grid && this.grid._unloadedData){
 						return this.grid._unloadedData[rownum];
+					}else if(this.grid && this.grid.selectedData){
+						return this.grid.selectedData[rownum];
 					}
 				}), this);
 				this.selectionActionBar.set("selection", sel);
@@ -1324,12 +1337,20 @@ define("p3/widget/GridContainer", [
 			this.grid.on("deselect", lang.hitch(this, function(evt){
 				var sel = [];
 				if(!evt.selected){
+					this.grid.selectedData = {};
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
 					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						return evt.grid.row(rownum).data;
+						var row = evt.grid.row(rownum);
+						if(row.data){
+							return row.data;
+						}else if(this.grid && this.grid._unloadedData){
+							return this.grid._unloadedData[rownum];
+						}else if(this.grid && this.grid.selectedData){
+							return this.grid.selectedData[rownum];
+						}
 					}));
 				}
 				this.selectionActionBar.set("selection", sel);

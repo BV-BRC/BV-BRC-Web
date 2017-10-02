@@ -21,6 +21,7 @@ define("p3/widget/app/GenomeDistance", [
 		defaultPath: "",
 
 		startup: function(){
+			this.inherited(arguments);
 
 			// activate genome group selector when user is logged in
 			if(window.App.user){

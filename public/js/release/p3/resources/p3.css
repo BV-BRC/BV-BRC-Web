@@ -14399,6 +14399,16 @@ div.appsublabel {
         display: table-cell; 
         border-right: 1px solid #bbb;
 }
+.ui-icon.dgrid-hider-toggle {
+	background-position: 0 -190px;
+	background-color: transparent;
+	transform: scale(1.4);
+	border: none;
+	cursor: pointer;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
@@ -14416,7 +14426,7 @@ div.appsublabel {
 }
 .dgrid-cell.field-go {
     width: 8%;
-	text-align: left;    
+	text-align: left;
 }
 .dgrid-cell.field-family_id {
     width: 12%;
@@ -14557,11 +14567,15 @@ div.appsublabel {
 .blast_result .dgrid-column-s_coverage,
 .blast_result .dgrid-column-na_length,
 .blast_result .dgrid-column-aa_length,
-.blast_result .dgrid-column-length,
 .blast_result .dgrid-column-score,
 .blast_result .dgrid-column-evalue {
     width: 4%;
     text-align: center;
+}
+.blast_result .dgrid-column-q_length,
+.blast_result .dgrid-column-length {
+    width: 5%;
+    text-align: right;
 }
 .blast_result .collapsed .detail {
     display: none;

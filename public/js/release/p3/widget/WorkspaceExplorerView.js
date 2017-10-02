@@ -14,27 +14,26 @@ define("p3/widget/WorkspaceExplorerView", [
 		containerType: "folder",
 		onlyWritable: false, 		// only lists writable workspaces
 		allowDragAndDrop: true,		// whether or not to allow drag and drop
+		showHiddenFiles: false,
 		_setTypes: function(val){
-			if(!(val instanceof Array)){
-				this.types = [val];
+			if(val){
+				this.types = Array.isArray(val) ? val : [val];
 			}else{
-				this.types = val;
+				this.types = null;
 			}
+
 			this.refreshWorkspace();
 		},
 		queryOptions: {
 			sort: [{attribute: "name", descending: false}]
 		},
 
-		showHiddenFiles: window.App && window.App.showHiddenFiles,
-
 		_setShowHiddenFiles: function(val){
 			this.showHiddenFiles = val;
-			this.refreshWorkspace();
+			// don't refresh
 		},
 
 		listWorkspaceContents: function(ws){
-			// console.log("[WorkspaceExplorerView] listWorkspaceContents()")
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)

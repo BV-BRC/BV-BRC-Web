@@ -145,7 +145,7 @@ define("p3/widget/app/BLAST", [
 		},
 
 		hasSingleFastaSequence: function(sequence){
-			return (sequence.indexOf('>') == sequence.lastIndexOf('>'));
+			return sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null;}).length == 1;
 		},
 
 		isNucleotideFastaSequence: function(sequence){

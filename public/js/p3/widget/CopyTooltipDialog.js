@@ -42,22 +42,23 @@ define([
 		_totsv: function(selection, includeHeader, selectedOnly, shownCols){
 			var out = [];
 
-			// gather all of the keys present in the selected objects and remove any undefined entries
-			var key_set = new Set();
+			// remove any undefined entries
 			var clean_selection = [];
 			selection.forEach(function(obj){
 				if (obj){
-					var keys = new Set(Object.keys(obj));
-					keys.forEach(function (key){
-						key_set.add(key);
-					});
 					clean_selection.push(obj);
 				}
 			});
 
+			// sort based on the columns defined elsewhere on the UI
+			columns = this.grid.columns;
+			//console.log('[CopyTooltipDialog] columns: ', columns)
+			var key_list = Array.from(Object.keys(columns));
+			//console.log('[CopyTooltipDialog] key_list: ', key_list);
+
 			// construct the header
 			var header = [];
-			key_set.forEach(function(key){
+			key_list.forEach(function(key){
 				if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 					header.push(key);
 				}
@@ -72,7 +73,7 @@ define([
 			clean_selection.forEach(function(obj){
 				var io = [];
 
-				key_set.forEach(function(key){
+				key_list.forEach(function(key){
 					// decide if we should include this column
 					if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
 						// push it to the array
@@ -90,7 +91,6 @@ define([
 
 		},
 
-		// XXX known issue: seleted items not accessible after changing pages (NPE)
 		copySelection: function(type, selection){
 
 			// format the text
