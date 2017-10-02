@@ -353,7 +353,7 @@ define("p3/widget/InteractionGraphContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["interaction_data"]
 				},
 				function(selection, containerWidget){
@@ -370,7 +370,7 @@ define("p3/widget/InteractionGraphContainer", [
 					}
 
 					// console.log("Add Items to Group", sel);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_group";
 
 					var stg = new SelectionToGroup({

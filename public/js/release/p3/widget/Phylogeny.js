@@ -440,12 +440,12 @@ define("p3/widget/Phylogeny", [
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["*"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "genome_group";
 
 					if(!type){

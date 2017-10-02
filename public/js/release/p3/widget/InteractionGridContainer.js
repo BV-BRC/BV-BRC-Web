@@ -210,7 +210,7 @@ define("p3/widget/InteractionGridContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["interaction_data"]
 				},
 				function(selection){
@@ -222,7 +222,7 @@ define("p3/widget/InteractionGridContainer", [
 						return orig.indexOf(x) == i;
 					});
 
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_group";
 
 					if(!type){

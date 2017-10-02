@@ -197,7 +197,6 @@ function(declare, Grid, Store, DijitRegistry,
 			Topic.publish("/select", []);
 
 			this.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -208,7 +207,6 @@ function(declare, Grid, Store, DijitRegistry,
 				on.emit(_self.domNode, "select", newEvt);
 			});
 			this.on("dgrid-deselect", function(evt){
-				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -219,7 +217,6 @@ function(declare, Grid, Store, DijitRegistry,
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
 
-			console.log("STARTUP REFRESH");
 			this.refresh();
 
 		},

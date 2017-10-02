@@ -31,6 +31,7 @@ define("p3/widget/app/PhylogeneticTree", [
 			this.outGroup.genomeToAttachPt = ["out_genome_id"];
 			this.outGroup.genomeGroupToAttachPt = ["out_genomes_genomegroup"];
 			this.outGroup.maxGenomes = 5;
+			this.selectedTR = []; //list of selected TR for ingroup and outgroup, used in onReset()
 		},
 
 		startup: function(){
@@ -185,6 +186,7 @@ define("p3/widget/app/PhylogeneticTree", [
 		onAddGenome: function(groupType){
 			//console.log("Create New Row", domConstruct);
 			var lrec = {};
+			lrec["groupType"] = groupType;
 			var chkPassed = this.ingestAttachPoints(this[groupType].genomeToAttachPt, lrec);
 			//console.log("this.genomeToAttachPt = " + this.genomeToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
@@ -192,6 +194,7 @@ define("p3/widget/app/PhylogeneticTree", [
 			if(chkPassed && this[groupType].addedNum < this[groupType].maxGenomes){
 				var newGenomeIds =[lrec[this[groupType].genomeToAttachPt]];
 				var tr = this[groupType+'GenomeTable'].insertRow(0);
+				lrec["row"] = tr;
 				var td = domConstruct.create('td', {"class": "textcol "+groupType+"GenomeData", innerHTML: ""}, tr);
 				td.genomeRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + "</div>";
@@ -212,6 +215,8 @@ define("p3/widget/app/PhylogeneticTree", [
 					}
 					handle.remove();
 				}));
+				lrec["handle"] = handle;
+				this.selectedTR.push(lrec);
 				this.increaseGenome(groupType, newGenomeIds);
 			}
 			//console.log(lrec);
@@ -230,6 +235,7 @@ define("p3/widget/app/PhylogeneticTree", [
 		onAddGenomeGroup: function(groupType){
 			//console.log("Create New Row", domConstruct);
 			var lrec = {};
+			lrec["groupType"] = groupType;
 			var chkPassed = this.ingestAttachPoints(this[groupType].genomeGroupToAttachPt, lrec);
 			//console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
@@ -256,6 +262,7 @@ define("p3/widget/app/PhylogeneticTree", [
 					&& newGenomeIds.length > 0
 					&& this[groupType].addedNum +newGenomeIds.length <= this[groupType].maxGenomes){
 					var tr = this[groupType+'GenomeTable'].insertRow(0);
+					lrec["row"] = tr;
 					var td = domConstruct.create('td', {"class": "textcol "+groupType+"GenomeData", innerHTML: ""}, tr);
 					td.genomeRecord = lrec;
 					td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + "</div>";
@@ -276,6 +283,8 @@ define("p3/widget/app/PhylogeneticTree", [
 						}
 						handle.remove();
 					}));
+					lrec["handle"] = handle;
+					this.selectedTR.push(lrec);
 					this.increaseGenome(groupType, newGenomeIds);
 				}
 
@@ -330,6 +339,26 @@ define("p3/widget/app/PhylogeneticTree", [
 				domClass.add(this.domNode, "Error");
 				console.log("Form is incomplete");
 			}
+		},
+
+		onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
+			this.selectedTR.forEach(lang.hitch(this,function(lrec){
+				domConstruct.destroy(lrec.row);
+				lrec.handle.remove();
+				groupType = lrec["groupType"];
+				var ntr = this[groupType+'GenomeTable'].insertRow(-1);
+				var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+				var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+				var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+			}));
+			this.selectedTR = [];
+			this.inGroup.addedList = [];
+			this.inGroup.addedNum = 0;
+			this.outGroup.addedList = [];
+			this.outGroup.addedNum = 0;
 		},
 
 		getValues: function(){
