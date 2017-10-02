@@ -1333,7 +1333,8 @@ define([
 					}, {
 						name: 'Collection Year',
 						text: 'collection_year',
-						editable: true
+						editable: true,
+						type: 'number'
 					}, {
 						name: 'Collection Date',
 						text: 'collection_date',
