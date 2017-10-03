@@ -9,66 +9,40 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 
 	var _DataStore = new Observable(new MemoryStore({idProperty: "id", data: []}));
 	var initialDataSet=true;
-	// var _DataStore = new MemoryStore({idProperty: "id", data: []});
+
+	setTimeout(function(){
+		PollJobs();
+	})
 
 	function PollJobs(){
-		if(window.App && window.App.api && window.App.api.service){
-			// console.log("AppService.enumerate_tasks")
-			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 10000]), function(tasks){
+		// digest cycle is unclear, so leaving this here.
+		if(!(window.App && window.App.api && window.App.api.service)) return;
 
-
-				// console.log("Enumerate Task Results: ", tasks);
-				// console.log("_DataStore: ",_DataStore);
-
-				if (initialDataSet){
-					_DataStore.setData(tasks[0].slice(0,-1));
-					_DataStore.put(tasks[0][tasks[0].length-1])
-					initialDataSet=false;
-				}else{
-
-					tasks[0].forEach(function(task){
-						// console.log("Get and Update Task: ", task);
-						//console.log("Checking for task: ", task.id)
-						// when(_DataStore.get(task.id), function(oldTask){
-						// 	if(!oldTask){
-						// 		 console.log("No Old Task, store as new");
-						// 		_DataStore.put(task);
-						// 	}else if(oldTask.status != task.status){
-						// 		console.log("Updating Status of task", task.status)
-						// 		_DataStore.put(task);
-						// 	}
-						// }, function(err){
-						// 	console.log("ERROR RETRIEVING TASK ", err)
-						// });
-
-						_DataStore.put(task);
-					});
-
-				}
-				Deferred.when(getJobSummary(), function(msg){
-					// console.log("Publish Job Summary: ", msg);
-					Topic.publish("/Jobs", msg);
+		Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 10000]), function(tasks){
+			if (initialDataSet){
+				_DataStore.setData(tasks[0].slice(0,-1));
+				_DataStore.put(tasks[0][tasks[0].length-1])
+				initialDataSet=false;
+			}else{
+				tasks[0].forEach(function(task){
+					_DataStore.put(task);
 				});
-
-				if(firstRun){
-					ready.resolve(true);
-					firstRun = false;
-				}
-				setTimeout(function(){
-					PollJobs();
-				}, 15000)
+			}
+			Deferred.when(getJobSummary(), function(msg){
+				Topic.publish("/Jobs", msg);
 			});
-		}else{
+
+			if(firstRun){
+				ready.resolve(true);
+				firstRun = false;
+			}
 			setTimeout(function(){
 				PollJobs();
-			}, 1000);
-		}
+			}, 15000)
+		});
 	}
 
-	PollJobs();
-
 	function getJobSummary(){
-		//console.log("getJobSummary() from api_service");
 		var def = new Deferred();
 		var summary = {total: 0};
 		when(ready, function(){
@@ -137,7 +111,6 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 		getJobSummary: getJobSummary,
 		getJobs: function(){
 			return Deferred.when(ready, function(){
-				//console.log('getJobs()', Jobs);
 				return Object.keys(Jobs).map(function(id){
 					return Jobs[id];
 				});
@@ -145,7 +118,6 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 		},
 
 		getStore: function(){
-			// return new Observable(_DataStore);
 			return _DataStore;
 		}
 	}
