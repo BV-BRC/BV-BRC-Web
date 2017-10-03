@@ -17,10 +17,7 @@ define([
 		idType: null,
 		inputType: null,
 		conversionTypes: {
-			"feature_data": [{label: "Feature", value: "feature_group"}, {
-				label: "Genome",
-				value: "genome_group"
-			}]
+			"feature_data": [{label: "Feature", value: "feature_group"}, {label: "Genome",value: "genome_group"}]
 		},
 		selectType: false,
 		_setTypeAttr: function(t){
@@ -44,6 +41,12 @@ define([
 			this.set('type', this.groupTypeSelect.get('value'));
 			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
 			this.onChangeTarget(this.type);
+			if(this.type == "genome_group"){
+				this.idType = "genome_id";
+			}
+			else if(this.type == "feature_group"){
+				this.idType = "feature_id";
+			}
 		},
 
 		onChangeTarget: function(target){
