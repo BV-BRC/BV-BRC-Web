@@ -1213,8 +1213,7 @@ define([
 					}, {
 						name: 'Antimicrobial Resistance Evidence',
 						text: 'antimicrobial_resistance_evidence',
-						editable: true,
-						isList: true
+						editable: true
 					}, {
 						name: 'Reference Genome',
 						text: 'reference_genome'
@@ -1334,7 +1333,8 @@ define([
 					}, {
 						name: 'Collection Year',
 						text: 'collection_year',
-						editable: true
+						editable: true,
+						type: 'number'
 					}, {
 						name: 'Collection Date',
 						text: 'collection_date',
