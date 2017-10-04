@@ -214,12 +214,26 @@ define([
 					validContainerTypes: ["interaction_data"]
 				},
 				function(selection){
-					var sel = selection.map(function(x){
+					var sel_feature = selection.map(function(x){
 						return [x.feature_id_a, x.feature_id_b];
 					}).reduce(function(a, b){
 						return a.concat(b);
 					}).filter(function(x, i, orig){
 						return orig.indexOf(x) == i;
+					});
+
+					var sel_genome = selection.map(function(x){
+						return [x.genome_id_a, x.genome_id_b];
+					}).reduce(function(a, b){
+						return a.concat(b);
+					}).filter(function(x, i, orig){
+						return orig.indexOf(x) == i;
+					});
+          var feature_ids = sel_feature.map(function(x){
+						return {feature_id: x};
+					});
+					var genome_ids = sel_genome.map(function(x){
+						return {genome_id: x};
 					});
 
 					var dlg = new Dialog({title: "Add selected items to group"});
@@ -229,12 +243,10 @@ define([
 						console.error("Missing type for AddGroup")
 						return;
 					}
-
 					var stg = new SelectionToGroup({
-						selection: sel.map(function(x){
-							return {feature_id: x};
-						}),
+						selection: feature_ids.concat(genome_ids),
 						type: type,
+						inputType: "feature_data",
 						path: ""
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
