@@ -51,7 +51,7 @@ define([
 			});
 
 			// sort based on the columns defined elsewhere on the UI
-			columns = this.grid.columns
+			columns = this.grid.columns;
 			//console.log('[CopyTooltipDialog] columns: ', columns)
 			var key_list = Array.from(Object.keys(columns)).filter(function(i){
 				return ['Selection Checkboxes', 'public'].indexOf(i) < 0
