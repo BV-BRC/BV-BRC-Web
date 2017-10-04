@@ -1271,7 +1271,7 @@ define([
 								case "GenomeAnnotation":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
-                                case "Variation":
+                case "Variation":
 								case "RNASeq":
 								case "TnSeq":
 										d = "p3/widget/viewer/Seq";
