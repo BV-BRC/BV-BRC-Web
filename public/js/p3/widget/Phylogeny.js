@@ -190,33 +190,37 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(treeDat){
 				// console.log("Set Newick");
-				if(!treeDat.tree){
-					console.log("No newick+json in Request Response");
-					return;
-				}
-				if(treeDat.labels){
-					this.set('labels', treeDat.labels);
-				}
-				if(treeDat.info){
-					headerParts = [];
-					if(treeDat.info.taxon_name){
-						headerParts.push(treeDat.info.taxon_name);
-					}
-					if(treeDat.info.taxon_rank){
-						headerParts.push(treeDat.info.taxon_rank + " level tree");
-					}
-					if(treeDat.info.count){
-						headerParts.push("(" + String(treeDat.info.count) + " genomes)");
-					}
-					this.treeHeader.innerHTML = headerParts.join(" ");
-				}
-
-				this.set('newick', treeDat.tree);
+                this.processTreeData(treeDat);
 			}), lang.hitch(this, function(err){
 				this.noData();
 				console.log("Error Retreiving newick for Taxon: ", err)
 			}));
 		},
+
+        processTreeData: function(treeDat){
+            if(!treeDat.tree){
+                console.log("No newick+json in Request Response");
+                return;
+            }
+            if(treeDat.labels){
+                this.set('labels', treeDat.labels);
+            }
+            if(treeDat.info){
+                headerParts = [];
+                if(treeDat.info.taxon_name && treeDat.info.taxon_name != "unknown"){
+                    headerParts.push(treeDat.info.taxon_name);
+                }
+                if(treeDat.info.taxon_rank && treeDat.info.taxon_rank != "unknown"){
+                    headerParts.push(treeDat.info.taxon_rank + " level tree");
+                }
+                if(treeDat.info.count){
+                    headerParts.push("(" + String(treeDat.info.count) + " genomes)");
+                }
+                this.treeHeader.innerHTML = headerParts.join(" ");
+            }
+
+            this.set('newick', treeDat.tree);
+        },
 
 		processTree: function(){
 			if(!this.newick){
