@@ -1076,6 +1076,7 @@ define([
 					var stg = new SelectionToGroup({
 						selection: selection,
 						type: type,
+						inputType: containerWidget.containerType,
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){

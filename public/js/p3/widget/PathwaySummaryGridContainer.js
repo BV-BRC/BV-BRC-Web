@@ -132,27 +132,31 @@ define([
 					// console.log("Add Items to Group", selection);
 					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_group";
-					var ids = selection.map(function(d){
+					var feature_ids = selection.map(function(d){
 						return d['feature_ids'];
 					});
 					//construct an array, each element is an object with "feature_id" as property
+					//no need to remove duplicate as WorkspaceManager takes care of it
 					var features = [];
-					ids.forEach(function(s){
+					feature_ids.forEach(function(s){
 					  s.forEach(function(d){
 							features.push({feature_id: d});
 						})
 				  });
-					//remove duplicate features
-					var feature_map = {};
-					features.forEach(function(feature){
-            feature_map[feature.feature_id] = true;
-          });
-					var features_filtered = Object.keys(feature_map).map(function(feature){
-            return {feature_id: feature}
-          });
+
+					var genome_ids = selection.map(function(d){
+						return d['genome_ids'];
+					});
+					var genomes = [];
+					genome_ids.forEach(function(s){
+						s.forEach(function(d){
+							genomes.push({genome_id: d});
+						})
+					});
 					var stg = new SelectionToGroup({
-						selection: features_filtered,
+						selection: features.concat(genomes),
 						type: type,
+						inputType: "feature_data",
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
