@@ -126,10 +126,10 @@ define([
 
 				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 
-				if(window.ga){
-					window.ga('send', 'pageview', '/search?keyword=' + encodeURIComponent(query) + "&cat=" + searchFilter);
+				if(window.gtag){
+					gtag('event', 'globalsearch', {'query': encodeURIComponent(query), 'category': searchFilter});
 				}
-				console.log("Do Search: ", searchFilter, query);
+				// console.log("Do Search: ", searchFilter, query);
 			}
 		},
 		onClickAdvanced: function(evt){
