@@ -22,15 +22,11 @@ define([
 		startup: function(){
 			this.inherited(arguments);
 
-			this.jobsQueuedNode.innerHTML = 'loading';
-
 			Topic.subscribe("/JobStatus", lang.hitch(this, this.onJobMessage))
-//			JobManager.getJobSummary().then(lang.hitch(this, "onJobMessage"));
-
 
 			this.tooltip = new Tooltip({
 				connectId: [this.domNode],
-				label: "Queued &middot; Running &middot; Completed",
+				label: '<i class="icon-tasks" style="color: #666"></i> Queued | Running | Completed',
 				position: ["above"]
 			});
 		},

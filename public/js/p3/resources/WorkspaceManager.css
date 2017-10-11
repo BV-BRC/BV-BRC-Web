@@ -264,14 +264,10 @@ th.dgrid-cell.wsItemType {
 	margin: 0 5px 0 0;
 }
 
-
-/* removing middots
-.JobStatusCounts > span:not(:last-child):after,
-.UploadingActive > span:not(:last-child):after{
-	content:"\00b7";
+.UploadStatusCount > span:first-child:after{
+	content:" \00b7";
 	color: #333;
 }
-*/
 
 .UploadingProgress::before{
 	content:"\00b7";
@@ -282,25 +278,19 @@ th.dgrid-cell.wsItemType {
 .UploadingProgress,
 .UploadingActive{
 	color: #98981d;
-	margin: 0;
 }
-
-
-.JobsComplete,
-.UploadingComplete{
-	color: #3c763d;
-	margin: 0;
-}
-
 
 .JobsQueued {
 	color: #777;
-	margin: 0;
+}
+
+.JobsCompleted,
+.UploadingComplete{
+	color: #3c763d;
 }
 
 .JobsSuspended {
-	color: red;
-	margin: 0;
+	color: #a94442;
 }
 
 .ActionButtonWrapper {
