@@ -26,7 +26,9 @@ define([
 
 			this.tooltip = new Tooltip({
 				connectId: [this.domNode],
-				label: '<i class="icon-tasks" style="color: #666"></i> Queued | Running | Completed',
+				label: '<i class="icon-tasks" style="color: #666"></i> Queued | ' +
+						'<i class="icon-play22 JobsRunning"></i> Running | ' +
+						'<i class="icon-checkmark2 JobsCompleted"></i> Completed',
 				position: ["above"]
 			});
 		},
