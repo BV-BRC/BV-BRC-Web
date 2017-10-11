@@ -4,8 +4,8 @@
 }
 
 .WorkspaceController {
-	background:#ddd;
-	border-top: #227194;
+	background:#eee;
+	border-top: 1px solid #e2e2e2;
 }
 
 .BrowserHeader {
@@ -241,29 +241,31 @@ th.dgrid-cell.wsItemType {
 	color: #ddd;
 }
 
-.JobStatusCount,
+.JobStatusCounts,
 .UploadStatusCount {
-	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
-
-}
-.JobsComplete,
-.UploadingComplete{
-	color: blue;
-	margin: 0;
+	display:inline-block;
+	background:#FFFFFF;
+	border-radius:2px;
+	margin:2px;
+	padding:2px;
 }
 
-.JobsRunning,
-.UploadingProgress,
-.UploadingActive{
-	color: green;
-	margin: 0;
+.JobStatusCounts {
+	color: #ddd;
 }
 
-.JobsRunning::before,
-.JobsQueued::before,
-.JobsSuspended::before,
-.UploadingActive::before{
-	content:"\00b7";
+.JobStatusCounts span {
+	color: #333;
+}
+
+.JobStatusCounts .divider {
+	border-left:1px solid #ccc;
+	height: 30px;
+	margin: 0 5px 0 0;
+}
+
+.UploadStatusCount > span:first-child:after{
+	content:" \00b7";
 	color: #333;
 }
 
@@ -272,14 +274,23 @@ th.dgrid-cell.wsItemType {
 	color: #333;
 }
 
+.JobsRunning,
+.UploadingProgress,
+.UploadingActive{
+	color: #98981d;
+}
+
 .JobsQueued {
-	color: orange;
-	margin: 0;
+	color: #777;
+}
+
+.JobsCompleted,
+.UploadingComplete{
+	color: #3c763d;
 }
 
 .JobsSuspended {
-	color: red;
-	margin: 0;
+	color: #a94442;
 }
 
 .ActionButtonWrapper {
