@@ -22,7 +22,7 @@ define([
 			this.inGroup.addedNum = 0;
 			this.inGroup.genomeToAttachPt = ["in_genome_id"];
 			this.inGroup.genomeGroupToAttachPt = ["in_genomes_genomegroup"];
-			this.inGroup.maxGenomes = 50;
+			this.inGroup.maxGenomes = 100;
 			this.outGroup = {};
 			this.outGroup.addedList = [];
 			this.outGroup.addedNum = 0;
