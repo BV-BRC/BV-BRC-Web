@@ -316,12 +316,17 @@ function(locale, domConstruct, domClass, Tooltip){
 			}
 		},
 		status_alias: function(val){
-			switch(val){
-				case "deleted":
-					return 'failed'
-				default:
-					return val
-			}
+			if(val == 'initializating' || val == 'queued')
+				return '<b style="color: #666;" title="Queued">queued</b>'
+			else if(val == "in-progress")
+				return '<b style="color: #98981d;" title="Running">in progress</b>'
+			else if(val == "deleted" || val == "failed")
+				return '<b style="color: #a94442" title="Failed">failed</b>'
+			else if(val == "completed")
+				return '<b style="color: #3c763d;" title="Completed">completed</b>'
+			else
+				return val
+
 		},
 		status_indicator: function(val){
 			switch(val){

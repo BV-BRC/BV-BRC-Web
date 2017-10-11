@@ -1,6 +1,19 @@
 <div class="JobStatusButton" data-dojo-attach-event="onclick:openJobs">
 	<span>Jobs</span>
-	<span class="JobStatusCount">
-		<span class="JobsComplete" data-dojo-attach-point="jobsCompleteNode">0</span><span class="JobsRunning" data-dojo-attach-point="jobsRunningNode">0</span><span class="JobsQueued" data-dojo-attach-point="jobsQueuedNode">0</span><span class="JobsSuspended" data-dojo-attach-point="jobsSuspendedNode">0</span>
-	</span>	
+	<span class="JobStatusCounts">
+
+		<i class="icon-tasks" style="color: #666"></i>
+		<span data-dojo-attach-point="jobsQueuedNode"></span>
+
+		<span class="divider"></span>
+
+		<i class="icon-play22" style="color: #98981d"></i>
+		<span data-dojo-attach-point="jobsRunningNode"></span>
+
+		<span class="divider"></span>
+
+		<i class="icon-checkmark2" style="color: #3c763d "></i>
+		<span data-dojo-attach-point="jobsCompleteNode"></span>
+
+	</span>
 </div>
