@@ -158,7 +158,7 @@ define([
 			})
 
 			// listen for job app types and loading status
-			Topic.subscribe('/JobInfo', function(info){
+			Topic.subscribe('/Jobs', function(info){
 				if(info.status == 'loading'){
 					lastUpdated.innerHTML = self.loadingHTML;
 					loadingJobList = true;
@@ -185,7 +185,7 @@ define([
 		// returns current time in HH:MM:SS, 12 hour format
 		getTime: function(){
 			var time = new Date().toTimeString().split(' ')[0];
-			var hours = time.split(':')[0];
+			var hours = parseInt(time.split(':')[0]);
 			hours = (hours + 11) % 12 + 1;
 			return hours + time.slice(time.indexOf(':'));
 		},
