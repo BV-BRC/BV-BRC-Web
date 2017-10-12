@@ -327,7 +327,7 @@ define([
 			var backBC = new BorderContainer({
 				style: {
 					width: "805px",
-					height: "575px",
+					height: "700px",
 					margin: "0",
 					padding: "0px"
 				}
@@ -467,6 +467,10 @@ define([
 				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
 				var uploader = this.uploader = new Uploader({
 					path: _self.path,
+					style: {
+						height: "620px",
+						overflow: "scroll"
+					},
 					region: "center",
 					multiple: false,
 					types: this.type,
