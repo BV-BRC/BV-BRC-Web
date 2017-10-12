@@ -53,7 +53,7 @@ define([
 
 
 			/**
-			 * add options
+			 * add option containers
 			 */
 			var options = domConstruct.create("span", {
 				style: {
@@ -73,7 +73,9 @@ define([
 				}
 			}, options);
 
-
+			/**
+			 * app filter
+			 */
 			var selector = new Select({
 				name: "type",
 				style: {
@@ -86,21 +88,22 @@ define([
 
 			this.appFilter = 'all';
 			on(selector, 'change', function(val){
-				this.appFilter = val;
-				Topic.publish('/JobFilter', val);
+				self.appFilter = val;
+				Topic.publish('/JobFilter', {app: val});
 			})
 
-			// initialize filters
+			// initialize app filters
 			var apps = self.getFilterLabels(JobManager.getStore().data);
-			selector.set("options",
-				[{ label: "All Apps", value: "all", selected: true}].concat(
-				apps)
-			).reset();
+			selector.set("options", apps).reset();
 
 
+			/**
+			 * status filters / counts
+			 */
 			var queuedBtn = domConstruct.create("span", {
-				innerHTML: '<i class="icon-tasks" style="color: #666"></i> ' +
-				'<span>-</span> queued',
+				class: 'JobsFilter',
+				innerHTML: '<i class="icon-tasks Queued"></i> ' +
+					'<span>-</span> queued',
 				style: {
 					fontSize: '1.2em',
 					margin: '0 0.8em'
@@ -108,7 +111,8 @@ define([
 			}, filters);
 
 			var inProgressBtn = domConstruct.create("span", {
-				innerHTML: '<i class="icon-play22" style="color: #98981d"></i> ' +
+				class: 'JobsFilter',
+				innerHTML: '<i class="icon-play22 JobsRunning"></i> ' +
 					'<span>-</span> running',
 				style: {
 					fontSize: '1.2em',
@@ -117,7 +121,7 @@ define([
 			}, filters);
 
 			var completedBtn = domConstruct.create("span", {
-				innerHTML: '<i class="icon-checkmark2" style="color: #3c763d "></i> ' +
+				innerHTML: '<i class="icon-checkmark2 JobsCompleted"></i> ' +
 					'<span>-</span> completed',
 				style: {
 					fontSize: '1.2em',
@@ -127,8 +131,8 @@ define([
 
 
 			var failedBtn = domConstruct.create("span", {
-				innerHTML: '<i class="icon-warning2" style="color: #a94442"></i> ' +
-				'<span>-</span> failed',
+				innerHTML: '<i class="icon-warning2 JobsFailed"></i> ' +
+					'<span>-</span> failed',
 				style: {
 					fontSize: '1.2em',
 					margin: '0 0.8em'
