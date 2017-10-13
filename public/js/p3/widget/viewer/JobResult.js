@@ -134,7 +134,7 @@ define([
 				return;
 			}
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({content: "Loading data from "+this.data.name+" job file.  If you have moved your job result, please ensure you have also moved the ."+this.data.name+" folder to this directory as well.", region: "top", style:"width:90%;height:30%;"});
+			this.viewHeader = new ContentPane({content: "Loading data from "+this.data.name+" job file.  If you have moved your job result, please ensure you have also moved the ."+this.data.name+" folder to this directory as well.", region: "top", style:"width:90%;height:35%;", splitter: true});
 			//this.viewer= new ContentPane({content: "", region: "center"});
 			this.viewer = new WorkspaceExplorerView({region: "center", path: this._hiddenPath});
 			// console.log("[JobResult] WSV: ", this.viewer);
