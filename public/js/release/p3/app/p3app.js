@@ -71,10 +71,10 @@ define("p3/app/p3app", [
 				if(meta){
 					meta.content = "PATRIC," + (document.title).replace("::", ",");
 				}
-				if(window.ga){
+				if(window.gtag){
 					// console.log("document title changed to", document.title);
-					ga('set', 'title', document.title);
-					ga('send', 'pageview');
+					var page_path = window.location.pathname + window.location.hash;
+					gtag('config', window.App.gaID, {'page_path': page_path});
 				}
 			};
 

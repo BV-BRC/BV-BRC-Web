@@ -149,6 +149,11 @@ define("p3/widget/app/GenomeDistance", [
 			query(".reSubmitBtn").style("visibility", "visible");
 
 			def.promise.then(function(q){
+				// log GA
+				if(window.gtag){
+					gtag('event', 'SimilarGenomeFinder', {'event_category': 'Services', 'method': q.method});
+				}
+
 				_self.result.set('state', {query: q, resultType: resultType});
 			});
 

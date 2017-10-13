@@ -463,6 +463,18 @@ define("p3/widget/WorkspaceBrowser", [
 					type: "CreateWorkspace"
 				});
 			},  self.path.split('/').length < 3);
+            
+            this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["PhylogeneticTree"],
+				tooltip: "View Tree"
+			}, function(selection){
+				// console.log("View Experiment: ", selection[0]);
+				var expPath = this.get('path');
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&wsTreeId=" + expPath});
+
+			}, false);
 
 
 			this.browserHeader.addAction("ViewExperimentSummary", "fa icon-eye fa-2x", {
@@ -491,6 +503,8 @@ define("p3/widget/WorkspaceBrowser", [
 				Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?&wsExpId=" + eid});
 
 			}, false);
+			
+            
 
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
@@ -1259,7 +1273,7 @@ define("p3/widget/WorkspaceBrowser", [
 								case "GenomeAnnotation":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
-                                case "Variation":
+                case "Variation":
 								case "RNASeq":
 								case "TnSeq":
 										d = "p3/widget/viewer/Seq";

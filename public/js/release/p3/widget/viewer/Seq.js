@@ -175,7 +175,7 @@ define("p3/widget/viewer/Seq", [
         + '&addStores=' + encodeURIComponent(JSON.stringify(stores))
         + '&tracks=PATRICGenes,RefSeqGenes';
 
-      // console.log("[Seq] url params: ", url);
+      // console.log("[Seq] url params: ", this.jbrowseUrl);
       return this.jbrowseUrl;
 		}
 	});

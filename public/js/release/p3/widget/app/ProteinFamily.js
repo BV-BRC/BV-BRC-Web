@@ -180,6 +180,11 @@ define("p3/widget/app/ProteinFamily", [
 				// 	return;
 				// }
 
+				// log GA
+				if(window.gtag){
+					gtag('event', 'ProteinFamilySorter', {'event_category': 'Services', 'family_type': params.family_type});
+				}
+
 				if(this.addedList.length === 1 && this.addedList[0]['type'] === 'genome_group'){
 					Topic.publish("/navigate", {href: "/view/GenomeGroup" + this.addedList[0]['path'] + "#view_tab=proteinFamilies&params=" + encodeURIComponent(JSON.stringify(params))});
 				}else{

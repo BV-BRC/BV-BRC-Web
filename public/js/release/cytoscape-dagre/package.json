@@ -1,26 +1,27 @@
 {
-  "_from": "cytoscape-dagre@^2.0.0",
-  "_id": "cytoscape-dagre@2.0.0",
+  "_from": "cytoscape-dagre@2.1.0",
+  "_id": "cytoscape-dagre@2.1.0",
   "_inBundle": false,
-  "_integrity": "sha1-X1gBvKi4+qOv/JeL4mztCBidtPU=",
+  "_integrity": "sha1-dDRa8Fr0uSl96nNkl6Xw932X4Ww=",
   "_location": "/cytoscape-dagre",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "cytoscape-dagre@^2.0.0",
+    "raw": "cytoscape-dagre@2.1.0",
     "name": "cytoscape-dagre",
     "escapedName": "cytoscape-dagre",
-    "rawSpec": "^2.0.0",
+    "rawSpec": "2.1.0",
     "saveSpec": null,
-    "fetchSpec": "^2.0.0"
+    "fetchSpec": "2.1.0"
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-2.0.0.tgz",
-  "_shasum": "5f5801bca8b8faa3affc978be26ced08189db4f5",
-  "_spec": "cytoscape-dagre@^2.0.0",
+  "_resolved": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-2.1.0.tgz",
+  "_shasum": "74345af05af4b9297dea736497a5f0f77d97e16c",
+  "_spec": "cytoscape-dagre@2.1.0",
   "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-dagre/issues"
@@ -58,5 +59,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "2.0.0"
+  "version": "2.1.0"
 }

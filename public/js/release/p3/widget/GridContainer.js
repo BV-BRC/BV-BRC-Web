@@ -1078,6 +1078,7 @@ define("p3/widget/GridContainer", [
 					var stg = new SelectionToGroup({
 						selection: selection,
 						type: type,
+						inputType: containerWidget.containerType,
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -1312,16 +1313,18 @@ define("p3/widget/GridContainer", [
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
-						if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
-							if(!this.grid.selectedData["primaryKey"]){
-							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+						if(this.grid.primaryKey){
+							if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
+								if(!this.grid.selectedData["primaryKey"]){
+								  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+								}
+								this.grid.selectedData[rownum] = row.data;
 							}
-							this.grid.selectedData[rownum] = row.data;
-						}
-						else{
-							this.grid.selectedData = {};
-						  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
-						  this.grid.selectedData[rownum] = row.data;
+							else{
+								this.grid.selectedData = {};
+							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+							  this.grid.selectedData[rownum] = row.data;
+						  }
 					  }
 						return row.data;
 					}else if(this.grid && this.grid._unloadedData){
