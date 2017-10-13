@@ -219,7 +219,7 @@ define([
 
 
 			// listen for new job data
-			Topic.subscribe("/JobInfo", function(info){
+			Topic.subscribe("/Jobs", function(info){
 				if(info.status == 'updated'){
 					var store = JobManager.getStore();
 					_self.grid.set('store', store)
@@ -228,13 +228,16 @@ define([
 
 
 			// listen for filtering
-			Topic.subscribe("/JobFilter", function(val){
-				if(val == 'all'){
-					_self.grid.set("query", {});
+			Topic.subscribe("/JobFilter", function(filter){
+				if(filter.app && filter.status && filter.app !== 'all'){
+					_self.grid.set("query", filter);
+				}else if(filter.app && filter.status && filter.app === 'all'){
+					_self.grid.set("query", {status: filter.status});
+				}else if(filter.status){
+					_self.grid.set("query", {status: filter.status});
 				}else{
-					_self.grid.set("query", { app: val });
+					_self.grid.set("query", {});
 				}
-
 			})
 		},
 

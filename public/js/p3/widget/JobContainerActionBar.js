@@ -62,6 +62,7 @@ define([
 			}, this.container);
 
 			var filters = domConstruct.create("span", {
+				class: 'JobFilters',
 				style: {
 					float: 'right'
 				}
@@ -86,10 +87,13 @@ define([
 				]
 			}, appFilter)
 
-			this.appFilter = 'all';
+			this.filters = {
+				app: 'all',
+				status: null
+			}
 			on(selector, 'change', function(val){
-				self.appFilter = val;
-				Topic.publish('/JobFilter', {app: val});
+				self.filters.app = val;
+				Topic.publish('/JobFilter', self.filters);
 			})
 
 			// initialize app filters
@@ -101,7 +105,7 @@ define([
 			 * status filters / counts
 			 */
 			var queuedBtn = domConstruct.create("span", {
-				class: 'JobsFilter',
+				class: 'JobFilter',
 				innerHTML: '<i class="icon-tasks Queued"></i> ' +
 					'<span>-</span> queued',
 				style: {
@@ -109,9 +113,13 @@ define([
 					margin: '0 0.8em'
 				}
 			}, filters);
+			on(queuedBtn, 'click', function(val){
+				Object.assign(self.filters,  {status: 'queued'});
+				Topic.publish('/JobFilter', self.filters);
+			});
 
 			var inProgressBtn = domConstruct.create("span", {
-				class: 'JobsFilter',
+				class: 'JobFilter',
 				innerHTML: '<i class="icon-play22 JobsRunning"></i> ' +
 					'<span>-</span> running',
 				style: {
@@ -119,8 +127,13 @@ define([
 					margin: '0 0.8em'
 				}
 			}, filters);
+			on(inProgressBtn, 'click', function(val){
+				Object.assign(self.filters,  {status: 'running'});
+				Topic.publish('/JobFilter', self.filters);
+			})
 
 			var completedBtn = domConstruct.create("span", {
+				class: 'JobFilter',
 				innerHTML: '<i class="icon-checkmark2 JobsCompleted"></i> ' +
 					'<span>-</span> completed',
 				style: {
@@ -128,9 +141,14 @@ define([
 					margin: '0 0.8em'
 				}
 			}, filters);
+			on(completedBtn, 'click', function(val){
+				Object.assign(self.filters,  {status: 'completed'});
+				Topic.publish('/JobFilter', self.filters);
+			})
 
 
 			var failedBtn = domConstruct.create("span", {
+				class: 'JobFilter',
 				innerHTML: '<i class="icon-warning2 JobsFailed"></i> ' +
 					'<span>-</span> failed',
 				style: {
@@ -138,6 +156,10 @@ define([
 					margin: '0 0.8em'
 				}
 			}, filters);
+			on(failedBtn, 'click', function(val){
+				Object.assign(self.filters,  {status: 'failed'});
+				Topic.publish('/JobFilter', self.filters);
+			})
 
 			/* not used in favor of listening for changes
 			var refreshBtn = new Button({
@@ -181,7 +203,6 @@ define([
 				}
 			})
 
-
 			this.inherited(arguments);
 		},
 
@@ -206,7 +227,7 @@ define([
 			// organize options by app count
 			var apps = []
 			var facet = {label: "All Apps", value: "all"};
-			if(self.appFilter == 'all') facet.selected = true;
+			if(self.filters.app == 'all') facet.selected = true;
 			apps.push(facet)
 
 			for (var k in info) {
@@ -215,10 +236,10 @@ define([
 					value: k,
 					count: info[k]
 				};
-				if(k == this.appFilter) facet.selected = true;
+				if(k == self.filters.app) facet.selected = true;
 				apps.push(facet)
 			};
-			apps.sort(function(a, b) { return a.count - b.count; });
+			apps.sort(function(a, b) { return b.count - a.count; });
 
 			return apps;
 		}

@@ -274,14 +274,15 @@ th.dgrid-cell.wsItemType {
 	color: #333;
 }
 
+.JobsQueued {
+	color: #777;
+}
+
+
 .JobsRunning,
 .UploadingProgress,
 .UploadingActive{
 	color: #98981d;
-}
-
-.JobsQueued {
-	color: #777;
 }
 
 .JobsCompleted,
@@ -289,9 +290,25 @@ th.dgrid-cell.wsItemType {
 	color: #3c763d;
 }
 
-.JobsSuspended {
+.JobsFailed {
 	color: #a94442;
 }
+
+.JobFilters .JobFilter {
+	opacity: 0.8;
+	padding: 0 0 3px 0;
+}
+.JobFilters .JobFilter:hover {
+	opacity: 1.0;
+	cursor: pointer;
+}
+
+.JobFilters .JobFilter:hover,
+.JobFilters .JobFilter.active {
+	border-bottom: 3px solid #999;
+
+}
+
 
 .ActionButtonWrapper {
 	font-size: 1.1em;

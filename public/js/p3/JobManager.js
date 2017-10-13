@@ -6,8 +6,14 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 	var self = this;
 	var TIME_OUT = 5000; // in ms
 
+	// state model of filters applied to jobs
+	self.filters = {
+		app: 'all',
+		status: null
+	};
+
+	// state of status (used to detect changes)
 	var StatusSummary = {init: null};
-	var filters = {};
 
 	var _DataStore = new MemoryStore({
 		idProperty: "id",
@@ -36,8 +42,8 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 	/**
 	 * listen for job filtering to store filter state locally
 	 */
-	Topic.subscribe("/JobFilter", function(val){
-		filters = {app: val}
+	Topic.subscribe("/JobFilter", function(filter){
+		Object.assign(self.filters, filter)
 	});
 
 
@@ -45,23 +51,25 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 	 * updates the job list (see JobsGrid.js)
 	 */
 	function updateJobsList(){
-		Topic.publish("/JobInfo", {status: 'loading'});
+		Topic.publish("/Jobs", {status: 'loading'});
 
 		var prom = window.App.api.service("AppService.enumerate_tasks", [0, 10000]);
 		return Deferred.when(prom, function(res){
 			var jobs = res[0];
 			_DataStore.setData(jobs)
 
-			if('app' in filters && filters.app == 'all'){
-				Topic.publish("/JobInfo", {status: 'filter', jobs: _DataStore.data});
-				return
-			}else if('app' in filters){
-				Topic.publish("/JobInfo", {status: 'filtered', jobs: _DataStore.data});
-				Topic.publish("/JobFilter", filters.app);
+//			if(self.filters.app == 'all'){
+//				Topic.publish("/Jobs", {status: 'filter', jobs: _DataStore.data});
+//				return
+//			}
+
+			if(self.filters.app || self.filters.status){
+				Topic.publish("/Jobs", {status: 'filtered', jobs: _DataStore.data});
+				Topic.publish("/JobFilter", self.filters);
 				return;
 			}
 
-			Topic.publish("/JobInfo", {status: 'updated', jobs: _DataStore.data});
+			Topic.publish("/Jobs", {status: 'updated', jobs: _DataStore.data});
 		});
 	}
 
