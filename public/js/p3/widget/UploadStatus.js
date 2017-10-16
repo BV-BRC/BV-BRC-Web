@@ -35,7 +35,11 @@ define([
 			UploadManager.getUploadSummary().then(lang.hitch(this, "onUploadMessage"));
 			this.tooltip = new Tooltip({
 				connectId: [this.uploadStatusCount],
-				label: " Completed &middot; In progress &middot; % Complete",
+				label: ' <i class="icon-play22 JobsRunning"></i> In progress | ' +
+					'<i class="icon-checkmark2 JobsCompleted"></i> Completed | ' +
+					'% Complete',
+
+				//" Completed &middot; In progress &middot; % Complete",
 				position: ["above"]
 			});
 		},
@@ -111,7 +115,7 @@ define([
 
 //				if (this._uploadButtons[msg.filename]){
 //					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
-//					this._uploadButtons[msg.filename].innerHTML= msg.filename 
+//					this._uploadButtons[msg.filename].innerHTML= msg.filename
 //					setTimeout(function(){
 //						domConstr.destroy(this._uploadButtons[msg.filename]);
 //						delete this._uploadButtons[msg.filename];

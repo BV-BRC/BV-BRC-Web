@@ -217,24 +217,27 @@ th.dgrid-cell.wsItemType {
 	cursor: pointer;
 }
 
-.JobStatusButton > A:first-child,
-.JobStatusButton > SPAN:first-child {
-	color:#fff;margin:2px;padding:2px
+.JobStatusButton > a:first-child,
+.JobStatusButton > span:first-child {
+	color:#fff;
+	margin:2px;
+	padding:2px;
 }
 
-.UploadStatusArea > SPAN {
+.UploadStatusArea > span {
 	color:#fff;
 	margin: 2px 2px 2px 0;
-	padding: 2px 2px 2px 0;
 }
+
 .UploadStatusArea{
 	cursor: pointer;
 	display:inline-block;
 }
+
 .UploadStatusUpload{
 	display:inline-block;
 	margin: 2px 0 2px 2px;
-	padding: 2px 0 2px 2px;
+    padding: 2px 0 2px 2px;
 }
 
 .UploadStatusUpload .fa {
@@ -242,7 +245,7 @@ th.dgrid-cell.wsItemType {
 }
 
 .JobStatusCounts,
-.UploadStatusCount {
+.UploadStatusCounts {
 	display:inline-block;
 	background:#FFFFFF;
 	border-radius:2px;
@@ -254,39 +257,29 @@ th.dgrid-cell.wsItemType {
 	color: #ddd;
 }
 
-.JobStatusCounts span {
+.JobStatusCounts span,
+.UploadStatusCounts span{
 	color: #333;
 }
 
+.UploadStatusCounts .divider,
 .JobStatusCounts .divider {
 	border-left:1px solid #ccc;
 	height: 30px;
 	margin: 0 5px 0 0;
 }
 
-.UploadStatusCount > span:first-child:after{
-	content:" \00b7";
-	color: #333;
-}
-
-.UploadingProgress::before{
-	content:"\00b7";
-	color: #333;
-}
-
 .JobsQueued {
 	color: #777;
 }
 
-
 .JobsRunning,
-.UploadingProgress,
-.UploadingActive{
+.UploadsRunning{
 	color: #98981d;
 }
 
 .JobsCompleted,
-.UploadingComplete{
+.UploadsCompleted{
 	color: #3c763d;
 }
 
@@ -309,23 +302,6 @@ th.dgrid-cell.wsItemType {
 	border-bottom: 3px solid #c0d3a2;
 }
 
-.JobFilters .JobFilter:after {
-
-	content: "";
-	position: absolute;
-	width: 100%;
-	height: 2px;
-	bottom: 0;
-	left: 0;
-	background-color: #000;
-	visibility: hidden;
-	-webkit-transform: scaleX(0);
-	transform: scaleX(0);
-	-webkit-transition: all 0.3s ease-in-out 0s;
-	transition: all 0.3s ease-in-out 0s;
-}
-.JobFilters .JobFilter:hover:after { transform: scaleX(1); }
-
 .ActionButtonWrapper {
 	font-size: 1.1em;
 	display: inline-block;
@@ -342,7 +318,6 @@ th.dgrid-cell.wsItemType {
 .ActionButtonWrapper.depressed  {
 	color: #ddd;
 	border-color: #ddd;
-
 }
 
 .ActionButtonContainer {
