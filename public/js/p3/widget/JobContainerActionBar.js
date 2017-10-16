@@ -1,9 +1,12 @@
 define([
 	"dojo/_base/declare", "./ActionBar", "dojo/dom-construct", "dojo/dom-style", "dojo/on",
 	"dijit/form/Button", "dijit/form/Select", "dojo/topic", "dojo/query", "../JobManager",
+	"dojo/dom-class"
 ], function(
 	declare, ActionBar, domConstruct, domStyle, on,
-	Button, Select, Topic, query, JobManager){
+	Button, Select, Topic, query, JobManager,
+	domClass
+){
 	return declare([ActionBar], {
 		path: null,
 		loadingHTML:
@@ -25,7 +28,7 @@ define([
 			domStyle.set(this.domNode, {
 				border: 'none',
 				margin: '10px 0 0 0',
-				padding: '5px'
+				padding: '3px 5px'
 			})
 
 			/**
@@ -61,7 +64,7 @@ define([
 				}
 			}, this.container);
 
-			var filters = domConstruct.create("span", {
+			var statusBtns = this.statusBtns = domConstruct.create("span", {
 				class: 'JobFilters',
 				style: {
 					float: 'right'
@@ -80,7 +83,7 @@ define([
 			var selector = new Select({
 				name: "type",
 				style: {
-					width: '150px', float: 'right', marginRight: '30px'
+					width: '150px', float: 'right', marginRight: '2.0em'
 				},
 				options: [
 					{ label: "All Apps", value: "all", selected: true}
@@ -104,18 +107,37 @@ define([
 			/**
 			 * status filters / counts
 			 */
+
+			var allBtn = domConstruct.create("span", {
+				class: 'JobFilter',
+				innerHTML: '<i class="icon-undo"></i> All statuses',
+				style: {
+					fontSize: '1.2em',
+					margin: '0 1.0em 0 0'
+				}
+			}, statusBtns);
+			domStyle.set(allBtn, 'display', 'none');
+			on(allBtn, 'click', function(val){
+				self.activate(this);
+				Object.assign(self.filters,  {status: null});
+				Topic.publish('/JobFilter', self.filters);
+				domStyle.set(allBtn, 'display', 'none');
+			});
+
+
 			var queuedBtn = domConstruct.create("span", {
 				class: 'JobFilter',
 				innerHTML: '<i class="icon-tasks Queued"></i> ' +
 					'<span>-</span> queued',
 				style: {
-					fontSize: '1.2em',
-					margin: '0 0.8em'
+					fontSize: '1.2em'
 				}
-			}, filters);
+			}, statusBtns);
 			on(queuedBtn, 'click', function(val){
+				self.activate(this);
 				Object.assign(self.filters,  {status: 'queued'});
 				Topic.publish('/JobFilter', self.filters);
+				domStyle.set(allBtn, 'display', 'inline');
 			});
 
 			var inProgressBtn = domConstruct.create("span", {
@@ -124,12 +146,14 @@ define([
 					'<span>-</span> running',
 				style: {
 					fontSize: '1.2em',
-					margin: '0 0.8em'
+					marginLeft: '1.0em'
 				}
-			}, filters);
+			}, statusBtns);
 			on(inProgressBtn, 'click', function(val){
+				self.activate(this);
 				Object.assign(self.filters,  {status: 'running'});
 				Topic.publish('/JobFilter', self.filters);
+				domStyle.set(allBtn, 'display', 'inline');
 			})
 
 			var completedBtn = domConstruct.create("span", {
@@ -138,12 +162,14 @@ define([
 					'<span>-</span> completed',
 				style: {
 					fontSize: '1.2em',
-					margin: '0 0.8em'
+					marginLeft: '1.0em'
 				}
-			}, filters);
+			}, statusBtns);
 			on(completedBtn, 'click', function(val){
+				self.activate(this);
 				Object.assign(self.filters,  {status: 'completed'});
 				Topic.publish('/JobFilter', self.filters);
+				domStyle.set(allBtn, 'display', 'inline');
 			})
 
 
@@ -153,23 +179,15 @@ define([
 					'<span>-</span> failed',
 				style: {
 					fontSize: '1.2em',
-					margin: '0 0.8em'
+					marginLeft: '1.0em'
 				}
-			}, filters);
+			}, statusBtns);
 			on(failedBtn, 'click', function(val){
+				self.activate(this);
 				Object.assign(self.filters,  {status: 'failed'});
 				Topic.publish('/JobFilter', self.filters);
+				domStyle.set(allBtn, 'display', 'inline');
 			})
-
-			/* not used in favor of listening for changes
-			var refreshBtn = new Button({
-				style: { float: 'right', paddingBottom: '5px' },
-				label: '<i class="icon-refresh"></i>',
-				onClick: function(){
-
-				}
-			}, refreshArea).startup();
-			*/
 
 			// listen for job status counts
 			var loadingJobList = false;
@@ -183,7 +201,9 @@ define([
 					lastUpdated.innerHTML = "Last updated: " + self.getTime();
 			})
 
-			// listen for job app types and loading status
+			/**
+			 * listen for job list changes (to update job types) and for loading status
+			 */
 			Topic.subscribe('/Jobs', function(info){
 				if(info.status == 'loading'){
 					lastUpdated.innerHTML = self.loadingHTML;
@@ -206,6 +226,14 @@ define([
 			this.inherited(arguments);
 		},
 
+		// style custom btns with "active" state
+		activate: function(node){
+			query('.JobFilter', this.container).forEach(function(node) {
+				domClass.remove(node, 'active');
+			})
+
+			domClass.add(node, 'active');
+		},
 
 		// returns current time in HH:MM:SS, 12 hour format
 		getTime: function(){
@@ -216,20 +244,24 @@ define([
 		},
 
 
+		// takes job objects, returns sorted list of objects of form:
+		// [{label: 'AppName  (count)', value: 'AppName', count: x}, ... ]
 		getFilterLabels: function(jobs){
 			var self = this;
+
 			// count by apps
 			var info = {};
 			jobs.forEach(function(job){
 				info[job.app] = job.app in info ? info[job.app] + 1 : 1;
 			})
 
-			// organize options by app count
+			// add 'all apps' option
 			var apps = []
 			var facet = {label: "All Apps", value: "all"};
 			if(self.filters.app == 'all') facet.selected = true;
 			apps.push(facet)
 
+			// organize options by app count
 			for (var k in info) {
 				var facet = {
 					label: k + ' (' + info[k] + ')',

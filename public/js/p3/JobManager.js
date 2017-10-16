@@ -58,11 +58,6 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 			var jobs = res[0];
 			_DataStore.setData(jobs)
 
-//			if(self.filters.app == 'all'){
-//				Topic.publish("/Jobs", {status: 'filter', jobs: _DataStore.data});
-//				return
-//			}
-
 			if(self.filters.app || self.filters.status){
 				Topic.publish("/Jobs", {status: 'filtered', jobs: _DataStore.data});
 				Topic.publish("/JobFilter", self.filters);
@@ -88,7 +83,7 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 			var	failed = status.failed || 0;
 
 			// check for any changes in status
-			var change;
+			var change = false;
 			if(queued !== StatusSummary.queued ||
 			   inProgress !== StatusSummary.inProgress ||
 			   completed !== StatusSummary.completed ||
@@ -106,7 +101,7 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 			// publish job status for jobs ticker
 			Topic.publish("/JobStatus", StatusSummary);
 
-			return change; // no changes
+			return change; // bool
 		})
 	}
 

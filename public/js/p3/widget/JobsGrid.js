@@ -106,12 +106,6 @@ function(declare, Grid, Store, DijitRegistry,
 
 		sort: [
 			{attribute: "submit_time", descending: true }
-			/*{attribute: "status", descending: true },
-			{attribute: "app", descending: true },
-			{attribute: "start_time", descending: true },
-			{attribute: "completed_time", descending: true },
-			{attribute: "parameters", descending: true },
-			{attribute: "id", descending: true }*/
 		],
 
 		_setTotalRows: function(rows){
