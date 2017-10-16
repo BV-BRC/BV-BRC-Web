@@ -93,18 +93,6 @@ color:#fff;font-weight:600;background:#34698e;
 	vertical-align: bottom;
 }
 
-.UploadComplete {
-	color: green;
-	border: 1px solid green;
-}
-
-.UploadingButton {
-	display: inline-block;
-	margin: 2px 4px 2px 2px;
-	padding:2px;
-	border: 1px solid gray;
-}
-
 .TypeContainer {
 	display: inline-block;
 	width: 80px;
@@ -232,6 +220,7 @@ th.dgrid-cell.wsItemType {
 .UploadStatusArea{
 	cursor: pointer;
 	display:inline-block;
+    padding: 2px;
 }
 
 .UploadStatusUpload{
@@ -242,6 +231,11 @@ th.dgrid-cell.wsItemType {
 
 .UploadStatusUpload .fa {
 	color: #ddd;
+}
+.UploadingProgress  {
+	border-left: 1px solid #ccc;
+	height: 30px;
+	padding-left: 5px;
 }
 
 .JobStatusCounts,
