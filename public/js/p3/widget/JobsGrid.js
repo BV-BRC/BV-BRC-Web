@@ -34,15 +34,6 @@ function(declare, Grid, Store, DijitRegistry,
 			copyOnly: true
 		},
 		columns: {
-			/*
-			"status_indicator": {
-				label: "",
-				field: "status",
-				unhidable: true,
-				formatter: formatter.status_indicator
-			},
-			*/
-
 			"status": {
 				label: "Status",
 				field: "status",
@@ -113,18 +104,8 @@ function(declare, Grid, Store, DijitRegistry,
 			]
 		},
 
-	//sort: [
-	//		{attribute: "submit_time", descending: true}
-//		],
-
 		sort: [
-			{attribute: "submit_time", descending: true },
-			{attribute: "status", descending: true },
-			{attribute: "app", descending: true },
-			{attribute: "start_time", descending: true },
-			{attribute: "completed_time", descending: true },
-			{attribute: "parameters", descending: true },
-			{attribute: "id", descending: true }
+			{attribute: "submit_time", descending: true }
 		],
 
 		_setTotalRows: function(rows){

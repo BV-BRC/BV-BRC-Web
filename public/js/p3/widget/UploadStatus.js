@@ -35,14 +35,15 @@ define([
 			UploadManager.getUploadSummary().then(lang.hitch(this, "onUploadMessage"));
 			this.tooltip = new Tooltip({
 				connectId: [this.uploadStatusCount],
-				label: " Completed &middot; In progress &middot; % Complete",
+				label: ' <i class="icon-play22 JobsRunning"></i> In progress | ' +
+					'<i class="icon-checkmark2 JobsCompleted"></i> Completed | ' +
+					'% Complete',
 				position: ["above"]
 			});
 		},
 		onUploadMessage: function(msg){
-			// console.log("UPLOADMMANAGER MESSAGE: ", msg);
 			if(msg && msg.type == "UploadStatSummary"){
-				// console.log("UploadStatSummary: ", msg.summary);
+
 				this._uploads.inProgress = msg.summary.inProgress;
 				this._uploads.complete = msg.summary.complete;
 				this._uploads.progress = msg.summary.progress;
@@ -70,7 +71,6 @@ define([
 			}
 
 			if(msg && msg.type == "UploadProgress"){
-				// console.log("UploadProgress msg: ", msg);
 				if(this._uploads.files[msg.filename]){
 					this._uploads.files[msg.filename] = msg;
 				}
@@ -80,18 +80,16 @@ define([
 					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">" + key + "</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");
 				}, this);
 				content.push("</tbody></table></div>");
-				// console.log("Panel Content: ", content.join(""));
 				UploadSummaryPanel.set('content', content.join(""));
 
 				UploadManager.getUploadSummary().then(lang.hitch(this, function(res){
 					var stats = res.summary;
-					// console.log("getUploadSummary cb stats: ", res);
-					// console.log("Stats.progress: ", stats.progress);
 
 					this._uploads.progress = stats.progress;
-					// console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
+
 					this.uploadingProgress.innerHTML = this._uploads.progress + "%";
 					if(this._uploads.inProgress > 0){
+						domClass.remove(this.uploadStatusCount, "dijitHidden");
 						domClass.remove(this.uploadingProgress, "dijitHidden");
 					}
 
@@ -111,7 +109,7 @@ define([
 
 //				if (this._uploadButtons[msg.filename]){
 //					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
-//					this._uploadButtons[msg.filename].innerHTML= msg.filename 
+//					this._uploadButtons[msg.filename].innerHTML= msg.filename
 //					setTimeout(function(){
 //						domConstr.destroy(this._uploadButtons[msg.filename]);
 //						delete this._uploadButtons[msg.filename];

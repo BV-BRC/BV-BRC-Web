@@ -149,14 +149,6 @@ define([
 
 			this.grid.set("sort", [
 				{attribute: "submit_time", descending: true }
-				/*
-				{attribute: "status", descending: true },
-				{attribute: "app", descending: true },
-				{attribute: "start_time", descending: true },
-				{attribute: "completed_time", descending: true },
-				{attribute: "parameters", descending: true },
-				{attribute: "id", descending: true }
-				*/
 			])
 
 			this.containerActionBar = new JobContainerActionBar({
@@ -219,7 +211,7 @@ define([
 
 
 			// listen for new job data
-			Topic.subscribe("/JobInfo", function(info){
+			Topic.subscribe("/Jobs", function(info){
 				if(info.status == 'updated'){
 					var store = JobManager.getStore();
 					_self.grid.set('store', store)
@@ -228,13 +220,12 @@ define([
 
 
 			// listen for filtering
-			Topic.subscribe("/JobFilter", function(val){
-				if(val == 'all'){
-					_self.grid.set("query", {});
-				}else{
-					_self.grid.set("query", { app: val });
-				}
+			Topic.subscribe("/JobFilter", function(filters){
+				// remove any non-specific filter states
+				if(filters.app == 'all') delete filters.app;
+				if(!filters.status) delete filters.status;
 
+				_self.grid.set("query", filters);
 			})
 		},
 
