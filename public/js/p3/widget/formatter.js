@@ -316,7 +316,7 @@ function(locale, domConstruct, domClass, Tooltip){
 			}
 		},
 		status_alias: function(val){
-			if(val == 'initializating' || val == 'queued')
+			if(val == 'queued' || val == 'init' || val == 'pending')
 				return '<b style="color: #666;" title="Queued">queued</b>'
 			else if(val == "in-progress")
 				return '<b style="color: #98981d;" title="Running">in progress</b>'
