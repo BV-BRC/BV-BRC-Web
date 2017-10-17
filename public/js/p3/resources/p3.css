@@ -1109,16 +1109,19 @@ h6 {
   font-size: 1em;
   font-weight: bold; }
 
+h1.xxxl,
 h2.xxxl {
   font-size: 40px;
   line-height: 36px; }
 
+h1.xxl,
 h2.xxl {
   font-size: 30px; }
 
-h2.xl {
+h1.xl {
   font-size: 26px; }
 
+h2.xl,
 h3.xl {
   font-size: 20px; }
 

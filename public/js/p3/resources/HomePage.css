@@ -66,6 +66,10 @@
     text-align: left;
 }
 
+.tools ul li a:hover {
+    font-weight: bold;
+}
+
 .dlp-hp ul li {
     display: inline-block;
     width: 103px;
