@@ -53,7 +53,7 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 	function updateJobsList(){
 		Topic.publish("/Jobs", {status: 'loading'});
 
-		var prom = window.App.api.service("AppService.enumerate_tasks", [0, 10000]);
+		var prom = window.App.api.service("AppService.enumerate_tasks", [0, 20000]);
 		return Deferred.when(prom, function(res){
 			var jobs = res[0];
 			_DataStore.setData(jobs)
