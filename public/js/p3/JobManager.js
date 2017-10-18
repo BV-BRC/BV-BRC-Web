@@ -33,7 +33,12 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 		// check for status change.  if change, update jobs list
 		var prom = getStatus();
 		prom.then(function(statusChange){
-			if(statusChange) updateJobsList();
+			if(statusChange){
+				updateJobsList().then(function(){
+					setTimeout(PollJobs, TIME_OUT);
+				})
+				return;
+			}
 
 			setTimeout(PollJobs, TIME_OUT);
 		})
@@ -53,8 +58,8 @@ define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
 	function updateJobsList(){
 		Topic.publish("/Jobs", {status: 'loading'});
 
-		var prom = window.App.api.service("AppService.enumerate_tasks", [0, 10000]);
-		return Deferred.when(prom, function(res){
+		var prom = window.App.api.service("AppService.enumerate_tasks", [0, 20000]);
+		return prom.then(function(res){
 			var jobs = res[0];
 			_DataStore.setData(jobs)
 
