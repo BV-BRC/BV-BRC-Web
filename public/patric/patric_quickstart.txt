@@ -1,0 +1,25 @@
+PATRIC QUICKSTART
+
+Introduction to key navigation concepts
+
+This brief document will introduce you to some key navigation concepts in PATRIC. The patterns introduced here are used throughout PATRIC. Once you understand how they are used in one area, applying what you have learned to the rest of the site is straightforward.
+
+PATRIC is made up of a number of VIEWS.  For example, the Genome View is focused on a single annotated genome and its related data, and likewise, the Feature View is focused on a single genomic feature and its related data. Most PATRIC data types have a view associated with them. The Genome List, Taxonomy, and Genome Group Views are each focused on collections of genomes.
+
+In this introduction, we are going to explore these concepts using the Taxonomy View. This view organizes collections of genomes by the organism's taxonomic classification.
+
+**View** - By clicking the ORGANISMS top menu item, and selecting Coxiella from the drop-down menu, we are are presented the Coxiella Taxonomic View, with the Overview tab selected. This view provides access to the data in PATRIC within the Coxiella taxonomic level.
+
+**Header** - The Header on this view, displayed in the top left of the page under the menu, tells you what view you are in and the scope of that view. In this example, we are in the  "Taxon View" and the scope is Coxiella, denoted by the final breadcrumb in the taxonomic hierarchy: Bacteria >> Protobacteria >> Gammaproteobacteria >> Legionellales >> Coxiellaceae >> Coxiella. The final entry in this breadcrumb is the number of items in this collection, which is (28 Genomes), which corresponds the number of Coxiella genomes in PATRIC at the time this document was created.
+
+**Tabs** - The additional tabs provide access to the other data types associated with the current scope of 28 Coxiella genomes.  These tabs include Phylogeny, Taxonomy, Genomes, Sequences, Features, Specialty Genes, Protein Families, and additional data types.
+
+**Genome Tab** - Selecting the Genomes tab displays a table (tabular Grid that displays the list of data retrieved from the PATRIC database) containing the 28 Coxiella genomes in PATRIC. This count is presented both at the end of the breadcrumb in the Header as well as at the bottom left of the table: "1 - 28 of 28 results."
+
+**Feature Tab** - Selecting the Features tab displays a table containing all the genomic features associated with these 28 genomes, which was a total of 63,033 at the time this document was created.  This count is shown at the bottom left of the table: "1 - 200 of 63033 results."
+
+**Table** - Some key features of each of these tabs include the table itself which contains the list of items, the page and row count of the table (bottom left of the table), and the page count showing which page number is being displayed in the current view of the paginated results (bottom right of the table). By default, PATRIC shows 200 rows per page.
+
+**Table Filter and Action Bar** - Directly above the table is the Table Filter and Action Bar. Actions performed in this area apply to the entire contents of the table. For example, the Download button (top left of the table), allows you to download the entire table. By default, 2 filters are already applied: "CDS" and "PATRIC."
+
+**Selection Action Bar** - To the right of the table is the vertical Selection Action Bar. Buttons chosen in this bar apply to only those rows in the table that are selected (those with the checkbox on the left side selected). For example, the Download button in the Selection Action Bar only downloads the rows that are selected. As you select rows in the table, the options in the Selection Action Bar change to reflect what actions are available for the selected items.
