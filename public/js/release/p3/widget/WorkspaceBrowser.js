@@ -472,8 +472,20 @@ define("p3/widget/WorkspaceBrowser", [
 			}, function(selection){
 				// console.log("View Experiment: ", selection[0]);
 				var expPath = this.get('path');
-				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&wsTreeId=" + expPath});
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=" + expPath});
 
+			}, false);
+
+
+			this.actionPanel.addAction("ViewNwk", "fa icon-tree2 fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["nwk"],
+				tooltip: "View Tree"
+			}, function(selection){
+				// console.log("View Experiment: ", selection[0]);
+				var path = selection.map(function(obj){ return obj.path });
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=" + path[0]});
 			}, false);
 
 
