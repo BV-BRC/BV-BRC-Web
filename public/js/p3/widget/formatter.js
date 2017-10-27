@@ -319,7 +319,7 @@ function(locale, domConstruct, domClass, Tooltip){
 			if(val == 'queued' || val == 'init' || val == 'pending')
 				return '<b style="color: #666;" title="Queued">queued</b>'
 			else if(val == "in-progress")
-				return '<b style="color: #98981d;" title="Running">in progress</b>'
+				return '<b style="color: #98981d;" title="Running">running</b>'
 			else if(val == "deleted" || val == "failed")
 				return '<b style="color: #a94442" title="Failed">failed</b>'
 			else if(val == "completed")
