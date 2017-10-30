@@ -5,7 +5,7 @@ define("p3/panels", [], function(){
 			title: "PATRIC Quickstart",
 			ctor: "dijit/layout/ContentPane",
 			params: {
-				content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+				content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video><br><a href="/public/patric/patric_quickstart.txt"><i class="fa icon-file-text fa-2x"/><span class="normal"> Text format</span></a>'
 			}
 		},
 		reportProblem: {

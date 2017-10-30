@@ -13007,7 +13007,7 @@ background-color: #FF00FF;
 .P3Header {
     width: 100%;
     height: 35px;
-    background: #34698e;
+    background: #2c5776;
     padding: 0;
     margin-top: 0;
     border-top: 1px solid #999;
@@ -13025,11 +13025,14 @@ background-color: #FF00FF;
     margin-right: -95px;
 }
 .P3Header .appLabel {
-    font-size: .75em;
-    color: orange;
+    font-size: 1em;
+    color: #ffbc3e;
     font-weight: 600;
     margin-left: 3px;
     
+}
+#widget_globalSearch .dijitPlaceHolder {
+    color: #6f6f6f;
 }
 .claro .topMenuButtonIcon.dijitDropDownButton .dijitButtonNode,
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
@@ -13096,6 +13099,7 @@ background-color: #FF00FF;
 .CarouselContent {
 	text-align: left;
 }
+.CarouselContent H1,
 .CarouselContent H2,
 .CarouselContent H3,
 .CarouselContent H4 {
@@ -14881,7 +14885,7 @@ div.appsublabel {
 .home h2 {
     font-size: 20px;
 }
-.home h4 {
+.home h3 {
     font-size: 14px;
     line-height: 16px;
 }
@@ -14894,16 +14898,19 @@ div.appsublabel {
 .home ul {
     margin: 0;
 }
-.tools h4 {
+.tools h3 {
     margin-top: 20px;
 }
-.tools h4:first-child {
+.tools h3:first-child {
     margin-top: 4px;
 }
 .tools ul li {
     width: 310px;
     vertical-align: top;
     text-align: left;
+}
+.tools ul li a:hover {
+    font-weight: bold;
 }
 .dlp-hp ul li {
     display: inline-block;
@@ -15021,6 +15028,13 @@ i.home_dlp {
   width: 967px;
   margin: 5px auto 0 auto;
   position: relative
+}
+.patric .dlp h1 {
+  color: #666666;
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+  font-size: 2em;
+  line-height: 1.286em;
+  margin-bottom: 0.75em;
 }
 .patric .dlp h2 {
   color: #666666;
@@ -16551,7 +16565,7 @@ div.pubmed ul li {
 .highlight-e {
   color: #09456f; }
 .highlight-f {
-  color: #87b934; }
+  color: #638826; }
 .linkstyle-highlight a {
   color: #1fa1c3; }
 .linkstyle-highlight-b a {
@@ -16607,13 +16621,16 @@ h5 {
 h6 {
   font-size: 1em;
   font-weight: bold; }
+h1.xxxl,
 h2.xxxl {
   font-size: 40px;
   line-height: 36px; }
+h1.xxl,
 h2.xxl {
   font-size: 30px; }
-h2.xl {
+h1.xl {
   font-size: 26px; }
+h2.xl,
 h3.xl {
   font-size: 20px; }
 .upper {
@@ -16640,12 +16657,10 @@ footer.main-footer .container {
   overflow: hidden;
 }
 footer.main-footer .container .column {
-  display: inline;
   float: left;
   width: 229px;
   border-left: #547f9d 1px solid;
-  margin-right: -1px;
-  font-weight: 100;
+  min-height: 143px
 }
 * html body footer.main-footer .container .column {
   overflow-x: hidden;
@@ -16653,15 +16668,6 @@ footer.main-footer .container .column {
 body footer.main-footer .container .column .wrapper {
   overflow: hidden;
   padding: 0 15px;
-}
-  body footer.main-footer .container .column.last {
-  display: inline;
-  float: left;
-  margin-right: 0;
-  width: 229px;
-}
-* html body footer.main-footer .container .column.last {
-  overflow-x: hidden;
 }
 body footer.main-footer ul.left {
   width: 99px;
@@ -16716,7 +16722,7 @@ body footer.main-footer ul.left {
     padding: 3px 6px;
 }
 .center-text {
-    text-align: center; 
+    text-align: center;
 }
 .subsystemslegend {
     font-size: 15px;
@@ -16734,4 +16740,14 @@ body footer.main-footer ul.left {
     top: 95px;
     width: 80px;
     z-index: 10;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
