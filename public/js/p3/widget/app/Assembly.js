@@ -17,6 +17,7 @@ define([
 		pageTitle: "Genome Assembly Service",
 		templateString: Template,
 		applicationName: "GenomeAssembly",
+		applicationHelp: "genome_assembly",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 13,
