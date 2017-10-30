@@ -29,7 +29,7 @@ define([
 
 		gethelp: function(){
 
-			var helprequest = xhr.get("/js/p3/widget/app/help/" + this.applicationName + "Help.html", {
+			var helprequest = xhr.get(window.App.pagesServiceURL + "help/" + this.applicationHelp + ".html", {
 				handleAs: "text"
 			});
 			helprequest.then(function(data){
@@ -50,7 +50,7 @@ define([
 					if(dojo.hasClass(item, "dialoginfo")){
 						item.info_dialog = new Dialog({
 							content: help_text,
-							"class": 'nonModal',
+							"class": 'helpModal',
 							draggable: true,
 							style: "max-width: 350px;"
 						});
@@ -69,6 +69,7 @@ define([
 					else if(dojo.hasClass(item, "tooltipinfo")){
 						item.info_dialog = new TooltipDialog({
 							content: help_text,
+							"class": 'helpTooltip',
 							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
 							onMouseLeave: function(){
 								popup.close(item.info_dialog);
