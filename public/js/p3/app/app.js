@@ -519,6 +519,9 @@ define([
 				if(cur instanceof ctor){
 					instance = cur;
 					// console.log("newNavState: ", newNavState);
+					if(newNavState.class){
+						instance.domNode.classList.add(newNavState.class)
+					}
 
 					instance.set('state', newNavState);
 

@@ -18,7 +18,7 @@
 @import url("modeling.css");
 @import url("facetfilter.css");
 @import url("./GenomeList.css");
-@import url("./GenomeViewer.css");
+/* @import url("./GenomeViewer.css"); */
 /*@import url("./p2.css");*/
 @import url("./JobsGrid.css");
 @import url("./SummaryWidget.css");
@@ -29,6 +29,7 @@
 @import url("HomePage.css");
 @import url("./dlp.css");
 @import url("./help.css");
+@import url("webpage.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
 
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
