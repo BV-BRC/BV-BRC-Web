@@ -167,7 +167,7 @@ define([
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
-				newState.class = "webpage";
+				newState.widgetExtraClass = "webpage";
 				newState.style = "padding:0";
 				newState.value = PathJoin(_self.pagesServiceURL, "webpage", path);
 				newState.set = "href";
