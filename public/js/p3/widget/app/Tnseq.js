@@ -15,6 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "TnSeq",
+		applicationHelp: "TnSeq",
 		pageTitle: "Tn-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
@@ -68,7 +69,7 @@ define([
 			//create help dialog for infobutton's with infobuttoninfo div's
 			this.emptyTable(this.libsTable, this.startingRows);
 			//this.emptyTable(this.condTable, this.initConditions);
-			
+
             //for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
             var control = {id: "control", condition: "control", label: "Control", icon:this.getConditionIcon()};
             var treatment = {id: "treatment", condition: "treatment", label: "Treatment", icon:this.getConditionIcon()};
@@ -347,13 +348,13 @@ define([
                 return fn;
             }
         },
-		
+
         onReset: function(evt){
 			domClass.remove(this.domNode, "Working");
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
             var toDestroy = [];
-            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){
                 toDestroy.push(lrec["id"]);
 		    }));
             //because its removing rows cells from array needs separate loop
@@ -582,4 +583,3 @@ define([
 
 	});
 });
-
