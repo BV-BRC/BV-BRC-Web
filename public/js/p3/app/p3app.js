@@ -160,20 +160,14 @@ define([
 
 			Router.register("\/webpage(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("webpage", params);
-				var newState = {href: params.newPath}
-				for(var prop in params.state){
-					newState[prop] = params.state[prop]
-				}
-
 				var path = params.params[0] || "/";
-				newState.widgetClass = "dijit/layout/ContentPane";
+				var newState = getState(params, oldPath);
+				newState.widgetClass = "p3/widget/WebPagePane";
 				newState.widgetExtraClass = "webpage";
-				newState.style = "padding:0";
 				newState.value = PathJoin(_self.pagesServiceURL, "webpage", path);
 				newState.set = "href";
 				newState.requireAuth = false;
-				newState.pageTitle = 'PATRIC';
-				// console.log("Navigate to ", newState);
+
 				_self.navigate(newState);
 			});
 
