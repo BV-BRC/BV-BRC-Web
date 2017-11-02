@@ -26,6 +26,9 @@ define([
 
 				this.inherited(arguments);
 			}
+		},
+		onLoad: function(){
+			this.containerNode.classList.add("webpage")
 		}
 	})
 })
