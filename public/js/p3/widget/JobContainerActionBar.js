@@ -151,7 +151,7 @@ define([
 			}, statusBtns);
 			on(inProgressBtn, 'click', function(val){
 				self.activate(this);
-				Object.assign(self.filters,  {status: 'running'});
+				Object.assign(self.filters,  {status: 'in-progress'});
 				Topic.publish('/JobFilter', self.filters);
 				domStyle.set(allBtn, 'display', 'inline');
 			})
