@@ -13,6 +13,7 @@ define([
 		baseClass: "Modeling",
 		templateString: Template,
 		applicationName: "ModelReconstruction",
+		applicationHelp: "model_reconstruction",
 		pageTitle: "Reconstruct Metabolic Model",
 		required: true,
 		code_four: false,

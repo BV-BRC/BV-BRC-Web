@@ -17,6 +17,7 @@ define([
 		pageTitle: "Metagenome Binning Service",
 		templateString: Template,
 		applicationName: "MetagenomeBinning",
+		applicationHelp: "metagenome_binning",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 13,
@@ -217,4 +218,3 @@ define([
 
 	});
 });
-

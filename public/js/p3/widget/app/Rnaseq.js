@@ -15,6 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "RNASeq",
+		applicationHelp: "RNASeq",
 		pageTitle: "RNA-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
@@ -296,13 +297,13 @@ define([
                 return fn;
             }
         },
-		
+
         onReset: function(evt){
 			domClass.remove(this.domNode, "Working");
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
             var toDestroy = [];
-            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){
                 toDestroy.push(lrec["id"]);
 		    }));
             //because its removing rows cells from array needs separate loop
@@ -549,4 +550,3 @@ define([
 
 	});
 });
-
