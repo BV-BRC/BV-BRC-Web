@@ -1,13 +1,13 @@
 require({cache:{
-'url:p3/widget/templates/ReportProblem.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\" encType=\"multipart/form-data\" name=\"problemForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div >\n\t\t<div class=\"HideWithAuth\">\n\t\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"email\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Email Address is required',trim:true,placeHolder:'Email Address'\"></div>\n\t\t</div>\n\n\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"subject\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Subject must be provided',trim:true,placeHolder:'Subject'\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Textarea\" name=\"content\" data-dojo-attach-point=\"content\" style=\"width:600px;height:250px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Description must be provided',trim:true,rows:20\"></div>\n\t\t<div>\n\t\t\tSelect file to attach (optional):\t<input data-dojo-attach-point=\"attachmentNode\" type=\"file\" name=\"attachment\" />\n\t\t</div>\n\t</div>\n\t\t<div class=\"workingMessage messageContainer\">\n\t\t\tSending Feedback...\n\t\t</div>\n\n\t\t<div class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">There was an error submitting your report:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n\t\t</div>\t\n</form>\n\n"}});
+'url:p3/widget/templates/ReportProblem.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\" encType=\"multipart/form-data\" name=\"problemForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div >\n\t\t<div class=\"HideWithAuth\">\n\t\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"email\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Email Address is required',trim:true,placeHolder:'Email Address'\"></div>\n\t\t</div>\n\n\t\t<div data-dojo-type=\"dijit/form/TextBox\" name=\"subject\" data-dojo-attach-point=\"content\" style=\"display:block;margin-bottom:8px;width:600px;\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Subject must be provided',trim:true,placeHolder:'Subject'\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Textarea\" name=\"content\" data-dojo-attach-point=\"content\" style=\"width:600px;height:250px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Description must be provided',trim:true,rows:20\"></div>\n\t\t<div>\n\t\t\tSelect file to attach (optional):\t<input data-dojo-attach-point=\"attachmentNode\" type=\"file\" name=\"attachment\" />\n\t\t</div>\n\t</div>\n\t\t<div class=\"workingMessage messageContainer\">\n\t\t\tSending Feedback...\n\t\t</div>\n\n\t\t<div class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">There was an error submitting your report:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n\t\t</div>\n</form>\n\n"}});
 define("p3/widget/ReportProblem", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ReportProblem.html", "dijit/form/Form",
-	"dojo/topic", "dojo/request", "dojo/when"
+	"dojo/topic", "dojo/request", "dojo/when", "dojo/query"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, Topic, request, when){
+			Template, FormMixin, Topic, request, when, query){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
@@ -19,6 +19,14 @@ define("p3/widget/ReportProblem", [
 				this.saveButton.set("disabled", true);
 			}
 			return valid;
+		},
+		startup: function() {
+			if (this.issueSubject){
+				var msgBox = query('[name="subject"]')[0].value = this.issueSubject;
+			}
+			if(this.issueText){
+				var msgBox = query('[name="content"]')[0].value = this.issueText;
+			}
 		},
 
 		onSubmit: function(evt){

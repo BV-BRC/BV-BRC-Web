@@ -144,26 +144,6 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 			}, false);
 
-			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-selection-Genome fa-2x", {
-				label: "GENOME",
-				validTypes: ["*"],
-				validContainerTypes: ["genome_group"],
-				multiple: false,
-				tooltip: "View Genome. Press and Hold for more options.",
-				pressAndHold: function(selection, button, opts, evt){
-
-					popup.open({
-						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
-						around: button,
-						orient: ["below"]
-					});
-				}
-			}, function(selection){
-
-				var sel = selection[0];
-				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-			}, false);
-
 			this.actionPanel.addAction("ViewFeatureGroup", "MultiButton fa icon-selection-FeatureList fa-2x", {
 				label: "VIEW",
 				validTypes: ["feature_group"],
@@ -226,48 +206,6 @@ define("p3/widget/WorkspaceBrowser", [
 					Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
 				}
 			});
-
-			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-selection-Feature fa-2x", {
-				validTypes: ["*"],
-				label: "FEATURE",
-				validContainerTypes: ["feature_group"],
-				multiple: false,
-				tooltip: "View Feature. Press and Hold for more options.",
-				pressAndHold: function(selection, button, opts, evt){
-
-					popup.open({
-						popup: new PerspectiveToolTipDialog({
-							perspective: "Feature",
-							perspectiveUrl: "/view/Feature/" + selection[0].feature_id
-						}),
-						around: button,
-						orient: ["below"]
-					});
-				}
-			}, function(selection){
-
-				var sel = selection[0];
-				Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-			}, false);
-
-			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-selection-Genome fa-2x", {
-				label: "GENOME",
-				validTypes: ["*"],
-				validContainerTypes: ["feature_group"],
-				multiple: false,
-				tooltip: "View Genome. Press and Hold for more options.",
-				pressAndHold: function(selection, button, opts, evt){
-					popup.open({
-						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
-						around: button,
-						orient: ["below"]
-					});
-				}
-			}, function(selection){
-
-				var sel = selection[0];
-				Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-			}, false);
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
 				label: "DWNLD",
@@ -478,7 +416,7 @@ define("p3/widget/WorkspaceBrowser", [
 				tooltip: "Upload to Folder"
 			}, function(selection){
 				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
-			}, self.path.split('/').length > 3);
+			}, false);
 
 			this.browserHeader.addAction("CreateFolder", "fa icon-folder-plus fa-2x", {
 				label: "ADD FOLDER",
@@ -500,6 +438,7 @@ define("p3/widget/WorkspaceBrowser", [
 				tooltip: "Show hidden folders/files"
 			}, function(selection){
 				window.App.showHiddenFiles = !window.App.showHiddenFiles;
+				self.activePanel.set('showHiddenFiles', window.App.showHiddenFiles);
 
 				// change icon/text based on state
 				var icon = query('[rel="ShowHidden"] .fa', this.domNode)[0],
@@ -512,9 +451,7 @@ define("p3/widget/WorkspaceBrowser", [
 					domAttr.set(text, "textContent", "HIDE HIDDEN");
 				else
 					domAttr.set(text, "textContent", "SHOW HIDDEN");
-
-				Topic.publish("/refreshWorkspace", {});
-			}, self.path.split('/').length > 3);
+			}, false);
 
 			var addWSBtn = this.browserHeader.addAction("CreateWorkspace", "fa icon-add-workspace fa-2x", {
 				label: "NEW WS",
@@ -526,6 +463,30 @@ define("p3/widget/WorkspaceBrowser", [
 					type: "CreateWorkspace"
 				});
 			},  self.path.split('/').length < 3);
+            
+            this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["PhylogeneticTree"],
+				tooltip: "View Tree"
+			}, function(selection){
+				// console.log("View Experiment: ", selection[0]);
+				var expPath = this.get('path');
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=" + expPath});
+
+			}, false);
+
+
+			this.actionPanel.addAction("ViewNwk", "fa icon-tree2 fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["nwk"],
+				tooltip: "View Tree"
+			}, function(selection){
+				// console.log("View Experiment: ", selection[0]);
+				var path = selection.map(function(obj){ return obj.path });
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=" + path[0]});
+			}, false);
 
 
 			this.browserHeader.addAction("ViewExperimentSummary", "fa icon-eye fa-2x", {
@@ -554,11 +515,13 @@ define("p3/widget/WorkspaceBrowser", [
 				Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?&wsExpId=" + eid});
 
 			}, false);
+			
+            
 
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
-				validTypes: ["RNASeq", "TnSeq"],
+				validTypes: ["RNASeq", "TnSeq", "Variation"],
 				tooltip: "View tracks in genome browser."
 			}, function(selection){
 				console.log("View Tracks: ", selection[0]);
@@ -568,143 +531,6 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, false);
 
-			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
-			var viewFASTATT = new TooltipDialog({
-				content: vfc, onMouseLeave: function(){
-					popup.close(viewFASTATT);
-				}
-			});
-
-			on(viewFASTATT.domNode, "div:click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				var selection = self.actionPanel.get('selection');
-				popup.close(viewFASTATT);
-				var idType = "feature_id";
-
-				var ids = selection.map(function(d){
-					return d['feature_id'];
-				});
-
-				Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
-			});
-
-			this.actionPanel.addAction("ViewFASTA", "fa icon-fasta fa-2x", {
-				label: "FASTA",
-				ignoreDataType: true,
-				multiple: true,
-				validTypes: ["*"],
-				validContainerTypes: ["feature_group"],
-				tooltip: "View FASTA Data",
-				tooltipDialog: viewFASTATT
-			}, function(selection){
-				popup.open({
-					popup: this._actions.ViewFASTA.options.tooltipDialog,
-					around: this._actions.ViewFASTA.button,
-					orient: ["below"]
-				});
-				// console.log("popup viewFASTA", selection);
-
-			}, false);
-
-			this.actionPanel.addAction("MultipleSeqAlignment", "fa icon-alignment fa-2x", {
-				label: "MSA",
-				ignoreDataType: true,
-				multiple: true,
-				min: 2,
-				validTypes: ["*"],
-				validContainerTypes: ["feature_group"],
-				tooltip: "Multiple Sequence Alignment"
-			}, function(selection){
-				var selection = self.actionPanel.get('selection');
-				var ids = selection.map(function(d){
-					return d['feature_id'];
-				});
-
-				xhr.post("/portal/portal/patric/FIGfam/FIGfamWindow?action=b&cacheability=PAGE", {
-					data: {
-						featureIds: ids.join(","),
-						callType: 'toAligner'
-					}
-				}).then(function(results){
-					Topic.publish("/navigate", {href: "/portal/portal/patric/MSA?cType=&cId=&pk=" + results});
-				});
-
-			}, false);
-
-			var idMappingTTDialog = new TooltipDialog({
-				content: IDMappingTemplate, onMouseLeave: function(){
-					popup.close(idMappingTTDialog);
-				}
-			});
-
-			on(idMappingTTDialog.domNode, "TD:click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				// console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection');
-				// console.log("selection: ", selection);
-				var ids = selection.map(function(d){
-					return d['feature_id'];
-				});
-
-				xhr.post("/portal/portal/patric/IDMapping/IDMappingWindow?action=b&cacheability=PAGE", {
-					data: {
-						keyword: ids.join(","),
-						from: "feature_id",
-						fromGroup: "PATRIC",
-						to: rel,
-						toGroup: (["seed_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other",
-						sraction: 'save_params'
-					}
-				}).then(function(results){
-					Topic.publish("/navigate", {href: "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results});
-				});
-				popup.close(idMappingTTDialog);
-			});
-
-			this.actionPanel.addAction("idmapping", "fa icon-exchange fa-2x", {
-				label: "ID MAP",
-				ignoreDataType: true,
-				multiple: true,
-				validTypes: ["*"],
-				validContainerTypes: ["feature_group"],
-				tooltip: "ID Mapping",
-				tooltipDialog: idMappingTTDialog
-			}, function(selection){
-
-				// console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
-				// console.log("this: ", this);
-				popup.open({
-					popup: this._actions.idmapping.options.tooltipDialog,
-					around: this._actions.idmapping.button,
-					orient: ["below"]
-				});
-				// console.log("popup idmapping", selection);
-			}, false);
-
-			this.actionPanel.addAction("Pathway Summary", "fa icon-git-pull-request fa-2x", {
-				label: "PATHWAY",
-				ignoreDataType: true,
-				multiple: true,
-				validTypes: ["*"],
-				validContainerTypes: ["feature_group"],
-				tooltip: "Pathway Summary"
-			}, function(selection){
-
-				var selection = self.actionPanel.get('selection');
-				var ids = selection.map(function(d){
-					return d['feature_id'];
-				});
-
-				xhr.post("/portal/portal/patric/TranscriptomicsEnrichment/TranscriptomicsEnrichmentWindow?action=b&cacheability=PAGE", {
-					data: {
-						feature_id: ids.join(","),
-						callType: 'saveParams'
-					}
-				}).then(function(results){
-					Topic.publish("/navigate", {href: "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results});
-				});
-
-			}, false);
 /* */
 			this.actionPanel.addAction("ExperimentGeneList", "fa icon-list-unordered fa-2x", {
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
@@ -760,56 +586,17 @@ define("p3/widget/WorkspaceBrowser", [
 				Topic.publish("/navigate", {href: url});
 			}, false);
 
-			this.actionPanel.addAction("RemoveItem", "fa icon-x fa-2x", {
-				label: "REMOVE",
-				ignoreDataType: true,
-				multiple: true,
-				validTypes: ["*"],
-				validContainerTypes: ["genome_group", "feature_group"],
-				tooltip: "Remove Selection from Group"
-			}, function(selection){
-				// console.log("Remove Items from Group", selection);
-				// console.log("currentContainerWidget: ", this.currentContainerWidget);
-
-				var idType = (this.currentContainerWidget.containerType == "genome_group") ? "genome_id" : "feature_id";
-				var type = (idType == "genome_id") ? "genome" : "genome feature";
-				var objs = selection.map(function(s){
-					// console.log('s: ', s, s.data);
-					return s[idType];
-				});
-
-				var conf = "Are you sure you want to remove " + objs.length + " " + type +
-					((objs.length > 1) ? "s" : "") +
-					" from this group?";
-				var _self = this;
-				var dlg = new Confirmation({
-					content: conf,
-					onConfirm: function(evt){
-						// console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path'));
-						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'), idType, objs), function(){
-							if(_self.currentContainerWidget && _self.currentContainerWidget.refresh){
-								_self.currentContainerWidget.refresh();
-							}else{
-								console.log("No current container Widget or no refresh() on it");
-							}
-						});
-					}
-				});
-				dlg.startup();
-				dlg.show();
-
-			}, false);
 
 			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {
 				label: "SPLIT",
 				ignoreDataType: true,
 				multiple: true,
 				validTypes: ["*"],
-				validContainerTypes: ["genome_group", "feature_group", "experiment_group"],
-				tooltip: "Copy selection to a new or existing group"
+				validContainerTypes: ["experiment_group"],
+				tooltip: "Add selection to a new or existing group"
 			}, function(selection, containerWidget){
 				// console.log("Add Items to Group", selection);
-				var dlg = new Dialog({title: "Copy Selection to Group"});
+				var dlg = new Dialog({title: "Add selected items to group"});
 				var stg = new SelectionToGroup({
 					selection: selection,
 					type: containerWidget.containerType,
@@ -901,7 +688,8 @@ define("p3/widget/WorkspaceBrowser", [
 				validTypes: ["*"],
 				tooltip: "Delete Folder"
 			}, function(selection){
-				var objs = selection.map(function(o){ return o.path; });
+				var objs = selection.map(function(o){ return o.path; }),
+					types = selection.map(function(o){ return o.type; });
 
 				// omit special any folders
 				try{
@@ -925,7 +713,7 @@ define("p3/widget/WorkspaceBrowser", [
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						var prom = WorkspaceManager.deleteObjects(objs, true, true);
+						var prom = WorkspaceManager.deleteObjects(objs, true, true, types);
 						Deferred.when(prom, function(){
 							self.activePanel.clearSelection();
 						})
@@ -951,8 +739,9 @@ define("p3/widget/WorkspaceBrowser", [
 				label: "RENAME",
 				validTypes: ["*"],
 				tooltip: "Rename the selected item"
-			}, function(selection){
-				var path = selection[0].path;
+			}, function(sel){
+				var path = sel[0].path,
+					isJob = sel[0].type === 'job_result';
 
 				// omit special any folders
 				try{
@@ -967,7 +756,7 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 
 				try{
-					self.renameDialog(path)
+					self.renameDialog(path, isJob)
 				}catch(e){
 					var d = new Dialog({
 						content: e.toString(),
@@ -984,7 +773,8 @@ define("p3/widget/WorkspaceBrowser", [
 				validTypes: ["*"],
 				tooltip: "Copy selected objects"
 			}, function(selection){
-				var paths = selection.map(function(obj){ return obj.path });
+				var paths = selection.map(function(obj){ return obj.path }),
+					types = selection.map(function(obj){ return obj.type });
 
 				// open object selector to get destination
 				var objSelector = new WSObjectSelector({
@@ -1014,20 +804,24 @@ define("p3/widget/WorkspaceBrowser", [
 						return;
 					}
 
-					var prom = WorkspaceManager.copy(paths, destPath);
+					var prom = WorkspaceManager.copy(paths, destPath, types);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
 					}, function(e){
+						Topic.publish("/Notification", {
+							message: "Copy failed",
+							type: "error"
+						});
 						var msg = /_ERROR_(.*)_ERROR_/g.exec(e)[1];
 
 						if(msg.indexOf('overwrite flag is not set') != -1){
-							msg = "Can not overwrite " + msg.split(' ')[2]
+							var re = /object (.+) and overwrite/g;
+							msg = "Can not overwrite " + re.exec(msg)[1];
 						}
 
 						new Dialog({
 							content: msg,
-							title: "Move failed",
-							style: "width: 250px;"
+							title: "Copy failed"
 						}).show();
 					})
 				}
@@ -1043,7 +837,8 @@ define("p3/widget/WorkspaceBrowser", [
 				validTypes: ["*"],
 				tooltip: "Move selected objects"
 			}, function(selection){
-				var paths = selection.map(function(obj){ return obj.path });
+				var paths = selection.map(function(obj){ return obj.path }),
+					types = selection.map(function(obj){ return obj.type });
 
 				// omit special any folders
 				try{
@@ -1084,7 +879,7 @@ define("p3/widget/WorkspaceBrowser", [
 						return;
 					}
 
-					var prom = WorkspaceManager.move(paths, destPath);
+					var prom = WorkspaceManager.move(paths, destPath, types);
 					Deferred.when(prom, function(){
 						self.activePanel.clearSelection();
 					}, function(e){
@@ -1095,8 +890,8 @@ define("p3/widget/WorkspaceBrowser", [
 						}
 
 						new Dialog({
-							content: msg,
 							title: "Move failed",
+							content: msg,
 							style: "width: 250px;"
 						}).show();
 					})
@@ -1125,7 +920,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.inherited(arguments);
 		},
 
-		renameDialog: function(path){
+		renameDialog: function(path, isJob){
 			var self = this;
 			var conf = '';
 
@@ -1152,7 +947,7 @@ define("p3/widget/WorkspaceBrowser", [
 						if(path.split('/').length <= 3) {
 							prom =  WorkspaceManager.renameWorkspace(path, newName)
 						}else{
-							prom = WorkspaceManager.rename(path, nameInput.get('value'))
+							prom = WorkspaceManager.rename(path, nameInput.get('value'), isJob)
 						}
 
 						Deferred.when(prom, function(res){
@@ -1490,6 +1285,7 @@ define("p3/widget/WorkspaceBrowser", [
 								case "GenomeAnnotation":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
+                case "Variation":
 								case "RNASeq":
 								case "TnSeq":
 										d = "p3/widget/viewer/Seq";

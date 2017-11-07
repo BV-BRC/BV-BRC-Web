@@ -31,7 +31,7 @@
     var isProd = request.applicationOptions.appLabel == "";
     %>
 
-    <div class="P3Header" style="display: flex">
+    <div class="P3Header" style="display: flex" role="heading" aria-level="1">
         <div style="width: 220px;">
             <a href="/">
                 <img class="p3LogoImage" src="/patric/images/patric_logo_bg.png" alt="PATRIC Logo"/>
@@ -48,11 +48,12 @@
                         <div class="menuItems">
                             <% for (var i = 0; i < servicesMiddle;i++){ %>
                             <div>
-                                        <span class="menuItem half"><a class="navigationLink"
-                                                                       href="<%- services[i].href %>"><%- services[i].name %></a></span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
+                                </span>
                                 <span class="menuItem half">
                                     <% if (services[servicesMiddle + i]) { %>
-                                    <a class="navigationLink"
+                                    <a class="navigationLink" title="<%- services[servicesMiddle + i].name %> overview"
                                        href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
                                     <% } %>
                                 </span>
@@ -60,11 +61,15 @@
                             <% } %>
                             <br>
                             <div>
-                                <span class="menuItem half"><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></span>
-                                <span class="menuItem half"><a class="navigationLink"
-                                                               href="/view/Taxonomy/2157">All Archaea</a></span>
-                                <span class="menuItem half"><a class="navigationLink"
-                                                               href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes">Eukaryotic Hosts</a></span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                </span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
+                                </span>
+                                <span class="menuItem half">
+                                    <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                                        title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
                             </div>
                         </div>
                     </div>
@@ -163,7 +168,7 @@
                                 <a class="navigationLink" href="/job/">My Jobs</a>
                             </div>
                             <div>
-                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a></span>
+                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
                             </div>
                         </div>
                     </div>
@@ -247,31 +252,20 @@
                  data-dojo-props="iconClass:'icon-bars fa-2x'">
                 <span></span>
                 <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div><a class="TopMenuLink navigationLinkOut" href="http://enews.patricbrc.org/" title="News"
-                            target="_blank" rel="noopener">PATRIC
-                            News</a></div>
-                    <div><a class="TopMenuLink navigationLink" href="/content/publications"
-                            title="Publications">Publications</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="http://enews.patricbrc.org/"
+                            target="_blank" rel="noopener">PATRIC News</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/publications">Publications</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/workshops">PATRIC Workshops</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/presentations">PATRIC Presentations</a></div>
                     <hr>
 
-                    <!--<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> Upcoming Workshops </a> </div> -->
-
-                    <div><a class="TopMenuLink navigationLink" href="/content/about" title="About PATRIC">About
-                            PATRIC </a>
-                    </div>
-                    <div><a class="TopMenuLink navigationLink" href="/content/CitePATRIC" title="Cite PATRIC">Cite
-                            PATRIC</a>
-                    </div>
-                    <div><a class="TopMenuLink navigationLink" href="/content/SWG" title="Scientific Working Group">Scientific
-                            Working Group</a></div>
-                    <div><a class="TopMenuLink navigationLink" href="/content/personnel" title="Personnel">Personnel</a>
-                    </div>
-                    <div><a class="TopMenuLink navigationLink" href="/content/collaborators" title="Collaborators">Collaborators</a>
-                    </div>
-                    <div><a class="TopMenuLink navigationLink" href="/content/related_sites" title="Related Sites">Related
-                            Sites</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/cidvbi/PATRIC"
-                            title="System Architecture" target="_blank" rel="noopener">System Architecture</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/about">About PATRIC </a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/CitePATRIC">Cite PATRIC</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/SWG">Scientific Working Group</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/personnel">Personnel</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/collaborators">Collaborators</a></div>
+                    <div><a class="TopMenuLink navigationLink" href="/content/related_sites">Related Sites</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/cidvbi/PATRIC" target="_blank" rel="noopener">System Architecture</a></div>
                 </div>
             </div>
         </div>

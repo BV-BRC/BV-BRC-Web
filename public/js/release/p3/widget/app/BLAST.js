@@ -145,7 +145,7 @@ define("p3/widget/app/BLAST", [
 		},
 
 		hasSingleFastaSequence: function(sequence){
-			return (sequence.indexOf('>') == sequence.lastIndexOf('>'));
+			return sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null;}).length == 1;
 		},
 
 		isNucleotideFastaSequence: function(sequence){
@@ -278,6 +278,11 @@ define("p3/widget/app/BLAST", [
 			query(".reSubmitBtn").style("visibility", "visible");
 
 			def.promise.then(function(q){
+				// log GA
+				if(window.gtag){
+					gtag('event', 'BLAST', {'event_category': 'Services', 'method': q.method});
+				}
+
 				_self.result.set('state', {query: q, resultType: resultType});
 			});
 

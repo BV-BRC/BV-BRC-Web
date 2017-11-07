@@ -98,6 +98,12 @@ define("p3/WorkspaceManager", [
 				if(!results[0][0] || !results[0][0]){
 					throw new Error("Error Creating Object");
 				}else{
+					if(obj.notification){
+						Topic.publish("/Notification", {
+							message: "Group created: " + obj.name,
+							type: "message"
+						});
+				  }
 					var r = results[0][0];
 					Topic.publish("/refreshWorkspace", {});
 					return self.metaListToObj(r);
@@ -122,23 +128,30 @@ define("p3/WorkspaceManager", [
 					res.data = JSON.parse(res.data);
 				}
 				if(res && res.data && res.data.id_list){
+					//add logic to remove duplicate from ids
+					var idsFiltered = [];
+					ids.forEach(function(id){
+						if(idsFiltered.indexOf(id)  == -1) {
+							idsFiltered.push(id);
+						}
+					});
 					if(res.data.id_list[idType]){
 						var existing = {}
 						res.data.id_list[idType].forEach(function(id){
 							existing[id] = true;
 						});
 
-						ids = ids.filter(function(id){
+						idsFiltered = idsFiltered.filter(function(id){
 							return !existing[id];
 						});
 
-						res.data.id_list[idType] = res.data.id_list[idType].concat(ids);
+						res.data.id_list[idType] = res.data.id_list[idType].concat(idsFiltered);
 					}else{
-						res.data.id_list[idType] = ids;
+						res.data.id_list[idType] = idsFiltered;
 					}
 					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
 						Topic.publish("/Notification", {
-							message: ids.length + " items added to group " + groupPath,
+							message: idsFiltered.length + " unique items added to group " + groupPath,
 							type: "message"
 						});
 						return r;
@@ -192,7 +205,14 @@ define("p3/WorkspaceManager", [
 				name: name,
 				id_list: {}
 			};
-			group.id_list[idType] = ids;
+			//add logic to remove duplicate from ids
+			var idsFiltered = [];
+			ids.forEach(function(id){
+				if(idsFiltered.indexOf(id)  == -1) {
+					idsFiltered.push(id);
+				}
+			});
+			group.id_list[idType] = idsFiltered;
 
 			// console.log("Creating Group: ", group);
 			return this.create({
@@ -200,7 +220,8 @@ define("p3/WorkspaceManager", [
 				name: name,
 				type: type,
 				userMeta: {},
-				content: group
+				content: group,
+				notification: true
 			})
 
 		},
@@ -244,7 +265,7 @@ define("p3/WorkspaceManager", [
 			});
 		},
 
-		deleteObjects: function(paths, deleteFolders, force){
+		deleteObjects: function(paths, deleteFolders, force, types){
 			var self = this;
 			if(!paths) throw new Error("Invalid Path(s) to delete");
 
@@ -254,11 +275,35 @@ define("p3/WorkspaceManager", [
 			// throw error for any special folder
 			self.omitSpecialFolders(paths, 'delete');
 
-			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
+
+			Topic.publish("/Notification", {
+				message: "<span class='default'>Deleting " + paths.length + " items...</span>"
+			});
+
+			// delete objects
+			var prom = self.api("Workspace.delete", [{
 				objects: paths,
 				force: force,
 				deleteDirectories: deleteFolders
-			}]), function(results){
+			}])
+
+			// figure out any potential hidden job folders (Which may or may not be there)
+			if(types){
+				var hiddenFolders = [];
+				paths.forEach(function(path, i){
+					if(types[i] === 'job_result') hiddenFolders.push(path);
+				})
+
+				if(hiddenFolders.length){
+					var jobProms = this.deleteJobData(hiddenFolders);
+
+					Topic.publish("/Notification", {
+						message: "<span class='default'>Deleting associated job result data...</span>"
+					});
+				}
+			}
+
+			return Deferred.when(All(prom, jobProms), function(){
 				Topic.publish("/Notification", {
 					message: paths.length + (paths.length > 1 ? ' items' : ' item') + " deleted",
 					type: "message"
@@ -424,8 +469,9 @@ define("p3/WorkspaceManager", [
 			});
 
 		},
-		copy: function(paths, dest){
-			var _self = this;
+
+		copy: function(paths, dest, types /* optional */){
+			var self = this;
 
 			// copy contents into folders of same name, but whatever parent path is choosen
 			var srcDestPaths = paths.map(function(path){
@@ -439,43 +485,55 @@ define("p3/WorkspaceManager", [
 					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
 				})
 
-				var prom = this.api("Workspace.create", [{objects: newWSPaths }]);
+				var initProm = this.api("Workspace.create", [{objects: newWSPaths }]);
 			}
 
 			Topic.publish("/Notification", {
 				message: "<span class='default'>Copying " + paths.length + " items...</span>"
 			});
 
-			return Deferred.when(prom, function(res){
 
-				return Deferred.when(_self.api("Workspace.copy", [{
+			// figure out any potential hidden job folders (Which may or may not be there)
+			if(types){
+				var hiddenFolders = [];
+				paths.forEach(function(path, i){
+					if(types[i] === 'job_result') hiddenFolders.push(path);
+				})
+
+				if(hiddenFolders.length){
+					var jobProms = this.moveJobData(hiddenFolders, dest, false /* just copy */);
+
+					Topic.publish("/Notification", {
+						message: "<span class='default'>Copying associated job result data...</span>"
+					});
+				}
+			}
+
+			return Deferred.when(initProm, function(res){
+				var copyProm = self.api("Workspace.copy", [{
 					objects: srcDestPaths,
 					recursive: true,
 					move: false
-				}]),
-				function(res){
+				}])
+
+				return Deferred.when(All(copyProm, jobProms), function(res){
 					Topic.publish("/refreshWorkspace", {});
 					Topic.publish("/Notification", {
 						message: "Copied contents of "+ paths.length + (paths.length > 1 ? " items" : 'item'),
 						type: "message"
 					});
 					return res;
-				}, function(err){
-					Topic.publish("/Notification", {
-						message: "Copy failed",
-						type: "error"
-					});
 				})
 			})
 		},
 
-		move: function(paths, dest){
+		move: function(paths, dest, types /* optional */){
 			var self = this;
 
 			self.omitSpecialFolders(paths, 'move')
 
 			var srcDestPaths = paths.map(function(path){
-				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)]
+				return [path, dest + '/' + path.slice(path.lastIndexOf('/')+1)];
 			})
 
 			// if moving to workspace level, need to create the folders first
@@ -485,14 +543,30 @@ define("p3/WorkspaceManager", [
 					return [dest + '/' + path.slice(path.lastIndexOf('/')+1) + '/', "Directory"];
 				})
 
-				var prom = this.api("Workspace.create", [{objects: newWSPaths }]);
+				var initProm = this.api("Workspace.create", [{objects: newWSPaths }]);
 			}
 
 			Topic.publish("/Notification", {
 				message: "<span class='default'>Moving " + paths.length + " items...</span>"
 			});
 
-			return Deferred.when(prom, function(res){
+			// figure out any potential hidden job folders (Which may or may not be there)
+			if(types){
+				var hiddenFolders = [];
+				paths.forEach(function(path, i){
+					if(types[i] === 'job_result') hiddenFolders.push(path);
+				})
+
+				if(hiddenFolders.length){
+					var jobProms = this.moveJobData(hiddenFolders, dest, true /* should move */);
+
+					Topic.publish("/Notification", {
+						message: "<span class='default'>Moving associated job result data...</span>"
+					});
+				}
+			}
+
+			return Deferred.when(initProm, function(res){
 				return Deferred.when(self.api("Workspace.copy", [{
 					objects: srcDestPaths,
 					recursive: true,
@@ -509,33 +583,37 @@ define("p3/WorkspaceManager", [
 			})
 		},
 
-
-		rename: function(path, newName){
+		rename: function(path, newName, isJob){
 			var self = this;
 
 			self.omitSpecialFolders([path], 'rename');
 
-			if(path.split('/').length <= 3) {
+			if(path.split('/').length <= 3){
 				return self.renameWorkspace(path, newName)
 			}
 
-			// ensure path doesn't already exist
 			var newPath = path.slice(0, path.lastIndexOf('/'))+'/'+newName;
+
+			// ensure path doesn't already exist
+			console.log('Checking for "', newPath, '" before rename...' )
 			return Deferred.when(this.getObjects(newPath, true),
 				function(response){
 					throw Error("The name <i>" + newName + "</i> already exists!  Please pick a unique name.")
 				}, function(err){
 
-					return Deferred.when(self.api("Workspace.copy", [{
+					var prom = self.api("Workspace.copy", [{
 						objects: [[path, newPath]],
 						recursive: true,
 						move: true
-					}],
-					function(res){
-						Topic.publish("/refreshWorkspace", {});
-						Topic.publish("/Notification", {message: "File renamed", type: "message"});
-						return res;
-					}))
+					}])
+
+					if(isJob) {
+						// if job, also need to rename hiden folder
+						var jobProm = self.renameJobData(path, newName);
+						prom = All(prom, jobProm);
+					}
+
+					return Deferred.when(prom)
 				})
 		},
 
@@ -562,6 +640,72 @@ define("p3/WorkspaceManager", [
 						return res;
 					}))
 			})
+		},
+
+		// hack to deal with job result data (dot folders)
+		moveJobData: function(paths, dest, shouldMove){
+			var self = this;
+			var paths = Array.isArray(paths) ? paths : [paths];
+
+			// log what is happening so that console error is expected
+			console.log('Attempting to copy job data with move=' + shouldMove + '...');
+			var proms = paths.map(function(path){
+				var parts = path.split('/'),
+					jobName = parts.pop(),
+					dotPath = parts.join('/') + '/.' + jobName;
+
+				return self.api("Workspace.copy", [{
+					objects: [[dotPath, dest + '/.' + jobName]],
+					recursive: true,
+					move: shouldMove
+				}])
+			})
+
+			return proms;
+		},
+
+		renameJobData: function(path, newName){
+			var self = this;
+
+			var parts = path.split('/'),
+				jobName = parts.pop(),
+				dotPath = parts.join('/') + '/.' + jobName;
+
+			var newPath = path.slice(0, path.lastIndexOf('/'))+'/.'+newName;
+
+			// log what is happening so that console error is expected
+			console.log('Checking for job data "', newPath, '" before rename...' );
+			return Deferred.when(this.getObjects(newPath, true),
+				function(response){
+					throw Error("The name <i>" + newName + "</i> already exists!  Please pick a unique name.")
+				}, function(err){
+					self.api("Workspace.copy", [{
+						objects: [[dotPath, newPath]],
+						recursive: true,
+						move: true
+					}])
+				})
+		},
+
+		deleteJobData: function(paths){
+			var self = this;
+			var paths = Array.isArray(paths) ? paths : [paths];
+
+			// log what is happening so that console error is expected
+			console.log('Attempting to delete job data: ', paths);
+			var proms = paths.map(function(path){
+				var parts = path.split('/'),
+					jobName = parts.pop(),
+					dotPath = parts.join('/') + '/.' + jobName;
+
+				return self.api("Workspace.delete", [{
+					objects: [dotPath],
+					force: true,
+					deleteDirectories: true
+				}])
+			})
+
+			return proms;
 		},
 
 		getObjects: function(paths, metadataOnly){

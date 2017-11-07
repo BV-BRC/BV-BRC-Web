@@ -39,58 +39,63 @@ define([
 		},
 
 		// convert the selection into TSV format, skipping headers and columns as specified
-		_totsv: function(selection, includeHeader, selectedOnly, shownCols){
+		_totsv: function(selection, includeHeader, selectedOnly){
 			var out = [];
 
-			// gather all of the keys present in the selected objects and remove any undefined entries
-			var key_set = new Set();
+			// remove any undefined entries
 			var clean_selection = [];
 			selection.forEach(function(obj){
 				if (obj){
-					var keys = new Set(Object.keys(obj));
-					keys.forEach(function (key){
-						key_set.add(key);
-					});
 					clean_selection.push(obj);
 				}
 			});
 
-			// construct the header
-			var header = [];
-			key_set.forEach(function(key){
-				if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
-					header.push(key);
-				}
+			// sort based on the columns defined elsewhere on the UI
+			columns = this.grid.columns;
+			var key_list = Array.from(Object.keys(columns));
+
+			// filter out blacklisted columns
+			key_list = key_list.filter(function(i){
+				return ['Selection Checkboxes', 'public'].indexOf(i) < 0
 			});
+
+			// filter out not selected columns
+			if (selectedOnly) {
+				key_list = key_list.filter(function(j){
+					return (typeof columns[j].hidden == 'undefined' || !columns[j].hidden);
+				});
+			}
+
+			// console.log('[CopyTooltipDialog] columns: ', columns)
+			// console.log('[CopyTooltipDialog] selection: ', selection)
+			// console.log('[CopyTooltipDialog] key_list: ', key_list);
 
 			// if we want the header, push it to the array
 			if (includeHeader){
+				var header = [];
+				key_list.forEach(function(key){
+					header.push(columns[key].label);
+				});
 				out.push(header.join("\t"));
 			}
 
 			// for each selected item, push its data to the result array
 			clean_selection.forEach(function(obj){
 				var io = [];
-
-				key_set.forEach(function(key){
-					// decide if we should include this column
-					if (!selectedOnly || (selectedOnly && shownCols.includes(key))){
-						// push it to the array
-						if (obj[key] instanceof Array){
-							io.push(obj[key].join(";"));
-						} else {
-							io.push(obj[key]);
-						}
+				key_list.forEach(function(col_key){
+					key = columns[col_key].field;
+					if (obj[key] instanceof Array){
+						io.push(obj[key].join(";"));
+					} else {
+						io.push(obj[key]);
 					}
 				});
-
 				out.push(io.join("\t"));
   		});
 			return out.join("\n");
 
 		},
 
-		// XXX known issue: seleted items not accessible after changing pages (NPE)
 		copySelection: function(type, selection){
 
 			// format the text
@@ -120,24 +125,8 @@ define([
 					break;
 			}
 
-			// build a list of which columns are visible to the user
-			var shownCols = [];
-			if (selectedOnly) {
-				var col_keys = Object.keys(this.grid.columns);
-				for (var i=0; i<col_keys.length; i++) {
-					var key = col_keys[i];
-
-					// if the column is not hidden, put it in the list of shown columns
-					if ((typeof this.grid.columns[key].hidden == 'undefined') || !this.grid.columns[key].hidden) {
-						shownCols.push(key);
-					}
-				}
-			}
-
-			// console.log("CopyTooltipDialog.copySelection(", type,",", selection,",",shownCols,")");
-
 			// convert to tsv
-			var copy_text = this._totsv(selection, includeHeader, selectedOnly, shownCols);
+			var copy_text = this._totsv(selection, includeHeader, selectedOnly);
 
 			// put it on the clipboard (https://www.npmjs.com/package/clipboard-js)
 			clipboard.copy(copy_text);

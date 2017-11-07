@@ -17,7 +17,7 @@ define("p3/widget/viewer/MSA", [
 			SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs){
 
 	var schemes = [{
-			name: "Zappo", 
+			name: "Zappo",
 			id: "zappo"
 		},
 		{
@@ -83,7 +83,7 @@ define("p3/widget/viewer/MSA", [
 
 
 	var filters = [{
-			name: "Hide columns by % conservation (>=)", 
+			name: "Hide columns by % conservation (>=)",
 			id: "hide_col_threshold_greater"
 		},
 		{
@@ -274,7 +274,7 @@ define("p3/widget/viewer/MSA", [
 					// console.log("this.itemDetailPanel", self.itemDetailPanel);
 					if (sel.feature_id == curr_selection) {
 						self.itemDetailPanel.set('containerWidget', {containerType: 'feature_data'});
-						self.itemDetailPanel.set('selection', [sel]);	
+						self.itemDetailPanel.set('selection', [sel]);
 					}
 				})
 
@@ -286,7 +286,7 @@ define("p3/widget/viewer/MSA", [
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
-			var fasta = "";			
+			var fasta = "";
 			var tree_newick = this.data.tree;
 			this.alt_labels = {"genome_name": {}, "patric_id": {}};
 			this.dataStats["idType"] = null;
@@ -373,7 +373,7 @@ define("p3/widget/viewer/MSA", [
 			// console.log("this.dataMap ", this.dataMap);
 			// console.log("this.data ", this.data);
 			// console.log("fasta ", fasta);
-			
+
 		},
 
 		createViewerData: function(){
@@ -524,7 +524,7 @@ define("p3/widget/viewer/MSA", [
 
 				// console.log("msa_models=", msa_models);
 				// console.log("m=", m);
-				
+
 				switch(rel){
 				case "hide_col_threshold_greater":
 					var threshold = prompt("Enter threshold (in percent)", 20);
@@ -541,7 +541,7 @@ define("p3/widget/viewer/MSA", [
 					m.g.columns.set("hidden", hidden);
 					m.g.vis.set("seqlogo", false);
 					break;
-					
+
 				case "hide_col_threshold_less":
 					var threshold = prompt("Enter threshold (in percent)", 20);
 					threshold = threshold / 100;
@@ -665,7 +665,7 @@ define("p3/widget/viewer/MSA", [
 				}
 				popup.close(filterMenu);
 			}));
-			
+
 			on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
 				var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
 				var sel = snapMenu.selection;
@@ -910,12 +910,12 @@ define("p3/widget/viewer/MSA", [
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["*"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_data";
 
 					if(!type){
@@ -941,7 +941,7 @@ define("p3/widget/viewer/MSA", [
 					dlg.show();
 				},
 				false
-			], 
+			],
 			[
 				"MultipleSeqAlignmentFeatures",
 				"fa icon-alignment fa-2x",
@@ -1031,7 +1031,7 @@ define("p3/widget/viewer/MSA", [
 					});
 				},
 				false
-			], 
+			],
 			[
 				"ViewGenomeItem",
 				"MultiButton fa icon-selection-Genome fa-2x",

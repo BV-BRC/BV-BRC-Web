@@ -264,14 +264,14 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 100,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["proteinfamily_data"]
 				},
 				function(selection){
 
 					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
 							return s.family_id;
-						}).join(',') + ")))&select(feature_id)&limit(25000)";
+						}).join(',') + ")))&select(feature_id,genome_id)&limit(25000)";
 
 					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
 						handleAs: 'json',
@@ -282,12 +282,13 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 							'Authorization': (window.App.authorizationToken || "")
 						},
 						data: query
-					}), function(featureIds){
+					}), function(ids){
 
-						var dlg = new Dialog({title: "Copy Selection to Group"});
+						var dlg = new Dialog({title: "Add selected items to group"});
 						var stg = new SelectionToGroup({
-							selection: featureIds,
+							selection: ids,
 							type: "feature_group",
+							inputType: "feature_data",
 							path: ""
 						});
 						on(dlg.domNode, "dialogAction", function(){

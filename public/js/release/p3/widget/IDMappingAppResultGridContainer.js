@@ -315,12 +315,12 @@ define("p3/widget/IDMappingAppResultGridContainer", [
 					Topic.publish("/navigate", {
 						href: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){
 							return x.feature_id;
-						}).join(",") + "))", 
+						}).join(",") + "))",
                         target: "blank"
 					});
 				},
 				false
-			],  
+			],
 
 			[
 				"ViewGenomeItem",
@@ -395,7 +395,7 @@ define("p3/widget/IDMappingAppResultGridContainer", [
 				},
 				false
 			],
-			
+
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -582,12 +582,12 @@ define("p3/widget/IDMappingAppResultGridContainer", [
 					validTypes: ["feature_data"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type;
 
 					if(!containerWidget){
@@ -611,6 +611,7 @@ define("p3/widget/IDMappingAppResultGridContainer", [
 						selection: selection,
                         selectType: true,
 						type: type,
+						inputType: containerWidget.containerType,
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -625,9 +626,9 @@ define("p3/widget/IDMappingAppResultGridContainer", [
 					dlg.show();
 				},
 				false
-			] 	
+			]
 		]
-            
-            
+
+
 	});
 });

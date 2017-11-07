@@ -48,6 +48,9 @@ define("p3/widget/GroupExplore", [
 			if(selected.length > 0){
 				var dataArray = [];
 				var url = "";
+				document.getElementById('create_msg').innerHTML = "<b>Please select one or more regions to view members.</b>";
+				document.getElementById('create_msg').style = "color: black";
+				
 				for(var i = 0, ilen = selected.length; i < ilen; ++i){
 					id_array.push(selected[i]);
 					if(i == 0){
@@ -290,12 +293,15 @@ define("p3/widget/GroupExplore", [
 			console.log("myPath=", myPath);
 			WorkspaceManager.createGroup(regionGroupName, myType, myPath, idType, id_array);
 			document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + "/" + regionGroupName + "' target=_blank>" + "here" + "</a> to view.</b>";
+			document.getElementById('create_msg').style = "color: green";
 			//alert("Please refresh the workspace folder to view.");
 		}else if(regionGroupName){
 			document.getElementById('create_msg').innerHTML = "<b>Please select the regions which have members.</b>";
+			document.getElementById('create_msg').style = "color: red";
 			//alert("Please select the regions which have members.");
 		}else{
 			document.getElementById('create_msg').innerHTML = "<b>Please select one or more regions from the diagram.</b>";
+			//document.getElementById('create_msg').style = "color: red";
 			//alert("Please select a region or multiple regions from the diagram.");
 		}
 	}
@@ -617,7 +623,7 @@ define("p3/widget/GroupExplore", [
 			var div2 = domConstruct.create("div", {id: "gse-members"}, div);
 			var div1 = domConstruct.create("div", {
 				id: "create_msg",
-				innerHTML: "Please select one or more regions to view members."
+				innerHTML: "<b>Please select one or more regions to view members.</b>"
 			}, div);
 			var div3 = domConstruct.create("div", {id: "gse-venndiagram"}, div);
 		},
