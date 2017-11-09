@@ -164,7 +164,7 @@ define([
 				var newState = getState(params, oldPath);
 				newState.widgetClass = "p3/widget/WebPagePane";
 				newState.widgetExtraClass = "webpage";
-				newState.value = PathJoin(_self.pagesServiceURL, "webpage", path);
+				newState.value = PathJoin(_self.docsServiceURL, path);
 				newState.set = "href";
 				newState.requireAuth = false;
 

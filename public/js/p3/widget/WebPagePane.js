@@ -15,12 +15,18 @@ define([
 			}
 			else {
 
-				for(i = 0; i < parsed.childNodes.length; i++){
-					// console.log(parsed.childNodes[i])
-					if(parsed.childNodes[i].tagName === "TITLE"){
-						window.document.title  = parsed.childNodes[i].innerHTML
-					} else if (parsed.childNodes[i].tagName === "DIV"){
-						arguments[0] = parsed.childNodes[i]
+				for(i = 0; i < parsed.children.length; i++){
+					// console.log(parsed.children[i])
+					if(parsed.children[i].tagName === "TITLE"){
+						window.document.title  = parsed.children[i].innerHTML
+					} else if (parsed.children[i].tagName === "DIV"){
+						rootDivNode = parsed.children[i]
+						sectionNode = rootDivNode.children[1]
+						contentDivNode = sectionNode.children[1]
+						articleNode = contentDivNode.children[0].children[1]
+						articleBody = articleNode.children[0]
+
+						arguments[0] = articleBody
 					}
 				}
 
