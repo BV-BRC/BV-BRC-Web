@@ -29,7 +29,7 @@ define([
 
 		gethelp: function(){
 
-			var helprequest = xhr.get(window.App.pagesServiceURL + "help/" + this.applicationHelp + ".html", {
+			var helprequest = xhr.get(window.App.docsServiceURL + this.applicationHelp, {
 				handleAs: "text"
 			});
 			helprequest.then(function(data){

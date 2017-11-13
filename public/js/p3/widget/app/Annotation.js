@@ -12,7 +12,7 @@ define([
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
-		applicationHelp: "genome_annotation",
+		applicationHelp: "user_guide/genome_data_and_tools/genome_annotation_service.html",
 		pageTitle: "Genome Annotation Service",
 		required: true,
 		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],

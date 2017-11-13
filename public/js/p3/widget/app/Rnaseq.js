@@ -15,7 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "RNASeq",
-		applicationHelp: "RNASeq",
+		applicationHelp: "user_guide/differential_expression_data_and_tools/rna_seq_analysis_service.html",
 		pageTitle: "RNA-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",

@@ -17,7 +17,7 @@ define([
 		pageTitle: "Metagenome Binning Service",
 		templateString: Template,
 		applicationName: "MetagenomeBinning",
-		applicationHelp: "metagenome_binning",
+		applicationHelp: "user_guide/genome_data_and_tools/metagenome_binning_service.html",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 13,

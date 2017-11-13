@@ -9,7 +9,7 @@ define([
 		"baseClass": "Expression",
 		templateString: Template,
 		applicationName: "DifferentialExpression",
-		applicationHelp: "differential_expression",
+		applicationHelp: "user_guide/differential_expression_data_and_tools/expression_data_import_service.html",
 		pageTitle: "Differential Expression Import",
 		defaultPath: "",
 		constructor: function(){

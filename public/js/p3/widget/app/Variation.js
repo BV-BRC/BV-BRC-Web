@@ -16,7 +16,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "Variation",
-		applicationHelp: "variation",
+		applicationHelp: "user_guide/genome_data_and_tools/variation_analysis_service.html",
 		pageTitle: "Variation Service",
 		libraryData: null,
 		defaultPath: "",

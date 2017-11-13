@@ -15,7 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "TnSeq",
-		applicationHelp: "TnSeq",
+		applicationHelp: "user_guide/genome_data_and_tools/tn_seq_analysis_service.html",
 		pageTitle: "Tn-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
