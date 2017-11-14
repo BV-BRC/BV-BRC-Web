@@ -1,4 +1,4 @@
-<form dojoAttachPoint="containerNode" class="PanelForm"
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
@@ -161,7 +161,7 @@
                         <div class="appField" style="width:150px;">
                             <label class="paramlabel">PATRIC Feature Strategy</label>
                             <div name="patric-feature-strategy" class="infobox iconbox infobutton dialoginfo">
-                                <i data-dojo-attach-point="patricMapInfo" class="fa icon-info-circle fa"></i>
+                                <i class="fa icon-info-circle fa"></i>
                             </div>
                             <div class="appField" style="width:120px;">
                             <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
