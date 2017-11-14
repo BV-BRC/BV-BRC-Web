@@ -24,7 +24,10 @@ define([
         defaultPath: "",
 
 		startup: function(){
-
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
 			// activate genome group selector when user is logged in
 			if(window.App.user){
 				this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
@@ -50,13 +53,7 @@ define([
 					this.advicon2.className = "fa icon-caret-down fa-1";
 				}
 			}));
-
-            _self=this;
-            _self.info_dialog = new Tooltip({
-                label: "This tool uses the Uniprot-KB mapping table to map external IDs to PATRIC. This is done using NCBI IDs. Due to updates over time some NCBI IDs may achieve better mapping results than others.",
-                connectId: _self.patricMapInfo
-            });
-        },
+    },
 
 
 		constructor: function(){
