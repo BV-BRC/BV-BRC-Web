@@ -33,6 +33,7 @@ define([
 				handleAs: "text"
 			});
 			helprequest.then(function(data){
+				data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />','')
 				this.help_doc = domConstruct.toDom(data);
 				var ibuttons = query(".infobutton");
 				ibuttons.forEach(function(item){
