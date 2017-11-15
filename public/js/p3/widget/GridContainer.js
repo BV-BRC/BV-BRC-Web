@@ -1263,7 +1263,7 @@ define([
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:56px;text-align:center;",
+				style: "width:56px;text-align:center;overflow-y: auto;",
 				splitter: false,
 				currentContainerWidget: this
 			});
