@@ -143,7 +143,7 @@ define([
 		},
 
 		hasSingleFastaSequence: function(sequence){
-			return sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null;}).length == 1;
+			return sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null;}).length <= 1;
 		},
 
 		isNucleotideFastaSequence: function(sequence){
