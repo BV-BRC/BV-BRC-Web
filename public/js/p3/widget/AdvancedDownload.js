@@ -18,12 +18,8 @@ define([
 				downloadTypes: [
 					{"label": "Genomic Sequences in FASTA (*.fna)", type: "fna", skipAnnotation: true},
 					{"label": "Protein Sequences in FASTA (*.faa)", type: "faa"},
-					{"label": "Annotations in GenBank file format (*.gbf)", type: "gbf"},
 					{"label": "Genomic features in Generic Feature Format format (*.gff)", type: "gff"},
 					{"label": "Genomic features in tab-delimited format (*.features.tab)", type: "features.tab"},
-					{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "cds.tab"},
-
-					{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "rna.tab"},
 					{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "ffn"},
 					{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "frn"},
 					{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "pathway.tab"}
