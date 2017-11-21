@@ -16,6 +16,7 @@ define([
 		templateString: Template,
 		applicationName: "GenomeComparison",
 		applicationHelp: "user_guide/genome_data_and_tools/proteome_comparison_service.html",
+		tutorialLink: "tutorial/proteome_comparison/proteome_comparison.html",
 		pageTitle: "Proteome Comparison",
 		defaultPath: "",
 		startingRows: 9,

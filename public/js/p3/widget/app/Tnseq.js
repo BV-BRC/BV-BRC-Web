@@ -16,6 +16,7 @@ define([
 		templateString: Template,
 		applicationName: "TnSeq",
 		applicationHelp: "user_guide/genome_data_and_tools/tn_seq_analysis_service.html",
+		tutorialLink: "",
 		pageTitle: "Tn-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",

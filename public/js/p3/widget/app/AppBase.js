@@ -88,6 +88,18 @@ define([
 					}
 				});
 			});
+
+			var tutorials = query(".tutorialButton");
+			var tutorialLink = window.App.docsServiceURL + (this.tutorialLink || 'tutorial/');
+			tutorials.forEach(function(item){
+				if (dojo.hasClass(item, "tutorialInfo")){
+					on(item, 'click', function() {
+						// console.log(tutorialLink)
+						window.open(tutorialLink, 'Tutorials')
+					})
+				}
+			})
+
 		},
 
 		onOutputPathChange: function(val){

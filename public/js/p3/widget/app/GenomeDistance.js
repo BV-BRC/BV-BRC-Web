@@ -13,6 +13,7 @@ define([
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "GenomeDistance",
 		templateString: Template,
+		tutorialLink: "tutorial/similar_genome_finder/similar_genome_finder.html",
 		loadingMask: null,
 		result_store: null,
 		result_grid: null,

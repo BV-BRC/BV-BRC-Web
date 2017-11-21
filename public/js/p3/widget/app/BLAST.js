@@ -75,6 +75,7 @@ define([
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "BLAST",
 		templateString: Template,
+		tutorialLink: "/tutorial/blast/blast.html",
 		addedGenomes: 0,
 		maxGenomes: 20,
 		startingRows: 5,

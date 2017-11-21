@@ -16,6 +16,7 @@ define([
 		templateString: Template,
 		applicationName: "RNASeq",
 		applicationHelp: "user_guide/differential_expression_data_and_tools/rna_seq_analysis_service.html",
+		tutorialLink: "tutorial/rna_seq_submission/submitting_rna_seq_job.html",
 		pageTitle: "RNA-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
