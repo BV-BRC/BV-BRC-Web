@@ -1,4 +1,4 @@
-<form dojoAttachPoint="containerNode" class="PanelForm"
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
@@ -110,7 +110,7 @@
         <div class="appSubmissionArea">
             <div style="margin-top: 10px; text-align:center;">
                 <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-point="mapButton"
+                     data-dojo-attach-point="submitButton"
                      data-dojo-attach-event="onClick:submit"
                      data-dojo-props="disabled:false">
                     Search

@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
-	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"./AppBase",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
 	"../viewer/Blast", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
 			on, query, domClass, domConstruct, domStyle, Topic,
-			WidgetBase, Templated, WidgetsInTemplate,
+			AppBase,
 			Template, FormMixin,
 			BlastResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
@@ -72,7 +72,7 @@ define([
 		{value: "features", label: "Genomic features (genes, proteins or RNAs)"}
 	];
 
-	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
+	return declare([AppBase], {
 		"baseClass": "BLAST",
 		templateString: Template,
 		tutorialLink: "/tutorial/blast/blast.html",
@@ -88,6 +88,9 @@ define([
 		},
 
 		startup: function(){
+
+			if (this._started) { return; }
+			this.inherited(arguments);
 
 			// activate genome group selector when user is logged in
 			if(window.App.user){
@@ -165,10 +168,10 @@ define([
 				&& this.hasSingleFastaSequence(sequence)){
 
 				// console.log("validation passed");
-				this.mapButton.set('disabled', false);
+				this.submitButton.set('disabled', false);
 				return true;
 			}else{
-				this.mapButton.set('disabled', true);
+				this.submitButton.set('disabled', true);
 				return false;
 			}
 		},
