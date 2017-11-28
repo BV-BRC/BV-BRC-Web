@@ -88,7 +88,12 @@ define([
 				label: "PNG Image",
 				formats: [".jpg", ".jpeg"],
 				description: "A PNG image file."
-			}
+			},
+            nwk: {
+                label: "Newick",
+                formats: [".nwk"],
+                description: "Phylogenetic tree file."
+            }
 		},
 		_setPathAttr: function(val){
 			this.path = val;
