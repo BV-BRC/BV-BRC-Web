@@ -362,7 +362,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.browserHeader.addAction("ViewAnnotatedGenome", "fa icon-eye fa-2x", {
 				label: "VIEW",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -390,7 +390,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.browserHeader.addAction("ViewAnnotatedGenomeCDS", "fa icon-genome-features-cds fa-2x", {
 				label: "CDS",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -402,7 +402,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -464,7 +464,7 @@ define("p3/widget/WorkspaceBrowser", [
 					type: "CreateWorkspace"
 				});
 			},  self.path.split('/').length < 3);
-            
+
             this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
 				label: "VIEW",
 				multiple: false,
@@ -516,8 +516,8 @@ define("p3/widget/WorkspaceBrowser", [
 				Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?&wsExpId=" + eid});
 
 			}, false);
-			
-            
+
+
 
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
@@ -1284,6 +1284,7 @@ define("p3/widget/WorkspaceBrowser", [
 									}
 									break;
 								case "GenomeAnnotation":
+								case "GenomeAnnotationGenbank":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
                 case "Variation":

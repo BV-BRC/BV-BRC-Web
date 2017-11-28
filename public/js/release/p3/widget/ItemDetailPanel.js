@@ -15,6 +15,7 @@ define("p3/widget/ItemDetailPanel", [
 		changeableTypes: {
 			unspecified: {label: "unspecified", value: "unspecified"},
 			contigs: {label: "contigs", value: "contigs"},
+			nwk: {label: "nwk", value: "nwk"},
 			reads: {label: "reads", value: "reads"},
 			diffexp_input_data: {label: "diffexp_input_data", value: "diffexp_input_data"},
 			diffexp_input_metadata: {label: "diffexp_input_metadata", value: "diffexp_input_metadata"}

@@ -519,6 +519,9 @@ define("p3/app/app", [
 				if(cur instanceof ctor){
 					instance = cur;
 					// console.log("newNavState: ", newNavState);
+					if(newNavState.widgetExtraClass){
+						instance.domNode.classList.add(newNavState.widgetExtraClass)
+					}
 
 					instance.set('state', newNavState);
 

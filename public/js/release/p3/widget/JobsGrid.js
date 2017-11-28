@@ -13,23 +13,34 @@ function(declare, Grid, Store, DijitRegistry,
 		 JobManager, on){
 
 	var store = JobManager.getStore();
-
 	return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
 		store: store,
+		selectionMode: "single",
+		allowTextSelection: false,
+		deselectOnRefresh: false,
+		minRowsPerPage: 50,
+		bufferRows: 100,
+		maxRowsPerPage: 1000,
+		pagingDelay: 250,
+		//pagingMethod: "throttleDelayed",
+		farOffRemoval: 2000,
+		keepScrollPosition: true,
+		rowHeight: 24,
+		loadingMessage: "Loading...",
+		dndDataType: "genome",
+		dndParams: {
+			accept: "none",
+			selfAccept: false,
+			copyOnly: true
+		},
 		columns: {
-			"status_indicator": {
-				label: "",
-				field: "status",
-				unhidable: true,
-				formatter: formatter.status_indicator
-			},
 			"status": {
 				label: "Status",
 				field: "status",
 				formatter: formatter.status_alias
 			},
 
-			submit_time: {
+			"submit_time": {
 				label: "Submit",
 				field: "submit_time",
 				formatter: formatter.date
@@ -45,20 +56,19 @@ function(declare, Grid, Store, DijitRegistry,
 				field: "app",
 				formatter: formatter.appLabel
 			},
-			parameters: {
+			"parameters": {
 				label: "Output Name",
 				field: "parameters",
 				formatter: function(val){
 					return val.output_file || "";
 				}
 			},
-
-			start_time: {
+			"start_time": {
 				label: "Start",
 				field: "start_time",
 				formatter: formatter.date
 			},
-			completed_time: {
+			"completed_time": {
 				label: "Completed",
 				field: "completed_time",
 				formatter: formatter.date
@@ -68,12 +78,7 @@ function(declare, Grid, Store, DijitRegistry,
 
 			this.queryOptions = {
 				sort: [{attribute: "submit_time", descending: true}]
-
-//				sort: [{attribute: "genome_name", descending: false},
-//					{attribute: "accession", descending: false},
-//					{attribute: "start", descending: false}]
 			};
-
 
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
 				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
@@ -91,26 +96,8 @@ function(declare, Grid, Store, DijitRegistry,
 					type: this.dndDataType
 				}
 			})
+		},
 
-		},
-		selectionMode: "single",
-		allowTextSelection: false,
-		deselectOnRefresh: false,
-		minRowsPerPage: 50,
-		bufferRows: 100,
-		maxRowsPerPage: 1000,
-		pagingDelay: 250,
-		//		pagingMethod: "throttleDelayed",
-		farOffRemoval: 2000,
-		keepScrollPosition: true,
-		rowHeight: 24,
-		loadingMessage: "Loading...",
-		dndDataType: "genome",
-		dndParams: {
-			accept: "none",
-			selfAccept: false,
-			copyOnly: true
-		},
 		queryOptions: {
 			sort: [
 				{attribute: "submit_time", descending: true}
@@ -118,28 +105,17 @@ function(declare, Grid, Store, DijitRegistry,
 		},
 
 		sort: [
-			{attribute: "submit_time", descending: true}
+			{attribute: "submit_time", descending: true }
 		],
-
-		/*
-			_setApiServer: function(server){
-					//console.log("_setapiServerAttr: ", server);
-					this.apiServer = server;
-					this.set('store', this.createStore(this.dataModel), this.buildQuery());
-			},
-	*/
 
 		_setTotalRows: function(rows){
 			this.totalRows = rows;
-			//console.log("Total Rows: ", rows);
+
 			if(this.controlButton){
-				//console.log("this.controlButton: ", this.controlButton);
 				if(!this._originalTitle){
 					this._originalTitle = this.controlButton.get('label');
 				}
 				this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
-
-				//console.log(this.controlButton);
 			}
 		},
 
@@ -175,23 +151,12 @@ function(declare, Grid, Store, DijitRegistry,
 				return;
 			}
 			var _self = this;
+
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
 				});
 			});
-
-			// this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
-			// 	var row = _self.row(evt);
-			// 	//console.log("dblclick row:", row)
-			// 	if (row.data && row.data.status && row.data.status=="completed"){
-			// 		//console.log("row.data: ", row.data);
-			// 		Topic.publish("/navigate", {href: "/workspace" + row.data.parameters.output_path+ "/" + row.data.parameters.output_file});
-			// 	}else{
-			// 		_self.showErrorDialog(row.data);
-			// 	}
-
-			// });
 
 			_selection = {};
 			Topic.publish("/select", []);
@@ -219,39 +184,7 @@ function(declare, Grid, Store, DijitRegistry,
 
 			this.refresh();
 
-		},
-		_setActiveFilter: function(filter){
-			//console.log("Set Active Filter: ", filter, "started:", this._started);
-			this.activeFilter = filter;
-			this.set("query", this.buildQuery());
-		},
-
-		buildQuery: function(table, extra){
-			var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
-			//console.log("Feature Grid Query:", q);
-			return q;
-		},
-		createStore: function(dataModel){
-			//console.log("Create Store for ", dataModel, " at ", this.apiServer);
-			var store = new Store({
-				target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
-				idProperty: "rownum",
-				headers: {
-					"accept": "application/json",
-					"content-type": "application/json",
-					"Authorization": (window.App.authorizationToken || ""),
-					'X-Requested-With': null
-				}
-			});
-			//console.log("store: ", store);
-			return store;
-		},
-
-		getFilterPanel: function(){
-			//console.log("getFilterPanel()");
-			return FilterPanel;
 		}
-
 	});
 
 });

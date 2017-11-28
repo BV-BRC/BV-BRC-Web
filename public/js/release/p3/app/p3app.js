@@ -158,6 +158,19 @@ define("p3/app/p3app", [
 				_self.navigate(newState);
 			});
 
+			Router.register("\/webpage(\/.*)", function(params, oldPath, newPath, state){
+				// console.log("webpage", params);
+				var path = params.params[0] || "/";
+				var newState = getState(params, oldPath);
+				newState.widgetClass = "p3/widget/WebPagePane";
+				newState.widgetExtraClass = "webpage";
+				newState.value = PathJoin(_self.docsServiceURL, path);
+				newState.set = "href";
+				newState.requireAuth = false;
+
+				_self.navigate(newState);
+			});
+
 			Router.register("\/help(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Upload URL Callback", params.newPath);
 				var newState = {href: params.newPath}
