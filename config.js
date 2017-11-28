@@ -26,7 +26,6 @@ var defaults = {
 	appServiceURL: "",
 	dataURL: "",
 	accountURL: "http://user.patric.local:3002/",
-	pagesServiceURL: "http://pages.patric.local/",
 	docsServiceURL: "http://docs.patric.local/",
 	enableDevAuth: false,
 	devAuthorizationToken: "",
