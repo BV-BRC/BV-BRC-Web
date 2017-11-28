@@ -1,24 +1,26 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
-	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"./AppBase",
 	"dojo/text!./templates/GenomeDistance.html", "dijit/form/Form",
 	"../viewer/GenomeDistance", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
 			on, query, domClass, domConstruct, domStyle, Topic,
-			WidgetBase, Templated, WidgetsInTemplate,
+			AppBase,
 			Template, FormMixin,
 			ResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
-	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-		"baseClass": "GenomeDistance",
+	return declare([AppBase], {
+		"baseClass": "App GenomeDistance",
 		templateString: Template,
+		tutorialLink: "tutorial/similar_genome_finder/similar_genome_finder.html",
 		loadingMask: null,
 		result_store: null,
 		result_grid: null,
 		defaultPath: "",
 
 		startup: function(){
+			if (this._started) { return; }
 			this.inherited(arguments);
 
 			// activate genome group selector when user is logged in

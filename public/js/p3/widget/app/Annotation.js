@@ -12,6 +12,8 @@ define([
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
+		applicationHelp: "user_guide/genome_data_and_tools/genome_annotation_service.html",
+		tutorialLink: "tutorial/genome_annotation/annotation.html",
 		pageTitle: "Genome Annotation Service",
 		required: true,
 		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
@@ -29,7 +31,7 @@ define([
                         _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
                         _self.output_pathWidget.set('value', _self.defaultPath);
                 },
-		changeCode: function(item){	
+		changeCode: function(item){
 			this.code_four=false;
 			item.lineage_names.forEach(lang.hitch(this, function(lname){
 				if (dojo.indexOf(this.genera_four, lname)>=0){
@@ -38,7 +40,7 @@ define([
 			}));
 			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
 		},
-	
+
 		onTaxIDChange: function(val){
             this._autoNameSet=true;
             var tax_id=this.tax_idWidget.get("item").taxon_id;
@@ -58,7 +60,7 @@ define([
                 //this.scientific_nameWidget.set("item",tax_obj);
                 //this.scientific_nameWidget.validate();
 
-            } 
+            }
 			this._autoTaxSet=false;
 		},
 
@@ -109,4 +111,3 @@ define([
 
 	});
 });
-

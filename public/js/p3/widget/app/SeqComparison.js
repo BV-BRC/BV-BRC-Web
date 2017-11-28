@@ -15,6 +15,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "GenomeComparison",
+		applicationHelp: "user_guide/genome_data_and_tools/proteome_comparison_service.html",
+		tutorialLink: "tutorial/proteome_comparison/proteome_comparison.html",
 		pageTitle: "Proteome Comparison",
 		defaultPath: "",
 		startingRows: 9,
@@ -163,7 +165,7 @@ define([
 			if (this.ref_genome_id.get('value') || this.ref_user_genomes_fasta.get('value') || this.ref_user_genomes_featuregroup.get('value')) {
 				this.numref = 1;
 			} else {
-				this.numref = 0;			
+				this.numref = 0;
 			}
 			//console.log("change genome name, this.numref=", this.numref, "this.ref_genome_id.get('value')=", this.ref_genome_id.get('value'));
 		},
@@ -325,7 +327,7 @@ define([
 				//console.log("genome_ids ", values["genome_ids"]);
 				//console.log("reference_genome_index ", values["reference_genome_index"]);
 				var numUserGenome = 0;
-				
+
 				if (values["user_genomes"]) {
 					numUserGenome += values["user_genomes"].length;
 				}
@@ -334,8 +336,8 @@ define([
 				}
 				if (values["genome_ids"]) {
 					numUserGenome += values["genome_ids"].length;
-				}								
-								
+				}
+
 				if(numUserGenome>1 && values["reference_genome_index"] > 0){
 					domClass.add(this.domNode, "Working");
 					domClass.remove(this.domNode, "Error");
@@ -459,4 +461,3 @@ define([
 
 	});
 });
-

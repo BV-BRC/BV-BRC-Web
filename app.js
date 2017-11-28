@@ -98,6 +98,8 @@ app.use(function(req, res, next){
 		homologyServiceURL: config.get("homologyServiceURL"),
 		genomedistanceServiceURL: config.get("genomedistanceServiceURL"),
 		compareregionServiceURL: config.get("compareregionServiceURL"),
+		pagesServiceURL: config.get("pagesServiceURL"),
+		docsServiceURL: config.get("docsServiceURL"),
 		enableDevTools: config.get("enableDevTools"),
 		accountURL: config.get("accountURL"),
 		appLabel: config.get("appLabel"),
@@ -167,6 +169,7 @@ app.use('/', routes);
 app.post("/reportProblem", reportProblem);
 app.use("/workspace", workspace);
 app.use("/content", contentViewer);
+app.use("/webpage", contentViewer);
 app.use("/remote", remotePage);
 app.use("/view", viewers);
 app.use("/search", search);

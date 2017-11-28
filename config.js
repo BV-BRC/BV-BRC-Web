@@ -26,7 +26,8 @@ var defaults = {
 	appServiceURL: "",
 	dataURL: "",
 	accountURL: "http://user.patric.local:3002/",
-
+	pagesServiceURL: "http://pages.patric.local/",
+	docsServiceURL: "http://docs.patric.local/",
 	enableDevAuth: false,
 	devAuthorizationToken: "",
 	devUser: false,
@@ -46,7 +47,7 @@ var defaults = {
 		"brcdownloads": "http://brcdownloads.patricbrc.org"
 	}
 };
-	
+
 var config_filename = "p3-web.conf";
 var config_file = __dirname + "/" + config_filename;
 if (!fs.statSync(config_file))

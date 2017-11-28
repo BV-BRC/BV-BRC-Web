@@ -18,7 +18,20 @@
     margin-bottom: 20px;
 }
 
-.nonModal_underlay {
+.helpModal .headerlink {
+    display: none
+}
+
+.helpModal h2,
+.helpModal h3 {
+    margin-bottom: 0.5em;
+}
+
+.helpModal .section {
+    margin-bottom: 20px;
+}
+
+.helpTooltip h2 {
     display: none
 }
 
