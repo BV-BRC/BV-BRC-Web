@@ -162,6 +162,11 @@ app.use("/patric/images", express.static(path.join(__dirname, "public/patric/ima
 		res.setHeader("Expires", d.toGMTString());
 	}
 }));
+app.use("/public/pdfs/", [
+	function(req, res, next){
+		res.redirect('https://docs.patricbrc.org/tutorial/')
+	}
+])
 app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
 app.use("/public/", express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
