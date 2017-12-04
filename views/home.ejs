@@ -1,5 +1,5 @@
 <% var flows = [
-    {name: "PATRIC Webinar", secondary: "Phylogenetic Tree Builder", rel: "carousel_webinar", background: "#34698e"}
+    {name: "PATRIC CLI", secondary: "Command Line Interface", rel: "carousel_cli", background: "#34698e"}
     , {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
@@ -17,6 +17,28 @@
             <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_cli" class="CarouselContent showOnLoad dijitVisible">
+                    <div class="wrapper">
+                        <img class="right"
+                             src="/patric/images/carousel/CLI.png" alt="PATRIC Webinar">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC CLI</h1>
+                        <h2 class="xl highlight-f upper far">Command Line Interface</h2>
+                        <p>The PATRIC Command Line Interface (CLI) includes commands and features to
+                        1) run PATRIC services, including Genome Assembly and Annotation;
+                        2) enable access to PATRIC workspaces;
+                        3) manage data objects in the workspace, such as genomes; and
+                        4) facilitate access and manipulation of data retrieved from the PATRIC databases.
+                        Full-fledged documentation for using the CLI is available as well.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="https://docs.patricbrc.org/cli_tutorial/index.html"
+                              title="PATRIC CLI Tutorial"
+                              target="_blank" rel="noopener">CLI Tutorial</a></p>
+                        <br><br>
+                    </div>
+                </div>
+<% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_webinar" class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
@@ -35,7 +57,6 @@
                         <br><br>
                     </div>
                 </div>
-<% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop" class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
