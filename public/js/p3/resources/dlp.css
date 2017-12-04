@@ -88,7 +88,7 @@
   position: relative;
 }
 .patric .dlp .ribbon-title .wrap {
-  background: url(/patric/images/ribbon-title-wrap.png) no-repeat top left;
+  background: no-repeat top left;
   position: absolute;
   bottom: -9px;
   left: 0;
