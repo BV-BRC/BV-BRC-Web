@@ -313,7 +313,7 @@ define([
 			var _self = this;
 
 			if(this.disabled){
-				new Dialog({title: "Notice", draggable: true, content: "Please wait until upload complete."}).show();
+				new Dialog({title: "Notice", draggable: true, content: "Please wait until upload completes."}).show();
 				return;
 			}
 			// if dialog is already built, just show it
