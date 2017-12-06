@@ -30,6 +30,7 @@ define([
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
 		allowUpload: true,  	    	// whether or not to add the upload button
+		uploadingSelection: "",     // uploading in progress, to be copied to selection
 		title: "Choose or Upload a Workspace Object",
 		autoSelectParent: false,   		// if true, the folder currently being viewed is selected by default
 		onlyWritable: false,	    	// only list writable workspaces
@@ -311,6 +312,10 @@ define([
 		openChooser: function(){
 			var _self = this;
 
+			if(this.disabled){
+				new Dialog({title: "UPLOAD IN PROGRESS...", draggable: true, content: "Please wait until its completion."}).show();
+				return;
+			}
 			// if dialog is already built, just show it
 			if(this.dialog){
 				this.dialog.flip("front");
@@ -482,8 +487,10 @@ define([
 					// console.log("Uploader Dialog Action: ", evt);
 					if(evt.files && evt.files[0] && evt.action == "close"){
 						var file = evt.files[0];
-						_self.set("selection", file);
-						_self.set('value', file.path, true);
+						//_self.set("selection", file);
+						//_self.set('value', file.path, true);
+						_self.set("disabled", true);
+						_self.set("uploadingSelection", file);
 						_self.dialog.hide();
 					}else{
 						_self.dialog.flip()
@@ -556,10 +563,26 @@ define([
 				this.refreshWorkspaceItems();
 			}
 			Topic.subscribe("/refreshWorkspace", lang.hitch(this, "refreshWorkspaceItems"));
+			Topic.subscribe("/upload", lang.hitch(this, "onUploadMessage"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 			this.searchBox.set('placeHolder', this.placeHolder);
 			this.searchBox.labelFunc = this.labelFunc;
+		},
+
+		onUploadMessage(msg){
+			if(msg && msg.type == "UploadComplete"){
+				if(this.uploadingSelection != ""){
+					this.set("disabled", false);
+					this.set("selection", this.uploadingSelection);
+					if(msg.workspacePath.substr(-1) != '/'){
+						msg.workspacePath += '/';
+					}
+					this.set("value", msg.workspacePath+msg.filename);
+					this.set("uploadingSelection", "");
+				}
+			return;
+			}
 		},
 
 		labelFunc: function(item, store){
