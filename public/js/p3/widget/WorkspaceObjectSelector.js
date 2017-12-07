@@ -570,7 +570,7 @@ define([
 			this.searchBox.labelFunc = this.labelFunc;
 		},
 
-		onUploadMessage(msg){
+		onUploadMessage: function(msg){
 			if(msg && msg.type == "UploadComplete"){
 				if(this.uploadingSelection != ""){
 					this.set("disabled", false);
