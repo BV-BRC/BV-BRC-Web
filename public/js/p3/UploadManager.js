@@ -127,6 +127,7 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 					Topic.publish("/upload", {
 						type: "UploadComplete",
 						filename: file.name,
+						size: file.size,
 						url: url,
 						workspacePath: workspacePath
 					});
@@ -179,4 +180,3 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 
 	return UploadManager;
 });
-
