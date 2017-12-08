@@ -199,6 +199,10 @@ define([
 						genomeList.push(rec.genome_ids);
 					});
 
+					// log GA
+					if(window.gtag){
+						gtag('event', 'ComparativePathways', {'event_category': 'Services', 'search_on': values.search_on, 'keyword': values.keyword});
+					}
 					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genomeList + "))#view_tab=pathways" + ((filter) ? filter : "")});
 				}
 			}else{

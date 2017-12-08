@@ -146,6 +146,13 @@ define([
 			}
 		},
 
+		sanitizeFastaSequence: function(sequence){
+			var header = sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null})
+			var sanitized = sequence.split('\n').filter(function(line){ return line.match(/^>.*/) == null}).map(function(line){ return line.replace(/ /g,'')})
+
+			return header.concat(sanitized).join('\n')
+		},
+
 		hasSingleFastaSequence: function(sequence){
 			return sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null;}).length <= 1;
 		},
@@ -443,6 +450,10 @@ define([
 				this.sequence_message.innerHTML = 'PATRIC BLAST accepts only one sequence at a time. Please provide only one sequence.';
 				return;
 			}
+			var sanitized = this.sanitizeFastaSequence(val)
+			// console.log(sanitized)
+			this.sequence.set('value', sanitized)
+
 			this.sequence_message.innerHTML = '';
 			if(this.program.isLoaded()){
 				this.program.closeDropDown();
