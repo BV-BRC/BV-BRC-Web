@@ -172,7 +172,7 @@ define([
 					console.log("Job Submission Results: ", results);
 
 					if(window.gtag){
-						gtag('event', this.applicationName, {'event_category': 'Services', 'Results': results});
+						gtag('event', this.applicationName, {'event_category': 'Services'});
 					}
 
 					domClass.remove(_self.domNode, "Working")
