@@ -368,11 +368,11 @@ define([
 					var min_genome_count = parseInt(tb_num_genome_family_min.get('value'));
 					var max_genome_count = parseInt(tb_num_genome_family_max.get('value'));
 
-					!isNaN(min_member_count) ? filter.min_member_count = min_member_count : {};
-					!isNaN(max_member_count) ? filter.max_member_count = max_member_count : {};
+					!isNaN(min_member_count) ? filter.min_member_count = Math.min(min_member_count, max_member_count) : {};
+					!isNaN(max_member_count) ? filter.max_member_count = Math.max(min_member_count, max_member_count) : {};
 
-					!isNaN(min_genome_count) ? filter.min_genome_count = min_genome_count : {};
-					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
+					!isNaN(min_genome_count) ? filter.min_genome_count = Math.min(min_genome_count, max_genome_count) : {};
+					!isNaN(max_genome_count) ? filter.max_genome_count = Math.max(min_genome_count, max_genome_count) : {};
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
 					// console.log(this.pfState);
