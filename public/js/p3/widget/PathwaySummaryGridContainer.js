@@ -1,36 +1,38 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./SelectionToGroup",
+	"./ContainerActionBar", "FileSaver",
 	"./PathwaySummaryGrid", "./GridContainer", "./PerspectiveToolTip"
 ], function(declare, lang, on, Topic, domConstruct,
 			Dialog, popup, TooltipDialog, SelectionToGroup,
+			ContainerActionBar, saveAs,
 			PathwaySummaryGrid, GridContainer, PerspectiveToolTipDialog){
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		var self = this;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		gridCtor: PathwaySummaryGrid,
 		containerType: "pathway_summary_data",
 		facetFields: [],
-		enableFilterPanel: false,
+		dataModel: 'pathway_summary',
+		createFilterPanel: function(opts){
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: lang.mixin({}, this.state),
+				enableAnchorButton: false,
+				currentContainerWidget: this
+			});
+		},
 
 		buildQuery: function(){
 			// prevent further filtering. DO NOT DELETE
@@ -185,7 +187,34 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
+				function(){
+
+					downloadTT.set('content', dfc)
+
+					on(downloadTT.domNode, 'div:click', lang.hitch(this, function(evt){
+						var rel = evt.target.attributes.rel.value;
+						var DELIMITER, ext;
+						if(rel === 'text/csv'){
+							DELIMITER = ',';
+							ext = 'csv';
+						}else{
+							DELIMITER = '\t';
+							ext = 'txt';
+						}
+
+						var data  = this.grid.store.query("", {sort: this.grid.store.sort});
+
+						var headers = ['Pathway Name', '# of Gene Selected', '# of Genes Annotated', '% Coverage'];
+						var content = [];
+						data.forEach(function(row){
+							content.push([row.pathway_name, row.genes_selected, row.genes_annotated, row.coverage].join(DELIMITER));
+						})
+
+						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_pathway_summary.' + ext);
+
+						popup.close(downloadTT);
+					}));
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
