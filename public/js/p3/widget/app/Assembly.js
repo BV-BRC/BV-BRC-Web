@@ -347,7 +347,9 @@ define([
 		onAddSRR: function(){
 			var accession = this.srr_accession.get('value');
 			// console.log("updateSRR", accession, accession.substr(0, 3))
-			if(accession.substr(0, 3) !== 'SRR'){
+			var prefixList = ['SRR', 'ERR']
+			if(prefixList.indexOf(accession.substr(0, 3)) == -1){
+				this.srr_accession.set("state", "Error")
 				return false;
 			}
 
