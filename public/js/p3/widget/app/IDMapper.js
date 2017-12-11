@@ -14,7 +14,7 @@ define([
 	return declare([AppBase], {
 		"baseClass": "IDMapper",
 		applicationName: "IDMapper",
-		applicationHelp: "user_guide/genome_feature_data_and_tools/id_mapper.html",
+		applicationHelp: "user_guides/services/id_mapper.html",
 		templateString: Template,
 		path: "",
 		mapFromIDs: null,
