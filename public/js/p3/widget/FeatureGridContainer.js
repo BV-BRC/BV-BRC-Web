@@ -19,7 +19,7 @@ define([
 	return declare([GridContainer], {
 		gridCtor: FeatureGrid,
 		containerType: "feature_data",
-		facetFields: ["annotation", "feature_type"],
+		facetFields: ["public", "annotation", "feature_type"],
 		filter: "",
 		maxGenomeCount: 10000,
 		dataModel: "genome_feature",

@@ -381,7 +381,7 @@ define([
 					tooltip: "Copy Selection to Clipboard.",
 					tooltipDialog: copySelectionTT,
 					max: 5000,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "pathway_summary_data"]
 				},
 				function(selection, container){
 					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("selection", selection);
@@ -1263,7 +1263,7 @@ define([
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:56px;text-align:center;",
+				style: "width:56px;text-align:center;overflow-y: auto;",
 				splitter: false,
 				currentContainerWidget: this
 			});

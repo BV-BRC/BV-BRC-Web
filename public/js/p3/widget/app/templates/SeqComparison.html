@@ -4,7 +4,14 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Proteome Comparison</h3>
+            <h3>Proteome Comparison
+              <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+              <div class="infobox iconbox tutorialButton tutorialInfo">
+                <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+              </div>
+            </h3>
             <p>Protein sequence-based comparison using bi-directional BLASTP.</p>
         </div>
 
@@ -27,8 +34,8 @@
                                         <div class="headerrow">
                                             <div style="width:85%;display:inline-block;">
                                                 <label class="appBoxLabel">Parameters</label>
-                                                <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-                                                    <i class="fa icon-info-circle fa"></i>
+                                                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -91,8 +98,8 @@
                                         <div class="headerrow">
                                             <div style="width:85%;display:inline-block;">
                                                 <label class="appBoxLabel">Reference Genome</label>
-                                                <div name="referenceinfo" class="infobox iconbox infobutton dialoginfo">
-                                                    <i class="fa icon-info-circle fa"></i>
+                                                <div name="reference-genome-selection" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -129,8 +136,8 @@
                             <div class="headerrow">
                                 <div style="width:90%;display:inline-block;">
                                     <label class="appBoxLabel">Comparison Genomes</label>
-                                    <div name="comparisoninfo" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa"></i>
+                                    <div name="comparison-genomes-selection" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                     </div>
                                 </div>
                             </div>
@@ -206,4 +213,3 @@
         </div>
     </div>
 </form>
-

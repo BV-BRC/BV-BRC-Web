@@ -21,8 +21,11 @@ define([
 		},
 		setupResultType: function(){
 			// console.log("[GenomeAnnotation] setupResultType()");
+			if(this.data.autoMeta.app.id){
+				this._resultType = this.data.autoMeta.app.id;
+			}
+			this._appLabel = this._resultType;
 			this._resultMetaTypes = {"genome": {"label": "Genome"}};
-			this._appLabel = "Genome Annotation";
 			this._autoLabels = {
 				"num_features": {"label": "Feature count"},
 				"scientific_name": {"label": "Organism"},

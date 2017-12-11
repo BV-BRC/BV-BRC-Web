@@ -88,7 +88,12 @@ define([
 				label: "PNG Image",
 				formats: [".jpg", ".jpeg"],
 				description: "A PNG image file."
-			}
+			},
+            nwk: {
+                label: "Newick",
+                formats: [".nwk"],
+                description: "Phylogenetic tree file."
+            }
 		},
 		_setPathAttr: function(val){
 			this.path = val;
@@ -339,16 +344,19 @@ define([
 				// only show prompt if given file-already-exists error
 				if (err.indexOf('overwrite flag is not set') === -1) return;
 
+				var def = new Deferred();
 				var conf = "Are you sure you want to overwrite <i>" + obj.path + obj.name + "</i> ?";
 				var dlg = new Confirmation({
 					title: "Overwriting File!",
 					content: conf,
 					onConfirm: function(evt){
-						_self.uploadFile(file, uploadDirectory, type, true)
+						_self.uploadFile(file, uploadDirectory, type, true);
+						def.resolve(obj);
 					}
 				});
 				dlg.startup();
 				dlg.show();
+				return def.promise;
 			});
 
 		},

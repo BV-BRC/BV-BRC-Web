@@ -1,5 +1,5 @@
 <% var flows = [
-    {name: "PATRIC Workshop", secondary: "ARGONNE, IL", rel: "carousel_workshop", background: "#34698e"}
+    {name: "PATRIC CLI", secondary: "Command Line Interface", rel: "carousel_cli", background: "#34698e"}
     , {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
@@ -17,7 +17,46 @@
             <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
-
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_cli" class="CarouselContent showOnLoad dijitVisible">
+                    <div class="wrapper">
+                        <img class="right"
+                             src="/patric/images/carousel/CLI.png" alt="PATRIC Webinar">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC CLI</h1>
+                        <h2 class="xl highlight-f upper far">Command Line Interface</h2>
+                        <p>The PATRIC Command Line Interface (CLI) includes commands and features to
+                        1) run PATRIC services, including Genome Assembly and Annotation;
+                        2) enable access to PATRIC workspaces;
+                        3) manage data objects in the workspace, such as genomes; and
+                        4) facilitate access and manipulation of data retrieved from the PATRIC databases.
+                        Full-fledged documentation for using the CLI is available as well.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="https://docs.patricbrc.org/cli_tutorial/index.html"
+                              title="PATRIC CLI Tutorial"
+                              target="_blank" rel="noopener">CLI Tutorial</a></p>
+                        <br><br>
+                    </div>
+                </div>
+<% /*
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_webinar" class="CarouselContent showOnLoad dijitVisible">
+                    <div class="wrapper">
+                        <img class="right"
+                             src="/patric/images/carousel/webinar_PhyloTree.png" alt="PATRIC Webinar">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Webinar</h1>
+                        <h2 class="xl highlight-f upper far">Phylogenetic Tree Builder</h2>
+                        <p>PATRIC now provides a new service that builds phylogenetic trees. The trees, which can include both private
+                        and public data, are built using well-established methods for generating whole-genome phylogenies from amino
+                        acid sequences. On November 30th at 3pm EST we will provide a webinar demonstrates this service.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="http://enews.patricbrc.org/5225/patric-webinar-phylogenetic-tree-builder-november-30-2017-300pm-est/"
+                              title="PATRIC Webinar Phylogenetic Tree Builder"
+                              target="_blank" rel="noopener">More Information</a></p>
+                        <br><br>
+                    </div>
+                </div>
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop" class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
@@ -39,7 +78,7 @@
                         <br><br>
                     </div>
                 </div>
-
+*/ %>
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_service" class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
@@ -100,7 +139,7 @@
                               href="/view/DataType/AntibioticResistance">Explore Data</a></p>
                     </div>
                 </div>
-<!--
+<% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb"
                      class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper"><img class="right"
@@ -117,7 +156,7 @@
                               href="/view/Taxonomy/1763#view_tab=overview">Visit TB@PATRIC</a></p>
                     </div>
                 </div>
--->
+*/ %>
             </div>
         </div>
     </div>
@@ -322,11 +361,13 @@
                             <div style="text-align:left;padding-left:20px;"><%- svc.summary %></div>
                         </div>
                         <% }) %>
-                        <div style="text-align:right;"><a href="http://enews.patricbrc.org" target="_blank" rel="noopener">Read
+                        <div style="text-align:right;"><a href="https://docs.patricbrc.org/news/" target="_blank" rel="noopener">Read
                                 More</a></div>
                     </td>
                     <td style="width:10px;"></td>
                     <td style="vertical-align:top;">
+                        <a class="twitter-timeline" data-lang="en" data-height="400" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
                         <h2 class="section-title section-title-b"><span class="wrap">Top 10 Genera</span></h2>
                         <div data-dojo-type="p3/widget/TaxonomyTopNSummary" data-dojo-props="count:10"
                              style="width:100%;margin:0px;"></div>
@@ -373,7 +414,7 @@
                             <li><a href="//www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823">Facebook</a></li>
                         </ul>
                         <ul class="left no-decoration">
-                            <li><a href="http://enews.patricbrc.org/feed/">RSS</a></li>
+                            <li><a href="//docs.patricbrc.org/news.rss">RSS</a></li>
                             <li><a href="//www.youtube.com/user/PATRICBRC">YouTube</a></li>
                             <li><a href="//www.addthis.com/bookmark.php?v=250&amp;username=xa-4c40660c515875dc">Share This</a></li>
                         </ul>

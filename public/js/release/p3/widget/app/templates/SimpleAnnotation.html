@@ -12,7 +12,7 @@
 				<div style="width:85%;display:inline-block;">
 					<label class="appBoxLabel">Parameters</label>
 					<div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa icon-info-circle fa"></i>
+						<i class="fa icon-info-circle fa" title="click to open info dialog"></i>
 					</div>
 				</div>
 			</div>
@@ -42,14 +42,14 @@
 				<div class="appField">
 					<label>Taxonomy ID / Name / Rank</label><br>
 					<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonInfoSelector" name="scientific_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
-				</div> 
+				</div>
 			</div>
 
 			<div style="display:none" class="appRow">
 				<div class="appField">
 					<label>Taxonomy ID</label><br>
 					<div data-dojo-attach-event="onChange:onTaxIDChange" data-dojo-type="p3/widget/TaxIDSelector" value=""  name="tax_id" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="tax_idWidget"></div>
-				</div> 
+				</div>
 			</div>
 			<div class="appRow">
 				<div class="appField">
@@ -68,8 +68,8 @@
 					<div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'" data-dojo-attach-event="onChange:onOutputPathChange"></div>
 				</div>
 			</div>
-			
-			
+
+
 		</div>
 		</div>
 	<div class="appSubmissionArea">

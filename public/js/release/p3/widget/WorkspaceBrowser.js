@@ -362,7 +362,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.browserHeader.addAction("ViewAnnotatedGenome", "fa icon-eye fa-2x", {
 				label: "VIEW",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -371,16 +371,17 @@ define("p3/widget/WorkspaceBrowser", [
 			}, false);
 
 			this.browserHeader.addAction("ViewModel", "fa icon-eye fa-2x", {
-				label: "VIEW",
+				label: 'VIEW <i class="icon-external-link"></i>',
 				multiple: false,
 				validTypes: ["model"],
-				tooltip: "View Model @ ModelSEED.org"
+				tooltip: 'View Model @ ModelSEED.org'
 			}, function(selection){
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 
 				// adjust path for legacy modelseed
-				var parts = path.split('/')
-				path = parts.slice(0, -1).join('/') + '/.'+ parts.slice(-1)[0]
+				var parts = path.split('/');
+				var isLegacy = parts[1] == 'models';
+				path = parts.slice(0, -1).join('/') + '/' + (isLegacy ? '' : '.') + parts.slice(-1)[0];
 
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				window.open(url, "_blank");
@@ -389,7 +390,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.browserHeader.addAction("ViewAnnotatedGenomeCDS", "fa icon-genome-features-cds fa-2x", {
 				label: "CDS",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -401,7 +402,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -463,7 +464,7 @@ define("p3/widget/WorkspaceBrowser", [
 					type: "CreateWorkspace"
 				});
 			},  self.path.split('/').length < 3);
-            
+
             this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
 				label: "VIEW",
 				multiple: false,
@@ -515,8 +516,8 @@ define("p3/widget/WorkspaceBrowser", [
 				Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?&wsExpId=" + eid});
 
 			}, false);
-			
-            
+
+
 
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
@@ -1283,6 +1284,7 @@ define("p3/widget/WorkspaceBrowser", [
 									}
 									break;
 								case "GenomeAnnotation":
+								case "GenomeAnnotationGenbank":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
                 case "Variation":

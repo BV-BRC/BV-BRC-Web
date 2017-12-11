@@ -1,9 +1,13 @@
-<form dojoAttachPoint="containerNode" class="PanelForm"
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Similar Genome Finder</h3>
+            <h3>Similar Genome Finder
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                  <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                </div>
+            </h3>
             <p>Find similar public genomes or compute genome distance estimation using Mash/MinHash.</p>
         </div>
 
@@ -106,7 +110,7 @@
         <div class="appSubmissionArea">
             <div style="margin-top: 10px; text-align:center;">
                 <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-point="mapButton"
+                     data-dojo-attach-point="submitButton"
                      data-dojo-attach-event="onClick:submit"
                      data-dojo-props="disabled:false">
                     Search

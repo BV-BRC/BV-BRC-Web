@@ -15,6 +15,7 @@ define([
 		"baseClass": "App SeqSimilarity",
 		templateString: Template,
 		applicationName: "Sequence Similarity",
+		tutorialLink: "tutorial/similar_genome_finder/similar_genome_finder.html",
 		defaultPath: "",
 
 		onSearchByChange: function(newVal){

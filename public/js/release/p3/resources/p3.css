@@ -13281,8 +13281,8 @@ background-color: #FF00FF;
 	padding: 4px;
 }
 .WorkspaceController {
-	background:#ddd;
-	border-top: #227194;
+	background:#eee;
+	border-top: 1px solid #e2e2e2;
 }
 .BrowserHeader {
 	padding: 0;
@@ -13356,16 +13356,6 @@ color:#fff;font-weight:600;background:#34698e;
 	font-size:1.0em;
 	font-weight: 600;
 	vertical-align: bottom;
-}
-.UploadComplete {
-	color: green;
-	border: 1px solid green;
-}
-.UploadingButton {
-	display: inline-block;
-	margin: 2px 4px 2px 2px;
-	padding:2px;
-	border: 1px solid gray;
 }
 .TypeContainer {
 	display: inline-block;
@@ -13464,60 +13454,80 @@ th.dgrid-cell.wsItemType {
 .JobStatusButton {
 	cursor: pointer;
 }
-.JobStatusButton > A:first-child,
-.JobStatusButton > SPAN:first-child {
-	color:#fff;margin:2px;padding:2px
+.JobStatusButton > a:first-child,
+.JobStatusButton > span:first-child {
+	color:#fff;
+	margin:2px;
+	padding:2px;
 }
-.UploadStatusArea > SPAN {
+.UploadStatusArea > span {
 	color:#fff;
 	margin: 2px 2px 2px 0;
-	padding: 2px 2px 2px 0;
 }
 .UploadStatusArea{
 	cursor: pointer;
 	display:inline-block;
+    padding: 2px;
 }
 .UploadStatusUpload{
 	display:inline-block;
 	margin: 2px 0 2px 2px;
-	padding: 2px 0 2px 2px;
+    padding: 2px 0 2px 2px;
 }
 .UploadStatusUpload .fa {
 	color: #ddd;
 }
-.JobStatusCount,
-.UploadStatusCount {
-	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
+.UploadingProgress  {
+	border-left: 1px solid #ccc;
+	height: 30px;
+	padding-left: 5px;
 }
-.JobsComplete,
-.UploadingComplete{
-	color: blue;
-	margin: 0;
+.JobStatusCounts,
+.UploadStatusCounts {
+	display:inline-block;
+	background:#FFFFFF;
+	border-radius:2px;
+	margin:2px;
+	padding:2px;
 }
-.JobsRunning,
-.UploadingProgress,
-.UploadingActive{
-	color: green;
-	margin: 0;
+.JobStatusCounts {
+	color: #ddd;
 }
-.JobsRunning::before,
-.JobsQueued::before,
-.JobsSuspended::before,
-.UploadingActive::before{
-	content:"\00b7";
+.JobStatusCounts span,
+.UploadStatusCounts span{
 	color: #333;
 }
-.UploadingProgress::before{
-	content:"\00b7";
-	color: #333;
+.UploadStatusCounts .divider,
+.JobStatusCounts .divider {
+	border-left:1px solid #ccc;
+	height: 30px;
+	margin: 0 5px 0 0;
 }
 .JobsQueued {
-	color: orange;
-	margin: 0;
+	color: #777;
 }
-.JobsSuspended {
-	color: red;
-	margin: 0;
+.JobsRunning,
+.UploadsRunning{
+	color: #98981d;
+}
+.JobsCompleted,
+.UploadsCompleted{
+	color: #3c763d;
+}
+.JobsFailed {
+	color: #a94442;
+}
+.JobFilters .JobFilter {
+	opacity: 0.75;
+	padding: 0 0 5px 0;
+}
+.JobFilters .JobFilter:hover,
+.JobFilters .JobFilter.active  {
+	opacity: 1.0;
+	cursor: pointer;
+}
+.JobFilters .JobFilter.active {
+	border-bottom: 3px solid #c0d3a2;
 }
 .ActionButtonWrapper {
 	font-size: 1.1em;
@@ -13786,7 +13796,17 @@ th.dgrid-cell.wsItemType {
 .appSubmissionArea {
     margin-bottom: 20px;
 }
-.nonModal_underlay {
+.helpModal .headerlink {
+    display: none
+}
+.helpModal h2,
+.helpModal h3 {
+    margin-bottom: 0.5em;
+}
+.helpModal .section {
+    margin-bottom: 20px;
+}
+.helpTooltip h2 {
     display: none
 }
 .appField {
@@ -14236,9 +14256,6 @@ div.appsublabel {
 .dgrid-cell.field-disease {
 	width: 15%;
 	white-space: nowrap;
-}
-.section > H2 {
-	background: #efefef;
 }
 .dgrid-column-status_indicator{
     width: 30px;
@@ -15104,7 +15121,7 @@ i.home_dlp {
   position: relative;
 }
 .patric .dlp .ribbon-title .wrap {
-  background: url(/patric/images/ribbon-title-wrap.png) no-repeat top left;
+  background: no-repeat top left;
   position: absolute;
   bottom: -9px;
   left: 0;
@@ -15743,6 +15760,59 @@ i.home_dlp {
 }
 .HelpContent SECTION {
 	padding: 4px;
+}
+.patric .webpage {
+    width: 967px !important;
+    margin: 5px auto 0 auto;
+    position: relative !important;
+}
+.patric .webpage .section {
+    margin-bottom: 25px;
+}
+.patric .webpage .section a.headerlink {
+    display: none;
+}
+.patric .webpage .section p {
+    margin: 0 0 5px 0;
+}
+.patric .webpage h1 {
+    color: #666666;
+    font-size: 2em;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+}
+.patric .webpage h2 {
+    font-size: 1.5em;
+    margin-top: 0.5em;
+}
+.patric .webpage ul {
+    padding: 0 0 0 10px;
+    margin: 0 0 17px 0;
+}
+.patric .webpage table {
+    border-collapse: separate;
+    empty-cells: hide;
+    border-bottom: #d3d3d3 1px solid;
+    border-right: #d3d3d3 1px solid;
+    border-spacing: 0;
+}
+.patric .webpage table th,
+.patric .webpage table td,
+.patric .webpage table caption {
+    padding: 4px 5px;
+}
+.patric .webpage table thead th {
+    background: #fff;
+    color: #666666;
+    font-weight: bold;
+}
+.patric .webpage table td,
+.patric .webpage table th {
+    border-top: #d3d3d3 1px solid;
+    border-left: #d3d3d3 1px solid;
+}
+.patric .webpage table tr:nth-child(odd) td,
+.patric .webpage table tr.even td {
+    background: #f5f5f5;
 }
 .cy-context-menus-cxt-menu {
     display:none;

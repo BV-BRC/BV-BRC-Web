@@ -29,63 +29,79 @@ define([
 
 		gethelp: function(){
 
-			var helprequest = xhr.get("/js/p3/widget/app/help/" + this.applicationName + "Help.html", {
-				handleAs: "text"
-			});
-			helprequest.then(function(data){
-				this.help_doc = domConstruct.toDom(data);
-				var ibuttons = query(".infobutton");
-				ibuttons.forEach(function(item){
-					//var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
-					//basic flat child workaround for getting help in safari. will break if nested.
-					var help_text = null;
-					for(i = 0; i < this.help_doc.childNodes.length; i++){
-						if(this.help_doc.childNodes[i].id == item.attributes.name.value){
-							help_text = this.help_doc.childNodes[i];
-						}
-					}
-					help_text = help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
-					help_text.style.overflowY = 'auto';
-					help_text.style.maxHeight = '400px';
-					if(dojo.hasClass(item, "dialoginfo")){
-						item.info_dialog = new Dialog({
-							content: help_text,
-							"class": 'nonModal',
-							draggable: true,
-							style: "max-width: 350px;"
-						});
-						item.open = false;
-						on(item, 'click', function(){
-							if(!item.open){
-								item.open = true;
-								item.info_dialog.show();
-							}
-							else{
-								item.open = false;
-								item.info_dialog.hide();
-							}
-						});
-					}
-					else if(dojo.hasClass(item, "tooltipinfo")){
-						item.info_dialog = new TooltipDialog({
-							content: help_text,
-							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
-							onMouseLeave: function(){
-								popup.close(item.info_dialog);
-							}
-						});
-						on(item, 'mouseover', function(){
-							popup.open({
-								popup: item.info_dialog,
-								around: item
-							});
-						});
-						on(item, 'mouseout', function(){
-							popup.close(item.info_dialog);
-						});
-					}
+			if (this.applicationHelp){
+				var helprequest = xhr.get(window.App.docsServiceURL + this.applicationHelp, {
+					handleAs: "text"
 				});
-			});
+				helprequest.then(function(data){
+					data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />','')
+					this.help_doc = domConstruct.toDom(data);
+					var ibuttons = query(".infobutton");
+					ibuttons.forEach(function(item){
+						//var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+						//basic flat child workaround for getting help in safari. will break if nested.
+						var help_text = null;
+						for(i = 0; i < this.help_doc.childNodes.length; i++){
+							if(this.help_doc.childNodes[i].id == item.attributes.name.value){
+								help_text = this.help_doc.childNodes[i];
+							}
+						}
+						help_text = help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
+						help_text.style.overflowY = 'auto';
+						help_text.style.maxHeight = '400px';
+						if(dojo.hasClass(item, "dialoginfo")){
+							item.info_dialog = new Dialog({
+								content: help_text,
+								"class": 'helpModal',
+								draggable: true,
+								style: "max-width: 350px;"
+							});
+							item.open = false;
+							on(item, 'click', function(){
+								if(!item.open){
+									item.open = true;
+									item.info_dialog.show();
+								}
+								else{
+									item.open = false;
+									item.info_dialog.hide();
+								}
+							});
+						}
+						else if(dojo.hasClass(item, "tooltipinfo")){
+							item.info_dialog = new TooltipDialog({
+								content: help_text,
+								"class": 'helpTooltip',
+								style: "overflow-y: auto; max-width: 350px; max-height: 400px",
+								onMouseLeave: function(){
+									popup.close(item.info_dialog);
+								}
+							});
+							on(item, 'mouseover', function(){
+								popup.open({
+									popup: item.info_dialog,
+									around: item
+								});
+							});
+							on(item, 'mouseout', function(){
+								popup.close(item.info_dialog);
+							});
+						}
+					});
+				});
+			}
+
+			var tutorials = query(".tutorialButton");
+			var tutorialLink = window.App.docsServiceURL + (this.tutorialLink || 'tutorial/');
+			tutorials.forEach(function(item){
+				if (dojo.hasClass(item, "tutorialInfo")){
+					on(item, 'click', function() {
+						// console.log(tutorialLink)
+						window.open(tutorialLink, 'Tutorials')
+					})
+				}
+			})
+
 		},
 
 		onOutputPathChange: function(val){
@@ -154,6 +170,11 @@ define([
 				this.submitButton.set("disabled", true);
 				window.App.api.service("AppService.start_app", [this.applicationName, values]).then(function(results){
 					console.log("Job Submission Results: ", results);
+
+					if(window.gtag){
+						gtag('event', this.applicationName, {'event_category': 'Services'});
+					}
+
 					domClass.remove(_self.domNode, "Working")
 					domClass.add(_self.domNode, "Submitted");
 					_self.submitButton.set("disabled", false);
