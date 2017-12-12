@@ -168,11 +168,7 @@ define([
 		},
 
 		_setSelectionAttr: function(val){
-			//make sure file has been uploaded
-			if(val.size == 0){
-				new Dialog({title: "Notice", draggable: true, content: "Selected file is not ready, please wait."}).show();
-				return;
-			}
+			
 			this.selection = val;
 
 			// ensures item is in store (for public workspaces),
@@ -576,7 +572,7 @@ define([
 		},
 
 		onUploadMessage: function(msg){
-			if(msg && msg.type == "UploadComplete"){
+			if(msg && msg.filename == this.uploadingSelection.name && msg.type == "UploadComplete" ){
 				if(this.uploadingSelection != ""){
 					this.uploadingSelection.size = msg.size;
 					this.set("disabled", false);
@@ -584,7 +580,7 @@ define([
 					if(msg.workspacePath.substr(-1) != '/'){
 						msg.workspacePath += '/';
 					}
-					this.set("value", msg.workspacePath+msg.filename);
+					this.set("value", this.uploadingSelection.path, true);
 					this.set("uploadingSelection", "");
 				}
 			return;
