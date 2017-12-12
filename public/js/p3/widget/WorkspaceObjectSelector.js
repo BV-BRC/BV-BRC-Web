@@ -576,7 +576,7 @@ define([
 		},
 
 		onUploadMessage: function(msg){
-			if(msg && msg.type == "UploadComplete"){
+			if(msg && msg.filename == this.uploadingSelection.name && msg.type == "UploadComplete" ){
 				if(this.uploadingSelection != ""){
 					this.uploadingSelection.size = msg.size;
 					this.set("disabled", false);
