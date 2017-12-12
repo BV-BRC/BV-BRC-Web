@@ -168,11 +168,7 @@ define([
 		},
 
 		_setSelectionAttr: function(val){
-			//make sure file has been uploaded
-			if(val.size == 0){
-				new Dialog({title: "Notice", draggable: true, content: "Selected file is not ready, please wait."}).show();
-				return;
-			}
+			
 			this.selection = val;
 
 			// ensures item is in store (for public workspaces),
