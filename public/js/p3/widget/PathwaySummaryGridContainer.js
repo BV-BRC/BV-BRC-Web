@@ -141,10 +141,10 @@ define([
 					//no need to remove duplicate as WorkspaceManager takes care of it
 					var features = [];
 					feature_ids.forEach(function(s){
-					  s.forEach(function(d){
+						s.forEach(function(d){
 							features.push({feature_id: d});
 						})
-				  });
+					});
 
 					var genome_ids = selection.map(function(d){
 						return d['genome_ids'];
@@ -207,7 +207,7 @@ define([
 						var headers = ['Pathway Name', '# of Gene Selected', '# of Genes Annotated', '% Coverage'];
 						var content = [];
 						data.forEach(function(row){
-							content.push([row.pathway_name, row.genes_selected, row.genes_annotated, row.coverage].join(DELIMITER));
+							content.push(['"' + row.pathway_name + '"', row.genes_selected, row.genes_annotated, row.coverage].join(DELIMITER));
 						})
 
 						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_pathway_summary.' + ext);

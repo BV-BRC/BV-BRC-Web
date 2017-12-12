@@ -15,6 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "ComparativePathway",
+		applicationHelp: "user_guides/services/comparative_pathway_service.html",
 		tutorialLink: "tutorial/comparative_pathways/comparative_pathways.html",
 		pageTitle: "Comparative Pathway Tool",
 		libraryData: null,
