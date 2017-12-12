@@ -584,7 +584,7 @@ define([
 					if(msg.workspacePath.substr(-1) != '/'){
 						msg.workspacePath += '/';
 					}
-					this.set("value", msg.workspacePath+msg.filename);
+					this.set("value", this.uploadingSelection.path, true);
 					this.set("uploadingSelection", "");
 				}
 			return;
