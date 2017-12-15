@@ -349,12 +349,22 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("genome_id", lang.hitch(this, "onSetGenomeId"));
 			this.watch("referenceSequences", lang.hitch(this, "onSetReferenceSequences"));
-
+			
 			Topic.subscribe("CircularView", lang.hitch(this, function(){
+				console.log("CircularViewerContainer this", this);
 				var key = arguments[0];
 				var value = arguments[1];
-				//console.log("CircularViewerContainer addCustomTrack", value);	
-				if(key === "addCustomTrack") {
+				console.log("CircularView", value);	
+
+				if(key === "removeTrack") {
+					for (var i=0; i<this.viewer._tracks.length; i++) {
+						if (this.viewer._tracks[i].title === value.title) {
+							this.viewer.removeTrack(i);
+						}
+					}
+					console.log("CircularViewerContainer removeTrack viewer", this.viewer);
+				}
+				else if(key === "addCustomTrack") {
 					var track_name = "Custom track " + value.index;
 					//var filter = "&keyword(" + encodeURIComponent(value.keyword);
 					// use searchToQuery for advanced keyword search
@@ -489,10 +499,9 @@ define([
 							data: value.userData							
 						}, "outer");
 					} 
-					
 				}
-				
 			}));			
+			console.log("CircularViewerContainer viewer", this.viewer);
 		},
 
 		visible: false,
@@ -524,6 +533,7 @@ define([
 
 			this.addChild(this.controlPanel);
 			this.addChild(this.viewer);
+			console.log("CircularViewerContainer viewer", this.viewer);	
 		}
 	});
 });

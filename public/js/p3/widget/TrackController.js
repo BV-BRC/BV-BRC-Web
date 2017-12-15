@@ -62,7 +62,8 @@ define([
 
 		visibleIconClass: "icon-eye",
 		hiddenIconClass: "icon-eye-slash",
-
+        removeIconClass: "icon-close",
+        
 		saveSVG: function(){
 			// console.log("saveSVG()");
 			if(this.viewer){
@@ -293,10 +294,12 @@ define([
 			colorPicker.watch("backgroundColor", function(attr, oldVal, color){
 				console.log("COLOR PICKER VALUE: ", color)
 				event.track.set('backgroundColor', color)
+				console.log("backgroundColor event.track=", event.track);
 			});
 
 			colorPicker.watch("foregroundColor", function(attr, oldVal, color){
 				event.track.set("foregroundColor", color)
+				console.log("foregroundColor event.track=", event.track);
 			});
 
 			var tdinfo = domConstruct.create("td", {innerHTML: event.track.title}, tr);
@@ -367,12 +370,12 @@ define([
 						console.log("hide");
 						domClass.remove(visibleButton, this.visibleIconClass);
 						domClass.add(visibleButton, this.hiddenIconClass);
-						event.track.set('visible', false)
+						event.track.set('visible', false);
 					}else{
 						console.log("show");
 						domClass.remove(visibleButton, this.hiddenIconClass);
 						domClass.add(visibleButton, this.visibleIconClass);
-						event.track.set('visible', true)
+						event.track.set('visible', true);
 					}
 				}))
 			}
@@ -383,14 +386,21 @@ define([
 
 			// })
 			// disabled the remove button for future implementation
-			/*
-			if(!event.isReferenceTrack){
-				domConstruct.create("i", {
+		    console.log("trackTable = ", this.trackTable);
+			
+			if(!event.isReferenceTrack && event.track.hideable != false){
+				var removeButton = domConstruct.create("i", {
 					'class': "fa icon-close fa-2x" + (event.isReferenceTrack ? " disabled" : ""),
 					style: {margin: "2px"}
 				}, td);
+				
+				on(removeButton,"click", lang.hitch(this, function(evt){
+                    domConstruct.empty(removeButton.parentNode.parentNode.parentNode);
+					//event.track.set('visible', false);                    
+					Topic.publish("CircularView", "removeTrack", event.track);
+			    }));
 			}
-			*/
+	
 		}
 
 	});
