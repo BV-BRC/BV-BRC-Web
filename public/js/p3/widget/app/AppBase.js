@@ -10,6 +10,7 @@ define([
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "App Sleep",
 		templateString: Template,
+		docsServiceURL: window.App.docsServiceURL,
 		path: "",
 		applicationName: "Date",
 		showCancel: false,
