@@ -109,11 +109,12 @@ define([
 					objs.sort(function(a, b){
 						var s = sort[0];
 						if(s.descending){
-							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
+							return (a[s.attribute] < b[s.attribute]) ? 1 : -1
 						}else{
 							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 						}
 					});
+
 					return objs;
 				})
 
