@@ -158,7 +158,7 @@ define([
 					popup.open({
 						popup: uploadTolltip,
 						around: a,
-						orient: ["above-centered", "below-centered"],
+						orient: ["above-centered", "below-centered"]
 					});
 				}));
 				on(a, 'mouseout', function(){
