@@ -116,7 +116,7 @@ define([
 //					return a.name > b.name;
 //				})
 
-				console.log("******before set data track title:", title, " refseqs:", refseqs, "type of refseqs", typeof refseqs);
+				// console.log("******before set data track title:", title, " refseqs:", refseqs, "type of refseqs", typeof refseqs);
 				track.set("data", refseqs);
 
 				return refseqs;
@@ -281,7 +281,7 @@ define([
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				//console.log("GC CONTENT: ", gcContentData);
+				// console.log("GC CONTENT: ", gcContentData);
 				//gcContentTrack3.set('data', gcContentData);
 				//gcContentTrack2.set('data', gcContentData);
 				//gcSkewTrack2.set('data', gcContentData);
@@ -351,10 +351,10 @@ define([
 			this.watch("referenceSequences", lang.hitch(this, "onSetReferenceSequences"));
 			
 			Topic.subscribe("CircularView", lang.hitch(this, function(){
-				console.log("CircularViewerContainer this", this);
+				// console.log("CircularViewerContainer this", this);
 				var key = arguments[0];
 				var value = arguments[1];
-				console.log("CircularView", value);	
+				// console.log("CircularView", value);	
 
 				if(key === "removeTrack") {
 					for (var i=0; i<this.viewer._tracks.length; i++) {
@@ -362,7 +362,7 @@ define([
 							this.viewer.removeTrack(i);
 						}
 					}
-					console.log("CircularViewerContainer removeTrack viewer", this.viewer);
+					// console.log("CircularViewerContainer removeTrack viewer", this.viewer);
 				}
 				else if(key === "addCustomTrack") {
 					var track_name = "Custom track " + value.index;
@@ -388,7 +388,7 @@ define([
 					}
 				
 					filter = filter +  "and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
-					console.log("filter = ", filter);
+					// console.log("filter = ", filter);
 					// console.log("CircularViewerContainer addCustomTrack", value);
 					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
 				} 
@@ -501,7 +501,7 @@ define([
 					} 
 				}
 			}));			
-			console.log("CircularViewerContainer viewer", this.viewer);
+			// console.log("CircularViewerContainer viewer", this.viewer);
 		},
 
 		visible: false,
@@ -533,7 +533,7 @@ define([
 
 			this.addChild(this.controlPanel);
 			this.addChild(this.viewer);
-			console.log("CircularViewerContainer viewer", this.viewer);	
+			// console.log("CircularViewerContainer viewer", this.viewer);	
 		}
 	});
 });
