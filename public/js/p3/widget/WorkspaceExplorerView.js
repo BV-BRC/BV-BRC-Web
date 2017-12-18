@@ -34,6 +34,7 @@ define([
 		},
 
 		listWorkspaceContents: function(ws){
+
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
@@ -98,6 +99,21 @@ define([
 						objs = objs.filter(function(r){
 							return (r && r.type && (_self.types.indexOf(r.type) >= 0))
 						})
+					}
+
+					// if special folder, sort by create_time by default
+					var specialSortFolders = [
+						"Genome Groups",
+						"Feature Groups",
+						"Experiments",
+						"Experiment Groups"
+					];
+					var folderName = parts[parts.length - 1];
+					if(specialSortFolders.indexOf(folderName) != -1){
+						_self.prevSort = _self._sort;
+						_self.set('sort', [{ attribute: 'creation_time', descending: false }] )
+					}else{
+						_self.set('sort', _self.prevSort || [{ attribute: 'name', descending: false }])
 					}
 
 					// sorting
