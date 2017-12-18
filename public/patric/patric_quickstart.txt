@@ -1,0 +1,39 @@
+PATRIC QUICKSTART
+
+**Introduction to Navigation Concepts** - This brief document will introduce you to some key navigation concepts in PATRIC. The patterns introduced here are used throughout PATRIC. Once you understand how they are used in one area, applying what you have learned to the rest of the site is straightforward.
+
+PATRIC is made up of a number of VIEWS.  For example, the Genome View is focused on a single annotated genome and its related data, and likewise, the Feature View is focused on a single genomic feature and its related data. Most PATRIC data types have a view associated with them. The Genome List, Taxonomy, and Genome Group Views are each focused on collections of genomes.
+
+In this introduction, we are going to explore these concepts using the Taxonomy View. This view organizes collections of genomes by the organism's taxonomic classification.
+
+**View** - By clicking the ORGANISMS top menu item, and selecting Coxiella from the drop-down menu, we are are presented the Coxiella Taxonomic View, with the Overview tab selected. This view provides access to the data in PATRIC within the Coxiella taxonomic level.
+
+**Header** - The Header on this view, displayed in the top left of the page under the menu, tells you what view you are in and the scope of that view. In this example, we are in the  "Taxon View" and the scope is "Coxiella, denoted by the final breadcrumb in the taxonomic hierarchy: Bacteria >> Protobacteria >> Gammaproteobacteria >> Legionellales >> Coxiellaceae >> Coxiella". The final entry in this breadcrumb is the number of items in this collection, which is (28 Genomes), which corresponds the number of Coxiella genomes in PATRIC at the time this document was created.
+
+**Tabs** - The additional tabs provide access to the other data types associated with the current scope of 28 Coxiella genomes.  These tabs include Phylogeny, Taxonomy, Genomes, Sequences, Features, Specialty Genes, Protein Families, and additional data types.
+
+**Genome Tab** - Selecting the Genomes tab displays a table (tabular Grid that displays the list of data retrieved from the PATRIC database) containing the 28 Coxiella genomes in PATRIC. This count is presented both at the end of the breadcrumb in the Header as well as at the bottom left of the table: "1 - 28 of 28 results."
+
+**Feature Tab** - Selecting the Features tab displays a table containing all the genomic features associated with these 28 genomes, which was a total of 63,033 at the time this document was created.  This count is shown at the bottom left of the table: "1 - 200 of 63033 results."
+
+**Table** - Some key features of each of these tabs include the table itself which contains the list of items, the page and row count of the table (bottom left of the table), and the page count showing which page number is being displayed in the current view of the paginated results (bottom right of the table). By default, PATRIC shows 200 rows per page.
+
+**Table Filter and Action Bar** - Directly above the table is the Table Filter and Action Bar. Actions performed in this area apply to the entire contents of the table. For example, the Download button (top left of the table), allows you to download the entire table. By default, 2 filters are already applied: "CDS" and "PATRIC."
+
+**Selection Action Bar** - To the right of the table is the vertical Selection Action Bar. Buttons chosen in this bar apply to only those rows in the table that are selected (those with the checkbox on the left side selected). For example, the Download button in the Selection Action Bar only downloads the rows that are selected. As you select rows in the table, the options in the Selection Action Bar change to reflect what actions are available for the selected items.
+
+**Filters** - In our example, in the Features tab, the default displays PATRIC CDS annotated features for the 28 Coxiella genomes. If we remove the CDS filter by clicking the "feature type x" text below the "CDS" text above the table, we see *all* PATRIC features, not just CDS.
+
+You can select which filters to apply by clicking the FILTERS button in the top right portion of the Action Bar above the table, which displays a panel showing the available filters (table column/field) and a summary of the corresponding values from the table. For example, selecting "rRNA" and "tRNA" from the "Feature Type" filter will filter the table down to only those feature types.  Clicking the HIDE button at the top right portion of the action bar closes the Filter panel and toggles that button back to FILTERS. The resulting table shows only the rRNA and tRNA features, and the result count on the bottom left of the table is updated.
+
+As another example, clicking the Genomes tab and then the FILTERS button displays the available filters for the Coxiella _genomes_. Clicking "Complete" under the "Genome Status" filter and "Human, Homo sapiens" under the "Host Name" filter will filter the table down to only those genomes that match both criteria, and the result count on the bottom left is reduced as well. However, the top-level _Taxon View_, and hence the other tabs, are still scoped for all of the Coxiella genomes (28 in our example).
+
+**Refocusing the View** - To refocus (re-scope) the View to only the filtered set of genomes, click the APPLY button at the top right of the table.  Now the View, and thus all the tabs, are scoped to just the set of genomes established by the filter. Also, the Header at the top of the page under the Menu is updated to show the current scope, ""Coxiella, denoted by the final breadcrumb in the taxonomic hierarchy: Bacteria >> Protobacteria >> Gammaproteobacteria >> Legionellales >> Coxiellaceae >> Coxiella >> where HOST_NAME is 'Human, Homo sapiens' AND GENOME_STATUS is 'Complete' (3 genomes)."
+
+_Helpful hint:_ Button icons that are enclosed in square brackets "[ ]" will update the current view or switch to a new one.
+
+Clicking on the Features tab in this example will now display only the set of features associated with the filtered set of genomes, and update the result count on the bottom left of the table accordingly.
+
+**Genome View** - To access the Genome View for one of the Coxiella genomes, click the checkbox beside one of the genomes in the table in the Genomes tab, then click the GENOME button in the Select Action Bar on the right side of the table. This will display the (single) Genome View.  All of the tabs and information in this view are scoped to this single genome.
+
+**Conclusion** - using the basic concepts provided in this introduction, you should be able to more readily access your data of interest in PATRIC.

@@ -11,6 +11,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "PhylogeneticTree",
+		applicationHelp: "user_guide/genome_data_and_tools/phylogenetic_tree_building_service.html",
+		tutorialLink: "tutorial/phylogenetic_tree_building/tree_building.html",
 		pageTitle: "Phylogenetic Tree Building",
 		defaultPath: "",
 		startingRows: 9,

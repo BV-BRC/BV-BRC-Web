@@ -241,9 +241,28 @@ define("p3/widget/viewer/DataType", [
 
 			window.document.title = dataType;
 
-			when(request.get(PathJoin(this.apiServiceUrl, "content/dlp/", dataType), {
-				handleAs: "html"
-			}), lang.hitch(this, function(content){
+			// when(request.get(PathJoin(this.apiServiceUrl, "content/dlp/", dataType), {
+			when(request.get(PathJoin(window.App.docsServiceURL, "website/data_landing_pages/", dataType + '.html'), {
+				handleAs: "text"
+			}), lang.hitch(this, function(data){
+
+				data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />','')
+				doc = domConstruct.toDom(data)
+				// console.log(doc.childNodes.length, doc.childNodes)
+
+				len = doc.childNodes.length
+				for(i = 0; i < len; i++){
+					// console.log(i, doc.childNodes[i].tagName)
+					if (doc.childNodes[i].tagName === 'DIV'){
+						// console.log(i, doc.childNodes[i])
+						rootDivNode = doc.childNodes[i]
+						sectionDivNode = rootDivNode.children[1]
+						contentDivNode = sectionDivNode.children[1]
+						articleNode = contentDivNode.children[0].children[1]
+						articleBody = articleNode.children[0]
+						content = articleBody.children[0].children[1]
+					}
+				}
 
 				this.template = content;
 				this.viewer.set('content', content);

@@ -15,6 +15,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "ProteinFamily",
+		applicationHelp: "user_guide/protein_family_sorter/protein_family_service.html",
+		tutorialLink: "tutorial/protein_family_sorter/protein_family_sorter.html",
 		pageTitle: "Protein Family Sorter",
 		libraryData: null,
 		defaultPath: "",

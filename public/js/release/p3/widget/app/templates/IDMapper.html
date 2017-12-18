@@ -1,9 +1,13 @@
-<form dojoAttachPoint="containerNode" class="PanelForm"
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>ID Mapper</h3>
+            <h3>ID Mapper
+              <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+            </h3>
             <p>Map from one ID type to another and obtain PATRIC gene lists from a list of IDs.</p>
         </div>
 
@@ -156,8 +160,8 @@
                     <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
                         <div class="appField" style="width:150px;">
                             <label class="paramlabel">PATRIC Feature Strategy</label>
-                            <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
-                                <i data-dojo-attach-point="patricMapInfo" class="fa icon-info-circle fa"></i>
+                            <div name="patric-feature-strategy" class="infobox iconbox infobutton dialoginfo">
+                                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                             </div>
                             <div class="appField" style="width:120px;">
                             <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
@@ -185,4 +189,3 @@
 	</div>
     <div class="idmap_result_div" data-dojo-attach-point="idmap_result_div"></div>
 </form>
-

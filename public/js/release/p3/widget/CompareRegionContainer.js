@@ -176,6 +176,12 @@ define("p3/widget/CompareRegionContainer", [
 					value: 15000, label: "15,000bp"
 				}, {
 					value: 20000, label: "20,000bp"
+				}, {
+					value: 50000, label: "50,000bp"
+				}, {
+					value: 75000, label: "75,000bp"
+				}, {
+					value: 100000, label: "100,000bp"
 				}]
 			});
 			domConstruct.place(label_region_size, filterPanel.containerNode, "last");

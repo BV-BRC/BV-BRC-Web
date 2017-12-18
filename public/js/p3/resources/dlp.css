@@ -3,6 +3,13 @@
   margin: 5px auto 0 auto;
   position: relative
 }
+.patric .dlp h1 {
+  color: #666666;
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+  font-size: 2em;
+  line-height: 1.286em;
+  margin-bottom: 0.75em;
+}
 
 .patric .dlp h2 {
   color: #666666;
@@ -81,7 +88,7 @@
   position: relative;
 }
 .patric .dlp .ribbon-title .wrap {
-  background: url(/patric/images/ribbon-title-wrap.png) no-repeat top left;
+  background: no-repeat top left;
   position: absolute;
   bottom: -9px;
   left: 0;

@@ -16,7 +16,9 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "Variation",
-		pageTitle: "Variation Service",
+		applicationHelp: "user_guide/genome_data_and_tools/variation_analysis_service.html",
+        tutorialLink: "tutorial/variation_analysis_service/variation_analysis_service.html",
+        pageTitle: "Variation Service",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 7,
@@ -259,7 +261,7 @@ define([
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
             var toDestroy = [];
-            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){
                 toDestroy.push(lrec["_id"]);
 		    }));
             //because its removing rows cells from array needs separate loop
@@ -401,4 +403,3 @@ define([
         }
 	});
 });
-

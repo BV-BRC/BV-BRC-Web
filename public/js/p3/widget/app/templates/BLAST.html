@@ -3,7 +3,11 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>BLAST</h3>
+            <h3>BLAST
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                </div>
+            </h3>
             <p>The BLAST Search allows you to search against public or private genomes in PATRIC or other reference
                 databases using a DNA or protein sequence and find matching genomes, genes, RNAs, or proteins.</p>
         </div>
@@ -139,7 +143,7 @@
         <div class="appSubmissionArea">
             <div style="margin-top: 10px; text-align:center;">
                 <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-point="mapButton"
+                     data-dojo-attach-point="submitButton"
                      data-dojo-attach-event="onClick:submit"
                      data-dojo-props="disabled:true">
                     Search

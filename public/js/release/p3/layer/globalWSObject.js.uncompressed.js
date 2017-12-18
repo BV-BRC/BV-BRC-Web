@@ -16554,6 +16554,12 @@ define([
 				if(!results[0][0] || !results[0][0]){
 					throw new Error("Error Creating Object");
 				}else{
+					if(obj.notification){
+						Topic.publish("/Notification", {
+							message: "Group created: " + obj.name,
+							type: "message"
+						});
+				  }
 					var r = results[0][0];
 					Topic.publish("/refreshWorkspace", {});
 					return self.metaListToObj(r);
@@ -16578,23 +16584,30 @@ define([
 					res.data = JSON.parse(res.data);
 				}
 				if(res && res.data && res.data.id_list){
+					//add logic to remove duplicate from ids
+					var idsFiltered = [];
+					ids.forEach(function(id){
+						if(idsFiltered.indexOf(id)  == -1) {
+							idsFiltered.push(id);
+						}
+					});
 					if(res.data.id_list[idType]){
 						var existing = {}
 						res.data.id_list[idType].forEach(function(id){
 							existing[id] = true;
 						});
 
-						ids = ids.filter(function(id){
+						idsFiltered = idsFiltered.filter(function(id){
 							return !existing[id];
 						});
 
-						res.data.id_list[idType] = res.data.id_list[idType].concat(ids);
+						res.data.id_list[idType] = res.data.id_list[idType].concat(idsFiltered);
 					}else{
-						res.data.id_list[idType] = ids;
+						res.data.id_list[idType] = idsFiltered;
 					}
 					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
 						Topic.publish("/Notification", {
-							message: ids.length + " items added to group " + groupPath,
+							message: idsFiltered.length + " unique items added to group " + groupPath,
 							type: "message"
 						});
 						return r;
@@ -16648,7 +16661,14 @@ define([
 				name: name,
 				id_list: {}
 			};
-			group.id_list[idType] = ids;
+			//add logic to remove duplicate from ids
+			var idsFiltered = [];
+			ids.forEach(function(id){
+				if(idsFiltered.indexOf(id)  == -1) {
+					idsFiltered.push(id);
+				}
+			});
+			group.id_list[idType] = idsFiltered;
 
 			// console.log("Creating Group: ", group);
 			return this.create({
@@ -16656,7 +16676,8 @@ define([
 				name: name,
 				type: type,
 				userMeta: {},
-				content: group
+				content: group,
+				notification: true
 			})
 
 		},

@@ -37,7 +37,7 @@
     font-size: 20px;
 }
 
-.home h4 {
+.home h3 {
     font-size: 14px;
     line-height: 16px;
 }
@@ -53,11 +53,10 @@
     margin: 0;
 }
 
-.tools h4 {
+.tools h3 {
     margin-top: 20px;
 }
-
-.tools h4:first-child {
+.tools h3:first-child {
     margin-top: 4px;
 }
 
@@ -65,6 +64,10 @@
     width: 310px;
     vertical-align: top;
     text-align: left;
+}
+
+.tools ul li a:hover {
+    font-weight: bold;
 }
 
 .dlp-hp ul li {

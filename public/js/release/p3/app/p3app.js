@@ -71,10 +71,10 @@ define("p3/app/p3app", [
 				if(meta){
 					meta.content = "PATRIC," + (document.title).replace("::", ",");
 				}
-				if(window.ga){
+				if(window.gtag){
 					// console.log("document title changed to", document.title);
-					ga('set', 'title', document.title);
-					ga('send', 'pageview');
+					var page_path = window.location.pathname + window.location.hash;
+					gtag('config', window.App.gaID, {'page_path': page_path});
 				}
 			};
 
@@ -155,6 +155,19 @@ define("p3/app/p3app", [
 				newState.requireAuth = false;
 				newState.pageTitle = 'PATRIC';
 				// console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+			Router.register("\/webpage(\/.*)", function(params, oldPath, newPath, state){
+				// console.log("webpage", params);
+				var path = params.params[0] || "/";
+				var newState = getState(params, oldPath);
+				newState.widgetClass = "p3/widget/WebPagePane";
+				newState.widgetExtraClass = "webpage";
+				newState.value = PathJoin(_self.docsServiceURL, path);
+				newState.set = "href";
+				newState.requireAuth = false;
+
 				_self.navigate(newState);
 			});
 

@@ -4,13 +4,13 @@ define([
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
 	"dijit/layout/ContentPane", "dojo/request", "../util/QueryToSearchInput", "./GlobalSearch",
 	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/AdvancedSearch.html",
-	"../util/searchToQuery"
+	"../util/searchToQuery", "./formatter"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass, base, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
 			ContentPane, Request, queryToSearchInput, GlobalSearch,
 			TemplatedMixin, WidgetsInTemplate, Template,
-			searchToQuery
+			searchToQuery, formatter
 ){
 	return declare([WidgetBase, TemplatedMixin, WidgetsInTemplate], {
 		"baseClass": "AdvancedSearch",
@@ -35,8 +35,8 @@ define([
 					{field: "genome_status", label: "Genome Status", type: "orText"},
 					{field: "isolation_country", label: "Isolation Country", type: "orText"},
 					{field: "host_name", label: "Host Name", type: "orText"},
-					{field: "collection_date", label: "Collection Date", type: "orText"},
-					{field: "completion_date", label: "Completion Date", type: "orText"}
+					{field: "collection_date", label: "Collection Date", type: "date"},
+					{field: "completion_date", label: "Completion Date", type: "date"}
 				]
 			},
 
@@ -135,34 +135,37 @@ define([
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + "</a></div>");
 
 				out.push("<div class='resultInfo'>");
+				out.push("<span> Genome ID: " + doc.genome_id + "</span>");
+
 				if (doc.plasmids && doc.plasmids > 0){
+					out.push(" | ");
 					out.push("<span>" + doc.plasmids + " Plasmids</span>");
 				}
 
 				if (doc.contigs && doc.contigs > 0){
-					if (doc.plasmids) { out.push(" | "); }
+					out.push(" | ");
 					out.push("<span>" + doc.contigs + " Contigs</span>");
 				}
 
 				out.push("</div>");
 
 				out.push("<div class='resultInfo'>");
-				if (doc.date_inserted){
-					out.push("<span> SEQUENCED: " + doc.date_inserted + "</span>")
+				if (doc.completion_date){
+					out.push("<span> SEQUENCED: " + formatter.dateOnly(doc.completion_date) + "</span>")
 				}
 
 				if (doc.sequencing_centers){
 
-					out.push("&nbsp;( " + doc.sequencing_centers + " )");
+					out.push("&nbsp;(" + doc.sequencing_centers + ")");
 				}
 				out.push("</div>")
 
 				out.push("<div class='resultInfo'>");
 				if (doc.collection_date){
-					out.push("<span>COLLECTED: " + doc.collection_date + "</span>");
+					out.push("<span>COLLECTED: " + formatter.dateOnly(doc.collection_date) + "</span>");
 				}
 				if (doc.host_name){
-					out.push("&nbsp;<span>HOST:  " + doc.host_name + "</span>");
+					out.push("<span>HOST:  " + doc.host_name + "</span>");
 				}
 
 				out.push("</div>");

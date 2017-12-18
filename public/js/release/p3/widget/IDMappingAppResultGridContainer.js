@@ -611,6 +611,7 @@ define("p3/widget/IDMappingAppResultGridContainer", [
 						selection: selection,
                         selectType: true,
 						type: type,
+						inputType: containerWidget.containerType,
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){

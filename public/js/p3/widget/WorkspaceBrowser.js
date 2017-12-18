@@ -360,7 +360,7 @@ define([
 			this.browserHeader.addAction("ViewAnnotatedGenome", "fa icon-eye fa-2x", {
 				label: "VIEW",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View Annotated Genome"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -369,16 +369,17 @@ define([
 			}, false);
 
 			this.browserHeader.addAction("ViewModel", "fa icon-eye fa-2x", {
-				label: "VIEW",
+				label: 'VIEW <i class="icon-external-link"></i>',
 				multiple: false,
 				validTypes: ["model"],
-				tooltip: "View Model @ ModelSEED.org"
+				tooltip: 'View Model @ ModelSEED.org'
 			}, function(selection){
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 
 				// adjust path for legacy modelseed
-				var parts = path.split('/')
-				path = parts.slice(0, -1).join('/') + '/.'+ parts.slice(-1)[0]
+				var parts = path.split('/');
+				var isLegacy = parts[1] == 'models';
+				path = parts.slice(0, -1).join('/') + '/' + (isLegacy ? '' : '.') + parts.slice(-1)[0];
 
 				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				window.open(url, "_blank");
@@ -387,7 +388,7 @@ define([
 			this.browserHeader.addAction("ViewAnnotatedGenomeCDS", "fa icon-genome-features-cds fa-2x", {
 				label: "CDS",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View CDS for Annotated Genome"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -399,7 +400,7 @@ define([
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
-				validTypes: ["GenomeAnnotation"],
+				validTypes: ["GenomeAnnotation", "GenomeAnnotationGenbank"],
 				tooltip: "View Annotated Genome in Genome Browser"
 			}, function(selection){
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -461,7 +462,7 @@ define([
 					type: "CreateWorkspace"
 				});
 			},  self.path.split('/').length < 3);
-            
+
             this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
 				label: "VIEW",
 				multiple: false,
@@ -470,8 +471,20 @@ define([
 			}, function(selection){
 				// console.log("View Experiment: ", selection[0]);
 				var expPath = this.get('path');
-				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&wsTreeId=" + expPath});
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=" + expPath});
 
+			}, false);
+
+
+			this.actionPanel.addAction("ViewNwk", "fa icon-tree2 fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["nwk"],
+				tooltip: "View Tree"
+			}, function(selection){
+				// console.log("View Experiment: ", selection[0]);
+				var path = selection.map(function(obj){ return obj.path });
+				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=" + path[0]});
 			}, false);
 
 
@@ -501,8 +514,8 @@ define([
 				Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?&wsExpId=" + eid});
 
 			}, false);
-			
-            
+
+
 
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
@@ -1269,6 +1282,7 @@ define([
 									}
 									break;
 								case "GenomeAnnotation":
+								case "GenomeAnnotationGenbank":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
                 case "Variation":

@@ -1,19 +1,20 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/IDMapper.html", "dijit/form/Form", "../../util/PathJoin",
+	"dojo/text!./templates/IDMapper.html", "./AppBase", "../../util/PathJoin",
 	"dojo/request", "../viewer/IDMappingApp", "../../WorkspaceManager", "../WorkspaceObjectSelector",
     "dojo/query", "dojo/_base/lang", "dijit/Tooltip", "dijit/popup"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, PathJoin,
-			xhr, ResultContainer, WorkspaceManager, 
+			Template, AppBase, PathJoin,
+			xhr, ResultContainer, WorkspaceManager,
             WorkspaceObjectSelector,query,lang,
             Tooltip, popup){
-	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
+	return declare([AppBase], {
 		"baseClass": "IDMapper",
 		applicationName: "IDMapper",
+		applicationHelp: "user_guide/genome_feature_data_and_tools/id_mapper.html",
 		templateString: Template,
 		path: "",
 		mapFromIDs: null,
@@ -23,12 +24,15 @@ define([
         defaultPath: "",
 
 		startup: function(){
-
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
 			// activate genome group selector when user is logged in
 			if(window.App.user){
 				this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
             }
-                
+
 			this.result = new ResultContainer({
 				id: this.id + "_idmapResult",
 				style: "min-height: 700px; visibility:hidden;"
@@ -49,13 +53,7 @@ define([
 					this.advicon2.className = "fa icon-caret-down fa-1";
 				}
 			}));
-            
-            _self=this;
-            _self.info_dialog = new Tooltip({
-                label: "This tool uses the Uniprot-KB mapping table to map external IDs to PATRIC. This is done using NCBI IDs. Due to updates over time some NCBI IDs may achieve better mapping results than others.",
-                connectId: _self.patricMapInfo
-            });
-        },
+    },
 
 
 		constructor: function(){

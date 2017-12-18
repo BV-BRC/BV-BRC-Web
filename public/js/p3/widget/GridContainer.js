@@ -1263,7 +1263,7 @@ define([
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:56px;text-align:center;",
+				style: "width:56px;text-align:center;overflow-y: auto;",
 				splitter: false,
 				currentContainerWidget: this
 			});
@@ -1311,16 +1311,18 @@ define([
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
-						if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
-							if(!this.grid.selectedData["primaryKey"]){
-							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+						if(this.grid.primaryKey){
+							if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
+								if(!this.grid.selectedData["primaryKey"]){
+								  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+								}
+								this.grid.selectedData[rownum] = row.data;
 							}
-							this.grid.selectedData[rownum] = row.data;
-						}
-						else{
-							this.grid.selectedData = {};
-						  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
-						  this.grid.selectedData[rownum] = row.data;
+							else{
+								this.grid.selectedData = {};
+							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+							  this.grid.selectedData[rownum] = row.data;
+						  }
 					  }
 						return row.data;
 					}else if(this.grid && this.grid._unloadedData){
