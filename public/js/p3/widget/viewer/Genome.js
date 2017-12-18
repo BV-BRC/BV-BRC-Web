@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/request",
-	"./TabViewerBase",
+	"./TabViewerBase", "dijit/Dialog",
 	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
@@ -9,7 +9,7 @@ define([
 	"../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
-			TabViewerBase,
+			TabViewerBase, Dialog,
 			GenomeOverview, AMRPanelGridContainer, Phylogeny,
 			GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
@@ -25,7 +25,6 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
 			if(!id){
 				return;
 			}
@@ -47,6 +46,18 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
+			}), lang.hitch(this, function(error){
+				if(error.response.status == 404){
+					var d = new Dialog({
+						content: "Genome <i>" + this.genome_id + "</i> was not found.  This could be because it" +
+							" is currently being indexed in the PATRIC database, it" +
+							" does not exist, or" +
+							" you do not have read privileges." ,
+						title: "Genome not found",
+						style: "width: 400px;"
+					}).show();
+					this.set("genome", null)
+				}
 			}));
 
 		},
@@ -119,7 +130,7 @@ define([
 		},
 
 		buildHeaderContent: function(genome){
-
+2
 			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", genome.taxon_id), {
 				headers: {
 					accept: "application/json"
@@ -152,6 +163,7 @@ define([
 
 			this._set("genome", genome);
 
+
 			// check host genomes. remove the circular viewer tab if it's a host genome
 			if(genome && genome.taxon_lineage_ids){
 				// console.log("this genome: ", genome);
@@ -165,7 +177,6 @@ define([
 		},
 
 		onSetState: function(attr, oldState, state){
-
 			if(!state){
 				return;
 			}
