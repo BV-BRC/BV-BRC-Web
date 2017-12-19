@@ -51,7 +51,6 @@ define([
 			// get the contents directly from the hidden folder, since metadata may be stale after a move
 			WorkspaceManager.getFolderContents(this._hiddenPath, true, true)
 				.then(function(objs){
-					//console.log("[JobResult] objects: ", objs);
 						_self._resultObjects = objs;
 						_self.setupResultType();
 						_self.refresh();
@@ -134,10 +133,8 @@ define([
 				return;
 			}
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({content: "Loading data from "+this.data.name+" job file.  If you have moved your job result, please ensure you have also moved the ."+this.data.name+" folder to this directory as well.", region: "top", style:"width:90%;height:35%;", splitter: true});
-			//this.viewer= new ContentPane({content: "", region: "center"});
+			this.viewHeader = new ContentPane({content: "Loading data from "+this.data.name+" job file.", region: "top", style:"width:90%;height:30%;"});
 			this.viewer = new WorkspaceExplorerView({region: "center", path: this._hiddenPath});
-			// console.log("[JobResult] WSV: ", this.viewer);
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 

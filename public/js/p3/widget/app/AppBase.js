@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector", "dojo/topic",
+	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector", "dojo/topic", "dojo/_base/lang",
 	"dijit/Dialog", "dojo/request", "dojo/dom-construct", "dojo/query", "dijit/TooltipDialog", "dijit/popup", "dijit/registry", "dojo/dom"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, WorkspaceObjectSelector, Topic,
+			Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
 			Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -17,6 +17,7 @@ define([
 		activeWorkspace: "",
 		activeWorkspacePath: "",
 		help_doc: null,
+		activeUploads: [],
 
 		postMixInProperties: function(){
 			this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
@@ -138,6 +139,33 @@ define([
 			}
 
 			this.gethelp();
+			Topic.subscribe("/upload", lang.hitch(this, "onUploadMessage"));
+			Topic.subscribe("/UploaderDialog", lang.hitch(this, function(msg){
+				if(msg && msg.type == 'UploaderClose'){
+					this.validate();
+				}
+			}));
+      if(this.submitButton){
+				var uploadTolltip = new TooltipDialog({
+					content: "Upload in Progress, please wait.",
+					onMouseLeave: function(){
+						popup.close(uploadTolltip);
+					}
+				});
+				var a = this.submitButton.domNode;
+				on(a, 'mouseover', lang.hitch(this, function(){
+					if(this.activeUploads && this.activeUploads.length != 0)
+					popup.open({
+						popup: uploadTolltip,
+						around: a,
+						orient: ["above-centered", "below-centered"]
+					});
+				}));
+				on(a, 'mouseout', function(){
+					popup.close(uploadTolltip);
+				});
+			}
+
 			this._started = true;
 		},
 
@@ -145,6 +173,47 @@ define([
 			domClass.remove(this.domNode, "Working");
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
+		},
+
+		onUploadMessage: function(msg){
+			var path = msg.workspacePath;
+			if(msg.workspacePath.substr(-1) != '/'){
+						path += '/';
+			}
+			path += msg.filename;
+			if(msg && msg.type == "UploadStart" && this.activeUploads.indexOf(msg.workspacePath+msg.filename) == -1){
+				//add file this.activeUploads
+				this.activeUploads.push(path);
+				this.validate();
+			return;
+			}
+
+			if(msg && msg.type == "UploadProgress"){
+				this.validate();
+			  return;
+			}
+
+			if(msg && msg.type == "UploadComplete"){
+				//remove file from this.activeUploads
+				var i = this.activeUploads.indexOf(path);
+				if(i != -1){
+					this.activeUploads.splice(i,1);
+				}
+				this.validate();
+			return;
+			}
+		},
+
+		validate: function(){
+			var valid = this.inherited(arguments);
+			if (valid && this.activeUploads.length == 0){
+				if (this.submitButton){ this.submitButton.set("disabled",false); }
+				return valid;
+			}
+			else {
+				if (this.submitButton){ this.submitButton.set("disabled", true); }
+				return false;
+			}
 		},
 
 		onSubmit: function(evt){

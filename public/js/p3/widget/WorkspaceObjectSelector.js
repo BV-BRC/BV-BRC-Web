@@ -168,13 +168,8 @@ define([
 		},
 
 		_setSelectionAttr: function(val){
-			//make sure file has been uploaded
-			if(val.size == 0){
-				new Dialog({title: "Notice", draggable: true, content: "Selected file is not ready, please wait."}).show();
-				return;
-			}
-			this.selection = val;
 
+			this.selection = val;
 			// ensures item is in store (for public workspaces),
 			// this is more efficient than recursively grabing all public objects of a certain type
 			try{
@@ -315,12 +310,9 @@ define([
 		},
 
 		openChooser: function(){
+			this.refreshWorkspaceItems();
 			var _self = this;
 
-			if(this.disabled){
-				new Dialog({title: "Notice", draggable: true, content: "Please wait until upload completes."}).show();
-				return;
-			}
 			// if dialog is already built, just show it
 			if(this.dialog){
 				this.dialog.flip("front");
@@ -492,11 +484,14 @@ define([
 					// console.log("Uploader Dialog Action: ", evt);
 					if(evt.files && evt.files[0] && evt.action == "close"){
 						var file = evt.files[0];
-						//_self.set("selection", file);
-						//_self.set('value', file.path, true);
-						_self.set("disabled", true);
-						_self.set("uploadingSelection", file);
-						_self.dialog.hide();
+						_self.set("selection", file);
+						_self.set('value', file.path, true);
+						Deferred.when(_self.dialog.hide(), function(){
+							Topic.publish("/UploaderDialog", {
+								type: "UploaderClose"
+							});
+						});
+
 					}else{
 						_self.dialog.flip()
 					}
@@ -568,27 +563,10 @@ define([
 				this.refreshWorkspaceItems();
 			}
 			Topic.subscribe("/refreshWorkspace", lang.hitch(this, "refreshWorkspaceItems"));
-			Topic.subscribe("/upload", lang.hitch(this, "onUploadMessage"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 			this.searchBox.set('placeHolder', this.placeHolder);
 			this.searchBox.labelFunc = this.labelFunc;
-		},
-
-		onUploadMessage: function(msg){
-			if(msg && msg.type == "UploadComplete"){
-				if(this.uploadingSelection != ""){
-					this.uploadingSelection.size = msg.size;
-					this.set("disabled", false);
-					this.set("selection", this.uploadingSelection);
-					if(msg.workspacePath.substr(-1) != '/'){
-						msg.workspacePath += '/';
-					}
-					this.set("value", msg.workspacePath+msg.filename);
-					this.set("uploadingSelection", "");
-				}
-			return;
-			}
 		},
 
 		labelFunc: function(item, store){
