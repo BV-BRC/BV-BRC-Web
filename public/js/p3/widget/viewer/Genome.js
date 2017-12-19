@@ -83,8 +83,8 @@ define([
 					// check whether genome is a host genome and set default filter condition
 					if(this.state.genome){
 						if(!this.state.hashParams.filter){
-							var taxon_lineage_ids = this.state.genome.taxon_lineage_ids;
-							if (taxon_lineage_ids.indexOf("2759") > -1){
+
+							if (this.state.genome.taxon_lineage_ids && this.state.genome.taxon_lineage_ids.indexOf("2759") > -1){
 
 								activeQueryState = lang.mixin({}, this.state, {
 									search: "eq(genome_id," + this.state.genome.genome_id + ")",
