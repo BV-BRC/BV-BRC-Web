@@ -147,7 +147,7 @@ define([
 			}));
       if(this.submitButton){
 				var uploadTolltip = new TooltipDialog({
-					content: "Upload in Progress, please wait.",
+					content: "Upload in progress, please wait.",
 					onMouseLeave: function(){
 						popup.close(uploadTolltip);
 					}
