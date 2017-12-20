@@ -169,7 +169,7 @@ define([
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
 						data: {
-							q: fromId + ":(" + fromIdValue.join(" OR ") + ")",
+                            q: fromId + ":(" + fromIdValue.join(" OR ") + ") AND "+ toId + ":[* TO *]",
 							rows: _self.rowLimit,
 							sort: "genome_name asc,accession asc,start asc"
 						}
