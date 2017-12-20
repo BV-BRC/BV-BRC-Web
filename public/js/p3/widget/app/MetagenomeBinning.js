@@ -145,13 +145,6 @@ define([
 			return (success);
 		},
 
-
-		onReset: function(evt){
-			domClass.remove(this.domNode, "Working");
-			domClass.remove(this.domNode, "Error");
-			domClass.remove(this.domNode, "Submitted");
-		},
-
 		// TODO: remove adding to library
 		validateSRR: function(){
 			var accession = this.srr_accession.get('value');
@@ -190,7 +183,7 @@ define([
 		},
 
 		validate: function(){
-			console.log("validate...metagenome binning..")
+			var isValid = false
 
 			if (this.read1.searchBox.value && this.read2.searchBox.value) {
 				this.input_mode = "paired_read";
@@ -206,7 +199,13 @@ define([
 				this.input_mode = null;
 			}
 
-			if (this.input_mode == null){
+			if (this.input_mode && this.output_path.value && this.output_file.value) {
+				isValid = true
+			} else {
+				isValid = false
+			}
+
+			if (!isValid){
 				this.submitButton.set("disabled", true);
 				// this.set("state", "Incomplete");
 				return false;

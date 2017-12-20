@@ -2,10 +2,12 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector", "dojo/topic", "dojo/_base/lang",
+	"../../util/PathJoin",
 	"dijit/Dialog", "dojo/request", "dojo/dom-construct", "dojo/query", "dijit/TooltipDialog", "dijit/popup", "dijit/registry", "dojo/dom"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
 			Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
+			PathJoin,
 			Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -32,11 +34,11 @@ define([
 		gethelp: function(){
 
 			if (this.applicationHelp){
-				var helprequest = xhr.get(window.App.docsServiceURL + this.applicationHelp, {
+				var helprequest = xhr.get(PathJoin(this.docsServiceURL, this.applicationHelp), {
 					handleAs: "text"
 				});
 				helprequest.then(function(data){
-					data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />','')
+					data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />', '')
 					this.help_doc = domConstruct.toDom(data);
 					var ibuttons = query(".infobutton");
 					ibuttons.forEach(function(item){
@@ -94,10 +96,10 @@ define([
 			}
 
 			var tutorials = query(".tutorialButton");
-			var tutorialLink = window.App.docsServiceURL + (this.tutorialLink || 'tutorial/');
+			var tutorialLink = PathJoin(this.docsServiceURL, (this.tutorialLink || 'tutorial/'));
 			tutorials.forEach(function(item){
 				if (dojo.hasClass(item, "tutorialInfo")){
-					on(item, 'click', function() {
+					on(item, 'click', function(){
 						// console.log(tutorialLink)
 						window.open(tutorialLink, 'Tutorials')
 					})
@@ -145,7 +147,7 @@ define([
 					this.validate();
 				}
 			}));
-      if(this.submitButton){
+			if(this.submitButton){
 				var uploadTolltip = new TooltipDialog({
 					content: "Upload in progress, please wait.",
 					onMouseLeave: function(){
@@ -178,36 +180,36 @@ define([
 		onUploadMessage: function(msg){
 			var path = msg.workspacePath;
 			if(msg.workspacePath.substr(-1) != '/'){
-						path += '/';
+				path += '/';
 			}
 			path += msg.filename;
 			if(msg && msg.type == "UploadStart" && this.activeUploads.indexOf(msg.workspacePath+msg.filename) == -1){
 				//add file this.activeUploads
 				this.activeUploads.push(path);
 				this.validate();
-			return;
+				return;
 			}
 
 			if(msg && msg.type == "UploadProgress"){
 				this.validate();
-			  return;
+				return;
 			}
 
 			if(msg && msg.type == "UploadComplete"){
 				//remove file from this.activeUploads
 				var i = this.activeUploads.indexOf(path);
 				if(i != -1){
-					this.activeUploads.splice(i,1);
+					this.activeUploads.splice(i, 1);
 				}
 				this.validate();
-			return;
+				return;
 			}
 		},
 
 		validate: function(){
 			var valid = this.inherited(arguments);
 			if (valid && this.activeUploads.length == 0){
-				if (this.submitButton){ this.submitButton.set("disabled",false); }
+				if (this.submitButton){ this.submitButton.set("disabled", false); }
 				return valid;
 			}
 			else {
