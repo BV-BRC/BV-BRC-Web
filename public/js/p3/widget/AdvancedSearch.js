@@ -57,7 +57,7 @@ define([
 
 		_generateLink: {
 			"genome": function(docs, total){
-				console.log("Genome Link Generator: ", docs, total)
+				// console.log("Genome Link Generator: ", docs, total)
 				if (total==1){
 					return ['/view/Genome/', docs[0].genome_id, "#view_tab=overview"].join("");
 				}else{
@@ -103,7 +103,7 @@ define([
 		},
 
 		generateLink: function(type, docs, total){
-			console.log("Generate Link: ", type, docs, total)
+			// console.log("Generate Link: ", type, docs, total)
 			return this._generateLink[type].apply(this, [docs, total]);
 		},
 
@@ -366,7 +366,7 @@ define([
 			}
 			out.push("</table></div>")
 
-			console.log("Content Length: ", content.length, content);
+			// console.log("Content Length: ", content.length, content);
 
 			if (content.length>0){
 				out.push("<h2>Top Matches</h2>" + content.join(""))
@@ -398,7 +398,7 @@ define([
 
 				if (type == "genome_feature") {
 					// for genome features, sort by annotation first then by scores so as to show PATRIC features first
-					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+annotation,-score)" }				
+					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+annotation,-score)" }
 				} else {
 					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
 				}
