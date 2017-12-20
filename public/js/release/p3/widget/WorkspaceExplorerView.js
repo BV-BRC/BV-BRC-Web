@@ -34,6 +34,7 @@ define("p3/widget/WorkspaceExplorerView", [
 		},
 
 		listWorkspaceContents: function(ws){
+
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
@@ -100,6 +101,21 @@ define("p3/widget/WorkspaceExplorerView", [
 						})
 					}
 
+					// if special folder, sort by create_time by default
+					var specialSortFolders = [
+						"Genome Groups",
+						"Feature Groups",
+						"Experiments",
+						"Experiment Groups"
+					];
+					var folderName = parts[parts.length - 1];
+					if(specialSortFolders.indexOf(folderName) != -1){
+						_self.prevSort = _self._sort;
+						_self.set('sort', [{ attribute: 'creation_time', descending: false }] )
+					}else{
+						_self.set('sort', _self.prevSort || [{ attribute: 'name', descending: false }])
+					}
+
 					// sorting
 					var sort = _self.get('sort');
 					if(!sort || sort.length == 0){
@@ -109,11 +125,12 @@ define("p3/widget/WorkspaceExplorerView", [
 					objs.sort(function(a, b){
 						var s = sort[0];
 						if(s.descending){
-							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
+							return (a[s.attribute] < b[s.attribute]) ? 1 : -1
 						}else{
 							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 						}
 					});
+
 					return objs;
 				})
 

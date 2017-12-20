@@ -77,6 +77,7 @@ define("p3/widget/ColumnsGenome", ["./formatter"], function(formatter){
 		disease: {
 			label: 'Disease',
 			field: 'disease',
+			hidden: true,
 			sortable: false
 		},
 		collection_year: {

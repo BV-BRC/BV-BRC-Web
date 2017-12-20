@@ -1,6 +1,6 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div class="appTemplate" style="width: 340px;">
+    <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
             <h3>Reconstruct Metabolic Model
@@ -11,10 +11,13 @@
                 <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
               </div>
             </h3>
-            <p>Reconstruct a Metabolic Model</p>
+            <p>The Model Reconstruction Service generate draft genome-scale metabolic models.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Model Reconstruction Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
 
-        <div class="formFieldsContainer">
+        <div style="width: 340px; margin:auto;" class="formFieldsContainer">
 
             <div class="appBox appShadow">
                 <label class="appBoxLabel">Select a Genome</label>

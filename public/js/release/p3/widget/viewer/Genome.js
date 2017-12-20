@@ -1,7 +1,7 @@
 define("p3/widget/viewer/Genome", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/request",
-	"./TabViewerBase",
+	"./TabViewerBase", "dijit/Dialog",
 	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
@@ -9,7 +9,7 @@ define("p3/widget/viewer/Genome", [
 	"../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
-			TabViewerBase,
+			TabViewerBase, Dialog,
 			GenomeOverview, AMRPanelGridContainer, Phylogeny,
 			GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
@@ -25,7 +25,6 @@ define("p3/widget/viewer/Genome", [
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
 			if(!id){
 				return;
 			}
@@ -47,6 +46,18 @@ define("p3/widget/viewer/Genome", [
 				handleAs: "json"
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
+			}), lang.hitch(this, function(error){
+				if(error.response.status == 404){
+					var d = new Dialog({
+						content: "Genome <i>" + this.genome_id + "</i> was not found.  This could be because it" +
+							" is currently being indexed in the PATRIC database, it" +
+							" does not exist, or" +
+							" you do not have read privileges." ,
+						title: "Genome not found",
+						style: "width: 400px;"
+					}).show();
+					this.set("genome", null)
+				}
 			}));
 
 		},
@@ -72,8 +83,8 @@ define("p3/widget/viewer/Genome", [
 					// check whether genome is a host genome and set default filter condition
 					if(this.state.genome){
 						if(!this.state.hashParams.filter){
-							var taxon_lineage_ids = this.state.genome.taxon_lineage_ids;
-							if (taxon_lineage_ids.indexOf("2759") > -1){
+
+							if (this.state.genome.taxon_lineage_ids && this.state.genome.taxon_lineage_ids.indexOf("2759") > -1){
 
 								activeQueryState = lang.mixin({}, this.state, {
 									search: "eq(genome_id," + this.state.genome.genome_id + ")",
@@ -152,6 +163,7 @@ define("p3/widget/viewer/Genome", [
 
 			this._set("genome", genome);
 
+
 			// check host genomes. remove the circular viewer tab if it's a host genome
 			if(genome && genome.taxon_lineage_ids){
 				// console.log("this genome: ", genome);
@@ -165,7 +177,6 @@ define("p3/widget/viewer/Genome", [
 		},
 
 		onSetState: function(attr, oldState, state){
-
 			if(!state){
 				return;
 			}

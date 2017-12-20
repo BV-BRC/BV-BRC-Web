@@ -215,9 +215,11 @@ define("p3/widget/WorkspaceGrid", [
 				return;
 			});
 
+			// see WorkspaceExplorerView.listWorkspaceContents for sorting
+			_self.set('sort', [{ attribute: 'name', descending: false }] )
+
 			this.inherited(arguments);
 			this._started = true;
-
 		},
 		_setActiveFilter: function(filter){
 			// console.log("Set Active Filter: ", filter, "started:", this._started);

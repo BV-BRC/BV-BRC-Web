@@ -477,7 +477,6 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, false);
 
-
 			this.actionPanel.addAction("ViewNwk", "fa icon-tree2 fa-2x", {
 				label: "VIEW",
 				multiple: false,
@@ -488,7 +487,6 @@ define("p3/widget/WorkspaceBrowser", [
 				var path = selection.map(function(obj){ return obj.path });
 				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=" + path[0]});
 			}, false);
-
 
 			this.browserHeader.addAction("ViewExperimentSummary", "fa icon-eye fa-2x", {
 				label: "VIEW",
@@ -517,8 +515,6 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, false);
 
-
-
 			this.browserHeader.addAction("ViewTracks", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
@@ -532,7 +528,6 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, false);
 
-/* */
 			this.actionPanel.addAction("ExperimentGeneList", "fa icon-list-unordered fa-2x", {
 				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
 				tooltip: "View Gene List"
@@ -901,11 +896,22 @@ define("p3/widget/WorkspaceBrowser", [
 				objSelector.openChooser();
 			}, false);
 
+
+			this.actionPanel.addAction("EditType", "fa icon-tag fa-2x", {
+				label: "EDIT TYPE",
+				validTypes: ["*"],
+				allowMultiTypes: true,
+				multiple: true,
+				tooltip: "Edit the object type of selected item(s)"
+			}, function(sel){
+				self.editTypeDialog(sel);
+			}, false);
+
+
 			// listen for opening user permisssion dialog
 			Topic.subscribe('/openUserPerms', function(selection){
 				self.userPermDialog(selection);
 			})
-
 
 			this.itemDetailPanel = new ItemDetailPanel({
 				region: "right",
@@ -1201,6 +1207,113 @@ define("p3/widget/WorkspaceBrowser", [
 			dlg.startup()
 			dlg.show();
 		},
+
+
+		editTypeDialog: function(selection){
+			var self = this;
+
+			/**
+			 * Handle unaccepted requests
+			 */
+			var types = this.itemDetailPanel.changeableTypes;
+			var options = Object.keys(types).map(function(key){ return types[key]; })
+			var validTypes = options.map(function(item){ return item.value });
+
+			var unchangeableTypes = selection.filter(function(obj){
+				 return validTypes.indexOf(obj.type) == -1;
+			}).map(function(obj){
+				return obj.type;
+			}).filter(function(val, i, self) { // only return unique
+				return self.indexOf(val) === i;
+			})
+
+			if(unchangeableTypes.length > 0){
+				new Dialog({
+					title: "Cannot change type",
+					content:
+						"<b>The selected items must be one of the following types:</b> <br>" +
+							validTypes.join('<br>') + ".<br><br>" +
+						"<b>However, your selection contained the type(s):</b> <br>" +
+							unchangeableTypes.join('<br>'),
+					style: "width: 400px;"
+				}).show();
+				return;
+			}
+
+			/**
+			 * build form
+			 */
+			var form = domConstruct.toDom('<div class="editTypeForm">');
+
+			// addd type dropdown to form
+			options = [{label: "Select a new type...", value: 'helptext', selected: true}].concat(options)
+			var typeSelector = new Select({
+				name: "typeSelector",
+				style: { width: '200px', margin: '10px 0px 20px 0' },
+				options: options
+			})
+			domConstruct.place(typeSelector.domNode, form)
+
+			// open form in dialog
+			var paths = selection.map(function(obj){ return obj.path });
+			var dlg = new Confirmation({
+				title: "Change "  + (paths.length > 1 ? paths.length+" Object Types" : " Object Type" ),
+				okLabel: "Save",
+				content: form,
+				style: { width: '300px'},
+				onConfirm: function(evt){
+					var newType = typeSelector.attr('value');
+					var newObjs = selection.map(function(obj){
+						return Object.assign(obj, {type: newType} )
+					})
+
+					Topic.publish("/Notification", {
+						message: "<span class='default'>Changing " +
+							(paths.length > 1 ?  paths.length+" types..." : " type...") +
+						"</span>"
+					});
+
+					WorkspaceManager.updateMetadata(newObjs)
+						.then(function(){
+							Topic.publish("/Notification", {
+								message: "Type change complete", type: "message"
+							});
+							Topic.publish('/refreshWorkspace');
+						}, function(){
+							Topic.publish("/Notification", {
+								message: "Type change failed",
+								type: "error"
+							});
+						})
+
+					this.hideAndDestroy();
+					self.activePanel.clearSelection();
+				},
+				onCancel: function() {	// also do updates on close checkbox
+					this.hideAndDestroy();
+					self.activePanel.clearSelection();
+				}
+			})
+
+			dlg.okButton.setDisabled(true);
+
+			// give warning on change, and disable 'save' button
+			on(typeSelector, 'change', function(val){
+				if(paths.length > 1){
+					domConstruct.place(domConstruct.toDom(
+						'<br><b>Warning:</b> clicking "Save" will change the type of '
+						+ paths.length + " selected objects."
+					), form)
+				}
+				dlg.okButton.setDisabled(false);
+			})
+
+
+
+			dlg.startup()
+			dlg.show();
+		},
+
 
 		_setPathAttr: function(val){
 			// console.log("WorkspaceBrowser setPath()", val)

@@ -459,7 +459,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 					var dlg = new Dialog({title: "Add selected items to group"});
 
 					var stg = new SelectionToGroup({
-						selection: geneIds,
+						selection: geneIds.map(function(id) { return {feature_id:id} }),
 						type: "feature_group",
 						path: this.get("path")
 					});

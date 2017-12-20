@@ -248,9 +248,26 @@ define("p3/WorkspaceManager", [
 				}
 			});
 		},
-		updateMetadata: function(path, userMeta, type){
-			var data = [path, userMeta || {}, type || undefined];
-			return Deferred.when(this.api("Workspace.update_metadata", [{objects: [data]}]), function(res){
+
+		/**
+		 * accepts object(s) with at least the following:
+		 * [{
+		 * 	  path: /path/to/object,          (required)
+		 * 	  userMeta: (userMeta_for_object> (required)
+		 *    type: <type_of_object>          (optional)
+		 * }]
+		 *
+		 * note: update_metadata will replace userMeta
+		 */
+		updateMetadata: function(objs){
+			var objs = Array.isArray(objs) ? objs : [objs];
+
+			var data = objs.map(function(obj){
+				return [obj.path, obj.userMeta, obj.type || undefined]
+			});
+
+			// note: update_metadata will replace userMeta
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects: data}]), function(res){
 				Topic.publish("/refreshWorkspace", {});
 				return res[0][0];
 			});

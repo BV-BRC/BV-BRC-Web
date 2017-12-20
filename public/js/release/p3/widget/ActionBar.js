@@ -80,7 +80,7 @@ define("p3/widget/ActionBar", [
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes || [];
 
-				// if top level "workspace", hide 'create folder' and upload
+				// if top level "workspace", hide actions
 				if(sel[0] && 'isWorkspace' in sel[0] && ["CreateFolder", "Upload", "ShowHidden"].indexOf(an) !== -1){
 					return false;
 				}
@@ -95,12 +95,12 @@ define("p3/widget/ActionBar", [
 					return false;
 				}
 
-				// if public or not owner, hide ability for upload, create folder, delete, share
+				// if public or not owner, hide ability for upload, create folder, delete, share, etc
 				else if(sel[0] && (
 						'isPublic' in sel[0] ||
 						['r', 'n'].indexOf(sel[0].user_permissions) !== -1 ||
 						(sel[0].global_permission == 'r' && window.App.user.id != sel[0].owner_id) ) &&
-					["Upload", "CreateFolder", "Delete", "ShareFolder", "Move", "Rename"].indexOf(an) !== -1) {
+					["Upload", "CreateFolder", "Delete", "ShareFolder", "Move", "Rename", "EditType"].indexOf(an) !== -1) {
 					return false;
 				}
 				else if(sel[0] && sel[0].source && sel[0].source !== "PATRIC_VF" && an === "ViewSpgeneEvidence"){

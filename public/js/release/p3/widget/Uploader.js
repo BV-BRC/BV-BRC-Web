@@ -351,7 +351,7 @@ define("p3/widget/Uploader", [
 					title: "Overwriting File!",
 					content: conf,
 					onConfirm: function(evt){
-						_self.uploadFile(file, uploadDirectory, type, true)
+						_self.uploadFile(file, uploadDirectory, type, true);
 					}
 				});
 				dlg.startup();

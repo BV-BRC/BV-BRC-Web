@@ -32,8 +32,6 @@ define("p3/widget/GenomeFeatureSummary", [
 			}
 		}],
 		processData: function(data){
-			// console.log("FACET PIVOTS: ", data.facet_counts.facet_pivot['annotation,feature_type'])
-
 			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']){
 				console.log("INVALID SUMMARY DATA", data);
 				return;
