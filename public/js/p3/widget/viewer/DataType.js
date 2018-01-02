@@ -246,7 +246,7 @@ define([
 				handleAs: "text"
 			}), lang.hitch(this, function(data){
 
-				data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />','')
+				data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />', '')
 				doc = domConstruct.toDom(data)
 				// console.log(doc.childNodes.length, doc.childNodes)
 
@@ -422,7 +422,7 @@ define([
 				"<h3>Features:</h3>",
 				"{1}",
 				"</div>",
-				"<div class='left left-align-text' style='margin:0 15px'>",
+				"<div class='left left-align-text'>",
 				"<h3>Proteins by Attributes:</h3>",
 				"{2}",
 				"</div>",
@@ -681,7 +681,7 @@ define([
 			var genome_scale = d3.scale.linear().domain([0, (maxGenomes + 500)]).range([chartheight, 0]);
 			var year_scale = d3.scale.ordinal().domain(yearLables).rangeBands([0, chartwidth]);
 
-			var genome_axis = d3.svg.axis().scale(genome_scale).orient("left").tickSubdivide(1).tickSize(-chartwidth).tickPadding(15);
+			var genome_axis = d3.svg.axis().scale(genome_scale).orient("left").tickSubdivide(1).tickSize(-chartwidth).tickPadding(10);
 			var year_axis = d3.svg.axis().scale(year_scale).orient("bottom").tickSize(0).tickPadding(10).tickFormat(d3.format("d"));
 
 			// add Background
