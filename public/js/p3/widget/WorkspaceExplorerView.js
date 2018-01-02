@@ -234,11 +234,13 @@ define([
 				return;
 			}
 
+			var _self = this;
 			this.inherited(arguments);
 			domClass.add(this.domNode, "WorkspaceExplorerView");
 
 			this.refreshWorkspace();
 
+			// also listen for later changes
 			Topic.subscribe("/refreshWorkspace", function(msg){
 				_self.refreshWorkspace();
 			});
