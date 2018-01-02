@@ -73,8 +73,8 @@ define([
 				field: "creation_time",
 				className: "wsItemCreationTime",
 				formatter: formatter.date
-			},
-			/*,
+			}
+			/*
 			userMeta: {
 				label: "User Metadata",
 				field: "userMeta",
