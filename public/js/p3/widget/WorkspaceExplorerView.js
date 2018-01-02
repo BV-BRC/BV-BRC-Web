@@ -233,25 +233,14 @@ define([
 			if(this._started){
 				return;
 			}
+
 			this.inherited(arguments);
 			domClass.add(this.domNode, "WorkspaceExplorerView");
 
-			var _self = this;
 			this.refreshWorkspace();
-//			this.listWorkspaceContents(this.path).then(function(contents) {
-//				_self.render(_self.path, contents);
-//			})
 
 			Topic.subscribe("/refreshWorkspace", function(msg){
 				_self.refreshWorkspace();
-			});
-
-			Topic.subscribe("/Jobs", function(msg){
-				// if (msg.type=="JobStatus") {
-				// 	console.log("JobStatus MSG: ", msg.job);
-				// }else if (msg.type=="JobStatusChanged") {
-				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
-				// }
 			});
 		},
 

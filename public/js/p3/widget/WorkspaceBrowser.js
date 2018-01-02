@@ -17,7 +17,8 @@ define([
 	Confirmation, SelectionToGroup, Dialog, TooltipDialog,
 	popup, IDMappingTemplate, xhr, Select, CheckBox,
 	ContainerActionBar, GroupExplore, PerspectiveToolTipDialog, UserSelector,
-	Button, Formatter, TextBox, WSObjectSelector){
+	Button, Formatter, TextBox, WSObjectSelector
+){
 	return declare([BorderContainer], {
 		baseClass: "WorkspaceBrowser",
 		disabled: false,
@@ -1345,13 +1346,9 @@ define([
 			}else if(!parts[1]){
 				obj = {metadata: {type: "folder"}, type: "folder", path: "/" + window.App.user.id, isWorkspace: true}
 			}else{
-				//if(val[val.length - 1] == "/"){
-				//	ws = ws.substr(0, ws.length - 1)
-				//}
 				obj = WorkspaceManager.getObject(val, true)
 			}
 			Deferred.when(obj, lang.hitch(this, function(obj){
-
 				if(this.browserHeader){
 					this.browserHeader.set("selection", [obj]);
 				}
@@ -1398,7 +1395,7 @@ define([
 								case "GenomeAnnotationGenbank":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
-                case "Variation":
+				                case "Variation":
 								case "RNASeq":
 								case "TnSeq":
 										d = "p3/widget/viewer/Seq";
@@ -1500,7 +1497,6 @@ define([
 					// WorkspaceManager.set("currentPath", val);
 
 
-					// console.log("Set Browser Heade	 Path: ", this.path);
 					if (this.browserHeader)
 						this.browserHeader.set("path", this.path);
 				}));
