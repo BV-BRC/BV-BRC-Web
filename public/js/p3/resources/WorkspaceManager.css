@@ -145,10 +145,15 @@ color:#fff;font-weight:600;background:#34698e;
 	cursor: pointer;
 }
 
-.dgrid-cell.wsItemType,
-.wsItemType {
+.dgrid-cell.wsItemTypeIcon,
+.wsItemTypeIcon {
 	width: 32px;
 	text-align: center;
+}
+
+th.dgrid-cell.wsItemTypeIcon {
+	border-right: 0;
+	padding-left: 0;
 }
 
 .WorkspaceExplorerView .dgrid-cell {
@@ -161,15 +166,13 @@ color:#fff;font-weight:600;background:#34698e;
 
 th.dgrid-cell.wsItemName,
 th.dgrid-cell.wsItemSize,
+th.dgrid-cell.wsItemType,
 th.dgrid-cell.wsItemCreationTime,
 th.dgrid-cell.wsItemOwnerId,
 th.dgrid-cell.wsItemMembers {
 	border-right: 1px solid #C0C0C0;
 }
-th.dgrid-cell.wsItemType {
-	border-right: 0;
-	padding-left: 0;
-}
+
 .dgrid-cell.wsItemName,
 .dgrid-cell.wsItemSize,
 .dgrid-cell.wsItemCreationTime,
@@ -182,7 +185,8 @@ th.dgrid-cell.wsItemType {
 	width: 90px;
 }
 
-.wsItemSize {
+.wsItemSize,
+.wsItemType {
 	width: 100px;
 }
 
@@ -269,7 +273,7 @@ th.dgrid-cell.wsItemType {
 
 .JobsRunning,
 .UploadsRunning{
-	color: #98981d;
+	color: #ffa900;
 }
 
 .JobsCompleted,

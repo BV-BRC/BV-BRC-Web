@@ -632,7 +632,7 @@ define([
 							}
 							return item.type;
 						},
-						className: "wsItemType",
+						className: "wsItemTypeIcon",
 						formatter: formatter.wsItemType,
 						unhidable: true
 					},
@@ -657,6 +657,12 @@ define([
 						className: "wsItemSize",
 						hidden: false,
 						formatter: formatter.objectOrFileSize
+					},
+					obj_type: {
+						label: "Type",
+						field: "type",
+						className: "wsItemType",
+						hidden: true
 					},
 					owner: {
 						label: "Owner",
