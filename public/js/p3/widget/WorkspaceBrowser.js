@@ -306,7 +306,7 @@ define([
 				validTypes: WorkspaceManager.viewableTypes,
 				tooltip: "View in Browser"
 			}, function(selection){
-				console.log("[WorkspaceBrowser] View Item Action", selection);
+				// console.log("[WorkspaceBrowser] View Item Action", selection);
 				Topic.publish("/navigate", {href: "/workspace" + selection[0].path});
 			}, false);
 
@@ -490,7 +490,7 @@ define([
 				validTypes: ["DifferentialExpression"],
 				tooltip: "Toggle Summary View"
 			}, function(selection){
-				console.log("View Experiment Summary: ", selection[0]);
+				// console.log("View Experiment Summary: ", selection[0]);
 				var eid = self.actionPanel.currentContainerWidget.getExperimentId();
 				if (self.actionPanel.currentContainerWidget.isSummaryView()) {
 					Topic.publish("/navigate", {href: "/workspace" + eid});
@@ -517,7 +517,7 @@ define([
 				validTypes: ["RNASeq", "TnSeq", "Variation"],
 				tooltip: "View tracks in genome browser."
 			}, function(selection){
-				console.log("View Tracks: ", selection[0]);
+				// console.log("View Tracks: ", selection[0]);
 				var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
 				var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
 				Topic.publish("/navigate", {href: "/view/Genome/"+genomeId+"#"+urlQueryParams});
