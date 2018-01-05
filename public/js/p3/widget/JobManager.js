@@ -86,7 +86,6 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
-					console.log("SEL: ", sel)
 					Topic.publish("/navigate", {href: "/workspace" + sel.parameters.output_path + "/" + sel.parameters.output_file});
 				},
 				false
@@ -176,14 +175,11 @@ define([
 
 			this.grid.on('select', lang.hitch(this, function(evt){
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-					console.log("rownum: ", rownum);
-					console.log("Row: ", evt.grid.row(rownum).data);
 					var d = evt.grid.row(rownum).data;
 
 					d._formatterType = d.status + "_job";
 					return d;
 				}));
-				console.log("selection: ", sel);
 
 				this.actionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel)
@@ -196,7 +192,7 @@ define([
 
 			// show / hide item detail panel event
 			var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
-			on(hideBtn, "click",  function(e) {
+			on(hideBtn, "click",  function(e){
 				var icon = query('.fa', hideBtn)[0],
 					text = query('.ActionButtonText', hideBtn)[0];
 
