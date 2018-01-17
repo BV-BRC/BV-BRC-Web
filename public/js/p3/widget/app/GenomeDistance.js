@@ -83,7 +83,8 @@ define([
 
 		validate: function(){
 			// console.log("validate", this.genome_id.get('value'), this.fasta.get('value'), !(this.genome_id.get('value') == '' && this.fasta.get('value') == ''));
-
+			if (!(this.genome_id.get('value') == '' && this.fasta.get('value') == ''))
+			  if (this.submitButton){ this.submitButton.set("disabled", false); }
 			return !(this.genome_id.get('value') == '' && this.fasta.get('value') == '');
 		},
 
