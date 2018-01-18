@@ -898,6 +898,16 @@ define([
 			})
 		},
 
+
+		/**
+		 * Lists permissions, given paths(s)
+		 *
+		 * returns lists of lists (if single path given)
+		 * 		or
+		 * returns hash of paths with list of lists values (if multiple paths given)
+		 *
+		 * Todo: to be deprecated?
+		 */
 		listPermissions: function(paths){
 			var _self = this;
 			return Deferred.when(this.api("Workspace.list_permissions", [{
@@ -909,6 +919,54 @@ define([
 			function(err){
 				_self.showError(err);
 			})
+		},
+
+		/**
+		 * Lists permissions, given paths(s)
+		 *
+		 * returns lists of objects (if single path given)
+		 * 		or
+		 * returns hash of paths with list of objects as values (if multiple paths given)
+		 *
+		 */
+		listPerms: function(path){
+			var self = this;
+			var paths = Array.isArray(path) ? path : [path];
+
+			return Deferred.when(this.api("Workspace.list_permissions", [{
+				objects: paths
+			}]), function(res) {
+				var pathHash = res[0];
+				Object.keys(pathHash).forEach(function(path){
+					// server sometimes returns 'none' permissions, ignore them.
+					var permObjs = pathHash[path].filter(function(p){
+						return p[0] != 'global_permission' || p[1] != 'n';
+					}).map(function(p){
+						return {
+							'user': p[0],
+							'perm': self.permissionMap(p[1])
+						}
+					})
+
+					pathHash[path] = permObjs;
+				})
+
+				return Object.keys(pathHash).length > 1 ? pathHash : pathHash[path];
+			},
+
+			function(err){
+				self.showError(err);
+			})
+		},
+
+		permissionMap: function(perm){
+			var mapping = {
+				'n': 'No access',
+				'r': 'Can view',
+				'w': 'Can edit',
+				'a': 'Admin'
+			}
+			return mapping[perm];
 		},
 
 		metaListToObj: function(list){
@@ -930,7 +988,6 @@ define([
 		},
 
 		errorDetailsBtn: function(){
-
 			var btn = new Button({
 				label: "Details",
 				//disabled: true,
@@ -1008,7 +1065,6 @@ define([
 		},
 
 		_currentPathGetter: function(){
-
 			if(!this.currentPath){
 				this.currentPath = Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function(cws){
 					this.currentPath = cws.path;

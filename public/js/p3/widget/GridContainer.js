@@ -4,13 +4,15 @@ define([
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog", "./PerspectiveToolTip",
-	"./CopyTooltipDialog"
-], function(declare, BorderContainer, on, domConstruct,
-			request, when, domClass,
-			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
-			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
-		  CopyTooltipDialog){
+	"./CopyTooltipDialog", "./PermissionEditor"
+], function(
+	declare, BorderContainer, on, domConstruct,
+	request, when, domClass,
+	ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
+	Topic, query, ContentPane, IDMappingTemplate,
+	Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
+	CopyTooltipDialog, PermissionEditor
+){
 
     var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
 	var viewMSATT = new TooltipDialog({
@@ -1089,6 +1091,43 @@ define([
 					stg.startup();
 					dlg.startup();
 					dlg.show();
+				},
+				false
+			], [
+				"Share",
+				"fa icon-user-plus fa-2x",
+				{
+					label: "SHARE",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 100,
+					tooltip: "Share genome(s) with other users",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection, containerWidget){
+					var self = this;
+
+					var selection = selection[0]
+					var sel = Object.assign(selection, {
+						owner_id: selection.owner
+					})
+					delete sel.owner
+
+					var onClose = function() {
+						this.hideAndDestroy();
+
+						// refresh
+					}
+
+					var permEditor = new PermissionEditor({
+						selection: sel,
+						onConfirm: onClose,
+						onCance: onClose
+					})
+
+					permEditor.show();
 				},
 				false
 			], [
