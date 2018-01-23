@@ -162,13 +162,14 @@ define([
 											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
 										default:
+											sourceLink = val || ''
 											break;
 									}
 									node.innerHTML = sourceLink;
 								}
 							}
 						},
-						{label: "Organism", field: "organism"},
+						{label: "Function", field: "function"},
 						{label: "PubMed", field: "pmid",
 							renderCell: function(obj, val, node){
 								if(val){
@@ -511,7 +512,7 @@ define([
 			}
 
 			// specialty gene
-			var spgUrl = PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,pmid,subject_coverage,query_coverage,identity,e_value)");
+			var spgUrl = PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,function,pmid,subject_coverage,query_coverage,identity,e_value)");
 			xhr.get(spgUrl, xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
 
