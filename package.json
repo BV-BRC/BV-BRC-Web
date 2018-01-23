@@ -18,7 +18,7 @@
     "cytoscape-panzoom": "^2.5.2",
     "dagre": "^0.7.4",
     "debug": "^2.6.9",
-    "ejs": "^1.0.0",
+    "ejs": "^2.5.7",
     "express": "~4.14.0",
     "express-formidable": "^1.0.0",
     "express-session": "^1.15.6",
