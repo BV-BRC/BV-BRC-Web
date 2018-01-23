@@ -23,7 +23,7 @@ define("p3/widget/WorkspaceGrid", [
 					}
 					return item.type;
 				},
-				className: "wsItemType",
+				className: "wsItemTypeIcon",
 				formatter: formatter.wsItemType,
 				unhidable: true
 			},
@@ -49,6 +49,12 @@ define("p3/widget/WorkspaceGrid", [
 				hidden: false,
 				formatter: formatter.objectOrFileSize
 			},
+			obj_type: {
+				label: "Type",
+				field: "type",
+				className: "wsItemType",
+				hidden: true
+			},
 			owner_id: {
 				label: "Owner",
 				field: "owner_id",
@@ -67,8 +73,8 @@ define("p3/widget/WorkspaceGrid", [
 				field: "creation_time",
 				className: "wsItemCreationTime",
 				formatter: formatter.date
-			}/*,
-
+			}
+			/*
 			userMeta: {
 				label: "User Metadata",
 				field: "userMeta",
@@ -78,7 +84,8 @@ define("p3/widget/WorkspaceGrid", [
 				label: "Metadata",
 				field: "autoMeta",
 				hidden: true
-			}*/
+			}
+			*/
 		},
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){

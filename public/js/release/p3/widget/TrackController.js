@@ -142,7 +142,7 @@ define("p3/widget/TrackController", [
 							//console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
 							if(tabs.length > 3 && tabs[0]){
 								user_data.push({
-									accession: tabs[0].toUpperCase(),
+									accession: tabs[0],
 									start: parseInt(tabs[1]),
 									end: parseInt(tabs[2]),
 									length: parseInt(tabs[2]) - parseInt(tabs[1]) + 1,
@@ -157,7 +157,7 @@ define("p3/widget/TrackController", [
 
 							}else if(tabs.length == 3 && tabs[0] && (type === "tiles")){
 								user_data.push({
-									accession: tabs[0].toUpperCase(),
+									accession: tabs[0],
 									start: parseInt(tabs[1]),
 									end: parseInt(tabs[2]),
 									length: parseInt(tabs[2]) - parseInt(tabs[1]) + 1,
