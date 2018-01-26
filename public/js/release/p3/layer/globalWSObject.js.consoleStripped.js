@@ -16468,7 +16468,7 @@ define([
 		"modeltemplate", "nwk", "pdf", "png", "ppt", "pptx", "proteomics_experiment",
 		"reads", "rxnprobs", "string", "svg", "tar_gz", "tbi",
 		"transcriptomics_experiment", "transcripts", "txt", "unspecified", "vcf",
-		"vcf_gz", "wig", "xls", "xlsx", "zip", "contigset"],
+		"vcf_gz", "wig", "xls", "xlsx", "zip", "contigset", "xml"],
 		viewableTypes: ["txt", "html", "json", "csv", "diffexp_experiment",
 		"diffexp_expression", "diffexp_mapping", "diffexp_sample", "pdf",
 		"diffexp_input_data", "diffexp_input_metadata", "svg", "gif", "png", "jpg"],
