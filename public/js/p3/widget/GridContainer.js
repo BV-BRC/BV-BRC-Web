@@ -1113,7 +1113,6 @@ define([
 					var sel = Object.assign(selection, {
 						owner_id: selection.owner
 					})
-					delete sel.owner
 
 					var onClose = function() {
 						this.hideAndDestroy();
