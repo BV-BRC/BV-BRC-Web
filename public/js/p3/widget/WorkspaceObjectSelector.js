@@ -632,7 +632,7 @@ define([
 							}
 							return item.type;
 						},
-						className: "wsItemTypeIcon",
+						className: "wsObjIcon",
 						formatter: formatter.wsItemType,
 						unhidable: true
 					},
