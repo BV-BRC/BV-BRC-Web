@@ -34,21 +34,25 @@ define([
 	"dojo", "dojo/_base/declare", "dijit/_WidgetBase", "./Confirmation", // dojo/on
 	"../widget/UserSelector", "./Formatter", "dojo/dom-construct",
 	"dijit/form/Select", "dijit/form/Button", "../WorkspaceManager",
-	"dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/query", "dojo/topic"
+	"dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/query", "dojo/topic",
+	"../DataAPI"
 ],function(
 	dojo, declare, WidgetBase, Confirmation,
 	UserSelector, Formatter, domConstruct,
 	Select, Button, WorkspaceManager,
-	Deferred, CheckBox, query, Topic
+	Deferred, CheckBox, query, Topic,
+	DataAPI
 ){
 	return declare([WidgetBase], {
 		/* required widget input */
 		selection: null,    // objects to be shared
+		useSolrAPI: false,
 
  		constructor: function(o){
 			this.selection = o.selection;
 			this.onConfirm = o.onConfirm ? o.onConfirm : function(){};
 			this.onCancel = o.onCancel ? o.onCancel : function(){};
+			this.useSolrAPI = o.useSolrAPI || false;
 		},
 		postCreate: function(){},
 		startup: function(){
@@ -161,10 +165,11 @@ define([
 			// Note: on click, the user is added server side.
 			var addUserBtn = new Button({
 				label: '<i class="icon-plus"></i> Add User',
-				//disabled: true,
 				onClick: function(){
 					var userId = userSelector.getSelected();
 						perm = permSelect.attr('value')
+
+					console.log('userID, perm', userId, perm)
 
 					if (!userId) return;
 
@@ -172,7 +177,9 @@ define([
 					if(self.findUser(userId)) return;
 
 					self.progressEle.innerHTML = self.loadingHTML;
-					var prom = WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
+					var prom = self.useSolrAPI ?
+						DataAPI.addGenomePermission(self.selection.genome_id, userId, perm) :
+						WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
 					Deferred.when(prom, function(result) {
 						dojo.place(
 							'<tr>'+
@@ -209,7 +216,13 @@ define([
 				onCancel: this.onCancel
 			})
 
-			self.listWSPermissions(folderPath);
+
+			console.log('use solr', this.useSolrAPI)
+			if(this.useSolrAPI){
+				this.listSolrPermissions();
+			}else{
+				this.listWSPermissions();
+			}
 
 			dlg.startup()
 			dlg.show();
@@ -217,19 +230,103 @@ define([
 
 
 		/*
-		 * list workspade (init) permissions in dom
+		 * list solr (initial) permissions in dom
 		*/
-		listWSPermissions: function(folderPath){
-			var form = self.form;
+		listSolrPermissions: function(){
+			var self = this,
+				form = self.form;
+				id = this.selection.genome_id,
+				isPublic = this.selection.public;
 
-			var prom = WorkspaceManager.listPerms(folderPath);
+			var perms = this.solrPermsToObjs(this.selection.user_read, this.selection.user_write);
+
+			var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
+			var cb = new CheckBox({
+				name: "checkBox",
+				value: "isPublic",
+				checked: isPublic,
+				onChange: function(e){
+					//var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
+
+
+					Deferred.when(prom, function(res){
+					}, function(e){
+						alert('oh no, something has went wrong!')
+					})
+				}
+			})
+			cb.placeAt(checkBox);
+			checkBox.appendChild(domConstruct.create('label', {
+				'for': 'publicCB',
+				'innerHTML': " Publicly Readable"
+			}))
+			domConstruct.place(checkBox, form, 'first');
+
+
+			domConstruct.place(
+				'<h4 style="margin-bottom: 5px;">'+
+					'Share with Everybody'+
+				'</h4>',
+			form, 'first');
+
+			// user perms
+			perms.forEach(function(p){
+				// server sometimes returns 'none' permissions, so ignore them.
+				if(p.perm == 'n' || p.user == 'global_permission') return;
+
+
+				self.addUser(p.user, p.perm)
+
+				dojo.place(
+					'<tr>'+
+						'<td data-user="'+p.user+'">'+Formatter.baseUsername(p.user)+
+						'<td data-perm="'+p.perm+'">'+p.perm+
+						'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
+					query('tbody', self.currentUsers)[0]
+				);
+			})
+
+			// event for deleting users
+			self.reinitDeleteEvents();
+
+			self.progressEle.innerHTML = '';
+
+		},
+
+		solrPermsToObjs: function(readList, writeList){
+			var readObjs = (readList || []).map(function(user){
+				return {
+					user: user,
+					perm: 'Can read'
+				}
+			})
+
+			var writeObjs = (writeList || []).map(function(user){
+				return {
+					user: user,
+					perm: 'Can edit'
+				}
+			})
+
+			return readObjs.concat(writeObjs);
+		},
+
+
+		/*
+		 * list workspace (initial) permissions in dom
+		*/
+		listWSPermissions: function(){
+			var self = this,
+				form = self.form;
+				folderPath = this.selection.path;
+
+			var prom = WorkspaceManager.listPerms(folderPath, true /* include global */);
 			Deferred.when(prom, function(perms){
-
-				// add global permission toggle
-				var globalPerm = perms.filter(function(perm){
-					return perm[0] == 'global_permission'
-				})[0][1];
-				var isPublic = globalPerm != 'n';
+				// add global permission toggle (using latest state)
+				var globalPerm = perms.filter(function(p){
+					return p.user == 'global_permission'
+				})[0].perm;
+				var isPublic = globalPerm != 'No access';
 
 				var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
 				var cb = new CheckBox({
@@ -258,18 +355,19 @@ define([
 				form, 'first');
 
 				// user perms
-				perms.forEach(function(perm){
+				perms.forEach(function(p){
 					// server sometimes returns 'none' permissions, so ignore them.
-					if(perm[0] == 'global_permission' || perm[1] == 'n') return;
+					if(p.perm == 'n' || p.user == 'global_permission') return;
 
-					self.addUser(perm[0], perm[1])
+
+					self.addUser(p.user, p.perm)
 
 					dojo.place(
 						'<tr>'+
-							'<td data-user="'+perm[0]+'">'+Formatter.baseUsername(perm[0])+
-							'<td data-perm="'+perm[1]+'">'+Formatter.permissionMap(perm[1])+
+							'<td data-user="'+p.user+'">'+Formatter.baseUsername(p.user)+
+							'<td data-perm="'+p.perm+'">'+p.perm+
 							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-						query('tbody', currentUsers)[0]
+						query('tbody', self.currentUsers)[0]
 					);
 				})
 
@@ -281,6 +379,8 @@ define([
 		},
 
 		reinitDeleteEvents: function(){
+			var self = this;
+
 			query('tbody .icon-trash-o', self.currentUsers).on('click', function(){
 				var userRow = query(this).parents('tr')[0],
 					userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');

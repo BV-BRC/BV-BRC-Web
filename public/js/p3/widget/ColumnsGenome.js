@@ -13,11 +13,22 @@ define(["./formatter"], function(formatter){
 		},
 		genome_name: {
 			label: 'Genome Name',
-			field: 'genome_name'
+			//field: 'genome_name',
+			get: function(item){
+				return item;
+			},
+			formatter: formatter.genomeName
 		},
 		genome_id: {
 			label: 'Genome ID',
 			field: 'genome_id'
+		},
+		members: {
+			label: 'Members',
+			get: function(item){
+				return item;
+			},
+			formatter: formatter.genomeMembers
 		},
 		taxon_id: {
 			label: 'NCBI Taxon ID',
@@ -343,6 +354,6 @@ define(["./formatter"], function(formatter){
 			field: 'date_modified',
 			hidden: true,
 			formatter: formatter.dateOnly
-		}
+		},
 	}
 });

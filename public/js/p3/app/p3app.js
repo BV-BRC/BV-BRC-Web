@@ -6,7 +6,7 @@ define([
 	"dojo/store/JsonRest", "dojox/widget/Toaster",
 	"dojo/ready", "./app", "../router",
 	"dojo/window", "../widget/Drawer", "dijit/layout/ContentPane",
-	"../jsonrpc", "../panels", "../WorkspaceManager", "dojo/keys",
+	"../jsonrpc", "../panels", "../WorkspaceManager", "../DataAPI", "dojo/keys",
 	"dijit/Dialog", "../util/PathJoin"
 ], function(declare,
 			Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
@@ -16,7 +16,7 @@ define([
 			Ready, App,
 			Router, Window,
 			Drawer, ContentPane,
-			RPC, Panels, WorkspaceManager, Keys,
+			RPC, Panels, WorkspaceManager, DataAPI, Keys,
 			Dialog, PathJoin){
 	return declare([App], {
 		panels: Panels,
@@ -317,6 +317,8 @@ define([
 				if(this.dataAPI.charAt(-1) != "/"){
 					this.dataAPI = this.dataAPI + "/";
 				}
+
+				DataAPI.init(this.dataAPI, this.authorizationToken || "");
 				this.api.data = RPC(this.dataAPI, this.authorizationToken);
 			}
 			/*

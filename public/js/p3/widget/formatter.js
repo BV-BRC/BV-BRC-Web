@@ -218,6 +218,22 @@ function(locale, domConstruct, domClass, Tooltip){
 
 	var formatters = {
 		getExternalLinks: getExternalLinks,
+		genomeName: function(obj){
+			if(obj.user_read || obj.user_write){
+				return '<i class="fa icon-users" title="shared"></i> '+ obj.genome_name;
+			}
+
+			return obj.genome_name;
+		},
+		genomeMembers: function(obj){
+			var allMembers = (obj.user_read || []).concat(obj.user_write);
+			if(allMembers.length > 1){
+				return allMembers.length + ' members'
+			}
+
+			return 'Only me';
+		},
+
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},

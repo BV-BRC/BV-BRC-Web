@@ -130,7 +130,7 @@ define([
 		},
 
 		buildHeaderContent: function(genome){
-2
+
 			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", genome.taxon_id), {
 				headers: {
 					accept: "application/json"

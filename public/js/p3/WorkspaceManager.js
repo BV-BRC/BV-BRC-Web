@@ -809,7 +809,6 @@ define([
 					includeSubDirs: false,
 					recursive: recursive ? true : false
 				}]), function(results){
-
 					if(!results[0] || !results[0][path]){
 						return [];
 					}
@@ -929,7 +928,7 @@ define([
 		 * returns hash of paths with list of objects as values (if multiple paths given)
 		 *
 		 */
-		listPerms: function(path){
+		listPerms: function(path, includeGlobal){
 			var self = this;
 			var paths = Array.isArray(path) ? path : [path];
 
@@ -940,7 +939,7 @@ define([
 				Object.keys(pathHash).forEach(function(path){
 					// server sometimes returns 'none' permissions, ignore them.
 					var permObjs = pathHash[path].filter(function(p){
-						return p[0] != 'global_permission' || p[1] != 'n';
+						return p[1] != 'n' || (includeGlobal && p[0] == 'global_permission');
 					}).map(function(p){
 						return {
 							'user': p[0],

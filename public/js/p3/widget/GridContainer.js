@@ -1124,7 +1124,8 @@ define([
 					var permEditor = new PermissionEditor({
 						selection: sel,
 						onConfirm: onClose,
-						onCance: onClose
+						onCance: onClose,
+						useSolrAPI: true
 					})
 
 					permEditor.show();
