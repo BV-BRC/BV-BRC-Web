@@ -131,6 +131,14 @@ define([
 			xhr.get(PathJoin(this.apiServiceUrl, "antibiotics", "?" + query), xhrOption)
 				.then(lang.hitch(this, function(data){
 
+					if(data.length === 0) {
+						domConstruct.empty(this.antibioticSummaryNode);
+						domConstruct.create("h2", {"innerHTML": 'No summary data available.'}, this.antibioticSummaryNode, "first");
+
+						domConstruct.empty(this.structureNode);
+						return
+					}
+
 					var d = data[0];
 					var summary = lang.mixin({}, {
 						pubchem_cid: d['pubchem_cid'],
