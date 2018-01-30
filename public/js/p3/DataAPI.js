@@ -2,20 +2,22 @@
  * Primarily only used for genome persmisions right now.
  * See P3JsonRest.js for query related requests
  *
+ * Author(s):
+ * 		nconrad
  */
 define([
 	"dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 	"dojo/_base/Deferred", "dojo/topic", "./jsonrpc", "dojo/Stateful",
-	"dojo/promise/all"
+	"dojo/promise/all", "dojo/_base/Deferred"
 ], function(
 	xhr, declare, lang,
-	Deferred, Topic, RPC, Stateful, All){
+	Deferred, Topic, RPC, Stateful,
+	All, Deferred){
 
 	var DataAPI = (declare([Stateful], {
 		token: null,
 		apiUrl: null,
 		postOpts: {
-			handleAs: 'json',
 			headers: {
 				"content-type": "application/json",
 				"X-Requested-With": null,
@@ -42,13 +44,11 @@ define([
 
 			var data = {
 				op: 'add',
-				user: user,
+				users: user,
 				permission: perm
 			}
 
-			this.post(id, data).then(function(res){
-				console.log('add genome permissions res:', res)
-			})
+			return this.post(id, data);
 		},
 
 
@@ -60,7 +60,7 @@ define([
 			var params = Object.assign({data: JSON.stringify(data)}, this.postOpts),
 				url = this.apiUrl + 'permissions/genome/' + id;
 
-			return xhr.post(url, params)
+			return xhr.post(url, params);
 		},
 
 		get: function(data){

@@ -26,7 +26,7 @@
  * 		.onCancel() - callback for when dialog is canceled
  *
  * Author(s):
- *		nc
+ *		nconrad
  *
  */
 
@@ -180,7 +180,11 @@ define([
 					var prom = self.useSolrAPI ?
 						DataAPI.addGenomePermission(self.selection.genome_id, userId, perm) :
 						WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
+
+					console.log('prom', prom)
+
 					Deferred.when(prom, function(result) {
+						console.log('result', result)
 						dojo.place(
 							'<tr>'+
 								'<td data-user="'+userId+'">'+Formatter.baseUsername(userId)+
@@ -206,15 +210,18 @@ define([
 			domConstruct.place(addUserBtn.domNode, form, "last")
 
 			// open form in dialog
-			var dlg = new Confirmation({
+			var dlg = this.dialog = new Confirmation({
 				title: "Edit Sharing",
-				okLabel: "Done",
-				cancelLabel: false,
+				okLabel: "Save",
+				cancelLabel: 'Cancel',
 				content: form,
 				style: { width: '500px'},
 				onConfirm: this.onConfirm,
 				onCancel: this.onCancel
 			})
+			dlg.okButton.set('disabled', true)
+
+
 
 
 			console.log('use solr', this.useSolrAPI)
