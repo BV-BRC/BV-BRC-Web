@@ -4,13 +4,13 @@ define([
 	"dojo/text!./templates/SeqComparison.html", "./AppBase", "dojo/dom-construct", "dijit/registry",
 	"dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "dojo/domReady!", "dijit/form/NumberTextBox",
 	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog",
-	"dojo/NodeList-traverse", "../../WorkspaceManager", "dojo/store/Memory", "dojox/widget/Standby"
+	"dojo/NodeList-traverse", "../../WorkspaceManager", "dojo/store/Memory", "dojox/widget/Standby", "dojo/when"
 ], function(declare, WidgetBase, on,
 			domClass,
 			Template, AppBase, domConstruct, registry,
 			Deferred, aspect, lang, domReady, NumberTextBox,
 			query, dom, popup, Tooltip, Dialog, TooltipDialog,
-			children, WorkspaceManager, Memory, Standby){
+			children, WorkspaceManager, Memory, Standby, when){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
 		templateString: Template,
@@ -28,6 +28,8 @@ define([
 			this.genomeToAttachPt = ["comp_genome_id"];
 			this.fastaToAttachPt = ["user_genomes_fasta"];
 			this.featureGroupToAttachPt = ["user_genomes_featuregroup"];
+			this.genomeGroupToAttachPt = ["user_genomes_genomegroup"];
+			this.userGenomeList = [];
 			this.numref = 0;
 		},
 
@@ -70,6 +72,19 @@ define([
 			}
 		},
 
+		checkDuplicate: function(cur_value, attachType){
+			var success = 1;
+			var genomeIds = [];
+			var genomeList = query(".genomedata");
+			genomeList.forEach(function(item){
+					genomeIds.push(item.genomeRecord[attachType]);
+				});
+			if(genomeIds.length > 0 && genomeIds.indexOf(cur_value) > -1) {//found duplicate
+				success = 0;
+			}
+			return success;
+		},
+		
 		ingestAttachPoints: function(input_pts, target, req){
 			req = typeof req !== 'undefined' ? req : true;
 			var success = 1;
@@ -125,11 +140,16 @@ define([
 						success = 0;
 					}
 				}
+				else if(attachname == "user_genomes_genomegroup"){
+					cur_value = this[attachname].searchBox.value;
+					var duplicate = this.checkDuplicate(cur_value, "user_genomes_genomegroup");
+					success = success * duplicate;
+				}
 				else{
 					cur_value = this[attachname].value;
 				}
 
-				console.log("cur_value=" + cur_value);
+				// console.log("cur_value=" + cur_value);
 
 				if(typeof(cur_value) == "string"){
 					target[attachname] = cur_value.trim();
@@ -206,16 +226,48 @@ define([
 			return display_name;
 		},
 
-		increaseGenome: function(){
-			this.addedGenomes = this.addedGenomes + 1;
-			this.numgenomes.set('value', Number(this.addedGenomes));
+		makeGenomeGroupName: function(newGenomeIds){
+			var name = this[this.genomeGroupToAttachPt].searchBox.get("displayedValue");
+			var maxName = 36;
+			var display_name = name;
+			if(name.length > maxName){
+				display_name = name.substr(0, (maxName / 2) - 2) + "..." + name.substr((name.length - (maxName / 2)) + 2);
+			}
 
-		},
-		decreaseGenome: function(){
-			this.addedGenomes = this.addedGenomes - 1;
-			this.numgenomes.set('value', Number(this.addedGenomes));
+			return display_name;
 		},
 
+		increaseGenome: function(genomeType, newGenomeIds){
+			if (genomeType == "genome" || genomeType == "genome_group") {
+				newGenomeIds.forEach(lang.hitch(this, function(id){
+					this.userGenomeList.push(id);
+				}));
+				this.addedGenomes = this.addedGenomes + newGenomeIds.length;
+				this.numgenomes.set('value', Number(this.addedGenomes));
+			} else {
+				this.addedGenomes = this.addedGenomes + 1;
+				this.numgenomes.set('value', Number(this.addedGenomes));
+			}
+			// console.log("increase this.userGenomeList = " + this.userGenomeList);
+		},
+
+		decreaseGenome: function(genomeType, newGenomeIds){
+			if (genomeType == "genome" || genomeType == "genome_group") {
+				newGenomeIds.forEach(lang.hitch(this, function(id){
+					var idx = this.userGenomeList.indexOf(id);
+					if(idx > -1){
+						this.userGenomeList.splice(idx, 1);
+					}
+				}));
+				this.addedGenomes = this.addedGenomes - newGenomeIds.length;
+				this.numgenomes.set('value', Number(this.addedGenomes));
+			} else {
+				this.addedGenomes = this.addedGenomes - 1;
+				this.numgenomes.set('value', Number(this.addedGenomes));
+			}
+			// console.log("decrease this.userGenomeList = " + this.userGenomeList);			
+		},
+		
 		onAddGenome: function(){
 			//console.log("Create New Row", domConstruct);
 			var lrec = {};
@@ -223,6 +275,7 @@ define([
 			//console.log("this.genomeToAttachPt = " + this.genomeToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			if(chkPassed && this.addedGenomes < this.maxGenomes){
+				var newGenomeIds =[lrec[this.genomeToAttachPt]];
 				var tr = this.genomeTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
 				td.genomeRecord = lrec;
@@ -233,9 +286,9 @@ define([
 					this.genomeTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this, function(evt){
-					console.log("Delete Row");
+					// console.log("Delete Row");
 					domConstruct.destroy(tr);
-					this.decreaseGenome();
+					this.decreaseGenome("genome", newGenomeIds);
 					if(this.addedGenomes < this.startingRows){
 						var ntr = this.genomeTable.insertRow(-1);
 						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
@@ -244,18 +297,19 @@ define([
 					}
 					handle.remove();
 				}));
-				this.increaseGenome();
+				this.increaseGenome("genome", newGenomeIds);
 			}
 			//console.log(lrec);
 		},
 
 		onAddFasta: function(){
-			console.log("Create New Row", domConstruct);
+			// console.log("Create New Row", domConstruct);
 			var lrec = {};
 			var chkPassed = this.ingestAttachPoints(this.fastaToAttachPt, lrec);
 			//console.log("this.fastaToAttachPt = " + this.fastaToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			if(chkPassed && this.addedGenomes < this.maxGenomes){
+				var newGenomeIds =[lrec[this.fastaToAttachPt]];
 				var tr = this.genomeTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
 				td.genomeRecord = lrec;
@@ -266,9 +320,9 @@ define([
 					this.genomeTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this, function(evt){
-					console.log("Delete Row");
+					// console.log("Delete Row");
 					domConstruct.destroy(tr);
-					this.decreaseGenome();
+					this.decreaseGenome("fasta", newGenomeIds);
 					if(this.addedGenomes < this.startingRows){
 						var ntr = this.genomeTable.insertRow(-1);
 						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
@@ -277,7 +331,7 @@ define([
 					}
 					handle.remove();
 				}));
-				this.increaseGenome();
+				this.increaseGenome("fasta", newGenomeIds);
 			}
 			//console.log(lrec);
 		},
@@ -289,6 +343,7 @@ define([
 			//console.log("this.featureGroupToAttachPt = " + this.featureGroupToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
 			if(chkPassed && this.addedGenomes < this.maxGenomes){
+				var newGenomeIds =[lrec[this.featureGroupToAttachPt]];
 				var tr = this.genomeTable.insertRow(0);
 				var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
 				td.genomeRecord = lrec;
@@ -299,9 +354,9 @@ define([
 					this.genomeTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this, function(evt){
-					console.log("Delete Row");
+					// console.log("Delete Row");
 					domConstruct.destroy(tr);
-					this.decreaseGenome();
+					this.decreaseGenome("feature_group", newGenomeIds);
 					if(this.addedGenomes < this.startingRows){
 						var ntr = this.genomeTable.insertRow(-1);
 						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
@@ -310,11 +365,68 @@ define([
 					}
 					handle.remove();
 				}));
-				this.increaseGenome();
+				this.increaseGenome("feature_group", newGenomeIds);
 			}
 			//console.log(lrec);
 		},
 
+		// implement adding a genome group
+		onAddGenomeGroup: function(){
+			var lrec = {};
+			var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
+			// console.log("this.genomeGroupToAttachPt = " + this.genomeGroupToAttachPt);
+			// console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+			var path = lrec[this.genomeGroupToAttachPt];
+			var newGenomeIds = [];
+			when(WorkspaceManager.getObject(path), lang.hitch(this, function(res){
+				if(typeof res.data == "string"){
+					res.data = JSON.parse(res.data);
+				}
+				if(res && res.data && res.data.id_list){
+					if(res.data.id_list["genome_id"]){
+						newGenomeIds =  res.data.id_list["genome_id"];
+					}
+				}
+				//display a notice if adding new genome group exceeds maximum allowed number
+				var count = this.addedGenomes + newGenomeIds.length;
+				if(count > this.maxGenomes){
+					var msg = "Sorry, you can only add up to "+this.maxGenomes+" genomes";
+					msg += " and you are trying to select "+count + ".";
+					new Dialog({title: "Notice", content: msg}).show();
+				}
+        		// console.log("newGenomeIds = ", newGenomeIds);
+
+				if(chkPassed && this.addedGenomes < this.maxGenomes
+					&& newGenomeIds.length > 0
+					&& count < this.maxGenomes){
+					var tr = this.genomeTable.insertRow(0);
+					var td = domConstruct.create('td', {"class": "textcol genomedata", innerHTML: ""}, tr);
+					td.genomeRecord = lrec;
+					td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName() + "</div>";
+					var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
+					var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
+					if(this.addedGenomes < this.startingRows){
+						this.genomeTable.deleteRow(-1);
+					}
+					var handle = on(td2, "click", lang.hitch(this, function(evt){
+						// console.log("Delete Row");
+						domConstruct.destroy(tr);
+						this.decreaseGenome("genome_group", newGenomeIds);
+						if(this.addedGenomes < this.startingRows){
+							var ntr = this.genomeTable.insertRow(-1);
+							var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+							var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+							var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+						}
+						handle.remove();
+					}));
+					this.increaseGenome("genome_group", newGenomeIds);
+				}
+			}));
+
+			// console.log(lrec);
+		},
+		
 		onSubmit: function(evt){
 			var _self = this;
 
@@ -354,7 +466,7 @@ define([
 					}
 					this.submitButton.set("disabled", true);
 					window.App.api.service("AppService.start_app", [this.applicationName, values]).then(function(results){
-						console.log("Job Submission Results: ", results);
+						// console.log("Job Submission Results: ", results);
 						domClass.remove(_self.domNode, "Working")
 						domClass.add(_self.domNode, "Submitted");
 						_self.submitButton.set("disabled", false);
@@ -362,19 +474,19 @@ define([
 							obj.reset();
 						});
 					}, function(err){
-						console.log("Error:", err)
+						// console.log("Error:", err)
 						domClass.remove(_self.domNode, "Working");
 						domClass.add(_self.domNode, "Error");
 						_self.errorMessage.innerHTML = err;
 					})
 				}else{
 					domClass.add(this.domNode, "Error");
-					console.log("Form is incomplete");
+					// console.log("Form is incomplete");
 				}
 
 			}else{
 				domClass.add(this.domNode, "Error");
-				console.log("Form is incomplete");
+				// console.log("Form is incomplete");
 			}
 		},
 
@@ -400,12 +512,10 @@ define([
 				refType = "ref_user_genomes_featuregroup";
 				featureGroups.push(values["ref_user_genomes_featuregroup"]);
 			}
-
-			compGenomeList.forEach(function(item){
-				if(item.genomeRecord.comp_genome_id){
-					genomeIds.push(item.genomeRecord.comp_genome_id);
-				}
-			});
+			
+			this.userGenomeList.forEach(lang.hitch(this, function(id){
+					genomeIds.push(id);
+			}));
 
 			compGenomeList.forEach(function(item){
 				if(item.genomeRecord.user_genomes_fasta){
