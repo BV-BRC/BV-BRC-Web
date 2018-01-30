@@ -4,14 +4,14 @@ define([
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog", "./PerspectiveToolTip",
-	"./CopyTooltipDialog", "./PermissionEditor"
+	"./CopyTooltipDialog", "./PermissionEditor", "../WorkspaceManager", "../DataAPI", "dojo/_base/Deferred"
 ], function(
 	declare, BorderContainer, on, domConstruct,
 	request, when, domClass,
 	ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 	Topic, query, ContentPane, IDMappingTemplate,
 	Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
-	CopyTooltipDialog, PermissionEditor
+	CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred
 ){
 
     var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -1109,22 +1109,62 @@ define([
 				function(selection, containerWidget){
 					var self = this;
 
-					var selection = selection[0]
-					var sel = Object.assign(selection, {
-						owner_id: selection.owner
-					})
+					var selection = selection;
+
+
+					//var sel = Object.assign(selection, {
+					//	owner_id: selection.owner
+					//})
 
 					var onClose = function() {
 						this.hideAndDestroy();
-
-						// refresh
 					}
 
+
+					var onConfirm = function(perms) {
+						console.log('editor perms', perms)
+
+						//var perm = perms[0].permission,
+						//	users = perms.map(function(perm){ return perm.user });
+
+						var ids = selection.map(function(sel) {
+							return sel.genome_id
+						})
+
+						Topic.publish("/Notification", {
+							message: "Updating permissions (this may take awhile)...", type: "default"
+						});
+
+
+						var prom = DataAPI.setGenomePermissions(ids, perms);
+						Deferred.when(prom).then(function(result) {
+							console.log('the final results', result)
+
+
+							Topic.publish("/Notification", {
+								message: "Permissions updated.",
+								type: "message"
+							});
+							self.grid.refresh()
+
+						}, function(err){
+							console.log('error', err)
+							Topic.publish("/Notification", {
+								message: err,
+								type: "error"
+							});
+						})
+					}
+
+					console.log('selection,', selection)
+					var initialPerms = self.solrPermsToObjs(selection)
 					var permEditor = new PermissionEditor({
-						selection: sel,
-						onConfirm: onClose,
+						selection: selection,
+						onConfirm: onConfirm,
 						onCance: onClose,
-						useSolrAPI: true
+						user: window.App.user.id || '',
+						useSolrAPI: true,
+						permissions: initialPerms
 					})
 
 					permEditor.show();
@@ -1200,6 +1240,49 @@ define([
 				false
 			]
 		],
+
+		solrPermsToObjs: function(selection){
+			var permSets = []
+			var allPermissions = {}
+
+			console.log('the selection', selection)
+
+			selection.forEach(function(sel){
+				console.log('selection iteration', sel)
+				var id = sel.genome_id;
+
+				var readObjs = (sel.user_read || []).map(function(user){
+					var obj =  {
+						user: user,
+						perm: 'Can view'
+					}
+
+					return obj;
+				})
+
+				var writeObjs = (sel.user_write || []).map(function(user){
+					var obj = {
+						user: user,
+						perm: 'Can edit'
+					}
+
+					return obj;
+				})
+
+				var permObjs = readObjs.concat(writeObjs);
+				permSets.push(permObjs);
+			})
+
+			var permissions = permSets.reduce(
+				function(a, b) { return a.concat(b); },
+				[]
+			);
+
+
+
+			console.log('permissions from solrPermsToObjs', permissions)
+			return permissions
+		},
 
 		buildQuery: function(){
 			var q = [];

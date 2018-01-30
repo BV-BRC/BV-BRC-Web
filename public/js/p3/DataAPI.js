@@ -25,40 +25,45 @@ define([
 			}
 		},
 
-		addGenomePermission: function(id, user, perm){
-			console.log('called add genome perm', id, user, perm)
-			if(!id || !user || !perm){
-				console.log('addGenomePermission expects id, user, and permission');
-				return;
+		setGenomePermissions: function(ids, perms){
+			var self = this;
+
+			if(!ids || !perms){
+				throw new Error('setGenomePermission expects id and permissions');
 			}
 
-			if( ['read', 'write', 'r', 'w'].indexOf(perm) == -1 || !perm ){
-				console.log('Permission "' + perm +'" not valid!');
-				return;
-			}
+			var data = perms.map(function(p){
+				return {
+					user: p.user,
+					permission: self.permMapping(p.permission)
+				}
+			})
 
-			if(perm == 'r')
-				perm = 'read';
-			else if(permission == 'w')
-				perm = 'write';
+			var ids = Array.isArray(ids) ? ids : [ids];
 
-			var data = {
-				op: 'add',
-				users: user,
-				permission: perm
-			}
+			console.log('posting with', data)
 
-			return this.post(id, data);
+			return this.post(ids, data);
 		},
 
+		permMapping: function(perm) {
+			var mapping = {
+				'Can view': 'read',
+				'Can edit': 'write',
+				'r': 'read',
+				'w': 'write'
+			}
+
+			return mapping[perm];
+		},
 
 		checkPermParams: function(id, user, perm){
 			//implement
 		},
 
-		post: function(id, data){
+		post: function(ids, data){
 			var params = Object.assign({data: JSON.stringify(data)}, this.postOpts),
-				url = this.apiUrl + 'permissions/genome/' + id;
+				url = this.apiUrl + 'permissions/genome/' + ids.join(',');
 
 			return xhr.post(url, params);
 		},

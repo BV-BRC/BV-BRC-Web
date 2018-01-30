@@ -46,6 +46,9 @@ define([
 	return declare([WidgetBase], {
 		/* required widget input */
 		selection: null,    // objects to be shared
+		permissions: [], 	// initial permissions of objects/items/whatever
+		user: null,        // owner of object(s)
+
 		useSolrAPI: false,
 
  		constructor: function(o){
@@ -81,9 +84,11 @@ define([
 		_userPerms: [],
 
 		rmUser: function(userId){
+			console.log('removing', userId, 'before:', this._userPerms)
 			this._userPerms = this._userPerms.filter(function(perm){
 				return userId != perm.user ;
 			})
+			console.log('new userperms', this._userPerms)
 		},
 
 		addUser: function(userId, perm){
@@ -110,12 +115,11 @@ define([
 		show: function(){
 			var self = this;
 
-			var folderPath = this.selection.path;
 
 			/**
 			 * Build the form and events
 			 */
-			var ownerId = Formatter.baseUsername(this.selection.owner_id);
+			var ownerId = Formatter.baseUsername(this.user);
 
 			var form = self.form = domConstruct.toDom('<div class="userPermForm">')
 			domConstruct.place(
@@ -137,7 +141,7 @@ define([
 							'<th>&nbsp;'+
 					'<tbody>'+
 						'<tr>'+
-							'<td><i>'+ this.selection.owner_id.split('@')[0] + ' ' + (ownerId == 'me' ? '(me)': '')+'</i>'+
+							'<td><i>'+ self.user.split('@')[0] + ' ' + (self.user == 'me' ? '(me)': '')+'</i>'+
 							'<td>Owner'+
 							'<td>&nbsp;'
 			);
@@ -176,31 +180,26 @@ define([
 					// don't add already existing users
 					if(self.findUser(userId)) return;
 
-					self.progressEle.innerHTML = self.loadingHTML;
-					var prom = self.useSolrAPI ?
-						DataAPI.addGenomePermission(self.selection.genome_id, userId, perm) :
-						WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
+					console.log('actually got this far')
 
-					console.log('prom', prom)
+					dojo.place(
+						'<tr>'+
+							'<td data-user="'+userId+'">'+Formatter.baseUsername(userId)+
+							'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
+							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
+						query('tbody', self.currentUsers)[0]
+					);
 
-					Deferred.when(prom, function(result) {
-						console.log('result', result)
-						dojo.place(
-							'<tr>'+
-								'<td data-user="'+userId+'">'+Formatter.baseUsername(userId)+
-								'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
-								'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-							query('tbody', self.currentUsers)[0]
-						);
+					self.addUser(userId, perm)
+					self.reinitDeleteEvents();
 
-						self.addUser(userId, perm)
-						self.reinitDeleteEvents();
+					self.progressEle.innerHTML = '';
 
-						self.progressEle.innerHTML = '';
+					// reset filter select
+					userSelector.reset();
 
-						// reset filter select
-						userSelector.reset();
-					})
+					// allow save now
+					self.dialog.okButton.set('disabled', false);
 				}
 			});
 
@@ -210,21 +209,22 @@ define([
 			domConstruct.place(addUserBtn.domNode, form, "last")
 
 			// open form in dialog
+			var itemCount = self.selection.length;
 			var dlg = this.dialog = new Confirmation({
-				title: "Edit Sharing",
+				title: "Edit Sharing" + (itemCount > 1 ? ' (for ' + itemCount + ' Items)' : '')  ,
 				okLabel: "Save",
 				cancelLabel: 'Cancel',
 				content: form,
 				style: { width: '500px'},
-				onConfirm: this.onConfirm,
+				onConfirm: function(evt) {
+					self.onConfirm(self._userPerms)
+				},
+
 				onCancel: this.onCancel
 			})
 			dlg.okButton.set('disabled', true)
 
 
-
-
-			console.log('use solr', this.useSolrAPI)
 			if(this.useSolrAPI){
 				this.listSolrPermissions();
 			}else{
@@ -242,52 +242,64 @@ define([
 		listSolrPermissions: function(){
 			var self = this,
 				form = self.form;
-				id = this.selection.genome_id,
-				isPublic = this.selection.public;
+				//id = this.selection.genome_id,
+				selection = this.selection;
 
-			var perms = this.solrPermsToObjs(this.selection.user_read, this.selection.user_write);
-
-			var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
-			var cb = new CheckBox({
-				name: "checkBox",
-				value: "isPublic",
-				checked: isPublic,
-				onChange: function(e){
-					//var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
-
-
-					Deferred.when(prom, function(res){
-					}, function(e){
-						alert('oh no, something has went wrong!')
-					})
-				}
-			})
-			cb.placeAt(checkBox);
-			checkBox.appendChild(domConstruct.create('label', {
-				'for': 'publicCB',
-				'innerHTML': " Publicly Readable"
-			}))
-			domConstruct.place(checkBox, form, 'first');
+			if(selection.lenbth == 1){
+				var isPublic = this.selection.public;
+				var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
+				var cb = new CheckBox({
+					name: "checkBox",
+					value: "isPublic",
+					checked: isPublic,
+					onChange: function(e){
+						//var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
+						Deferred.when(prom, function(res){
+						}, function(e){
+							alert('oh no, something has went wrong!')
+						})
+					}
+				})
+				cb.placeAt(checkBox);
+				checkBox.appendChild(domConstruct.create('label', {
+					'for': 'publicCB',
+					'innerHTML': " Publicly Readable"
+				}))
+				domConstruct.place(checkBox, form, 'first');
 
 
-			domConstruct.place(
-				'<h4 style="margin-bottom: 5px;">'+
-					'Share with Everybody'+
-				'</h4>',
-			form, 'first');
+				domConstruct.place(
+					'<h4 style="margin-bottom: 5px;">'+
+						'Share with Everybody'+
+					'</h4>',
+				form, 'first');
+			}
+
 
 			// user perms
+
+			var userSet = {} // ensures users aren't listed more than once in multi object permissions
+			var perms = this.permissions;
 			perms.forEach(function(p){
-				// server sometimes returns 'none' permissions, so ignore them.
-				if(p.perm == 'n' || p.user == 'global_permission') return;
+				var userCount = perms.filter(function(pp){ return pp.user == p.user}).length;
+				console.log('usercount', userCount, selection.length )
 
+				var user = p.user,
+					perm = p.perm
 
-				self.addUser(p.user, p.perm)
+				if(user in userSet) return;
+
+				userSet[user] = 1;
+
+				// we won't want to change permission if different amount objects
+				if(userCount !== selection.length) perm = 'Varies';
+
+				self.addUser(user, perm)
 
 				dojo.place(
 					'<tr>'+
-						'<td data-user="'+p.user+'">'+Formatter.baseUsername(p.user)+
-						'<td data-perm="'+p.perm+'">'+p.perm+
+						'<td data-user="'+user+'">'+Formatter.baseUsername(user)+
+						'<td data-perm="'+perm+'">'+perm+
 						'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
 					query('tbody', self.currentUsers)[0]
 				);
@@ -299,25 +311,6 @@ define([
 			self.progressEle.innerHTML = '';
 
 		},
-
-		solrPermsToObjs: function(readList, writeList){
-			var readObjs = (readList || []).map(function(user){
-				return {
-					user: user,
-					perm: 'Can read'
-				}
-			})
-
-			var writeObjs = (writeList || []).map(function(user){
-				return {
-					user: user,
-					perm: 'Can edit'
-				}
-			})
-
-			return readObjs.concat(writeObjs);
-		},
-
 
 		/*
 		 * list workspace (initial) permissions in dom
@@ -392,7 +385,19 @@ define([
 				var userRow = query(this).parents('tr')[0],
 					userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');
 
-				self.progressEle.innerHTML = self.loadingHTML;
+				domConstruct.destroy(userRow);
+				self.rmUser(userId);
+
+				// allow save
+				self.dialog.okButton.set('disabled', false)
+			})
+		},
+
+		hideAndDestroy: function(){
+			this.dialog.hideAndDestroy();
+		}
+
+		/*
 				var prom = WorkspaceManager.setPermissions(folderPath, [[userId, 'n']]);
 				Deferred.when(prom, function(result){
 					domConstruct.destroy(userRow)
@@ -407,11 +412,7 @@ define([
 						title: "Error deleting user: "+userId,
 						style: "width: 250px !important;"
 					}).show();
-				})
-			})
-		}
-
-
+		})*/
 
 
 	});
