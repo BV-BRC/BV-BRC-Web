@@ -23,6 +23,11 @@ define(["./formatter"], function(formatter){
 			label: 'Genome ID',
 			field: 'genome_id'
 		},
+		owner: {
+			label: 'Owner',
+			field: 'owner',
+			formatter: formatter.baseUsername
+		},
 		members: {
 			label: 'Members',
 			get: function(item){

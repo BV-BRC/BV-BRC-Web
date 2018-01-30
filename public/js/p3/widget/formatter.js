@@ -226,9 +226,9 @@ function(locale, domConstruct, domClass, Tooltip){
 			return obj.genome_name;
 		},
 		genomeMembers: function(obj){
-			var allMembers = (obj.user_read || []).concat(obj.user_write);
-			if(allMembers.length > 1){
-				return allMembers.length + ' members'
+			var members = (obj.user_read || []).concat(obj.user_write || []);
+			if(members.length >= 1){
+				return (members.length+1) + ' members'
 			}
 
 			return 'Only me';

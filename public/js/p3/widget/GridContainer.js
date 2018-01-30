@@ -1116,8 +1116,8 @@ define([
 					//	owner_id: selection.owner
 					//})
 
-					var onClose = function() {
-						this.hideAndDestroy();
+					var onCancel = function() {
+						//this.hideAndDestroy();
 					}
 
 
@@ -1132,7 +1132,9 @@ define([
 						})
 
 						Topic.publish("/Notification", {
-							message: "Updating permissions (this may take awhile)...", type: "default"
+							message: "<span class='default'>Updating permissions (this may take awhile)...</span>",
+							type: "default",
+							duration: 50000
 						});
 
 
@@ -1143,17 +1145,18 @@ define([
 
 							Topic.publish("/Notification", {
 								message: "Permissions updated.",
-								type: "message"
+								type: "message",
 							});
 							self.grid.refresh()
 
 						}, function(err){
 							console.log('error', err)
 							Topic.publish("/Notification", {
-								message: err,
+								message: 'Failed. ' + err.response.status,
 								type: "error"
 							});
 						})
+
 					}
 
 					console.log('selection,', selection)
@@ -1161,7 +1164,7 @@ define([
 					var permEditor = new PermissionEditor({
 						selection: selection,
 						onConfirm: onConfirm,
-						onCance: onClose,
+						onCancel: onCancel,
 						user: window.App.user.id || '',
 						useSolrAPI: true,
 						permissions: initialPerms

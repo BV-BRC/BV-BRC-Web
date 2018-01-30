@@ -1150,7 +1150,7 @@ define([
 			return div;
 		},
 		"genome_meta_table_names": function(){
-			return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+			return ['Organism Info', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
 		},
 
 		"genome_meta_spec": function(){
@@ -1218,6 +1218,19 @@ define([
 						name: 'Reference Genome',
 						text: 'reference_genome'
 					}],
+
+				'Sharing': [{
+						name: 'Can view',
+						text: 'user_read',
+						editable: false,
+						isList: true
+					}, {
+						name: 'Can edit',
+						text: 'user_write',
+						editable: false,
+						isList: true
+					}
+				],
 
 				'Project Info': [{
 						name: 'Sequencing Center',

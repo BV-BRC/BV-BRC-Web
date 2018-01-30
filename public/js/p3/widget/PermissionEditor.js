@@ -48,17 +48,24 @@ define([
 		selection: null,    // objects to be shared
 		permissions: [], 	// initial permissions of objects/items/whatever
 		user: null,        // owner of object(s)
-
 		useSolrAPI: false,
+
+		/**
+		 * Data model and data model helpers
+		 */
+		_userPerms: [],
 
  		constructor: function(o){
 			this.selection = o.selection;
 			this.onConfirm = o.onConfirm ? o.onConfirm : function(){};
 			this.onCancel = o.onCancel ? o.onCancel : function(){};
 			this.useSolrAPI = o.useSolrAPI || false;
+			this._userPerms = [];
 		},
-		postCreate: function(){},
-		startup: function(){
+		postCreate: function(o){
+
+		},
+		startup: function(o){
 			if(this._started){
 				return;
 			}
@@ -78,10 +85,7 @@ define([
 
 		loadingHTML:
 			'<img src="/patric/images/loader.gif" class="pull-right" height="20"/>',
-		/**
-		 * Data model and data model helpers
-		 */
-		_userPerms: [],
+
 
 		rmUser: function(userId){
 			console.log('removing', userId, 'before:', this._userPerms)
@@ -93,6 +97,7 @@ define([
 
 		addUser: function(userId, perm){
 			if(this.findUser(userId)) return false;
+			console.log('adding user:', userId)
 
 			this._userPerms.push({
 				user: userId,
@@ -106,6 +111,14 @@ define([
 			return this._userPerms.find(function(perm){
 				return userId == perm.user
 			})
+		},
+
+		setPerm: function(userId, newPerm){
+			this._userPerms.forEach(function(perm, i, perms){
+				if(perm.user == userId) perms[i].permission = newPerm;
+			})
+
+			console.log('perms after', this._userPerms)
 		},
 
 
@@ -150,7 +163,7 @@ define([
 			var userSelector = new UserSelector({name: "user"});
 
 			// user's permission
-			var permSelect = new Select({
+			var newPermSelect = new Select({
 				name: "perm",
 				style: { width: '100px', margin: '0 10px' },
 				options: [
@@ -166,31 +179,40 @@ define([
 			})
 
 			// add user's permission button
-			// Note: on click, the user is added server side.
 			var addUserBtn = new Button({
 				label: '<i class="icon-plus"></i> Add User',
 				onClick: function(){
-					var userId = userSelector.getSelected();
-						perm = permSelect.attr('value')
+					var user = userSelector.getSelected();
+						perm = newPermSelect.attr('value')
 
-					console.log('userID, perm', userId, perm)
+					console.log('user, perm', user, perm)
 
-					if (!userId) return;
+					if (!user) return;
 
 					// don't add already existing users
-					if(self.findUser(userId)) return;
+					if(self.findUser(user)) {
+						console.log('already found user', self._userPerms)
+						return;
+					}
 
 					console.log('actually got this far')
 
-					dojo.place(
-						'<tr>'+
-							'<td data-user="'+userId+'">'+Formatter.baseUsername(userId)+
-							'<td data-perm="'+perm+'">'+Formatter.permissionMap(perm)+
-							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-						query('tbody', self.currentUsers)[0]
+					// add a new row of user, perm selector, and trash button
+
+					var permSelector = self.permSelector(user, perm)
+					var row = domConstruct.toDom(
+						'<tr><td data-user="'+user+'">'+Formatter.baseUsername(user)+'</td></tr>'
 					);
 
-					self.addUser(userId, perm)
+					var td = domConstruct.toDom('<td>');
+					domConstruct.place(permSelector.domNode, td)
+					domConstruct.place(td, row)
+					domConstruct.place(domConstruct.toDom(
+						'<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
+					, row)
+					domConstruct.place(row, query('tbody', self.currentUsers)[0])
+
+					self.addUser(user, perm)
 					self.reinitDeleteEvents();
 
 					self.progressEle.innerHTML = '';
@@ -205,24 +227,30 @@ define([
 
 			domConstruct.place(self.currentUsers, form)
 			domConstruct.place(userSelector.domNode, form)
-			domConstruct.place(permSelect.domNode, form, "last")
+			domConstruct.place(newPermSelect.domNode, form, "last")
 			domConstruct.place(addUserBtn.domNode, form, "last")
 
 			// open form in dialog
 			var itemCount = self.selection.length;
-			var dlg = this.dialog = new Confirmation({
+			this.dialog = new Confirmation({
 				title: "Edit Sharing" + (itemCount > 1 ? ' (for ' + itemCount + ' Items)' : '')  ,
 				okLabel: "Save",
 				cancelLabel: 'Cancel',
 				content: form,
 				style: { width: '500px'},
 				onConfirm: function(evt) {
-					self.onConfirm(self._userPerms)
+					console.log('called confirm')
+					//self.hideAndDestroy();
+					self.onConfirm(self._userPerms);
 				},
 
-				onCancel: this.onCancel
+				onCancel: function(evt) {
+					console.log('called cancel')
+					//self.hideAndDestroy();
+					self.onCancel();
+				}
 			})
-			dlg.okButton.set('disabled', true)
+			this.dialog.okButton.set('disabled', true)
 
 
 			if(this.useSolrAPI){
@@ -231,8 +259,8 @@ define([
 				this.listWSPermissions();
 			}
 
-			dlg.startup()
-			dlg.show();
+			this.dialog.startup()
+			this.dialog.show();
 		},
 
 
@@ -281,8 +309,9 @@ define([
 			var userSet = {} // ensures users aren't listed more than once in multi object permissions
 			var perms = this.permissions;
 			perms.forEach(function(p){
-				var userCount = perms.filter(function(pp){ return pp.user == p.user}).length;
-				console.log('usercount', userCount, selection.length )
+				var userCount = perms.filter(function(pp){
+					return pp.user == p.user && pp.perm == p.perm;
+				}).length;
 
 				var user = p.user,
 					perm = p.perm
@@ -296,20 +325,69 @@ define([
 
 				self.addUser(user, perm)
 
-				dojo.place(
-					'<tr>'+
-						'<td data-user="'+user+'">'+Formatter.baseUsername(user)+
-						'<td data-perm="'+perm+'">'+perm+
-						'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-					query('tbody', self.currentUsers)[0]
+				// adding rows of user, perm selector, and trash button
+				var permSelector = self.permSelector(user, perm)
+				var row = domConstruct.toDom(
+					'<tr><td data-user="'+user+'">'+Formatter.baseUsername(user)+'</td></tr>'
 				);
+
+				var td = domConstruct.toDom('<td>');
+				domConstruct.place(permSelector.domNode, td)
+				domConstruct.place(td, row)
+				domConstruct.place(domConstruct.toDom(
+					'<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
+				, row)
+				domConstruct.place(row, query('tbody', self.currentUsers)[0]);
 			})
 
 			// event for deleting users
 			self.reinitDeleteEvents();
 
 			self.progressEle.innerHTML = '';
+		},
 
+
+		permSelector: function(user, defaultPerm) {
+			var self = this;
+			var opts = [
+				{
+					label: "Can view",
+					value: "Can view"
+				},{
+					label: "Can edit",
+					value: "Can edit",
+					user: user
+				}
+			]
+
+			if(defaultPerm.toLowerCase() == 'varies'){
+				opts.unshift({
+					label: 'Varies*',
+					value: 'varies'
+				});
+			}
+
+			opts.forEach(function(opt, i ){
+				if(defaultPerm == opt.value || defaultPerm == opt.label)
+					opts[i].selected = true;
+			})
+
+			var selector = new Select({
+				name: "perm",
+				style: { width: '100px', margin: '0 0px' },
+				options: opts,
+				user: user
+			})
+
+			selector.on('change', function(){
+				var user = this.get('user'),
+					perm = this.get("value");
+
+				self.setPerm(user, perm);
+				self.dialog.okButton.set('disabled', false);
+			})
+
+			return selector;
 		},
 
 		/*
@@ -359,7 +437,6 @@ define([
 					// server sometimes returns 'none' permissions, so ignore them.
 					if(p.perm == 'n' || p.user == 'global_permission') return;
 
-
 					self.addUser(p.user, p.perm)
 
 					dojo.place(
@@ -391,29 +468,6 @@ define([
 				// allow save
 				self.dialog.okButton.set('disabled', false)
 			})
-		},
-
-		hideAndDestroy: function(){
-			this.dialog.hideAndDestroy();
 		}
-
-		/*
-				var prom = WorkspaceManager.setPermissions(folderPath, [[userId, 'n']]);
-				Deferred.when(prom, function(result){
-					domConstruct.destroy(userRow)
-
-					self.rmUser(userId);
-					self.progressEle.innerHTML = '';
-
-				}, function(err){
-					var parts = err.split("_ERROR_");
-					var d = new Dialog({
-						content: parts[1] || parts[0],
-						title: "Error deleting user: "+userId,
-						style: "width: 250px !important;"
-					}).show();
-		})*/
-
-
 	});
 });
