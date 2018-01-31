@@ -126,7 +126,7 @@ define([
 					this.fasta_message.innerHTML = "No FASTA file has selected";
 					return;
 				}
-
+				 document.getElementsByClassName('searchBy')[0].innerHTML = path;
 				WorkspaceManager.getObject(path, true).then(lang.hitch(this, function(file){
 
 					if(file.link_reference && file.size > 0 && file.type == "contigs"){
@@ -203,6 +203,9 @@ define([
 
 		onSuggestNameChange: function(){
 			// console.log("onGenomeIDChange", this.fasta.get('value'), this.genome_id.get('value'));
+			var searchBy = document.getElementsByClassName('searchBy');
+        searchBy[0].innerHTML = this.genome_id.get('displayedValue');
+        searchBy[0].style.display = 'block';
 			if(this.fasta && this.fasta.get('value') !== '' && this.genome_id.get('value') !== ''){
 				this.fasta.reset();
 			}
