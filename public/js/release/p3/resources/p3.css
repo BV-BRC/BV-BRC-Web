@@ -13403,12 +13403,12 @@ color:#fff;font-weight:600;background:#34698e;
 	font-size: 1.2em;
 	cursor: pointer;
 }
-.dgrid-cell.wsItemTypeIcon,
-.wsItemTypeIcon {
+.dgrid-cell.wsObjIcon,
+.wsObjIcon {
 	width: 32px;
 	text-align: center;
 }
-th.dgrid-cell.wsItemTypeIcon {
+th.dgrid-cell.wsObjIcon {
 	border-right: 0;
 	padding-left: 0;
 }
