@@ -533,7 +533,10 @@ define([
 				}
 
 				var firstStartPosition = Math.max(data[0].start, rangeStart);
-				var lastEndPosition = Math.min(data[data.length - 1].end, rangeEnd);
+				var largestEnd = data.reduce(function(max, row) {
+					return (max > row.end) ? max : row.end
+				}, 0)
+				var lastEndPosition = Math.min((largestEnd + 100), rangeEnd);
 				this.set("featureViewer", {
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,

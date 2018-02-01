@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "./ActionBar", "dojo/dom-construct", "dojo/dom-style", "dojo/on",
 	"dijit/form/Button", "dijit/form/Select", "dojo/topic", "dojo/query", "../JobManager",
-	"dojo/dom-class"
+	"dojo/dom-class", "./formatter"
 ], function(
 	declare, ActionBar, domConstruct, domStyle, on,
 	Button, Select, Topic, query, JobManager,
-	domClass
+	domClass, formatter
 ){
 	return declare([ActionBar], {
 		path: null,
@@ -86,7 +86,7 @@ define([
 					width: '150px', float: 'right', marginRight: '2.0em'
 				},
 				options: [
-					{ label: "All Apps", value: "all", selected: true}
+					{ label: "All Services", value: "all", selected: true}
 				]
 			}, appFilter)
 
@@ -257,14 +257,14 @@ define([
 
 			// add 'all apps' option
 			var apps = []
-			var facet = {label: "All Apps", value: "all"};
+			var facet = {label: "All Services", value: "all"};
 			if(self.filters.app == 'all') facet.selected = true;
 			apps.push(facet)
 
 			// organize options by app count
 			for (var k in info) {
 				var facet = {
-					label: k + ' (' + info[k] + ')',
+					label: formatter.serviceLabel(k) + ' (' + info[k] + ')',
 					value: k,
 					count: info[k]
 				};
