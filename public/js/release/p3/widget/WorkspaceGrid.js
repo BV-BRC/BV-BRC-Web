@@ -23,7 +23,7 @@ define("p3/widget/WorkspaceGrid", [
 					}
 					return item.type;
 				},
-				className: "wsItemTypeIcon",
+				className: "wsObjIcon",
 				formatter: formatter.wsItemType,
 				unhidable: true
 			},
@@ -179,7 +179,7 @@ define("p3/widget/WorkspaceGrid", [
 				//}
 			});
 
-			this.on(".dgrid-content .dgrid-cell.wsItemType:click", function(evt){
+			this.on(".dgrid-content .dgrid-cell.wsObjIcon:click", function(evt){
 				var row = _self.row(evt);
 				evt.preventDefault();
 				evt.stopPropagation();
