@@ -116,9 +116,7 @@ define([
 
 			}
 			this.inherited(arguments);
-			//this.groupNameBox.set('path', this.path);  // removing because redundant?
-			//this.workspaceObjectSelector.set('path', this.path); //removing because redundant?
-			//this.workspaceObjectSelector.set('type', [this.type]); // removing because redundant?
+
 			if(this.inputType in this.conversionTypes){
 				this.selectType = true;
 				domClass.remove(this.groupTypeBox, "dijitHidden");
