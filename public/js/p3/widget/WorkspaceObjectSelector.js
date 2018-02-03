@@ -511,8 +511,6 @@ define([
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true)
 				.then(lang.hitch(this, function(items){
-					console.log('items', items)
-
 					delete this._refreshing;
 
 					// sort by most recent
