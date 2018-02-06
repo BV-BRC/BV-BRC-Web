@@ -9,3 +9,4 @@ public/js/release/build-report.txt
 .idea/
 .vscode/
 public/video/
+.htmlhintrc
