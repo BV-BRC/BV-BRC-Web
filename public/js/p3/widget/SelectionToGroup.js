@@ -6,7 +6,8 @@ define([
 	"./WorkspaceObjectSelector"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, lang, WorkspaceManager, domStyle, Parser, Select, WorkspaceFilenameValidationTextBox, WorkspaceObjectSelector){
+			Template, lang, WorkspaceManager, domStyle, Parser, Select, WorkspaceFilenameValidationTextBox,
+			WorkspaceObjectSelector){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "Panel",
 		"disabled": false,
@@ -29,12 +30,18 @@ define([
 
 		_setPathAttr: function(path){
 			this.path = path;
-			if(this.groupNameBox){
-				this.groupNameBox.set('path', this.path);
-			}
 
 			if(this.workspaceObjectSelector){
 				this.workspaceObjectSelector.set("path", this.path);
+			}
+
+			// for new groups
+			if(this.groupPathSelector){
+				this.groupPathSelector.set("path", '/'+window.App.user.id);
+				this.groupPathSelector.set("value", this.path);
+			}
+			if(this.groupNameBox){
+				this.groupNameBox.set('path', this.path);
 			}
 		},
 		onChangeOutputType: function(){
@@ -49,26 +56,43 @@ define([
 			}
 		},
 
+		// only used for new groups
+		onChangeGroupPath: function(newPath, thing) {
+			// need to update path of group name box since validation
+			// and value (full path) state is kept and fetched from there.
+			this.groupNameBox.set('path', newPath);
+		},
+
 		onChangeTarget: function(target){
-			console.log("onChangeTarget ");
 			if(!this._started){
 				return;
 			}
 			var targetType = this.targetType.get('value');
 			var val;
-			console.log("Target Type: ", targetType);
+
 			if(targetType == "existing"){
 				domClass.remove(this.workspaceObjectSelector.domNode, "dijitHidden");
+
+				// only if new group
+				domClass.add(this.groupPathLabel, "dijitHidden");
+				domClass.add(this.groupPathSelector.domNode, "dijitHidden");
 				domClass.add(this.groupNameBox.domNode, "dijitHidden");
+
 				val = this.workspaceObjectSelector.get('value');
 
 			}else{
 				domClass.add(this.workspaceObjectSelector.domNode, "dijitHidden");
+
+				// only if new group
+				domClass.remove(this.groupPathLabel, "dijitHidden");
+				domClass.remove(this.groupPathSelector.domNode, "dijitHidden");
 				domClass.remove(this.groupNameBox.domNode, "dijitHidden");
+
+
 
 				val = this.groupNameBox.isValid() ? this.groupNameBox.get('value') : false;
 			}
-			console.log("Target Val: ", val);
+			//console.log("Target Val: ", val);
 			this.value = val;
 			if(val){
 				this.copyButton.set('disabled', false);
@@ -86,12 +110,13 @@ define([
 				console.log("set selection(): ", arguments);
 			}));
 			if(!this.path){
+
+				this.path = WorkspaceManager.getDefaultFolder(this.type)
 				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
+
 			}
 			this.inherited(arguments);
-			this.groupNameBox.set('path', this.path);
-			this.workspaceObjectSelector.set('path', this.path);
-			this.workspaceObjectSelector.set('type', [this.type]);
+
 			if(this.inputType in this.conversionTypes){
 				this.selectType = true;
 				domClass.remove(this.groupTypeBox, "dijitHidden");
@@ -102,12 +127,10 @@ define([
 		},
 
 		onCancel: function(evt){
-			// console.log("Cancel/Close Dialog", evt)
 			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		},
 		onCopy: function(evt){
-			// console.log("Copy Selection: ", this.selection, " to ", this.value);
-			//var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
+
 			if(!this.idType){
 				this.idType = "genome_id";
 				if(this.type == "genome_group"){

@@ -2,13 +2,13 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/request", "dojo/dom-class", "dojo/dom-construct",
 	"dojo/text!./templates/MetagenomeBinning.html", "dojo/NodeList-traverse", "dojo/store/Memory",
-	"dojox/xml/parser",
+	"dojox/xml/parser", "dijit/Dialog",
 	"dijit/popup", "dijit/TooltipDialog",
 	"./AppBase", "../../WorkspaceManager"
 ], function(declare, WidgetBase, lang, Deferred,
 	on, xhr, domClass, domConstruct,
 	Template, children, Memory,
-	xmlParser,
+	xmlParser, Dialog,
 	popup, TooltipDialog,
 	AppBase, WorkspaceManager){
 
@@ -31,6 +31,7 @@ define([
 			this.pairToAttachPt1 = ["read1", "read2"];
 			this.pairToAttachPt2 = ["read1"];
 			this.paramToAttachPt = ["output_path", "output_file", "genome_group"];
+			this.inputCounter = 0;
 
 		},
 
@@ -52,7 +53,7 @@ define([
 				}
 				)
 			}));
-
+			this.numInputs.startup();
 			this._started = true;
 		},
 
@@ -145,6 +146,61 @@ define([
 			return (success);
 		},
 
+		onSuggestReadChange: function(){
+			if(this.read1.searchBox.get('value') && this.read2.searchBox.get('value')){
+				//both read1 and read2 are set
+				if(this.read1.searchBox.get('value') == this.read2.searchBox.get('value')){
+					var msg = "READ FILE 1 and READ FILE 2 cannot be the same.";
+					new Dialog({title: "Notice", content: msg}).show();
+					this.submitButton.set("disabled", true);
+					return;
+				}
+				else{
+					if(this.input_mode == 'contigs'){
+						var msg = "You can only have paired read OR contigs.";
+						new Dialog({title: "Notice", content: msg}).show();
+						this.submitButton.set("disabled", true);
+						return;
+					}
+					else{
+						this.input_mode = 'paired_read';
+						this.inputCounter = this.inputCounter +1;
+						this.numInputs.set('value', Number(this.inputCounter));
+					}
+				}
+			}
+			else{
+				if(this.input_mode == 'paired_read'){
+					this.input_mode = null;
+					this.inputCounter = this.inputCounter -1;
+					this.numInputs.set('value', Number(this.inputCounter));
+				}
+			}
+		},
+
+		onSuggestContigsChange: function(){
+      if(this.contig.searchBox.get('value') != ''){
+				if(this.input_mode == 'paired_read'){
+				  var msg = "You can only have paired read OR contigs.";
+					new Dialog({title: "Notice", content: msg}).show();
+					this.submitButton.set("disabled", true);
+					return;
+			  }
+				else{
+					this.input_mode = 'contigs';
+					this.inputCounter = this.inputCounter + 1;
+					this.numInputs.set('value', Number(this.inputCounter));
+				}
+			}
+			else{
+				if(this.input_mode == 'contigs'){
+					this.input_mode = null;
+					this.inputCounter = this.inputCounter -1;
+					this.numInputs.set('value', Number(this.inputCounter));
+				}
+			}
+		},
+
 		// TODO: remove adding to library
 		validateSRR: function(){
 			var accession = this.srr_accession.get('value');
@@ -182,39 +238,17 @@ define([
 			}))
 		},
 
-		validate: function(){
-			var isValid = false
 
-			if (this.read1.searchBox.value && this.read2.searchBox.value) {
-				this.input_mode = "paired_read";
-			}
-			// else if (this.srr_accession.get('value')){
-			// 	this.input_mode = "sra";
-			// 	// this.validateSRR();
-			// }
-			else if (this.contig.searchBox.value){
-				this.input_mode = "contigs"
-			}
-			else {
-				this.input_mode = null;
-			}
-
-			if (this.input_mode && this.output_path.value && this.output_file.value) {
-				isValid = true
-			} else {
-				isValid = false
-			}
-
-			if (!isValid){
-				this.submitButton.set("disabled", true);
-				// this.set("state", "Incomplete");
-				return false;
-			} else {
+	  validate: function(){
+	    var valid = this.inherited(arguments);
+			if (valid && this.input_mode){
 				this.submitButton.set("disabled", false);
-				// this.set("state", "");
 				return true;
-			}
-		}
+			} else {
+				this.submitButton.set("disabled", true);
+				return false;
+	    }
+    }
 
 	});
 });
