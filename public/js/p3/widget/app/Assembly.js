@@ -3,13 +3,13 @@ define([
 	"dojo/on", "dojo/request", "dojo/dom-class", "dojo/dom-construct",
 	"dojo/text!./templates/Assembly.html", "dojo/NodeList-traverse", "dojo/store/Memory",
 	"dojox/xml/parser",
-	"dijit/popup", "dijit/TooltipDialog",
+	"dijit/popup", "dijit/TooltipDialog", "dijit/Dialog",
 	"./AppBase", "../../WorkspaceManager"
 ], function(declare, WidgetBase, lang, Deferred,
 	on, xhr, domClass, domConstruct,
 	Template, children, Memory,
 	xmlParser,
-	popup, TooltipDialog,
+	popup, TooltipDialog, Dialog,
 	AppBase, WorkspaceManager){
 
 	return declare([AppBase], {
@@ -404,7 +404,11 @@ define([
 		},
 
 		onAddPair: function(){
-
+			if(this.read1.searchBox.get("value") == this.read2.searchBox.get("value")){
+				var msg = "READ FILE 1 and READ FILE 2 cannot be the same.";
+				new Dialog({title: "Notice", content: msg}).show();
+				return;
+			}
 			var lrec = { _type: "paired" };
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
@@ -497,4 +501,3 @@ define([
 		}
 	});
 });
-

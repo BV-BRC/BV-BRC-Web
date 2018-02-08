@@ -51,10 +51,16 @@ function(declare, Grid, Store, DijitRegistry,
 				field: "id",
 				hidden: true
 			},
+			"service": {
+				label: "Service",
+				field: "app",
+				formatter: formatter.serviceLabel
+			},			
 			"app": {
 				label: "App",
 				field: "app",
-				formatter: formatter.appLabel
+				formatter: formatter.appLabel,
+				hidden: true
 			},
 			"parameters": {
 				label: "Output Name",

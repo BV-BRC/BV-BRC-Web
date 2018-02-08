@@ -634,7 +634,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 							}
 							return item.type;
 						},
-						className: "wsItemType",
+						className: "wsObjIcon",
 						formatter: formatter.wsItemType,
 						unhidable: true
 					},
@@ -659,6 +659,12 @@ define("p3/widget/WorkspaceObjectSelector", [
 						className: "wsItemSize",
 						hidden: false,
 						formatter: formatter.objectOrFileSize
+					},
+					obj_type: {
+						label: "Type",
+						field: "type",
+						className: "wsItemType",
+						hidden: true
 					},
 					owner: {
 						label: "Owner",
