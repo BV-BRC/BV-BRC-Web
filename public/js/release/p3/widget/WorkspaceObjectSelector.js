@@ -406,6 +406,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 			})
 
 
+			// dialog cancel/ok buttons
 			var cancelButton = new Button({label: "Cancel"});
 			cancelButton.on('click', function(){
 				_self.dialog.hide();
@@ -430,19 +431,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 					case "upload":
 						_self.dialog.flip();
 						break;
-					/*  testing without inline ws/folder creation
-					case "createFolder":
-						var element = _self.grid.row(0).element;
-						_self.grid.addNewFolder({id: "untitled"});
-						break;
-					case "createWS":
-						var element = _self.grid.row(0).element;
-						_self.grid.addNewFolder({id: "untitled"});
-						break;
-					*/
 				}
 			});
-			// var _self = this;
 
 			var grid = this.grid = this.createGrid();
 
@@ -521,21 +511,22 @@ define("p3/widget/WorkspaceObjectSelector", [
 			if(this._refreshing){
 				return;
 			}
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
-				delete this._refreshing;
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true)
+				.then(lang.hitch(this, function(items){
+					delete this._refreshing;
 
-				// sort by most recent
-				items.sort(function(a, b){
-					return b.timestamp - a.timestamp;
-				});
+					// sort by most recent
+					items.sort(function(a, b){
+						return b.timestamp - a.timestamp;
+					});
 
-				this.store = new Memory({data: items, idProperty: "path"});
+					this.store = new Memory({data: items, idProperty: "path"});
 
-				this.searchBox.set("store", this.store);
-				if(this.value){
-					this.searchBox.set('value', this.value);
-				}
-			}));
+					this.searchBox.set("store", this.store);
+					if(this.value){
+						this.searchBox.set('value', this.value);
+					}
+				}));
 		},
 		onSearchChange: function(value){
 			this.set("value", value);

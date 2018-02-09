@@ -197,23 +197,6 @@ define("p3/widget/viewer/GenomeGroup", [
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
 
-			/*
-			if(localStorage){
-				var gs = localStorage.getItem(this.showQuickstartKey);
-				if(gs){
-					gs = JSON.parse(gs);
-				}
-				if(!gs){
-
-					var dlg = new Dialog({
-						title: "PATRIC Quickstart",
-						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
-					});
-					dlg.show();
-					localStorage.setItem(this.showQuickstartKey, true);
-				}
-
-			}*/
 		},
 
 		buildHeaderContent: function(){
