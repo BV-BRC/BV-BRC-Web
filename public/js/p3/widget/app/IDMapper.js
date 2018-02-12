@@ -93,8 +93,15 @@ define([
 			}
 
 		},
+    show: function(){
+      console.log('show me the map form');
+      document.getElementsByClassName('appTemplate')[0].style.display = 'block';
+      document.getElementsByClassName('showButton')[0].style.display = 'none';
+    },
 
 		map: function(){
+      document.getElementsByClassName('appTemplate')[0].style.display = 'none';
+      document.getElementsByClassName('showButton')[0].style.display = 'block';
 			console.log("MAP: ", this.mapFromIDs, this.leftTypeSelect.get('value'), this.rightTypeSelect.get('value'));
 			var from = this.leftTypeSelect.get('value');
 			var to = this.rightTypeSelect.get('value');

@@ -475,7 +475,13 @@ define([
                                 item['idx'] = idx;
                                 item['target'] = d['id_value'];
                                 item['uniprotkb_accession']=accession;
+																console.log(item);
+                                if(item.source !== undefined){
                                 _self.sourceToTarget[item['source']][d['id_value']]=true;
+                              } else {
+                                console.log('no sources');
+                                return false;
+                              }
                                 data.push(item);
                                 idx+=1;
                             });
