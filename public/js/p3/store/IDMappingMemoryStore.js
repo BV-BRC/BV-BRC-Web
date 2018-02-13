@@ -11,25 +11,12 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "idx",
 		state: null,
-        rowLimit :25000,
-        sourceToTarget: {}, //models one to many, and no mapping relationships
-        summary: {total: 0, found: 0, type: "None", mapped:0},
-
-        onSetState: function(attr, oldVal, state){
-			if(!state){
-				return;
-			}
-			// console.log("onSetState", state, this);
-			this.reload();
-		},
 
 		constructor: function(options){
 			this._loaded = false;
-			this.topicId = options.topicId;
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
-			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
 		reload: function(){
@@ -48,13 +35,13 @@ define([
 			else{
 				var _self = this;
 				var results;
-				var qr = QueryResults(when(this.loadData(), lang.hitch(this, function(){
+				var qr = QueryResults(when(this.loadData(), function(){
 					results = _self.query(query, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
 					});
 					return results;
-				})));
+				}));
 
 				return qr;
 			}
@@ -70,39 +57,6 @@ define([
 				})
 			}
 		},
-        expandNoMap: function(data){
-            var _self=this;
-            var hasMap=0;
-            var numFound=0;
-            if(data !== null){
-            var idx = data.length+1;
-            Object.keys(_self.sourceToTarget).forEach(function(source){
-                var numTargets = Object.keys(_self.sourceToTarget[source]).length;
-                if( numTargets == 0){
-                    data.push({'source':source,'idx':idx});
-                    idx+=1;
-                }
-                else{
-                    hasMap+=1;
-                    numFound+= numTargets;
-                }
-            });
-          }
-            _self.summary.mapped=hasMap;
-            _self.summary.found=numFound;
-            Topic.publish(_self.topicId, "updateHeader", _self.summary);
-            Topic.publish(_self.topicId, "hideLoadingMask");
-
-        },
-        findFailure: function(fromIdValue, toId){
-            _self=this;
-            _self.summary.found = 0;
-            var data = [];
-            _self.expandNoMap(data);
-            _self.setData(data);
-            _self._loaded = true;
-            return true;
-        },
 
 		loadData: function(){
 			if(this._loadingDeferred){
@@ -112,7 +66,7 @@ define([
 			var _self = this;
 
 			// console.warn(this.state, this.state.genome_ids, !this.state.genome_ids);
-			if(!this.state){
+			if(!this.state.fromIdValue){
 				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
@@ -132,83 +86,17 @@ define([
 			var toIdGroup = this.state.toIdGroup;
 			var toId = this.state.toId;
 			var fromIdValue = this.state.fromIdValue.split(',');
-            var via ="gene_id";
-            via= this.state.joinId;
-            var joinId = null;
-            if (via == "gene_id"){
-                joinId = {"genome_feature":"gene_id","id_ref":"GeneID"};
-            }
-            else if (via =="refseq_locus_tag"){
-                joinId = {"genome_feature":"refseq_locus_tag","id_ref":"Gene_OrderedLocusName"};
-            }
-            else if (via =="protein_id"){
-                joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
-            }
-            else{
-                joinId = {"genome_feature":"gi","id_ref":"GI"};
-            }
 
-            _self.sourceToTarget={};
-            fromIdValue.forEach(function(d){
-                _self.sourceToTarget[d]={};
-            });
-
-
-
-			_self.summary.total =fromIdValue.length;
-			_self.summary.type =toId;
+			var summary = {
+				total: fromIdValue.length,
+				found: 0,
+				type: toId
+			};
 
 			// console.log(this.state);
 
 			if(fromIdGroup === 'PATRIC'){
 				if(toIdGroup === 'PATRIC'){
-          console.log('am i even here?');
-					this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/json",
-							'Content-Type': "application/solrquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-						},
-						data: {
-                            q: fromId + ":(" + fromIdValue.join(" OR ") + ") AND "+ toId + ":[* TO *]",
-							rows: _self.rowLimit,
-							sort: "genome_name asc,accession asc,start asc"
-						}
-					}), function(data){
-
-                        var idx =0;
-						data.forEach(function(d){
-							d['target'] = d[toId];
-                            d['idx'] = idx;
-                            d['source'] = d[fromId];
-                            d['document_type']='feature_data';
-                            _self.sourceToTarget[d[fromId]][d[toId]]=true;
-                            idx+=1;
-						}
-          );
-                        _self.expandNoMap(data);
-						_self.setData(data);
-						_self._loaded = true;
-						return true;
-					}, function(error){
-            console.log(error);
-						_self.expandNoMap(null);
-						//_self.setDta({});
-						_self._loaded = true;
-            return false;
-          });
-				}else{
-					// from PATRIC to Other
-					var giNumbers = {};
-					var accessionGiMap = {};
-					var giTarget = {};
-
-					// step 1: get GeneID from fromId (query to genome_feature)
-					// step 2: get UniprotKBAccession from GI numbers (query to id_ref), then create accessionGiMap
-					// step 3: get requested id from UniprotKBAccession (query to id_ref), then create giTargetMap
-					console.log('trying to map from patric ids to other ids');
 					this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
 						handleAs: 'json',
 						headers: {
@@ -219,12 +107,49 @@ define([
 						},
 						data: {
 							q: fromId + ":(" + fromIdValue.join(" OR ") + ")",
-							rows: _self.rowLimit
+							rows: fromIdValue.length,
+							sort: "genome_name asc,accession asc,start asc"
+						}
+					}), function(data){
+
+						summary.found = data.length;
+						Topic.publish("IDMapping", "updateHeader", summary);
+                        var idx =0;
+						data.forEach(function(d){
+							d['target'] = d[toId];
+                            d['idx'] = idx;
+                            idx+=1;
+						});
+
+						_self.setData(data);
+						_self._loaded = true;
+						return true;
+					});
+				}else{
+					// from PATRIC to Other
+					var giNumbers = {};
+					var accessionGiMap = {};
+					var giTarget = {};
+
+					// step 1: get GI from fromId (query to genome_feature)
+					// step 2: get UniprotKBAccession from GI numbers (query to id_ref), then create accessionGiMap
+					// step 3: get requested id from UniprotKBAccession (query to id_ref), then create giTargetMap
+
+					this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						},
+						data: {
+							q: fromId + ":(" + fromIdValue.join(" OR ") + ")",
+							rows: fromIdValue.length
 						}
 					}), function(features){
-
 						giNumbers = features.map(function(d){
-							return d[joinId.genome_feature];
+							return d.gi;
 						}).filter(function(d){
 							return d !== undefined && d > 0;
 						});
@@ -232,8 +157,9 @@ define([
 						// console.log(giNumbers);
 
 						if(giNumbers.length === 0){
-				            Topic.publish(_self.topicId, "hideLoadingMask");
-                            _self.findFailure(fromIdValue, toId);
+							summary.found = 0;
+							Topic.publish("IDMapping", "updateHeader", summary);
+
 							_self.setData([]);
 							_self._loaded = true;
 							return true;
@@ -249,13 +175,18 @@ define([
 								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 							},
 							data: {
-								q: "id_type:"+joinId.id_ref+" AND id_value:(" + giNumbers.join(" OR ") + ")",
-								rows: _self.rowLimit
+								q: "id_type:GI AND id_value:(" + giNumbers.join(" OR ") + ")",
+								rows: 25000
 							}
 						}), function(response){
 
 							if(response.length === 0){
-                                return _self.findFailure(fromIdValue,toId);
+								summary.found = 0;
+								Topic.publish("IDMapping", "updateHeader", summary);
+
+								_self.setData([]);
+								_self._loaded = true;
+								return true;
 							}
 
 							response.forEach(function(d){
@@ -273,8 +204,8 @@ define([
 									'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 								},
 								data: {
-									q: "uniprotkb_accession:(" + Object.keys(accessionGiMap).join(" OR ") + ") AND " + ((toId === 'UniProtKB-Accession') ? 'id_type:'+joinId.id_ref : 'id_type:(' + toId + ')'),
-									rows: _self.rowLimit
+									q: "uniprotkb_accession:(" + Object.keys(accessionGiMap).join(" OR ") + ") AND " + ((toId === 'UniProtKB-Accession') ? 'id_type:GI' : 'id_type:(' + toId + ')'),
+									rows: 25000
 								}
 							}), function(response){
 
@@ -303,29 +234,24 @@ define([
 
 								var data = [];
 								features.forEach(function(d){
-								    var item = Object.create(d);
-									if(d.hasOwnProperty(joinId.genome_feature)){
-										var target = giTarget[d[joinId.genome_feature]];
+									if(d.hasOwnProperty('gi')){
+										var target = giTarget[d['gi']];
 										if(target){
 											target.forEach(function(t){
+												var item = Object.create(d);
 												item['target'] = t;
-												item['source'] = item[fromId];
 												item['idx'] = item['feature_id'] + '_' + item['target'];
-                                                item['document_type']='feature_data';
-                                                _self.sourceToTarget[item[fromId]][t]=true;
 												data.push(item);
 											});
 										}
 									}
 								});
 
-								_self.summary.found = data.length;
-								Topic.publish(_self.topicId, "updateHeader", _self.summary);
-                                _self.expandNoMap(data);
+								summary.found = data.length;
+								Topic.publish("IDMapping", "updateHeader", summary);
 
 								_self.setData(data);
 								_self._loaded = true;
-				                Topic.publish(_self.topicId, "hideLoadingMask");
 								return true;
 							});
 						});
@@ -333,220 +259,114 @@ define([
 				}
 			}
 			else{
-				if(toIdGroup === 'PATRIC'){
-                    // from Other to PATRIC
+				// from Other to PATRIC
 
-                    // step 1: get UniProtKBAccession (query to id_ref). skip if fromId equals UniProtKB-Accession
-                    // step 2: get GI from UniProtKBAccession (query to id_ref) // defUniprotKB2PATRIC()
-                    // step 3: get PATRIC feature from GI (query to genome_feature) // defUniprotKB2PATRIC()
+				// step 1: get UniProtKBAccession (query to id_ref). skip if fromId equals UniProtKB-Accession
+				// step 2: get GI from UniProtKBAccession (query to id_ref) // defUniprotKB2PATRIC()
+				// step 3: get PATRIC feature from GI (query to genome_feature) // defUniprotKB2PATRIC()
 
-                    var defUniprotKB2PATRIC = function(uniprotKBAccession, accessionSource){
+				var defUniprotKB2PATRIC = function(uniprotKBAccession, accessionTarget){
 
-                        return when(request.post(_self.apiServer + '/id_ref/', {
-                            handleAs: 'json',
-                            headers: {
-                                'Accept': "application/json",
-                                'Content-Type': "application/solrquery+x-www-form-urlencoded",
-                                'X-Requested-With': null,
-                                'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-                            },
-                            data: {
-                                q: "uniprotkb_accession:(" + uniprotKBAccession.join(" OR ") + ") AND id_type:"+joinId.id_ref,
-                                rows: _self.rowLimit
-                            }
-                        }), function(response){
+					return when(request.post(_self.apiServer + '/id_ref/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						},
+						data: {
+							q: "uniprotkb_accession:(" + uniprotKBAccession.join(" OR ") + ") AND id_type:GI",
+							rows: 25000
+						}
+					}), function(response){
 
+						var giNumbers = []; // response.map(function(d){ return d.id_value;});
+						var giTarget = [];
 
-							if(response.length === 0){
-                                return _self.findFailure(fromIdValue,toId);
+						response.forEach(function(d){
+							var gi = d['id_value'];
+							giNumbers.push(gi);
+							var accession = d['uniprotkb_accession'];
+							giTarget[gi] = accessionTarget[accession];
+						});
+
+						return when(request.post(_self.apiServer + '/genome_feature/', {
+							handleAs: 'json',
+							headers: {
+								'Accept': "application/json",
+								'Content-Type': "application/solrquery+x-www-form-urlencoded",
+								'X-Requested-With': null,
+								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+							},
+							data: {
+								q: "gi:(" + giNumbers.join(" OR ") + ") AND annotation:PATRIC",
+								rows: 25000
 							}
+						}), function(response){
 
-                            var giNumbers = []; // response.map(function(d){ return d.id_value;});
-                            var giSource = [];
+							var data = [];
+							response.forEach(function(d){
+								var item = Object.create(d);
+								item['target'] = giTarget[d['gi']];
+								item['idx'] = item['feature_id'] + '_' + item['target'];
+								data.push(item);
+							});
+							return data;
+						});
+					});
+				};
 
-                            response.forEach(function(d){
-                                var gi = d['id_value'];
-                                giNumbers.push(gi);
-                                var accession = d['uniprotkb_accession'];
-                                giSource[gi] = {'uniprotkb_accession': accession, 'source':accessionSource[accession]};
-                            });
+				var accessionTargetMap = {};
 
-                            return when(request.post(_self.apiServer + '/genome_feature/', {
-                                handleAs: 'json',
-                                headers: {
-                                    'Accept': "application/json",
-                                    'Content-Type': "application/solrquery+x-www-form-urlencoded",
-                                    'X-Requested-With': null,
-                                    'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-                                },
-                                data: {
-                                    q: joinId.genome_feature+":(" + giNumbers.join(" OR ") + ") AND annotation:PATRIC",
-                                    rows: _self.rowLimit
-                                }
-                            }), function(response){
+				if(fromId === 'UniProtKB-Accession'){
 
-                                var data = [];
-                                response.forEach(function(d){
-                                    var item = Object.create(d);
-                                    item['source'] = giSource[d[joinId.genome_feature]]["source"];
-                                    item['uniprotkb_accession']=giSource[d[joinId.genome_feature]]['uniprotkb_accession'];
-                                    item['target']=d[toId];
-                                    item['feature_id']=d['feature_id'];
-                                    item['document_type']="feature_data";
-                                    item['idx'] = item['feature_id'] + '_' + item['target'];
-                                    _self.sourceToTarget[item['source']][d[toId]]=true;
-                                    data.push(item);
-                                });
-                                _self.expandNoMap(data);
-                                return data;
-                            });
-                        });
-                    };
+					accessionTargetMap = fromIdValue.map(function(d){
+						return {d: d};
+					});
+					this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionTargetMap), function(data){
+						summary.found = data.length;
+						Topic.publish("IDMapping", "updateHeader", summary);
 
-                    var accessionSourceMap = {};
+						_self.setData(data);
+						_self._loaded = true;
+						return true;
+					});
+				}else{
+					// get UniprotKBAccession via query to id_ref
+					this._loadingDeferred = when(request.post(_self.apiServer + '/id_ref/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						},
+						data: {
+							q: 'id_type:' + fromId + ' AND id_value:(' + fromIdValue.join(' OR ') + ')',
+							rows: 25000
+						}
+					}), function(response){
 
-                    if(fromId === 'UniProtKB-Accession'){
+						var uniprotkbAccessionList = [];
 
-                        fromIdValue.forEach(function(d){
-                            accessionSourceMap[d]= d;
-                        });
-                        this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionSourceMap), function(data){
-                            _self.setData(data);
-                            _self._loaded = true;
-                            return true;
-                        });
-                    }else{
-                        // get UniprotKBAccession via query to id_ref
-                        this._loadingDeferred = when(request.post(_self.apiServer + '/id_ref/', {
-                            handleAs: 'json',
-                            headers: {
-                                'Accept': "application/json",
-                                'Content-Type': "application/solrquery+x-www-form-urlencoded",
-                                'X-Requested-With': null,
-                                'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-                            },
-                            data: {
-                                q: 'id_type:' + fromId + ' AND id_value:(' + fromIdValue.join(' OR ') + ')',
-                                rows: _self.rowLimit
-                            }
-                        }), function(response){
+						response.forEach(function(d){
+							var accession = d['uniprotkb_accession'];
+							uniprotkbAccessionList.push(accession);
+							accessionTargetMap[accession] = d['id_value'];
+						});
 
-                            var uniprotkbAccessionList = [];
+						return when(defUniprotKB2PATRIC(uniprotkbAccessionList, accessionTargetMap), function(data){
+							summary.found = data.length;
+							Topic.publish("IDMapping", "updateHeader", summary);
 
-							if(response.length === 0){
-                                return _self.findFailure(fromIdValue,toId);
-							}
-
-                            response.forEach(function(d){
-                                var accession = d['uniprotkb_accession'];
-                                uniprotkbAccessionList.push(accession);
-                                accessionSourceMap[accession] = d['id_value'];
-                            });
-
-                            return when(defUniprotKB2PATRIC(uniprotkbAccessionList, accessionSourceMap), function(data){
-
-                                _self.setData(data);
-                                _self._loaded = true;
-                                return true;
-                            });
-                        });
-                    }
-                }
-
-                else{//start OTHER to OTHER
-
-                    // step 1: get UniProtKBAccession (query to id_ref). skip if fromId equals UniProtKB-Accession
-                    // step 2: get GI from UniProtKBAccession (query to id_ref) // defUniprotKB2PATRIC()
-                    // step 3: get PATRIC feature from GI (query to genome_feature) // defUniprotKB2PATRIC()
-
-                    var defUniprotKB2Other = function(uniprotKBAccession, accessionSource){
-
-                        return when(request.post(_self.apiServer + '/id_ref/', {
-                            handleAs: 'json',
-                            headers: {
-                                'Accept': "application/json",
-                                'Content-Type': "application/solrquery+x-www-form-urlencoded",
-                                'X-Requested-With': null,
-                                'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-                            },
-                            data: {
-                                q: "uniprotkb_accession:(" + uniprotKBAccession.join(" OR ") + ") AND id_type:"+toId,
-                                rows: _self.rowLimit
-                            }
-                        }), function(response){
-                            var data=[];
-                            var giNumbers = []; // response.map(function(d){ return d.id_value;});
-                            var giSource = [];
-                            var idx =0;
-                            response.forEach(function(d){
-                                var accession = d['uniprotkb_accession'];
-                                var item = {};
-                                item['source'] = accessionSource[accession];
-                                item['idx'] = idx;
-                                item['target'] = d['id_value'];
-                                item['uniprotkb_accession']=accession;
-                                console.log(item);
-                                if(item.source !== undefined){
-                                _self.sourceToTarget[item['source']][d['id_value']]=true;
-                              } else {
-                                console.log('no sources');
-                                return false;
-                              }
-                                data.push(item);
-                                idx+=1;
-                            });
-                            _self.expandNoMap(data);
-                            return data;
-                        });
-                    };
-
-                    var accessionSourceMap = {};
-
-                    if(fromId === 'UniProtKB-Accession'){
-
-                        accessionSourceMap = fromIdValue.map(function(d){
-                            return {d: d};
-                        });
-                        this._loadingDeferred = when(defUniprotKB2Other(fromIdValue, accessionSourceMap), function(data){
-                            _self.setData(data);
-                            _self._loaded = true;
-                            return true;
-                        });
-                    }else{
-                        // get UniprotKBAccession via query to id_ref
-                        this._loadingDeferred = when(request.post(_self.apiServer + '/id_ref/', {
-                            handleAs: 'json',
-                            headers: {
-                                'Accept': "application/json",
-                                'Content-Type': "application/solrquery+x-www-form-urlencoded",
-                                'X-Requested-With': null,
-                                'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-                            },
-                            data: {
-                                q: 'id_type:' + fromId + ' AND id_value:(' + fromIdValue.join(' OR ') + ')',
-                                rows: _self.rowLimit
-                            }
-                        }), function(response){
-
-                            var uniprotkbAccessionList = [];
-
-                            response.forEach(function(d){
-                                var accession = d['uniprotkb_accession'];
-                                uniprotkbAccessionList.push(accession);
-                                accessionSourceMap[accession] = d['id_value'];
-                            });
-
-                            return when(defUniprotKB2Other(uniprotkbAccessionList, accessionSourceMap), function(data){
-
-                                _self.setData(data);
-                                _self._loaded = true;
-                                return true;
-                            });
-                        });
-                    }
-
-                }//end else OTHER to OTHER
-            }
+							_self.setData(data);
+							_self._loaded = true;
+							return true;
+						});
+					});
+				}
+			}
 
 			return this._loadingDeferred;
 		}
