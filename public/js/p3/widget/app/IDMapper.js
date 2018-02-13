@@ -82,6 +82,10 @@ define([
     */
     return true;
   },
+  reset: function(){
+    console.log('going to clear the form');
+    this.leftList.set('value', '');
+  },
 
   onChange: function(){
     console.log("onChangeType: ", this.leftTypeSelect.get('value'), this.rightTypeSelect.get('value'));
@@ -93,27 +97,33 @@ define([
     var leftV = this.leftTypeSelect.get('value');
     var rightV = this.rightTypeSelect.get('value');
     var exampleL = '';
+    var exampleR = '';
     if(leftV === 'patric_id'){
       exampleL = 'fig|1094551.3.peg.8';
     } else if(leftV === 'refseq_locus_tag'){
       exampleL = 'MEC_00004';
     }
+    else if(leftV === 'protein_id'){
+      exampleL = 'EJF76201.1';
+    }
     if(rightV === 'patric_id'){
       exampleR = 'fig|1094551.3.peg.8';
     } else if(rightV === 'refseq_locus_tag'){
       exampleR = 'MEC_00004';
+    } else if(rightV === 'protein_id'){
+      exampleR = 'EJF76201.1';
     }
     document.getElementsByClassName('exampleLeft')[0].innerHTML = exampleL;
     document.getElementsByClassName('exampleRight')[0].innerHTML = exampleR;
   },
   show: function(){
     console.log('show me the map form');
-    document.getElementsByClassName('appTemplate')[0].style.display = 'block';
+    document.getElementsByClassName('showHideSection')[0].style.display = 'block';
     document.getElementsByClassName('showButton')[0].style.display = 'none';
   },
 
   map: function(){
-    document.getElementsByClassName('appTemplate')[0].style.display = 'none';
+    document.getElementsByClassName('showHideSection')[0].style.display = 'none';
     document.getElementsByClassName('showButton')[0].style.display = 'block';
     console.log("MAP: ", this.mapFromIDs, this.leftTypeSelect.get('value'), this.rightTypeSelect.get('value'));
     var from = this.leftTypeSelect.get('value');

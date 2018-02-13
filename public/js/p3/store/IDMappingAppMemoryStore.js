@@ -110,7 +110,7 @@ define([
         }
 
         var _self = this;
-
+        console.log(this.state.toId);
         // console.warn(this.state, this.state.genome_ids, !this.state.genome_ids);
         if(!this.state){
           // console.log("No Genome IDS, use empty data set for initial store");
@@ -141,9 +141,9 @@ define([
         else if (via =="refseq_locus_tag"){
           joinId = {"genome_feature":"refseq_locus_tag","id_ref":"Gene_OrderedLocusName"};
         }
-        else if (via =="protein_id"){
-          joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
-        }
+        // else if (via =="protein_id"){
+        //   joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
+        // }
         else{
           joinId = {"genome_feature":"gi","id_ref":"GI"};
         }
@@ -161,7 +161,7 @@ define([
         // console.log(this.state);
 
         if(fromIdGroup === 'PATRIC'){
-          if(toIdGroup === 'PATRIC'){
+          if(toIdGroup === 'PATRIC' || toId === 'protein_id'){
             console.log('am i even here?');
             this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
               handleAs: 'json',
