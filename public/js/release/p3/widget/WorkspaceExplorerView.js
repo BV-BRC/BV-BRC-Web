@@ -34,7 +34,6 @@ define("p3/widget/WorkspaceExplorerView", [
 		},
 
 		listWorkspaceContents: function(ws){
-
 			var _self = this;
 			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
@@ -58,8 +57,10 @@ define("p3/widget/WorkspaceExplorerView", [
 			var prom1 = WorkspaceManager.getFolderContents(ws, this.showHiddenFiles, null, filterPublic);
 
 			// if listing user's top level, included 'shared with me' as well
+
 			var userID = window.App.user.id;
 			var isUserTopLevel = (ws == '/'+userID);
+
 			if(isUserTopLevel){
 				var prom2 = WorkspaceManager.listSharedWithUser(userID);
 			}
@@ -82,17 +83,27 @@ define("p3/widget/WorkspaceExplorerView", [
 						_self.rmEmptyFolderDiv();
 					}
 
-					// option to filter only writable thing
-					if(_self.onlyWritable){
-						objs = objs.filter(function(o){
-							return !(o.user_permission == 'r' || o.user_permission == 'n')
-						})
-					}
 
 					// join permissions to each obj
 					objs.forEach(function(obj){
 						obj.permissions = permHash[obj.path]
 					})
+
+					// option to filter only writable things
+					// Todo: refactor into workspacemnager
+					if(_self.onlyWritable){
+						objs = objs.filter(function(o){
+							for(var i=0; i<o.permissions.length; i++){
+								var user = o.permissions[i][0],
+									perm = o.permissions[i][1]
+
+								if(o.user_permission == 'o' ||
+									(user == userID && (perm == 'w' || perm == 'a'))){
+									return true;
+								}
+							}
+						})
+					}
 
 					// option to filter by types
 					if(_self.types){

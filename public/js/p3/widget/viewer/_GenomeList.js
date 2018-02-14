@@ -372,7 +372,7 @@ define([
 
 					var dlg = new Dialog({
 						title: "PATRIC Quickstart",
-						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+						content: '<iframe width="945" height="480" src="https://www.youtube.com/embed/K3eL4i9vQBo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
 					});
 					dlg.show();
 					localStorage.setItem(this.showQuickstartKey, true);
