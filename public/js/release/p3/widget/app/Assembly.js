@@ -349,11 +349,11 @@ define("p3/widget/app/Assembly", [
 		onAddSRR: function(){
 			var accession = this.srr_accession.get('value');
 			// console.log("updateSRR", accession, accession.substr(0, 3))
-			var prefixList = ['SRR', 'ERR']
-			if(prefixList.indexOf(accession.substr(0, 3)) == -1){
-				this.srr_accession.set("state", "Error")
-				return false;
-			}
+			// var prefixList = ['SRR', 'ERR']
+			// if(prefixList.indexOf(accession.substr(0, 3)) == -1){
+			// 	this.srr_accession.set("state", "Error")
+			// 	return false;
+			// }
 
 			// TODO: validate and populate title
 			// SRR5121082

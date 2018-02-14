@@ -134,13 +134,13 @@ define("p3/widget/TrackController", [
 			if(type && file && file.type === "text/plain"){
 				var reader = new FileReader();
 				reader.onload = function(){
-					//console.log(this.result);
+					// console.log(this.result);
 					var lines = this.result.trim().split(/[\r\n]/g);
 					if(lines){
 						lines.map(function(item){
 							tabs = item.split('\t');
-							//console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
-							if(tabs.length > 3 && tabs[0]){
+							// console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
+							if(tabs.length > 3 && tabs[0] && Number.isInteger(parseInt(tabs[1]))){
 								user_data.push({
 									accession: tabs[0],
 									start: parseInt(tabs[1]),
@@ -155,7 +155,7 @@ define("p3/widget/TrackController", [
 									self.minScore = parseFloat(tabs[3]);
 								}
 
-							}else if(tabs.length == 3 && tabs[0] && (type === "tiles")){
+							}else if(tabs.length == 3 && tabs[0]  && Number.isInteger(parseInt(tabs[1])) && (type === "tiles")){
 								user_data.push({
 									accession: tabs[0],
 									start: parseInt(tabs[1]),
