@@ -15931,8 +15931,12 @@ iframe  {
     padding: 0;
     overflow: hidden;
 }
-.claro .dijitTabPaneWrapper {
+.claro {
     overflow: auto;
+}
+.dijitTabPaneWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .layer {
     width: 925px;
