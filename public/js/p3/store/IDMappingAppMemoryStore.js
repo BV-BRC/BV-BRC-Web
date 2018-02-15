@@ -134,6 +134,7 @@ define([
         var fromIdValue = this.state.fromIdValue.split(',');
         var via ="gene_id";
         via= this.state.joinId;
+        // the joinID is what creates Advanced Search
         var joinId = null;
         if (via == "gene_id"){
           joinId = {"genome_feature":"gene_id","id_ref":"GeneID"};
@@ -141,9 +142,9 @@ define([
         else if (via =="refseq_locus_tag"){
           joinId = {"genome_feature":"refseq_locus_tag","id_ref":"Gene_OrderedLocusName"};
         }
-        // else if (via =="protein_id"){
-        //   joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
-        // }
+        else if (via =="protein_id"){
+          joinId = {"genome_feature":"protein_id","id_ref":"RefSeq"};
+        }
         else{
           joinId = {"genome_feature":"gi","id_ref":"GI"};
         }
@@ -161,8 +162,7 @@ define([
         // console.log(this.state);
 
         if(fromIdGroup === 'PATRIC'){
-          if(toIdGroup === 'PATRIC' || toId === 'protein_id'){
-            console.log('am i even here?');
+          if(toIdGroup === 'PATRIC'){
             this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
               handleAs: 'json',
               headers: {
@@ -204,11 +204,9 @@ define([
           var giNumbers = {};
           var accessionGiMap = {};
           var giTarget = {};
-
           // step 1: get GeneID from fromId (query to genome_feature)
           // step 2: get UniprotKBAccession from GI numbers (query to id_ref), then create accessionGiMap
           // step 3: get requested id from UniprotKBAccession (query to id_ref), then create giTargetMap
-          console.log('trying to map from patric ids to other ids');
           this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
             handleAs: 'json',
             headers: {

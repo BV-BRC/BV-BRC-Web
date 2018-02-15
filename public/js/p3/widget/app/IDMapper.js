@@ -83,7 +83,6 @@ define([
     return true;
   },
   reset: function(){
-    console.log('going to clear the form');
     this.leftList.set('value', '');
   },
 
@@ -136,7 +135,7 @@ define([
     var q;
     var fromIdGroup = null;
     var toIdGroup = null;
-    var patric_id_group ={"patric_id":"","feature_id":"","P2_feature_id":"","alt_locus_tag":"","refseq_locus_tag":"","gene_id":"","gi":"","refseq":""};
+    var patric_id_group ={"patric_id":"","feature_id":"","P2_feature_id":"","alt_locus_tag":"","refseq_locus_tag":"","gene_id":"","gi":"","protein_id":""};
 
     fromIdGroup = (from in patric_id_group) ? "PATRIC" : "OTHER";
     toIdGroup = (to in patric_id_group) ? "PATRIC" : "OTHER";
