@@ -110,7 +110,7 @@ define([
         }
 
         var _self = this;
-
+        console.log(this.state.toId);
         // console.warn(this.state, this.state.genome_ids, !this.state.genome_ids);
         if(!this.state){
           // console.log("No Genome IDS, use empty data set for initial store");
@@ -134,6 +134,7 @@ define([
         var fromIdValue = this.state.fromIdValue.split(',');
         var via ="gene_id";
         via= this.state.joinId;
+        // the joinID is what creates Advanced Search
         var joinId = null;
         if (via == "gene_id"){
           joinId = {"genome_feature":"gene_id","id_ref":"GeneID"};
@@ -162,7 +163,6 @@ define([
 
         if(fromIdGroup === 'PATRIC'){
           if(toIdGroup === 'PATRIC'){
-            console.log('am i even here?');
             this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
               handleAs: 'json',
               headers: {
@@ -204,11 +204,9 @@ define([
           var giNumbers = {};
           var accessionGiMap = {};
           var giTarget = {};
-
           // step 1: get GeneID from fromId (query to genome_feature)
           // step 2: get UniprotKBAccession from GI numbers (query to id_ref), then create accessionGiMap
           // step 3: get requested id from UniprotKBAccession (query to id_ref), then create giTargetMap
-          console.log('trying to map from patric ids to other ids');
           this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
             handleAs: 'json',
             headers: {
