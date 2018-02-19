@@ -1102,7 +1102,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					requireAuth: true,
-					max: 100,
+					max: 50,
 					tooltip: "Share genome(s) with other users",
 					validContainerTypes: ["genome_data"]
 				},
@@ -1110,7 +1110,6 @@ define([
 					var self = this;
 
 					var selection = selection;
-
 
 					//var sel = Object.assign(selection, {
 					//	owner_id: selection.owner
