@@ -13,6 +13,7 @@ define([
 	return declare([AppBase], {
 		"baseClass": "App GenomeDistance",
 		templateString: Template,
+		applicationHelp: "user_guides/services/similar_genome_finder_service.html",
 		tutorialLink: "tutorial/similar_genome_finder/similar_genome_finder.html",
 		loadingMask: null,
 		result_store: null,
@@ -82,7 +83,8 @@ define([
 
 		validate: function(){
 			// console.log("validate", this.genome_id.get('value'), this.fasta.get('value'), !(this.genome_id.get('value') == '' && this.fasta.get('value') == ''));
-
+			if (!(this.genome_id.get('value') == '' && this.fasta.get('value') == ''))
+			  if (this.submitButton){ this.submitButton.set("disabled", false); }
 			return !(this.genome_id.get('value') == '' && this.fasta.get('value') == '');
 		},
 
@@ -124,7 +126,7 @@ define([
 					this.fasta_message.innerHTML = "No FASTA file has selected";
 					return;
 				}
-
+				 document.getElementsByClassName('searchBy')[0].innerHTML = path;
 				WorkspaceManager.getObject(path, true).then(lang.hitch(this, function(file){
 
 					if(file.link_reference && file.size > 0 && file.type == "contigs"){
@@ -201,6 +203,9 @@ define([
 
 		onSuggestNameChange: function(){
 			// console.log("onGenomeIDChange", this.fasta.get('value'), this.genome_id.get('value'));
+			var searchBy = document.getElementsByClassName('searchBy');
+        searchBy[0].innerHTML = this.genome_id.get('displayedValue');
+        searchBy[0].style.display = 'block';
 			if(this.fasta && this.fasta.get('value') !== '' && this.genome_id.get('value') !== ''){
 				this.fasta.reset();
 			}

@@ -127,6 +127,7 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare", "dojo/_base/la
 					Topic.publish("/upload", {
 						type: "UploadComplete",
 						filename: file.name,
+						size: file.size,
 						url: url,
 						workspacePath: workspacePath
 					});
@@ -179,4 +180,3 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare", "dojo/_base/la
 
 	return UploadManager;
 });
-

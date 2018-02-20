@@ -83,8 +83,8 @@ define([
 					// check whether genome is a host genome and set default filter condition
 					if(this.state.genome){
 						if(!this.state.hashParams.filter){
-							var taxon_lineage_ids = this.state.genome.taxon_lineage_ids;
-							if (taxon_lineage_ids.indexOf("2759") > -1){
+
+							if (this.state.genome.taxon_lineage_ids && this.state.genome.taxon_lineage_ids.indexOf("2759") > -1){
 
 								activeQueryState = lang.mixin({}, this.state, {
 									search: "eq(genome_id," + this.state.genome.genome_id + ")",
@@ -130,6 +130,9 @@ define([
 		},
 
 		buildHeaderContent: function(genome){
+			if(!genome){
+				return;
+			}
 
 			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", genome.taxon_id), {
 				headers: {
@@ -259,7 +262,7 @@ define([
 			this.sequences = new SequenceGridContainer({
 				title: "Sequences",
 				id: this.viewer.id + "_" + "sequences",
-				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+				state: lang.mixin({}, this.state, {search: (this.genome_id ? "?eq(genome_id," + this.genome_id + ")" : "?ne(genome_id,*)" )})
 			});
 
 			this.amr = new AMRPanelGridContainer({
@@ -288,7 +291,7 @@ define([
 			this.specialtyGenes = new SpecialtyGeneGridContainer({
 				title: "Specialty Genes",
 				id: this.viewer.id + "_" + "specialtyGenes",
-				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+				state: lang.mixin({}, this.state, {search: (this.genome_id ? "?eq(genome_id," + this.genome_id + ")" : "?ne(genome_id,*)" )})
 			});
 
 			this.pathways = new PathwaysContainer({

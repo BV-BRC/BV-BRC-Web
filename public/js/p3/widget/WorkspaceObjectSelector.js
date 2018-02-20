@@ -30,6 +30,7 @@ define([
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
 		allowUpload: true,  	    	// whether or not to add the upload button
+		uploadingSelection: "",     // uploading in progress, to be copied to selection
 		title: "Choose or Upload a Workspace Object",
 		autoSelectParent: false,   		// if true, the folder currently being viewed is selected by default
 		onlyWritable: false,	    	// only list writable workspaces
@@ -167,8 +168,8 @@ define([
 		},
 
 		_setSelectionAttr: function(val){
-			this.selection = val;
 
+			this.selection = val;
 			// ensures item is in store (for public workspaces),
 			// this is more efficient than recursively grabing all public objects of a certain type
 			try{
@@ -309,6 +310,7 @@ define([
 		},
 
 		openChooser: function(){
+			this.refreshWorkspaceItems();
 			var _self = this;
 
 			// if dialog is already built, just show it
@@ -402,6 +404,7 @@ define([
 			})
 
 
+			// dialog cancel/ok buttons
 			var cancelButton = new Button({label: "Cancel"});
 			cancelButton.on('click', function(){
 				_self.dialog.hide();
@@ -426,19 +429,8 @@ define([
 					case "upload":
 						_self.dialog.flip();
 						break;
-					/*  testing without inline ws/folder creation
-					case "createFolder":
-						var element = _self.grid.row(0).element;
-						_self.grid.addNewFolder({id: "untitled"});
-						break;
-					case "createWS":
-						var element = _self.grid.row(0).element;
-						_self.grid.addNewFolder({id: "untitled"});
-						break;
-					*/
 				}
 			});
-			// var _self = this;
 
 			var grid = this.grid = this.createGrid();
 
@@ -484,7 +476,12 @@ define([
 						var file = evt.files[0];
 						_self.set("selection", file);
 						_self.set('value', file.path, true);
-						_self.dialog.hide();
+						Deferred.when(_self.dialog.hide(), function(){
+							Topic.publish("/UploaderDialog", {
+								type: "UploaderClose"
+							});
+						});
+
 					}else{
 						_self.dialog.flip()
 					}
@@ -512,21 +509,22 @@ define([
 			if(this._refreshing){
 				return;
 			}
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
-				delete this._refreshing;
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true)
+				.then(lang.hitch(this, function(items){
+					delete this._refreshing;
 
-				// sort by most recent
-				items.sort(function(a, b){
-					return b.timestamp - a.timestamp;
-				});
+					// sort by most recent
+					items.sort(function(a, b){
+						return b.timestamp - a.timestamp;
+					});
 
-				this.store = new Memory({data: items, idProperty: "path"});
+					this.store = new Memory({data: items, idProperty: "path"});
 
-				this.searchBox.set("store", this.store);
-				if(this.value){
-					this.searchBox.set('value', this.value);
-				}
-			}));
+					this.searchBox.set("store", this.store);
+					if(this.value){
+						this.searchBox.set('value', this.value);
+					}
+				}));
 		},
 		onSearchChange: function(value){
 			this.set("value", value);
@@ -625,7 +623,7 @@ define([
 							}
 							return item.type;
 						},
-						className: "wsItemTypeIcon",
+						className: "wsObjIcon",
 						formatter: formatter.wsItemType,
 						unhidable: true
 					},

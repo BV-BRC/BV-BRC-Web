@@ -75,7 +75,8 @@ define([
 	return declare([AppBase], {
 		"baseClass": "BLAST",
 		templateString: Template,
-		tutorialLink: "/tutorial/blast/blast.html",
+		applicationHelp: "user_guides/services/blast.html",
+		tutorialLink: "tutorial/blast/blast.html",
 		addedGenomes: 0,
 		maxGenomes: 20,
 		startingRows: 5,
@@ -144,6 +145,13 @@ define([
 				this.advancedOptions.style.display = 'none';
 				this.advancedOptionIcon.className = "fa icon-caret-down fa-1";
 			}
+		},
+
+		sanitizeFastaSequence: function(sequence){
+			var header = sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null})
+			var sanitized = sequence.split('\n').filter(function(line){ return line.match(/^>.*/) == null}).map(function(line){ return line.replace(/ /g,'')})
+
+			return header.concat(sanitized).join('\n')
 		},
 
 		hasSingleFastaSequence: function(sequence){
@@ -443,6 +451,10 @@ define([
 				this.sequence_message.innerHTML = 'PATRIC BLAST accepts only one sequence at a time. Please provide only one sequence.';
 				return;
 			}
+			var sanitized = this.sanitizeFastaSequence(val)
+			// console.log(sanitized)
+			this.sequence.set('value', sanitized)
+
 			this.sequence_message.innerHTML = '';
 			if(this.program.isLoaded()){
 				this.program.closeDropDown();

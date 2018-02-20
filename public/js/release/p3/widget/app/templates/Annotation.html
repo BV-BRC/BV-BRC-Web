@@ -1,7 +1,7 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div class="appTemplate" style="width: 450px">
+    <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
             <h3>Genome Annotation
@@ -12,7 +12,10 @@
                 <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
               </div>
             </h3>
-            <p>Annotates genomes using RASTtk.</p>
+            <p>The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Genome Annotation Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
         <div style="width:450px; margin:auto" class="formFieldsContainer">
             <div id="annotationBox" style="width:400px;" class="appBox appShadow">

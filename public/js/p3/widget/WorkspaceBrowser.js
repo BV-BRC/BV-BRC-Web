@@ -4,10 +4,16 @@ define([
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
+<<<<<<< HEAD
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
 	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip",
 	"dijit/form/TextBox", "./WorkspaceObjectSelector", "./PermissionEditor",
 
+=======
+	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select", "dijit/form/CheckBox",
+	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip", "../widget/UserSelector",
+	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "./WorkspaceObjectSelector",
+>>>>>>> master
 	"dojo/NodeList-traverse"
 ], function(
 	declare, BorderContainer, on, query,
@@ -216,9 +222,9 @@ define([
 			}, false);
 
 			var dfc = '<div>Download Table As...</div>'+
-					  '<div class="wsActionTooltip" rel="text/tsv">Text</div>'+
-					  '<div class="wsActionTooltip" rel="text/csv">CSV</div>'+
-					  '<div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+					'<div class="wsActionTooltip" rel="text/tsv">Text</div>'+
+					'<div class="wsActionTooltip" rel="text/csv">CSV</div>'+
+					'<div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 			var downloadTT = new TooltipDialog({
 				content: dfc, onMouseLeave: function(){
 					popup.close(downloadTT);
@@ -307,7 +313,7 @@ define([
 				validTypes: WorkspaceManager.viewableTypes,
 				tooltip: "View in Browser"
 			}, function(selection){
-				console.log("[WorkspaceBrowser] View Item Action", selection);
+				// console.log("[WorkspaceBrowser] View Item Action", selection);
 				Topic.publish("/navigate", {href: "/workspace" + selection[0].path});
 			}, false);
 
@@ -462,15 +468,14 @@ define([
 				Topic.publish("/openDialog", {
 					type: "CreateWorkspace"
 				});
-			},  self.path.split('/').length < 3);
+			}, self.path.split('/').length < 3);
 
-            this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
+			this.browserHeader.addAction("ViewTree", "fa icon-tree2 fa-2x", {
 				label: "VIEW",
 				multiple: false,
 				validTypes: ["PhylogeneticTree"],
 				tooltip: "View Tree"
 			}, function(selection){
-				// console.log("View Experiment: ", selection[0]);
 				var expPath = this.get('path');
 				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=" + expPath});
 
@@ -482,7 +487,6 @@ define([
 				validTypes: ["nwk"],
 				tooltip: "View Tree"
 			}, function(selection){
-				// console.log("View Experiment: ", selection[0]);
 				var path = selection.map(function(obj){ return obj.path });
 				Topic.publish("/navigate", {href: "/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=" + path[0]});
 			}, false);
@@ -493,7 +497,7 @@ define([
 				validTypes: ["DifferentialExpression"],
 				tooltip: "Toggle Summary View"
 			}, function(selection){
-				console.log("View Experiment Summary: ", selection[0]);
+				// console.log("View Experiment Summary: ", selection[0]);
 				var eid = self.actionPanel.currentContainerWidget.getExperimentId();
 				if (self.actionPanel.currentContainerWidget.isSummaryView()) {
 					Topic.publish("/navigate", {href: "/workspace" + eid});
@@ -520,7 +524,7 @@ define([
 				validTypes: ["RNASeq", "TnSeq", "Variation"],
 				tooltip: "View tracks in genome browser."
 			}, function(selection){
-				console.log("View Tracks: ", selection[0]);
+				// console.log("View Tracks: ", selection[0]);
 				var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
 				var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
 				Topic.publish("/navigate", {href: "/view/Genome/"+genomeId+"#"+urlQueryParams});
@@ -1051,10 +1055,10 @@ define([
 			var validTypes = options.map(function(item){ return item.value });
 
 			var unchangeableTypes = selection.filter(function(obj){
-				 return validTypes.indexOf(obj.type) == -1;
+				return validTypes.indexOf(obj.type) == -1;
 			}).map(function(obj){
 				return obj.type;
-			}).filter(function(val, i, self) { // only return unique
+			}).filter(function(val, i, self){ // only return unique
 				return self.indexOf(val) === i;
 			})
 
@@ -1120,7 +1124,7 @@ define([
 					this.hideAndDestroy();
 					self.activePanel.clearSelection();
 				},
-				onCancel: function() {	// also do updates on close checkbox
+				onCancel: function(){	// also do updates on close checkbox
 					this.hideAndDestroy();
 					self.activePanel.clearSelection();
 				}
@@ -1224,11 +1228,11 @@ define([
 								case "GenomeAnnotationGenbank":
 									d = "p3/widget/viewer/GenomeAnnotation";
 									break;
-				                case "Variation":
+								case "Variation":
 								case "RNASeq":
 								case "TnSeq":
-										d = "p3/widget/viewer/Seq";
-										break;
+									d = "p3/widget/viewer/Seq";
+									break;
 							}
 						}
 						panelCtor = window.App.getConstructor(d);

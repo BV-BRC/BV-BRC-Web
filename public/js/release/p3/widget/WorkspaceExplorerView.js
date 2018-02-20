@@ -57,8 +57,10 @@ define("p3/widget/WorkspaceExplorerView", [
 			var prom1 = WorkspaceManager.getFolderContents(ws, this.showHiddenFiles, null, filterPublic);
 
 			// if listing user's top level, included 'shared with me' as well
+
 			var userID = window.App.user.id;
 			var isUserTopLevel = (ws == '/'+userID);
+
 			if(isUserTopLevel){
 				var prom2 = WorkspaceManager.listSharedWithUser(userID);
 			}
@@ -81,23 +83,48 @@ define("p3/widget/WorkspaceExplorerView", [
 						_self.rmEmptyFolderDiv();
 					}
 
-					// option to filter only writable thing
-					if(_self.onlyWritable){
-						objs = objs.filter(function(o){
-							return !(o.user_permission == 'r' || o.user_permission == 'n')
-						})
-					}
 
 					// join permissions to each obj
 					objs.forEach(function(obj){
 						obj.permissions = permHash[obj.path]
 					})
 
+					// option to filter only writable things
+					// Todo: refactor into workspacemnager
+					if(_self.onlyWritable){
+						objs = objs.filter(function(o){
+							for(var i=0; i<o.permissions.length; i++){
+								var user = o.permissions[i][0],
+									perm = o.permissions[i][1]
+
+								if(o.user_permission == 'o' ||
+									(user == userID && (perm == 'w' || perm == 'a'))){
+									return true;
+								}
+							}
+						})
+					}
+
 					// option to filter by types
 					if(_self.types){
 						objs = objs.filter(function(r){
 							return (r && r.type && (_self.types.indexOf(r.type) >= 0))
 						})
+					}
+
+					// if special folder, sort by create_time by default
+					var specialSortFolders = [
+						"Genome Groups",
+						"Feature Groups",
+						"Experiments",
+						"Experiment Groups"
+					];
+					var folderName = parts[parts.length - 1];
+					if(specialSortFolders.indexOf(folderName) != -1){
+						_self.prevSort = _self._sort;
+						_self.set('sort', [{ attribute: 'creation_time', descending: false }] )
+					}else{
+						_self.set('sort', _self.prevSort || [{ attribute: 'name', descending: false }])
 					}
 
 					// sorting
@@ -109,11 +136,12 @@ define("p3/widget/WorkspaceExplorerView", [
 					objs.sort(function(a, b){
 						var s = sort[0];
 						if(s.descending){
-							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
+							return (a[s.attribute] < b[s.attribute]) ? 1 : -1
 						}else{
 							return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 						}
 					});
+
 					return objs;
 				})
 
@@ -216,25 +244,16 @@ define("p3/widget/WorkspaceExplorerView", [
 			if(this._started){
 				return;
 			}
+
+			var _self = this;
 			this.inherited(arguments);
 			domClass.add(this.domNode, "WorkspaceExplorerView");
 
-			var _self = this;
 			this.refreshWorkspace();
-//			this.listWorkspaceContents(this.path).then(function(contents) {
-//				_self.render(_self.path, contents);
-//			})
 
+			// also listen for later changes
 			Topic.subscribe("/refreshWorkspace", function(msg){
 				_self.refreshWorkspace();
-			});
-
-			Topic.subscribe("/Jobs", function(msg){
-				// if (msg.type=="JobStatus") {
-				// 	console.log("JobStatus MSG: ", msg.job);
-				// }else if (msg.type=="JobStatusChanged") {
-				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
-				// }
 			});
 		},
 

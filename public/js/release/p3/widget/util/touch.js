@@ -1,4 +1,4 @@
-define("dojo/touch", ["./_base/kernel", "./aspect", "./dom", "./dom-class", "./_base/lang", "./on", "./has", "./mouse", "./domReady", "./_base/window"],
+define("dojo/touch", ["dojo/_base/kernel", "dojo/aspect", "dojo/dom", "dojo/dom-class", "dojo/_base/lang", "dojo/on", "dojo/has", "dojo/mouse", "dojo/domReady", "dojo/_base/window"],
 function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 
 	// module:
@@ -73,7 +73,7 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 			if(node.dojoClick !== undefined){ return node; }
 		}while(node = node.parentNode);
 	}
-	
+
 	function doClicks(e, moveType, endType){
 		// summary:
 		//		Setup touch listeners to generate synthetic clicks immediately (rather than waiting for the browser
@@ -82,14 +82,14 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 		//		its dojoClick property set to truthy. If a node receives synthetic clicks because one of its ancestors has its
 		//      dojoClick property set to truthy, you can disable synthetic clicks on this node by setting its own dojoClick property
 		//      to falsy.
-		
+
 		var markedNode = marked(e.target);
 		clickTracker  = !e.target.disabled && markedNode && markedNode.dojoClick; // click threshold = true, number, x/y object, or "useTarget"
 		if(clickTracker){
 			useTarget = (clickTracker == "useTarget");
 			clickTarget = (useTarget?markedNode:e.target);
 			if(useTarget){
-				// We expect a click, so prevent any other 
+				// We expect a click, so prevent any other
 				// default action on "touchpress"
 				e.preventDefault();
 			}

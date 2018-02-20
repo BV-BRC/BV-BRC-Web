@@ -13,7 +13,7 @@ define([
 		}
 
 		function walk(term){
-			console.log("Walk: ", term.name, " Args: ", term.args);
+			// console.log("Walk: ", term.name, " Args: ", term.args);
 			switch(term.name){
 				case "and":
 				case "or":
@@ -21,7 +21,7 @@ define([
 						return walk(t);
 					}).join(" " + term.name.toUpperCase() + " ");
 
-					console.log("out: ", out);
+					// console.log("out: ", out);
 					break;
 				case "in":
 					var f = decodeURIComponent(term.args[0]);

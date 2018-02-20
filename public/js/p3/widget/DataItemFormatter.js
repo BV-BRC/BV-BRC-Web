@@ -57,6 +57,9 @@ define([
 			options = options || {};
 
 			var columns = [{
+				name: 'Service',
+				text: 'app'
+			}, {
 				name: 'App',
 				text: 'app'
 			}, {
@@ -101,6 +104,9 @@ define([
 			options = options || {};
 
 			var columns = [{
+				name: 'Service',
+				text: 'app'
+			}, {
 				name: 'App',
 				text: 'app'
 			}, {
@@ -1643,7 +1649,7 @@ define([
 		var label = column.name;
 		var multiValued = column.multiValued || false;
 		var mini = options && options.mini || false;
-
+		// console.log("column=", column, "item=", item, "key=", key, "label=", label);
 		if(key && item[key] && !column.data_hide){
 			if(column.isList){
 				var tr = domConstruct.create("tr", {});
@@ -1664,6 +1670,11 @@ define([
 				return renderRow(label, dateStr)
 			}else if(!mini || column.mini){
 				var l = evaluateLink(column.link, item[key], item);
+				// console.log("item[key]=", item[key]);
+				// a special case for service app
+				if (label == 'Service'){
+					l = formatter.serviceLabel(item[key]);				
+				}
 				return renderRow(label, l);
 			}
 		}

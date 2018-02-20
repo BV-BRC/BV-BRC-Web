@@ -15,8 +15,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "TnSeq",
-		applicationHelp: "user_guide/genome_data_and_tools/tn_seq_analysis_service.html",
-		tutorialLink: "",
+		applicationHelp: "user_guides/services/tn_seq_analysis_service.html",
+		tutorialLink: "tutorial/tn-seq/tn-seq.html",
 		pageTitle: "Tn-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
@@ -536,6 +536,11 @@ define([
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
+			if(this.read1.searchBox.get("value") == this.read2.searchBox.get("value")){
+				var msg = "READ FILE 1 and READ FILE 2 cannot be the same.";
+				new Dialog({title: "Notice", content: msg}).show();
+				return;
+			}
 			var lrec = {type:"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active

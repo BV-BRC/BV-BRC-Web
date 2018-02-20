@@ -12,7 +12,11 @@
                 <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
               </div>
             </h3>
-            <p>Protein sequence-based comparison using bi-directional BLASTP.</p>
+            <p>The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP.
+                This service allows users to select genomes and compare them to reference genome.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Proteome Comparison Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
 
         <div class="formFieldsContainer">
@@ -169,6 +173,15 @@
                                      data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
                                 <div style="width:10%;display:inline-block;"><i
                                         data-dojo-attach-event="click:onAddFeatureGroup"
+                                        class="fa icon-plus-circle fa-lg"></i></div>
+                                </br>
+                                <label>And/or select genome group</label></br>
+                                <div style="width:85%;display:inline-block;"
+                                     data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup"
+                                     required="false" data-dojo-attach-point="user_genomes_genomegroup"
+                                     data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for Comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddGenomeGroup"
                                         class="fa icon-plus-circle fa-lg"></i></div>
                                 </br>
                             </div>

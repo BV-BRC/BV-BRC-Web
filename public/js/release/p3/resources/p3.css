@@ -13403,10 +13403,14 @@ color:#fff;font-weight:600;background:#34698e;
 	font-size: 1.2em;
 	cursor: pointer;
 }
-.dgrid-cell.wsItemType,
-.wsItemType {
+.dgrid-cell.wsObjIcon,
+.wsObjIcon {
 	width: 32px;
 	text-align: center;
+}
+th.dgrid-cell.wsObjIcon {
+	border-right: 0;
+	padding-left: 0;
 }
 .WorkspaceExplorerView .dgrid-cell {
 	border: 0;
@@ -13416,14 +13420,11 @@ color:#fff;font-weight:600;background:#34698e;
 }
 th.dgrid-cell.wsItemName,
 th.dgrid-cell.wsItemSize,
+th.dgrid-cell.wsItemType,
 th.dgrid-cell.wsItemCreationTime,
 th.dgrid-cell.wsItemOwnerId,
 th.dgrid-cell.wsItemMembers {
 	border-right: 1px solid #C0C0C0;
-}
-th.dgrid-cell.wsItemType {
-	border-right: 0;
-	padding-left: 0;
 }
 .dgrid-cell.wsItemName,
 .dgrid-cell.wsItemSize,
@@ -13435,7 +13436,8 @@ th.dgrid-cell.wsItemType {
 .wsItemMembers {
 	width: 90px;
 }
-.wsItemSize {
+.wsItemSize,
+.wsItemType {
 	width: 100px;
 }
 .wsItemCreationTime{
@@ -13508,7 +13510,7 @@ th.dgrid-cell.wsItemType {
 }
 .JobsRunning,
 .UploadsRunning{
-	color: #98981d;
+	color: #ffa900;
 }
 .JobsCompleted,
 .UploadsCompleted{
@@ -15069,9 +15071,10 @@ i.home_dlp {
 .patric .dlp p {
   margin: 0 0 17px 0;
 }
-.patric .dlp ul {
-  padding: 0 0 0 10px;
-  margin: 0 0 17px 0;
+.patric .dlp ul,
+.patric .dlp dl {
+  padding: 0 0 0 5px;
+  margin: 0 0 10px 0;
 }
 .patric .dlp a {
   color: #09456f;
@@ -15451,14 +15454,12 @@ i.home_dlp {
 	font-weight: bold;
 }
 #dlp-features-data li {
-	margin-left: 10px;
-	padding-left: 0;
 	list-style-type: circle;
 }
 #dlp-features-data .data-box  {
   float: left;
   width: 173px;
-  height: 278px;
+  height: 298px;
   margin: 0 5px;
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
@@ -15473,6 +15474,16 @@ i.home_dlp {
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
   padding: 20px;
+}
+#dlp-sp-features-data h4 {
+	font-weight: bold;
+}
+#dlp-sp-features-data p {
+  margin: 0 0 5px 10px;
+}
+#dlp-sp-features-data dd {
+  margin-left: 10px;
+  display: inline-block;
 }
 #dlp-proteinfamilies-dist-genera-header {
   margin: 0;
@@ -15920,8 +15931,12 @@ iframe  {
     padding: 0;
     overflow: hidden;
 }
-.claro .dijitTabPaneWrapper {
+.claro {
     overflow: auto;
+}
+.dijitTabPaneWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .layer {
     width: 925px;

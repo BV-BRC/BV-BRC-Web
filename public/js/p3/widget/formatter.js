@@ -391,10 +391,33 @@ function(locale, domConstruct, domClass, Tooltip){
 			}
 		},
 		appLabel: function(appName){
-			if(appName == "GenomeComparison"){
-				return "Proteome Comparison"
-			}
 			return appName;
+		},
+		serviceLabel: function(appName){
+			switch(appName){
+				case "GenomeComparison":
+					return "Proteome Comparison";
+				case "GenomeAssembly":
+					return "Assembly";
+				case "GenomeAnnotation":
+					return "Annotation";
+				case "Variation":
+					return "Variation Analysis";
+				case "PhylogenicTree":
+					return "Phylogenic Tree";
+				case "DifferentialExpression":
+					return "Expression Import";
+				case "RNASeq":
+					return "RNA-Seq Analysis";
+				case "TnSeq":
+					return "Tn-Seq Analysis";
+				case "MetagenomeBinning":
+					return "Metagenome Binning";
+				case "ModelReconstruction":
+					return "Model Reconstruction";
+				default:
+					return appName;
+			}
 		},
 		autoLabel: function(ws_location, autoData){
 			_autoLabels = {};

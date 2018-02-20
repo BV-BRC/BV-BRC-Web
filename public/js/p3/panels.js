@@ -5,7 +5,7 @@ define([], function(){
 			title: "PATRIC Quickstart",
 			ctor: "dijit/layout/ContentPane",
 			params: {
-				content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video><br><a href="/public/patric/patric_quickstart.txt"><i class="fa icon-file-text fa-2x"/><span class="normal"> Text format</span></a>'
+				content: '<iframe width="945" height="480" src="https://www.youtube.com/embed/K3eL4i9vQBo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br><a href="/public/patric/patric_quickstart.txt"><i class="fa icon-file-text fa-2x"/><span class="normal"> Text format</span></a>'
 			}
 		},
 		reportProblem: {

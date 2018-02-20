@@ -42,20 +42,30 @@ define("circulus/Track", [
 			var _self=this;
 
 			this.watch("visible", function(attr,oldVal,vis){
+				// console.log("track set visible", attr, oldVal,vis);
+				// console.log("track set visible this", this);
+				// console.log("track set visible options", options);
 				if (vis && _self.data.length>0){
 					_self.render();
+					// console.log("track set visible options after set", options);
 				}else{
+					// console.log("track set invisible options", options);
+					
+					// options.visible=vis;
+					// _self.surface.clear();
 					options.surface.clear();
-					this._foregroundColorPaths=[];
-					this._backgroundPaths=[];
+					// console.log("track set visible options after clear", options);
+
+					_self._foregroundColorPaths=[];
+					_self._backgroundPaths=[];
 				}
 			})
 
 			this.watch("loading", function(attr,oldVal, loading){
-				console.log("SET LOADING: ", loading, "VISIBLE: ", _self.visible)
+				// console.log("SET LOADING: ", loading, "VISIBLE: ", _self.visible)
 				// if (oldVal == loading){ return; }
 				if (loading && _self.visible){
-					console.log("CALL RENDER LOADING")
+					// console.log("CALL RENDER LOADING")
 					_self.renderLoading()
 				}else if (_self._loadingPath) {
 					if (this._loadingAnimationInterval){
@@ -69,7 +79,7 @@ define("circulus/Track", [
 			this.watch('data', lang.hitch(this, function(attr,oldVal,data){
 				//no idea why this is needed to avoid losing reference to the this.surface group from the viewer
 
-				console.log("Track set('data'): ",_self.surface.groupIdx, " opts groupIdx: ", options.surface.groupIdx, "data: ", data);
+				// console.log("Track set('data'): ",_self.surface.groupIdx, " opts groupIdx: ", options.surface.groupIdx, "data: ", data);
 				_self.surface = options.surface;
 				if (this.visible){
 					_self.render();
@@ -143,7 +153,7 @@ define("circulus/Track", [
 			Object.keys(refSections).forEach(function(secName){
 					// if (ds.length>20){ return; };
 					// console.log("Adding ",ds.length, " Data Items to Section", secName);
-					console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
+					// console.log("   Starting Angle: ", refSections[secName].startAngle, refSections[secName].endAngle);
 					this.renderAlignedBackgroundSection(refSections[secName].startAngle, refSections[secName].endAngle, refSections[secName].length);
 			},this)
 		},
@@ -151,7 +161,7 @@ define("circulus/Track", [
 		renderAlignedBackgroundSection: function(startAngle,endAngle,sectionLength){
 			var totalLength = 0;
 			var trackWidth = this.get("trackWidth");
-			console.log("Render Aligned Background Section: ", startAngle, endAngle);
+			// console.log("Render Aligned Background Section: ", startAngle, endAngle);
 			var path = this.surface.createPath("");
 			if (this.background){
 				path.setStroke(this.background.stroke);
@@ -207,7 +217,7 @@ define("circulus/Track", [
 			}
 
 			if (!refresh && this._backgroundRendered){ return; }
-			console.log("RENDER BACKGROUND: ", trackWidth);
+			// console.log("RENDER BACKGROUND: ", trackWidth);
 			// console.log("Render Backgroup surface ID: ", this.surface.groupIdx);
 			this.bgPath= this.surface.createPath("");
 			var r = this.internalRadius+trackWidth;
@@ -236,7 +246,7 @@ define("circulus/Track", [
 		},
 
 		renderLoading: function() {
-			console.log("RENDER LOADING: ", trackWidth);
+			// console.log("RENDER LOADING: ", trackWidth);
 			// console.log("Render Backgroup surface ID: ", this.surface.groupIdx);
  			var trackWidth = this.get("trackWidth");
  			this._loadingPath = this.surface.createGroup("");
@@ -283,7 +293,7 @@ define("circulus/Track", [
 			this._loadingAnimationInterval = setInterval(anFn,interval + 1000);
 			setTimeout(anFn,500);
 
-			console.log("renderLoading complete");
+			// console.log("renderLoading complete");
 			return path;
 		}
 	});

@@ -57,7 +57,6 @@ define([
 
 		_generateLink: {
 			"genome": function(docs, total){
-				console.log("Genome Link Generator: ", docs, total)
 				if (total==1){
 					return ['/view/Genome/', docs[0].genome_id, "#view_tab=overview"].join("");
 				}else{
@@ -103,17 +102,17 @@ define([
 		},
 
 		generateLink: function(type, docs, total){
-			console.log("Generate Link: ", type, docs, total)
+			// console.log("Generate Link: ", type, docs, total)
 			return this._generateLink[type].apply(this, [docs, total]);
 		},
 
 		_setStateAttr: function(state){
-			console.log("AdvancedSearch _setStateAttr: ", state);
+			// console.log("AdvancedSearch _setStateAttr: ", state);
 			this._set("state", state);
 		},
 
 		onSetState: function(attr, oldval, state){
-			console.log("onSetState: ", state.search);
+			// console.log("onSetState: ", state.search);
 
 			if (state.search){
 				this.searchBox.set("value", queryToSearchInput(state.search));
@@ -244,7 +243,7 @@ define([
 		},
 
 		formattranscriptomics_experiment: function(docs, total){
-			console.log("formattranscriptomics_experiment docs: ", docs);
+			// console.log("formattranscriptomics_experiment docs: ", docs);
 			var out;
 			if (total==1){
 				out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, "#view_tab=overview", '">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
@@ -287,7 +286,7 @@ define([
 
 		formattaxonomy: function(docs, total){
 			var q = this.state.search;
-			console.log("format taxonomy q: ", q);
+
 			var out=["<div class=\"searchResultsContainer taxonomyResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/TaxonList/?', q, '">Taxa</a>&nbsp;(', total, ")</div>"];
 
 			docs.forEach(function(doc){
@@ -304,8 +303,7 @@ define([
 
 		formatantibiotics: function(docs, total){
 			var q = this.state.search;
-			console.log("format antibiotics q: ", q);
-			// console.log("format antibiotics doc: ", docs);
+
 			var out=["<div class=\"searchResultsContainer antibioticsResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/AntibioticList/?', q, '">Antibiotic</a>&nbsp;(', total, ")</div>"];
 
 			docs.forEach(function(doc){
@@ -318,13 +316,12 @@ define([
 			})
 			out.push("</div>");
 
-			console.log("Antibiotics Format: ", out.join(""));
 			return out.join("");
 		},
 
 		_setSearchResultsAttr: function(val){
 			this.searchResults=val;
-			console.log("Search Results: ", val);
+
 			var foundContent=false;
 			var resultCounts = {};
 			var singleResults = {};
@@ -366,8 +363,6 @@ define([
 			}
 			out.push("</table></div>")
 
-			console.log("Content Length: ", content.length, content);
-
 			if (content.length>0){
 				out.push("<h2>Top Matches</h2>" + content.join(""))
 			}
@@ -398,13 +393,13 @@ define([
 
 				if (type == "genome_feature") {
 					// for genome features, sort by annotation first then by scores so as to show PATRIC features first
-					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+annotation,-score)" }				
+					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+annotation,-score)" }
 				} else {
 					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
 				}
 			})
 
-			console.log("SEARCH: ", q);
+			// console.log("SEARCH: ", q);
 			this.viewer.innerHTML="Searching...."
 			Request.post(window.App.dataAPI + "query/", {
 				headers: {

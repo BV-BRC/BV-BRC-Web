@@ -286,6 +286,7 @@ define("p3/widget/viewer/MSA", [
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
+            var clustal_txt = ["CLUSTAL"];
 			var fasta = "";
 			var tree_newick = this.data.tree;
 			this.alt_labels = {"genome_name": {}, "patric_id": {}};
@@ -306,12 +307,13 @@ define("p3/widget/viewer/MSA", [
 					// console.log("headerInfo ", headerInfo);
 					if(!(headerInfo[1] in this.dataMap)){
 						geneID = headerInfo[1];
+                        clustal.push(geneID + "\t");
 						if (this.data.map[geneID]["patric_id"]) {
-							clustal.push(this.data.map[geneID]["patric_id"] + "\t");
+							clustal_txt.push(this.data.map[geneID]["patric_id"] + "\t");
 							tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID]["patric_id"]);
 							fasta = fasta + ">" + this.data.map[geneID]["patric_id"] + "\n";
 						} else {
-							clustal.push(this.data.map[geneID]["refseq_locus_tag"]+ "\t");
+							clustal_txt.push(this.data.map[geneID]["refseq_locus_tag"]+ "\t");
 							tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID]["refseq_locus_tag"]);
 							fasta = fasta + ">" + this.data.map[geneID]["refseq_locus_tag"] + "\n";
 						}
@@ -352,6 +354,7 @@ define("p3/widget/viewer/MSA", [
 				else if(line.trim() != "" && geneID in this.dataMap){
 					this.dataMap[geneID].sequence.push(line);
 					clustal[clustal.length - 1] = clustal[clustal.length - 1] + line;
+                    clustal_txt[clustal_txt.length - 1] = clustal_txt[clustal_txt.length - 1] + line;
 					fasta = fasta + line + "\n";
 				}
 				else{
@@ -367,6 +370,7 @@ define("p3/widget/viewer/MSA", [
 				}
 			}));
 			this.dataStats.clustal = clustal.join("\n");
+            this.dataStats.clustal_txt = clustal_txt.join("\n");
 			this.dataStats.tree_newick = tree_newick;
 			this.dataStats.fasta = fasta;
 			// console.log("this.dataStats ", this.dataStats);
@@ -674,7 +678,7 @@ define("p3/widget/viewer/MSA", [
 					msa.utils.export.saveAsImg(m, "PATRIC_msa.png");
 				}
 				else if(rel == "msa-txt"){
-					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
+					saveAs(new Blob([this.dataStats.clustal_txt]), "PATRIC_msa.txt");
 				}
 				else if(rel == "msa-fasta"){
 					// msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");

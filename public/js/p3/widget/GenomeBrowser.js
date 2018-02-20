@@ -567,7 +567,7 @@ define([
 							browser: this,
 							elem: this.viewElem,
 							config: this.config.view,
-							stripeWidth: 250,
+							stripeWidth: 1000,
 							refSeq: this.refSeq,
 							zoomLevel: 1 / 200
 						});
@@ -946,7 +946,7 @@ define([
 				// }
 			}
 
-			console.log("JBrowse CONFIG: ", jbrowseConfig);
+			// console.log("JBrowse CONFIG: ", jbrowseConfig);
 			if(state && state.hashParams && state.hashParams.addFeatures){
 				jbrowseConfig.stores.url.features = JSON.parse(state.hashParams.addFeatures)
 			}
@@ -961,7 +961,7 @@ define([
 				jbrowseConfig.stores = JSON.parse(state.hashParams.addStores);
 			}
 
-			console.log("jbrowseConfig", jbrowseConfig);
+			// console.log("jbrowseConfig", jbrowseConfig);
 
 			this.set("jbrowseConfig", jbrowseConfig)
 
@@ -1005,11 +1005,11 @@ define([
 		},
 
 		onFirstView: function(){
-			console.log("GenomeBrowser onFirstView()")
+			// console.log("GenomeBrowser onFirstView()")
 			if(this._firstView){
 				return;
 			}
-			console.log("GenomeBrowser onFirstView()")
+			// console.log("GenomeBrowser onFirstView()")
 
 			// if(!this._browser){
 			// 	console.log("Create GenomeBrowser: ", this.jbrowseConfig);

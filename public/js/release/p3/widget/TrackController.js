@@ -64,13 +64,14 @@ define("p3/widget/TrackController", [
 
 		visibleIconClass: "icon-eye",
 		hiddenIconClass: "icon-eye-slash",
-
+        removeIconClass: "icon-close",
+        
 		saveSVG: function(){
 			// console.log("saveSVG()");
 			if(this.viewer){
-				console.log("Call Export SVG");
+				// console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
-				console.log("SVG BEGIN: ", svg.substr(0, 50));
+				// console.log("SVG BEGIN: ", svg.substr(0, 50));
 				saveAs(new Blob([svg]), "PATRIC_circular_genome.svg");
 				//domConstruct.place(e,this.exportContainer,"first");
 			}
@@ -120,7 +121,7 @@ define("p3/widget/TrackController", [
 			var files = event.target.files;
 			var user_data = [];
 			var self = this;
-			console.log("validateUserFileSelection: type =, files =", type, files);
+			// console.log("validateUserFileSelection: type =, files =", type, files);
 			var file = null;
 			self.maxScore = 0;
 			self.minScore = 0;
@@ -133,15 +134,15 @@ define("p3/widget/TrackController", [
 			if(type && file && file.type === "text/plain"){
 				var reader = new FileReader();
 				reader.onload = function(){
-					//console.log(this.result);
+					// console.log(this.result);
 					var lines = this.result.trim().split(/[\r\n]/g);
 					if(lines){
 						lines.map(function(item){
 							tabs = item.split('\t');
-							//console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
-							if(tabs.length > 3 && tabs[0]){
+							// console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
+							if(tabs.length > 3 && tabs[0] && Number.isInteger(parseInt(tabs[1]))){
 								user_data.push({
-									accession: tabs[0].toUpperCase(),
+									accession: tabs[0],
 									start: parseInt(tabs[1]),
 									end: parseInt(tabs[2]),
 									length: parseInt(tabs[2]) - parseInt(tabs[1]) + 1,
@@ -154,9 +155,9 @@ define("p3/widget/TrackController", [
 									self.minScore = parseFloat(tabs[3]);
 								}
 
-							}else if(tabs.length == 3 && tabs[0] && (type === "tiles")){
+							}else if(tabs.length == 3 && tabs[0]  && Number.isInteger(parseInt(tabs[1])) && (type === "tiles")){
 								user_data.push({
-									accession: tabs[0].toUpperCase(),
+									accession: tabs[0],
 									start: parseInt(tabs[1]),
 									end: parseInt(tabs[2]),
 									length: parseInt(tabs[2]) - parseInt(tabs[1]) + 1,
@@ -168,7 +169,7 @@ define("p3/widget/TrackController", [
 						});
 					}
 
-					console.log("before assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+					// console.log("before assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
 
 					// For GC content, GC skew, reset maxScore, minScore
 					if(self.maxScore <= 1 && self.maxScore > 0 && self.minScore <= 1 && self.minScore >= 0){
@@ -184,7 +185,7 @@ define("p3/widget/TrackController", [
 						self.maxScore = Math.max(Math.abs(self.maxScore), Math.abs(self.minScore));
 						self.minScore = (-1) * self.maxScore;
 					}
-					console.log("after assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
+					// console.log("after assigning self.maxScore=", self.maxScore, "self.minScore=", self.minScore);
 
 					user_data.sort(function(a, b){
 						var a1 = a.start, b1 = b.start;
@@ -216,7 +217,7 @@ define("p3/widget/TrackController", [
 					});
 					*/
 					//console.log(user_data);
-					console.log("-----reading file self.userData=", self.userData, "self.maxScore=", self.maxScore, "self.minScore=", self.minScore, "fileName=", self.fileName);
+					// console.log("-----reading file self.userData=", self.userData, "self.maxScore=", self.maxScore, "self.minScore=", self.minScore, "fileName=", self.fileName);
 					if(user_data.length == 0){
 						Topic.publish("/Notification", {message: "User file format error.", type: "error"});
 					}else{
@@ -247,7 +248,7 @@ define("p3/widget/TrackController", [
 					minScore: this.minScore,
 					userData: this.userData
 				};
-				console.log("onAddUserFileTrack: userTrackSelection =", userTrackSelection);
+				// console.log("onAddUserFileTrack: userTrackSelection =", userTrackSelection);
 				Topic.publish("CircularView", "addUserTrack", userTrackSelection);
 			}else{
 				Topic.publish("/Notification", {message: "User file format error.", type: "error"});
@@ -293,12 +294,14 @@ define("p3/widget/TrackController", [
 			domConstruct.place(colorPicker.domNode, color);
 
 			colorPicker.watch("backgroundColor", function(attr, oldVal, color){
-				console.log("COLOR PICKER VALUE: ", color)
+				// console.log("COLOR PICKER VALUE: ", color)
 				event.track.set('backgroundColor', color)
+				// console.log("backgroundColor event.track=", event.track);
 			});
 
 			colorPicker.watch("foregroundColor", function(attr, oldVal, color){
 				event.track.set("foregroundColor", color)
+				// console.log("foregroundColor event.track=", event.track);
 			});
 
 			var tdinfo = domConstruct.create("td", {innerHTML: event.track.title}, tr);
@@ -341,7 +344,7 @@ define("p3/widget/TrackController", [
 
 							select_plot.on("change", function(){
 								Topic.publish("CircularView", "name", select_plot.get("value"));
-								console.log("select_plot my value: ", select_plot.get("value"));
+								// console.log("select_plot my value: ", select_plot.get("value"));
 							})
 						}
 			*/
@@ -354,8 +357,8 @@ define("p3/widget/TrackController", [
 				}
 			}, tr);
 
-			console.log("Track check event.track", event.track);
-			console.log("Track check event.track.hideable", event.track.hideable);
+			// console.log("Track check event.track", event.track);
+			// console.log("Track check event.track.hideable", event.track.hideable);
 
 			if(!event.isReferenceTrack && event.track.hideable != false){
 				var visibleButton = domConstruct.create("i", {
@@ -363,18 +366,18 @@ define("p3/widget/TrackController", [
 					style: {margin: "2px"}
 				}, td);
 				on(visibleButton, "click", lang.hitch(this, function(evt){
-					console.log("Click Visible");
+					// console.log("Click Visible");
 					if(domClass.contains(visibleButton, this.visibleIconClass)){
 						// hide
-						console.log("hide");
+						// console.log("hide");
 						domClass.remove(visibleButton, this.visibleIconClass);
 						domClass.add(visibleButton, this.hiddenIconClass);
-						event.track.set('visible', false)
+						event.track.set('visible', false);
 					}else{
-						console.log("show");
+						// console.log("show");
 						domClass.remove(visibleButton, this.hiddenIconClass);
 						domClass.add(visibleButton, this.visibleIconClass);
-						event.track.set('visible', true)
+						event.track.set('visible', true);
 					}
 				}))
 			}
@@ -385,14 +388,21 @@ define("p3/widget/TrackController", [
 
 			// })
 			// disabled the remove button for future implementation
-			/*
-			if(!event.isReferenceTrack){
-				domConstruct.create("i", {
+		    // console.log("trackTable = ", this.trackTable);
+			
+			if(!event.isReferenceTrack && event.track.hideable != false){
+				var removeButton = domConstruct.create("i", {
 					'class': "fa icon-close fa-2x" + (event.isReferenceTrack ? " disabled" : ""),
 					style: {margin: "2px"}
 				}, td);
+				
+				on(removeButton,"click", lang.hitch(this, function(evt){
+                    domConstruct.empty(removeButton.parentNode.parentNode.parentNode);
+					//event.track.set('visible', false);                    
+					Topic.publish("CircularView", "removeTrack", event.track);
+			    }));
 			}
-			*/
+	
 		}
 
 	});

@@ -1,191 +1,197 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div class="appTemplate">
-        <div class="appTitle">
-            <span class="breadcrumb">Services</span>
-            <h3>ID Mapper
-              <div name="overview" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-              </div>
-            </h3>
-            <p>Map from one ID type to another and obtain PATRIC gene lists from a list of IDs.</p>
+dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+<div class="appTemplate">
+  <div class="appTitle">
+    <span class="breadcrumb">Services</span>
+    <h3>ID Mapper
+      <div name="overview" class="infobox iconbox infobutton dialoginfo">
+        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+      </div>
+    </h3>
+    <p>The ID Mapper tool maps PATRIC identifiers to those from other prominent external databases such as GenBank,
+      RefSeq, EMBL, UniProt, KEGG, etc. Alternatively, it can map a list of external database identifiers to the corresponding PATRIC features.
+      For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">ID Mapper Service User Guide</a>.
+    </p>
+  </div>
+
+  <table style="width:100%;margin-top:15px">
+    <tr>
+      <td style="vertical-align:top;">
+        <div class="appRow" style="width:140px; white-space:nowrap"> FROM:
+          <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="leftTypeSelect">
+            <option selected="true" value="patric_id">PATRIC ID</option>
+            <option value="feature_id">Feature ID</option>
+            <option value="alt_locus_tag">Alt Locus Tag</option>
+            <option value="P2_feature_id">P2 Feature ID</option>
+            <option value="refseq">RefSeq</option>
+            <option value="refseq_locus_tag">RefSeq Locus tag</option>
+            <option value="gene_id">Gene ID</option>
+            <option value="gi">GI</option>
+            <option value="allergome">Allergome</option>
+            <option value="BioCyc">BioCyc</option>
+            <option value="ChEMBL">ChEMBL</option>
+            <option value="DIP">DIP</option>
+            <option value="DNASU">DNASU</option>
+            <option value="DisProt">DisProt</option>
+            <option value="DrugBank">DrugBank</option>
+            <option value="EMBL">EMBL</option>
+            <option value="EMBL-CDS">EMBL-CDS</option>
+            <option value="EchoBASE">EchoBASE</option>
+            <option value="EcoGene">EcoGene</option>
+            <option value="EnsembleGenome">EnsembleGenome</option>
+            <option value="GenoList">GenoList</option>
+            <option value="HOGENOM">HOGENOM</option>
+            <option value="KEGG">KEGG</option>
+            <option value="KO">KO</option>
+            <option value="LegioList">LegioList</option>
+            <option value="Leproma">Leproma</option>
+            <option value="MEROPS">MEROPS</option>
+            <option value="MINT">MINT</option>
+            <option value="NCBI_TaxID">NCBI_TaxID</option>
+            <option value="OMA">OMA</option>
+            <option value="OrthoDB">OrthoDB</option>
+            <option value="PDB">PDB</option>
+            <option value="PeroxiBase">PeroxiBase</option>
+            <option value="PhosSite">PhosSite</option>
+            <option value="PptaseDB">PptaseDB</option>
+            <option value="ProtClustDB">ProtClustDB</option>
+            <option value="PseudoCAP">PseudoCAP</option>
+            <option value="REBASE">REBASE</option>
+            <option value="Reactome">Reactome</option>
+            <option value="RefSeq_NT">RefSeq_NT</option>
+            <option value="STRING">STRING</option>
+            <option value="TCDB">TCDB</option>
+            <option value="TubercuList">TubercuList</option>
+            <option value="UniGene">UniGene</option>
+            <option value="UniParc">UniParc</option>
+            <option value="UniPathway">UniPathway</option>
+            <option value="UniProtKB-Accession">UniProtKB-Accession</option>
+            <option value="UniProtKB-ID">UniProtKB-ID</option>
+            <option value="UniRef100">UniRef100</option>
+            <option value="UniRef50">UniRef50</option>
+            <option value="UniRef90">UniRef90</option>
+            <option value="World-2DPAGE">World-2DPAGE</option>
+            <option value="eggNOG">eggNOG</option>
+          </select>
+          <p style="margin-top:5px;margin-bottom:5px">Example: <span class="exampleLeft">fig|1094551.3.peg.8</span></p>
         </div>
-
-	<table style="width:100%;">
-		<tr>
-			<td style="vertical-align:top;">
-                <div class="appRow" style="width:140px; white-space:nowrap"> FROM:
-				<select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="leftTypeSelect"  >
-					<option selected="true" value="patric_id">PATRIC ID</option>
-					<option value="feature_id">Feature ID</option>
-					<option value="alt_locus_tag">Alt Locus Tag</option>
-					<option value="P2_feature_id">P2 Feature ID</option>
-					<option value="refseq">RefSeq</option>
-					<option value="refseq_locus_tag">RefSeq Locus tag</option>
-					<option value="gene_id">Gene ID</option>
-					<option value="gi">GI</option>
-					<option value="allergome">Allergome</option>
-					<option value="BioCyc">BioCyc</option>
-					<option value="ChEMBL">ChEMBL</option>
-					<option value="DIP">DIP</option>
-					<option value="DNASU">DNASU</option>
-					<option value="DisProt">DisProt</option>
-					<option value="DrugBank">DrugBank</option>
-					<option value="EMBL">EMBL</option>
-					<option value="EMBL-CDS">EMBL-CDS</option>
-					<option value="EchoBASE">EchoBASE</option>
-					<option value="EcoGene">EcoGene</option>
-					<option value="EnsembleGenome">EnsembleGenome</option>
-					<option value="GenoList">GenoList</option>
-					<option value="HOGENOM">HOGENOM</option>
-					<option value="KEGG">KEGG</option>
-					<option value="KO">KO</option>
-					<option value="LegioList">LegioList</option>
-					<option value="Leproma">Leproma</option>
-					<option value="MEROPS">MEROPS</option>
-					<option value="MINT">MINT</option>
-					<option value="NCBI_TaxID">NCBI_TaxID</option>
-					<option value="OMA">OMA</option>
-					<option value="OrthoDB">OrthoDB</option>
-					<option value="PDB">PDB</option>
-					<option value="PeroxiBase">PeroxiBase</option>
-					<option value="PhosSite">PhosSite</option>
-					<option value="PptaseDB">PptaseDB</option>
-					<option value="ProtClustDB">ProtClustDB</option>
-					<option value="PseudoCAP">PseudoCAP</option>
-					<option value="REBASE">REBASE</option>
-					<option value="Reactome">Reactome</option>
-					<option value="RefSeq_NT">RefSeq_NT</option>
-					<option value="STRING">STRING</option>
-					<option value="TCDB">TCDB</option>
-					<option value="TubercuList">TubercuList</option>
-					<option value="UniGene">UniGene</option>
-					<option value="UniParc">UniParc</option>
-					<option value="UniPathway">UniPathway</option>
-					<option value="UniProtKB-Accession">UniProtKB-Accession</option>
-					<option value="UniProtKB-ID">UniProtKB-ID</option>
-					<option value="UniRef100">UniRef100</option>
-					<option value="UniRef50">UniRef50</option>
-					<option value="UniRef90">UniRef90</option>
-					<option value="World-2DPAGE">World-2DPAGE</option>
-					<option value="eggNOG">eggNOG</option>
-				</select>
+      </td>
+      <td>
+      </td>
+      <td>
+        <div class="appRow" style="width:140px; white-space:nowrap">TO:
+          <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="rightTypeSelect" >
+            <option selected="true" value="patric_id">PATRIC ID</option>
+            <option value="feature_id">Feature ID</option>
+            <option value="alt_locus_tag">Alt Locus Tag</option>
+            <option value="P2_feature_id">P2 Feature ID</option>
+            <option value="refseq">RefSeq</option>
+            <option value="refseq_locus_tag">RefSeq Locus tag</option>
+            <option value="gene_id">Gene ID</option>
+            <option value="gi">GI</option>
+            <option value="allergome">Allergome</option>
+            <option value="BioCyc">BioCyc</option>
+            <option value="ChEMBL">ChEMBL</option>
+            <option value="DIP">DIP</option>
+            <option value="DNASU">DNASU</option>
+            <option value="DisProt">DisProt</option>
+            <option value="DrugBank">DrugBank</option>
+            <option value="EMBL">EMBL</option>
+            <option value="EMBL-CDS">EMBL-CDS</option>
+            <option value="EchoBASE">EchoBASE</option>
+            <option value="EcoGene">EcoGene</option>
+            <option value="EnsembleGenome">EnsembleGenome</option>
+            <option value="GenoList">GenoList</option>
+            <option value="HOGENOM">HOGENOM</option>
+            <option value="KEGG">KEGG</option>
+            <option value="KO">KO</option>
+            <option value="LegioList">LegioList</option>
+            <option value="Leproma">Leproma</option>
+            <option value="MEROPS">MEROPS</option>
+            <option value="MINT">MINT</option>
+            <option value="NCBI_TaxID">NCBI_TaxID</option>
+            <option value="OMA">OMA</option>
+            <option value="OrthoDB">OrthoDB</option>
+            <option value="PDB">PDB</option>
+            <option value="PeroxiBase">PeroxiBase</option>
+            <option value="PhosSite">PhosSite</option>
+            <option value="PptaseDB">PptaseDB</option>
+            <option value="ProtClustDB">ProtClustDB</option>
+            <option value="PseudoCAP">PseudoCAP</option>
+            <option value="REBASE">REBASE</option>
+            <option value="Reactome">Reactome</option>
+            <option value="RefSeq_NT">RefSeq_NT</option>
+            <option value="STRING">STRING</option>
+            <option value="TCDB">TCDB</option>
+            <option value="TubercuList">TubercuList</option>
+            <option value="UniGene">UniGene</option>
+            <option value="UniParc">UniParc</option>
+            <option value="UniPathway">UniPathway</option>
+            <option value="UniProtKB-Accession">UniProtKB-Accession</option>
+            <option value="UniProtKB-ID">UniProtKB-ID</option>
+            <option value="UniRef100">UniRef100</option>
+            <option value="UniRef50">UniRef50</option>
+            <option value="UniRef90">UniRef90</option>
+            <option value="World-2DPAGE">World-2DPAGE</option>
+            <option value="eggNOG">eggNOG</option>
+          </select>
+          <p style="margin-top:5px;margin-bottom:5px">Example: <span class="exampleRight">fig|1094551.3.peg.8</span></p>
+        </div>
+      </td>
+      <td></td>
+      <td>
+      </td>
+    </tr>
+    <tr>
+      <td data-dojo-attach-point="leftColumnCount" >0 IDs</td>
+      <td></td>
+      <td data-dojo-attach-point="rightColumnCount" colspan="4"></td>
+    </tr>
+    <tr>
+      <td style="vertical-align:top;" colspan="2">
+        <div data-dojo-attach-point="leftList" style="width: 100%;height:300px;vertical-align:top;max-height:350px" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeLeft"></div>
+      </td>
+      <td style="vertical-align:top; padding-left:20px" colspan="2">
+        <div class="appRow">
+          <div class="appRowSegment">
+            <div data-dojo-attach-point="advanced2" style="display:inline-block">
+              <label class="largelabel">Advanced</label>
+              <div class="iconbox" style="margin-left:0px">
+                <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
+              </div>
             </div>
-			</td>
-			<td>
-			</td>
-			<td>
-                <div class="appRow" style="width:140px; white-space:nowrap">TO:
-                                <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="change:onChange" data-dojo-attach-point="rightTypeSelect" >
-                                        <option selected="true" value="patric_id">PATRIC ID</option>
-                                        <option value="feature_id">Feature ID</option>
-                                        <option value="alt_locus_tag">Alt Locus Tag</option>
-                                        <option value="P2_feature_id">P2 Feature ID</option>
-                                        <option value="refseq">RefSeq</option>
-                                        <option value="refseq_locus_tag">RefSeq Locus tag</option>
-                                        <option value="gene_id">Gene ID</option>
-                                        <option value="gi">GI</option>
-                                        <option value="allergome">Allergome</option>
-                                        <option value="BioCyc">BioCyc</option>
-                                        <option value="ChEMBL">ChEMBL</option>
-                                        <option value="DIP">DIP</option>
-                                        <option value="DNASU">DNASU</option>
-                                        <option value="DisProt">DisProt</option>
-                                        <option value="DrugBank">DrugBank</option>
-                                        <option value="EMBL">EMBL</option>
-                                        <option value="EMBL-CDS">EMBL-CDS</option>
-                                        <option value="EchoBASE">EchoBASE</option>
-                                        <option value="EcoGene">EcoGene</option>
-                                        <option value="EnsembleGenome">EnsembleGenome</option>
-                                        <option value="GenoList">GenoList</option>
-                                        <option value="HOGENOM">HOGENOM</option>
-                                        <option value="KEGG">KEGG</option>
-                                        <option value="KO">KO</option>
-                                        <option value="LegioList">LegioList</option>
-                                        <option value="Leproma">Leproma</option>
-                                        <option value="MEROPS">MEROPS</option>
-                                        <option value="MINT">MINT</option>
-                                        <option value="NCBI_TaxID">NCBI_TaxID</option>
-                                        <option value="OMA">OMA</option>
-                                        <option value="OrthoDB">OrthoDB</option>
-                                        <option value="PDB">PDB</option>
-                                        <option value="PeroxiBase">PeroxiBase</option>
-                                        <option value="PhosSite">PhosSite</option>
-                                        <option value="PptaseDB">PptaseDB</option>
-                                        <option value="ProtClustDB">ProtClustDB</option>
-                                        <option value="PseudoCAP">PseudoCAP</option>
-                                        <option value="REBASE">REBASE</option>
-                                        <option value="Reactome">Reactome</option>
-                                        <option value="RefSeq_NT">RefSeq_NT</option>
-                                        <option value="STRING">STRING</option>
-                                        <option value="TCDB">TCDB</option>
-                                        <option value="TubercuList">TubercuList</option>
-                                        <option value="UniGene">UniGene</option>
-                                        <option value="UniParc">UniParc</option>
-                                        <option value="UniPathway">UniPathway</option>
-                                        <option value="UniProtKB-Accession">UniProtKB-Accession</option>
-                                        <option value="UniProtKB-ID">UniProtKB-ID</option>
-                                        <option value="UniRef100">UniRef100</option>
-                                        <option value="UniRef50">UniRef50</option>
-                                        <option value="UniRef90">UniRef90</option>
-                                        <option value="World-2DPAGE">World-2DPAGE</option>
-                                        <option value="eggNOG">eggNOG</option>
-                                </select>
-                            </div>
-			</td>
-            <td></td>
-            <td>
-            </td>
-		</tr>
-		<tr>
-			<td data-dojo-attach-point="leftColumnCount" >0 IDs</td>
-            <td></td>
-			<td data-dojo-attach-point="rightColumnCount" colspan="4"></td>
-		</tr>
-		<tr>
-            <td style="vertical-align:top;" colspan="2">
-				<div data-dojo-attach-point="leftList" style="width: 100%;height:300px;vertical-align:top;max-height:350px" data-dojo-type="dijit/form/Textarea" data-dojo-props="rows:10" data-dojo-attach-event="onChange:onChangeLeft"></div>
-			</td>
-            <td style="vertical-align:top; padding-left:20px" colspan="2">
-                    <div class="appRow">
-                        <div class="appRowSegment">
-                            <div data-dojo-attach-point="advanced2" style="display:inline-block">
-                                <label class="largelabel">Advanced</label>
-                                <div class="iconbox" style="margin-left:0px">
-                                    <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
-                        <div class="appField" style="width:150px;">
-                            <label class="paramlabel">PATRIC Feature Strategy</label>
-                            <div name="patric-feature-strategy" class="infobox iconbox infobutton dialoginfo">
-                                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                            </div>
-                            <div class="appField" style="width:120px;">
-                            <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
-                                <option value="gene_id">GeneID</option>
-                                <option selected="true" value="gi">GI</option>
-                                <option value="refseq_locus_tag">Refseq locus tag</option>
-                                <option value="protein_id">Refseq Protein Acc</option>
-                            </select>
-                            </div>
-                        </div>
-                    </div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-		</tr>
-        <tr>
-            <td></td>
-			<td style="text-align:left;">
-            <div data-dojo-type="dijit/form/Button" data-dojo-attach-point="mapButton" data-dojo-attach-event="onClick:map" data-dojo-props="disabled:false">MAP</div>
-            </td>
-            <td colspan="4"></td>
-
-	</table>
-	</div>
-    <div class="idmap_result_div" data-dojo-attach-point="idmap_result_div"></div>
+          </div>
+        </div>
+        <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
+          <div class="appField" style="width:150px;">
+            <label class="paramlabel">PATRIC Feature Strategy</label>
+            <div name="patric-feature-strategy" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+            <div class="appField" style="width:120px;">
+              <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
+                <option value="gene_id">GeneID</option>
+                <option selected="true" value="gi">GI</option>
+                <option value="refseq_locus_tag">Refseq locus tag</option>
+                <option value="protein_id">Refseq Protein Acc</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="text-align:left;">
+        <div data-dojo-type="dijit/form/Button" data-dojo-attach-point="mapButton" data-dojo-attach-event="onClick:map" data-dojo-props="disabled:false">MAP</div>
+      </td>
+      <td colspan="4"></td>
+    </tr>
+  </table>
+</div>
+<div class="showButton" style="display:none; text-align:center; margin-top:5px" data-dojo-type="dijit/form/Button" data-dojo-attach-point="sButton" data-dojo-attach-event="onClick:show" data-dojo-props="disabled:false">Edit and Resubmit</div>
+<div class="idmap_result_div" data-dojo-attach-point="idmap_result_div"></div>
 </form>
