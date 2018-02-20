@@ -1109,38 +1109,22 @@ define([
 				function(selection, containerWidget){
 					var self = this;
 
-					var selection = selection;
+					var initialPerms = self.solrPermsToObjs(selection)
 
-					//var sel = Object.assign(selection, {
-					//	owner_id: selection.owner
-					//})
-
-					var onCancel = function() {
-						//this.hideAndDestroy();
-					}
-
-
-					var onConfirm = function(perms) {
-						console.log('editor perms', perms)
-
-						//var perm = perms[0].permission,
-						//	users = perms.map(function(perm){ return perm.user });
-
+					var onConfirm = function(newPerms) {
 						var ids = selection.map(function(sel) {
 							return sel.genome_id
 						})
 
 						Topic.publish("/Notification", {
-							message: "<span class='default'>Updating permissions (this may take awhile)...</span>",
+							message: "<span class='default'>Updating permissions (this could take several minutes)...</span>",
 							type: "default",
 							duration: 50000
 						});
 
-
-						var prom = DataAPI.setGenomePermissions(ids, perms);
-						Deferred.when(prom).then(function(result) {
-							console.log('the final results', result)
-
+						var prom = DataAPI.setGenomePermissions(ids, newPerms);
+						Deferred.when(prom).then(function(res) {
+							console.log('the final res', res)
 
 							Topic.publish("/Notification", {
 								message: "Permissions updated.",
@@ -1155,15 +1139,12 @@ define([
 								type: "error"
 							});
 						})
-
 					}
 
-					console.log('selection,', selection)
-					var initialPerms = self.solrPermsToObjs(selection)
 					var permEditor = new PermissionEditor({
 						selection: selection,
 						onConfirm: onConfirm,
-						onCancel: onCancel,
+						//onCancel: onCancel,
 						user: window.App.user.id || '',
 						useSolrAPI: true,
 						permissions: initialPerms
@@ -1253,16 +1234,10 @@ define([
 				console.log('selection iteration', sel)
 				var id = sel.genome_id;
 
-				var readObjs = (sel.user_read || []).map(function(user){
-					var obj =  {
-						user: user,
-						perm: 'Can view'
-					}
+				var readList = sel.user_read,
+					writeList = sel.user_write;
 
-					return obj;
-				})
-
-				var writeObjs = (sel.user_write || []).map(function(user){
+				var writeObjs = (writeList || []).map(function(user){
 					var obj = {
 						user: user,
 						perm: 'Can edit'
@@ -1270,6 +1245,20 @@ define([
 
 					return obj;
 				})
+
+				var readObjs = (readList || [])
+					.filter(function(user) {
+						// if user has write permission, only list that
+						return writeList.indexOf(user) == -1
+					})
+					.map(function(user){
+						var obj =  {
+							user: user,
+							perm: 'Can view'
+						}
+
+						return obj;
+					})
 
 				var permObjs = readObjs.concat(writeObjs);
 				permSets.push(permObjs);
@@ -1279,8 +1268,6 @@ define([
 				function(a, b) { return a.concat(b); },
 				[]
 			);
-
-
 
 			console.log('permissions from solrPermsToObjs', permissions)
 			return permissions

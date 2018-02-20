@@ -26,14 +26,16 @@ define(["./formatter"], function(formatter){
 		owner: {
 			label: 'Owner',
 			field: 'owner',
-			formatter: formatter.baseUsername
+			formatter: formatter.baseUsername,
+			hidden: true
 		},
 		members: {
-			label: 'Members',
+			label: 'Members (shared with)',
 			get: function(item){
 				return item;
 			},
-			formatter: formatter.genomeMembers
+			formatter: formatter.genomeMembers,
+			hidden: true
 		},
 		taxon_id: {
 			label: 'NCBI Taxon ID',

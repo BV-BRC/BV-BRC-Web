@@ -88,16 +88,13 @@ define([
 
 
 		rmUser: function(userId){
-			console.log('removing', userId, 'before:', this._userPerms)
 			this._userPerms = this._userPerms.filter(function(perm){
 				return userId != perm.user ;
 			})
-			console.log('new userperms', this._userPerms)
 		},
 
 		addUser: function(userId, perm){
 			if(this.findUser(userId)) return false;
-			console.log('adding user:', userId)
 
 			this._userPerms.push({
 				user: userId,
@@ -117,8 +114,6 @@ define([
 			this._userPerms.forEach(function(perm, i, perms){
 				if(perm.user == userId) perms[i].permission = newPerm;
 			})
-
-			console.log('perms after', this._userPerms)
 		},
 
 
@@ -185,17 +180,12 @@ define([
 					var user = userSelector.getSelected();
 						perm = newPermSelect.attr('value')
 
-					console.log('user, perm', user, perm)
-
 					if (!user) return;
 
 					// don't add already existing users
 					if(self.findUser(user)) {
-						console.log('already found user', self._userPerms)
 						return;
 					}
-
-					console.log('actually got this far')
 
 					// add a new row of user, perm selector, and trash button
 
@@ -239,14 +229,10 @@ define([
 				content: form,
 				style: { width: '500px'},
 				onConfirm: function(evt) {
-					console.log('called confirm')
-					//self.hideAndDestroy();
 					self.onConfirm(self._userPerms);
 				},
 
 				onCancel: function(evt) {
-					console.log('called cancel')
-					//self.hideAndDestroy();
 					self.onCancel();
 				}
 			})

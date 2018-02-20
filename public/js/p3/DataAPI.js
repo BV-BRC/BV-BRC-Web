@@ -50,6 +50,7 @@ define([
 			var mapping = {
 				'Can view': 'read',
 				'Can edit': 'write',
+				'Varies': 'unchanged',
 				'r': 'read',
 				'w': 'write'
 			}
