@@ -200,11 +200,10 @@ define([
 					domConstruct.place(domConstruct.toDom(
 						'<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
 					, row)
-					domConstruct.place(row, query('tbody', self.currentUsers)[0])
+					var newRow = domConstruct.place(row, query('tbody', self.currentUsers)[0])
 
-					self.addUser(user, perm)
-					self.reinitDeleteEvents();
-
+					self.addUser(user, perm);
+					self.addDeleteEvent(newRow);
 					self.progressEle.innerHTML = '';
 
 					// reset filter select
@@ -321,11 +320,12 @@ define([
 				domConstruct.place(domConstruct.toDom(
 					'<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
 				, row)
-				domConstruct.place(row, query('tbody', self.currentUsers)[0]);
+				var newRow = domConstruct.place(row, query('tbody', self.currentUsers)[0]);
+
+				// event for deleting users
+				self.reinitDeleteEvents(newRow);
 			})
 
-			// event for deleting users
-			self.reinitDeleteEvents();
 
 			self.progressEle.innerHTML = '';
 		},
@@ -438,21 +438,22 @@ define([
 				domConstruct.place(domConstruct.toDom(
 					'<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
 				, row)
-				domConstruct.place(row, query('tbody', self.currentUsers)[0]);
+				var fullRow = domConstruct.place(row, query('tbody', self.currentUsers)[0]);
+
+				// add delete event for this row
+				self.addDeleteEvent(fullRow);
 			})
 
-			// event for deleting users
-			self.reinitDeleteEvents();
 
 			self.progressEle.innerHTML = '';
 		},
 
-		reinitDeleteEvents: function(){
+		addDeleteEvent: function(row){
 			var self = this;
 
-			query('tbody .icon-trash-o', self.currentUsers).on('click', function(){
+			query('.icon-trash-o', row).on('click', function(){
 				var userRow = query(this).parents('tr')[0],
-					userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');
+					 userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');
 
 				domConstruct.destroy(userRow);
 				self.rmUser(userId);
