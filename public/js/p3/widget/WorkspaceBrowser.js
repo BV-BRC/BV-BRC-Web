@@ -720,16 +720,6 @@ define([
 			}, false);
 
 
-			this.actionPanel.addAction("ShareFolder", "fa icon-user-plus fa-2x", {
-				label: "SHARE",
-				allowMultiTypes: false,
-				multiple: false,
-				validTypes: ["folder"],
-				tooltip: "Share Folder"
-			}, function(selection){
-				self.showPermDialog(selection);
-			}, false);
-
 			this.actionPanel.addAction("Rename", "fa icon-pencil-square-o fa-2x", {
 				label: "RENAME",
 				validTypes: ["*"],
@@ -895,7 +885,6 @@ define([
 				objSelector.openChooser();
 			}, false);
 
-
 			this.actionPanel.addAction("EditType", "fa icon-tag fa-2x", {
 				label: "EDIT TYPE",
 				validTypes: ["*"],
@@ -905,6 +894,17 @@ define([
 			}, function(sel){
 				self.editTypeDialog(sel);
 			}, false);
+
+			this.actionPanel.addAction("ShareFolder", "fa icon-user-plus fa-2x", {
+				label: "SHARE",
+				allowMultiTypes: false,
+				multiple: false,
+				validTypes: ["folder"],
+				tooltip: "Share Folder"
+			}, function(selection){
+				self.showPermDialog(selection);
+			}, false);
+
 
 
 			// listen for opening user permisssion dialog

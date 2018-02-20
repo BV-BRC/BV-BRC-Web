@@ -41,8 +41,6 @@ define([
 
 			var ids = Array.isArray(ids) ? ids : [ids];
 
-			console.log('posting with', data)
-
 			return this.post(ids, data);
 		},
 
