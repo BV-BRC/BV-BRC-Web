@@ -1227,8 +1227,6 @@ define([
 			var permSets = []
 			var allPermissions = {}
 
-			console.log('the selection', selection)
-
 			selection.forEach(function(sel){
 				console.log('selection iteration', sel)
 				var id = sel.genome_id;
@@ -1248,7 +1246,7 @@ define([
 				var readObjs = (readList || [])
 					.filter(function(user) {
 						// if user has write permission, only list that
-						return writeList.indexOf(user) == -1
+						return writeList.indexOf(user) == -1;
 					})
 					.map(function(user){
 						var obj =  {
@@ -1268,8 +1266,7 @@ define([
 				[]
 			);
 
-			console.log('permissions from solrPermsToObjs', permissions)
-			return permissions
+			return permissions;
 		},
 
 		buildQuery: function(){
