@@ -927,20 +927,56 @@ define([
 		},
 
 		showPermDialog: function(selection) {
-			var self = this;
+			var self = this,
+				selection = selection[0], // only allows one selection
+				existingPerms = selection.permissions;
 
-			var onClose = function() {	// also do updates on close checkbox
-				this.hideAndDestroy();
-				Topic.publish('/refreshWorkspace');
+			// update workspace list on confirm
+			var onConfirm = function(newPerms) {
+				// set any deleted users' permissions to 'n'
+				var newUsers = newPerms.map(function(p){ return p.user });
+				existingPerms.forEach(function(p) {
+					var user = p[0];
 
-				// refresh list in detail panel
-				self.activePanel.clearSelection();
+					if(p[0] == 'global_permission') return;
+
+					if (newUsers.indexOf(user) == -1)
+						newPerms.push({user: user, permission: 'n'});
+				})
+
+				Topic.publish("/Notification", {
+					message: "<span class='default'>Updating permissions...</span>",
+					type: "default",
+					duration: 50000
+				});
+
+				var prom = WorkspaceManager.setPermissions(selection.path, newPerms);
+				Deferred.when(prom).then(function(res) {
+
+					Topic.publish("/Notification", {
+						message: "Permissions updated.",
+						type: "message",
+					});
+
+					Topic.publish('/refreshWorkspace');
+
+					// refresh list in detail panel
+					self.activePanel.clearSelection();
+
+				}, function(err){
+					console.log('error', err)
+					Topic.publish("/Notification", {
+						message: 'Failed. ' + err.response.status,
+						type: "error"
+					});
+				})
 			}
 
 			var permEditor = new PermissionEditor({
-				selection: selection[0],
-				onConfirm: onClose,
-				onCance: onClose
+				selection: selection,
+				onConfirm: onConfirm,
+				user: window.App.user.id || '',
+				permissions: existingPerms
 			})
 
 			permEditor.show();

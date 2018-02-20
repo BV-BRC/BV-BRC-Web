@@ -868,12 +868,21 @@ define([
 				})
 		},
 
+		/**
+		 * takes path string and list of permission objects of form
+		 * [{user: 'user@patricbrc.org', permission: <'r'|'w'|'n'|'a'|>}, ... ]
+		 */
 		setPermissions: function(path, permissions){
 			var _self = this;
+
+			// map list of objs to list of lists
+			var permissions = permissions.map(function(p){
+				return [p.user, p.permission];
+			})
+
 			return Deferred.when(this.api("Workspace.set_permissions", [{
 				path: path,
 				permissions: permissions
-
 			}]), function(res) {
 				return res;
 			},

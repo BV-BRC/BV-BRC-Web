@@ -1124,7 +1124,6 @@ define([
 
 						var prom = DataAPI.setGenomePermissions(ids, newPerms);
 						Deferred.when(prom).then(function(res) {
-							console.log('the final res', res)
 
 							Topic.publish("/Notification", {
 								message: "Permissions updated.",

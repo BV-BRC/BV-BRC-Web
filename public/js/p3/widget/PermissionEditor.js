@@ -255,8 +255,7 @@ define([
 		*/
 		listSolrPermissions: function(){
 			var self = this,
-				form = self.form;
-				//id = this.selection.genome_id,
+				form = self.form,
 				selection = this.selection;
 
 			if(selection.lenbth == 1){
@@ -303,7 +302,6 @@ define([
 					perm = p.perm
 
 				if(user in userSet) return;
-
 				userSet[user] = 1;
 
 				// we won't want to change permission if different amount objects
@@ -338,11 +336,10 @@ define([
 			var opts = [
 				{
 					label: "Can view",
-					value: "Can view"
+					value: self.useSolrAPI ? "Can view" : 'r'
 				},{
 					label: "Can edit",
-					value: "Can edit",
-					user: user
+					value: self.useSolrAPI ? "Can edit" : 'w'
 				}
 			]
 
@@ -381,64 +378,73 @@ define([
 		*/
 		listWSPermissions: function(){
 			var self = this,
-				form = self.form;
+				form = self.form,
 				folderPath = this.selection.path;
 
-			var prom = WorkspaceManager.listPerms(folderPath, true /* include global */);
-			Deferred.when(prom, function(perms){
-				// add global permission toggle (using latest state)
-				var globalPerm = perms.filter(function(p){
-					return p.user == 'global_permission'
-				})[0].perm;
-				var isPublic = globalPerm != 'No access';
 
-				var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
-				var cb = new CheckBox({
-					name: "checkBox",
-					value: "isPublic",
-					checked: isPublic,
-					onChange: function(e){
-						var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
-						Deferred.when(prom, function(res){
-						}, function(e){
-							alert('oh no, something has went wrong!')
-						})
-					}
-				})
-				cb.placeAt(checkBox);
-				checkBox.appendChild(domConstruct.create('label', {
-					'for': 'publicCB',
-					'innerHTML': " Publicly Readable"
-				}))
+			var perms = this.permissions;
+			// add global permission toggle (using latest state)
+			var globalPerm = perms.filter(function(p){
+				return p[0] == 'global_permission'
+			})[0][1]
 
-				domConstruct.place(checkBox, form, 'first');
-				domConstruct.place(
-					'<h4 style="margin-bottom: 5px;">'+
-						'Share with Everybody'+
-					'</h4>',
-				form, 'first');
+			var isPublic = globalPerm != 'n';
 
-				// user perms
-				perms.forEach(function(p){
-					// server sometimes returns 'none' permissions, so ignore them.
-					if(p.perm == 'n' || p.user == 'global_permission') return;
-
-					self.addUser(p.user, p.perm)
-
-					dojo.place(
-						'<tr>'+
-							'<td data-user="'+p.user+'">'+Formatter.baseUsername(p.user)+
-							'<td data-perm="'+p.perm+'">'+p.perm+
-							'<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-						query('tbody', self.currentUsers)[0]
-					);
-				})
-
-				// event for deleting users
-				self.reinitDeleteEvents();
-
-				self.progressEle.innerHTML = '';
+			var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
+			var cb = new CheckBox({
+				name: "checkBox",
+				value: "isPublic",
+				checked: isPublic,
+				onChange: function(e){
+					var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
+					Deferred.when(prom, function(res){
+					}, function(e){
+						alert('oh no, "Public" permission could not be set.')
+					})
+				}
 			})
+			cb.placeAt(checkBox);
+			checkBox.appendChild(domConstruct.create('label', {
+				'for': 'publicCB',
+				'innerHTML': " Publicly Readable"
+			}))
+
+			domConstruct.place(checkBox, form, 'first');
+			domConstruct.place(
+				'<h4 style="margin-bottom: 5px;">'+
+					'Share with Everybody'+
+				'</h4>',
+			form, 'first');
+
+			// user perms
+			perms.forEach(function(p){
+				var user = p[0],
+					perm = p[1]
+
+				// server sometimes returns 'none' permissions, so ignore them.
+				if(perm == 'n' || user == 'global_permission') return;
+
+				self.addUser(user, perm)
+
+				// adding rows of user, perm selector, and trash button
+				var permSelector = self.permSelector(user, perm)
+				var row = domConstruct.toDom(
+					'<tr><td data-user="'+user+'">'+Formatter.baseUsername(user)+'</td></tr>'
+				);
+
+				var td = domConstruct.toDom('<td>');
+				domConstruct.place(permSelector.domNode, td)
+				domConstruct.place(td, row)
+				domConstruct.place(domConstruct.toDom(
+					'<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
+				, row)
+				domConstruct.place(row, query('tbody', self.currentUsers)[0]);
+			})
+
+			// event for deleting users
+			self.reinitDeleteEvents();
+
+			self.progressEle.innerHTML = '';
 		},
 
 		reinitDeleteEvents: function(){
@@ -452,7 +458,7 @@ define([
 				self.rmUser(userId);
 
 				// allow save
-				self.dialog.okButton.set('disabled', false)
+				self.dialog.okButton.set('disabled', false);
 			})
 		}
 	});
