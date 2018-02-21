@@ -15071,9 +15071,10 @@ i.home_dlp {
 .patric .dlp p {
   margin: 0 0 17px 0;
 }
-.patric .dlp ul {
-  padding: 0 0 0 10px;
-  margin: 0 0 17px 0;
+.patric .dlp ul,
+.patric .dlp dl {
+  padding: 0 0 0 5px;
+  margin: 0 0 10px 0;
 }
 .patric .dlp a {
   color: #09456f;
@@ -15453,14 +15454,12 @@ i.home_dlp {
 	font-weight: bold;
 }
 #dlp-features-data li {
-	margin-left: 10px;
-	padding-left: 0;
 	list-style-type: circle;
 }
 #dlp-features-data .data-box  {
   float: left;
   width: 173px;
-  height: 278px;
+  height: 298px;
   margin: 0 5px;
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
@@ -15475,6 +15474,16 @@ i.home_dlp {
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
   padding: 20px;
+}
+#dlp-sp-features-data h4 {
+	font-weight: bold;
+}
+#dlp-sp-features-data p {
+  margin: 0 0 5px 10px;
+}
+#dlp-sp-features-data dd {
+  margin-left: 10px;
+  display: inline-block;
 }
 #dlp-proteinfamilies-dist-genera-header {
   margin: 0;
@@ -15922,8 +15931,12 @@ iframe  {
     padding: 0;
     overflow: hidden;
 }
-.claro .dijitTabPaneWrapper {
+.claro {
     overflow: auto;
+}
+.dijitTabPaneWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .layer {
     width: 925px;
