@@ -110,7 +110,6 @@ define([
         }
 
         var _self = this;
-        console.log(this.state.toId);
         // console.warn(this.state, this.state.genome_ids, !this.state.genome_ids);
         if(!this.state){
           // console.log("No Genome IDS, use empty data set for initial store");

@@ -66,7 +66,6 @@ define([
           this.rightColumnCount.innerHTML = (val.length || "0") + ((val && val.length > 1) ? " IDs" : " ID");
           this.rightList.set('value', val.join('\n'));
         });
-
       },
 
       validate: function(){
@@ -84,6 +83,8 @@ define([
   },
   reset: function(){
     this.leftList.set('value', '');
+    this.leftTypeSelect.set('value', 'patric_id');
+    this.rightTypeSelect.set('value', 'patric_id');
   },
 
   onChange: function(){
