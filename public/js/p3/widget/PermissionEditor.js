@@ -323,7 +323,7 @@ define([
 				var newRow = domConstruct.place(row, query('tbody', self.currentUsers)[0]);
 
 				// event for deleting users
-				self.reinitDeleteEvents(newRow);
+				self.addDeleteEvent(newRow);
 			})
 
 

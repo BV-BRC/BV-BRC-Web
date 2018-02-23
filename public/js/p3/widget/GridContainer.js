@@ -1228,7 +1228,6 @@ define([
 			var allPermissions = {}
 
 			selection.forEach(function(sel){
-				console.log('selection iteration', sel)
 				var id = sel.genome_id;
 
 				var readList = sel.user_read,
