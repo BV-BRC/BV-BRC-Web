@@ -4,16 +4,10 @@ define([
 	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
-<<<<<<< HEAD
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select",
 	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip",
 	"dijit/form/TextBox", "./WorkspaceObjectSelector", "./PermissionEditor",
 
-=======
-	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request", "dijit/form/Select", "dijit/form/CheckBox",
-	"./ContainerActionBar", "./GroupExplore", "./PerspectiveToolTip", "../widget/UserSelector",
-	"dijit/form/Button", "./formatter", "dijit/form/TextBox", "./WorkspaceObjectSelector",
->>>>>>> master
 	"dojo/NodeList-traverse"
 ], function(
 	declare, BorderContainer, on, query,
