@@ -1,0 +1,417 @@
+<!doctype html>
+<html>
+
+<head lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Argonne Homepage Prototype</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/styles.min.css">
+  <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+</head>
+
+<body id="homepage">
+  <div class="homepage-wrapper">
+    <div class="nav-wrapper">
+        <div class="container">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-light">
+    <a class="navbar-brand" href="#">
+      <img src="./img/PATRIC-logo.png" alt="PATRIC Logo" style="height: 16px">
+      <span class="logo-text">PATRIC</span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+      aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Organisms
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Data
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Workspaces
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Services
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Help
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+      </ul>
+      <a class="btn btn-primary button-yellow nav-button">Register</a>
+      <a class="btn btn-primary button-yellow nav-button">Login</a>
+    </div>
+  </nav>
+          </div>
+    </div>
+
+
+    <!-- Homepage Content + Sidebar Container -->
+    <div class="container">
+      <div class="row">
+
+        <div class="col-md-8">
+          <!-- Homepage Content -->
+          <div class="homepage-content">
+
+            <div class="browse-search">
+              <p>PATRIC is Bacterial Bioinformatics Resource Center, providing integrated data and analysis tools to supportbiomedical
+                research.
+              </p>
+
+              <div class="row">
+                <div class="col-md-2">
+                  <h3>BROWSE</h3>
+                </div>
+                <div class="col-md-3">
+                  <a href="#" class="btn btn-primary button-green">ALL BACTERIA</a>
+                </div>
+                <div class="col-md-3">
+                  <a href="#" class="btn btn-primary button-green">ALL ARCHAEA</a>
+                </div>
+                <div class="col-md-4">
+                  <a href="#" class="btn btn-primary button-green">EUKARYOTIC HOSTS</a>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-2">
+                  <h3>SEARCH</h3>
+                </div>
+                <div class="col-md-10">
+                  <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">All Data Types</span>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Find a gene, genome, microarray, etc">
+                    <div class="input-group-append">
+                      <span class="input-group-text">
+                        <span class="fas fa-search"></span>
+                        <span class="fas fa-caret-down"></span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="analyze-data">
+              <div class="row">
+                <div class="col-md-12">
+                  <h2>ANALYZE DATA IN PATRIC</h2>
+                  <p>At PATRIC, you can upload your private data in a workspace, analyze it using high-throughput services,
+                    and compare it with other public databases using visual analytics tools. Please
+                    <a href="#">Register</a> or
+                    <a href="#">Login</a> to get started.</p>
+                </div>
+                <div class="col-md-4">
+                  <h3>UPLOAD</h3>
+                  <ul class="list-unstyled">
+                    <li>
+                      <a href="#">Upload Data</a>
+                    </li>
+                    <li>
+                      <a href="#">Manage Workspace</a>
+                    </li>
+                    <li>
+                      <a href="#">Share or Publish</a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-md-4">
+                  <h3>ANALYZE</h3>
+                  <ul class="list-unstyled">
+                    <li>
+                      <a href="#">Genome Assembly</a>
+                    </li>
+                    <li>
+                      <a href="#">Genome Annotation</a>
+                    </li>
+                    <li>
+                      <a href="#">RNA-Seq Analysis</a>
+                    </li>
+                    <li>
+                      <a href="#">Metagenome Binning</a>
+                    </li>
+                    <li>
+                      <a href="#">see more...</a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-md-4">
+                  <h3>COMPARE</h3>
+                  <ul class="list-unstyled">
+                    <li>
+                      <a href="#">BLAST</a>
+                    </li>
+                    <li>
+                      <a href="#">Protein Families</a>
+                    </li>
+                    <li>
+                      <a href="#">Proteome Comparison</a>
+                    </li>
+                    <li>
+                      <a href="#">Metabolic Pathways</a>
+                    </li>
+                    <li>
+                      <a href="#">see more...</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="tut-ug-buttons">
+              <div class="row">
+                <div class="col-md-12">
+                  <a href="#" class="btn btn-primary button-blue">TUTORIALS</a>
+                  <a href="#" class="btn btn-primary button-blue">USER GUIDES</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="omics-my-data">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="omics">
+                    <h3>OMICS DATA</h3>
+                    <p>PATRIC provides data and analysis tools for multiple omics data types</p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <ul class="list-unstyled">
+                          <li>
+                            <a href="#">Genomics</a>
+                          </li>
+                          <li>
+                            <a href="#">Genomic Features</a>
+                          </li>
+                          <li>
+                            <a href="#">Protein Families</a>
+                          </li>
+                          <li>
+                            <a href="#">Metabolic Pathways</a>
+                          </li>
+                        </ul>
+                      </div>
+                      <div class="col-md-6">
+                        <ul class="list-unstyled">
+                          <li>
+                            <a href="#">Antibiotics</a>
+                          </li>
+                          <li>
+                            <a href="#">AMR Data</a>
+                          </li>
+                          <li>
+                            <a href="#">Transcriptomes</a>
+                          </li>
+                          <li>
+                            <a href="#">Interactions</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="my-data">
+                    <h3>MY DATA</h3>
+                    <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
+
+                    <a href="#" class="btn btn-primary button-orange">LOGIN</a>
+                    <span>or</span>
+                    <a href="#" class="btn btn-primary button-gray">REGISTER</a>
+
+                    <ul class="list-unstyled list-inline">
+                      <li class="list-inline-item">
+                        <a href="#" style="text-decoration: none;">WORKSHOPS</a>
+                      </li>
+                      <li class="list-inline-item">
+                        <a href="#" style="text-decoration: none;">TOOLS</a>
+                      </li>
+                      <li class="list-inline-item">
+                        <a href="#" style="text-decoration: none;">TUTORIALS</a>
+                      </li>
+                      <li class="list-inline-item">
+                        <a href="#" style="text-decoration: none;">CITE</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="news">
+              <div class="news-heading">
+                <h3>NEWS</h3>
+              </div>
+              <div class="row">
+
+                <div class="col-md-6">
+                  <div class="news-article">
+                    <p class="news-date">
+                      11/29/2017
+                    </p>
+                    <p class="news-title">
+                      PATRIC November 2017 Data and Website Release
+                    </p>
+                    <p class="news-entry">
+                      The PATRIC November 2017 Release Features over 20,000 new genomes, as well as new functionality and data Including a production
+                      release of the Command Line Interface (CLI), FTP-based bulk upload capability, enhancements to the
+                      Phylogenetic Tree Building Service, updated Tutorials, and other enhancements.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="news-article">
+                    <p class="news-date">
+                      11/21/2017
+                    </p>
+                    <p class="news-title">
+                      PATRIC Webinar - Phylogenetic Tree Builder, November 30, 2017, 3:00pm EST
+                    </p>
+                    <p class="news-entry">
+                      PATRIC now provides a new service that builds phylogenetic trees. The trees, which can include both private and public data,
+                      are built using well-established methods for generating whole-genome phylogenies from amino acid sequences.
+                      On November 30th at 3pm EST we will provide a webinar demonstrates this service. Please email rwattam@vt.edu
+                      if you plan to attend so that we will know approximately how many participants to expect.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <!-- Homepage Sidebar -->
+          <div class="homepage-sidebar">
+            <div class="announcements">
+              <h3>ANNOUNCEMENTS</h3>
+              <p class="font-weight-bold">PATRIC Command Line Interface</p>
+              <p>Run PATRIC services, including Genome Assembly and Annotation; access and manage PATRIC workspaces; access
+                and manipulate data retrieved from the PATRIC databases.
+              </p>
+              <img src="./img/announcement-img.png" alt="Command Line Interface">
+              <a href="#" style="text-decoration: none; display: block;" class="text-right">VIEW ALL</a>
+            </div>
+
+            <div class="twitter-feed">
+              <h3>TWEETS by
+                <a href="#">@PATRICBRC</a>
+              </h3>
+              <img src="./img/PATRIC-twitter-tweet.png" alt="PATRIC Tweet" style="width: 325px;">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3">
+            <h4>PATRIC</h4>
+            <address>
+              University of Chicago
+              <br> 5801 South Ellis Avenue
+              <br> Chicago, IL 60637-5418
+              <br>
+            </address>
+          </div>
+          <div class="col-md-3">
+            <h4>How to Cite PATRIC</h4>
+            <p>If you use PATRIC web resources to assist in research publications or proposals please cite as:</p>
+            <a href="#">How to cite PATRIC</a>
+          </div>
+          <div class="col-md-3">
+            <h4>Funding Statement</h4>
+            <p>This project has been funded in whole or in part with Federal funds from the National Institute of Allergy and
+              Infectious Diseases, National Institutes of Health, Department of Health and Human Services, under Contract
+              No. HHSN272201400027C, awarded to RL Stevens</p>
+          </div>
+          <div class="col-md-3">
+            <h4>Follow Us</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li>
+                    <a href="#">Twitter</a>
+                  </li>
+                  <li>
+                    <a href="#">Facebook</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li>
+                    <a href="#">RSS</a>
+                  </li>
+                  <li>
+                    <a href="#">YouTube</a>
+                  </li>
+                  <li>
+                    <a href="#">Share This</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+
+</html>
