@@ -10,6 +10,7 @@ define([
 
 	var	custom_colors = ["blue", "green", "orange", "pink", "red", "purple"];
 	var	user_colors = ["#1E90FF", "#32CD32", "#FF6347", "#FF69B4", "#DC143C", "#8A2BE2"];
+	var section_gap = 0.3;
 	
 	return declare([BorderContainer], {
 		gutters: true,
@@ -223,7 +224,7 @@ define([
 					trackWidth: 0.1,
 					//fill: "#eeeeee",
 					stroke: null,
-					gap: 1,
+					gap: section_gap,
 					background: {fill: null, stroke: null}
 				},
 				data: refseqs
@@ -237,7 +238,7 @@ define([
 					trackWidth: 0.03,
 					fill: "#000F7D",
 					stroke: null,
-					gap: 1,
+					gap: section_gap,
 					background: {fill: null, stroke: null},
 					formatPopupContent: function(item){
 						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
@@ -333,7 +334,7 @@ define([
 					min: 0,
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: 1,
+					gap: section_gap,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
@@ -369,7 +370,7 @@ define([
 					scoreProperty: "skew",
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: 1,
+					gap: section_gap,
 					background: {fill: "#F3CDA0", stroke: null}
 				}
 			}, "outer");
