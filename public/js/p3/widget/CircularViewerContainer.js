@@ -181,15 +181,14 @@ define([
 					xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
 						data: query,
 						headers: {
-							accept: "application/solr+json",
+							accept: "application/json",
 							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 							'X-Requested-With': null,
 							'Authorization': (window.App.authorizationToken || "")
 						},
 						handleAs: "json"					
-					}).then(lang.hitch(this, function(res){
-						// console.log(" features:", res);
-						var refseqs = res.response.docs;
+					}).then(lang.hitch(this, function(refseqs){
+						// console.log(" features:", refseqs);
 						
 						if (refseqs.length == 0) {
 							track.set('loading', false);
@@ -252,12 +251,12 @@ define([
 			//this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS))", null, "blue", null);
 			this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null);
 			this.addFeatureTrack("CDS - REV", "CDS reverse strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null);
-			this.addSpGeneTrack("AMR Genes", "AMR Genes", this.state.genome_ids[0], "&in(property,(%22Antibiotic%20Resistance%22))", null, "red", null);
-			this.addSpGeneTrack("VF Genes", "VF Genes", this.state.genome_ids[0], "&in(property,(%22Virulence%20Factor%22))", null, "orange", null);
-			this.addSpGeneTrack("Drug Targets", "Drug Targets", this.state.genome_ids[0], "&in(property,(%22Drug%20Target%22))", null, "black", null);
-			this.addSpGeneTrack("Transporters", "Transporters", this.state.genome_ids[0], "&in(property,(%22Transporter%22))", null, "blue", null);
-			this.addSpGeneTrack("Human Homologs", "Human Homologs", this.state.genome_ids[0], "&in(property,(%22Human%20Homolog%22))", null, "lime", null);
-			this.addSpGeneTrack("Essential Genes", "Essential Genes", this.state.genome_ids[0], "&in(property,(%22Essential%20Gene%22))", null, "navy", null);
+			this.addSpGeneTrack("AMR Genes", "AMR Genes", this.state.genome_ids[0], "&eq(property,%22Antibiotic%20Resistance%22)", null, "red", null);
+			this.addSpGeneTrack("VF Genes", "VF Genes", this.state.genome_ids[0], "&eq(property,%22Virulence%20Factor%22)", null, "orange", null);
+			this.addSpGeneTrack("Drug Targets", "Drug Targets", this.state.genome_ids[0], "&eq(property,%22Drug%20Target%22)", null, "black", null);
+			this.addSpGeneTrack("Transporters", "Transporters", this.state.genome_ids[0], "&eq(property,%22Transporter%22)", null, "blue", null);
+			this.addSpGeneTrack("Human Homologs", "Human Homologs", this.state.genome_ids[0], "&eq(property,%22Human%20Homolog%22)", null, "lime", null);
+			this.addSpGeneTrack("Essential Genes", "Essential Genes", this.state.genome_ids[0], "&eq(property,%22Essential%20Gene%22)", null, "navy", null);
 
 			var fillFn = function(item){
 				switch(item.feature_type){
