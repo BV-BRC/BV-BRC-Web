@@ -10,6 +10,7 @@ define([
 
 	var	custom_colors = ["blue", "green", "orange", "pink", "red", "purple"];
 	var	user_colors = ["#1E90FF", "#32CD32", "#FF6347", "#FF69B4", "#DC143C", "#8A2BE2"];
+	var section_gap = 0.3;
 	
 	return declare([BorderContainer], {
 		gutters: true,
@@ -123,6 +124,93 @@ define([
 			}));
 		},
 
+		addSpGeneTrack: function(title, title_tooltip, gid, filter, strand, fill, stroke, background){
+			var fields = ["feature_id", "feature_type", "sequence_id", "segments", "gi", "na_length", "pos_group", "strand", "public", "aa_length", "patric_id", "owner",
+				"location", "protein_id", "refseq_locus_tag", "taxon_id", "accession", "end", "genome_name", "product", "genome_id", "annotation", "start"];
+				
+			// var sp_fields = ["feature_id","patric_id", "evidence", "property", "source"];
+			// var sp_query = "?eq(genome_id," + this.state.genome_ids[0] + ")&in(property,(%22Antibiotic%20Resistance%22,%22Virulence%20Factor%22,%22Transporter%22,%22Essential%20Gene%22))&sort(+patric_id,+property)" + "&select(" + sp_fields.join(",") + ")&limit(25000)";
+			// var sp_query = "?eq(genome_id," + this.state.genome_ids[0] + ")" + filter + "&sort(+patric_id,+property)" + "&select(" + sp_fields.join(",") + ")&limit(25000)";
+			var sp_query = "?eq(genome_id," + this.state.genome_ids[0] + ")" + filter + "&select(feature_id)" + "&limit(25000)";			
+			// console.log("sp_query: ", sp_query);
+
+			var track = this.viewer.addTrack({
+				type: SectionTrack,
+				options: {
+					title: title,
+					title_tooltip: title_tooltip,
+					loadingText: "LOADING " + title.toUpperCase(),
+					loading: true,
+					trackWidth: 0.05,
+					fill: fill,
+					stroke: stroke,
+					gap: 0,
+					background: background,
+					formatPopupContent: function(item){
+						return DataItemFormatter(item, "feature_data", {mini: true, linkTitle: true})
+					},
+					formatDialogContent: function(item){
+						return DataItemFormatter(item, "feature_data", {linkTitle: true})
+					}
+				}
+			})
+
+			return xhr.get(PathJoin(this.apiServiceUrl, "sp_gene", sp_query), {
+				headers: {
+					accept: "application/json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(spgenes){
+				// console.log(" spgenes:", spgenes);				
+				if (spgenes.length == 0) {
+					track.set('loading', false);
+	                Topic.publish("/Notification", {message: "No data found.", type: "error"});                                          	
+					return spgenes;
+				} else {
+					var feature_ids = [];
+					
+					for (var i=0; i < spgenes.length; i++) {
+						feature_ids.push(spgenes[i].feature_id);
+					}
+					
+					var query = "in(feature_id,(" + feature_ids.join(",") + "))&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
+					// console.log(" query:",  PathJoin(this.apiServiceUrl, "genome_feature", query));								 
+					
+					xhr.post(PathJoin(this.apiServiceUrl, "genome_feature/"), {
+						data: query,
+						headers: {
+							accept: "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"					
+					}).then(lang.hitch(this, function(refseqs){
+						// console.log(" features:", refseqs);
+						
+						if (refseqs.length == 0) {
+							track.set('loading', false);
+							Topic.publish("/Notification", {message: "No data found.", type: "error"});                                          
+					
+							return refseqs;
+						}
+						// console.log(" refseqs:", refseqs); 										
+						refseqs = refseqs.map(function(r){
+							r.name = r.accession;
+							r.length = r.end - r.start;
+							// console.log(" refseqs mapped:", r);
+							return r;
+						});
+						
+						track.set("data", refseqs);
+
+					}));				
+				}
+			}));								
+		},		
+
 		onSetReferenceSequences: function(attr, oldVal, refseqs){
 			// console.log("RefSeqs: ", refseqs);
 
@@ -134,7 +222,7 @@ define([
 					trackWidth: 0.1,
 					//fill: "#eeeeee",
 					stroke: null,
-					gap: 1,
+					gap: section_gap,
 					background: {fill: null, stroke: null}
 				},
 				data: refseqs
@@ -148,7 +236,7 @@ define([
 					trackWidth: 0.03,
 					fill: "#000F7D",
 					stroke: null,
-					gap: 1,
+					gap: section_gap,
 					background: {fill: null, stroke: null},
 					formatPopupContent: function(item){
 						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
@@ -161,8 +249,14 @@ define([
 			}, "outer", true);
 
 			//this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS))", null, "blue", null);
-			this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
-			this.addFeatureTrack("CDS - REV", "CDS reverse strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
+			this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null);
+			this.addFeatureTrack("CDS - REV", "CDS reverse strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null);
+			this.addSpGeneTrack("AMR Genes", "AMR Genes", this.state.genome_ids[0], "&eq(property,%22Antibiotic%20Resistance%22)", null, "red", null);
+			this.addSpGeneTrack("VF Genes", "VF Genes", this.state.genome_ids[0], "&eq(property,%22Virulence%20Factor%22)", null, "orange", null);
+			this.addSpGeneTrack("Drug Targets", "Drug Targets", this.state.genome_ids[0], "&eq(property,%22Drug%20Target%22)", null, "black", null);
+			this.addSpGeneTrack("Transporters", "Transporters", this.state.genome_ids[0], "&eq(property,%22Transporter%22)", null, "blue", null);
+			this.addSpGeneTrack("Human Homologs", "Human Homologs", this.state.genome_ids[0], "&eq(property,%22Human%20Homolog%22)", null, "lime", null);
+			this.addSpGeneTrack("Essential Genes", "Essential Genes", this.state.genome_ids[0], "&eq(property,%22Essential%20Gene%22)", null, "navy", null);
 
 			var fillFn = function(item){
 				switch(item.feature_type){
@@ -238,7 +332,7 @@ define([
 					min: 0,
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: 1,
+					gap: section_gap,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
@@ -274,7 +368,7 @@ define([
 					scoreProperty: "skew",
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: 1,
+					gap: section_gap,
 					background: {fill: "#F3CDA0", stroke: null}
 				}
 			}, "outer");
