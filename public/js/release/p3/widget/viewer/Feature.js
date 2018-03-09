@@ -240,6 +240,7 @@ define("p3/widget/viewer/Feature", [
 
 			this.compareRegionViewer = new CompareRegionContainer({
 				title: "Compare Region Viewer",
+				style: "overflow-y:auto",
 				id: this.viewer.id + "_compareRegionViewer"
 			});
 
