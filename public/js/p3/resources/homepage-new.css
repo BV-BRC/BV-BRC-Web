@@ -337,39 +337,42 @@ template {
 
 html,
 body {
-  color: #666666 !important;
-  font-family: 'Helvetica Neue', sans-serif;
+  color: #666666;
+  font-family: "Helvetica Neue", sans-serif !important;
 }
 
-h2 {
+#patric-homepage-wrapper h2 {
   font-size: 24pt;
   font-weight: 500;
+  color: #666666;
 }
 
-h3 {
+#patric-homepage-wrapper h3 {
   font-size: 18pt;
   font-weight: 500;
+  color: #666666;
 }
 
-p {
+#patric-homepage-wrapper p {
   font-size: 14pt;
   font-weight: 200;
+  color: #666666;
 }
 
-ul {
+#patric-homepage-wrapper ul {
   list-style: none;
   padding: 0;
 }
 
-a {
+#patric-homepage-wrapper a {
   color: #3E5775;
   font-weight: 200;
-  text-decoration: underline;
 }
 
 .btn {
   display: inline-block;
-  font-weight: 400;
+  font-weight: 400 !important;
+  font-size: 12pt !important;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -390,7 +393,7 @@ a {
 
 .button-green {
   background: #C4DE9B;
-  color: #666666;
+  color: #666666 !important;
   text-decoration: none;
   border: none;
   border-bottom: 2px solid #93A971;
@@ -401,11 +404,12 @@ a {
   border-bottom: 2px solid #93A971;
   color: #666666;
   opacity: 0.9;
+  text-decoration: none;
 }
 
 .button-blue {
   background: #5375B9;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   text-decoration: none;
   border: none;
   border-bottom: 2px solid #5375B9;
@@ -416,11 +420,12 @@ a {
 .button-blue:hover, .button-blue:focus {
   background: #5375B9;
   opacity: 0.9;
+  text-decoration: none;
 }
 
 .button-orange {
   background: #CE8836;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   text-decoration: none;
   border: none;
   padding-left: 20px;
@@ -431,11 +436,12 @@ a {
   background: #CE8836;
   color: #FFFFFF;
   opacity: 0.9;
+  text-decoration: none;
 }
 
 .button-gray {
   background: #A0A0A0;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   text-decoration: none;
   border: none;
   padding-left: 20px;
@@ -446,30 +452,7 @@ a {
   background: #A0A0A0;
   color: #FFFFFF;
   opacity: 0.9;
-}
-
-.nav {
-  background: #2B5775;
-  color: #FFFFFF;
-  text-align: center;
-}
-
-.nav p {
-  margin: 0;
-  padding: 0;
-  padding: 10px 0px;
-}
-
-.footer {
-  background: #2B5775;
-  color: #FFFFFF;
-  text-align: center;
-}
-
-.footer p {
-  margin: 0;
-  padding: 0;
-  padding: 10px 0px;
+  text-decoration: none;
 }
 
 #patric-homepage-wrapper {
@@ -483,11 +466,11 @@ a {
 
 .browse-search {
   background: #F4FFE6;
-  border-top: 4px solid #A0A0A0;
+  border-top: 4px solid #E3E3E3;
   border-bottom: 4px solid #93A971;
   margin-top: 20px;
   margin-bottom: 20px;
-  padding: 20px;
+  padding: 15px 20px;
   height: 225px;
 }
 
@@ -627,7 +610,7 @@ a {
 
 .analyze-data {
   background: #FFFFFF;
-  padding: 20px;
+  padding: 15px 20px;
   height: 400px;
 }
 
@@ -636,24 +619,31 @@ a {
 }
 
 .analyze-data h3 {
-  padding-left: 10px;
   margin-bottom: -5px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .analyze-data p {
   margin: 0;
   margin-top: -10px;
+  line-height: 1.2em;
+  font-size: 12pt;
 }
 
 .analyze-data li {
-  padding-left: 10px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
 
+.analyze-data li a {
+  font-size: 12pt;
+  text-decoration: underline;
+  color: #3E5775;
+}
+
 .tut-ug-buttons {
   background: #E3E3E3;
-  border-top: 1px solid #A0A0A0;
   border-bottom: 4px solid #A0A0A0;
   margin-bottom: 20px;
   padding: 10px 0px;
@@ -677,6 +667,21 @@ a {
 .omics-my-data .omics h3,
 .omics-my-data .omics p {
   margin-top: -5px;
+  line-height: 1.2em;
+}
+
+.omics-my-data .omics p {
+  padding-bottom: 20px;
+}
+
+.omics-my-data .omics li {
+  padding: 5px 0px;
+}
+
+.omics-my-data .omics li a {
+  font-size: 12pt;
+  color: #3E5775;
+  text-decoration: underline;
 }
 
 .omics-my-data .my-data {
@@ -692,16 +697,18 @@ a {
 }
 
 .omics-my-data .my-data p {
-  padding-bottom: 15px;
+  padding-bottom: 25px;
+  line-height: 1.2em;
 }
 
 .omics-my-data .my-data span {
   padding: 0 20px;
+  font-size: 12pt;
 }
 
 .omics-my-data .my-data-links {
   background: #E3E3E3;
-  margin-top: -69px;
+  margin-top: -54px;
 }
 
 .omics-my-data .my-data-links ul {
@@ -718,11 +725,15 @@ a {
   padding: 15px 10px;
 }
 
+.omics-my-data .my-data-links ul li {
+  padding: 15px 2px;
+}
+
 .omics-my-data .my-data-links ul a {
   color: #3E5775;
   text-decoration: none;
   font-size: 12pt;
-  font-weight: 300;
+  font-weight: 400 !important;
 }
 
 .omics-my-data .my-data-links ul a:hover, .omics-my-data .my-data-links ul a:focus {
@@ -733,13 +744,18 @@ a {
   background: #FFFFFF;
   margin-top: 20px;
   margin-bottom: 20px;
-  border-top: 4px solid #A0A0A0;
+  border-top: 4px solid #E3E3E3;
+  border-bottom: 4px solid #A0A0A0;
   padding: 10px;
   height: 450px;
 }
 
 .announcements h3 {
   margin-top: 5px;
+}
+
+.twitter-feed {
+  border-bottom: 4px solid #A0A0A0;
 }
 
 /*!
