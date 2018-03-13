@@ -12,10 +12,10 @@
 	</head>
 	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
 		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
-			<% include p3header %>
+			<% include p3header-new %>
 
 			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
-				<% include home%>
+				<% include homepage-new%>
 			</div>
 
 			<% if (request.isAuthenticated && request.isAuthenticated()) { %>
