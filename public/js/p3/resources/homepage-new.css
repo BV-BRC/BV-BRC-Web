@@ -455,6 +455,19 @@ body {
   text-decoration: none;
 }
 
+#patric-homepage-wrapper .global-search {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  margin-top: -6px;
+}
+
+#patric-homepage-wrapper .global-search .GlobalSearch {
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+}
+
 #patric-homepage-wrapper {
   background: #F2F2F2;
 }
@@ -547,8 +560,6 @@ body {
   text-align: center;
   white-space: nowrap;
   background-color: #e9ecef;
-  border: 1px solid #ced4da;
-  border-radius: .25rem;
 }
 
 .browse-search .input-search-drop {
