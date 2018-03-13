@@ -1,6 +1,6 @@
 <% var flows = [
-    {name: "PATRIC/RAST Workshop", secondary: "Argonne, IL May 7 - 9", rel: "carousel_workshop", background: "#34698e"}
-    , {name: "PATRIC Webinar", secondary: "Recorded Webinars", rel: "carousel_webinar", background: "#34698e"}
+    {name: "PATRIC Webinar", secondary: "Metagenomic Binning Service", rel: "carousel_webinar", background: "#34698e"}
+    , {name: "PATRIC/RAST Workshop", secondary: "Argonne, IL May 7 - 9", rel: "carousel_workshop", background: "#34698e"}
     , {name: "PATRIC CLI", secondary: "Command Line Interface", rel: "carousel_cli", background: "#34698e"}
     , {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     // , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
@@ -20,7 +20,28 @@
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
 
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop" class="CarouselContent showOnLoad dijitVisible">
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_webinar" class="CarouselContent showOnLoad dijitVisible">
+                    <div class="wrapper">
+                        <img class="right"
+                             src="https://docs.patricbrc.org/_images/webinar_metagenomic_binning.png" alt="PATRIC Webinar">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Webinar</h1>
+                        <h2 class="xl highlight-f upper far">Metagenomic Binning Service</h2>
+                        <p>PATRIC provides a new Metagenomic Binning Service that accepts either reads or contigs, and attempts to "bin"
+                            the data into a set of genomes. It can be used to reconstruct bacterial and archael genomes from environmental
+                            samples. The new service will produce reports that estimate the quality of the reconstructed genome for each bin,
+                            as well as potentially problematic annotations for each of the derived genomes.
+                        </p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="https://docs.patricbrc.org/news/2018/20180213-metagenomic-binning-webinar.html"
+                              title="PATRIC Webinar Metagenomic Binning Service"
+                              target="_blank" rel="noopener">More Information</a></p>
+                        <br><br>
+                    </div>
+                </div>
+
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop" class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
                              src="/patric/images/carousel/workshop_ANL_Aug_2017.jpg" alt="PATRIC Workshop">
@@ -35,31 +56,6 @@
                               href="https://docs.patricbrc.org/news/2018/20180122-patric-workshop-at-argonne-national-lab.html"
                               title="PATRIC-RAST Workshop at Argonne National Lab"
                               target="_blank" rel="noopener">More Information</a></p>
-                        <br><br>
-                    </div>
-                </div>
-
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_webinar" class="CarouselContent showOnLoad dijitHidden">
-                    <div class="wrapper">
-                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Webinar</h1>
-                        <h2 class="xl highlight-f upper far">Recorded Webinars</h2>
-                        <br>
-                        <p><strong><a href="https://docs.patricbrc.org/webinar/metagenomic_binning.html" target="_blank" rel="noopener">Metagenomic Binning Service</a></strong>
-                            accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples
-                        </p>
-                        <br>
-                        <p><strong><a href="https://docs.patricbrc.org/webinar/proteome_comparison.html" target="_blank" rel="noopener">Proteome Comparison Service</a></strong>
-                            compares annotated proteins by bi-directional BLASTP analysis.
-                        </p>
-                        <br>
-                        <p><strong><a href="https://docs.patricbrc.org/webinar/phylogenetic_tree_builder.html" target="_blank" rel="noopener">Phylogenetic Tree Builder</a></strong>
-                            generates whole-genome phylogenies from amino acid sequences.
-                        </p>
-                        <br>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://docs.patricbrc.org/webinar/"
-                              title="PATRIC Webinars"
-                              target="_blank" rel="noopener">Upcoming Webinars</a></p>
                         <br><br>
                     </div>
                 </div>
