@@ -17,11 +17,11 @@ define([
 		pageTitle: "Comprehensive Genome Analysis Service",
 		templateString: Template,
 		applicationName: "ComprehensiveGenomeAnalysis",
-		applicationHelp: "user_guides/services/genome_assembly_service.html",
-		tutorialLink: "tutorial/genome_assembly/assembly.html",
+		applicationHelp: "user_guide/genome_data_and_tools/Comprehensive_genome_analysis_service.html",
+		tutorialLink: "tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html",
 		libraryData: null,
 		defaultPath: "",
-		startingRows: 5,
+		startingRows: 6,
 		libCreated: 0,
 		srrValidationUrl: "https://www.ebi.ac.uk/ena/data/view/{0}&display=xml",
 		//below are from annotation
@@ -30,11 +30,9 @@ define([
 		code_four: false,
 
 		constructor: function(){
-
 			this.addedLibs = {counter: 0};
 			this.addedPairs = 0;
 			this.pairToAttachPt = ["read1", "read2"];
-			this.paramToAttachPt = ["recipe", "output_path", "output_file", "reference_assembly"];
 			this.singleToAttachPt = ["single_end_libs"];
 			this.libraryStore = new Memory({data: [], idProperty: "_id"});
 			this._autoTaxSet=false;
@@ -69,67 +67,76 @@ define([
 			this._started = true;
 		},
 
-    //TODO
 		getValues: function(){
-			if(typeof String.prototype.startsWith != 'function'){
-				String.prototype.startsWith = function(str){
-					return this.slice(0, str.length) == str;
-				};
-			}
-			var assembly_values = {};
 			var values = this.inherited(arguments);
-			if(values.hasOwnProperty("pipeline") && values["pipeline"]){
-				assembly_values["pipeline"] = values["pipeline"];
-			}
-			if(values.hasOwnProperty("min_contig_len") && values["min_contig_len"]){
-				assembly_values["min_contig_len"] = values["min_contig_len"];
-			}
-			if(values.hasOwnProperty("min_contig_cov") && values["min_contig_cov"]){
-				assembly_values["min_contig_cov"] = values["min_contig_cov"];
-			}
-			var pairedList = this.libraryStore.query({"_type": "paired"});
-			var singleList = this.libraryStore.query({"_type": "single"});
-			var srrAccessionList = this.libraryStore.query({"_type": "srr_accession"});
-			var pairedLibs = [];
-			var singleLibs = [];
-			var srrAccessions = [];
-			this.ingestAttachPoints(this.paramToAttachPt, assembly_values, true);
-
-			this.pairToAttachPt = ["read1", "read2"];
-			this.paramToAttachPt = ["recipe", "output_path", "output_file", "reference_assembly"];
-			this.singleToAttachPt = ["single_end_libs"];
-			pairedLibs = pairedList.map(function(lrec){
-				var rrec = {};
-				Object.keys(lrec).forEach(lang.hitch(this, function(attr){
-					if(!attr.startsWith("_")){
-						rrec[attr] = lrec[attr];
-					}
-				}));
-				return rrec;
+			//inputs that are NOT needed by the backend
+			var not_needed_inputs = ["startWith", "libdat_file1pair", "libdat_file2pair", "libdat_readfile"];
+			not_needed_inputs.forEach(function(key){
+				if(values.hasOwnProperty(key)){
+					delete values[key];
+				}
 			});
-			if(pairedLibs.length){
-				assembly_values["paired_end_libs"] = pairedLibs;
-			}
-			singleLibs = singleList.map(function(lrec){
-				var rrec = {};
-				Object.keys(lrec).forEach(lang.hitch(this, function(attr){
-					if(!attr.startsWith("_")){
-						rrec[attr] = lrec[attr];
-					}
-				}));
-				return rrec;
-			});
-			if(singleLibs.length){
-				assembly_values["single_end_libs"] = singleLibs;
-			}
-			srrAccessions = srrAccessionList.map(function(lrec){
-				return lrec._id;
-			})
-			if(srrAccessions.length){
-				assembly_values["srr_ids"] = srrAccessions;
-			}
-			return assembly_values;
 
+			if(this.startWithRead.checked){ //start from read file
+				//???
+				if(typeof String.prototype.startsWith != 'function'){
+					String.prototype.startsWith = function(str){
+						return this.slice(0, str.length) == str;
+					};
+				}
+
+				var pairedList = this.libraryStore.query({"_type": "paired"});
+				var singleList = this.libraryStore.query({"_type": "single"});
+				var srrAccessionList = this.libraryStore.query({"_type": "srr_accession"});
+				var pairedLibs = [];
+				var singleLibs = [];
+				var srrAccessions = [];
+
+				pairedLibs = pairedList.map(function(lrec){
+					var rrec = {};
+					Object.keys(lrec).forEach(lang.hitch(this, function(attr){
+						if(!attr.startsWith("_")){
+							rrec[attr] = lrec[attr];
+						}
+					}));
+					return rrec;
+				});
+				if(pairedLibs.length){
+					values["paired_end_libs"] = pairedLibs;
+				}
+
+				singleLibs = singleList.map(function(lrec){
+					var rrec = {};
+					Object.keys(lrec).forEach(lang.hitch(this, function(attr){
+						if(!attr.startsWith("_")){
+							rrec[attr] = lrec[attr];
+						}
+					}));
+					return rrec;
+				});
+				if(singleLibs.length){
+					values["single_end_libs"] = singleLibs;
+				}
+
+				srrAccessions = srrAccessionList.map(function(lrec){
+					return lrec._id;
+				})
+				if(srrAccessions.length){
+					values["srr_ids"] = srrAccessions;
+				}
+				delete values["contigs"];       //contigs file is not needed
+				values["input_type"] = 'reads'; //set input_type to be 'reads'
+
+      } // startWithRead
+
+			values["scientific_name"]=this.output_nameWidget.get('displayedValue');
+			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
+			if(this.startWithContigs.checked){  //starting from contigs
+				delete values['recipe'];          //assembly strategy is not needed
+				values["input_type"] = 'contigs'; //set input_type to be 'contigs'
+			}
+
+			return values;
 		},
 
 		ingestAttachPoints: function(input_pts, target, req){
@@ -158,10 +165,6 @@ define([
 				}
 
 				// Assign cur_value to target
-				if(attachname == "paired_platform" || attachname == "single_platform"){
-					alias = "platform";
-				}
-
 				if(attachname == "single_end_libs"){
 					alias = "read";
 				}
@@ -450,83 +453,65 @@ define([
 		},
 
 		onTaxIDChange: function(val){
-            this._autoNameSet=true;
-            var tax_id=this.tax_idWidget.get("item").taxon_id;
-            var sci_name=this.tax_idWidget.get("item").taxon_name;
-            //var tax_obj=this.tax_idWidget.get("item");
-            if(tax_id){
-                var name_promise=this.scientific_nameWidget.store.get(tax_id);
-                name_promise.then(lang.hitch(this, function(tax_obj) {
-                    if(tax_obj){
-                        this.scientific_nameWidget.set('item',tax_obj);
-                        this.scientific_nameWidget.validate();
-			            this.changeCode(this.tax_idWidget.get("item"));
-                    }
-                }));
-                //this.scientific_nameWidget.set('value',sci_name);
-                //this.scientific_nameWidget.set('displayedValue',sci_name);
-                //this.scientific_nameWidget.set("item",tax_obj);
-                //this.scientific_nameWidget.validate();
-
+      this._autoNameSet=true;
+      var tax_id=this.tax_idWidget.get("item").taxon_id;
+      var sci_name=this.tax_idWidget.get("item").taxon_name;
+      //var tax_obj=this.tax_idWidget.get("item");
+      if(tax_id){
+        var name_promise=this.scientific_nameWidget.store.get(tax_id);
+        name_promise.then(lang.hitch(this, function(tax_obj) {
+            if(tax_obj){
+                this.scientific_nameWidget.set('item',tax_obj);
+                this.scientific_nameWidget.validate();
+          this.changeCode(this.tax_idWidget.get("item"));
             }
+        }));
+      }
 			this._autoTaxSet=false;
 		},
 
     updateOutputName: function(){
-        var current_output_name = [];
-        var sci_item = this.scientific_nameWidget.get("item");
-        var label_value = this.myLabelWidget.get("value");
-        if(sci_item && sci_item.lineage_names.length > 0){
-            current_output_name.push(sci_item.lineage_names.slice(-1)[0].replace(/\(|\)|\||\/|\:/g,''));
-        }
-        if(label_value.length >0){
-            current_output_name.push(label_value);
-        }
-        if(current_output_name.length > 0){
-            this.output_nameWidget.set("value", current_output_name.join(" "));
-        }
+      var current_output_name = [];
+      var sci_item = this.scientific_nameWidget.get("item");
+      var label_value = this.myLabelWidget.get("value");
+      if(sci_item && sci_item.lineage_names.length > 0){
+          current_output_name.push(sci_item.lineage_names.slice(-1)[0].replace(/\(|\)|\||\/|\:/g,''));
+      }
+      if(label_value.length >0){
+          current_output_name.push(label_value);
+      }
+      if(current_output_name.length > 0){
+          this.output_nameWidget.set("value", current_output_name.join(" "));
+      }
     },
 
 		onSuggestNameChange: function(val){
-            this._autoTaxSet=true;
-            var tax_id=this.scientific_nameWidget.get("value");
-            if(tax_id){
-                //var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
-                //tax_promise.then(lang.hitch(this, function(tax_obj) {
-                //    if(tax_obj && tax_obj.length){
-                //        this.tax_idWidget.set('item',tax_obj[0]);
-                //    }
-                //}));
-                this.tax_idWidget.set('displayedValue',tax_id);
-                this.tax_idWidget.set('value',tax_id);
-			    this.changeCode(this.scientific_nameWidget.get("item"));
-                this.updateOutputName();
-            }
+      this._autoTaxSet=true;
+      var tax_id=this.scientific_nameWidget.get("value");
+      if(tax_id){
+        this.tax_idWidget.set('displayedValue',tax_id);
+        this.tax_idWidget.set('value',tax_id);
+        this.changeCode(this.scientific_nameWidget.get("item"));
+        this.updateOutputName();
+      }
 			this._autoNameSet=false;
-			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
-				var abbrv=this.scientific_nameWidget.get('displayedValue');
-				abbrv=abbrv.match(/[^\s]+$/);
-				this.output_nameWidget.set('value',abbrv);
-			}*/
 		},
 
 		onStartWithChange: function(){
 			if(this.startWithRead.checked){
 				this.readTable.style.display = 'block';
 				this.assemblyStrategy.style.display = 'block';
-				this.contigsFile.style.display = 'none';
+				this.annotationFileBox.style.display = 'none';
 				this.numlibs.constraints.min = 1;
 				this.contigsFile.required = false;
 			}
 			if(this.startWithContigs.checked){
 				this.readTable.style.display = 'none';
 				this.assemblyStrategy.style.display = 'none';
-				this.contigsFile.style.display = 'block';
+				this.annotationFileBox.style.display = 'block';
 				this.numlibs.constraints.min = 0;
 				this.contigsFile.required = true;
-
 			}
-
     }
 
 	});

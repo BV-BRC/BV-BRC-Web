@@ -12,7 +12,7 @@
               </div>
             </h3>
             <p>The Comprehensive Genome Analysis Service... (TO BE UPDATED) allows single or multiple assemblers to be invoked to compare results.  The service attempts to select the best assembly.
-                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Genome Assembly Service User Guide</a> and
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Comprehensive Genome Analysis Service User Guide</a> and
                 <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
             </p>
         </div>
@@ -24,7 +24,7 @@
             <div id="startWithBox" style="width:400px;" class="appBox appShadow">
                 <div class="headerrow">
                     <label class="appBoxLabel">Start With:</label>
-                    <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                    <div name="start-with" class="infobox iconbox infobutton dialoginfo">
                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                     </div>
                 </div>
@@ -43,12 +43,17 @@
                 <tr>
                     <td>
                         <div id="pairedBox" class="appBox appShadow">
-                            <div class="headerrow">
+                          <div class="headerrow">
+                              <div style="width:85%;display:inline-block;">
+                                  <label class="appBoxLabel">Input File</label>
+                                  <div name="read-input-file" class="infobox iconbox infobutton dialoginfo">
+                                      <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                                  </div>
+                              </div>
+                          </div>
+                            <div class="appRow">
                                 <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel">Paired read library</label>
-                                    <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                    </div>
+                                    <label class="paramlabel">Paired read library</label>
                                 </div>
                                 <div style="width:10%;display:inline-block;">
                                     <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
@@ -67,9 +72,9 @@
                                 </div>
                             </div>
 
-                            <div class="headerrow">
+                            <div class="appRow">
                                 <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel">Single read library</label>
+                                    <label class="paramlabel">Single read library</label>
                                 </div>
                                 <div style="width:10%;display:inline-block;"><i
                                         data-dojo-attach-event="click:onAddSingle"
@@ -77,13 +82,13 @@
                             </div>
                             <div class="appRow">
                                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile"
-                                     data-dojo-attach-point="single_end_libs" style="width:300px" required="false"
+                                     data-dojo-attach-point="single_end_libs" style="width:285px" required="false"
                                      data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
                             </div>
 
-                            <div class="headerrow">
+                            <div class="appRow">
                                 <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel">SRA run accession</label>
+                                    <label class="paramlabel">SRA run accession</label>
                                 </div>
                                 <div style="width:10%;display:inline-block;"><i
                                         data-dojo-attach-event="click:onAddSRR"
@@ -96,11 +101,10 @@
                                     data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
                             </div>
 
-
                         </div>
                     </td>
                     <td>
-                        <div class="appBox appShadow" style="height:186px; width:330px">
+                        <div class="appBox appShadow" style="height:213px; width:330px">
                             <div class="headerrow">
                                 <label class="appBoxLabel">Selected libraries</label>
                                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
@@ -121,6 +125,26 @@
                     </td>
                 </tr>
             </table>
+            <div data-dojo-attach-point="annotationFileBox"
+                style="width:400px; display:none" class="appBox appShadow">
+                  <div class="headerrow">
+                      <div style="width:85%;display:inline-block;">
+                          <label class="appBoxLabel">Input File</label>
+                          <div name="contigs" class="infobox iconbox infobutton dialoginfo">
+                              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                          </div>
+                      </div>
+                  </div>
+                  <div data-dojo-attach-point="contigsFile" class="appRow">
+                      <div class="appRow">
+                          <label class="paramlabel">Contigs</label><br>
+                          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%"
+                               required="false"
+                               data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
+                          </div>
+                      </div>
+                  </div>
+              </div>
               <div id="parameterBox" style="width:400px; " class="appBox appShadow">
                     <div class="headerrow">
                         <div style="width:85%;display:inline-block;">
@@ -143,14 +167,6 @@
                             <option value="plasmid">plasmid</option>
                             <option value="smart">smart</option>
                         </select>
-                    </div>
-                    <div data-dojo-attach-point="contigsFile" style="display: none;" class="appRow">
-                        <div class="appFieldLong">
-                            <label>Contigs</label><br>
-                            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%"
-                                 required="false"
-                                 data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
-                        </div>
                     </div>
 
                     <div class="appRow">
