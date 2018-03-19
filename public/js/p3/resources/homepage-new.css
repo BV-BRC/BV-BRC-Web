@@ -2,6 +2,7 @@
 #patric-homepage-wrapper {
   color: #666666;
   font-family: "Arial", sans-serif !important;
+  min-width: 100%;
 }
 
 #patric-homepage-wrapper h2 {
@@ -17,7 +18,7 @@
 }
 
 #patric-homepage-wrapper p {
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 300;
   color: #666666;
 }
@@ -29,7 +30,7 @@
 
 #patric-homepage-wrapper a {
   color: #3E5775;
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 300;
 }
 
@@ -313,7 +314,7 @@
 }
 
 #patric-homepage-wrapper .analyze-data li a {
-  font-size: 12pt;
+  font-size: 11pt;
   text-decoration: underline;
   color: #3e5775;
 }
@@ -355,7 +356,7 @@
 }
 
 #patric-homepage-wrapper .omics-my-data .omics li a {
-  font-size: 12pt;
+  font-size: 11pt;
   color: #3e5775;
   text-decoration: underline;
 }
@@ -379,7 +380,7 @@
 
 #patric-homepage-wrapper .omics-my-data .my-data span {
   padding: 0 20px;
-  font-size: 12pt;
+  font-size: 11pt;
 }
 
 #patric-homepage-wrapper .omics-my-data .my-data-links {
@@ -407,7 +408,7 @@
 #patric-homepage-wrapper .omics-my-data .my-data-links ul a {
   color: #3E5775;
   text-decoration: none;
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 400 !important;
 }
 
