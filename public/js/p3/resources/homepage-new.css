@@ -231,7 +231,6 @@
 }
 
 #patric-homepage-wrapper .browse-search .input-search-drop {
-  padding: .375rem .75rem;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
@@ -258,7 +257,6 @@
 #patric-homepage-wrapper .browse-search .form-control {
   display: block;
   width: 100%;
-  padding: .375rem .75rem;
   font-size: 1rem;
   line-height: 1.5;
   color: #495057;
@@ -423,7 +421,7 @@
   border-top: 4px solid #e3e3e3;
   border-bottom: 4px solid #a0a0a0;
   padding: 10px;
-  height: 450px;
+  height: 400px;
 }
 
 #patric-homepage-wrapper .announcements h3 {
@@ -431,6 +429,8 @@
 }
 
 #patric-homepage-wrapper .twitter-feed {
+  position: relative;
+  display: block;
   border-bottom: 4px solid #a0a0a0;
 }
 
