@@ -11,6 +11,7 @@ define([
 	var	custom_colors = ["blue", "green", "orange", "pink", "red", "purple"];
 	var	user_colors = ["#1E90FF", "#32CD32", "#FF6347", "#FF69B4", "#DC143C", "#8A2BE2"];
 	var section_gap = 0.3;
+	var genome_size=0;
 	
 	return declare([BorderContainer], {
 		gutters: true,
@@ -40,10 +41,14 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
+				// console.log("refseqs=", refseqs);
+				genome_size = 0;
 				refseqs = refseqs.map(function(r){
 					r.name = r.accession;
 					r.start = 0;
 					r.end = r.length;
+					genome_size += r.length;
+					// console.log("genome_size=", genome_size);
 					return r;
 				})
 				//.sort(function(a, b){  			// use query sorting instead: sort(+accession)
@@ -248,16 +253,19 @@ define([
 				data: refseqs
 			}, "outer", true);
 
-			//this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS))", null, "blue", null);
+			// console.log("refseqs=", refseqs);
+			// this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS))", null, "blue", null);
 			this.addFeatureTrack("CDS - FWD", "CDS forward strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null);
 			this.addFeatureTrack("CDS - REV", "CDS reverse strand", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null);
+			this.addFeatureTrack("Non-CDS Features", "Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", null, "#21DFD7", null);
 			this.addSpGeneTrack("AMR Genes", "AMR Genes", this.state.genome_ids[0], "&eq(property,%22Antibiotic%20Resistance%22)", null, "red", null);
 			this.addSpGeneTrack("VF Genes", "VF Genes", this.state.genome_ids[0], "&eq(property,%22Virulence%20Factor%22)", null, "orange", null);
-			this.addSpGeneTrack("Drug Targets", "Drug Targets", this.state.genome_ids[0], "&eq(property,%22Drug%20Target%22)", null, "black", null);
 			this.addSpGeneTrack("Transporters", "Transporters", this.state.genome_ids[0], "&eq(property,%22Transporter%22)", null, "blue", null);
-			this.addSpGeneTrack("Human Homologs", "Human Homologs", this.state.genome_ids[0], "&eq(property,%22Human%20Homolog%22)", null, "lime", null);
-			this.addSpGeneTrack("Essential Genes", "Essential Genes", this.state.genome_ids[0], "&eq(property,%22Essential%20Gene%22)", null, "navy", null);
+			this.addSpGeneTrack("Drug Targets", "Drug Targets", this.state.genome_ids[0], "&eq(property,%22Drug%20Target%22)", null, "black", null);
+			// this.addSpGeneTrack("Human Homologs", "Human Homologs", this.state.genome_ids[0], "&eq(property,%22Human%20Homolog%22)", null, "lime", null);
+			// this.addSpGeneTrack("Essential Genes", "Essential Genes", this.state.genome_ids[0], "&eq(property,%22Essential%20Gene%22)", null, "navy", null);
 
+			/* non-CDS track is modified to use a single color)
 			var fillFn = function(item){
 				switch(item.feature_type){
 					case "pseudogene":
@@ -274,6 +282,7 @@ define([
 				fill: null,
 				stroke: null
 			});
+			*/
 			// this.addFeatureTrack("Pseudogenes", "Pseudogenes", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
 			// this.addFeatureTrack("tRNA", "tRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
 			// this.addFeatureTrack("rRNA", "rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
@@ -373,9 +382,18 @@ define([
 				}
 			}, "outer");
 
+			var medLength = 100000;
+			var minLength = 10000;
+			var windowSize = 2000;
+			if (genome_size <= minLength) {
+				windowSize = 20;
+			} else if (genome_size > minLength && genome_size <= medLength) {
+				windowSize = 50;
+			}
+			
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
-				var gcContentData = this.getGCContent(data);
-				// console.log("GC CONTENT: ", gcContentData);
+				var gcContentData = this.getGCContent(data, windowSize);
+				//console.log("GC CONTENT: ", gcContentData);
 				//gcContentTrack3.set('data', gcContentData);
 				//gcContentTrack2.set('data', gcContentData);
 				//gcSkewTrack2.set('data', gcContentData);
@@ -389,7 +407,7 @@ define([
 			windowSize = windowSize || 2000;
 
 			var gcData = [];
-
+			// console.log("GC CONTENT: gcContentData data=", data, "windowSize=", windowSize);
 			function calculateGC(accession, seq, ws){
 				var cur = seq;
 				var slen = seq.length;
