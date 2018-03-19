@@ -148,7 +148,7 @@
   margin-top: 20px;
   margin-bottom: 20px;
   padding: 15px 20px;
-  height: 225px;
+  min-height: 225px;
 }
 
 #patric-homepage-wrapper .browse-search p {
@@ -226,6 +226,7 @@
   background-color: #e9ecef;
   border: 1px solid #ced4da;
   border-radius: .25rem;
+  outline: none;
 }
 
 #patric-homepage-wrapper .browse-search .input-search-drop {
@@ -262,7 +263,6 @@
   color: #495057;
   background-color: #fff;
   background-clip: padding-box;
-  border: 1px solid #ced4da;
   border-radius: .25rem;
   -webkit-transition: border-color .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;
   transition: border-color .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;
@@ -288,7 +288,7 @@
 #patric-homepage-wrapper .analyze-data {
   background: #FFFFFF;
   padding: 15px 20px;
-  height: 400px;
+  min-height: 400px;
 }
 
 #patric-homepage-wrapper .analyze-data h2 {
@@ -337,7 +337,7 @@
   background: #FCF9F1;
   border-bottom: 4px solid #A0A0A0;
   padding: 20px;
-  height: 300px;
+  min-height: 300px;
 }
 
 #patric-homepage-wrapper .omics-my-data .omics h3,
