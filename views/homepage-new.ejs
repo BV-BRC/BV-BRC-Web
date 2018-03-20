@@ -227,34 +227,6 @@
                     <div class="announcements">
                         <h3>ANNOUNCEMENTS</h3>
                         <ul id="slides"></ul>
-
-                        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-                            crossorigin="anonymous"></script>
-                        <script>
-                            $.getJSON("https://docs.patricbrc.org/_static/carousel.json", function (feed) {
-                                for (var i = 0; i < feed.length; i++) {
-
-                                    var link = feed[i].link;
-                                    var title = feed[i].title;
-                                    var desc = feed[i].desc;
-                                    var img = feed[i].img;
-
-                                    $("#slides").append("<li class=\"slide\"><a href=\"" + link + "\" class=\"feed-link\"><h4 class=\"feed-title\">" + title + "</h4><img src=\"" + img + "\" class=\"feed-img\"></a></li>");
-
-                                    $("#slides .slide").first().addClass("showing");
-                                }
-
-                                var slides = $('#slides .slide');
-                                var currentSlide = 0;
-                                var slideInterval = setInterval(nextSlide, 4000);
-
-                                function nextSlide() {
-                                    slides[currentSlide].className = "slide";
-                                    currentSlide = (currentSlide + 1) % slides.length;
-                                    slides[currentSlide].className = "slide showing";
-                                }
-                            });
-                        </script>
                     </div>
 
                     <div class="twitter-feed">
