@@ -266,6 +266,7 @@ define([
 			// this.addSpGeneTrack("Essential Genes", "Essential Genes", this.state.genome_ids[0], "&eq(property,%22Essential%20Gene%22)", null, "navy", null);
 
 			/* non-CDS track is modified to use a single color)
+
 			var fillFn = function(item){
 				switch(item.feature_type){
 					case "pseudogene":
