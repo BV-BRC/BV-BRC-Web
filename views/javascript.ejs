@@ -18,9 +18,20 @@
             var link = feed[i].link;
             var title = feed[i].title;
             var desc = feed[i].desc;
+            var descSnippit = desc.split(" ", 20).join(" ");
             var img = feed[i].img;
 
-            $("#slides").append("<li class=\"slide\"><a href=\"" + link + "\" class=\"feed-link\"><h4 class=\"feed-title\">" + title + "</h4><img src=\"" + img + "\" class=\"feed-img\"></a></li>");
+            // $("#slides").append("<li class=\"slide\"><a href=\"" + link + "\" class=\"feed-link\"><h4 class=\"feed-title\">" + title + "</h4><img src=\"" + img + "\" class=\"feed-img\"></a></li>");
+
+            $("#slides").append(
+                `<li class="slide">
+                    <a href="${link}" class="feed-link">
+                        <h4 class="feed-title">${title}</h4>
+                    </a>
+                    <p class="feed-description">${descSnippit} ... <a href="${link}">read more</a></p>
+                    <img src="${img}" class="feed-img">
+                </li>`
+            );
 
             $("#slides .slide").first().addClass("showing");
         }
