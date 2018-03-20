@@ -25,20 +25,20 @@ define([
       showChart: function(){
         this.set('view', "chart");
         //console.log(this);
-        if(this.class === 'pfSummaryWidget'){
+        if(this['class'] === 'pfSummaryWidget'){
           document.getElementsByClassName('proteinFeature')[0].style.display='block';
         }
-        if(this.class === 'spgSummaryWidget'){
+        if(this['class'] === 'spgSummaryWidget'){
           document.getElementsByClassName('specialty')[0].style.display='block';
         }
 
       },
       showTable: function(){
         this.set("view", "table");
-        if(this.class === 'pfSummaryWidget'){
+        if(this['class'] === 'pfSummaryWidget'){
           document.getElementsByClassName('proteinFeature')[0].style.display='none';
         }
-        if(this.class === 'spgSummaryWidget'){
+        if(this['class'] === 'spgSummaryWidget'){
           document.getElementsByClassName('specialty')[0].style.display='none';
         }
       },
