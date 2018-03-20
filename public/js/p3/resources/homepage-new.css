@@ -438,7 +438,7 @@
   border-top: 4px solid #e3e3e3;
   border-bottom: 4px solid #a0a0a0;
   padding: 10px;
-  height: 400px;
+  height: 425px;
 }
 
 #patric-homepage-wrapper .announcements h3 {
@@ -489,6 +489,12 @@
 #patric-homepage-wrapper .announcements .showing {
   opacity: 1;
   z-index: 2;
+}
+
+#patric-homepage-wrapper .announcements #feed-next {
+  display: block;
+  position: relative;
+  margin-top: 350px;
 }
 
 #patric-homepage-wrapper .twitter-feed {

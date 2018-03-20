@@ -21,8 +21,6 @@
             var descSnippit = desc.split(" ", 20).join(" ");
             var img = feed[i].img;
 
-            // $("#slides").append("<li class=\"slide\"><a href=\"" + link + "\" class=\"feed-link\"><h4 class=\"feed-title\">" + title + "</h4><img src=\"" + img + "\" class=\"feed-img\"></a></li>");
-
             $("#slides").append(
                 `<li class="slide">
                     <a href="${link}" class="feed-link">
@@ -32,19 +30,21 @@
                     <img src="${img}" class="feed-img">
                 </li>`
             );
-
             $("#slides .slide").first().addClass("showing");
         }
 
         var slides = $('#slides .slide');
         var currentSlide = 0;
-        var slideInterval = setInterval(nextSlide, 4000);
 
         function nextSlide() {
             slides[currentSlide].className = "slide";
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].className = "slide showing";
         }
+
+        $('#feed-next').click(function () {
+            nextSlide();
+        });
     });
 </script>
 <!-- // use bundle.js
