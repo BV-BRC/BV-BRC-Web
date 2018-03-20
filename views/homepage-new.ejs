@@ -224,86 +224,36 @@
             <div class="col-md-4">
                 <div class="homepage-sidebar-content">
 
-
                     <div class="announcements">
                         <h3>ANNOUNCEMENTS</h3>
-                        <ul id="slides">
-                            <li class="slide showing">
-                                <a href="https://docs.patricbrc.org/news/2018/20180213-metagenomic-binning-webinar.html#patric-webinar-metagenomic-binning-service-wednesday-february-28-2018-3-00pm-est-20-00-gmt"
-                                    class="announcement-link">
-                                    <h4 class="announcement-title">PATRIC Webinar – Metagenomic Binning Service</h4>
-                                    <img src="https://docs.patricbrc.org/_images/webinar_metagenomic_binning.png" />
-                                </a>
-                            </li>
-                            <li class="slide">
-                                <a href="https://docs.patricbrc.org/news/2018/20180206-proteome-comparison-video-tutorial.html#patric-video-tutorial-proteome-comparison"
-                                    class="announcement-link">
-                                    <h4 class="announcement-title">PATRIC Video Tutorial – Proteome Comparison</h4>
-                                    <img src="https://docs.patricbrc.org/_images/webinar_proteome_comparison.png" />
-                                </a>
-                            </li>
-                            <li class="slide">
-                                <a href="https://docs.patricbrc.org/news/2018/20180131-patric-january-2018-release.html#patric-january-2018-data-and-website-release"
-                                    class="announcement-link">
-                                    <h4 class="announcement-title">PATRIC January 2018 Data and Website Release</h4>
-                                    <img src="//placehold.it/500x350" />
-                                </a>
-                            </li>
+                        <ul id="slides"></ul>
 
-                        </ul>
-                        <style>
-                            #slides {
-                                position: relative;
-                                padding: 0px;
-                                margin: 0px;
-                                list-style-type: none;
-                            }
-
-                            .slide {
-                                position: absolute;
-                                left: 0px;
-                                top: 0px;
-                                opacity: 0;
-                                z-index: 1;
-                                box-sizing: border-box;
-                                /* padding: 20px; */
-                                -webkit-transition: opacity 1s;
-                                -moz-transition: opacity 1s;
-                                -o-transition: opacity 1s;
-                                transition: opacity 1s;
-                            }
-
-                            .showing {
-                                opacity: 1;
-                                z-index: 2;
-                            }
-
-                            .slide .title {
-                                font-size: 14pt!important;
-                                color: #666666;
-                                padding-bottom: 10px;
-                                text-decoration: underline;
-
-                            }
-
-                            .slide .description {}
-
-                            .slide img {
-                                width: 100%;
-                                height: auto;
-                            }
-                        </style>
+                        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+                            crossorigin="anonymous"></script>
                         <script>
-                            var slides = document.querySelectorAll('#slides .slide');
-                            var currentSlide = 0;
-                            var slideInterval = setInterval(nextSlide, 4000);
+                            $.getJSON("https://docs.patricbrc.org/_static/carousel.json", function (feed) {
+                                for (var i = 0; i < feed.length; i++) {
 
-                            function nextSlide() {
-                                slides[currentSlide].className = 'slide';
-                                currentSlide = (currentSlide + 1) % slides.length;
-                                slides[currentSlide].className = 'slide showing';
-                            }
+                                    var link = feed[i].link;
+                                    var title = feed[i].title;
+                                    var desc = feed[i].desc;
+                                    var img = feed[i].img;
 
+                                    $("#slides").append("<li class=\"slide\"><a href=\"" + link + "\" class=\"feed-link\"><h4 class=\"feed-title\">" + title + "</h4><img src=\"" + img + "\" class=\"feed-img\"></a></li>");
+
+                                    $("#slides .slide").first().addClass("showing");
+                                }
+
+                                var slides = $('#slides .slide');
+                                var currentSlide = 0;
+                                var slideInterval = setInterval(nextSlide, 4000);
+
+                                function nextSlide() {
+                                    slides[currentSlide].className = "slide";
+                                    currentSlide = (currentSlide + 1) % slides.length;
+                                    slides[currentSlide].className = "slide showing";
+                                }
+                            });
                         </script>
                     </div>
 
