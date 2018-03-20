@@ -17,7 +17,7 @@ define([
 		pageTitle: "Comprehensive Genome Analysis Service",
 		templateString: Template,
 		applicationName: "ComprehensiveGenomeAnalysis",
-		applicationHelp: "user_guide/genome_data_and_tools/Comprehensive_genome_analysis_service.html",
+		applicationHelp: "user_guide/genome_data_and_tools/comprehensive_genome_analysis_service.html",
 		tutorialLink: "tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html",
 		libraryData: null,
 		defaultPath: "",
