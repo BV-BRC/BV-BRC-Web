@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/IDMapping.html':"<div>\t\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t</tbody>\n\t</table>\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"3\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td><td rel=\"DIP\">DIP</td></tr>\n\t\t<tr><td rel=\"DisProt\">DisProt</td><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td><td rel=\"EchoBase\">EchoBASE</td></tr>\n\t\t<tr><td rel='EcoGene'>EcoGene</td><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td><td rel=\"GenoList\">GenoList</td></tr>\n\t\t<tr><td rel=\"GenomeReviews\">GenomeReviews</td><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td><td rel=\"Leproma\">Leproma</td></tr>\n\t\t<tr><td rel=\"MEROPS\">MEROPS</td><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td><td rel=\"PDB\">PDB</td></tr>\n\t\t<tr><td rel=\"PeroxiBase\">PeroxiBase</td><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td><td rel=\"Reactome\">Reactome</td></tr>\n\t\t<tr><td rel=\"RefSeq_NT\">RefSeq_NT</td><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td></tr>\n\t\t<tr><td rel=\"UniRef100\">UniRef100</td><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td><td rel=\"World-2DPAGE\">World-2DPAGE</td></tr>\n\t\t<tr><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n"}});
+'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t</tbody>\n\t</table>\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"3\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td><td rel=\"DIP\">DIP</td></tr>\n\t\t<tr><td rel=\"DisProt\">DisProt</td><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td><td rel=\"EchoBase\">EchoBASE</td></tr>\n\t\t<tr><td rel=\"EcoGene\">EcoGene</td><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td><td rel=\"GenoList\">GenoList</td></tr>\n\t\t<tr><td rel=\"GenomeReviews\">GenomeReviews</td><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td><td rel=\"Leproma\">Leproma</td></tr>\n\t\t<tr><td rel=\"MEROPS\">MEROPS</td><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td><td rel=\"PDB\">PDB</td></tr>\n\t\t<tr><td rel=\"PeroxiBase\">PeroxiBase</td><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td><td rel=\"Reactome\">Reactome</td></tr>\n\t\t<tr><td rel=\"RefSeq_NT\">RefSeq_NT</td><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td></tr>\n\t\t<tr><td rel=\"UniRef100\">UniRef100</td><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td><td rel=\"World-2DPAGE\">World-2DPAGE</td></tr>\n\t\t<tr><td rel=\"eggNOG\">eggNOG</td><td rel=\"KO\">KO</td><td rel=\"STRING\">STRING</td></tr>\n\t</tbody>\n\t</table>\n</div>\n"}});
 define("p3/widget/GridContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"dojo/request", "dojo/when", "dojo/dom-class",
@@ -345,7 +345,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max: 5000,
+					max: 10000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "subsystem_data"]
 				},
@@ -383,7 +383,7 @@ define("p3/widget/GridContainer", [
 					tooltip: "Copy Selection to Clipboard.",
 					tooltipDialog: copySelectionTT,
 					max: 5000,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "pathway_summary_data"]
 				},
 				function(selection, container){
 					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("selection", selection);
@@ -1050,12 +1050,12 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data", "subsystem_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type;
 
 					if(!containerWidget){
@@ -1078,6 +1078,7 @@ define("p3/widget/GridContainer", [
 					var stg = new SelectionToGroup({
 						selection: selection,
 						type: type,
+						inputType: containerWidget.containerType,
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -1264,7 +1265,7 @@ define("p3/widget/GridContainer", [
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:56px;text-align:center;",
+				style: "width:56px;text-align:center;overflow-y: auto;",
 				splitter: false,
 				currentContainerWidget: this
 			});
@@ -1312,9 +1313,24 @@ define("p3/widget/GridContainer", [
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
+						if(this.grid.primaryKey){
+							if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
+								if(!this.grid.selectedData["primaryKey"]){
+								  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+								}
+								this.grid.selectedData[rownum] = row.data;
+							}
+							else{
+								this.grid.selectedData = {};
+							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+							  this.grid.selectedData[rownum] = row.data;
+						  }
+					  }
 						return row.data;
-					}else if (this.grid && this.grid._unloadedData) {
+					}else if(this.grid && this.grid._unloadedData){
 						return this.grid._unloadedData[rownum];
+					}else if(this.grid && this.grid.selectedData){
+						return this.grid.selectedData[rownum];
 					}
 				}), this);
 				this.selectionActionBar.set("selection", sel);
@@ -1324,12 +1340,20 @@ define("p3/widget/GridContainer", [
 			this.grid.on("deselect", lang.hitch(this, function(evt){
 				var sel = [];
 				if(!evt.selected){
+					this.grid.selectedData = {};
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
 					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						return evt.grid.row(rownum).data;
+						var row = evt.grid.row(rownum);
+						if(row.data){
+							return row.data;
+						}else if(this.grid && this.grid._unloadedData){
+							return this.grid._unloadedData[rownum];
+						}else if(this.grid && this.grid.selectedData){
+							return this.grid.selectedData[rownum];
+						}
 					}));
 				}
 				this.selectionActionBar.set("selection", sel);

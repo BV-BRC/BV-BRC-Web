@@ -65,7 +65,7 @@ define([
 						dispSequenceID.push(feature['alt_locus_tag']);
 					}
 					if(feature['refseq_locus_tag']){
-						dispSequenceID.push("|");
+						dispSequenceID.push(" ");
 						dispSequenceID.push(feature['refseq_locus_tag']);
 					}
 					if(feature['product']){
@@ -162,13 +162,14 @@ define([
 											sourceLink = '<a href="' + url + '" target="_blank">' + val + '</a>';
 											break;
 										default:
+											sourceLink = val || ''
 											break;
 									}
 									node.innerHTML = sourceLink;
 								}
 							}
 						},
-						{label: "Organism", field: "organism"},
+						{label: "Function", field: "function"},
 						{label: "PubMed", field: "pmid",
 							renderCell: function(obj, val, node){
 								if(val){
@@ -511,7 +512,7 @@ define([
 			}
 
 			// specialty gene
-			var spgUrl = PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,pmid,subject_coverage,query_coverage,identity,e_value)");
+			var spgUrl = PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,function,pmid,subject_coverage,query_coverage,identity,e_value)");
 			xhr.get(spgUrl, xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
 
@@ -532,7 +533,10 @@ define([
 				}
 
 				var firstStartPosition = Math.max(data[0].start, rangeStart);
-				var lastEndPosition = Math.min(data[data.length - 1].end, rangeEnd);
+				var largestEnd = data.reduce(function(max, row) {
+					return (max > row.end) ? max : row.end
+				}, 0)
+				var lastEndPosition = Math.min((largestEnd + 100), rangeEnd);
 				this.set("featureViewer", {
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,

@@ -1,27 +1,33 @@
 {
-  "name": "cytoscape-context-menus",
-  "version": "2.1.1",
-  "description": "A Cytoscape.js extension to provide context menu around elements and core instance.",
-  "main": "cytoscape-context-menus.js",
-  "spm": {
-    "main": "cytoscape-context-menus.js"
+  "_from": "cytoscape-context-menus@^3.0.2",
+  "_id": "cytoscape-context-menus@3.0.3",
+  "_inBundle": false,
+  "_integrity": "sha1-D6Q9EVrIQjgelz9JsIjyuOMFnvs=",
+  "_location": "/cytoscape-context-menus",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "cytoscape-context-menus@^3.0.2",
+    "name": "cytoscape-context-menus",
+    "escapedName": "cytoscape-context-menus",
+    "rawSpec": "^3.0.2",
+    "saveSpec": null,
+    "fetchSpec": "^3.0.2"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus.git"
-  },
-  "keywords": [
-    "cytoscape",
-    "cyext"
+  "_requiredBy": [
+    "/"
   ],
-  "license": "MIT",
+  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-3.0.3.tgz",
+  "_shasum": "0fa43d115ac842381e973f49b088f2b8e3059efb",
+  "_spec": "cytoscape-context-menus@^3.0.2",
+  "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus/issues"
   },
-  "homepage": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus",
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "A Cytoscape.js extension to provide context menu around elements and core instance.",
   "devDependencies": {
     "gulp": "^3.8.8",
     "gulp-jshint": "^1.8.5",
@@ -31,34 +37,28 @@
     "jshint-stylish": "^1.0.0",
     "run-sequence": "^1.0.0"
   },
+  "homepage": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus",
+  "keywords": [
+    "cytoscape",
+    "cyext"
+  ],
+  "license": "MIT",
+  "main": "cytoscape-context-menus.js",
+  "name": "cytoscape-context-menus",
   "peerDependencies": {
-    "cytoscape": "^2.7.0",
+    "cytoscape": "^2.7.0 || ^3.0.0",
     "jquery": "^1.7.0 || ^2.0.0 || ^3.0.0"
   },
-  "gitHead": "750b967ea26493d1642137528d10df60df064ada",
-  "_id": "cytoscape-context-menus@2.1.1",
-  "_shasum": "d4ca45fccb54655478a4d47c9a088c40d692f69b",
-  "_from": "cytoscape-context-menus@>=2.1.1 <3.0.0",
-  "_npmVersion": "3.8.6",
-  "_nodeVersion": "5.11.1",
-  "_npmUser": {
-    "name": "metincansiper",
-    "email": "metincansiper@gmail.com"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus.git"
   },
-  "dist": {
-    "shasum": "d4ca45fccb54655478a4d47c9a088c40d692f69b",
-    "tarball": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-2.1.1.tgz"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "maintainers": [
-    {
-      "name": "metincansiper",
-      "email": "metincansiper@gmail.com"
-    }
-  ],
-  "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/cytoscape-context-menus-2.1.1.tgz_1483360880447_0.6392837611492723"
+  "spm": {
+    "main": "cytoscape-context-menus.js"
   },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-2.1.1.tgz"
+  "style": "cytoscape-context-menus.css",
+  "version": "3.0.3"
 }

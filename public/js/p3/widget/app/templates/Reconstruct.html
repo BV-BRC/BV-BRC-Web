@@ -1,18 +1,28 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div class="appTemplate" style="width: 340px;">
+    <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Reconstruct Metabolic Model</h3>
-            <p>Reconstruct a Metabolic Model</p>
+            <h3>Reconstruct Metabolic Model
+              <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+              <div class="infobox iconbox tutorialButton tutorialInfo">
+                <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+              </div>
+            </h3>
+            <p>The Model Reconstruction Service generate draft genome-scale metabolic models.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Model Reconstruction Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
 
-        <div class="formFieldsContainer">
+        <div style="width: 340px; margin:auto;" class="formFieldsContainer">
 
             <div class="appBox appShadow">
                 <label class="appBoxLabel">Select a Genome</label>
-                <div name="select-genome" class="infobox iconbox infobutton dialoginfo">
-                    <i class="fa icon-info-circle fa"></i>
+                <div name="select-a-genome" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
 
                 <div class="appRow">
@@ -51,8 +61,8 @@
         <div style="width: 340px; margin:auto;" class="formFieldsContainer">
             <div class="appBox appShadow">
                 <label class="appBoxLabel">Optional Parameters</label>
-                <div name="optional-params" class="infobox iconbox infobutton dialoginfo">
-                    <i class="fa icon-info-circle fa"></i>
+                <div name="optional-parameters" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
 
                 <!--
@@ -79,11 +89,19 @@
 
                 <div class="appRow">
                     <div class="appField">
+                        <label>Output Folder</label>
+                        <div data-dojo-attach-point="output_pathWidget"
+                             data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%"
+                             required="true"
+                             data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Reconstruction Results',missingMessage:'Output Folder must be selected.'"
+                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
+
+
                         <label>Output Name</label>
-                        <div data-dojo-attach-point="output_nameWidget"
-                             data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-                             style="width:100%"
-                             data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your model',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+                        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                                name="output_file" data-dojo-attach-point="output_file"
+                                style="width:85%" required="true"
+                                data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
                     </div>
                 </div>
 

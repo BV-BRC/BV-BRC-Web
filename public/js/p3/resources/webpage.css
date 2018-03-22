@@ -1,0 +1,64 @@
+.patric .webpage {
+    width: 967px !important;
+    margin: 5px auto 0 auto;
+    position: relative !important;
+}
+
+.patric .webpage .section {
+    margin-bottom: 25px;
+}
+
+.patric .webpage .section a.headerlink {
+    display: none;
+}
+
+.patric .webpage .section p {
+    margin: 0 0 5px 0;
+}
+
+.patric .webpage h1 {
+    color: #666666;
+    font-size: 2em;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+}
+
+.patric .webpage h2 {
+    font-size: 1.5em;
+    margin-top: 0.5em;
+}
+
+.patric .webpage ul {
+    padding: 0 0 0 10px;
+    margin: 0 0 17px 0;
+}
+
+.patric .webpage table {
+    border-collapse: separate;
+    empty-cells: hide;
+    border-bottom: #d3d3d3 1px solid;
+    border-right: #d3d3d3 1px solid;
+    border-spacing: 0;
+}
+
+.patric .webpage table th,
+.patric .webpage table td,
+.patric .webpage table caption {
+    padding: 4px 5px;
+}
+
+.patric .webpage table thead th {
+    background: #fff;
+    color: #666666;
+    font-weight: bold;
+}
+
+.patric .webpage table td,
+.patric .webpage table th {
+    border-top: #d3d3d3 1px solid;
+    border-left: #d3d3d3 1px solid;
+}
+
+.patric .webpage table tr:nth-child(odd) td,
+.patric .webpage table tr.even td {
+    background: #f5f5f5;
+}

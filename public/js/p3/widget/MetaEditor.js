@@ -38,11 +38,11 @@
 define([
     "dojo", "dojo/_base/declare", "dijit/_WidgetBase", "dojo/dom-construct", "dojo/on",
     "dijit/form/Form", "dijit/form/TextBox", "./Confirmation", "dojo/request",
-     "dijit/form/SimpleTextarea", "dijit/form/DateTextBox", "./InputList"
+     "dijit/form/SimpleTextarea", "dijit/form/DateTextBox", "dijit/form/NumberTextBox", "./InputList"
 ],function(
     dojo, declare, WidgetBase, dom, on,
     Form, TextBox, Confirmation, Request,
-    TextArea, DateTextBox, InputList
+    TextArea, DateTextBox, NumberTextBox, InputList
 ){
 	return declare([WidgetBase], {
 		// required widget inputs
@@ -144,6 +144,15 @@ define([
 							placeHolder: item.editable ? "Enter " + item.name : '-',
 							disabled: item.editable ? false : true
 						});
+					}else if(item.type == 'number'){
+					    input = new NumberTextBox({
+							name: item.text,
+							value: data[item.text] || '',
+							style: {width: '275px'},
+							placeHolder: item.editable ? "Enter " + item.name : '-',
+							disabled: item.editable ? false : true,
+							constraints: {pattern: "####"}
+						});
 					}else{
 						input = new TextBox({
 							name: item.text,
@@ -157,6 +166,7 @@ define([
 					// disable save button
 					on.once(input, "keyup", function(evt) {
 						self.dialog.okButton.setDisabled(false);
+						self.dialog.okButton.set('label', 'Save');
 					});
 
 					self._inputs.push(input);
@@ -239,7 +249,7 @@ define([
 
 		/**
 		 * Takes form data and puts into neccessary JSON format for Solr
-		 * Note: not used, in favor of data api
+		 * Note: this is not used.  getJsonPatch is being used with the data api
 		 */
 		getSolrJSON: function(){
 			var hash = this.getValues();
@@ -286,7 +296,7 @@ define([
 					value: value ? value : null
 				}
 
-				json.push(op)
+				json.push(op);
 			})
 
 			return json;

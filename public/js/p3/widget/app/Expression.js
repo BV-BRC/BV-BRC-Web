@@ -9,6 +9,8 @@ define([
 		"baseClass": "Expression",
 		templateString: Template,
 		applicationName: "DifferentialExpression",
+		applicationHelp: "user_guides/services/expression_data_import_service.html",
+		tutorialLink: "tutorial/expression_import/expression_import.html",
 		pageTitle: "Differential Expression Import",
 		defaultPath: "",
 		constructor: function(){
@@ -34,7 +36,7 @@ define([
 			//get xsetup from object type
 			ustring["xsetup"] = this.xfile.searchBox.get("item").type == 'expression_gene_matrix' ? 'gene_matrix' : 'gene_list'; // should be this.xfile.get("selection").type but need to fix on quick drop
 			ustring["organism"] = this.scientific_nameWidget.get('displayedValue');
-			ustring["host"] = false;			
+			ustring["host"] = false;
 			if (values["host"] == "true"){
 				ustring["host"] = true;
 			}
@@ -49,4 +51,3 @@ define([
 
 	});
 });
-

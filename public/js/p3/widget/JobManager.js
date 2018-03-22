@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",  "dojo/query",
-	"dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct", "./JobsGrid",
+	"dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct", "./JobsGrid", "./JobContainerActionBar",
 	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager",
 	"dojo/topic", "dijit/layout/BorderContainer", "./ActionBar", "./ItemDetailPanel"
 ], function(declare, WidgetBase, on, lang, query,
-			domClass, domAttr, domConstr, JobsGrid,
+			domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
 			Deferred, domGeometry, JobManager,
 			Topic, BorderContainer, ActionBar, ItemDetailPanel){
 	return declare([BorderContainer], {
@@ -31,43 +31,38 @@ define([
 					zIndex: 999,
 					padding: "10px",
 					margin: "auto",
-					"margin-top": "300px",
+					marginTop: "300px",
 					width: "30%",
 					border: "2px solid #aaa",
-					"border-radius": "4px",
-					"text-align": "center",
+					borderRadius: "4px",
+					textAlign: "center",
 					color: "red",
-					"font-size": "1.2em"
+					fontSize: "1.2em"
 				},
 				innerHTML: err
 			}, this.domNode);
 
 		},
-//		queryOptions: {
-//			sort: [{attribute: "submit_time", descending: false}]
-//		},
 
 		render: function(items){
 			items.sort(function(a, b){
 				return (Date.parse(a.submit_time) < Date.parse(b.submit_time)) ? 1 : -1;
 			});
+
 			this.grid.refresh();
 			this.grid.renderArray(items);
 		},
-		containerActions: [],
 
 		selectionActions: [
 			[
 				"ToggleItemDetail",
 				"fa icon-chevron-circle-right fa-2x", {
-				label: "HIDE",
-				persistent: true,
-				validTypes: ["*"],
-				tooltip: "Toggle Selection Detail"
-			},
+					label: "HIDE",
+					persistent: true,
+					validTypes: ["*"],
+					tooltip: "Toggle Selection Detail"
+				},
 				function(selection){
-					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
-
 					var children = this.getChildren();
 					if(children.some(function(child){
 							return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
@@ -91,8 +86,49 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
-					console.log("SEL: ", sel)
 					Topic.publish("/navigate", {href: "/workspace" + sel.parameters.output_path + "/" + sel.parameters.output_file});
+				},
+				false
+			], [
+				"ReportIssue",
+				"MultiButton fa icon-commenting-o fa-2x",
+				{
+					label: "REPORT<br>ISSUE...",
+					validTypes: ["*"],
+					multiple: false,
+					tooltip: "Report an Issue with this Job",
+					validContainerTypes: ["*"]
+				},
+				function(selection){
+					var sel = selection[0];
+
+					try {
+						var content =
+							"\n[Please feel free to add any additional information regarding this issue here.]\n\n\n" +
+							"********************** JOB INFO *************************\n\n" +
+							"Job ID: " + sel.id + '\n' +
+							"Job Status: " + sel.status + '\n' +
+							"App Name: " + sel.app + '\n\n' +
+							"Stdout: " + window.App.serviceAPI + '/task_info/' +sel.id + '/stdout' +'\n' +
+							"Stderr: " + window.App.serviceAPI + '/task_info/' +sel.id + '/stderr' +'\n\n' +
+							"Submit Time: " + sel.submit_time + '\n' +
+							"Start Time: " + sel.submit_time + '\n' +
+							"Completed Time: " + sel.submit_time +'\n\n' +
+							"Paremeters:\n" +
+							"{code}\n" +
+							JSON.stringify(sel.parameters, null, 4) +
+							'\n{code}\n';
+					} catch (e) {
+						var content = "There was an issue fetching some of job info.  Error: " + e
+					}
+
+					Topic.publish("/openDialog", {
+						type: "reportProblem",
+						params: {
+							issueText: content,
+							issueSubject: 'Reporting Issue with ' + sel.app
+						}
+					});
 				},
 				false
 			]
@@ -106,7 +142,21 @@ define([
 
 			var _self = this;
 
-			this.grid = new JobsGrid({region: "center"});
+			this.grid = new JobsGrid({
+				region: "center",
+			});
+
+			this.grid.set("sort", [
+				{attribute: "submit_time", descending: true }
+			])
+
+			this.containerActionBar = new JobContainerActionBar({
+				region: "top",
+				className: "BrowserHeader",
+				header: 'Job Status',
+				layoutPriority: 3
+			});
+
 			this.actionBar = new ActionBar({
 				splitter: false,
 				region: "right",
@@ -125,26 +175,24 @@ define([
 
 			this.grid.on('select', lang.hitch(this, function(evt){
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-					console.log("rownum: ", rownum);
-					console.log("Row: ", evt.grid.row(rownum).data);
 					var d = evt.grid.row(rownum).data;
 
 					d._formatterType = d.status + "_job";
 					return d;
 				}));
-				console.log("selection: ", sel);
 
 				this.actionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel)
 			}))
 
 			this.addChild(this.grid)
+			this.addChild(this.containerActionBar)
 			this.addChild(this.actionBar)
 			this.addChild(this.itemDetailPanel)
 
 			// show / hide item detail panel event
 			var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
-			on(hideBtn, "click",  function(e) {
+			on(hideBtn, "click",  function(e){
 				var icon = query('.fa', hideBtn)[0],
 					text = query('.ActionButtonText', hideBtn)[0];
 
@@ -157,29 +205,30 @@ define([
 					domAttr.set(text, "textContent", "HIDE");
 			})
 
-			// this.listJobs().then(function(jobs) {
-			// 	_self.render(jobs);
-			// })
 
-			// Topic.subscribe("/Jobs", function(msg){
-			// 	console.log("REFRESH JOBS ARRAY");
-			// 	_self.listJobs().then(function(jobs) {
-			// 		_self.render(jobs);
-			// 	})
-			// });
+			// listen for new job data
+			Topic.subscribe("/Jobs", function(info){
+				if(info.status == 'updated'){
+					var store = JobManager.getStore();
+					_self.grid.set('store', store)
+				}
+			})
+
+
+			// listen for filtering
+			Topic.subscribe("/JobFilter", function(filters){
+				// remove any non-specific filter states
+				if(filters.app == 'all') delete filters.app;
+				if(!filters.status) delete filters.status;
+
+				_self.grid.set("query", filters);
+			})
 		},
 
 		setupActions: function(){
-			if(this.containerActionBar){
-				this.containerActions.forEach(function(a){
-					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
-				}, this);
-			}
-
 			this.selectionActions.forEach(function(a){
 				this.actionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
 			}, this);
-
 		}
 
 	});

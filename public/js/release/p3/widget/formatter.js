@@ -316,12 +316,17 @@ function(locale, domConstruct, domClass, Tooltip){
 			}
 		},
 		status_alias: function(val){
-			switch(val){
-				case "deleted":
-					return 'failed'
-				default:
-					return val
-			}
+			if(val == 'queued' || val == 'init' || val == 'pending')
+				return '<b style="color: #666;" title="Queued">queued</b>'
+			else if(val == "in-progress")
+				return '<b style="color: #98981d;" title="Running">running</b>'
+			else if(val == "deleted" || val == "failed")
+				return '<b style="color: #a94442" title="Failed">failed</b>'
+			else if(val == "completed")
+				return '<b style="color: #3c763d;" title="Completed">completed</b>'
+			else
+				return val
+
 		},
 		status_indicator: function(val){
 			switch(val){
@@ -370,10 +375,33 @@ function(locale, domConstruct, domClass, Tooltip){
 			}
 		},
 		appLabel: function(appName){
-			if(appName == "GenomeComparison"){
-				return "Proteome Comparison"
-			}
 			return appName;
+		},
+		serviceLabel: function(appName){
+			switch(appName){
+				case "GenomeComparison":
+					return "Proteome Comparison";
+				case "GenomeAssembly":
+					return "Assembly";
+				case "GenomeAnnotation":
+					return "Annotation";
+				case "Variation":
+					return "Variation Analysis";
+				case "PhylogenicTree":
+					return "Phylogenic Tree";
+				case "DifferentialExpression":
+					return "Expression Import";
+				case "RNASeq":
+					return "RNA-Seq Analysis";
+				case "TnSeq":
+					return "Tn-Seq Analysis";
+				case "MetagenomeBinning":
+					return "Metagenome Binning";
+				case "ModelReconstruction":
+					return "Model Reconstruction";
+				default:
+					return appName;
+			}
 		},
 		autoLabel: function(ws_location, autoData){
 			_autoLabels = {};

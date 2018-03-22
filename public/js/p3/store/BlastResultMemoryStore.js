@@ -253,6 +253,7 @@ define([
 					"query_coverage": Math.round((Math.abs(hit.hsps[0].query_to - hit.hsps[0].query_from) + 1) / query_length * 100),
 					"subject_coverage": Math.round((Math.abs(hit.hsps[0].hit_to - hit.hsps[0].hit_from) + 1) / hit.len * 100),
 					"length": hit.len,
+					"q_length": query_length,
 					"evalue": this.formatEvalue(hit.hsps[0]['evalue']),
 					"bitscore": Math.round(hit.hsps[0]['bit_score']),
 					"genome_id": m.genome_id,

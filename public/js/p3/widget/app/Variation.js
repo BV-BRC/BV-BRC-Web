@@ -16,7 +16,9 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "Variation",
-		pageTitle: "Variation Service",
+		applicationHelp: "user_guides/services/variation_analysis_service.html",
+        tutorialLink: "tutorial/variation_analysis_service/variation_analysis_service.html",
+        pageTitle: "Variation Service",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 7,
@@ -259,7 +261,7 @@ define([
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
             var toDestroy = [];
-            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){
                 toDestroy.push(lrec["_id"]);
 		    }));
             //because its removing rows cells from array needs separate loop
@@ -326,6 +328,11 @@ define([
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
+			if(this.read1.searchBox.get("value") == this.read2.searchBox.get("value")){
+				var msg = "READ FILE 1 and READ FILE 2 cannot be the same.";
+				new Dialog({title: "Notice", content: msg}).show();
+				return;
+			}
 			var lrec={"_type":"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
@@ -401,4 +408,3 @@ define([
         }
 	});
 });
-

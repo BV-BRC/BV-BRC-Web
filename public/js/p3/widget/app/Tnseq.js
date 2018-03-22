@@ -15,6 +15,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "TnSeq",
+		applicationHelp: "user_guides/services/tn_seq_analysis_service.html",
+		tutorialLink: "tutorial/tn-seq/tn-seq.html",
 		pageTitle: "Tn-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
@@ -68,7 +70,7 @@ define([
 			//create help dialog for infobutton's with infobuttoninfo div's
 			this.emptyTable(this.libsTable, this.startingRows);
 			//this.emptyTable(this.condTable, this.initConditions);
-			
+
             //for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
             var control = {id: "control", condition: "control", label: "Control", icon:this.getConditionIcon()};
             var treatment = {id: "treatment", condition: "treatment", label: "Treatment", icon:this.getConditionIcon()};
@@ -347,13 +349,13 @@ define([
                 return fn;
             }
         },
-		
+
         onReset: function(evt){
 			domClass.remove(this.domNode, "Working");
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
             var toDestroy = [];
-            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){ 
+            this.libraryStore.data.forEach(lang.hitch(this,function(lrec){
                 toDestroy.push(lrec["id"]);
 		    }));
             //because its removing rows cells from array needs separate loop
@@ -534,6 +536,11 @@ define([
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
+			if(this.read1.searchBox.get("value") == this.read2.searchBox.get("value")){
+				var msg = "READ FILE 1 and READ FILE 2 cannot be the same.";
+				new Dialog({title: "Notice", content: msg}).show();
+				return;
+			}
 			var lrec = {type:"paired"};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
@@ -582,4 +589,3 @@ define([
 
 	});
 });
-

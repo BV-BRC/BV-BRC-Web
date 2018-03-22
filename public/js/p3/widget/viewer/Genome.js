@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/request",
-	"./TabViewerBase",
+	"./TabViewerBase", "dijit/Dialog",
 	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
@@ -9,7 +9,7 @@ define([
 	"../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
-			TabViewerBase,
+			TabViewerBase, Dialog,
 			GenomeOverview, AMRPanelGridContainer, Phylogeny,
 			GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
@@ -25,7 +25,6 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
 			if(!id){
 				return;
 			}
@@ -47,6 +46,18 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
+			}), lang.hitch(this, function(error){
+				if(error.response.status == 404){
+					var d = new Dialog({
+						content: "Genome <i>" + this.genome_id + "</i> was not found.  This could be because it" +
+							" is currently being indexed in the PATRIC database, it" +
+							" does not exist, or" +
+							" you do not have read privileges." ,
+						title: "Genome not found",
+						style: "width: 400px;"
+					}).show();
+					this.set("genome", null)
+				}
 			}));
 
 		},
@@ -72,8 +83,8 @@ define([
 					// check whether genome is a host genome and set default filter condition
 					if(this.state.genome){
 						if(!this.state.hashParams.filter){
-							var taxon_lineage_ids = this.state.genome.taxon_lineage_ids;
-							if (taxon_lineage_ids.indexOf("2759") > -1){
+
+							if (this.state.genome.taxon_lineage_ids && this.state.genome.taxon_lineage_ids.indexOf("2759") > -1){
 
 								activeQueryState = lang.mixin({}, this.state, {
 									search: "eq(genome_id," + this.state.genome.genome_id + ")",
@@ -119,6 +130,9 @@ define([
 		},
 
 		buildHeaderContent: function(genome){
+			if(!genome){
+				return;
+			}
 
 			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", genome.taxon_id), {
 				headers: {
@@ -152,6 +166,7 @@ define([
 
 			this._set("genome", genome);
 
+
 			// check host genomes. remove the circular viewer tab if it's a host genome
 			if(genome && genome.taxon_lineage_ids){
 				// console.log("this genome: ", genome);
@@ -165,7 +180,6 @@ define([
 		},
 
 		onSetState: function(attr, oldState, state){
-
 			if(!state){
 				return;
 			}
@@ -248,7 +262,7 @@ define([
 			this.sequences = new SequenceGridContainer({
 				title: "Sequences",
 				id: this.viewer.id + "_" + "sequences",
-				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+				state: lang.mixin({}, this.state, {search: (this.genome_id ? "?eq(genome_id," + this.genome_id + ")" : "?ne(genome_id,*)" )})
 			});
 
 			this.amr = new AMRPanelGridContainer({
@@ -277,7 +291,7 @@ define([
 			this.specialtyGenes = new SpecialtyGeneGridContainer({
 				title: "Specialty Genes",
 				id: this.viewer.id + "_" + "specialtyGenes",
-				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+				state: lang.mixin({}, this.state, {search: (this.genome_id ? "?eq(genome_id," + this.genome_id + ")" : "?ne(genome_id,*)" )})
 			});
 
 			this.pathways = new PathwaysContainer({

@@ -3,14 +3,19 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Metagenome Binning</h3>
+            <h3>Metagenome Binning
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                </div>
+            </h3>
             <p>Metagenome binning from sequencing reads.</p>
         </div>
         <div class="formFieldsContainer">
-            <div style="display: none;">
-                <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
-                       data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
-            </div>
+          <div style="display: none;">
+              <input data-dojo-attach-event="onChange:validate"
+                  data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
+                  data-dojo-attach-point="numInputs" data-dojo-props="constraints:{min:1,max:1000},"/>
+          </div>
             <table class="assemblyblocks" style="width:100%">
                 <tr>
                     <td>
@@ -19,23 +24,25 @@
                             <div class="headerrow">
                                 <div style="width:85%;display:inline-block;">
                                     <label class="appBoxLabel"> Paired read library</label>
-                                    <div name="pairinfo" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa"></i>
+                                    <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                     </div>
                                 </div>
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Read File 1</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair"
-                                     data-dojo-attach-point="read1" style="width:300px" required="false"
-                                     data-dojo-props="type:['reads'],multi:false"></div>
+                                <div data-dojo-attach-event="onChange:onSuggestReadChange"
+                                    data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair"
+                                    data-dojo-attach-point="read1" style="width:300px" required="false"
+                                    data-dojo-props="type:['reads'],multi:false"></div>
                             </div>
                             <div class="appRow">
                                 <div data-dojo-attach-point="read2block">
                                     <label class="paramlabel">Read File 2</label><br>
-                                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair"
-                                         data-dojo-attach-point="read2" style="width:300px" required="false"
-                                         data-dojo-props="type:['reads'],multi:false"></div>
+                                    <div data-dojo-attach-event="onChange:onSuggestReadChange"
+                                      data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair"
+                                      data-dojo-attach-point="read2" style="width:300px" required="false"
+                                      data-dojo-props="type:['reads'],multi:false"></div>
                                 </div>
                             </div>
                         </div>
@@ -67,9 +74,10 @@
                             <div class="appRow">
                                 <div class="appFieldLong">
                                     <label>Contigs</label><br>
-                                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs"
-                                        data-dojo-attach-point="contig" style="width:100%" required="false"
-                                        data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
+                                    <div data-dojo-attach-event="onChange:onSuggestContigsChange"
+                                      data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs"
+                                      data-dojo-attach-point="contig" style="width:100%" required="false"
+                                      data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
                                 </div>
                             </div>
                         </div>
@@ -79,8 +87,8 @@
                         <div class="appBox appShadow">
                             <div class="headerrow">
                                 <label class="appBoxLabel">Parameters</label>
-                                <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-                                    <i class="fa icon-info-circle fa"></i>
+                                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                 </div>
                             </div>
                             <div class="appRow">
@@ -88,7 +96,7 @@
                                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
                                      data-dojo-attach-point="output_path" style="width:300px" required="true"
                                      data-dojo-props="type:['folder'],multi:false"
-                                     data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                                     data-dojo-attach-event="onChange:validate"></div>
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Output Name</label><br>
@@ -131,4 +139,3 @@
         </div>
     </div>
 </form>
-

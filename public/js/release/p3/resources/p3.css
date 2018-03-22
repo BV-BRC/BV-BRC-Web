@@ -13007,7 +13007,7 @@ background-color: #FF00FF;
 .P3Header {
     width: 100%;
     height: 35px;
-    background: #34698e;
+    background: #2c5776;
     padding: 0;
     margin-top: 0;
     border-top: 1px solid #999;
@@ -13025,11 +13025,14 @@ background-color: #FF00FF;
     margin-right: -95px;
 }
 .P3Header .appLabel {
-    font-size: .75em;
-    color: orange;
+    font-size: 1em;
+    color: #ffbc3e;
     font-weight: 600;
     margin-left: 3px;
     
+}
+#widget_globalSearch .dijitPlaceHolder {
+    color: #6f6f6f;
 }
 .claro .topMenuButtonIcon.dijitDropDownButton .dijitButtonNode,
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
@@ -13096,6 +13099,7 @@ background-color: #FF00FF;
 .CarouselContent {
 	text-align: left;
 }
+.CarouselContent H1,
 .CarouselContent H2,
 .CarouselContent H3,
 .CarouselContent H4 {
@@ -13277,8 +13281,8 @@ background-color: #FF00FF;
 	padding: 4px;
 }
 .WorkspaceController {
-	background:#ddd;
-	border-top: #227194;
+	background:#eee;
+	border-top: 1px solid #e2e2e2;
 }
 .BrowserHeader {
 	padding: 0;
@@ -13353,16 +13357,6 @@ color:#fff;font-weight:600;background:#34698e;
 	font-weight: 600;
 	vertical-align: bottom;
 }
-.UploadComplete {
-	color: green;
-	border: 1px solid green;
-}
-.UploadingButton {
-	display: inline-block;
-	margin: 2px 4px 2px 2px;
-	padding:2px;
-	border: 1px solid gray;
-}
 .TypeContainer {
 	display: inline-block;
 	width: 80px;
@@ -13409,10 +13403,14 @@ color:#fff;font-weight:600;background:#34698e;
 	font-size: 1.2em;
 	cursor: pointer;
 }
-.dgrid-cell.wsItemType,
-.wsItemType {
+.dgrid-cell.wsObjIcon,
+.wsObjIcon {
 	width: 32px;
 	text-align: center;
+}
+th.dgrid-cell.wsObjIcon {
+	border-right: 0;
+	padding-left: 0;
 }
 .WorkspaceExplorerView .dgrid-cell {
 	border: 0;
@@ -13422,14 +13420,11 @@ color:#fff;font-weight:600;background:#34698e;
 }
 th.dgrid-cell.wsItemName,
 th.dgrid-cell.wsItemSize,
+th.dgrid-cell.wsItemType,
 th.dgrid-cell.wsItemCreationTime,
 th.dgrid-cell.wsItemOwnerId,
 th.dgrid-cell.wsItemMembers {
 	border-right: 1px solid #C0C0C0;
-}
-th.dgrid-cell.wsItemType {
-	border-right: 0;
-	padding-left: 0;
 }
 .dgrid-cell.wsItemName,
 .dgrid-cell.wsItemSize,
@@ -13441,8 +13436,9 @@ th.dgrid-cell.wsItemType {
 .wsItemMembers {
 	width: 90px;
 }
-.wsItemSize {
-	width: 150px;
+.wsItemSize,
+.wsItemType {
+	width: 100px;
 }
 .wsItemCreationTime{
 	width: 150px;
@@ -13460,60 +13456,80 @@ th.dgrid-cell.wsItemType {
 .JobStatusButton {
 	cursor: pointer;
 }
-.JobStatusButton > A:first-child,
-.JobStatusButton > SPAN:first-child {
-	color:#fff;margin:2px;padding:2px
+.JobStatusButton > a:first-child,
+.JobStatusButton > span:first-child {
+	color:#fff;
+	margin:2px;
+	padding:2px;
 }
-.UploadStatusArea > SPAN {
+.UploadStatusArea > span {
 	color:#fff;
 	margin: 2px 2px 2px 0;
-	padding: 2px 2px 2px 0;
 }
 .UploadStatusArea{
 	cursor: pointer;
 	display:inline-block;
+    padding: 2px;
 }
 .UploadStatusUpload{
 	display:inline-block;
 	margin: 2px 0 2px 2px;
-	padding: 2px 0 2px 2px;
+    padding: 2px 0 2px 2px;
 }
 .UploadStatusUpload .fa {
 	color: #ddd;
 }
-.JobStatusCount,
-.UploadStatusCount {
-	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
+.UploadingProgress  {
+	border-left: 1px solid #ccc;
+	height: 30px;
+	padding-left: 5px;
 }
-.JobsComplete,
-.UploadingComplete{
-	color: blue;
-	margin: 0;
+.JobStatusCounts,
+.UploadStatusCounts {
+	display:inline-block;
+	background:#FFFFFF;
+	border-radius:2px;
+	margin:2px;
+	padding:2px;
 }
-.JobsRunning,
-.UploadingProgress,
-.UploadingActive{
-	color: green;
-	margin: 0;
+.JobStatusCounts {
+	color: #ddd;
 }
-.JobsRunning::before,
-.JobsQueued::before,
-.JobsSuspended::before,
-.UploadingActive::before{
-	content:"\00b7";
+.JobStatusCounts span,
+.UploadStatusCounts span{
 	color: #333;
 }
-.UploadingProgress::before{
-	content:"\00b7";
-	color: #333;
+.UploadStatusCounts .divider,
+.JobStatusCounts .divider {
+	border-left:1px solid #ccc;
+	height: 30px;
+	margin: 0 5px 0 0;
 }
 .JobsQueued {
-	color: orange;
-	margin: 0;
+	color: #777;
 }
-.JobsSuspended {
-	color: red;
-	margin: 0;
+.JobsRunning,
+.UploadsRunning{
+	color: #ffa900;
+}
+.JobsCompleted,
+.UploadsCompleted{
+	color: #3c763d;
+}
+.JobsFailed {
+	color: #a94442;
+}
+.JobFilters .JobFilter {
+	opacity: 0.75;
+	padding: 0 0 5px 0;
+}
+.JobFilters .JobFilter:hover,
+.JobFilters .JobFilter.active  {
+	opacity: 1.0;
+	cursor: pointer;
+}
+.JobFilters .JobFilter.active {
+	border-bottom: 3px solid #c0d3a2;
 }
 .ActionButtonWrapper {
 	font-size: 1.1em;
@@ -13782,7 +13798,17 @@ th.dgrid-cell.wsItemType {
 .appSubmissionArea {
     margin-bottom: 20px;
 }
-.nonModal_underlay {
+.helpModal .headerlink {
+    display: none
+}
+.helpModal h2,
+.helpModal h3 {
+    margin-bottom: 0.5em;
+}
+.helpModal .section {
+    margin-bottom: 20px;
+}
+.helpTooltip h2 {
     display: none
 }
 .appField {
@@ -14233,9 +14259,6 @@ div.appsublabel {
 	width: 15%;
 	white-space: nowrap;
 }
-.section > H2 {
-	background: #efefef;
-}
 .dgrid-column-status_indicator{
     width: 30px;
 }
@@ -14399,6 +14422,16 @@ div.appsublabel {
         display: table-cell; 
         border-right: 1px solid #bbb;
 }
+.ui-icon.dgrid-hider-toggle {
+	background-position: 0 -190px;
+	background-color: transparent;
+	transform: scale(1.4);
+	border: none;
+	cursor: pointer;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
 .patric .dgrid-cell.field-genome_id {
     width: 8%;
 }
@@ -14416,7 +14449,7 @@ div.appsublabel {
 }
 .dgrid-cell.field-go {
     width: 8%;
-	text-align: left;    
+	text-align: left;
 }
 .dgrid-cell.field-family_id {
     width: 12%;
@@ -14557,11 +14590,15 @@ div.appsublabel {
 .blast_result .dgrid-column-s_coverage,
 .blast_result .dgrid-column-na_length,
 .blast_result .dgrid-column-aa_length,
-.blast_result .dgrid-column-length,
 .blast_result .dgrid-column-score,
 .blast_result .dgrid-column-evalue {
     width: 4%;
     text-align: center;
+}
+.blast_result .dgrid-column-q_length,
+.blast_result .dgrid-column-length {
+    width: 5%;
+    text-align: right;
 }
 .blast_result .collapsed .detail {
     display: none;
@@ -14867,7 +14904,7 @@ div.appsublabel {
 .home h2 {
     font-size: 20px;
 }
-.home h4 {
+.home h3 {
     font-size: 14px;
     line-height: 16px;
 }
@@ -14880,16 +14917,19 @@ div.appsublabel {
 .home ul {
     margin: 0;
 }
-.tools h4 {
+.tools h3 {
     margin-top: 20px;
 }
-.tools h4:first-child {
+.tools h3:first-child {
     margin-top: 4px;
 }
 .tools ul li {
     width: 310px;
     vertical-align: top;
     text-align: left;
+}
+.tools ul li a:hover {
+    font-weight: bold;
 }
 .dlp-hp ul li {
     display: inline-block;
@@ -14930,10 +14970,90 @@ div.appsublabel {
     margin-right: 0;
     width: 311px;
 }
+.home_wcid {
+    background-image: url(/patric/images/home/home-what-can-i-do.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+.home_wcid-assembly {
+    width: 100px;
+    height: 75px;
+    background-position: -5px -5px;
+}
+.home_wcid-comparative_pathways {
+    width: 100px;
+    height: 75px;
+    background-position: -115px -5px;
+}
+.home_wcid-gene_page_transcriptomics {
+    width: 100px;
+    height: 75px;
+    background-position: -5px -90px;
+}
+.home_wcid-genome_annotation {
+    width: 100px;
+    height: 75px;
+    background-position: -115px -90px;
+}
+.home_wcid-genome_metadata {
+    width: 100px;
+    height: 75px;
+    background-position: -225px -5px;
+}
+.home_wcid-protein_family_sorter {
+    width: 100px;
+    height: 75px;
+    background-position: -225px -90px;
+}
+.home_dlp {
+    background-image: url(/patric/images/home/home-dlp-icons.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+i.home_dlp {
+    margin: auto;
+}
+.home_dlp_features {
+    width: 61px;
+    height: 33px;
+    background-position: -5px -5px;
+}
+.home_dlp_genomes {
+    width: 64px;
+    height: 64px;
+    background-position: -76px -5px;
+}
+.home_dlp_pathways {
+    width: 62px;
+    height: 42px;
+    background-position: -5px -79px;
+}
+.home_dlp_proteins {
+    width: 68px;
+    height: 56px;
+    background-position: -77px -79px;
+}
+.home_dlp_specialtygenes {
+    width: 54px;
+    height: 48px;
+    background-position: -150px -5px;
+}
+.home_dlp_transcriptomics {
+    width: 37px;
+    height: 47px;
+    background-position: -155px -63px;
+}
 .patric .dlp {
   width: 967px;
   margin: 5px auto 0 auto;
   position: relative
+}
+.patric .dlp h1 {
+  color: #666666;
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+  font-size: 2em;
+  line-height: 1.286em;
+  margin-bottom: 0.75em;
 }
 .patric .dlp h2 {
   color: #666666;
@@ -14951,9 +15071,10 @@ div.appsublabel {
 .patric .dlp p {
   margin: 0 0 17px 0;
 }
-.patric .dlp ul {
-  padding: 0 0 0 10px;
-  margin: 0 0 17px 0;
+.patric .dlp ul,
+.patric .dlp dl {
+  padding: 0 0 0 5px;
+  margin: 0 0 10px 0;
 }
 .patric .dlp a {
   color: #09456f;
@@ -15003,7 +15124,7 @@ div.appsublabel {
   position: relative;
 }
 .patric .dlp .ribbon-title .wrap {
-  background: url(/patric/images/ribbon-title-wrap.png) no-repeat top left;
+  background: no-repeat top left;
   position: absolute;
   bottom: -9px;
   left: 0;
@@ -15333,14 +15454,12 @@ div.appsublabel {
 	font-weight: bold;
 }
 #dlp-features-data li {
-	margin-left: 10px;
-	padding-left: 0;
 	list-style-type: circle;
 }
 #dlp-features-data .data-box  {
   float: left;
   width: 173px;
-  height: 278px;
+  height: 298px;
   margin: 0 5px;
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
@@ -15355,6 +15474,16 @@ div.appsublabel {
   background:#d8e0e5;
   border: #c0cbcf 1px solid;
   padding: 20px;
+}
+#dlp-sp-features-data h4 {
+	font-weight: bold;
+}
+#dlp-sp-features-data p {
+  margin: 0 0 5px 10px;
+}
+#dlp-sp-features-data dd {
+  margin-left: 10px;
+  display: inline-block;
 }
 #dlp-proteinfamilies-dist-genera-header {
   margin: 0;
@@ -15643,7 +15772,60 @@ div.appsublabel {
 .HelpContent SECTION {
 	padding: 4px;
 }
-#cy-context-menus-cxt-menu {
+.patric .webpage {
+    width: 967px !important;
+    margin: 5px auto 0 auto;
+    position: relative !important;
+}
+.patric .webpage .section {
+    margin-bottom: 25px;
+}
+.patric .webpage .section a.headerlink {
+    display: none;
+}
+.patric .webpage .section p {
+    margin: 0 0 5px 0;
+}
+.patric .webpage h1 {
+    color: #666666;
+    font-size: 2em;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+}
+.patric .webpage h2 {
+    font-size: 1.5em;
+    margin-top: 0.5em;
+}
+.patric .webpage ul {
+    padding: 0 0 0 10px;
+    margin: 0 0 17px 0;
+}
+.patric .webpage table {
+    border-collapse: separate;
+    empty-cells: hide;
+    border-bottom: #d3d3d3 1px solid;
+    border-right: #d3d3d3 1px solid;
+    border-spacing: 0;
+}
+.patric .webpage table th,
+.patric .webpage table td,
+.patric .webpage table caption {
+    padding: 4px 5px;
+}
+.patric .webpage table thead th {
+    background: #fff;
+    color: #666666;
+    font-weight: bold;
+}
+.patric .webpage table td,
+.patric .webpage table th {
+    border-top: #d3d3d3 1px solid;
+    border-left: #d3d3d3 1px solid;
+}
+.patric .webpage table tr:nth-child(odd) td,
+.patric .webpage table tr.even td {
+    background: #f5f5f5;
+}
+.cy-context-menus-cxt-menu {
     display:none;
     z-index:1000;
     position:absolute;
@@ -15659,7 +15841,7 @@ div.appsublabel {
     padding: 3px 20px;
     position:relative;
     margin:0;
-    background-color:#F2F2F2;
+    background-color:#f8f8f8;
     font-weight:normal;
     font-size: 12px;
     white-space:nowrap;
@@ -15679,11 +15861,8 @@ div.appsublabel {
     background-image: none;
     cursor: pointer;
 }
-.cy-context-menus-cxt-menuitem[title]:before {
-    content:attr(title);
-}
-.cy-context-menus-cxt-menuitem:not([title]):before {
-    content:"\2630";
+.cy-context-menus-cxt-menuitem[content]:before {
+    content:attr(content);
 }
 .cy-context-menus-divider {
   border-bottom:1px solid #A0A0A0;
@@ -15752,8 +15931,12 @@ iframe  {
     padding: 0;
     overflow: hidden;
 }
-.claro .dijitTabPaneWrapper {
+.claro {
     overflow: auto;
+}
+.dijitTabPaneWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .layer {
     width: 925px;
@@ -16467,7 +16650,7 @@ div.pubmed ul li {
 .highlight-e {
   color: #09456f; }
 .highlight-f {
-  color: #87b934; }
+  color: #638826; }
 .linkstyle-highlight a {
   color: #1fa1c3; }
 .linkstyle-highlight-b a {
@@ -16523,13 +16706,16 @@ h5 {
 h6 {
   font-size: 1em;
   font-weight: bold; }
+h1.xxxl,
 h2.xxxl {
   font-size: 40px;
   line-height: 36px; }
+h1.xxl,
 h2.xxl {
   font-size: 30px; }
-h2.xl {
+h1.xl {
   font-size: 26px; }
+h2.xl,
 h3.xl {
   font-size: 20px; }
 .upper {
@@ -16556,12 +16742,10 @@ footer.main-footer .container {
   overflow: hidden;
 }
 footer.main-footer .container .column {
-  display: inline;
   float: left;
   width: 229px;
   border-left: #547f9d 1px solid;
-  margin-right: -1px;
-  font-weight: 100;
+  min-height: 143px
 }
 * html body footer.main-footer .container .column {
   overflow-x: hidden;
@@ -16569,15 +16753,6 @@ footer.main-footer .container .column {
 body footer.main-footer .container .column .wrapper {
   overflow: hidden;
   padding: 0 15px;
-}
-  body footer.main-footer .container .column.last {
-  display: inline;
-  float: left;
-  margin-right: 0;
-  width: 229px;
-}
-* html body footer.main-footer .container .column.last {
-  overflow-x: hidden;
 }
 body footer.main-footer ul.left {
   width: 99px;
@@ -16632,7 +16807,7 @@ body footer.main-footer ul.left {
     padding: 3px 6px;
 }
 .center-text {
-    text-align: center; 
+    text-align: center;
 }
 .subsystemslegend {
     font-size: 15px;
@@ -16650,4 +16825,14 @@ body footer.main-footer ul.left {
     top: 95px;
     width: 80px;
     z-index: 10;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }

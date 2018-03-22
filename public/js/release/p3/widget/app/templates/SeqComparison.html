@@ -4,8 +4,19 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Proteome Comparison</h3>
-            <p>Protein sequence-based comparison using bi-directional BLASTP.</p>
+            <h3>Proteome Comparison
+              <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+              <div class="infobox iconbox tutorialButton tutorialInfo">
+                <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+              </div>
+            </h3>
+            <p>The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP.
+                This service allows users to select genomes and compare them to reference genome.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Proteome Comparison Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
 
         <div class="formFieldsContainer">
@@ -27,8 +38,8 @@
                                         <div class="headerrow">
                                             <div style="width:85%;display:inline-block;">
                                                 <label class="appBoxLabel">Parameters</label>
-                                                <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-                                                    <i class="fa icon-info-circle fa"></i>
+                                                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -91,8 +102,8 @@
                                         <div class="headerrow">
                                             <div style="width:85%;display:inline-block;">
                                                 <label class="appBoxLabel">Reference Genome</label>
-                                                <div name="referenceinfo" class="infobox iconbox infobutton dialoginfo">
-                                                    <i class="fa icon-info-circle fa"></i>
+                                                <div name="reference-genome-selection" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -129,8 +140,8 @@
                             <div class="headerrow">
                                 <div style="width:90%;display:inline-block;">
                                     <label class="appBoxLabel">Comparison Genomes</label>
-                                    <div name="comparisoninfo" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa"></i>
+                                    <div name="comparison-genomes-selection" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                     </div>
                                 </div>
                             </div>
@@ -162,6 +173,15 @@
                                      data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
                                 <div style="width:10%;display:inline-block;"><i
                                         data-dojo-attach-event="click:onAddFeatureGroup"
+                                        class="fa icon-plus-circle fa-lg"></i></div>
+                                </br>
+                                <label>And/or select genome group</label></br>
+                                <div style="width:85%;display:inline-block;"
+                                     data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup"
+                                     required="false" data-dojo-attach-point="user_genomes_genomegroup"
+                                     data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for Comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
+                                <div style="width:10%;display:inline-block;"><i
+                                        data-dojo-attach-event="click:onAddGenomeGroup"
                                         class="fa icon-plus-circle fa-lg"></i></div>
                                 </br>
                             </div>
@@ -206,4 +226,3 @@
         </div>
     </div>
 </form>
-

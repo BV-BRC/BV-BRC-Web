@@ -1,7 +1,7 @@
 define("p3/app/p3app", [
 	"dojo/_base/declare",
 	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct", "dojo/query",
-	"dijit/registry", "dojo/request", "dojo/_base/lang",
+	"dijit/registry", "dojo/_base/lang",
 	"dojo/_base/Deferred",
 	"dojo/store/JsonRest", "dojox/widget/Toaster",
 	"dojo/ready", "./app", "../router",
@@ -10,7 +10,7 @@ define("p3/app/p3app", [
 	"dijit/Dialog", "../util/PathJoin"
 ], function(declare,
 			Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
-			Registry, xhr, lang,
+			Registry, lang,
 			Deferred,
 			JsonRest, Toaster,
 			Ready, App,
@@ -71,10 +71,10 @@ define("p3/app/p3app", [
 				if(meta){
 					meta.content = "PATRIC," + (document.title).replace("::", ",");
 				}
-				if(window.ga){
+				if(window.gtag){
 					// console.log("document title changed to", document.title);
-					ga('set', 'title', document.title);
-					ga('send', 'pageview');
+					var page_path = window.location.pathname + window.location.hash;
+					gtag('config', window.App.gaID, {'page_path': page_path});
 				}
 			};
 
@@ -155,6 +155,19 @@ define("p3/app/p3app", [
 				newState.requireAuth = false;
 				newState.pageTitle = 'PATRIC';
 				// console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+			Router.register("\/webpage(\/.*)", function(params, oldPath, newPath, state){
+				// console.log("webpage", params);
+				var path = params.params[0] || "/";
+				var newState = getState(params, oldPath);
+				newState.widgetClass = "p3/widget/WebPagePane";
+				newState.widgetExtraClass = "webpage";
+				newState.value = PathJoin(_self.docsServiceURL, path);
+				newState.set = "href";
+				newState.requireAuth = false;
+
 				_self.navigate(newState);
 			});
 
@@ -389,25 +402,6 @@ define("p3/app/p3app", [
 				}, d)
 			})
 
-		},
-
-		search_all_header: function(){
-			var node = dom.byId("global_search_keyword");
-			var keywords = node.value;
-			if(!keywords || keywords == "*"){
-				console.log("No Search Keywords Provided");
-				return;
-			}
-
-			console.log("Keywords: ", keywords);
-			xhr.post("/portal/portal/patric/GenomicFeature/GenomicFeatureWindow?action=b&cacheability=PAGE", {
-				data: {
-					sraction: "save_params",
-					keyword: encodeURIComponent(keywords)
-				}
-			}).then(function(results){
-				document.location = "/portal/portal/patric/GlobalSearch?cType=taxon&cId=131567&dm=&pk=" + results;
-			});
 		}
 
 	});

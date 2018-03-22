@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n\n    <div data-dojo-attach-point=\"groupTypeBox\" class=\"dijitHidden\">\n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeSelect\"  style=\"width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    </div>\n\n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden' data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Add\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n"}});
+'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n\n    <div data-dojo-attach-point=\"groupTypeBox\" class=\"dijitHidden\">\n\t\t<label>Group Type</label><br>\n\t\t<div data-dojo-type=\"dijit/form/Select\"\n\t\t\tdata-dojo-attach-point=\"groupTypeSelect\"\n\t\t\tstyle=\"width:95%;margin:10px;\"\n\t\t\tdata-dojo-attach-event=\"onChange:onChangeOutputType\" >\n\t\t</div>\n    </div>\n\n\t<label>New/Existing</label><br>\n\t<div data-dojo-type=\"dijit/form/Select\"\n\t\tstyle=\"width: 95%;margin:10px;\"\n\t\tdata-dojo-attach-event=\"onChange:onChangeTarget\"\n\t\tdata-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\n\n\t<label data-dojo-attach-point=\"groupPathLabel\" class='dijitHidden'>\n\t\tGroup Folder\n\t\t<span style=\"opacity: 0.7;\">(defaults to your groups folder)</span>\n\t</label><br>\n\t<div data-dojo-attach-point=\"groupPathSelector\"\n\t\tdata-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"group_path\" style=\"width:95%;margin:10px;\"\n\t\trequired=\"false\"\n\t\tclass='dijitHidden'\n\t\tdata-dojo-props=\"allowUpload:false,type:['folder'],multi:false,promptMessage:'Enter alternative group folder',missingMessage:'Optional'\"\n\t\tdata-dojo-attach-event=\"onChange:onChangeGroupPath\">\n\t</div>\n\n\n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\"\n\t\tdata-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\"\n\t\tstyle=\"width:95%;margin:10px;\"\n\t\tclass='dijitHidden'\n\t\tdata-dojo-props=\"promptMessage:'Enter New Group Name'\"\n\t\tdata-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\"\n\t\tdata-dojo-type=\"p3/widget/WorkspaceObjectSelector\"\n\t\tstyle=\"width:95%;margin:10px;\"\n\t\tdata-dojo-props=\"type:['genome_group']\"\n\t\tdata-dojo-attach-event=\"onChange:onChangeTarget\"\n\t\tclass=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Add\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n"}});
 define("p3/widget/SelectionToGroup", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
@@ -8,7 +8,8 @@ define("p3/widget/SelectionToGroup", [
 	"./WorkspaceObjectSelector"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, lang, WorkspaceManager, domStyle, Parser, Select, WorkspaceFilenameValidationTextBox, WorkspaceObjectSelector){
+			Template, lang, WorkspaceManager, domStyle, Parser, Select, WorkspaceFilenameValidationTextBox,
+			WorkspaceObjectSelector){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "Panel",
 		"disabled": false,
@@ -19,10 +20,7 @@ define("p3/widget/SelectionToGroup", [
 		idType: null,
 		inputType: null,
 		conversionTypes: {
-			"feature_data": [{label: "Feature", value: "feature_group"}, {
-				label: "Genome",
-				value: "genome_group"
-			}]
+			"feature_data": [{label: "Feature", value: "feature_group"}, {label: "Genome",value: "genome_group"}]
 		},
 		selectType: false,
 		_setTypeAttr: function(t){
@@ -34,40 +32,69 @@ define("p3/widget/SelectionToGroup", [
 
 		_setPathAttr: function(path){
 			this.path = path;
-			if(this.groupNameBox){
-				this.groupNameBox.set('path', this.path);
-			}
 
 			if(this.workspaceObjectSelector){
 				this.workspaceObjectSelector.set("path", this.path);
+			}
+
+			// for new groups
+			if(this.groupPathSelector){
+				this.groupPathSelector.set("path", '/'+window.App.user.id);
+				this.groupPathSelector.set("value", this.path);
+			}
+			if(this.groupNameBox){
+				this.groupNameBox.set('path', this.path);
 			}
 		},
 		onChangeOutputType: function(){
 			this.set('type', this.groupTypeSelect.get('value'));
 			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
 			this.onChangeTarget(this.type);
+			if(this.type == "genome_group"){
+				this.idType = "genome_id";
+			}
+			else if(this.type == "feature_group"){
+				this.idType = "feature_id";
+			}
+		},
+
+		// only used for new groups
+		onChangeGroupPath: function(newPath, thing) {
+			// need to update path of group name box since validation
+			// and value (full path) state is kept and fetched from there.
+			this.groupNameBox.set('path', newPath);
 		},
 
 		onChangeTarget: function(target){
-			console.log("onChangeTarget ");
 			if(!this._started){
 				return;
 			}
 			var targetType = this.targetType.get('value');
 			var val;
-			console.log("Target Type: ", targetType);
+
 			if(targetType == "existing"){
 				domClass.remove(this.workspaceObjectSelector.domNode, "dijitHidden");
+
+				// only if new group
+				domClass.add(this.groupPathLabel, "dijitHidden");
+				domClass.add(this.groupPathSelector.domNode, "dijitHidden");
 				domClass.add(this.groupNameBox.domNode, "dijitHidden");
+
 				val = this.workspaceObjectSelector.get('value');
 
 			}else{
 				domClass.add(this.workspaceObjectSelector.domNode, "dijitHidden");
+
+				// only if new group
+				domClass.remove(this.groupPathLabel, "dijitHidden");
+				domClass.remove(this.groupPathSelector.domNode, "dijitHidden");
 				domClass.remove(this.groupNameBox.domNode, "dijitHidden");
+
+
 
 				val = this.groupNameBox.isValid() ? this.groupNameBox.get('value') : false;
 			}
-			console.log("Target Val: ", val);
+			//console.log("Target Val: ", val);
 			this.value = val;
 			if(val){
 				this.copyButton.set('disabled', false);
@@ -85,12 +112,13 @@ define("p3/widget/SelectionToGroup", [
 				console.log("set selection(): ", arguments);
 			}));
 			if(!this.path){
+
+				this.path = WorkspaceManager.getDefaultFolder(this.type)
 				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
+
 			}
 			this.inherited(arguments);
-			this.groupNameBox.set('path', this.path);
-			this.workspaceObjectSelector.set('path', this.path);
-			this.workspaceObjectSelector.set('type', [this.type]);
+
 			if(this.inputType in this.conversionTypes){
 				this.selectType = true;
 				domClass.remove(this.groupTypeBox, "dijitHidden");
@@ -101,12 +129,10 @@ define("p3/widget/SelectionToGroup", [
 		},
 
 		onCancel: function(evt){
-			// console.log("Cancel/Close Dialog", evt)
 			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		},
 		onCopy: function(evt){
-			// console.log("Copy Selection: ", this.selection, " to ", this.value);
-			//var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
+
 			if(!this.idType){
 				this.idType = "genome_id";
 				if(this.type == "genome_group"){

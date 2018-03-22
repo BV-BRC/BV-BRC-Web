@@ -12,6 +12,7 @@ define("p3/widget/viewer/File", [
 		file: null,
 		viewable: false,
 		url: null,
+		preload: true,
 
 		_setFileAttr: function(val){
 			//console.log('[File] _setFileAttr:', val);
@@ -54,6 +55,8 @@ define("p3/widget/viewer/File", [
 			var _self = this;
 			Deferred.when(WS.getDownloadUrls(_self.filepath), function(url){
 					_self.url = url;
+			}).then(function(){
+				_self.refresh();
 			});
 
 			if(WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000){
@@ -62,9 +65,15 @@ define("p3/widget/viewer/File", [
 			// console.log('[File] viewable?:', this.viewable);
 
 			if(!this.file.data && this.viewable) {
-				// get the object to display
 				var _self = this;
-				Deferred.when(WS.getObject(this.filepath, false), function(obj){
+
+				// some filetypes we just want to reference by url, some we can go ahead and load
+				var reftypes = ["pdf", "gif", "png", "jpg"];
+				if (reftypes.indexOf(this.file.metadata.type) >= 0) this.preload = false;
+				// console.log('[File] preload?:', this.preload);
+
+				// get the object to display
+				Deferred.when(WS.getObject(this.filepath, !this.preload), function(obj){
 					// console.log('[File] obj:', obj);
 					_self.set("file", obj);
 				}).then(function(){
@@ -107,11 +116,11 @@ define("p3/widget/viewer/File", [
 				if (this.viewable) {
 					this.viewer.set('content', this.formatFileMetaData());
 
-					if (this.file.data) {
+					if (this.file.data || (!this.preload && this.url)) {
+						// console.log('[File] type:', this.file.metadata.type);
 						var childContent = '</br>';
 						switch(this.file.metadata.type){
 							case "html":
-								// console.log('[File] type: html');
 								childContent = this.file.data;
 								break;
 							case "json":
@@ -119,16 +128,20 @@ define("p3/widget/viewer/File", [
 							case "diffexp_expression":
 							case "diffexp_mapping":
 							case "diffexp_sample":
-								// console.log('[File] type: json');
 								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null),null,2)  + "</pre>";
 								break;
-							case "svg":
+							case "pdf":
+								childContent = '<iframe src="http://docs.google.com/gview?url=' + this.url + '&embedded=true" style="width:100%; height:100%;" frameborder="0"></iframe>';
+								//childContent = '<a href="'+ this.url + '">';
+								break;
 							case "gif":
 							case "png":
 							case "jpg":
+								childContent = '<img src="' + this.url + '">';
+								break;
+							case "svg":
 							case "txt":
 							default:
-								// console.log('[File] type: txt/img');
 								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + this.file.data + '</pre>';
 								break;
 						}

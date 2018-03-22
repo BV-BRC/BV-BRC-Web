@@ -2,10 +2,10 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ReportProblem.html", "dijit/form/Form",
-	"dojo/topic", "dojo/request", "dojo/when"
+	"dojo/topic", "dojo/request", "dojo/when", "dojo/query"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, Topic, request, when){
+			Template, FormMixin, Topic, request, when, query){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
@@ -17,6 +17,14 @@ define([
 				this.saveButton.set("disabled", true);
 			}
 			return valid;
+		},
+		startup: function() {
+			if (this.issueSubject){
+				var msgBox = query('[name="subject"]')[0].value = this.issueSubject;
+			}
+			if(this.issueText){
+				var msgBox = query('[name="content"]')[0].value = this.issueText;
+			}
 		},
 
 		onSubmit: function(evt){

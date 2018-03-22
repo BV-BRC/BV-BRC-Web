@@ -21,11 +21,18 @@ define("p3/widget/GenomeOverview", [
 		apiServiceUrl: window.App.dataAPI,
 		genome: null,
 		state: null,
+		sumWidgets: ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"],
+
 
 		_setStateAttr: function(state){
 			this._set("state", state);
 			if(state.genome){
 				this.set("genome", state.genome);
+			}else{
+				domConstruct.empty(this.genomeSummaryNode);
+				domConstruct.empty(this.pubmedSummaryNode)
+				domConstruct.place(domConstruct.toDom("<br><h4>Genome not found</h4>"), this.genomeSummaryNode, "first");
+				domConstruct.place(domConstruct.toDom("Not available"), this.pubmedSummaryNode, "first");
 			}
 		},
 
@@ -39,9 +46,7 @@ define("p3/widget/GenomeOverview", [
 			this.createSummary(genome);
 			this.createPubMed(genome)
 
-			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
-
-			sumWidgets.forEach(function(w){
+			this.sumWidgets.forEach(function(w){
 				if(this[w]){
 					this[w].set('query', "eq(genome_id," + this.genome.genome_id + ")")
 				}
@@ -59,6 +64,7 @@ define("p3/widget/GenomeOverview", [
 		createSummary: function(genome){
 			var self = this;
 			domConstruct.empty(self.genomeSummaryNode);
+
 			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), self.genomeSummaryNode, "first");
 
 			// if user owns genome, add edit button

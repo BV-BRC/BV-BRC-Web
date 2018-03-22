@@ -11,6 +11,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "PhylogeneticTree",
+		applicationHelp: "user_guides/services/phylogenetic_tree_building_service.html",
+		tutorialLink: "tutorial/phylogenetic_tree_building/tree_building.html",
 		pageTitle: "Phylogenetic Tree Building",
 		defaultPath: "",
 		startingRows: 9,
@@ -22,13 +24,14 @@ define([
 			this.inGroup.addedNum = 0;
 			this.inGroup.genomeToAttachPt = ["in_genome_id"];
 			this.inGroup.genomeGroupToAttachPt = ["in_genomes_genomegroup"];
-			this.inGroup.maxGenomes = 50;
+			this.inGroup.maxGenomes = 100;
 			this.outGroup = {};
 			this.outGroup.addedList = [];
 			this.outGroup.addedNum = 0;
 			this.outGroup.genomeToAttachPt = ["out_genome_id"];
 			this.outGroup.genomeGroupToAttachPt = ["out_genomes_genomegroup"];
 			this.outGroup.maxGenomes = 5;
+			this.selectedTR = []; //list of selected TR for ingroup and outgroup, used in onReset()
 		},
 
 		startup: function(){
@@ -183,6 +186,7 @@ define([
 		onAddGenome: function(groupType){
 			//console.log("Create New Row", domConstruct);
 			var lrec = {};
+			lrec["groupType"] = groupType;
 			var chkPassed = this.ingestAttachPoints(this[groupType].genomeToAttachPt, lrec);
 			//console.log("this.genomeToAttachPt = " + this.genomeToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
@@ -190,6 +194,7 @@ define([
 			if(chkPassed && this[groupType].addedNum < this[groupType].maxGenomes){
 				var newGenomeIds =[lrec[this[groupType].genomeToAttachPt]];
 				var tr = this[groupType+'GenomeTable'].insertRow(0);
+				lrec["row"] = tr;
 				var td = domConstruct.create('td', {"class": "textcol "+groupType+"GenomeData", innerHTML: ""}, tr);
 				td.genomeRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + "</div>";
@@ -210,6 +215,8 @@ define([
 					}
 					handle.remove();
 				}));
+				lrec["handle"] = handle;
+				this.selectedTR.push(lrec);
 				this.increaseGenome(groupType, newGenomeIds);
 			}
 			//console.log(lrec);
@@ -228,6 +235,7 @@ define([
 		onAddGenomeGroup: function(groupType){
 			//console.log("Create New Row", domConstruct);
 			var lrec = {};
+			lrec["groupType"] = groupType;
 			var chkPassed = this.ingestAttachPoints(this[groupType].genomeGroupToAttachPt, lrec);
 			//console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
 			//console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
@@ -241,11 +249,20 @@ define([
 						var newGenomeIds =  res.data.id_list["genome_id"];
 					}
 				}
-				//console.log("newGenomeIds = ", newGenomeIds);
+				//display a notice if adding new genome group exceeds maximum allowed number
+				var count = this[groupType].addedNum +newGenomeIds.length;
+				if(count > this[groupType].maxGenomes){
+					var msg = "Sorry, you can only add up to "+this[groupType].maxGenomes+" genomes";
+					msg += " in "+groupType[0].toUpperCase()+groupType.substring(1).toLowerCase();
+					msg += " and you are trying to select "+count + ".";
+					new Dialog({title: "Notice", content: msg}).show();
+				}
+        //console.log("newGenomeIds = ", newGenomeIds);
 				if(chkPassed && this[groupType].addedNum < this[groupType].maxGenomes
 					&& newGenomeIds.length > 0
 					&& this[groupType].addedNum +newGenomeIds.length <= this[groupType].maxGenomes){
 					var tr = this[groupType+'GenomeTable'].insertRow(0);
+					lrec["row"] = tr;
 					var td = domConstruct.create('td', {"class": "textcol "+groupType+"GenomeData", innerHTML: ""}, tr);
 					td.genomeRecord = lrec;
 					td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + "</div>";
@@ -266,6 +283,8 @@ define([
 						}
 						handle.remove();
 					}));
+					lrec["handle"] = handle;
+					this.selectedTR.push(lrec);
 					this.increaseGenome(groupType, newGenomeIds);
 				}
 
@@ -320,6 +339,26 @@ define([
 				domClass.add(this.domNode, "Error");
 				console.log("Form is incomplete");
 			}
+		},
+
+		onReset: function(evt){
+			domClass.remove(this.domNode, "Working");
+			domClass.remove(this.domNode, "Error");
+			domClass.remove(this.domNode, "Submitted");
+			this.selectedTR.forEach(lang.hitch(this,function(lrec){
+				domConstruct.destroy(lrec.row);
+				lrec.handle.remove();
+				groupType = lrec["groupType"];
+				var ntr = this[groupType+'GenomeTable'].insertRow(-1);
+				var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+				var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+				var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"}, ntr);
+			}));
+			this.selectedTR = [];
+			this.inGroup.addedList = [];
+			this.inGroup.addedNum = 0;
+			this.outGroup.addedList = [];
+			this.outGroup.addedNum = 0;
 		},
 
 		getValues: function(){

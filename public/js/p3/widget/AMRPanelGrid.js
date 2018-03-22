@@ -34,6 +34,7 @@ define([
 			test_year: {label: "Testing standard year", field: "testing_standard_year", hidden: true},
 			source: {label: "Source", field: "source", hidden: true}
 		},
+		selectAllFields: ["genome_id"],
 		startup: function(){
 			var _self = this;
 			this.on("dgrid-select", function(evt){

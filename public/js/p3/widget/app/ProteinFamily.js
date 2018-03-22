@@ -15,6 +15,8 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "ProteinFamily",
+		applicationHelp: "user_guides/services/protein_family_service.html",
+		tutorialLink: "tutorial/protein_family_sorter/protein_family_sorter.html",
 		pageTitle: "Protein Family Sorter",
 		libraryData: null,
 		defaultPath: "",
@@ -177,6 +179,11 @@ define([
 				// 	Topic.publish("/navigate", {href: "/view/Taxonomy/" + values['taxon_id'] + "#view_tab=proteinFamilies"});
 				// 	return;
 				// }
+
+				// log GA
+				if(window.gtag){
+					gtag('event', 'ProteinFamilySorter', {'event_category': 'Services', 'family_type': params.family_type});
+				}
 
 				if(this.addedList.length === 1 && this.addedList[0]['type'] === 'genome_group'){
 					Topic.publish("/navigate", {href: "/view/GenomeGroup" + this.addedList[0]['path'] + "#view_tab=proteinFamilies&params=" + encodeURIComponent(JSON.stringify(params))});

@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/query", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style", "dojo/topic",
-	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"./AppBase",
 	"dojo/text!./templates/BLAST.html", "dijit/form/Form",
 	"../viewer/Blast", "../../util/PathJoin", "../../WorkspaceManager", "../WorkspaceObjectSelector"
 ], function(declare, lang, Deferred,
 			on, query, domClass, domConstruct, domStyle, Topic,
-			WidgetBase, Templated, WidgetsInTemplate,
+			AppBase,
 			Template, FormMixin,
 			BlastResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector){
 
@@ -72,9 +72,11 @@ define([
 		{value: "features", label: "Genomic features (genes, proteins or RNAs)"}
 	];
 
-	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
+	return declare([AppBase], {
 		"baseClass": "BLAST",
 		templateString: Template,
+		applicationHelp: "user_guides/services/blast.html",
+		tutorialLink: "tutorial/blast/blast.html",
 		addedGenomes: 0,
 		maxGenomes: 20,
 		startingRows: 5,
@@ -87,6 +89,9 @@ define([
 		},
 
 		startup: function(){
+
+			if (this._started) { return; }
+			this.inherited(arguments);
 
 			// activate genome group selector when user is logged in
 			if(window.App.user){
@@ -142,8 +147,15 @@ define([
 			}
 		},
 
+		sanitizeFastaSequence: function(sequence){
+			var header = sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null})
+			var sanitized = sequence.split('\n').filter(function(line){ return line.match(/^>.*/) == null}).map(function(line){ return line.replace(/ /g,'')})
+
+			return header.concat(sanitized).join('\n')
+		},
+
 		hasSingleFastaSequence: function(sequence){
-			return (sequence.indexOf('>') == sequence.lastIndexOf('>'));
+			return sequence.split('\n').filter(function(line){ return line.match(/^>.*/) !== null;}).length <= 1;
 		},
 
 		isNucleotideFastaSequence: function(sequence){
@@ -164,10 +176,10 @@ define([
 				&& this.hasSingleFastaSequence(sequence)){
 
 				// console.log("validation passed");
-				this.mapButton.set('disabled', false);
+				this.submitButton.set('disabled', false);
 				return true;
 			}else{
-				this.mapButton.set('disabled', true);
+				this.submitButton.set('disabled', true);
 				return false;
 			}
 		},
@@ -276,6 +288,11 @@ define([
 			query(".reSubmitBtn").style("visibility", "visible");
 
 			def.promise.then(function(q){
+				// log GA
+				if(window.gtag){
+					gtag('event', 'BLAST', {'event_category': 'Services', 'method': q.method});
+				}
+
 				_self.result.set('state', {query: q, resultType: resultType});
 			});
 
@@ -434,6 +451,10 @@ define([
 				this.sequence_message.innerHTML = 'PATRIC BLAST accepts only one sequence at a time. Please provide only one sequence.';
 				return;
 			}
+			var sanitized = this.sanitizeFastaSequence(val)
+			// console.log(sanitized)
+			this.sequence.set('value', sanitized)
+
 			this.sequence_message.innerHTML = '';
 			if(this.program.isLoaded()){
 				this.program.closeDropDown();

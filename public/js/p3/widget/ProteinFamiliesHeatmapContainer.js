@@ -229,7 +229,7 @@ define([
 			var familyId = originalAxis.columnIds;
 			var genomeId = originalAxis.rowIds;
 
-			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
+			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))&select(feature_id,patric_id,refseq_locus_tag)&limit(250000)";
 
 			Topic.publish(this.topicId, "showLoadingMask");
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
@@ -259,7 +259,7 @@ define([
 			var familyIds = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
+			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&select(feature_id,patric_id,refseq_locus)&limit(250000)";
 
 			Topic.publish(this.topicId, "showLoadingMask");
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {

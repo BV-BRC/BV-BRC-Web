@@ -6,13 +6,13 @@ define("p3/widget/AdvancedSearch", [
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
 	"dijit/layout/ContentPane", "dojo/request", "../util/QueryToSearchInput", "./GlobalSearch",
 	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/AdvancedSearch.html",
-	"../util/searchToQuery"
+	"../util/searchToQuery", "./formatter"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass, base, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
 			ContentPane, Request, queryToSearchInput, GlobalSearch,
 			TemplatedMixin, WidgetsInTemplate, Template,
-			searchToQuery
+			searchToQuery, formatter
 ){
 	return declare([WidgetBase, TemplatedMixin, WidgetsInTemplate], {
 		"baseClass": "AdvancedSearch",
@@ -37,8 +37,8 @@ define("p3/widget/AdvancedSearch", [
 					{field: "genome_status", label: "Genome Status", type: "orText"},
 					{field: "isolation_country", label: "Isolation Country", type: "orText"},
 					{field: "host_name", label: "Host Name", type: "orText"},
-					{field: "collection_date", label: "Collection Date", type: "orText"},
-					{field: "completion_date", label: "Completion Date", type: "orText"}
+					{field: "collection_date", label: "Collection Date", type: "date"},
+					{field: "completion_date", label: "Completion Date", type: "date"}
 				]
 			},
 
@@ -59,7 +59,6 @@ define("p3/widget/AdvancedSearch", [
 
 		_generateLink: {
 			"genome": function(docs, total){
-				console.log("Genome Link Generator: ", docs, total)
 				if (total==1){
 					return ['/view/Genome/', docs[0].genome_id, "#view_tab=overview"].join("");
 				}else{
@@ -105,17 +104,17 @@ define("p3/widget/AdvancedSearch", [
 		},
 
 		generateLink: function(type, docs, total){
-			console.log("Generate Link: ", type, docs, total)
+			// console.log("Generate Link: ", type, docs, total)
 			return this._generateLink[type].apply(this, [docs, total]);
 		},
 
 		_setStateAttr: function(state){
-			console.log("AdvancedSearch _setStateAttr: ", state);
+			// console.log("AdvancedSearch _setStateAttr: ", state);
 			this._set("state", state);
 		},
 
 		onSetState: function(attr, oldval, state){
-			console.log("onSetState: ", state.search);
+			// console.log("onSetState: ", state.search);
 
 			if (state.search){
 				this.searchBox.set("value", queryToSearchInput(state.search));
@@ -137,34 +136,37 @@ define("p3/widget/AdvancedSearch", [
 				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + "</a></div>");
 
 				out.push("<div class='resultInfo'>");
+				out.push("<span> Genome ID: " + doc.genome_id + "</span>");
+
 				if (doc.plasmids && doc.plasmids > 0){
+					out.push(" | ");
 					out.push("<span>" + doc.plasmids + " Plasmids</span>");
 				}
 
 				if (doc.contigs && doc.contigs > 0){
-					if (doc.plasmids) { out.push(" | "); }
+					out.push(" | ");
 					out.push("<span>" + doc.contigs + " Contigs</span>");
 				}
 
 				out.push("</div>");
 
 				out.push("<div class='resultInfo'>");
-				if (doc.date_inserted){
-					out.push("<span> SEQUENCED: " + doc.date_inserted + "</span>")
+				if (doc.completion_date){
+					out.push("<span> SEQUENCED: " + formatter.dateOnly(doc.completion_date) + "</span>")
 				}
 
 				if (doc.sequencing_centers){
 
-					out.push("&nbsp;( " + doc.sequencing_centers + " )");
+					out.push("&nbsp;(" + doc.sequencing_centers + ")");
 				}
 				out.push("</div>")
 
 				out.push("<div class='resultInfo'>");
 				if (doc.collection_date){
-					out.push("<span>COLLECTED: " + doc.collection_date + "</span>");
+					out.push("<span>COLLECTED: " + formatter.dateOnly(doc.collection_date) + "</span>");
 				}
 				if (doc.host_name){
-					out.push("&nbsp;<span>HOST:  " + doc.host_name + "</span>");
+					out.push("<span>HOST:  " + doc.host_name + "</span>");
 				}
 
 				out.push("</div>");
@@ -212,15 +214,20 @@ define("p3/widget/AdvancedSearch", [
 
 		formatsp_gene: function(docs, total){
 			var out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, "#view_tab=specialtyGenes&filter=false", '">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+			// console.log("formatsp_gene, docs: ", docs);
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SpecialtyGeneList/" + doc.feature_id + "'>" + doc.product + "</a>");
+				out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
 				if (doc.gene) {  out.push(" | " + doc.gene ); }
 				out.push("</div>");
 
 				out.push("<div class='resultInfo'>" + doc.genome_name +  "</div>");
 
-				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
+				out.push("<div class='resultInfo'>" + doc.property + " | " + doc.source);
+
+				if (doc.evidence){
+					out.push("&nbsp;|&nbsp;" + doc.evidence);
+				}
 
 				if (doc.refseq_locus_tag){
 					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);
@@ -238,7 +245,7 @@ define("p3/widget/AdvancedSearch", [
 		},
 
 		formattranscriptomics_experiment: function(docs, total){
-			console.log("formattranscriptomics_experiment docs: ", docs);
+			// console.log("formattranscriptomics_experiment docs: ", docs);
 			var out;
 			if (total==1){
 				out=["<div class=\"searchResultsContainer featureResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, "#view_tab=overview", '">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
@@ -281,7 +288,7 @@ define("p3/widget/AdvancedSearch", [
 
 		formattaxonomy: function(docs, total){
 			var q = this.state.search;
-			console.log("format taxonomy q: ", q);
+
 			var out=["<div class=\"searchResultsContainer taxonomyResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/TaxonList/?', q, '">Taxa</a>&nbsp;(', total, ")</div>"];
 
 			docs.forEach(function(doc){
@@ -298,8 +305,7 @@ define("p3/widget/AdvancedSearch", [
 
 		formatantibiotics: function(docs, total){
 			var q = this.state.search;
-			console.log("format antibiotics q: ", q);
-			// console.log("format antibiotics doc: ", docs);
+
 			var out=["<div class=\"searchResultsContainer antibioticsResults\">", '<div class="resultTypeHeader"><a class="navigationLink" href="/view/AntibioticList/?', q, '">Antibiotic</a>&nbsp;(', total, ")</div>"];
 
 			docs.forEach(function(doc){
@@ -312,13 +318,12 @@ define("p3/widget/AdvancedSearch", [
 			})
 			out.push("</div>");
 
-			console.log("Antibiotics Format: ", out.join(""));
 			return out.join("");
 		},
 
 		_setSearchResultsAttr: function(val){
 			this.searchResults=val;
-			console.log("Search Results: ", val);
+
 			var foundContent=false;
 			var resultCounts = {};
 			var singleResults = {};
@@ -360,8 +365,6 @@ define("p3/widget/AdvancedSearch", [
 			}
 			out.push("</table></div>")
 
-			console.log("Content Length: ", content.length, content);
-
 			if (content.length>0){
 				out.push("<h2>Top Matches</h2>" + content.join(""))
 			}
@@ -390,10 +393,15 @@ define("p3/widget/AdvancedSearch", [
 						break;
 				}
 
-				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
+				if (type == "genome_feature") {
+					// for genome features, sort by annotation first then by scores so as to show PATRIC features first
+					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+annotation,-score)" }
+				} else {
+					q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(-score)" }
+				}
 			})
 
-			console.log("SEARCH: ", q);
+			// console.log("SEARCH: ", q);
 			this.viewer.innerHTML="Searching...."
 			Request.post(window.App.dataAPI + "query/", {
 				headers: {

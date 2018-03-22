@@ -343,7 +343,7 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
-					max: 5000,
+					max: 10000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "subsystem_data"]
 				},
@@ -381,7 +381,7 @@ define([
 					tooltip: "Copy Selection to Clipboard.",
 					tooltipDialog: copySelectionTT,
 					max: 5000,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "pathway_summary_data"]
 				},
 				function(selection, container){
 					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("selection", selection);
@@ -1048,12 +1048,12 @@ define([
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data", "subsystem_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type;
 
 					if(!containerWidget){
@@ -1076,6 +1076,7 @@ define([
 					var stg = new SelectionToGroup({
 						selection: selection,
 						type: type,
+						inputType: containerWidget.containerType,
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -1262,7 +1263,7 @@ define([
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:56px;text-align:center;",
+				style: "width:56px;text-align:center;overflow-y: auto;",
 				splitter: false,
 				currentContainerWidget: this
 			});
@@ -1310,9 +1311,24 @@ define([
 				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					var row = evt.grid.row(rownum);
 					if(row.data){
+						if(this.grid.primaryKey){
+							if(!this.grid.selectedData["primaryKey"] || this.grid.selectedData["primaryKey"] == this.grid.primaryKey){
+								if(!this.grid.selectedData["primaryKey"]){
+								  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+								}
+								this.grid.selectedData[rownum] = row.data;
+							}
+							else{
+								this.grid.selectedData = {};
+							  this.grid.selectedData["primaryKey"] = this.grid.primaryKey;
+							  this.grid.selectedData[rownum] = row.data;
+						  }
+					  }
 						return row.data;
-					}else if (this.grid && this.grid._unloadedData) {
+					}else if(this.grid && this.grid._unloadedData){
 						return this.grid._unloadedData[rownum];
+					}else if(this.grid && this.grid.selectedData){
+						return this.grid.selectedData[rownum];
 					}
 				}), this);
 				this.selectionActionBar.set("selection", sel);
@@ -1322,12 +1338,20 @@ define([
 			this.grid.on("deselect", lang.hitch(this, function(evt){
 				var sel = [];
 				if(!evt.selected){
+					this.grid.selectedData = {};
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
 					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-						return evt.grid.row(rownum).data;
+						var row = evt.grid.row(rownum);
+						if(row.data){
+							return row.data;
+						}else if(this.grid && this.grid._unloadedData){
+							return this.grid._unloadedData[rownum];
+						}else if(this.grid && this.grid.selectedData){
+							return this.grid.selectedData[rownum];
+						}
 					}));
 				}
 				this.selectionActionBar.set("selection", sel);

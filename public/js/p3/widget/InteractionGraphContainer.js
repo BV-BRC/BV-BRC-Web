@@ -167,10 +167,10 @@ define([
 
 						switch(rel){
 							case "cola":
-								cy.layout({name: 'cola', userConstIter: 1});
+								cy.layout({name: 'cola', userConstIter: 1}).run();
 								break;
 							default:
-								cy.layout({name: rel});
+								cy.layout({name: rel}).run();
 								break;
 						}
 					}));
@@ -353,7 +353,7 @@ define([
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["interaction_data"]
 				},
 				function(selection, containerWidget){
@@ -370,7 +370,7 @@ define([
 					}
 
 					// console.log("Add Items to Group", sel);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_group";
 
 					var stg = new SelectionToGroup({
@@ -441,10 +441,10 @@ define([
 								'border-color': '#FFAB00',
 								'border-width': 2,
 								'border-opacity': 0.8,
-								'background-color': '#FFAB00',
+								'background-color': '#FFAB00'/*,
 								'shadow-color': '#FFAB00',
 								'shadow-blur': 30,
-								'shadow-opacity': 1
+								'shadow-opacity': 1*/
 							}
 						}, {
 							selector: 'node.pinned',
@@ -477,10 +477,10 @@ define([
 						}, {
 							selector: 'edge:selected',
 							style: {
-								'line-color': '#BBBB55',
+								'line-color': '#BBBB55'/*,
 								'shadow-color': '#FFAB00', // a700
 								'shadow-blur': 30,
-								'shadow-opacity': 1
+								'shadow-opacity': 1*/
 							}
 						}, {
 							selector: 'edge.typeA',
@@ -523,26 +523,26 @@ define([
 						// 	hasTrailingDivider: true
 						// }, {
 						id: 'selectNeighborhood',
-						title: 'select Neighborhood',
+						content: 'select Neighborhood',
 						selector: 'node',
 						onClickFunction: function(evt){
 							cy.nodes().unselect();
 
-							var rootNode = evt.cyTarget;
+							var rootNode = evt.target;
 							rootNode.neighborhood().select();
 						}
 					}, {
 						id: 'selectSubgraph',
-						title: 'select Connected Sub-graph',
+						content: 'select Connected Sub-graph',
 						selector: 'node',
 						onClickFunction: function(evt){
 							cy.nodes().unselect();
 
-							var rootNode = evt.cyTarget;
+							var rootNode = evt.target;
 							var visitedArr = [rootNode];
 							cy.elements().bfs({
 								roots: rootNode,
-								visit: function(i, depth, v, e, u){
+								visit: function(v, e, u, i, depth){
 									visitedArr.push(v); // include node
 									visitedArr.push(e); // include edge
 								},
@@ -569,7 +569,7 @@ define([
 
 				cy.on('mouseover', 'node, edge', function(evt){
 					// cy.on('tap', 'node, edge', function(evt){
-					var ele = evt.cyTarget;
+					var ele = evt.target;
 
 					var content = [];
 					if(ele.isNode()){
@@ -715,10 +715,10 @@ define([
 				}
 			}else{
 
-				var sel = this.selection.filter(function(i, ele){
+				var sel = this.selection.filter(function(ele, i){
 					return ele.isNode() && ele.data('interactor_type') === 'Protein';
 				}).map(function(ele){
-					return ele.data('feature_id'); // feature_id
+					return {feature_id: ele.data('feature_id')}; // feature_id
 				});
 
 				this.selectionActionBar.set("selection", sel);
@@ -774,7 +774,7 @@ define([
 			}
 
 			// cy.layout({name: 'circle'});
-			cy.layout({name: 'cola', allConstIter: 1, fit: true});
+			cy.layout({name: 'cola', allConstIter: 1, fit: true}).run();
 		}
 	})
 });

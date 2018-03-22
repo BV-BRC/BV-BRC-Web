@@ -223,14 +223,15 @@ define("p3/widget/viewer/_GenomeList", [
 
 					// special case for host genomes
 					if(active == "features" && this.state && this.state.genome_ids && !this.state.hashParams.filter){
-						var q = "?in(genome_id,(" + this.state.genome_ids.join(",") + "))&select(taxon_lineage_ids)";
+						var q = "in(genome_id,(" + this.state.genome_ids.join(",") + "))&select(taxon_lineage_ids)&limit(" + this.state.genome_ids.length + ")";
 						// console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
-						xhr.get(PathJoin(this.apiServiceUrl, "genome", q), {
+						xhr.post(PathJoin(this.apiServiceUrl, "genome"), {
 							headers: {
 								accept: "application/json",
 								'X-Requested-With': null,
 								'Authorization': (window.App.authorizationToken || "")
 							},
+							data: q,
 							handleAs: "json"
 						}).then(lang.hitch(this, function(genome_data){
 
@@ -371,7 +372,7 @@ define("p3/widget/viewer/_GenomeList", [
 
 					var dlg = new Dialog({
 						title: "PATRIC Quickstart",
-						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+						content: '<iframe width="945" height="480" src="https://www.youtube.com/embed/K3eL4i9vQBo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
 					});
 					dlg.show();
 					localStorage.setItem(this.showQuickstartKey, true);

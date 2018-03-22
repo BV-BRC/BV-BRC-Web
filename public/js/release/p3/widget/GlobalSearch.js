@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<option value=\"antibiotic\">Antibiotic</option>\n\t\t\t\t\t\t<!--\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class='fa fa-1x icon-question-circle-o NonmodalDialogButton' rel='help:/misc/GlobalSearchOptions' title=\"Select search options from the dropdown list. Click to view the help information\"/></td>\n\t\t\t\t<td style=\"width:50px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchOption\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"option_and\">All terms</option>\n\t\t\t\t\t\t<option value=\"option_or\">Any term</option>\n\t\t\t\t\t\t<option value=\"option_and2\">All exact terms</option>\n\t\t\t\t\t\t<option value=\"option_or2\">Any exact term</option>\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n"}});
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">All Data Types</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<option value=\"antibiotic\">Antibiotic</option>\n\t\t\t\t\t\t<!--\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<label id=\"globalSearch\" class=\"sr-only\">Global Search</label>\n\t\t\t\t\t<input aria-labelledby=\"globalSearch\" placeholder=\"Global Search\" style=\"width:100%;\" data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class='fa fa-1x icon-question-circle-o NonmodalDialogButton' rel='help:/misc/GlobalSearchOptions' title=\"Select search options from the dropdown list. Click to view the help information\"/></td>\n\t\t\t\t<td style=\"width:50px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchOption\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"option_and\">All terms</option>\n\t\t\t\t\t\t<option value=\"option_or\">Any term</option>\n\t\t\t\t\t\t<option value=\"option_and2\">All exact terms</option>\n\t\t\t\t\t\t<option value=\"option_or2\">Any exact term</option>\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n"}});
 define("p3/widget/GlobalSearch", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
@@ -15,22 +15,40 @@ define("p3/widget/GlobalSearch", [
 
 	function processQuery(query, searchOption){
 		//console.log("processQuery query: ", query, "searchOption: ", searchOption);	
+		// replace some special characters
 		query = query.replace(/'/g, "").replace(/:/g, " ");
-					
-		var keywords = query.split(/\s/);
-		// console.log("keywords", keywords);
+		// console.log("query", query);
 		
-		// Add quotes for IDs: handle fig id (e.g. fig|83332.12.peg.1),  genome id (e.g. 83332.12), EC number (e.g. 2.1.1.1), other ids with number.number, number only, IDs ending with numbers (at least 1 digit). 		
-		for (var i=0; i<keywords.length; i++){
-			if (keywords[i].charAt(0) != '"' && keywords[i].charAt(keywords[i].length-1) != '"'){ // if not already quoted
-				// if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/^[0-9]+$/) != null || keywords[i].match(/[0-9]+$/) != null){
-				if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/[0-9]+$/) != null){
-					keywords[i] = '"' + keywords[i] + '"';
-				}
-			}				
-		}
-		query = keywords.join(" ");
+		// replace special words/characters: (+), (-), +, - , <, >, /, \ with a space as they are causing solr query problems when included in the keywords  
+		query =  query.replace(/\(\+\)/g, " ").replace(/\(-\)/g, " ").replace(/,|\+|-|=|<|>|\\|\//g, " ");
+		// console.log("query", query);	
 
+		// When query phrase is quoted, the whole phrase should be search as one keyword unless it contains (), {}, []
+		// e.g. "EC 2.1.1.1" should be search as "EC 3.2.1.1" not "EC AND 3.2.1.1"
+		// However if user specify "amylase (EC 3.2.1.1)", "amylase (EC 3.2.1.1)" can not be submitted as solr query as it contains ()
+		if (query.charAt(0) == '"' && query.match(/\(|\)|\[|\]|\{|\}/)){
+			query =  query.replace(/\"/g, "");
+		}
+
+		// This handles special implementation of doing exact search for possible ids such as fig id, EC number etc.
+		// When these id patterns are detected, quotes will be added for them in the search term
+		if (query.charAt(0) != '"' || query.match(/\(|\)|\[|\]|\{|\}/)) {
+			
+			// keywords should not include {}, [] or () characters
+			var keywords = query.split(/\s|\(|\)|\[|\]|\{|\}/);
+			// console.log("keywords", keywords);
+		
+			// Add quotes for IDs: handle fig id (e.g. fig|83332.12.peg.1),  genome id (e.g. 83332.12), EC number (e.g. 2.1.1.1), other ids with number.number, number only, IDs ending with numbers (at least 1 digit). 		
+			for (var i=0; i<keywords.length; i++){
+				if (keywords[i].charAt(0) != '"' && keywords[i].charAt(keywords[i].length-1) != '"'){ // if not already quoted
+					// if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/^[0-9]+$/) != null || keywords[i].match(/[0-9]+$/) != null){
+					if (keywords[i].match(/^fig\|[0-9]+/) != null || keywords[i].match(/[0-9]+\.[0-9]+/) != null || keywords[i].match(/[0-9]+$/) != null){
+						keywords[i] = '"' + keywords[i] + '"';
+					}
+				}				
+			}
+			query = keywords.join(" ");
+		}
 		var q = searchToQuery(query);
 
 		if (searchOption == "option_or") {
@@ -110,10 +128,11 @@ define("p3/widget/GlobalSearch", [
 
 				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 
-				if(window.ga){
-					window.ga('send', 'pageview', '/search?keyword=' + encodeURIComponent(query) + "&cat=" + searchFilter);
+				// log GA
+				if(window.gtag){
+					gtag('event', 'GlobalSearch', {'query': encodeURIComponent(query), 'category': searchFilter});
 				}
-				console.log("Do Search: ", searchFilter, query);
+				// console.log("Do Search: ", searchFilter, query);
 			}
 		},
 		onClickAdvanced: function(evt){

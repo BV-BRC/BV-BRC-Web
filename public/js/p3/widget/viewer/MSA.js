@@ -17,7 +17,7 @@ define([
 			SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs){
 
 	var schemes = [{
-			name: "Zappo", 
+			name: "Zappo",
 			id: "zappo"
 		},
 		{
@@ -83,7 +83,7 @@ define([
 
 
 	var filters = [{
-			name: "Hide columns by % conservation (>=)", 
+			name: "Hide columns by % conservation (>=)",
 			id: "hide_col_threshold_greater"
 		},
 		{
@@ -250,6 +250,7 @@ define([
 			this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + "</div>");
 		},
 		onSetData: function(attr, oldVal, data){
+			// console.log("data", data);
 			this.createDataMap();
 			this.render();
 		},
@@ -273,7 +274,7 @@ define([
 					// console.log("this.itemDetailPanel", self.itemDetailPanel);
 					if (sel.feature_id == curr_selection) {
 						self.itemDetailPanel.set('containerWidget', {containerType: 'feature_data'});
-						self.itemDetailPanel.set('selection', [sel]);	
+						self.itemDetailPanel.set('selection', [sel]);
 					}
 				})
 
@@ -285,6 +286,9 @@ define([
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
+            var clustal_txt = ["CLUSTAL"];
+			var fasta = "";
+			var tree_newick = this.data.tree;
 			this.alt_labels = {"genome_name": {}, "patric_id": {}};
 			this.dataStats["idType"] = null;
 			this.dataStats["numFeatures"] = 0;
@@ -292,15 +296,27 @@ define([
 			this.dataStats["minLength"] = 1000000;
 			this.dataStats["maxLength"] = 0;
 			this.dataStats["genomeIDs"] = {};
+			// console.log("this.data ", this.data);
+			// console.log("this.dataMap ", this.dataMap);
 			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
 					var match;
 					var headerInfo = regex.exec(line);
 					var record = {sequence: []};
+					// console.log("headerInfo ", headerInfo);
 					if(!(headerInfo[1] in this.dataMap)){
 						geneID = headerInfo[1];
-						clustal.push(geneID + "\t");
+                        clustal.push(geneID + "\t");
+						if (this.data.map[geneID]["patric_id"]) {
+							clustal_txt.push(this.data.map[geneID]["patric_id"] + "\t");
+							tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID]["patric_id"]);
+							fasta = fasta + ">" + this.data.map[geneID]["patric_id"] + "\n";
+						} else {
+							clustal_txt.push(this.data.map[geneID]["refseq_locus_tag"]+ "\t");
+							tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID]["refseq_locus_tag"]);
+							fasta = fasta + ">" + this.data.map[geneID]["refseq_locus_tag"] + "\n";
+						}
 						this.dataStats["numFeatures"] += 1;
 						if(geneID.startsWith("fig|")){
 							record["patric_id"] = geneID;
@@ -338,6 +354,8 @@ define([
 				else if(line.trim() != "" && geneID in this.dataMap){
 					this.dataMap[geneID].sequence.push(line);
 					clustal[clustal.length - 1] = clustal[clustal.length - 1] + line;
+                    clustal_txt[clustal_txt.length - 1] = clustal_txt[clustal_txt.length - 1] + line;
+					fasta = fasta + line + "\n";
 				}
 				else{
 					geneID = null;
@@ -352,6 +370,13 @@ define([
 				}
 			}));
 			this.dataStats.clustal = clustal.join("\n");
+            this.dataStats.clustal_txt = clustal_txt.join("\n");
+			this.dataStats.tree_newick = tree_newick;
+			this.dataStats.fasta = fasta;
+			// console.log("this.dataStats ", this.dataStats);
+			// console.log("this.dataMap ", this.dataMap);
+			// console.log("this.data ", this.data);
+			// console.log("fasta ", fasta);
 
 		},
 
@@ -451,7 +476,7 @@ define([
 
 			// init msa
 			var m = new msa.msa(opts);
-		 	console.log("m ", m);
+		 	// console.log("m ", m);
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
 			//var msaDiv = document.getElementById('msaDiv');
@@ -503,7 +528,7 @@ define([
 
 				// console.log("msa_models=", msa_models);
 				// console.log("m=", m);
-				
+
 				switch(rel){
 				case "hide_col_threshold_greater":
 					var threshold = prompt("Enter threshold (in percent)", 20);
@@ -520,7 +545,7 @@ define([
 					m.g.columns.set("hidden", hidden);
 					m.g.vis.set("seqlogo", false);
 					break;
-					
+
 				case "hide_col_threshold_less":
 					var threshold = prompt("Enter threshold (in percent)", 20);
 					threshold = threshold / 100;
@@ -644,7 +669,7 @@ define([
 				}
 				popup.close(filterMenu);
 			}));
-			
+
 			on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
 				var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
 				var sel = snapMenu.selection;
@@ -653,16 +678,18 @@ define([
 					msa.utils.export.saveAsImg(m, "PATRIC_msa.png");
 				}
 				else if(rel == "msa-txt"){
-					saveAs(new Blob([this.dataStats.clustal]), "PATRIC_msa.txt");
+					saveAs(new Blob([this.dataStats.clustal_txt]), "PATRIC_msa.txt");
 				}
 				else if(rel == "msa-fasta"){
-					msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
+					// msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
+					// console.log("this.dataStats.fasta ", this.dataStats.fasta);
+					saveAs(new Blob([this.dataStats.fasta]), "PATRIC_msa.fasta");
 				}
 				else if(rel == "tree-svg"){
 					saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_msa_tree.svg");
 				}
 				else if(rel == "tree-newick"){
-					saveAs(new Blob([this.data.tree]), "PATRIC_msa_tree.nwk");
+					saveAs(new Blob([this.dataStats.tree_newick]), "PATRIC_msa_tree.nwk");
 				}
 				popup.close(snapMenu);
 			}));
@@ -715,6 +742,7 @@ define([
 
 		doAlignment: function(){
 			console.log("doAlignment()");
+			// console.log("this.state.search ", this.state.search);
 			this.set('loading', true);
 			if(this.state && this.state.search){
 				var q = this.state.search + "&limit(" + this.maxSequences + ")";
@@ -886,12 +914,12 @@ define([
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["*"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_data";
 
 					if(!type){
@@ -917,7 +945,7 @@ define([
 					dlg.show();
 				},
 				false
-			], 
+			],
 			[
 				"MultipleSeqAlignmentFeatures",
 				"fa icon-alignment fa-2x",
@@ -1007,7 +1035,7 @@ define([
 					});
 				},
 				false
-			], 
+			],
 			[
 				"ViewGenomeItem",
 				"MultiButton fa icon-selection-Genome fa-2x",

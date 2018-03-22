@@ -1,8 +1,11 @@
 define("p3/widget/DataItemFormatter", [
 	"dojo/_base/lang", "dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
-	"dijit/form/Button", "../JobManager", "dijit/TitlePane", "./formatter"
-], function(lang, locale, domConstruct, domClass,
-			Button, JobManager, TitlePane, formatter){
+	"dijit/form/Button", "../JobManager", "dijit/TitlePane", "./formatter", "dojo/on",
+	"dojo/query", "dojo/NodeList-traverse"
+], function(
+	lang, locale, domConstruct, domClass,
+	Button, JobManager, TitlePane, formatter, on,
+	query){
 
 	var formatters = {
 		"default": function(item, options){
@@ -54,6 +57,9 @@ define("p3/widget/DataItemFormatter", [
 			options = options || {};
 
 			var columns = [{
+				name: 'Service',
+				text: 'app'
+			}, {
 				name: 'App',
 				text: 'app'
 			}, {
@@ -88,6 +94,8 @@ define("p3/widget/DataItemFormatter", [
 			var div = domConstruct.create("div");
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			displayDetail(item, columns, div, options);
+
+			displayStdoutPanels(div, item);
 
 			return div;
 		},
@@ -96,6 +104,9 @@ define("p3/widget/DataItemFormatter", [
 			options = options || {};
 
 			var columns = [{
+				name: 'Service',
+				text: 'app'
+			}, {
 				name: 'App',
 				text: 'app'
 			}, {
@@ -131,45 +142,7 @@ define("p3/widget/DataItemFormatter", [
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			displayDetail(item, columns, div, options);
 
-			var stpDiv = domConstruct.create("div", {}, div);
-			var stddlg = new TitlePane({title: "Standard Output", style: "margin-bottom:5px;", open: false}, stpDiv);
-			var tpDiv = domConstruct.create("div", {}, div);
-			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
-			dlg.watch("open", function(attr, oldVal, open){
-				if(!open){
-					return;
-				}
-				JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
-					console.log("JOB DETAIL: ", detail);
-					if(detail.stderr){
-						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
-					}else{
-						dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
-					}
-
-				}, function(err){
-					dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
-				});
-			});
-
-			stddlg.watch("open", function(attr, oldVal, open){
-				if(!open){
-					return;
-				}
-				JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
-					console.log("JOB DETAIL: ", detail);
-					if(detail.stdout){
-						stddlg.set("content", "<pre>" + detail.stdout + "</pre>");
-					}else{
-						stddlg.set("content", "Unable to retreive STDOUT of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
-					}
-
-				}, function(err){
-					stddlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
-				});
-			});
-
-			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+			displayStdoutPanels(div, item);
 
 			return div;
 		},
@@ -1246,8 +1219,7 @@ define("p3/widget/DataItemFormatter", [
 					}, {
 						name: 'Antimicrobial Resistance Evidence',
 						text: 'antimicrobial_resistance_evidence',
-						editable: true,
-						isList: true
+						editable: true
 					}, {
 						name: 'Reference Genome',
 						text: 'reference_genome'
@@ -1367,7 +1339,8 @@ define("p3/widget/DataItemFormatter", [
 					}, {
 						name: 'Collection Year',
 						text: 'collection_year',
-						editable: true
+						editable: true,
+						type: 'number'
 					}, {
 						name: 'Collection Date',
 						text: 'collection_date',
@@ -1490,6 +1463,14 @@ define("p3/widget/DataItemFormatter", [
 						editable: true,
 						type: 'textarea',
 						isList: true
+					}, {
+						name: 'Insert Date',
+						text: 'date_inserted',
+						type: 'date'
+					}, {
+						name: 'Last Modified',
+						text: 'date_modified',
+						type: 'date'
 					}]
 			}
 
@@ -1497,6 +1478,7 @@ define("p3/widget/DataItemFormatter", [
 		}
 
 	};
+
 
 	function displayHeader(parent, label, iconClass, url, options){
 		var linkTitle = options && options.linkTitle || false;
@@ -1544,6 +1526,93 @@ define("p3/widget/DataItemFormatter", [
 		})
 	}
 
+	function displayStdoutPanels(parent, item) {
+		var stpDiv = domConstruct.create("div", {}, parent);
+		var stdTitle = "Standard Output";
+		var stddlg = new TitlePane({
+			title: stdTitle,
+			style: "margin-bottom:5px;",
+			open: false
+		}, stpDiv);
+
+		var tpDiv = domConstruct.create("div", {}, parent);
+		var stderrTitle = "Error Output";
+		var dlg = new TitlePane({
+			title: stderrTitle,
+			open: false
+		}, tpDiv);
+
+		// add copy to clipboard button
+		var icon = '<i class="icon-clipboard2 pull-right"></i>';
+		var copyBtn = new Button({
+			label: icon,
+			style: {
+				'float': 'right',
+				'padding': 0
+			},
+			onClick: function(e) {
+				e.stopPropagation();
+				var self = this;
+
+				// get text
+				var pane = query(self.domNode).parents('.dijitTitlePane')[0];
+				var content = query('pre', pane)[0].innerText;
+
+				// copy contents
+				clipboard.copy(content);
+
+				self.set('label', "copied");
+				setTimeout(function() {
+					self.set('label', icon);
+				}, 2000);
+			}
+		})
+
+		// on stdout panel open
+		stddlg.watch("open", function(attr, oldVal, open){
+			if(!open){
+				return;
+			}
+
+			JobManager.queryTaskDetail(item.id, true, false).then(function(detail){
+				var titleBar = query('.dijitTitlePaneTextNode',  stddlg.domNode)[0];
+				domConstruct.place(copyBtn.domNode, titleBar)
+
+				console.log("JOB DETAIL: ", detail);
+				if(detail.stdout){
+					stddlg.set("content", "<pre style='overflow: scroll;'>" + detail.stdout + "</pre>");
+				}else{
+					stddlg.set("content", "Unable to retreive STDOUT of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+				}
+
+			}, function(err){
+				stddlg.set("content", "No standard output for this task found.<br>");
+			});
+		});
+
+		// on error panel open
+		dlg.watch("open", function(attr, oldVal, open){
+			if(!open){
+				return;
+			}
+
+			JobManager.queryTaskDetail(item.id, false, true).then(function(detail){
+				var titleBar = query('.dijitTitlePaneTextNode',  dlg.domNode)[0];
+				domConstruct.place(copyBtn.domNode, titleBar)
+
+				console.log("JOB DETAIL: ", detail);
+				if(detail.stderr){
+					dlg.set("content", "<pre style='overflow: scroll;'>" + detail.stderr + "</pre>");
+				}else{
+					dlg.set("content", "Unable to retreive STDERR of this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
+				}
+
+			}, function(err){
+				dlg.set("content", "No standard error for this task found.<br>");
+			});
+		});
+	}
+
 	function renderNoInfoFound(sectionName, parent){
 		domConstruct.create("tr", {
 			'innerHTML': '<td></td><td class="DataItemSectionNotFound">None available</td>'
@@ -1567,7 +1636,7 @@ define("p3/widget/DataItemFormatter", [
 		var label = column.name;
 		var multiValued = column.multiValued || false;
 		var mini = options && options.mini || false;
-
+		// console.log("column=", column, "item=", item, "key=", key, "label=", label);
 		if(key && item[key] && !column.data_hide){
 			if(column.isList){
 				var tr = domConstruct.create("tr", {});
@@ -1588,6 +1657,11 @@ define("p3/widget/DataItemFormatter", [
 				return renderRow(label, dateStr)
 			}else if(!mini || column.mini){
 				var l = evaluateLink(column.link, item[key], item);
+				// console.log("item[key]=", item[key]);
+				// a special case for service app
+				if (label == 'Service'){
+					l = formatter.serviceLabel(item[key]);				
+				}
 				return renderRow(label, l);
 			}
 		}

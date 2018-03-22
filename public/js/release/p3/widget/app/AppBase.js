@@ -3,21 +3,25 @@ require({cache:{
 define("p3/widget/app/AppBase", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector", "dojo/topic",
+	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector", "dojo/topic", "dojo/_base/lang",
+	"../../util/PathJoin",
 	"dijit/Dialog", "dojo/request", "dojo/dom-construct", "dojo/query", "dijit/TooltipDialog", "dijit/popup", "dijit/registry", "dojo/dom"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, WorkspaceObjectSelector, Topic,
+			Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
+			PathJoin,
 			Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom){
 	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "App Sleep",
 		templateString: Template,
+		docsServiceURL: window.App.docsServiceURL,
 		path: "",
 		applicationName: "Date",
 		showCancel: false,
 		activeWorkspace: "",
 		activeWorkspacePath: "",
 		help_doc: null,
+		activeUploads: [],
 
 		postMixInProperties: function(){
 			this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
@@ -31,63 +35,79 @@ define("p3/widget/app/AppBase", [
 
 		gethelp: function(){
 
-			var helprequest = xhr.get("/js/p3/widget/app/help/" + this.applicationName + "Help.html", {
-				handleAs: "text"
-			});
-			helprequest.then(function(data){
-				this.help_doc = domConstruct.toDom(data);
-				var ibuttons = query(".infobutton");
-				ibuttons.forEach(function(item){
-					//var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
-					//basic flat child workaround for getting help in safari. will break if nested.
-					var help_text = null;
-					for(i = 0; i < this.help_doc.childNodes.length; i++){
-						if(this.help_doc.childNodes[i].id == item.attributes.name.value){
-							help_text = this.help_doc.childNodes[i];
-						}
-					}
-					help_text = help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
-					help_text.style.overflowY = 'auto';
-					help_text.style.maxHeight = '400px';
-					if(dojo.hasClass(item, "dialoginfo")){
-						item.info_dialog = new Dialog({
-							content: help_text,
-							"class": 'nonModal',
-							draggable: true,
-							style: "max-width: 350px;"
-						});
-						item.open = false;
-						on(item, 'click', function(){
-							if(!item.open){
-								item.open = true;
-								item.info_dialog.show();
-							}
-							else{
-								item.open = false;
-								item.info_dialog.hide();
-							}
-						});
-					}
-					else if(dojo.hasClass(item, "tooltipinfo")){
-						item.info_dialog = new TooltipDialog({
-							content: help_text,
-							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
-							onMouseLeave: function(){
-								popup.close(item.info_dialog);
-							}
-						});
-						on(item, 'mouseover', function(){
-							popup.open({
-								popup: item.info_dialog,
-								around: item
-							});
-						});
-						on(item, 'mouseout', function(){
-							popup.close(item.info_dialog);
-						});
-					}
+			if (this.applicationHelp){
+				var helprequest = xhr.get(PathJoin(this.docsServiceURL, this.applicationHelp), {
+					handleAs: "text"
 				});
-			});
+				helprequest.then(function(data){
+					data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />', '')
+					this.help_doc = domConstruct.toDom(data);
+					var ibuttons = query(".infobutton");
+					ibuttons.forEach(function(item){
+						//var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+						//basic flat child workaround for getting help in safari. will break if nested.
+						var help_text = null;
+						for(i = 0; i < this.help_doc.childNodes.length; i++){
+							if(this.help_doc.childNodes[i].id == item.attributes.name.value){
+								help_text = this.help_doc.childNodes[i];
+							}
+						}
+						help_text = help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
+						help_text.style.overflowY = 'auto';
+						help_text.style.maxHeight = '400px';
+						if(dojo.hasClass(item, "dialoginfo")){
+							item.info_dialog = new Dialog({
+								content: help_text,
+								"class": 'helpModal',
+								draggable: true,
+								style: "max-width: 350px;"
+							});
+							item.open = false;
+							on(item, 'click', function(){
+								if(!item.open){
+									item.open = true;
+									item.info_dialog.show();
+								}
+								else{
+									item.open = false;
+									item.info_dialog.hide();
+								}
+							});
+						}
+						else if(dojo.hasClass(item, "tooltipinfo")){
+							item.info_dialog = new TooltipDialog({
+								content: help_text,
+								"class": 'helpTooltip',
+								style: "overflow-y: auto; max-width: 350px; max-height: 400px",
+								onMouseLeave: function(){
+									popup.close(item.info_dialog);
+								}
+							});
+							on(item, 'mouseover', function(){
+								popup.open({
+									popup: item.info_dialog,
+									around: item
+								});
+							});
+							on(item, 'mouseout', function(){
+								popup.close(item.info_dialog);
+							});
+						}
+					});
+				});
+			}
+
+			var tutorials = query(".tutorialButton");
+			var tutorialLink = PathJoin(this.docsServiceURL, (this.tutorialLink || 'tutorial/'));
+			tutorials.forEach(function(item){
+				if (dojo.hasClass(item, "tutorialInfo")){
+					on(item, 'click', function(){
+						// console.log(tutorialLink)
+						window.open(tutorialLink, 'Tutorials')
+					})
+				}
+			})
+
 		},
 
 		onOutputPathChange: function(val){
@@ -123,6 +143,33 @@ define("p3/widget/app/AppBase", [
 			}
 
 			this.gethelp();
+			Topic.subscribe("/upload", lang.hitch(this, "onUploadMessage"));
+			Topic.subscribe("/UploaderDialog", lang.hitch(this, function(msg){
+				if(msg && msg.type == 'UploaderClose'){
+					this.validate();
+				}
+			}));
+			if(this.submitButton){
+				var uploadTolltip = new TooltipDialog({
+					content: "Upload in progress, please wait.",
+					onMouseLeave: function(){
+						popup.close(uploadTolltip);
+					}
+				});
+				var a = this.submitButton.domNode;
+				on(a, 'mouseover', lang.hitch(this, function(){
+					if(this.activeUploads && this.activeUploads.length != 0)
+					popup.open({
+						popup: uploadTolltip,
+						around: a,
+						orient: ["above-centered", "below-centered"]
+					});
+				}));
+				on(a, 'mouseout', function(){
+					popup.close(uploadTolltip);
+				});
+			}
+
 			this._started = true;
 		},
 
@@ -130,6 +177,47 @@ define("p3/widget/app/AppBase", [
 			domClass.remove(this.domNode, "Working");
 			domClass.remove(this.domNode, "Error");
 			domClass.remove(this.domNode, "Submitted");
+		},
+
+		onUploadMessage: function(msg){
+			var path = msg.workspacePath;
+			if(msg.workspacePath.substr(-1) != '/'){
+				path += '/';
+			}
+			path += msg.filename;
+			if(msg && msg.type == "UploadStart" && this.activeUploads.indexOf(msg.workspacePath+msg.filename) == -1){
+				//add file this.activeUploads
+				this.activeUploads.push(path);
+				this.validate();
+				return;
+			}
+
+			if(msg && msg.type == "UploadProgress"){
+				this.validate();
+				return;
+			}
+
+			if(msg && msg.type == "UploadComplete"){
+				//remove file from this.activeUploads
+				var i = this.activeUploads.indexOf(path);
+				if(i != -1){
+					this.activeUploads.splice(i, 1);
+				}
+				this.validate();
+				return;
+			}
+		},
+
+		validate: function(){
+			var valid = this.inherited(arguments);
+			if (valid && this.activeUploads.length == 0){
+				if (this.submitButton){ this.submitButton.set("disabled", false); }
+				return valid;
+			}
+			else {
+				if (this.submitButton){ this.submitButton.set("disabled", true); }
+				return false;
+			}
 		},
 
 		onSubmit: function(evt){
@@ -156,6 +244,11 @@ define("p3/widget/app/AppBase", [
 				this.submitButton.set("disabled", true);
 				window.App.api.service("AppService.start_app", [this.applicationName, values]).then(function(results){
 					console.log("Job Submission Results: ", results);
+
+					if(window.gtag){
+						gtag('event', this.applicationName, {'event_category': 'Services'});
+					}
+
 					domClass.remove(_self.domNode, "Working")
 					domClass.add(_self.domNode, "Submitted");
 					_self.submitButton.set("disabled", false);

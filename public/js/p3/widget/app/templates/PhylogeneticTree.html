@@ -4,14 +4,24 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Phylogenetic Tree Building</h3>
-            <p>Phylogenetic Tree Building.</p>
+            <h3>Phylogenetic Tree Building
+                <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                </div>
+            </h3>
+            <p>The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for up to 50 user-selected genomes.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Phylogenetic Tree Building Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
 
         <div class="formFieldsContainer">
             <div style="display: none;">
                 <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false"
-                       data-dojo-attach-point="inGroupNumGenomes" data-dojo-props="constraints:{min:3,max:50},"/>
+                       data-dojo-attach-point="inGroupNumGenomes" data-dojo-props="constraints:{min:3,max:100},"/>
                 <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false"
                         data-dojo-attach-point="outGroupNumGenomes" data-dojo-props="constraints:{min:1,max:5},"/>
             </div>
@@ -27,8 +37,8 @@
                                     <div class="headerrow">
                                         <div style="width:90%;display:inline-block;">
                                             <label class="appBoxLabel">Ingroup Genomes</label>
-                                            <div name="ingroupinfo" class="infobox iconbox infobutton dialoginfo">
-                                                <i class="fa icon-info-circle fa"></i>
+                                            <div name="ingroup-genomes-selection" class="infobox iconbox infobutton dialoginfo">
+                                                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -78,8 +88,8 @@
                                         <div class="headerrow">
                                             <div style="width:85%;display:inline-block;">
                                                 <label class="appBoxLabel">Parameters</label>
-                                                <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-                                                    <i class="fa icon-info-circle fa"></i>
+                                                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -130,8 +140,8 @@
                             <div class="headerrow">
                                 <div style="width:90%;display:inline-block;">
                                     <label class="appBoxLabel">Outgroup Genomes</label>
-                                    <div name="outgroupinfo" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa"></i>
+                                    <div name="outgroup-genomes" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                     </div>
                                 </div>
                             </div>

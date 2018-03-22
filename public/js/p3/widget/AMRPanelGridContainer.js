@@ -146,12 +146,12 @@ define([
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing group",
+					tooltip: "Add selection to a new or existing group",
 					validContainerTypes: ["genome_amr_data"]
 				},
 				function(selection, containerWidget){
 
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "genome_group";
 
 					var stg = new SelectionToGroup({

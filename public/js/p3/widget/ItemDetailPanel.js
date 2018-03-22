@@ -13,6 +13,7 @@ define([
 		changeableTypes: {
 			unspecified: {label: "unspecified", value: "unspecified"},
 			contigs: {label: "contigs", value: "contigs"},
+			nwk: {label: "nwk", value: "nwk"},
 			reads: {label: "reads", value: "reads"},
 			diffexp_input_data: {label: "diffexp_input_data", value: "diffexp_input_data"},
 			diffexp_input_metadata: {label: "diffexp_input_metadata", value: "diffexp_input_metadata"}
@@ -174,9 +175,8 @@ define([
 								domConstruct.place(' <i class="fa icon-caret-down" style="text-decoration: none;"></i>',
 									_self[key + "Node"].domNode)
 
-								var type_options = [];
-								Object.keys(this.changeableTypes).forEach(function(change_type){
-									type_options.push(this.changeableTypes[change_type]);
+								var type_options = Object.keys(this.changeableTypes).map(function(key){
+									return this.changeableTypes[key]
 								}, this);
 								_self[key + "Node"].editorParams.options = type_options;
 							}
@@ -287,7 +287,13 @@ define([
 			// only update meta if value has changed
 			if(this.item.type == val) return;
 
-			WorkspaceManager.updateMetadata(this.item.path, false, val)
+			var newMeta = {
+				path: this.item.path,
+				userMeta: this.item.userMeta,
+				type: val
+			}
+
+			WorkspaceManager.updateMetadata(newMeta)
 				.then(function(meta){
 					this.item = WorkspaceManager.metaListToObj(meta);
 				});

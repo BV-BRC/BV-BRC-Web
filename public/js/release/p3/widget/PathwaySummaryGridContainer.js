@@ -1,36 +1,38 @@
 define("p3/widget/PathwaySummaryGridContainer", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./SelectionToGroup",
+	"./ContainerActionBar", "FileSaver",
 	"./PathwaySummaryGrid", "./GridContainer", "./PerspectiveToolTip"
 ], function(declare, lang, on, Topic, domConstruct,
 			Dialog, popup, TooltipDialog, SelectionToGroup,
+			ContainerActionBar, saveAs,
 			PathwaySummaryGrid, GridContainer, PerspectiveToolTipDialog){
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		var self = this;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		gridCtor: PathwaySummaryGrid,
 		containerType: "pathway_summary_data",
 		facetFields: [],
-		enableFilterPanel: false,
+		dataModel: 'pathway_summary',
+		createFilterPanel: function(opts){
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: lang.mixin({}, this.state),
+				enableAnchorButton: false,
+				currentContainerWidget: this
+			});
+		},
 
 		buildQuery: function(){
 			// prevent further filtering. DO NOT DELETE
@@ -125,34 +127,38 @@ define("p3/widget/PathwaySummaryGridContainer", [
 					validTypes: ["*"],
 					requireAuth: true,
 					max: 10000,
-					tooltip: "Copy selection to a new or existing feature group",
+					tooltip: "Add selection to a new or existing feature group",
 					validContainerTypes: ["pathway_summary_data"],
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var dlg = new Dialog({title: "Add selected items to group"});
 					var type = "feature_group";
-					var ids = selection.map(function(d){
+					var feature_ids = selection.map(function(d){
 						return d['feature_ids'];
 					});
 					//construct an array, each element is an object with "feature_id" as property
+					//no need to remove duplicate as WorkspaceManager takes care of it
 					var features = [];
-					ids.forEach(function(s){
-					  s.forEach(function(d){
+					feature_ids.forEach(function(s){
+						s.forEach(function(d){
 							features.push({feature_id: d});
 						})
-				  });
-					//remove duplicate features
-					var feature_map = {};
-					features.forEach(function(feature){
-            feature_map[feature.feature_id] = true;
-          });
-					var features_filtered = Object.keys(feature_map).map(function(feature){
-            return {feature_id: feature}
-          });
+					});
+
+					var genome_ids = selection.map(function(d){
+						return d['genome_ids'];
+					});
+					var genomes = [];
+					genome_ids.forEach(function(s){
+						s.forEach(function(d){
+							genomes.push({genome_id: d});
+						})
+					});
 					var stg = new SelectionToGroup({
-						selection: features_filtered,
+						selection: features.concat(genomes),
 						type: type,
+						inputType: "feature_data",
 						path: containerWidget.get("path")
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -181,7 +187,34 @@ define("p3/widget/PathwaySummaryGridContainer", [
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
+				function(){
+
+					downloadTT.set('content', dfc)
+
+					on(downloadTT.domNode, 'div:click', lang.hitch(this, function(evt){
+						var rel = evt.target.attributes.rel.value;
+						var DELIMITER, ext;
+						if(rel === 'text/csv'){
+							DELIMITER = ',';
+							ext = 'csv';
+						}else{
+							DELIMITER = '\t';
+							ext = 'txt';
+						}
+
+						var data  = this.grid.store.query("", {sort: this.grid.store.sort});
+
+						var headers = ['Pathway Name', '# of Gene Selected', '# of Genes Annotated', '% Coverage'];
+						var content = [];
+						data.forEach(function(row){
+							content.push(['"' + row.pathway_name + '"', row.genes_selected, row.genes_annotated, row.coverage].join(DELIMITER));
+						})
+
+						saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], {type: rel}), 'PATRIC_pathway_summary.' + ext);
+
+						popup.close(downloadTT);
+					}));
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,

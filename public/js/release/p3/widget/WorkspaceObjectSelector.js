@@ -32,6 +32,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
 		allowUpload: true,  	    	// whether or not to add the upload button
+		uploadingSelection: "",     // uploading in progress, to be copied to selection
 		title: "Choose or Upload a Workspace Object",
 		autoSelectParent: false,   		// if true, the folder currently being viewed is selected by default
 		onlyWritable: false,	    	// only list writable workspaces
@@ -63,13 +64,10 @@ define("p3/widget/WorkspaceObjectSelector", [
 		_setShowHiddenAttr: function(val){
 			this.showHidden = val;
 
-			console.log("set showHidden: ", val);
-
 			if(this.grid){
 				this.grid.set('showHiddenFiles', val);
 			}
 		},
-
 
 		_setDisabledAttr: function(val){
 			this.disabled = val;
@@ -147,10 +145,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 
 		},
 		_setTypeAttr: function(type){
-			if(!(type instanceof Array)){
-				type = [type];
-			}
-			this.type = type;
+			this.type = Array.isArray(type) ? type : [type];
+
 			if(this.grid){
 				this.grid.set('types', (["folder"].concat(this.type)));
 			}
@@ -174,8 +170,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 		},
 
 		_setSelectionAttr: function(val){
-			this.selection = val;
 
+			this.selection = val;
 			// ensures item is in store (for public workspaces),
 			// this is more efficient than recursively grabing all public objects of a certain type
 			try{
@@ -316,6 +312,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 		},
 
 		openChooser: function(){
+			this.refreshWorkspaceItems();
 			var _self = this;
 
 			// if dialog is already built, just show it
@@ -330,11 +327,11 @@ define("p3/widget/WorkspaceObjectSelector", [
 				title: this.title,
 				draggable: true
 			});
-			var frontBC = new BorderContainer({style: {width: "805px", height: "575px"}});
+			var frontBC = new BorderContainer({style: {width: "805px", height: "650px"}});
 			var backBC = new BorderContainer({
 				style: {
 					width: "805px",
-					height: "575px",
+					height: "700px",
 					margin: "0",
 					padding: "0px"
 				}
@@ -377,29 +374,39 @@ define("p3/widget/WorkspaceObjectSelector", [
 			domConstr.place(viewSelector.domNode, selectionPane.containerNode, "first");
 
 			var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
-			var span = domConstr.create("span", {style: {"float": 'left'}});
-			domConstr.place(span, buttonsPane.containerNode, "first");
-			this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
-			this.showUnspecifiedWidget.on("change", function(val){
-				_self.set("showUnspecified", val);
-			});
-			domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
-			domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
 
-			domConstr.create("br", {}, buttonsPane.containerNode);
-
-			var span2 = domConstr.create("span", {style: {"float": 'left'}});
-			domConstr.place(span2, buttonsPane.containerNode, "last");
+			var cbContainer = domConstr.create("div", {style: {"float": 'left'}});
+			domConstr.place(cbContainer, buttonsPane.containerNode, "last");
 			this.showHiddenWidget = new CheckBox({value: this.showHidden, checked: this.showHidden});
 			this.showHiddenWidget.on("change", function(val){
 				_self.set("showHidden", val);
+				if(val){
+					_self.grid.set('types', null);
+				}else{
+					// back to unchecked state
+					_self.grid.set('types', ["folder"].concat(_self.type));
+				}
 			});
-			domConstr.place(this.showHiddenWidget.domNode, span2, "first");
-			domConstr.create("span", {innerHTML: "Show hidden files and folders"}, span2);
+
+			domConstr.place(this.showHiddenWidget.domNode, cbContainer, "first");
+			domConstr.create("span", {innerHTML: "Show all files and folders "}, cbContainer);
+
+			var helpIcon = domConstr.create('i', {
+				'class': "icon-question-circle"
+			})
+			domConstr.place(helpIcon, cbContainer, "last");
+
+			new Tooltip({
+				connectId: helpIcon,
+				label: "<b>Note:</b><br>" +
+					   " - This selector only allows objects of a specific type to be selected.<br>" +
+					   " - When this is not checked, you can only see objects assigned the appropriate object type.<br>" +
+					   'You can change the type of an object under "Workspaces"',
+				position: ['above']
+			})
 
 
-
-
+			// dialog cancel/ok buttons
 			var cancelButton = new Button({label: "Cancel"});
 			cancelButton.on('click', function(){
 				_self.dialog.hide();
@@ -424,19 +431,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 					case "upload":
 						_self.dialog.flip();
 						break;
-					/*  testing without inline ws/folder creation
-					case "createFolder":
-						var element = _self.grid.row(0).element;
-						_self.grid.addNewFolder({id: "untitled"});
-						break;
-					case "createWS":
-						var element = _self.grid.row(0).element;
-						_self.grid.addNewFolder({id: "untitled"});
-						break;
-					*/
 				}
 			});
-			// var _self = this;
 
 			var grid = this.grid = this.createGrid();
 
@@ -465,6 +461,10 @@ define("p3/widget/WorkspaceObjectSelector", [
 				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
 				var uploader = this.uploader = new Uploader({
 					path: _self.path,
+					style: {
+						height: "620px",
+						overflow: "scroll"
+					},
 					region: "center",
 					multiple: false,
 					types: this.type,
@@ -478,7 +478,12 @@ define("p3/widget/WorkspaceObjectSelector", [
 						var file = evt.files[0];
 						_self.set("selection", file);
 						_self.set('value', file.path, true);
-						_self.dialog.hide();
+						Deferred.when(_self.dialog.hide(), function(){
+							Topic.publish("/UploaderDialog", {
+								type: "UploaderClose"
+							});
+						});
+
 					}else{
 						_self.dialog.flip()
 					}
@@ -506,21 +511,22 @@ define("p3/widget/WorkspaceObjectSelector", [
 			if(this._refreshing){
 				return;
 			}
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
-				delete this._refreshing;
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true)
+				.then(lang.hitch(this, function(items){
+					delete this._refreshing;
 
-				// sort by most recent
-				items.sort(function(a, b){
-					return b.timestamp - a.timestamp;
-				});
+					// sort by most recent
+					items.sort(function(a, b){
+						return b.timestamp - a.timestamp;
+					});
 
-				this.store = new Memory({data: items, idProperty: "path"});
+					this.store = new Memory({data: items, idProperty: "path"});
 
-				this.searchBox.set("store", this.store);
-				if(this.value){
-					this.searchBox.set('value', this.value);
-				}
-			}));
+					this.searchBox.set("store", this.store);
+					if(this.value){
+						this.searchBox.set('value', this.value);
+					}
+				}));
 		},
 		onSearchChange: function(value){
 			this.set("value", value);
@@ -593,7 +599,6 @@ define("p3/widget/WorkspaceObjectSelector", [
 			return isValid;
 		},
 		createGrid: function() {
-
 			var self = this;
 
 			var grid =  new Grid({
@@ -620,7 +625,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 							}
 							return item.type;
 						},
-						className: "wsItemType",
+						className: "wsObjIcon",
 						formatter: formatter.wsItemType,
 						unhidable: true
 					},
@@ -636,6 +641,22 @@ define("p3/widget/WorkspaceObjectSelector", [
 						editor: TextBox,
 						editorArgs: {placeHolder: "Untitled Folder", trim: true}
 					}),
+					size: {
+						label: "Size",
+						field: "size",
+						get: function(item){
+							return item;
+						},
+						className: "wsItemSize",
+						hidden: false,
+						formatter: formatter.objectOrFileSize
+					},
+					obj_type: {
+						label: "Type",
+						field: "type",
+						className: "wsItemType",
+						hidden: true
+					},
 					owner: {
 						label: "Owner",
 						field: "owner_id",
@@ -646,6 +667,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 					sharedWith: {
 						label: "Members",
 						field: "_item",
+						className: "wsItemMembers",
 						formatter: formatter.usersFormatter
 					},
 					creation_time: {
@@ -703,8 +725,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 				});
 			}
 
-			return grid
-
+			return grid;
 		}
 	});
 });

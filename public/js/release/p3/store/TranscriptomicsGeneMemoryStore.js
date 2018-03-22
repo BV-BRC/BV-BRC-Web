@@ -75,7 +75,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			var gfs = this.tgState.comparisonFilterStatus;
 
 			// var tsStart = window.performance.now();
-			var keywordRegex = this.tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+			var keywordRegex = this.tgState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").split("~").map(function(k){ return k.trim(); });
 
 			data.forEach(function(gene){
 
@@ -127,10 +127,10 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 
 				if(!skip && this.tgState.keyword !== ''){
 					skip = !keywordRegex.some(function(needle){
-						return needle && (gene.product.toLowerCase().indexOf(needle) >= 0
-							|| gene.patric_id.toLowerCase().indexOf(needle) >= 0
-							|| gene.alt_locus_tag.toLowerCase().indexOf(needle) >= 0
-							|| gene.refseq_locus_tag.toLowerCase().indexOf(needle) >= 0);
+						return needle && ((gene.product || '').toLowerCase().indexOf(needle) >= 0
+							|| (gene.patric_id || '').toLowerCase().indexOf(needle) >= 0
+							|| (gene.alt_locus_tag || '').toLowerCase().indexOf(needle) >= 0
+							|| (gene.refseq_locus_tag || '').toLowerCase().indexOf(needle) >= 0);
 					});
 				}
 				// console.log("after keyword filter", this.tgState.keyword !== '', skip);
@@ -607,7 +607,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 					if (gene.patric_id){
 						cols[order] = createColumn(order, gene.feature_id, gene.patric_id.replace("|", "") + " - " + gene.product, gene.dist, meta);
 					} else {
-						cols[order] = createColumn(order, gene.feature_id, gene.gene + " - " + gene.product, gene.dist, meta);					
+						cols[order] = createColumn(order, gene.feature_id, gene.gene + " - " + gene.product, gene.dist, meta);
 					}
 				}
 			}, this);

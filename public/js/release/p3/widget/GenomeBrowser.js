@@ -321,10 +321,13 @@ define("p3/widget/GenomeBrowser", [
 				.replace(/^chro?m?(osome)?/, 'chr')
 				.replace(/^co?n?ti?g/, 'ctg')
 				.replace(/^scaff?o?l?d?/, 'scaffold')
-				.replace(/^([a-z]*)0+/, '$1')
 				.replace(/^(\d+)$/, 'chr$1')
 				.replace(/^accn\|/, '')
-                .replace(/^sid\|\d+\|accn\|/,'');
+                .replace(/^sid\|\d+\|accn\|/,'') // handle legacy PATRIC format
+                .replace(/^.+\|accn\|/,'') //handle crazy rockhopper id requirements
+                .replace(/\|$/g,''); //handle crazy rockhopper id requirements
+                //not sure what this was for but it was causing problems when loweringCase with ID like "JEZL01000001" turning to jezl1000001
+                //              .replace(/^([a-z]*)0+/, '$1')
 
 			return refname;
 		},
@@ -564,7 +567,7 @@ define("p3/widget/GenomeBrowser", [
 							browser: this,
 							elem: this.viewElem,
 							config: this.config.view,
-							stripeWidth: 250,
+							stripeWidth: 1000,
 							refSeq: this.refSeq,
 							zoomLevel: 1 / 200
 						});
@@ -943,7 +946,7 @@ define("p3/widget/GenomeBrowser", [
 				// }
 			}
 
-			console.log("JBrowse CONFIG: ", jbrowseConfig);
+			// console.log("JBrowse CONFIG: ", jbrowseConfig);
 			if(state && state.hashParams && state.hashParams.addFeatures){
 				jbrowseConfig.stores.url.features = JSON.parse(state.hashParams.addFeatures)
 			}
@@ -958,7 +961,7 @@ define("p3/widget/GenomeBrowser", [
 				jbrowseConfig.stores = JSON.parse(state.hashParams.addStores);
 			}
 
-			console.log("jbrowseConfig", jbrowseConfig);
+			// console.log("jbrowseConfig", jbrowseConfig);
 
 			this.set("jbrowseConfig", jbrowseConfig)
 
@@ -1002,11 +1005,11 @@ define("p3/widget/GenomeBrowser", [
 		},
 
 		onFirstView: function(){
-			console.log("GenomeBrowser onFirstView()")
+			// console.log("GenomeBrowser onFirstView()")
 			if(this._firstView){
 				return;
 			}
-			console.log("GenomeBrowser onFirstView()")
+			// console.log("GenomeBrowser onFirstView()")
 
 			// if(!this._browser){
 			// 	console.log("Create GenomeBrowser: ", this.jbrowseConfig);

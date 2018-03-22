@@ -3,8 +3,18 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>RNA-Seq Analysis</h3>
-            <p>Align reads, assemble transcripts, measure/test expression.</p>
+            <h3>RNA-Seq Analysis
+              <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+              <div class="infobox iconbox tutorialButton tutorialInfo">
+                <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+              </div>
+            </h3>
+            <p>The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">RNA-Seq Analysis Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
         <div class="formFieldsContainer">
             <div style="display: none;">
@@ -21,8 +31,8 @@
                         <div id="pipelineBox" class="appBox appShadow">
                             <div style="width:85%;display:inline-block;">
                                 <label class="appBoxLabel">Parameters</label>
-                                <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
-                                    <i class="fa icon-info-circle fa"></i>
+                                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                 </div>
                             </div>
                             <div class="appRow">
@@ -65,8 +75,8 @@
                              style="min-height: 217px; height:auto; width:330px">
                             <div class="headerrow">
                                 <label class="appBoxLabel">Groups/Conditions</label>
-                                <div name="groupinfo" class="infobox iconbox infobutton tooltipinfo">
-                                    <i class="fa icon-info-circle fa"></i>
+                                <div name="groups-conditions" class="infobox iconbox infobutton tooltipinfo">
+                                    <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
                             </div>
@@ -110,8 +120,8 @@
                             <div class="headerrow">
                                 <div style="width:85%;display:inline-block;">
                                     <label class="appBoxLabel"> Paired read library</label>
-                                    <div name="pairinfo" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa"></i>
+                                    <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
+                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                                     </div>
                                 </div>
                                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddPair"
@@ -170,8 +180,8 @@
                         <div class="appBox appShadow" style="min-height: 320px; height:auto; width:330px">
                             <div class="headerrow">
                                 <label class="appBoxLabel">Selected libraries</label>
-                                <div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
-                                    <i class="fa icon-info-circle fa"></i>
+                                <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
+                                    <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
                                 <div class="appsublabel">Place read files here using the arrow buttons.</div>
@@ -215,4 +225,3 @@
         </div>
     </div>
 </form>
-
