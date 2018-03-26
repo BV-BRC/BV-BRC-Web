@@ -18,9 +18,6 @@ define([
     selectedClassDictionary: {},
 
     constructor: function(){
-      // TODO: use default font icons
-      //https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css
-      $('head').append("<link rel=\"stylesheet\" href=\"//maxcdn.bootstrapcdn.com//font-awesome/4.7.0/css/font-awesome.min.css\">");
       this.watch("state", lang.hitch(this, "onSetState"));
     },
 
@@ -324,9 +321,7 @@ define([
         })
 
       subsystemslegend.append("text")
-        .attr('font-family', 'FontAwesome')
         .attr('y', 12)
-        .attr('font-size', function(d) { return d.size+'em'} )
         .on("click", function(d){
 
           if (d.subclassScope) {
@@ -379,7 +374,9 @@ define([
         //fa-angle-down
         //.text(function(d) { return '\uf107' });
         //fa-angle-right
-        .text(function(d) { return '\uf105' });
+        // .text(function(d) { return '\uf105' });
+        .attr('class', 'fa icon-chevron-right')
+        .text('\uf105')
 
       subsystemslegend.append('rect')
         .attr('x', function(d) {
