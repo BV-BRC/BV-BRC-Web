@@ -1252,6 +1252,10 @@ body footer.main-footer ul.left {
     z-index: 10;
 }
 
+#subsystemspiechart {
+    cursor: pointer;
+}
+
 /* accessibility utils */
 .sr-only {
     position: absolute;

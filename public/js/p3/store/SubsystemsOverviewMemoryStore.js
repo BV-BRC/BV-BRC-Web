@@ -16,11 +16,11 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "idx",
+		idProperty: "id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null,
-		type: "pathway",
+		type: "subsystem",
 		onSetState: function(attr, oldVal, state){
 
 			var ov, nv;
@@ -50,15 +50,16 @@ define([
 				if(this._loaded){
 					this._loaded = false;
 					delete this._loadingDeferred;
-					this.loadData();
+					return this.loadData();
 				}else{
 					if(this._loadingDeferred){
-						var curDef = this._loadingDeferred;
-						when(this.loadData(), function(r){
-							curDef.resolve(r);
-						})
+						// var curDef = this._loadingDeferred;
+						// when(this.loadData(), function(r){
+						// 	curDef.resolve(r);
+						// })
+						return this._loadingDeferred;
 					}else{
-						this.loadData();
+						return this.loadData();
 					}
 				}
 			}
@@ -107,48 +108,33 @@ define([
 		},
 
 		queryTypes: {
-			pathway: "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-			"&json(facet," + encodeURIComponent(JSON.stringify({
-				stat: {
-					field: {
-						field: "pathway_id",
-						limit: -1,
-						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
-						}
-					}
-				}
-			})) + ")",
 
-			ecnumber: "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			subsystems_overview: "&limit(1)" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
+
 				stat: {
-					field: {
-						field: "ec_number",
-						limit: -1,
-						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
-						}
-					}
-				}
-			})) + ")",
-			genes: "&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-			"&json(facet," + encodeURIComponent(JSON.stringify({
-				stat: {
-					field: {
-						field: "feature_id",
-						limit: -1,
-						facet: {
-							genome_count: "unique(genome_id)",
-							gene_count: "unique(feature_id)",
-							ec_count: "unique(ec_number)",
-							genome_ec: "unique(genome_ec)"
+					type: "field",
+					field: "superclass",
+					limit: -1,
+					facet: {
+						subsystem_count: "unique(subsystem_id)",
+						"class": {
+							type: "field",
+							field: "class",
+							limit: -1,
+							facet: {
+								subsystem_count: "unique(subsystem_id)",
+								gene_count: "unique(feature_id)",
+								"subclass": {
+									type: "field",
+									field: "subclass",
+									limit: -1,
+									facet: {
+										subsystem_count: "unique(subsystem_id)",
+										gene_count: "unique(feature_id)"
+									}
+								}
+							}
 						}
 					}
 				}
@@ -163,11 +149,6 @@ define([
 					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
 				}
 
-				if(this.state.hashParams && this.state.hashParams.filter){
-					if(this.state.hashParams.filter != "false"){
-						q.push(this.state.hashParams.filter);
-					}
-				}
 				if(q.length < 1){
 					q = "";
 				}
@@ -209,7 +190,8 @@ define([
 			var q = this.buildQuery();
 
 			var _self = this;
-			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
+
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
@@ -223,67 +205,18 @@ define([
 
 				var docs = [];
 				var props = {
-					"pathway": "pathway_id",
-					"ecnumber": "ec_number",
-					"genes": 'feature_id'
+					"subsystems_overview": "subsystem_id"
 				};
-				if(response && response.grouped && response.grouped[props[this.type]]){
-					var ds = response.grouped[props[this.type]].doclist.docs;
-					if (response.facets.stat && response.facets.stat.buckets) {
-						var buckets = response.facets.stat.buckets;
-						var map = {};
-						buckets.forEach(function(b){
-							map[b["val"]] = b;
-							delete b["val"];
-						});
 
-						docs = ds.map(function(doc){
-							var p = props[this.type];
-							var pv = doc[p];
-							lang.mixin(doc, map[pv] || {});
-							if(doc.genome_ec && doc.genome_count){
-								doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
-							}else{
-								doc.ec_cons = 0;
-							}
-							if(doc.gene_count && doc.genome_count){
-								doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
-							}else{
-								doc.gene_cons = 0;
-							}
+				//flat queries return a different data format
+				if ( response && response.facets ) {
+					var buckets = response.facets.stat.buckets;
 
-							// compose index key
-							switch(this.type){
-								case "pathway":
-									doc.idx = doc.pathway_id;
-									break;
-								case "ecnumber":
-									doc.idx = doc.pathway_id + "_" + doc.ec_number;
-									break;
-								case "genes":
-									doc.idx = doc.feature_id;
-									doc.document_type = "genome_feature";
-									break;
-								default:
-									break;
-							}
-							return doc;
-						}, this);
-					}
-					else {
-						this.state.filter = false;
-					}
-
-					_self.setData(docs);
+					_self.setData(buckets);
 					_self._loaded = true;
 					return true;
-
-				}else{
-					console.error("Unable to Process Response: ", response);
-					_self.setData([]);
-					_self._loaded = true;
-					return false;
 				}
+
 			}), lang.hitch(this, function(err){
 				console.error("Error Loading Data: ", err);
 				_self.setData([]);
@@ -293,5 +226,7 @@ define([
 
 			return this._loadingDeferred;
 		}
+
+
 	})
 });
