@@ -246,7 +246,7 @@ define([
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
-			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink;
+			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink, ssLink;
 			if(feature.hasOwnProperty('go')){
 				goLink = feature['go'].map(function(goStr){
 					var go = goStr.split('|');
@@ -285,10 +285,7 @@ define([
 			}
 
 			if(feature.hasOwnProperty('subsystem')){
-				ssLink = feature['subsystem'].map(function(ssStr){
-					var ss = ssStr.split('|');
-					return ss[0];
-				}).join('<br>')
+				ssLink = feature['subsystem'].join('<br>')
 			}
 
 			domConstruct.empty(this.functionalPropertiesNode);
@@ -327,7 +324,7 @@ define([
 			domConstruct.create("td", {innerHTML: pwLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Subsystem", scope: "row"}, htr);
+			domConstruct.create("th", {innerHTML: "Subsystems", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: ssLink || '-'}, htr);
 		},
 		_setFeatureStructureAttr: function(structure){
