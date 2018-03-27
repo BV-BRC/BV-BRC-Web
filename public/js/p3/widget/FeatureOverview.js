@@ -284,6 +284,13 @@ define([
 				}).join('<br>')
 			}
 
+			if(feature.hasOwnProperty('subsystem')){
+				ssLink = feature['subsystem'].map(function(ssStr){
+					var ss = ssStr.split('|');
+					return ss[0];
+				}).join('<br>')
+			}
+
 			domConstruct.empty(this.functionalPropertiesNode);
 
 			var table = domConstruct.create("table", {"class": "p3basic striped"}, this.functionalPropertiesNode);
@@ -318,6 +325,10 @@ define([
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "Pathways", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: pwLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Subsystem", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: ssLink || '-'}, htr);
 		},
 		_setFeatureStructureAttr: function(structure){
 
@@ -533,7 +544,7 @@ define([
 				}
 
 				var firstStartPosition = Math.max(data[0].start, rangeStart);
-				var largestEnd = data.reduce(function(max, row) {
+				var largestEnd = data.reduce(function(max, row){
 					return (max > row.end) ? max : row.end
 				}, 0)
 				var lastEndPosition = Math.min((largestEnd + 100), rangeEnd);
