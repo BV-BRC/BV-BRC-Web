@@ -2442,9 +2442,37 @@
   line-height: 1.2em;
 }
 
+#patric-homepage-wrapper .omics-my-data .my-data .LoginButton.loginLink .dijitButtonNode {
+  background: #CE8836;
+  color: #FFFFFF !important;
+  font-weight: 400 !important;
+  font-size: 12pt !important;
+  text-decoration: none;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  height: 34px;
+  line-height: 1.5;
+  -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+}
+
+#patric-homepage-wrapper .omics-my-data .my-data .LoginButton.loginLink .dijitButtonNode:hover, #patric-homepage-wrapper .omics-my-data .my-data .LoginButton.loginLink .dijitButtonNode:focus {
+  background: #CE8836;
+  color: #FFFFFF;
+  opacity: 0.9;
+  text-decoration: none;
+}
+
+#patric-homepage-wrapper .omics-my-data .my-data .btn.button-gray {
+  height: 34px;
+}
+
 #patric-homepage-wrapper .omics-my-data .my-data span {
   padding: 0 10px;
   font-size: 11pt;
+  line-height: 1.5;
 }
 
 #patric-homepage-wrapper .omics-my-data .my-data-links {
