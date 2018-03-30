@@ -2,7 +2,6 @@
 #patric-homepage-wrapper {
   color: #666666;
   font-family: "Arial", sans-serif !important;
-  min-width: 100%;
 }
 
 #patric-homepage-wrapper h2 {
@@ -2113,6 +2112,8 @@ html {
   text-decoration: none;
   border: none;
   border-bottom: 2px solid #93A971;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 #patric-homepage-wrapper .button-green:hover, #patric-homepage-wrapper .button-green:focus {
@@ -2131,6 +2132,8 @@ html {
   border-bottom: 2px solid #2B5775;
   padding-left: 20px;
   padding-right: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 #patric-homepage-wrapper .button-blue:hover, #patric-homepage-wrapper .button-blue:focus {
@@ -2440,7 +2443,7 @@ html {
 }
 
 #patric-homepage-wrapper .omics-my-data .my-data span {
-  padding: 0 20px;
+  padding: 0 10px;
   font-size: 11pt;
 }
 
