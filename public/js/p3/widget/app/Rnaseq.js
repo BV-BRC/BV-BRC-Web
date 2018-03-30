@@ -160,6 +160,7 @@ define([
 			var condLibs = [];
 			var pairedLibs = [];
 			var singleLibs = [];
+            var contrastPairs=[];
 			this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
 			//for (var k in values) {
 			//	if(!k.startsWith("libdat_")){
@@ -177,6 +178,10 @@ define([
 						}
 					}
 				});
+				contrastList.forEach(function(contrastRecord){
+                    contrastPairs.push([condLibs.indexOf(contrastRecord['condition1'])+1, condLibs.indexOf(contrastRecord['condition2'])+1]);
+                });
+                assembly_values["contrasts"]=contrastPairs;
 			}
 
 			pairedList.forEach(function(libRecord){
