@@ -301,7 +301,7 @@ define([
 			this.viewerHeader = new ContentPane({
 				content: "",
 				region: "top",
-				style: 'height: 110px',
+				// style: 'height: 110px',
 				id: "subsystemheatmapheadercontainer"
 			});
 

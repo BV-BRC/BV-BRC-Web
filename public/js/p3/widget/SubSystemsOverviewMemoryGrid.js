@@ -135,7 +135,7 @@ define([
         .attr("text-anchor", "middle")
         .style("font-weight", "bold")
         .style("font-size", "14px")
-        .text("Subsystem Category Distribution - " + titleText);
+        .text("Subsystem Super Class Distribution - " + titleText);
 
       var arc = d3.svg.arc()
         .innerRadius(0)
