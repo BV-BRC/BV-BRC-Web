@@ -478,31 +478,8 @@ define([
 			 */
 
 			if(1){
-				glyph.on("click", function(evt){
-					// window.console.log("click alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey + " which=" + evt.which);
-/*
-					if(evt.shiftKey){
-						if(this.selected_fids[feature.fid]){
-							this.selected_fids[feature.fid] = false;
-							glyph.setStroke({width: 1});
-						}
-						else{
-							this.selected_fids[feature.fid] = true;
-							glyph.setStroke({width: 3, cap: 'round'});
-						}
 
-						var out = [];
-						var elt;
-						for(elt in this.selected_fids){
-							if(this.selected_fids[elt])
-								out.push(elt);
-						}
-
-						this.emit("selection_change", {selected_features: out});
-					}
-
-					evt.preventDefault();
-*/
+				var clickHandler = function(evt){
 					if(feature.fid && feature.fid.indexOf(".BLAST") > -1){
 						return;
 					}
@@ -527,15 +504,28 @@ define([
 						window.featureDialog.set("content", content);
 						window.featureDialog.show();
 					})
+				}
 
-				}.bind(this));
-
-				glyph.on("dblclick", function(evt){
-					// window.console.log("dblclick alt=" + evt.altKey + " ctrl=" + evt.ctrlKey + " shift=" + evt.shiftKey);
-					// this.emit("feature_dblclick", {feature: feature.fid});
-					// evt.preventDefault();
+				var dbClickHandler = function(evt){
 					Topic.publish("/navigate", {href:"/view/Feature/" + feature.fid + "#view_tab=compareRegionViewer"})
-				}.bind(this));
+				}
+
+				// check click events
+				var multiClickHandler = function(handlers, delay){
+					var clicks = 0, timeout, delay = delay || 250
+					return function(e){
+						clicks++
+						clearTimeout(timeout)
+						timeout = setTimeout(function(){
+							if(handlers[clicks]) handlers[clicks](e);
+							clicks = 0
+						}, delay)
+					}
+				}
+				glyph.on('click', multiClickHandler({
+					1: clickHandler,
+					2: dbClickHandler
+				}))
 
 				var feature_info_str = this.create_hover_text(feature, row_data);
 /*
