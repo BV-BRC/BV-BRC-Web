@@ -1,25 +1,25 @@
 /* Home New Styles */
 #patric-homepage-wrapper {
-  color: #666666;
+  color: #454545;
   font-family: "Arial", sans-serif !important;
 }
 
 #patric-homepage-wrapper h2 {
   font-size: 20pt;
   font-weight: 600;
-  color: #666666;
+  color: #454545;
 }
 
 #patric-homepage-wrapper h3 {
   font-size: 16pt;
   font-weight: 600;
-  color: #666666;
+  color: #454545;
 }
 
 #patric-homepage-wrapper p {
   font-size: 11pt;
   font-weight: 300;
-  color: #666666;
+  color: #454545;
 }
 
 #patric-homepage-wrapper ul {
@@ -2112,7 +2112,7 @@
 
 #patric-homepage-wrapper .button-green {
   background: #C4DE9B;
-  color: #666666 !important;
+  color: #454545 !important;
   text-decoration: none;
   border: none;
   border-bottom: 2px solid #93A971;
@@ -2123,7 +2123,7 @@
 #patric-homepage-wrapper .button-green:hover, #patric-homepage-wrapper .button-green:focus {
   background: #C4DE9B;
   border-bottom: 2px solid #93A971;
-  color: #666666;
+  color: #454545;
   text-decoration: none;
   opacity: 0.9;
 }
