@@ -229,45 +229,50 @@ define("p3/store/PathwayMemoryStore", [
 				};
 				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
-					var buckets = response.facets.stat.buckets;
-					var map = {};
-					buckets.forEach(function(b){
-						map[b["val"]] = b;
-						delete b["val"];
-					});
+					if (response.facets.stat && response.facets.stat.buckets) {
+						var buckets = response.facets.stat.buckets;
+						var map = {};
+						buckets.forEach(function(b){
+							map[b["val"]] = b;
+							delete b["val"];
+						});
 
-					docs = ds.map(function(doc){
-						var p = props[this.type];
-						var pv = doc[p];
-						lang.mixin(doc, map[pv] || {});
-						if(doc.genome_ec && doc.genome_count){
-							doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
-						}else{
-							doc.ec_cons = 0;
-						}
-						if(doc.gene_count && doc.genome_count){
-							doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
-						}else{
-							doc.gene_cons = 0;
-						}
+						docs = ds.map(function(doc){
+							var p = props[this.type];
+							var pv = doc[p];
+							lang.mixin(doc, map[pv] || {});
+							if(doc.genome_ec && doc.genome_count){
+								doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
+							}else{
+								doc.ec_cons = 0;
+							}
+							if(doc.gene_count && doc.genome_count){
+								doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
+							}else{
+								doc.gene_cons = 0;
+							}
 
-						// compose index key
-						switch(this.type){
-							case "pathway":
-								doc.idx = doc.pathway_id;
-								break;
-							case "ecnumber":
-								doc.idx = doc.pathway_id + "_" + doc.ec_number;
-								break;
-							case "genes":
-								doc.idx = doc.feature_id;
-								doc.document_type = "genome_feature";
-								break;
-							default:
-								break;
-						}
-						return doc;
-					}, this);
+							// compose index key
+							switch(this.type){
+								case "pathway":
+									doc.idx = doc.pathway_id;
+									break;
+								case "ecnumber":
+									doc.idx = doc.pathway_id + "_" + doc.ec_number;
+									break;
+								case "genes":
+									doc.idx = doc.feature_id;
+									doc.document_type = "genome_feature";
+									break;
+								default:
+									break;
+							}
+							return doc;
+						}, this);
+					}
+					else {
+						this.state.filter = false;
+					}
 
 					_self.setData(docs);
 					_self._loaded = true;

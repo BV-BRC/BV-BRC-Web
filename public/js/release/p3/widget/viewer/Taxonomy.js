@@ -172,11 +172,13 @@ define("p3/widget/viewer/Taxonomy", [
 
 		setActivePanelState: function(){
 
-			// console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
-
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-
 			var activeTab = this[active];
+
+			//only trigger active tab auto filter message once
+			if (activeTab.state && activeTab.state.autoFilterMessage) {
+				delete this.state.autoFilterMessage;
+			}
 
 			if(!activeTab){
 				console.warn("ACTIVE TAB NOT FOUND: ", active);
