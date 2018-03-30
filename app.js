@@ -14,6 +14,7 @@ var passport = require('passport');
 var package = require("./package.json");
 
 var routes = require('./routes/index');
+var newHome = require('./routes/newHome');
 var users = require('./routes/users');
 var reportProblem = require('./routes/reportProblem');
 var workspace = require('./routes/workspace');
@@ -170,6 +171,7 @@ app.use("/public/pdfs/", [
 app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
 app.use("/public/", express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
+app.use('/home-new', newHome);
 app.post("/reportProblem", reportProblem);
 app.use("/workspace", workspace);
 app.use("/content", contentViewer);
