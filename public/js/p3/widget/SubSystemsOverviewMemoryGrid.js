@@ -110,8 +110,8 @@ define([
 
       var color = d3.scale.category20();
 
-      var viewBoxWidth = width * 1.6;
-      var viewBoxHeight = height * 1.6;
+      var viewBoxWidth = width * 2;
+      var viewBoxHeight = height * 2;
 
       var svg = d3.select('#subsystemspiechart')
         .append('svg')
