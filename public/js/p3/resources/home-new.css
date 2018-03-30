@@ -5,20 +5,19 @@
 }
 
 #patric-homepage-wrapper h2 {
-  font-size: 20pt;
-  font-weight: 600;
+  font-size: 20px;
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
   color: #454545;
 }
 
 #patric-homepage-wrapper h3 {
-  font-size: 16pt;
-  font-weight: 600;
+  font-size: 18px;
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
   color: #454545;
 }
 
 #patric-homepage-wrapper p {
-  font-size: 11pt;
-  font-weight: 300;
+  font-size: 10pt;
   color: #454545;
 }
 
@@ -29,8 +28,7 @@
 
 #patric-homepage-wrapper a {
   color: #3E5775;
-  font-size: 11pt;
-  font-weight: 300;
+  font-size: 10pt;
 }
 
 /*!
@@ -2091,7 +2089,7 @@
 #patric-homepage-wrapper .btn {
   display: inline-block;
   font-weight: 400 !important;
-  font-size: 12pt !important;
+  font-size: 10pt !important;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -2100,7 +2098,7 @@
       -ms-user-select: none;
           user-select: none;
   border: 1px solid transparent;
-  padding: 0.375rem 0.75rem;
+  padding: 0.5rem 1.25rem;
   font-size: 1rem;
   line-height: 1.5;
   border-radius: 0.25rem;
@@ -2195,10 +2193,10 @@
   background: #F4FFE6;
   border-top: 4px solid #E3E3E3;
   border-bottom: 4px solid #93A971;
-  margin-top: 20px;
+  margin-top: 15px;
   margin-bottom: 20px;
   padding: 15px 20px;
-  min-height: 200px;
+  /* min-height: 200px; */
 }
 
 #patric-homepage-wrapper .browse-search p {
@@ -2211,7 +2209,7 @@
 }
 
 #patric-homepage-wrapper .browse-search .row {
-  padding: 10px 0px;
+  padding: 10px 0px 0 0;
 }
 
 #patric-homepage-wrapper .browse-search .custom-select {
@@ -2353,7 +2351,7 @@
 #patric-homepage-wrapper .analyze-data {
   background: #FFFFFF;
   padding: 15px 20px;
-  min-height: 350px;
+  /* min-height: 350px; */
 }
 
 #patric-homepage-wrapper .analyze-data h2 {
@@ -2368,7 +2366,6 @@
 
 #patric-homepage-wrapper .analyze-data p {
   margin: 0;
-  margin-top: -10px;
   line-height: 1.2em;
 }
 
@@ -2378,7 +2375,7 @@
 }
 
 #patric-homepage-wrapper .analyze-data li a {
-  font-size: 11pt;
+  /* font-size: 11pt; */
   text-decoration: underline;
   color: #3e5775;
 }
@@ -2387,7 +2384,7 @@
   background: #e3e3e3;
   border-bottom: 4px solid #a0a0a0;
   margin-bottom: 20px;
-  padding: 10px 0px;
+  padding: 2px 0px;
 }
 
 #patric-homepage-wrapper .tut-ug-buttons .button-blue {
@@ -2420,7 +2417,6 @@
 }
 
 #patric-homepage-wrapper .omics-my-data .omics li a {
-  font-size: 11pt;
   color: #3e5775;
   text-decoration: underline;
 }
@@ -2500,8 +2496,6 @@
 #patric-homepage-wrapper .omics-my-data .my-data-links ul a {
   color: #3E5775;
   text-decoration: none;
-  font-size: 11pt;
-  font-weight: 400 !important;
 }
 
 #patric-homepage-wrapper .omics-my-data .my-data-links ul a:hover, #patric-homepage-wrapper .omics-my-data .my-data-links ul a:focus {
@@ -2510,12 +2504,12 @@
 
 #patric-homepage-wrapper .announcements {
   background: #FFFFFF;
-  margin-top: 20px;
+  margin-top: 15px;
   margin-bottom: 20px;
   border-top: 4px solid #e3e3e3;
   border-bottom: 4px solid #a0a0a0;
   padding: 10px;
-  height: 425px;
+  height: 400px;
 }
 
 #patric-homepage-wrapper .announcements h3 {
@@ -2542,7 +2536,7 @@
 }
 
 #patric-homepage-wrapper .announcements .slide .feed-title {
-  font-size: 14pt;
+  font-size: 11pt;
   color: #3E5775;
   padding-bottom: 10px;
   text-decoration: underline;
@@ -2550,7 +2544,7 @@
 }
 
 #patric-homepage-wrapper .announcements .slide .feed-description {
-  font-size: 11pt !important;
+  font-size: 10pt !important;
   padding: 5px 0px;
 }
 
@@ -2571,7 +2565,7 @@
 #patric-homepage-wrapper .announcements #feed-next {
   display: block;
   position: relative;
-  margin-top: 350px;
+  margin-top: 330px;
 }
 
 #patric-homepage-wrapper .twitter-feed {
