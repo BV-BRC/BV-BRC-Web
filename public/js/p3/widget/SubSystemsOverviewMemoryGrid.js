@@ -79,11 +79,6 @@ define([
         }
         that.drawSubsystemPieChartGraph(data);
         that.loadingMask.hide();
-        // if (!oldState) {
-         
-        // } else {
-
-        // }
       });
     },
 
