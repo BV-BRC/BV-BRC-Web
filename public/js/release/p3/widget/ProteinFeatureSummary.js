@@ -9,9 +9,9 @@ define("p3/widget/ProteinFeatureSummary", [
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, easing){
 
-	var labels = ["Hypothetical proteins", "Proteins with functional assignments", "Proteins with EC number assignments", "Proteins with GO assignments", "Proteins with Pathway assignments", "Proteins with PATRIC genus-specific family (PLfam) assignments", "Proteins with PATRIC cross-genus family (PGfam) assignments", "Proteins with FIGfam assignments"];
-	var shortLabels = ["Hypothetical", "Functional", "EC assigned", "GO assigned", "Pathway assigned", "PLfam assigned", "PGfam assigned", "FIGfam assigned"];
-	var filters = ["eq(product,hypothetical+protein),eq(feature_type,CDS)", "ne(product,hypothetical+protein),eq(feature_type,CDS)", "eq(ec,*)", "eq(go,*)", "eq(pathway,*)", "eq(plfam_id,PLF*)", "eq(pgfam_id,PGF*)", "eq(figfam_id,*)"];
+	var labels = ["Hypothetical proteins", "Proteins with functional assignments", "Proteins with EC number assignments", "Proteins with GO assignments", "Proteins with Pathway assignments", "Proteins with Subsystem assignments", "Proteins with PATRIC genus-specific family (PLfam) assignments", "Proteins with PATRIC cross-genus family (PGfam) assignments", "Proteins with FIGfam assignments"];
+	var shortLabels = ["Hypothetical", "Functional", "EC assigned", "GO assigned", "Pathway assigned", "Subsystem assigned", "PLfam assigned", "PGfam assigned", "FIGfam assigned"];
+	var filters = ["eq(product,hypothetical+protein),eq(feature_type,CDS)", "ne(product,hypothetical+protein),eq(feature_type,CDS)", "eq(ec,*)", "eq(go,*)", "eq(pathway,*)", "eq(subsystem,*)", "eq(plfam_id,PLF*)", "eq(pgfam_id,PGF*)", "eq(figfam_id,*)"];
 
 	return declare([SummaryWidget], {
 		dataModel: "genome_feature",
@@ -78,6 +78,14 @@ define("p3/widget/ProteinFeatureSummary", [
 				return response.facet_counts.facet_fields.annotation;
 			});
 
+			var defSubsystemAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(subsystem,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
 			var defPLfamAssigned = when(xhr.post(url, {
 				handleAs: "json",
 				headers: this.headers,
@@ -102,7 +110,7 @@ define("p3/widget/ProteinFeatureSummary", [
 				return response.facet_counts.facet_fields.annotation;
 			});
 
-			return when(All([defHypothetical, defFunctional, defECAssigned, defGOAssigned, defPathwayAssigned, defPLfamAssigned, defPGfamAssigned, defFigfamAssigned]), lang.hitch(this, "processData"));
+			return when(All([defHypothetical, defFunctional, defECAssigned, defGOAssigned, defPathwayAssigned, defSubsystemAssigned, defPLfamAssigned, defPGfamAssigned, defFigfamAssigned]), lang.hitch(this, "processData"));
 		},
 		processData: function(results){
 

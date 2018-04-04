@@ -248,7 +248,7 @@ define("p3/widget/FeatureOverview", [
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
-			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink;
+			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, ipLink, pwLink, ssLink;
 			if(feature.hasOwnProperty('go')){
 				goLink = feature['go'].map(function(goStr){
 					var go = goStr.split('|');
@@ -286,6 +286,10 @@ define("p3/widget/FeatureOverview", [
 				}).join('<br>')
 			}
 
+			if(feature.hasOwnProperty('subsystem')){
+				ssLink = feature['subsystem'].join('<br>')
+			}
+
 			domConstruct.empty(this.functionalPropertiesNode);
 
 			var table = domConstruct.create("table", {"class": "p3basic striped"}, this.functionalPropertiesNode);
@@ -320,6 +324,10 @@ define("p3/widget/FeatureOverview", [
 			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "Pathways", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: pwLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Subsystems", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: ssLink || '-'}, htr);
 		},
 		_setFeatureStructureAttr: function(structure){
 
@@ -535,7 +543,7 @@ define("p3/widget/FeatureOverview", [
 				}
 
 				var firstStartPosition = Math.max(data[0].start, rangeStart);
-				var largestEnd = data.reduce(function(max, row) {
+				var largestEnd = data.reduce(function(max, row){
 					return (max > row.end) ? max : row.end
 				}, 0)
 				var lastEndPosition = Math.min((largestEnd + 100), rangeEnd);

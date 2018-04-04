@@ -5,7 +5,7 @@ define([
 	"../GenomeOverview", "../AMRPanelGridContainer", "../Phylogeny",
 	"../GenomeBrowser", "../CircularViewerContainer", "../SequenceGridContainer",
 	"../FeatureGridContainer", "../SpecialtyGeneGridContainer", "../ProteinFamiliesContainer",
-	"../PathwaysContainer", "../TranscriptomicsContainer", "../InteractionContainer",
+	"../PathwaysContainer", "../SubSystemsContainer", "../TranscriptomicsContainer", "../InteractionContainer",
 	"../../util/PathJoin"
 ], function(declare, lang,
 			domConstruct, xhr,
@@ -13,7 +13,7 @@ define([
 			GenomeOverview, AMRPanelGridContainer, Phylogeny,
 			GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
 			FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
-			PathwaysContainer, TranscriptomicsContainer, InteractionsContainer,
+			PathwaysContainer, SubSystemsContainer, TranscriptomicsContainer, InteractionsContainer,
 			PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
@@ -300,10 +300,10 @@ define([
 				id: this.viewer.id + "_" + "pathways"
 			});
 
-			// this.subsystems = new SubSystemsContainer({
-			// 	title: "Subsystems",
-			// 	id: this.viewer.id + "_" + "subsystems"
-			// })
+			this.subsystems = new SubSystemsContainer({
+				title: "Subsystems",
+				id: this.viewer.id + "_" + "subsystems"
+			})
 
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
@@ -333,7 +333,7 @@ define([
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
-			// this.viewer.addChild(this.subsystems);
+			this.viewer.addChild(this.subsystems);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.interactions);
 		}
