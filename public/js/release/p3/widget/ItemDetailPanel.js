@@ -255,7 +255,12 @@ define("p3/widget/ItemDetailPanel", [
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
 
-					var node = DataItemFormatter(item, this.containerWidget.containerType)
+					var node;
+					if (this.containerWidget.containerType === "subsystem_data") {
+						node = DataItemFormatter(item, this.containerWidget.containerType, this.containerWidget.state)
+					} else {
+						node = DataItemFormatter(item, this.containerWidget.containerType)
+					}
 					domConstruct.empty(this.itemBody);
 					domConstruct.place(node, this.itemBody, "first");
 				}else if(item && item._formatterType){

@@ -95,7 +95,7 @@ define("circulus/SectionTrack", [
 				}
 			}
 		},
-		gap: .25,
+		gap: .3,
 
 		renderAlignedData: function(data){
 			console.log("Render Aligned to Reference Track", data);

@@ -59,7 +59,9 @@ define("p3/widget/SelectionToGroup", [
 		},
 
 		// only used for new groups
-		onChangeGroupPath: function(newPath, thing) {
+		onChangeGroupPath: function(newPath) {
+			this.path = newPath;
+
 			// need to update path of group name box since validation
 			// and value (full path) state is kept and fetched from there.
 			this.groupNameBox.set('path', newPath);

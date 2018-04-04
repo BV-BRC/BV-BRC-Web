@@ -96,7 +96,7 @@ define("circulus/SectionTrackWithLabel", [
 				}
 			}
 		},
-		gap: .25,
+		gap: .3,
 
 		renderData: function(data) {
 			var totalLength = 0;
@@ -178,23 +178,27 @@ define("circulus/SectionTrackWithLabel", [
 				var mystartRads = startRads;
 
 				var myText = 0;
+				var textNumber = 0;
 				myText = myText.toFixed(Math.log10(1/factor)-1);
 
 				line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+				this._foregroundColorPaths.push(line);
+
+				/* due to space issue, we do not show 0.0 at the beginning of the contigs. 
 				textShape = this.surface.createTextPath({text: myText})
 						.moveTo(outerStart)
 						.lineTo(textouterEnd)
-						.setFill("grey")
 						.setFont({size: "8pt"});
 
 				if (this.fill) {
 					line.setStroke(this.fill);
 					//textShape.setStroke(this.fill);
-					textShape.setFill(this.fill);
+					if (textNumber>0) {					
+						textShape.setFill(this.fill);
+					}
 				}
-				this._foregroundColorPaths.push(line);
 				this._foregroundColorPaths.push(textShape);
-				
+				*/
 
 				for (i=0; i<ticks-1; i++)
 				{
@@ -230,6 +234,7 @@ define("circulus/SectionTrackWithLabel", [
 								.lineTo(textouterEnd)
 								.setFill("grey")
 								.setFont({size: "8pt"});
+							this._foregroundColorPaths.push(textShape);
 						}
 						else if (i%5 == 0)
 						{
@@ -247,11 +252,11 @@ define("circulus/SectionTrackWithLabel", [
 						if (this.fill) {
 							line.setStroke(this.fill);
 							//textShape.setStroke(this.fill);
-							textShape.setFill(this.fill);
+							if (i%10 == 0) {
+								textShape.setFill(this.fill);
+							}
 						}
 						this._foregroundColorPaths.push(line);
-						this._foregroundColorPaths.push(textShape);
-						
 					}
 				
 				}	

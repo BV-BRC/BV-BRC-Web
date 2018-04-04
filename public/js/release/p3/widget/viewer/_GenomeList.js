@@ -6,7 +6,7 @@ define("p3/widget/viewer/_GenomeList", [
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionContainer", "../GenomeGridContainer",
-	"../AMRPanelGridContainer",
+	"../AMRPanelGridContainer", "../SubSystemsContainer",
 	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish", "dijit/Dialog"
 ], function(declare, TabViewerBase, on, lang, xhr,
 			domClass, ContentPane, domConstruct, Topic,
@@ -15,7 +15,7 @@ define("p3/widget/viewer/_GenomeList", [
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			AMRPanelGridContainer,
+			AMRPanelGridContainer, SubSystemsContainer,
 			SequenceGridContainer, PathJoin, QueryToEnglish, Dialog){
 	return declare([TabViewerBase], {
 		maxGenomesPerList: 10000,
@@ -334,6 +334,13 @@ define("p3/widget/viewer/_GenomeList", [
 				id: this.viewer.id + "_" + "pathways",
 				disabled: false
 			});
+
+			this.subsystems = new SubSystemsContainer({
+				title: "Subsystems",
+				id: this.viewer.id + "_" + "subsystems",
+				disabled: false
+			});
+
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
 				id: this.viewer.id + "_" + "proteinFamilies",
@@ -360,6 +367,7 @@ define("p3/widget/viewer/_GenomeList", [
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.pathways);
+			this.viewer.addChild(this.subsystems);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.interactions);
 
