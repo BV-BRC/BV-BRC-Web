@@ -228,7 +228,8 @@ define([
 				name: 'NA Sequence',
 				text: 'na_sequence',
 				link: function(obj){
-					return obj.na_sequence.substr(0, 30) + '... ' + '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+					return obj.na_sequence.substr(0, 30) + '... ' + '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
+                                                + '<button onclick="clipboard.copy(\'' + obj.na_sequence + '\')">copy</button>';
 				}
 			}, {
 				name: 'AA Length',
@@ -237,7 +238,8 @@ define([
 				name: 'AA Sequence',
 				text: 'aa_sequence',
 				link: function(obj){
-					return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+					return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
+                                                + '<button onclick="clipboard.copy(\'' + obj.aa_sequence + '\')">copy</button>';
 				}
 			}];
 
