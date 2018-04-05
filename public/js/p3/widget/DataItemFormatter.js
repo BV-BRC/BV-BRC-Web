@@ -1648,46 +1648,33 @@ define([
 				// 3. need to de-duplicate fecet query
 
 				if (item.genome_count > 1) {
-					var query = "?eq(taxon_lineage_ids," + item.taxon_id + ")&select(genome_id)&limit(25000)";
-					return when(request.get(PathJoin(window.App.dataAPI, "genome", query), {
+					
+					var query = "q=genome_id:(" + options.genome_ids.join(" OR ") + ") AND subsystem_id:(\"" + item.subsystem_id + "\")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000";
+					when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
+						handleAs: 'json',
 						headers: {
-							'Accept': "application/json",
-							'Content-Type': "application/rqlquery+x-www-form-urlencoded"
+							'Accept': "application/solr+json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
 						},
-						handleAs: "json"
+						data: query
 					}), function(response){
 
-						var genome_ids = response.map(function(d){
-							return d.genome_id;
-						});
+						var role_list = "";
+						var role_items = response.facet_counts.facet_fields.role_name
 
-						var query = "q=genome_id:(" + genome_ids.join(" OR ") + ") AND subsystem_id:(\"" + item.subsystem_id + "\")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000";
-						when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
-							handleAs: 'json',
-							headers: {
-								'Accept': "application/solr+json",
-								'Content-Type': "application/solrquery+x-www-form-urlencoded",
-								'X-Requested-With': null,
-								'Authorization': (window.App.authorizationToken || "")
-							},
-							data: query
-						}), function(response){
+						for (var i = 0; i < role_items.length; i +=2) {
+							var role = "&#8226 " + role_items[i] + " <span style=\"font-weight: bold;\">(" + role_items[i+1] + ")</span><br>";
+							role_list += role
+						}
 
-							var role_list = "";
-							var role_items = response.facet_counts.facet_fields.role_name
+						item.role_name = role_list;
 
-							for (var i = 0; i < role_items.length; i +=2) {
-								var role = "&#8226 " + role_items[i] + " <span style=\"font-weight: bold;\">(" + role_items[i+1] + ")</span><br>";
-								role_list += role
-							}
-
-							item.role_name = role_list;
-
-							var row = renderProperty(column, item, options);
-							if(row){
-								domConstruct.place(row, tbody);
-							}
-						});
+						var row = renderProperty(column, item, options);
+						if(row){
+							domConstruct.place(row, tbody);
+						}
 					});
 				} else {
 					var query = "q=genome_id:(" + item.genome_id + ") AND subsystem_id:(\"" + item.subsystem_id + "\")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000";

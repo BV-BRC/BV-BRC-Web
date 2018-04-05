@@ -19,6 +19,7 @@ define("p3/widget/DownloadTooltipDialog", [
 			// console.log("DownloadTooltipDialog set selection: ", val);
 			this.selection = val;
 		},
+
 		timeout: function(val){
 			var _self = this;
 			this._timer = setTimeout(function(){
@@ -33,6 +34,7 @@ define("p3/widget/DownloadTooltipDialog", [
 
 			this.inherited(arguments);
 		},
+
 		onMouseLeave: function(){
 			popup.close(this);
 		},
@@ -48,17 +50,33 @@ define("p3/widget/DownloadTooltipDialog", [
 				dataType = conf.dataType;
 				pkField = conf.pk;
 			}
-			var sel = selection.map(function(sel){
-				return sel[pkField]
-			});
+
+			var sel;
+
+			//subsystem - take only first item
+			if (this.containerType === "subsystem_data") {
+				sel = selection[0][pkField]
+
+			} else {
+				sel = selection.map(function(sel){
+					return sel[pkField]
+				});
+			}
 
 			console.log("DOWNLOAD TYPE: ", type)
 			if(conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
 				var query = "in(" + pkField + ",(" + sel.join(",") + "))&sort(+" + pkField + ")&limit(2500000)"
 				when(this.grid.store.query({}), lang.hitch(this, function(results){
-					results = rql.query(query, {}, results);
-					var data = this["_to" + type.toLowerCase()](results);
-					saveAs(new Blob([data]), "PATRIC_" + this.containerType + "." + type);
+
+					if (pkField === "subsystem_id") {
+						var data = this["_to" + type.toLowerCase()](selection);
+						saveAs(new Blob([data]), "PATRIC_" + this.containerType + "." + type);
+					} else {
+						results = rql.query(query, {}, results);
+						var data = this["_to" + type.toLowerCase()](results);
+						saveAs(new Blob([data]), "PATRIC_" + this.containerType + "." + type);
+					}
+
 				}));
 			}else{
 
@@ -120,7 +138,14 @@ define("p3/widget/DownloadTooltipDialog", [
 					if (obj[key] instanceof Array){
 						io.push(obj[key].join(";"));
 					}else{
-						io.push(obj[key]);
+						//wrap commas because they are used to delineate new columns
+						var cleanedKey;
+						if (typeof obj[key] === 'string') {
+							cleanedKey = "\"" + obj[key] + "\""
+						} else {
+							cleanedKey = obj[key]
+						}
+						io.push(cleanedKey);
 					}
 				})
 
@@ -277,7 +302,7 @@ define("p3/widget/DownloadTooltipDialog", [
 				tableData: true
 			},
 			"subsystem_data": {
-				pk: "subsystem_id",
+				pk: "feature_id",
 				dataType: "subsystem",
 				"label": "Subsystem",
 				"generateDownloadFromStore": true,

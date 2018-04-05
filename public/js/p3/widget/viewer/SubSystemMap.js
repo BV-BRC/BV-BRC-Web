@@ -238,13 +238,13 @@ define([
 						var pmidString = pmids.join(", ");
 
 						$('#subsystemheatmapheader').append( "<br><br>");
-						$('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
+						//$('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
 						$('#subsystemheatmapheader').append( "<br><p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Associated Publication IDs: " + pmidString + "</span>" + "</p>");
 
 
 					} else if ( data && data.description ) {
-						$('#subsystemheatmapheader').append( "<br><br>");
-						$('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
+						// $('#subsystemheatmapheader').append( "<br><br>");
+						// $('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
 					} else if ( data && data.pmid ) {
 						var pmids = [];
 						data.pmid.forEach(function(pmid) {
@@ -301,7 +301,7 @@ define([
 			this.viewerHeader = new ContentPane({
 				content: "",
 				region: "top",
-				style: 'height: 110px',
+				// style: 'height: 110px',
 				id: "subsystemheatmapheadercontainer"
 			});
 

@@ -347,12 +347,9 @@ define("p3/widget/GridContainer", [
 					tooltip: "Download Selection",
 					max: 10000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "subsystem_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data"]
 				},
 				function(selection, container){
-					// console.log("this.currentContainerType: ", this.containerType);
-					// console.log("GridContainer selection: ", selection);
-					// console.log("   ARGS: ", arguments);
 
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
@@ -383,7 +380,7 @@ define("p3/widget/GridContainer", [
 					tooltip: "Copy Selection to Clipboard.",
 					tooltipDialog: copySelectionTT,
 					max: 5000,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "pathway_summary_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "spgene_ref_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data", "interaction_data", "genome_amr_data", "pathway_summary_data", "subsystem_data"]
 				},
 				function(selection, container){
 					this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set("selection", selection);
@@ -660,7 +657,7 @@ define("p3/widget/GridContainer", [
 					max: 5000,
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "pathway_data"]
 				},
 				function(selection){
 					// console.log("view FASTA")
@@ -1051,7 +1048,7 @@ define("p3/widget/GridContainer", [
 					requireAuth: true,
 					max: 10000,
 					tooltip: "Add selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data", "subsystem_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data", "spgene_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
@@ -1065,7 +1062,7 @@ define("p3/widget/GridContainer", [
 
 					if(containerWidget.containerType == "genome_data"){
 						type = "genome_group";
-					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data" || containerWidget.containerType == "subsystem_data"){
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data" || containerWidget.containerType == "spgene_data"){
 						type = "feature_group";
 					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
 						type = "experiment_group";

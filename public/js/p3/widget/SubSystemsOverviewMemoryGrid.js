@@ -2,12 +2,12 @@ define([
   "dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
   "dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dijit/Tooltip",
   "dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/SubsystemsOverviewMemoryStore", "dojo/request",
-  "dojo/aspect", "./GridSelector", "dojo/when", "d3/d3", "dojo/Stateful", "dojo/topic", "../util/PathJoin", "dojo/promise/all", "./DataVisualizationTheme"
+  "dojo/aspect", "./GridSelector", "dojo/when", "d3/d3", "dojo/Stateful", "dojo/topic", "../util/PathJoin", "dojo/promise/all", "./DataVisualizationTheme", "dojox/widget/Standby"
 ], function(declare, BorderContainer, on, Deferred,
       domClass, ContentPane, domConstruct, Tooltip,
       xhr, lang, Grid, formatter, SubsystemsOverviewMemoryStore, request,
-      aspect, selector, when, d3, Stateful, Topic, PathJoin, All, Theme){
-  return declare([Stateful], {
+      aspect, selector, when, d3, Stateful, Topic, PathJoin, All, Theme, Standby){
+  return declare([Stateful, BorderContainer], {
     store: null,
     subsystemSvg: null,
     genomeView: false,
@@ -45,6 +45,8 @@ define([
 
     onSetState: function(attr, oldState, state){
 
+      this.loadingMask.show();
+
       var ov, nv;
       if(oldState){
         ov = oldState.search;
@@ -71,10 +73,12 @@ define([
       var that = this;
 
       Deferred.when(this.store.query(), function(data) {
-        if (!oldState) {
-          that.drawSubsystemPieChartGraph(data);
-        }
 
+        if (oldState) {
+          d3.select('#subsystemspiechart').selectAll("*").remove();
+        }
+        that.drawSubsystemPieChartGraph(data);
+        that.loadingMask.hide();
       });
     },
 
@@ -110,8 +114,8 @@ define([
 
       var color = d3.scale.category20();
 
-      var viewBoxWidth = width * 1.6;
-      var viewBoxHeight = height * 1.6;
+      var viewBoxWidth = width * 2;
+      var viewBoxHeight = height * 2;
 
       var svg = d3.select('#subsystemspiechart')
         .append('svg')
@@ -131,7 +135,7 @@ define([
         .attr("text-anchor", "middle")
         .style("font-weight", "bold")
         .style("font-size", "14px")
-        .text("Subsystem Category Distribution - " + titleText);
+        .text("Subsystem Super Class Distribution - " + titleText);
 
       var arc = d3.svg.arc()
         .innerRadius(0)
@@ -594,11 +598,8 @@ define([
       var divHeightCovered = proportionCovered * height - marginTop;
       var divHeightNotCovered = proportionNotCovered * height - marginTop;
 
-      var percentCovered = proportionCovered * 100;
-      var percentNotCovered = proportionNotCovered * 100;
-
-      var percentCovered = Math.round(percentCovered);
-      var percentNotCovered = Math.round(percentNotCovered);
+      var percentCovered = Math.round(proportionCovered * 100);
+      var percentNotCovered = Math.round(proportionNotCovered * 100);
 
       var totalHeight = divHeightCovered + divHeightNotCovered;
 
@@ -734,6 +735,16 @@ define([
 
     getSubsystemPieGraph: function() {
       return this.subsystemSvg;
+    },
+
+    postCreate: function(){
+      this.loadingMask = new Standby({
+        target: this.id,
+        image: "/public/js/p3/resources/images/spin.svg",
+        color: "#efefef"
+      });
+      this.addChild(this.loadingMask);
+      this.loadingMask.startup();
     },
 
     createStore: function(server, token, state){
