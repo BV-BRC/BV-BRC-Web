@@ -1,66 +1,93 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/CreateWorkspace.html", "dijit/form/Form",
-	"dojo/topic", "../WorkspaceManager"
+  "dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+  "dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+  "dojo/text!./templates/CreateWorkspace.html", "dijit/form/Form",
+  "dojo/topic", "../WorkspaceManager"
 ], function(declare, WidgetBase, on,
-			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, Topic, WorkspaceManager){
-	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-		baseClass: "CreateWorkspace",
-		templateString: Template,
-		validate: function(){
-			var valid = this.inherited(arguments);
-			if(valid){
-				this.saveButton.set("disabled", false)
-			}else{
-				this.saveButton.set("disabled", true);
-			}
-			return valid;
-		},
+  domClass, Templated, WidgetsInTemplate,
+  Template, FormMixin, Topic, WorkspaceManager) {
+  return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
+    baseClass: "CreateWorkspace",
+    templateString: Template,
+    cws: null,
+    startup: function() {
+      this.saveButton.set("disabled", true);
+      this.cws = document.getElementsByClassName('cws')[0];
+      console.log(this.cws);
+      this.cws.addEventListener('keyup', this.checkChars);
+      this.cws.addEventListener('input', this.checkChars);
+      this.cws.button = this.saveButton;
+      this.cws.errorMessage = document.getElementsByClassName('charError')[0];
+    },
+    checkChars: function(evt) {
+      document.getElementsByClassName('cws')[0].button.set("disabled", true);
+      console.log('checking for only a-z A-Z 0-9');
+      console.log(evt.target.value);
+      var isValid = (/^[A-Za-z0-9_.]+$/.test(evt.target.value));
+      if (isValid) {
+        console.log(document.getElementsByClassName('cws')[0].button);
+        document.getElementsByClassName('cws')[0].button.set("disabled", false);
+        document.getElementsByClassName('cws')[0].errorMessage.innerHTML = '&nbsp;';
+        return true
+      }
+      document.getElementsByClassName('cws')[0].errorMessage.innerHTML = 'only letters, numbers, periods, or underscores';
+      return false;
+    },
+    validate: function() {
+      var valid = this.inherited(arguments);
+      if (valid) {
+        this.saveButton.set("disabled", false)
+      } else {
+        this.saveButton.set("disabled", true);
+      }
+      return valid;
+    },
 
-		onSubmit: function(evt){
-			var _self = this;
+    onSubmit: function(evt) {
+      var _self = this;
 
-			evt.preventDefault();
-			evt.stopPropagation();
+      evt.preventDefault();
+      evt.stopPropagation();
 
-			if(this.validate()){
-				var values = this.getValues();
-				domClass.add(this.domNode, "Working");
+      if (this.validate()) {
+        var values = this.getValues();
+        domClass.add(this.domNode, "Working");
 
-				WorkspaceManager.createWorkspace(values.name).then(function(results){
-					domClass.remove(_self.domNode, "Working");
-					var path = "/" + ["workspace", results.path].join("/");
-					Topic.publish("/refreshWorkspace", {});
+        WorkspaceManager.createWorkspace(values.name).then(function(results) {
+          domClass.remove(_self.domNode, "Working");
+          var path = "/" + ["workspace", results.path].join("/");
+          Topic.publish("/refreshWorkspace", {});
 
-					on.emit(_self.domNode, "dialogAction", {
-						action: "close",
-						bubbles: true
-					});
+          on.emit(_self.domNode, "dialogAction", {
+            action: "close",
+            bubbles: true
+          });
 
-					Topic.publish("/Notification", {
-						message: "Wroksapce Created",
-						positionDirection: 'bl-up'
-					});
+          Topic.publish("/Notification", {
+            message: "Wroksapce Created",
+            positionDirection: 'bl-up'
+          });
 
-				}, function(err){
-					domClass.remove(_self.domNode, "Working");
-					domClass.add(_self.domNode, "Error");
-					_self.errorMessage.innerHTML = err;
+        }, function(err) {
+          domClass.remove(_self.domNode, "Working");
+          domClass.add(_self.domNode, "Error");
+          _self.errorMessage.innerHTML = err;
 
-					Topic.publish("/Notification", {
-						message: "Error Creating Workspace",
-						type: "error"
-					});
-				})
-			}else{
-				console.log("Form is incomplete");
-			}
-		},
+          Topic.publish("/Notification", {
+            message: "Error Creating Workspace",
+            type: "error"
+          });
+        })
+      } else {
+        console.log("Form is incomplete");
+      }
+    },
 
-		onCancel: function(evt){
-			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
-		}
-	});
+    onCancel: function(evt) {
+      on.emit(this.domNode, "dialogAction", {
+        action: "close",
+        bubbles: true
+      });
+    }
+  });
 });
