@@ -144,8 +144,6 @@ dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
       </tr>
       <tr>
         <td data-dojo-attach-point="leftColumnCount" >0 IDs</td>
-        <td></td>
-        <td data-dojo-attach-point="rightColumnCount" colspan="4"></td>
       </tr>
       <tr>
         <td style="vertical-align:top;" colspan="2">
@@ -154,10 +152,12 @@ dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
         <td style="vertical-align:top; padding-left:20px" colspan="2">
           <div class="appRow">
             <div class="appRowSegment">
-              <div data-dojo-attach-point="advanced2" style="display:inline-block">
-                <label class="largelabel">Advanced</label>
-                <div class="iconbox" style="margin-left:0px">
-                  <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
+              <div class="showAdv">
+                <div data-dojo-attach-point="advanced2" style="display:inline-block">
+                  <label class="largelabel">Advanced</label>
+                  <div class="iconbox" style="margin-left:0px">
+                    <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
+                  </div>
                 </div>
               </div>
             </div>
