@@ -13,7 +13,7 @@ define([
     startup: function() {
       this.saveButton.set("disabled", true);
       this.cws = document.getElementsByClassName('cws')[0];
-      console.log(this.cws);
+      //console.log(this.cws);
       this.cws.addEventListener('keyup', this.checkChars);
       this.cws.addEventListener('input', this.checkChars);
       this.cws.button = this.saveButton;
@@ -21,11 +21,11 @@ define([
     },
     checkChars: function(evt) {
       document.getElementsByClassName('cws')[0].button.set("disabled", true);
-      console.log('checking for only a-z A-Z 0-9');
-      console.log(evt.target.value);
+      //console.log('checking for only a-z A-Z 0-9');
+      //console.log(evt.target.value);
       var isValid = (/^[A-Za-z0-9_.]+$/.test(evt.target.value));
       if (isValid) {
-        console.log(document.getElementsByClassName('cws')[0].button);
+        //console.log(document.getElementsByClassName('cws')[0].button);
         document.getElementsByClassName('cws')[0].button.set("disabled", false);
         document.getElementsByClassName('cws')[0].errorMessage.innerHTML = '&nbsp;';
         return true
@@ -79,7 +79,7 @@ define([
           });
         })
       } else {
-        console.log("Form is incomplete");
+        //console.log("Form is incomplete");
       }
     },
 
