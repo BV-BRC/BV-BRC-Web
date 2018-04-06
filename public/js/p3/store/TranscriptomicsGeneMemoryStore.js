@@ -272,26 +272,15 @@ define([
 			var wsRequest = new Deferred();
 
 			if(wsExpIds){
-				wsRequest = when(WorkspaceManager.getObjects(wsExpIds, true), function(data){
+                var comparisonFiles=[];
+                wsExpIds.forEach(function(exp_id){
+                    var parts = exp_id.split('/'),
+                        jobName = parts.pop(),
+                        dotPath = parts.join('/') + '/.' + jobName +"/sample.json";
+                    comparisonFiles.push(dotPath);
+                });
 
-					var fileList = data.map(function(obj){
-						var files = {};
-						obj.autoMeta.output_files.forEach(function(arr){
-							// console.log(typeof arr, arr);
-							var d = (arr instanceof Array) ? arr[0] : arr;
-							var file = d.substr(d.lastIndexOf('/') + 1);
-							var type = file.split('.')[0];
-							files[type] = d;
-						});
-
-						return {meta: obj, files: files};
-					});
-
-					var comparisonFiles = fileList.map(function(obj){
-						return obj.files.sample;
-					});
-
-					return when(WorkspaceManager.getObjects(comparisonFiles, false), function(results){
+					wsRequest = when(WorkspaceManager.getObjects(comparisonFiles, false), function(results){
 						return results.map(function(d){
 							if(!wsComparisonIds){
 								return JSON.parse(d.data)['sample'];
@@ -303,7 +292,6 @@ define([
 							}
 						});
 					});
-				});
 			}else{
 				wsRequest.resolve([]);
 			}
