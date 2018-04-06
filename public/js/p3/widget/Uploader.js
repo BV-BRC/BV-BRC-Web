@@ -499,7 +499,7 @@ define([
         Object.keys(fileHash).forEach(function(key) {
           var f = fileHash[key];
           if (f.name) {
-            console.log(f.name);
+            //console.log(f.name);
             if (f.name.indexOf('/') === -1 && f.name.indexOf('\\') === -1 && f.name !== '') {
               isValidName = true;
             }
@@ -508,7 +508,7 @@ define([
         });
       });
       if (!isValidName) {
-        console.error("file name contains slashes");
+        //console.error("file name contains slashes");
         document.getElementsByClassName('charError')[0].innerHTML = 'File names shall not contain slashes.';
         return;
       }
