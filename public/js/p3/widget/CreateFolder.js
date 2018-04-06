@@ -22,16 +22,20 @@ define([
     },
     checkChars: function(evt) {
       document.getElementsByClassName('cws')[0].button.set("disabled", true);
-      //console.log('checking for only a-z A-Z 0-9');
+      //console.log('checking for no slashes');
       //console.log(evt.target.value);
-      var isValid = (/^[A-Za-z0-9_.]+$/.test(evt.target.value));
-      if (isValid) {
-        console.log(document.getElementsByClassName('cws')[0].button);
+      if (evt.target.value.indexOf('/') === -1 && evt.target.value.indexOf('\\') === -1 && evt.target.value !== '') {
+        //console.log(document.getElementsByClassName('cws')[0].button);
         document.getElementsByClassName('cws')[0].button.set("disabled", false);
         document.getElementsByClassName('cws')[0].errorMessage.innerHTML = '&nbsp;';
         return true
       }
-      document.getElementsByClassName('cws')[0].errorMessage.innerHTML = 'only letters, numbers, periods, or underscores';
+      if (evt.target.value !== '') {
+        document.getElementsByClassName('cws')[0].errorMessage.innerHTML = 'Folder name shall not contain any slashes';
+      }
+      if (evt.target.value === '') {
+        document.getElementsByClassName('cws')[0].errorMessage.innerHTML = '&nbsp;';
+      }
       return false;
     },
     _setPathAttr: function(p) {
