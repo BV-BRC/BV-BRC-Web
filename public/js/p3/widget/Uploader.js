@@ -493,18 +493,26 @@ define([
       var inputFiles = {};
       var defs = [];
       var wsFiles = []
-
       var allFiles = this.dndFiles ? [this.dndFiles] : this._previousFiles;
-
+      var isValidName = false;
       allFiles.forEach(function(fileHash) {
         Object.keys(fileHash).forEach(function(key) {
           var f = fileHash[key];
           if (f.name) {
+            console.log(f.name);
+            if (f.name.indexOf('/') === -1 && f.name.indexOf('\\') === -1 && f.name !== '') {
+              isValidName = true;
+            }
             inputFiles[f.name] = f;
           }
         });
       });
-
+      if (!isValidName) {
+        console.error("file name contains slashes");
+        document.getElementsByClassName('charError')[0].innerHTML = 'File names shall not contain slashes.';
+        return;
+      }
+      document.getElementsByClassName('charError')[0].innerHTML = '';
       Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr) {
 
         if (tr && domAttr.get(tr, "data-filename")) {
