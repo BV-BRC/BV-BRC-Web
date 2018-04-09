@@ -67,9 +67,14 @@ define([
 		},
 
         updateOutputName: function() {
+            var charError = document.getElementsByClassName('charError')[0];
+            charError.innerHTML = '&nbsp;';
             var current_output_name = [];
             var sci_item = this.scientific_nameWidget.get('item');
             var label_value = this.myLabelWidget.get('value');
+            if (label_value.indexOf('/') !== -1 || label_value.indexOf('\\') !== -1) {
+              return charError.innerHTML = 'slashes are not allowed';
+            }
             if (sci_item && sci_item.lineage_names.length > 0) {
                 current_output_name.push(sci_item.lineage_names.slice(-1)[0].replace(/\(|\)|\||\/|\:/g, ''));
             }
