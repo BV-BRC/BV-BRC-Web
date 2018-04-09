@@ -117,6 +117,21 @@ define([
       this._started = true;
     },
 
+    checkOutputName: function() {
+      var charError = document.getElementsByClassName('charError')[0];
+      var label_value = this.output_file.get('value');
+      //charError.innerHTML = '&nbsp;';
+      if (label_value.indexOf('/') !== -1 || label_value.indexOf('\\') !== -1) {
+        charError.innerHTML = 'slashes are not allowed';
+        //console.log(this.output_file);
+        this.output_file.set('value', '');
+      } else {
+        if (label_value !== '') {
+          charError.innerHTML = '&nbsp;';
+        }
+      }
+    },
+
     getValues: function() {
       if (typeof String.prototype.startsWith !== 'function') {
         String.prototype.startsWith = function(str) {
