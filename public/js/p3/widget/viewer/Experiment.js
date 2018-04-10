@@ -19,31 +19,31 @@ define([
 		},
 		_setDataAttr: function(data){
 			this.data = data;
-			var paths = this.data.autoMeta.output_files.filter(function(f){
+            this._hiddenPath = data.path + "." + data.name;
+            
+			WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false).then(lang.hitch(this, function(paths){
+                var filtered = paths.filter(function(f){
 				// console.log("Filtering f: ", f);
-				if(f instanceof Array){
-					var path = f[0];
-				}else{
-					path = f;
-				}
-				if(path.match("sample.json")){
+				//if(f instanceof Array){
+				//	var path = f[0];
+				//}else{
+				//	path = f;
+				//}
+				if("path" in f && f.path.match("sample.json")){
 					return true
 				}
-				if(path.match("experiment.json")){
+				if("path" in f && f.path.match("experiment.json")){
 					return true
 				}
 				return false;
 			}).map(function(f){
-				if(f instanceof Array){
-					return f[0];
-				}
-				return f;
+				return f.path;
 			});
-			paths.sort();
+			filtered.sort();
 
 			// console.log("Experiment Sub Paths: ", paths);
 
-			WorkspaceManager.getObjects(paths).then(lang.hitch(this, function(objs){
+			WorkspaceManager.getObjects(filtered).then(lang.hitch(this, function(objs){
 				objs.forEach(function(obj){
 					if(typeof obj.data == 'string'){
 						obj.data = JSON.parse(obj.data);
@@ -60,6 +60,7 @@ define([
 				this.viewer.renderArray(this.samples);
 
 			}));
+            }));
 
 		},
 		startup: function(){
