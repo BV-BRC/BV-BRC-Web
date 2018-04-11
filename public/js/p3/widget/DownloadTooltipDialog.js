@@ -355,7 +355,7 @@ define([
 			var label;
 			this.containerType = val;
 
-			var conf = this.downloadableConfig[val] || this.downloadableConfig.default;
+			var conf = this.downloadableConfig[val] || this.downloadableConfig['default'];
 
 			this.set('label', conf.label);
 
