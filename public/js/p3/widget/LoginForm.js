@@ -11,13 +11,14 @@ define([
 			'baseClass': 'App Sleep',
 			templateString: Template,
 			callbackURL: '',
+			rpwi: null,
 			fieldChanged: function(evt) {
 				this.submitButton.set('disabled', true);
 				if (this.unField.get('value') !== '' && this.pwField.get('value') !== '') {
 					this.submitButton.set('disabled', false);
 				}
 			},
-      fieldChanged2: function(evt) {
+			fieldChanged2: function(evt) {
 				this.resetPWbutton.set('disabled', true);
 				if (this.emailAddress.get('value') !== '') {
 					this.resetPWbutton.set('disabled', false);
@@ -95,7 +96,6 @@ define([
 				if ((state === 'Incomplete') || (state === 'Error')) {
 					this.submitButton.set('disabled', true);
 				}
-
 				this.watch('state', function(prop, val, val2) {
 					if (val2 === 'Incomplete' || val2 === 'Error') {
 						this.submitButton.set('disabled', true);
@@ -103,16 +103,14 @@ define([
 						this.submitButton.set('disabled', false);
 					}
 				});
-
 				if (!this.showCancel && this.cancelButton) {
 					domClass.add(this.cancelButton.domNode, 'dijitHidden');
 				}
 				this._started = true;
 				this.submitButton.set('disabled', true);
-        this.resetPWbutton.set('disabled', true);
+				this.resetPWbutton.set('disabled', true);
 			},
 			makeFPform: function() {
-				console.log('howdy');
 				document.getElementsByClassName('loginForm')[0].style.display = 'none';
 				document.getElementsByClassName('pwReset')[0].style.display = 'block';
 				var loginf2 = document.getElementsByClassName('loginForm')[1];
