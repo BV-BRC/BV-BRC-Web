@@ -1,32 +1,35 @@
 {
-  "_from": "cytoscape-context-menus@^3.0.2",
-  "_id": "cytoscape-context-menus@3.0.3",
+  "_args": [
+    [
+      "cytoscape-context-menus@3.0.5",
+      "/Users/hsyoo/dev/deploy/p3_web"
+    ]
+  ],
+  "_from": "cytoscape-context-menus@3.0.5",
+  "_id": "cytoscape-context-menus@3.0.5",
   "_inBundle": false,
-  "_integrity": "sha1-D6Q9EVrIQjgelz9JsIjyuOMFnvs=",
+  "_integrity": "sha1-IQ+/8UrIPzGmKy7Sq2fTt4C5Q90=",
   "_location": "/cytoscape-context-menus",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "cytoscape-context-menus@^3.0.2",
+    "raw": "cytoscape-context-menus@3.0.5",
     "name": "cytoscape-context-menus",
     "escapedName": "cytoscape-context-menus",
-    "rawSpec": "^3.0.2",
+    "rawSpec": "3.0.5",
     "saveSpec": null,
-    "fetchSpec": "^3.0.2"
+    "fetchSpec": "3.0.5"
   },
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-3.0.3.tgz",
-  "_shasum": "0fa43d115ac842381e973f49b088f2b8e3059efb",
-  "_spec": "cytoscape-context-menus@^3.0.2",
+  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-3.0.5.tgz",
+  "_spec": "3.0.5",
   "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus/issues"
   },
-  "bundleDependencies": false,
-  "deprecated": false,
   "description": "A Cytoscape.js extension to provide context menu around elements and core instance.",
   "devDependencies": {
     "gulp": "^3.8.8",
@@ -60,5 +63,5 @@
     "main": "cytoscape-context-menus.js"
   },
   "style": "cytoscape-context-menus.css",
-  "version": "3.0.3"
+  "version": "3.0.5"
 }

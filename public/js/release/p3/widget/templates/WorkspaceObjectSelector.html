@@ -1,4 +1,6 @@
 <div style="padding:0px;" data-dojo-attach-point="focusNode">
-	<input type="hidden"/>
-	<input type="text" data-dojo-attach-point="searchBox" data-dojo-type="dijit/form/FilteringSelect" data-dojo-attach-event="onChange:onSearchChange" data-dojo-props="labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'"  value="${value}" style="width:85%"/>&nbsp;<i data-dojo-attach-event="click:openChooser" class="fa icon-folder-open fa-1x" />
+	<button type="button" data-dojo-attach-event="click:sortAlpha" style="margin-left:0;padding:0;font-size:8pt">sort</button>
+	<input type="hidden" />
+	<input type="text" data-dojo-attach-point="searchBox" data-dojo-type="dijit/form/FilteringSelect" data-dojo-attach-event="onChange:onSearchChange" data-dojo-props="labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'"
+	  value="${value}" style="width:82%" />&nbsp;<i data-dojo-attach-event="click:openChooser" class="fa icon-folder-open fa-1x" />
 </div>
