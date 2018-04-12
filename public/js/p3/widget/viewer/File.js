@@ -1,9 +1,9 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct","dojo/dom-style",
 	"../formatter", "../../WorkspaceManager", "dojo/_base/Deferred", "dojo/dom-attr", "dojo/_base/array"
 ], function(declare, BorderContainer, on,
-			domClass, ContentPane, domConstruct,
+			domClass, ContentPane, domConstruct,domStyle,
 			formatter, WS, Deferred, domAttr, array){
 	return declare([BorderContainer], {
 		baseClass: "FileViewer",
@@ -48,8 +48,10 @@ define([
 			}
 			this.inherited(arguments);
 			this.viewHeader = new ContentPane({content: "", region: "top"});
+			this.viewSubHeader = new ContentPane({content: "", region: "top"});
 			this.viewer = new ContentPane({region: "center"});
 			this.addChild(this.viewHeader);
+			this.addChild(this.viewSubHeader);
 			this.addChild(this.viewer);
 
 			var _self = this;
@@ -114,15 +116,25 @@ define([
 
 			if(this.file && this.file.metadata){
 				if (this.viewable) {
-					this.viewer.set('content', this.formatFileMetaData());
+					this.viewSubHeader.set('content', this.formatFileMetaData());
 
 					if (this.file.data || (!this.preload && this.url)) {
 						// console.log('[File] type:', this.file.metadata.type);
 						var childContent = '</br>';
 						switch(this.file.metadata.type){
 							case "html":
-								childContent = this.file.data;
-								break;
+								var iframe = domConstruct.create("iframe",{"style": "width:100%;height:100%" });
+								domConstruct.empty(this.viewer.containerNode);
+								domStyle.set(this.viewer.containerNode,"overflow", "hidden");
+								domConstruct.place(iframe,this.viewer.containerNode);
+                                var iframe_contents = this.file.data;
+                                var bookmark_regex=/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi;
+                                if (iframe_contents.search(bookmark_regex)){
+                                    iframe_contents=iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, "$&"+"  onclick='return false;'");
+                                }
+
+								iframe.srcdoc = iframe_contents;	
+								return;
 							case "json":
 							case "diffexp_experiment":
 							case "diffexp_expression":
@@ -145,12 +157,14 @@ define([
 								childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + this.file.data + '</pre>';
 								break;
 						}
-						this.viewer.addChild(new ContentPane({content: childContent, region: "center"}));
+						//this.viewer.addChild(new ContentPane({content: childContent, region: "center", style: "width:100%;height:100%;overflow:hidden;"}));	
+						this.viewer.set('content', childContent);
 					} else {
-						this.viewer.addChild(new ContentPane({content: '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>', region: "center"}));
+						//this.viewer.addChild(new ContentPane({content: '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>', region: "center"}));
+						this.viewer.set("content", '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');
 					}
 				} else {
-					this.viewer.set('content', this.formatFileMetaData());
+					this.viewSubHeader.set('content', this.formatFileMetaData());
 				}
 			}
 		}
