@@ -1,8 +1,11 @@
 <% var flows = [
-    {name: "PATRIC/RAST Workshop", secondary: "Argonne, IL May 7 - 9", rel: "carousel_workshop", background: "#34698e"}
-    , {name: "PATRIC Webinar", secondary: "Recorded Webinars", rel: "carousel_webinar", background: "#34698e"}
-    , {name: "PATRIC CLI", secondary: "Command Line Interface", rel: "carousel_cli", background: "#34698e"}
-    , {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
+    {name: "PATRIC/RAST Workshop", secondary: "Atlanta, GA June 7", rel: "carousel_workshop_asm", background: "#34698e"}
+    , {name: "PATRIC Homepage", secondary: "New Design", rel: "carousel_homepage", background: "#34698e"}
+    , {name: "PATRIC Subsystems", secondary: "New Functionality", rel: "carousel_subsystems", background: "#34698e"}
+    , {name: "PATRIC/RAST Workshop", secondary: "Argonne, IL May 7 - 9", rel: "carousel_workshop_anl", background: "#34698e"}
+    // , {name: "PATRIC Webinar", secondary: "Recorded Webinars", rel: "carousel_webinar", background: "#34698e"}
+    // , {name: "PATRIC CLI", secondary: "Command Line Interface", rel: "carousel_cli", background: "#34698e"}
+    // , {name: "New Services & Data", secondary: "In PATRIC", rel: "carousel_service", background: "#34698e"}
     // , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
     // , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
     //, {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
@@ -20,10 +23,65 @@
                  style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
                  id="p3carousel">
 
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop" class="CarouselContent showOnLoad dijitVisible">
+                <!-- ASM Workshop -->
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop_asm" class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
                         <img class="right"
-                             src="/patric/images/carousel/workshop_ANL_Aug_2017.jpg" alt="PATRIC Workshop">
+                             src="/patric/images/carousel/workshop-ASM-2018.png" alt="PATRIC ASM 2018 Workshop">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h1>
+                        <h2 class="xl highlight-f upper far">@ ASM Microbe 2018 in Atlanta, GA</h2>
+                        <p>The PATRIC/RAST team will be offering a 1-day tutorial workshop on June 7 at ASM Microbe 2018 in Atlanta, GA. The workshop will provide demonstrations and hands-on exercises using key PATRIC features and functionality.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                              href="http://www.abstractsonline.com/pp8/#!/4623/session/1156"
+                              title="PATRIC-RAST Workshop at ASM Microbe 2018"
+                              target="_blank" rel="noopener">More Information</a></p>
+                        <br><br>
+                    </div>
+                </div>
+
+                <!-- PATRIC Homepage -->
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_homepage" class="CarouselContent showOnLoad dijitHidden">
+                    <div class="wrapper">
+                        <img class="right"
+                                src="/patric/images/carousel/new-homepage.jpg" alt="PATRIC New Homepage">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Homepage</h1>
+                        <h2 class="xl highlight-f upper far">New Design</h2>
+                        <p>PATRIC has recently undergone a homepage redesign to better meet the needs of our users. We wanted to streamline our services and make it as easy as possible for users to quickly access areas of PATRIC they need most. Please feel free to check out the new homepage and submit any feedback you may have. It's not 100% complete so expect some changes to still be made.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                                href="https://www.patricbrc.org/home-new"
+                                title="PATRIC New Homepage Design"
+                                target="_blank" rel="noopener">View New Homepage</a></p>
+                        <br><br>
+                    </div>
+                </div>
+
+                <!-- PATRIC Subsystem -->
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_subsystems" class="CarouselContent showOnLoad dijitHidden">
+                    <div class="wrapper">
+                        <img class="right"
+                                src="/patric/images/carousel/subsystems.png" alt="PATRIC Subsystems">
+                        <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Subsystems</h1>
+                        <h2 class="xl highlight-f upper far">New Functionality</h2>
+                        <p>PATRIC now includes subsystem data for single genome, taxon, and genome group levels.  Subsystems are curated sets of biologically related functional roles across a reference set of genomes, comprising units of expert knowledge about a single biological process.</p>
+                        <br>
+                        <br>
+                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
+                                href="https://docs.patricbrc.org//user_guides/organisms_taxon/subsystems_tab.html"
+                                title="PATRIC Subsytems"
+                                target="_blank" rel="noopener">More Information</a></p>
+                        <br><br>
+                    </div>
+                </div>
+
+                <!-- Argonne Workshop -->
+                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop_anl" class="CarouselContent showOnLoad dijitHidden">
+                    <div class="wrapper">
+                        <img class="right"
+                                src="/patric/images/carousel/workshop_ANL_Aug_2017.jpg" alt="PATRIC Workshop">
                         <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h1>
                         <h2 class="xl highlight-f upper far">@ Argonne National Laboratory</h2>
                         <p>The PATRIC/RAST teams will be offering a tutorial workshop May 7-9, 2018, at Argonne National Laboratory
@@ -32,13 +90,15 @@
                         <br>
                         <br>
                         <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="https://docs.patricbrc.org/news/2018/20180122-patric-workshop-at-argonne-national-lab.html"
-                              title="PATRIC-RAST Workshop at Argonne National Lab"
-                              target="_blank" rel="noopener">More Information</a></p>
+                                href="https://docs.patricbrc.org/news/2018/20180122-patric-workshop-at-argonne-national-lab.html"
+                                title="PATRIC-RAST Workshop at Argonne National Lab"
+                                target="_blank" rel="noopener">More Information</a></p>
                         <br><br>
                     </div>
                 </div>
 
+
+<% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_webinar" class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <h1 class="xxxl sans-alternate upper highlight-e">PATRIC Webinar</h1>
@@ -63,7 +123,8 @@
                         <br><br>
                     </div>
                 </div>
-
+*/ %>
+<% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_cli" class="CarouselContent showOnLoad dijitHidden">
                     <div class="wrapper">
                         <img class="right"
@@ -85,6 +146,7 @@
                         <br><br>
                     </div>
                 </div>
+*/ %>
 <% /*
                 <div data-dojo-type="dijit/layout/ContentPane" id="carousel_webinar" class="CarouselContent showOnLoad dijitVisible">
                     <div class="wrapper">
