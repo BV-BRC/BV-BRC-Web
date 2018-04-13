@@ -5,7 +5,8 @@ define("p3/widget/viewer/Seq", [
 	return declare([JobResult], {
 		containerType: "Seq",
     streamables: null,
-		streamableTypes: ["bam", "gff", "vcf.gz", "bigwig"],
+		streamableTypes: ["bam", "gff", "vcf.gz", "bigwig","gtf"],
+		downloadableTypes: ["bam", "gff", "vcf.gz", "bigwig","gtf","bai"],
     setupResultType: function(){
 			if(this.data.autoMeta.app.id){
 				this._resultType = this.data.autoMeta.app.id;
@@ -49,8 +50,15 @@ define("p3/widget/viewer/Seq", [
     getDownloadUrlsForFiles: function() {
       var paths = [];
 			var _self = this;
+
+      _self._downloadableObjects=[];
       this._resultObjects.forEach(function(o){
-				paths.push(o.path);
+                var name_parts = o.name.split('.');
+                var extension = name_parts.pop();
+                if(_self.downloadableTypes.indexOf(o.type) > -1 || _self.downloadableTypes.indexOf(extension) > -1){
+				    paths.push(o.path);
+                    _self._downloadableObjects.push(o);
+                }
       });
 			// console.log('[Seq] paths:', paths);
 
@@ -58,9 +66,9 @@ define("p3/widget/viewer/Seq", [
       return WS.getDownloadUrls(paths)
         .then(function(urls){
 					// console.log('[Seq] urls:', urls)
-          for(var i = 0; i < _self._resultObjects.length; i++)
-            _self._resultObjects[i].url = urls[i];
-          return _self._resultObjects;
+          for(var i = 0; i < _self._downloadableObjects.length; i++)
+            _self._downloadableObjects[i].url = urls[i];
+          return _self._downloadableObjects;
         })
     },
     getStreamableFiles: function(){
@@ -102,8 +110,8 @@ define("p3/widget/viewer/Seq", [
               record = {'path':o.url, 'keyAndLabel':o.name, 'store':o.id, 'trackType':jBrowseTrackType, 'storeType':jBrowseStoreType};
               break;
             case "gff":
-              jBrowseTrackType = "JBrowse/Store/SeqFeature/GFF3";
-              jBrowseStoreType = "JBrowse/View/Track/CanvasFeatures";
+              jBrowseStoreType = "JBrowse/Store/SeqFeature/GFF3";
+              jBrowseTrackType = "JBrowse/View/Track/CanvasFeatures";
               record = {'path':o.url, 'keyAndLabel':o.name, 'store':o.id, 'trackType':jBrowseTrackType, 'storeType':jBrowseStoreType};
               break;
             case "vcf.gz":
