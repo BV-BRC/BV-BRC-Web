@@ -1,6 +1,9 @@
 
 # How to Add/Update SVG Icons
 
+This is an example class name for using a font-awesome icon: ``class="icon-sort-alpha-asc"``<br>
+Do not use <i>"fa fa-sort-alpha-asc"</i> - that will not work. The following is the reason why.
+
 Below we describe the process of adding SVG icons to the codebase, making icons readily available for use in the UI.
 
 1) Go to [icomoon.io](https://icomoon.io/), or similar.
