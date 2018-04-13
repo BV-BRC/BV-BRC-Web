@@ -1,50 +1,31 @@
 {
   "_args": [
     [
-      {
-        "raw": "cytoscape-cola@1.6.0",
-        "scope": null,
-        "escapedName": "cytoscape-cola",
-        "name": "cytoscape-cola",
-        "rawSpec": "1.6.0",
-        "spec": "1.6.0",
-        "type": "version"
-      },
+      "cytoscape-cola@1.6.0",
       "/Users/hsyoo/dev/deploy/p3_web"
     ]
   ],
   "_from": "cytoscape-cola@1.6.0",
   "_id": "cytoscape-cola@1.6.0",
-  "_inCache": true,
+  "_inBundle": false,
+  "_integrity": "sha1-jpm+icqtjS8Ewa3LORarwf91ZLI=",
   "_location": "/cytoscape-cola",
-  "_nodeVersion": "7.3.0",
-  "_npmOperationalInternal": {
-    "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/cytoscape-cola-1.6.0.tgz_1491327541424_0.3848759576212615"
-  },
-  "_npmUser": {
-    "name": "cytoscape",
-    "email": "cytoscapenpm@gmail.com"
-  },
-  "_npmVersion": "4.1.1",
   "_phantomChildren": {},
   "_requested": {
+    "type": "version",
+    "registry": true,
     "raw": "cytoscape-cola@1.6.0",
-    "scope": null,
-    "escapedName": "cytoscape-cola",
     "name": "cytoscape-cola",
+    "escapedName": "cytoscape-cola",
     "rawSpec": "1.6.0",
-    "spec": "1.6.0",
-    "type": "version"
+    "saveSpec": null,
+    "fetchSpec": "1.6.0"
   },
   "_requiredBy": [
-    "#USER",
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.6.0.tgz",
-  "_shasum": "8e99be89caad8d2f04c1adcb3916abc1ff7564b2",
-  "_shrinkwrap": null,
-  "_spec": "cytoscape-cola@1.6.0",
+  "_spec": "1.6.0",
   "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-cola/issues"
@@ -62,12 +43,6 @@
     "jshint-stylish": "^1.0.0",
     "run-sequence": "^1.0.0"
   },
-  "directories": {},
-  "dist": {
-    "shasum": "8e99be89caad8d2f04c1adcb3916abc1ff7564b2",
-    "tarball": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.6.0.tgz"
-  },
-  "gitHead": "bc39228c8375ae8f86a8a993dc9e10f900cd2715",
   "homepage": "https://github.com/cytoscape/cytoscape.js-cola",
   "keywords": [
     "cytoscape",
@@ -75,22 +50,10 @@
   ],
   "license": "MIT",
   "main": "cytoscape-cola.js",
-  "maintainers": [
-    {
-      "name": "cytoscape",
-      "email": "cytoscapenpm@gmail.com"
-    },
-    {
-      "name": "maxkfranz",
-      "email": "maxkfranz@gmail.com"
-    }
-  ],
   "name": "cytoscape-cola",
-  "optionalDependencies": {},
   "peerDependencies": {
     "cytoscape": "^2.4.0 || ^3.0.0"
   },
-  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cytoscape/cytoscape.js-cola.git"

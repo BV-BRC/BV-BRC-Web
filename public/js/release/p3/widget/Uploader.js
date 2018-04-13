@@ -1,149 +1,155 @@
 require({cache:{
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 700px; margin:auto; font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px; padding:4px;\"></div>\n\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/>\n\t\t\t\t<span>Restrict file selection to the common extensions for this file type: </span><br>\n\t\t\t\t<span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div id=\"dnd-zone\" style=\"width: 615px; border: 1px dashed #0085f3; color: #666; text-align: center; padding: 85px;\">\n\n\t\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t\t</div>\n\n\t\t\t\t<div style=\"width: 100%; text-align: center; font-size: 1.4em; font-weight: 700; margin: 15px 0;\">or</div>\n\n\t\t\t\t<span id=\"dnd-text\">Drop files here.</span>\n\t\t\t</div>\n\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\" style=\"min-height: 110px\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Start Upload</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</form>\n"}});
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n    <div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n    <div style=\"padding: 5px;\">\n      <div style=\"width:300px\">\n        ${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n      </select>\n      </div><br>\n      <div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 700px; margin:auto; font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px; padding:4px;\"></div>\n      <div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class=\"dijitHidden\">\n        <input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\" />\n        <span>Restrict file selection to the common extensions for this file type: </span><br>\n        <span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n      </div>\n      <div id=\"dnd-zone\" style=\"width: 615px; border: 1px dashed #0085f3; color: #666; text-align: center; padding: 85px;\">\n        <div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n          <span>${buttonLabel}</span>\n          <!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n        </div>\n        <div style=\"width: 100%; text-align: center; font-size: 1.4em; font-weight: 700; margin: 15px 0;\">or</div>\n        <span id=\"dnd-text\">Drop files here.</span>\n      </div>\n      <div data-dojo-attach-point=\"fileTableContainer\" style=\"min-height: 110px\"></div>\n      <div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n      </div>\n      <div style=\"margin-left:20px;margin-top:10px;text-align:right;\">\n        <span class=\"charError\" style=\"color:red\"></span>\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n        <div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Start Upload</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
 define("p3/widget/Uploader", [
-  "dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-  "dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-  "dojo/text!./templates/Uploader.html", "dijit/form/Form", "dojo/_base/Deferred",
-  "dijit/ProgressBar", "dojo/dom-construct", "p3/UploadManager", "dojo/query", "dojo/dom-attr",
-  "dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/promise/all", "../WorkspaceManager",
-  "./Confirmation"
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
+  'dojo/text!./templates/Uploader.html', 'dijit/form/Form', 'dojo/_base/Deferred',
+  'dijit/ProgressBar', 'dojo/dom-construct', 'p3/UploadManager', 'dojo/query', 'dojo/dom-attr',
+  'dojo/_base/lang', 'dojo/dom-geometry', 'dojo/dom-style', 'dojo/promise/all', '../WorkspaceManager',
+  './Confirmation'
 ], function(declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, Deferred,
   ProgressBar, domConstruct, UploadManager, Query, domAttr,
   lang, domGeometry, domStyle, All, WorkspaceManager,
-  Confirmation){
+  Confirmation) {
     return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-      "baseClass": "CreateWorkspace",
+      'baseClass': 'CreateWorkspace',
       templateString: Template,
-      path: "",
-      dndFiles: null, 	// accept files for drag and drop upload; if given, file list is initialized with these
+      path: '',
+      dndFiles: null, // accept files for drag and drop upload; if given, file list is initialized with these
       dndType: null,
       overwrite: false,
       multiple: false,
       types: false,
-      pathLabel: "Upload file to: ",
-      buttonLabel: "Select Files",
-      typeLabel: "Upload type: ",
+      pathLabel: 'Upload file to: ',
+      buttonLabel: 'Select Files',
+      typeLabel: 'Upload type: ',
       style: {
-        height: "520px",
-        overflow: "scroll"
+        height: '520px',
+        overflow: 'scroll'
       },
       knownTypes: {
-        unspecified: {label: "Unspecified", formats: ["*.*"]},
+        unspecified: {
+          label: 'Unspecified',
+          formats: ['*.*']
+        },
         contigs: {
-          label: "Contigs",
-          formats: [".fa", ".fasta", ".fna"],
-          description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."
+          label: 'Contigs',
+          formats: ['.fa', '.fasta', '.fna'],
+          description: 'Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted.'
         },
         reads: {
-          label: "Reads",
-          formats: [".fq", ".fastq", ".fa", ".fasta", ".gz", ".bz2"],
-          description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."
+          label: 'Reads',
+          formats: ['.fq', '.fastq', '.fa', '.fasta', '.gz', '.bz2'],
+          description: 'Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted.'
         },
-        diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv", ".txt", ".xls", ".xlsx"]},
+        diffexp_input_data: {
+          label: 'Diff. Expression Input Data',
+          formats: ['.csv', '.txt', '.xls', '.xlsx']
+        },
         diffexp_input_metadata: {
-          label: "Diff. Expression Input Metadata",
-          formats: [".csv", ".txt", ".xls", ".xlsx"]
+          label: 'Diff. Expression Input Metadata',
+          formats: ['.csv', '.txt', '.xls', '.xlsx']
         },
         feature_protein_fasta: {
-          label: "Feature Protein FASTA",
-          formats: [".fa", ".fasta", ".faa"],
-          description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."
+          label: 'Feature Protein FASTA',
+          formats: ['.fa', '.fasta', '.faa'],
+          description: 'Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted.'
         },
         txt: {
-          label: "Plain Text",
-          formats: [".txt"],
-          description: "A plain text file."
+          label: 'Plain Text',
+          formats: ['.txt'],
+          description: 'A plain text file.'
         },
         pdf: {
-          label: "PDF",
-          formats: [".pdf"],
-          description: "A pdf file."
+          label: 'PDF',
+          formats: ['.pdf'],
+          description: 'A pdf file.'
         },
         xml: {
-          label: "XML",
-          formats: [".xml"],
-          description: "An xml file."
+          label: 'XML',
+          formats: ['.xml'],
+          description: 'An xml file.'
         },
         json: {
-          label: "JSON",
-          formats: [".json"],
-          description: "A json file."
+          label: 'JSON',
+          formats: ['.json'],
+          description: 'A json file.'
         },
         csv: {
-          label: "CSV",
-          formats: [".csv"],
-          description: "A CSV (comma separated values) file."
+          label: 'CSV',
+          formats: ['.csv'],
+          description: 'A CSV (comma separated values) file.'
         },
         jpg: {
-          label: "JPEG Image",
-          formats: [".jpg", ".jpeg"],
-          description: "A JPEG image file."
+          label: 'JPEG Image',
+          formats: ['.jpg', '.jpeg'],
+          description: 'A JPEG image file.'
         },
         svg: {
-          label: "SVG Image",
-          formats: [".svg"],
-          description: "A SVG image file."
+          label: 'SVG Image',
+          formats: ['.svg'],
+          description: 'A SVG image file.'
         },
         gif: {
-          label: "GIF Image",
-          formats: [".gif"],
-          description: "A GIF image file."
+          label: 'GIF Image',
+          formats: ['.gif'],
+          description: 'A GIF image file.'
         },
         png: {
-          label: "PNG Image",
-          formats: [".jpg", ".jpeg"],
-          description: "A PNG image file."
+          label: 'PNG Image',
+          formats: ['.png'],
+          description: 'A PNG image file.'
         },
         nwk: {
-          label: "Newick",
-          formats: [".nwk"],
-          description: "Phylogenetic tree file."
+          label: 'Newick',
+          formats: ['.nwk'],
+          description: 'Phylogenetic tree file.'
         }
       },
-      _setPathAttr: function(val){
+      _setPathAttr: function(val) {
         this.path = val;
         this.destinationPath.innerHTML = val;
       },
 
-      onUploadTypeChanged: function(val){
+      onUploadTypeChanged: function(val) {
         var formats = this.knownTypes[val].formats;
-        this.formatListNode.innerHTML = formats.join(", ");
+        this.formatListNode.innerHTML = formats.join(', ');
 
         var description = this.knownTypes[val].description;
 
-        if(!this.showAllFormats.get('value')){
-          domAttr.set(this.fileInput, "accept", "*.*");
-        }else{
-          if(formats == "*.*"){
-            domClass.add(this.fileFilterContainer, "dijitHidden");
-          }else{
-            domClass.remove(this.fileFilterContainer, "dijitHidden");
+        if (!this.showAllFormats.get('value')) {
+          domAttr.set(this.fileInput, 'accept', '*.*');
+        } else {
+          if (formats == '*.*') {
+            domClass.add(this.fileFilterContainer, 'dijitHidden');
+          } else {
+            domClass.remove(this.fileFilterContainer, 'dijitHidden');
           }
 
-          domAttr.set(this.fileInput, "accept", formats.join(","));
+          domAttr.set(this.fileInput, 'accept', formats.join(','));
         }
 
-        if(description){
-          domClass.remove(this.typeDescriptionContainer, "dijitHidden");
+        if (description) {
+          domClass.remove(this.typeDescriptionContainer, 'dijitHidden');
           this.typeDescriptionContainer.innerHTML = description;
-        }else{
-          domClass.add(this.typeDescriptionContainer, "dijitHidden");
+        } else {
+          domClass.add(this.typeDescriptionContainer, 'dijitHidden');
         }
       },
-      onChangeShowAllFormats: function(val){
-        if(!val){
-          domAttr.set(this.fileInput, "accept", "*.*");
-        }else{
+      onChangeShowAllFormats: function(val) {
+        if (!val) {
+          domAttr.set(this.fileInput, 'accept', '*.*');
+        } else {
           var type = this.uploadType.get('value');
           var formats = this.knownTypes[this.uploadType.get('value')].formats;
-          domAttr.set(this.fileInput, "accept", formats.join(","));
+          domAttr.set(this.fileInput, 'accept', formats.join(','));
         }
 
       },
 
-      createUploadTable: function(empty){
+      createUploadTable: function(empty) {
 
         // remove existing container as long as not adding multiple rows,
         // since createUploadTable is called on each file change
@@ -153,158 +159,194 @@ define("p3/widget/Uploader", [
           domConstruct.empty(this.fileTableContainer);
         }
 
-        if(!this.uploadTable){
+        if (!this.uploadTable) {
 
-          var table = domConstruct.create("table", {
+          var table = domConstruct.create('table', {
             style: {
-              border: "1px solid #eee",
-              width: "100%"
+              border: '1px solid #eee',
+              width: '100%'
             }
           }, this.fileTableContainer);
-          this.uploadTable = domConstruct.create('tbody', {}, table)
-          var htr = domConstruct.create("tr", {}, this.uploadTable);
-          domConstruct.create("th", {
-            style: {"background-color": "#eee", "border": "none", "text-align": "left"},
-            innerHTML: "File Selected"
-          }, htr);
-          domConstruct.create("th", {
-            style: {"background-color": "#eee", "border": "none", "text-align": "left"},
-            innerHTML: "Type"
-          }, htr);
-          domConstruct.create("th", {
-            style: {"background-color": "#eee", "border": "none", "text-align": "left"},
-            innerHTML: "Size"
-          }, htr);
-          domConstruct.create("th", {
+          this.uploadTable = domConstruct.create('tbody', {}, table);
+          var htr = domConstruct.create('tr', {}, this.uploadTable);
+          domConstruct.create('th', {
             style: {
-              "background-color": "#eee",
-              "border": "none",
-              "text-align": "right"
+              'background-color': '#eee',
+              'border': 'none',
+              'text-align': 'left'
+            },
+            innerHTML: 'File Selected'
+          }, htr);
+          domConstruct.create('th', {
+            style: {
+              'background-color': '#eee',
+              'border': 'none',
+              'text-align': 'left'
+            },
+            innerHTML: 'Type'
+          }, htr);
+          domConstruct.create('th', {
+            style: {
+              'background-color': '#eee',
+              'border': 'none',
+              'text-align': 'left'
+            },
+            innerHTML: 'Size'
+          }, htr);
+          domConstruct.create('th', {
+            style: {
+              'background-color': '#eee',
+              'border': 'none',
+              'text-align': 'right'
             }
           }, htr);
-          if(empty){
+          if (empty) {
             this.createNoneSelectedRow();
           }
         }
       },
 
       createNoneSelectedRow: function() {
-        var row = domConstruct.create("tr", {"class": "fileRow noneSelected"}, this.uploadTable);
-        domConstruct.create("td", {
-          style: {"padding-left": "5px", "text-align": "left"},
-          innerHTML: "<i>None</i>"
+        var row = domConstruct.create('tr', {
+          'class': 'fileRow noneSelected'
+        }, this.uploadTable);
+        domConstruct.create('td', {
+          style: {
+            'padding-left': '5px',
+            'text-align': 'left'
+          },
+          innerHTML: '<i>None</i>'
         }, row);
-        domConstruct.create("td", {style: {"text-align": "left"}}, row);
-        domConstruct.create("td", {style: {"text-align": "left"}}, row);
-        domConstruct.create("td", {style: {"text-align": "right"}}, row);
+        domConstruct.create('td', {
+          style: {
+            'text-align': 'left'
+          }
+        }, row);
+        domConstruct.create('td', {
+          style: {
+            'text-align': 'left'
+          }
+        }, row);
+        domConstruct.create('td', {
+          style: {
+            'text-align': 'right'
+          }
+        }, row);
       },
 
-      createNewFileInput: function(oldFiles){
-        if(this.fileInput){
-          if(!this._previousFiles){
+      createNewFileInput: function(oldFiles) {
+        if (this.fileInput) {
+          if (!this._previousFiles) {
             this._previousFiles = [];
           }
-          if(this.inputHandler){
+          if (this.inputHandler) {
             this.inputHandler.remove();
           }
-          domStyle.set(this.fileInput, "display", "none");
+          domStyle.set(this.fileInput, 'display', 'none');
           this._previousFiles.push(oldFiles || this.fileInput.files);
         }
 
-        this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
-        domConstruct.place(this.fileInput, this.fileUploadButton, "last");
-        this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
+        this.fileInput = domConstruct.create('input', {
+          type: 'file',
+          multiple: this.multiple
+        });
+        domConstruct.place(this.fileInput, this.fileUploadButton, 'last');
+        this.inputHandler = on(this.fileInput, 'change', lang.hitch(this, 'onFileSelectionChange'));
       },
 
-      startup: function(){
+      startup: function() {
         var _self = this;
 
-        if(this._started) return;
+        if (this._started) return;
 
         this.inherited(arguments);
-        var state = this.get("state")
+        var state = this.get('state');
         this.createNewFileInput();
 
-        Object.keys(this.knownTypes).filter(function(t){
-          return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
-        }).forEach(function(t){
+        Object.keys(this.knownTypes).filter(function(t) {
+          return (!_self.types || (_self.types == '*') || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)));
+        }).forEach(function(t) {
           //console.log("* Add option: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
-          _self.uploadType.addOption({disabled: false, label: _self.knownTypes[t].label, value: t});
+          _self.uploadType.addOption({
+            disabled: false,
+            label: _self.knownTypes[t].label,
+            value: t
+          });
         });
 
         var type = this.uploadType.get('value');
-        if(type && this.knownTypes[type]){
+        if (type && this.knownTypes[type]) {
           var description = this.knownTypes[type].description;
-          if(description){
-            domClass.remove(this.typeDescriptionContainer, "dijitHidden");
+          if (description) {
+            domClass.remove(this.typeDescriptionContainer, 'dijitHidden');
             this.typeDescriptionContainer.innerHTML = description;
-          }else{
-            domClass.add(this.typeDescriptionContainer, "dijitHidden");
+          } else {
+            domClass.add(this.typeDescriptionContainer, 'dijitHidden');
           }
-        }else{
-          domClass.add(this.typeDescriptionContainer, "dijitHidden");
+        } else {
+          domClass.add(this.typeDescriptionContainer, 'dijitHidden');
         }
 
-        if(!this.path){
-          Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+        if (!this.path) {
+          Deferred.when(WorkspaceManager.get('currentPath'), function(path) {
             _self.set('path', path);
           });
         }
 
-        if((state == "Incomplete") || (state == "Error")){
-          this.saveButton.set("disabled", true);
+        if ((state == 'Incomplete') || (state == 'Error')) {
+          this.saveButton.set('disabled', true);
         }
 
-        this.watch("state", function(prop, val, val2){
-          if(val2 == "Incomplete" || val2 == "Error"){
-            this.saveButton.set("disabled", true);
-          }else{
+        this.watch('state', function(prop, val, val2) {
+          if (val2 == 'Incomplete' || val2 == 'Error') {
+            this.saveButton.set('disabled', true);
+          } else {
             this.saveButton.set('disabled', false);
           }
         });
         this.createUploadTable(true);
 
         // if activated via drag and drop, initialize with those files (not currently used)
-        if(this.dndFiles) {
-          this.fileUploadButton.innerHTML = 'Select more files'
+        if (this.dndFiles) {
+          this.fileUploadButton.innerHTML = 'Select more files';
           this.onFileSelectionChange(null, this.dndFiles);
           this.validate();
         }
 
         // wait to digest template
-        setTimeout(function(){
+        setTimeout(function() {
           _self.initDragAndDrop();
-        })
+        });
       },
 
       // drag and drop for drop area
-      initDragAndDrop: function(){
+      initDragAndDrop: function() {
         var self = this;
 
         // add dnd events
         this.dndZone = document.getElementById('dnd-zone');
         this.dndZone.addEventListener('dragover', onDragOver);
-        this.dndZone.addEventListener("dragleave", onDragLeave);
+        this.dndZone.addEventListener('dragleave', onDragLeave);
         this.dndZone.addEventListener('drop', onDragDrop);
 
         function onDragLeave(e) {
-          if (e.target.className.indexOf("dnd-active") != -1)
-          self.dndZone.classList.remove("dnd-active");
+          if (e.target.className.indexOf('dnd-active') != -1)
+          {self.dndZone.classList.remove('dnd-active');}
         }
 
         function onDragOver(e) {
           e.stopPropagation();
           e.preventDefault();
 
-          self.dndZone.classList.add("dnd-active");
+          self.dndZone.classList.add('dnd-active');
           e.dataTransfer.dropEffect = 'copy';
         }
 
         function onDragDrop(e) {
           e.stopPropagation();
           e.preventDefault();
-          if ( e.target['className'] == "dnd-active" )
-          self.dndZone.classList.remove("dnd-active");
+          if (e.target.className == 'dnd-active')
+          {self.dndZone.classList.remove('dnd-active');}
 
           var files = e.dataTransfer.files; // Array of all files
 
@@ -313,49 +355,60 @@ define("p3/widget/Uploader", [
         }
       },
 
-      validate: function(){
+      validate: function() {
         var valid = this.inherited(arguments);
-        var validFiles = []
-        Query("TR.fileRow", this.uploadTable).map(function(tr){
-          validFiles.push({filename: domAttr.get(tr, "data-filename"), type: domAttr.get(tr, "data-filetype")});
-        })
-        if(!validFiles || validFiles.length < 1){
+        var validFiles = [];
+        Query('TR.fileRow', this.uploadTable).map(function(tr) {
+          validFiles.push({
+            filename: domAttr.get(tr, 'data-filename'),
+            type: domAttr.get(tr, 'data-filetype')
+          });
+        });
+        if (!validFiles || validFiles.length < 1) {
           valid = false;
         }
 
-        if(valid){
-          this.saveButton.set("disabled", false);
-        }else{
-          this.saveButton.set("disabled", true);
+        if (valid) {
+          this.saveButton.set('disabled', false);
+        } else {
+          this.saveButton.set('disabled', true);
         }
         return valid;
       },
 
-      uploadFile: function(file, uploadDirectory, type, overwrite){
-        if(!this._uploading){
-          this._uploading = []
+      uploadFile: function(file, uploadDirectory, type, overwrite) {
+        if (!this._uploading) {
+          this._uploading = [];
         }
 
         var _self = this;
-        var obj = {path: uploadDirectory, name: file.name, type: type}
-        return Deferred.when(WorkspaceManager.create(obj, true, overwrite), function(obj){
-          domClass.add(_self.domNode, "Working");
+        var obj = {
+          path: uploadDirectory,
+          name: file.name,
+          type: type
+        };
+        return Deferred.when(WorkspaceManager.create(obj, true, overwrite), function(obj) {
+          domClass.add(_self.domNode, 'Working');
           var uploadUrl = obj.link_reference;
 
           _self.resetUploadTable();
 
-          var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
+          var msg = {
+            file: file,
+            uploadDirectory: uploadDirectory,
+            url: uploadUrl
+          };
           UploadManager.upload(msg, window.App.authorizationToken);
           return obj;
-        }, function(err){
+        }, function(err) {
           // only show prompt if given file-already-exists error
           if (err.indexOf('overwrite flag is not set') === -1) return;
 
-          var conf = "Are you sure you want to overwrite <i>" + obj.path + obj.name + "</i> ?";
+          var conf = 'Are you sure you want to overwrite <i>' + obj.path + obj.name + '</i> ?';
           var dlg = new Confirmation({
-            title: "Overwriting File!",
+            title: 'Overwriting File!',
             content: conf,
-            onConfirm: function(evt){
+            onConfirm: function(evt) {
               _self.uploadFile(file, uploadDirectory, type, true);
             }
           });
@@ -370,12 +423,12 @@ define("p3/widget/Uploader", [
       },
 
       // accepts evt (from input object) or FileList (from drag and drop),
-      onFileSelectionChange: function(evt, /* FileList */ files){
+      onFileSelectionChange: function(evt, /* FileList */ files) {
 
         // remove the "none" row when adding files
-        domConstruct.destroy( Query(".noneSelected", this.uploadTable)[0] );
+        domConstruct.destroy(Query('.noneSelected', this.uploadTable)[0]);
 
-        if(this.uploadTable && !this.multiple){
+        if (this.uploadTable && !this.multiple) {
           this.resetUploadTable();
         }
         // only recreate upload table header
@@ -388,69 +441,79 @@ define("p3/widget/Uploader", [
         this.createNewFileInput(files);
       },
 
-      buildFileTable: function(files){
+      buildFileTable: function(files) {
         var _self = this;
-        Object.keys(files).forEach(function(idx){
+        Object.keys(files).forEach(function(idx) {
           var file = files[idx];
-          if(file && file.name && file.size){
-            var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
-            domAttr.set(row, "data-filename", file.name);
-            domAttr.set(row, "data-filetype", _self.dndType || _self.uploadType.get('value'));
-            var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
-            var typeNode = domConstruct.create("td", {innerHTML: _self.uploadType.get("value")}, row);
-            var sizeNode = domConstruct.create("td", {innerHTML: file.size}, row);
-            var delNode = domConstruct.create("td", {innerHTML: '<i class="fa icon-x fa-1x" />'}, row);
-            var handle = on(delNode, "click", lang.hitch(this, function(evt){
+          if (file && file.name && file.size) {
+            var row = domConstruct.create('tr', {
+              'class': 'fileRow'
+            }, _self.uploadTable);
+            domAttr.set(row, 'data-filename', file.name);
+            domAttr.set(row, 'data-filetype', _self.dndType || _self.uploadType.get('value'));
+            var nameNode = domConstruct.create('td', {
+              innerHTML: file.name
+            }, row);
+            var typeNode = domConstruct.create('td', {
+              innerHTML: _self.uploadType.get('value')
+            }, row);
+            var sizeNode = domConstruct.create('td', {
+              innerHTML: file.size
+            }, row);
+            var delNode = domConstruct.create('td', {
+              innerHTML: '<i class="fa icon-x fa-1x" />'
+            }, row);
+            var handle = on(delNode, 'click', lang.hitch(this, function(evt) {
               handle.remove();
               domConstruct.destroy(row);
 
               // add "none selected" if all files were removed
-              var rowCount = Query("tr.fileRow", this.uploadTable).length;
-              if ( rowCount == 0) {
-                _self.createNoneSelectedRow()
+              var rowCount = Query('tr.fileRow', this.uploadTable).length;
+              if (rowCount == 0) {
+                _self.createNoneSelectedRow();
               }
 
-              this.validate()
+              this.validate();
             }));
           }
         }, this);
       },
 
 
-      onSubmit: function(evt){
+      onSubmit: function(evt) {
         var _self = this;
         evt.preventDefault();
         evt.stopPropagation();
 
         domAttr.set(this.saveButton, 'disabled', true);
 
-        if(!_self.path){
-          console.error("Missing Path for Upload: ", _self.path);
+        if (!_self.path) {
+          console.error('Missing Path for Upload: ', _self.path);
           return;
         }
 
         var inputFiles = {};
         var defs = [];
-        var wsFiles = []
+        var wsFiles = [];
 
         var allFiles = this.dndFiles ? [this.dndFiles] : this._previousFiles;
 
-        allFiles.forEach(function(fileHash){
-          Object.keys(fileHash).forEach(function(key){
+        allFiles.forEach(function(fileHash) {
+          Object.keys(fileHash).forEach(function(key) {
             var f = fileHash[key];
-            if(f.name){
+            if (f.name) {
               inputFiles[f.name] = f;
             }
           });
         });
 
-        Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
+        Query('TR.fileRow', this.uploadTable).forEach(lang.hitch(this, function(tr) {
 
-          if(tr && domAttr.get(tr, "data-filename")){
-            var f = inputFiles[domAttr.get(tr, "data-filename")];
+          if (tr && domAttr.get(tr, 'data-filename')) {
+            var f = inputFiles[domAttr.get(tr, 'data-filename')];
 
-            if(f.name){
-              defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
+            if (f.name) {
+              defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, 'data-filetype')), function(res) {
                 wsFiles.push(res);
                 return true;
               }));
@@ -458,19 +521,26 @@ define("p3/widget/Uploader", [
           }
         }));
 
-        All(defs).then(function(results){
+        All(defs).then(function(results) {
           // create fresh upload table when uploads are commplete
           _self.createUploadTable(true);
 
-          on.emit(_self.domNode, "dialogAction", {action: "close", files: wsFiles, bubbles: true});
+          on.emit(_self.domNode, 'dialogAction', {
+            action: 'close',
+            files: wsFiles,
+            bubbles: true
+          });
         });
       },
 
-      onCancel: function(evt){
+      onCancel: function(evt) {
         // console.log("Cancel/Close Dialog", evt)
-        on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
+        on.emit(this.domNode, 'dialogAction', {
+          action: 'close',
+          bubbles: true
+        });
       },
-      resize: function(changeSize, resultSize){
+      resize: function(changeSize, resultSize) {
         // summary:
         //              Call this to resize a widget, or after its size has changed.
         // description:
@@ -510,7 +580,7 @@ define("p3/widget/Uploader", [
         var node = this.domNode;
 
         // set margin box size, unless it wasn't specified, in which case use current size
-        if(changeSize){
+        if (changeSize) {
           domGeometry.setMarginBox(node, changeSize);
         }
 
@@ -518,9 +588,9 @@ define("p3/widget/Uploader", [
         // But note that setting the margin box and then immediately querying dimensions may return
         // inaccurate results, so try not to depend on it.
         var mb = resultSize || {};
-        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-        if(!("h" in mb) || !("w" in mb)){
-          mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+        lang.mixin(mb, changeSize || {}); // changeSize overrides resultSize
+        if (!('h' in mb) || !('w' in mb)) {
+          mb = lang.mixin(domGeometry.getMarginBox(node), mb); // just use domGeometry.marginBox() to fill in missing values
         }
 
         // Compute and save the size of my border box and content box

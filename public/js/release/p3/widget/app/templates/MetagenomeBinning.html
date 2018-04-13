@@ -1,52 +1,43 @@
-<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div class="appTemplate">
-        <div class="appTitle">
-            <span class="breadcrumb">Services</span>
-            <h3>Metagenome Binning
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>Metagenome Binning
                 <div class="infobox iconbox tutorialButton tutorialInfo">
                     <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
                 </div>
             </h3>
-            <p>Metagenome binning from sequencing reads.</p>
-        </div>
-        <div class="formFieldsContainer">
-          <div style="display: none;">
-              <input data-dojo-attach-event="onChange:validate"
-                  data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
-                  data-dojo-attach-point="numInputs" data-dojo-props="constraints:{min:1,max:1000},"/>
-          </div>
-            <table class="assemblyblocks" style="width:100%">
-                <tr>
-                    <td>
-                        <!-- paired read -->
-                        <div id="pairedBox" class="appBox appShadow">
-                            <div class="headerrow">
-                                <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel"> Paired read library</label>
-                                    <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="appRow">
-                                <label class="paramlabel">Read File 1</label><br>
-                                <div data-dojo-attach-event="onChange:onSuggestReadChange"
-                                    data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair"
-                                    data-dojo-attach-point="read1" style="width:300px" required="false"
-                                    data-dojo-props="type:['reads'],multi:false"></div>
-                            </div>
-                            <div class="appRow">
-                                <div data-dojo-attach-point="read2block">
-                                    <label class="paramlabel">Read File 2</label><br>
-                                    <div data-dojo-attach-event="onChange:onSuggestReadChange"
-                                      data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair"
-                                      data-dojo-attach-point="read2" style="width:300px" required="false"
-                                      data-dojo-props="type:['reads'],multi:false"></div>
-                                </div>
-                            </div>
-                        </div>
-<!--
+      <p>Metagenome binning from sequencing reads.</p>
+    </div>
+    <div class="formFieldsContainer">
+      <div style="display: none;">
+        <input data-dojo-attach-event="onChange:validate" data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numInputs" data-dojo-props="constraints:{min:1,max:1000}," />
+      </div>
+      <table class="assemblyblocks" style="width:100%">
+        <tr>
+          <td>
+            <!-- paired read -->
+            <div id="pairedBox" class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel"> Paired read library</label>
+                  <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Read File 1</label><br>
+                <div data-dojo-attach-event="onChange:onSuggestReadChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+              </div>
+              <div class="appRow">
+                <div data-dojo-attach-point="read2block">
+                  <label class="paramlabel">Read File 2</label><br>
+                  <div data-dojo-attach-event="onChange:onSuggestReadChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+                </div>
+              </div>
+            </div>
+            <!--
                         <div><span>OR</span></div>
 
                         <div class="appBox appShadow">
@@ -63,79 +54,68 @@
                             </div>
                         </div>
 -->
-                        <div><span>OR</span></div>
+            <div><span>OR</span></div>
 
-                        <div class="appBox appShadow">
-                            <div class="headerrow">
-                                <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel">Contigs</label>
-                                </div>
-                            </div>
-                            <div class="appRow">
-                                <div class="appFieldLong">
-                                    <label>Contigs</label><br>
-                                    <div data-dojo-attach-event="onChange:onSuggestContigsChange"
-                                      data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs"
-                                      data-dojo-attach-point="contig" style="width:100%" required="false"
-                                      data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </td>
-                    <td>
-                        <div class="appBox appShadow">
-                            <div class="headerrow">
-                                <label class="appBoxLabel">Parameters</label>
-                                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
-                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                </div>
-                            </div>
-                            <div class="appRow">
-                                <label class="paramlabel">Output Folder</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                                     data-dojo-attach-point="output_path" style="width:300px" required="true"
-                                     data-dojo-props="type:['folder'],multi:false"
-                                     data-dojo-attach-event="onChange:validate"></div>
-                            </div>
-                            <div class="appRow">
-                                <label class="paramlabel">Output Name</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-                                     data-dojo-attach-point="output_file" style="width:300px" required="true"
-                                     data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-                            </div>
-                            <div class="appRow">
-                                <label class="paramlabel">Genome Group Name</label><br>
-                                <div data-dojo-type="dijit/form/ValidationTextBox" name="genome_group"
-                                    data-dojo-attach-point="genome_group" style="width: 300px" required="false"
-                                    data-dojo-props="intermediateChanges:false, missingMessage:'You must provide a genome group name',trim:true,placeHolder:'My Genome Group'"></div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="appSubmissionArea">
-            <div style="width:400px; margin:auto" class="workingMessage messageContainer">
-                Submitting Job
-            </div>
-
-            <div style="width:400px; margin:auto" class="submittedMessage messageContainer">
-                Job has been queued.
-            </div>
-
-            <div style="width:400px; margin:auto" class="errorMessage messageContainer">
-                <div style="font-weight:900;font-size:1.1em;">Error Submitting Job</div>
-                <p data-dojo-attach-point="errorMessage">Error</p>
-            </div>
-
-            <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
-                     data-dojo-type="dijit/form/Button">Cancel
+            <div class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">Contigs</label>
                 </div>
-                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+              </div>
+              <div class="appRow">
+                <div class="appFieldLong">
+                  <label>Contigs</label><br>
+                  <div data-dojo-attach-event="onChange:onSuggestContigsChange" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" data-dojo-attach-point="contig" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
+                </div>
+              </div>
             </div>
-        </div>
+
+          </td>
+          <td>
+            <div class="appBox appShadow">
+              <div class="headerrow">
+                <label class="appBoxLabel">Parameters</label>
+                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Output Folder</label><br>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:validate"></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Genome Group Name</label><br>
+                <div data-dojo-type="dijit/form/ValidationTextBox" name="genome_group" data-dojo-attach-point="genome_group" style="width: 300px" required="false" data-dojo-props="intermediateChanges:false, missingMessage:'You must provide a genome group name',trim:true,placeHolder:'My Genome Group'"></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
+    <div class="appSubmissionArea">
+      <div style="width:400px; margin:auto" class="workingMessage messageContainer">
+        Submitting Job
+      </div>
+
+      <div style="width:400px; margin:auto" class="submittedMessage messageContainer">
+        Job has been queued.
+      </div>
+
+      <div style="width:400px; margin:auto" class="errorMessage messageContainer">
+        <div style="font-weight:900;font-size:1.1em;">Error Submitting Job</div>
+        <p data-dojo-attach-point="errorMessage">Error</p>
+      </div>
+
+      <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel
+        </div>
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+      </div>
+    </div>
+  </div>
 </form>
