@@ -59,11 +59,17 @@ define([
 					types.push(node.value);
 				}
 			});
+			if(types.length == 0){
+				var msg = "YOU NEED TO SELECT AT LEAST 1 FILE TYPE.";
+				new Dialog({title: "Notice", content: msg}).show();
+				return;
+			}
 			//new Dialog({content: "Download: " + ids + "\nTypes: " + types}).show();
 			var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
 			var conf = this.downloadableConfig[this.containerType]
 
 			var map = {}
+
 			conf.downloadTypes.forEach(function(type){
 				map[type.type] = type;
 			})
