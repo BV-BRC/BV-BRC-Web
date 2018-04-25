@@ -2082,10 +2082,6 @@
     align-self: stretch !important;
   }
 }
-#patric-homepage-wrapper {
-  background: #F2F2F2;
-}
-
 #patric-homepage-wrapper .btn {
   display: inline-block;
   font-weight: 400 !important;
@@ -2176,12 +2172,16 @@
   text-decoration: none;
 }
 
+#patric-homepage-wrapper {
+  background: #F2F2F2;
+}
+
 #patric-homepage-wrapper .global-search {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   width: 100%;
-  margin-top: -6px;
+  margin-top: -5px;
 }
 
 #patric-homepage-wrapper .global-search .GlobalSearch {
@@ -2196,7 +2196,6 @@
   margin-top: 15px;
   margin-bottom: 20px;
   padding: 15px 20px;
-  /* min-height: 200px; */
 }
 
 #patric-homepage-wrapper .browse-search p {
@@ -2348,10 +2347,34 @@
   box-sizing: inherit;
 }
 
+#patric-homepage-wrapper .global-search .GSbody {
+  border-bottom: 2px solid #A0A0A0;
+}
+
+#patric-homepage-wrapper .global-search .gs-data-types-dropdown .dijitInputField {
+  font-size: 14px;
+  padding: 6px 10px;
+}
+
+#patric-homepage-wrapper .global-search .gs-input .dijitInputField {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 6px 4px;
+}
+
+#patric-homepage-wrapper .global-search .gs-input .dijitPlaceHolder {
+  font-size: 14px;
+  padding: 6px 4px;
+}
+
+#patric-homepage-wrapper .global-search .gs-options-dropdown .dijitInputField {
+  font-size: 14px;
+  padding: 6px 10px;
+}
+
 #patric-homepage-wrapper .analyze-data {
   background: #FFFFFF;
   padding: 15px 20px;
-  /* min-height: 350px; */
 }
 
 #patric-homepage-wrapper .analyze-data h2 {
@@ -2375,7 +2398,6 @@
 }
 
 #patric-homepage-wrapper .analyze-data li a {
-  /* font-size: 11pt; */
   text-decoration: underline;
   color: #3e5775;
 }
