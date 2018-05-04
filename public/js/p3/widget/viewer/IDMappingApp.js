@@ -70,14 +70,14 @@ define([
 
       this.viewerHeader = new ContentPane({
         content: '', // [placeholder for IDMapping summary: xxx feature found etc]",
-        class: 'breadcrumb',
+        'class': 'breadcrumb',
         region: 'top'
       });
 
-      var headerContent = domConstruct.create('div', { class: 'PerspectiveHeader', style:{ 'padding-left':'20px' } });
+      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader', style:{ 'padding-left':'20px' } });
       domConstruct.place(headerContent, this.viewerHeader.containerNode, 'last');
       this.totalCountNode = domConstruct.create('span', {
-        class: 'PerspectiveTotalCount',
+        'class': 'PerspectiveTotalCount',
         innerHTML: '( loading... )',
         style: { color:'black' }
       }, headerContent);

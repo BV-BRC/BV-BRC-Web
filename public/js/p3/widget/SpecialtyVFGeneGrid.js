@@ -33,7 +33,7 @@ define([
       gene_id: { label: 'Gene ID', field: 'gene_id', hidden: true },
       gi: { label: 'GI', field: 'gi', hidden: true },
       product: { label: 'Product', field: 'product', hidden: false },
-      function: { label: 'Function', field: 'function', hidden: true },
+      'function': { label: 'Function', field: 'function', hidden: true },
       classification: { label: 'Classification', field: 'classification', hidden: true },
       pmid: { label: 'Pubmed', field: 'pmid', hidden: false },
       assertion: { label: 'Assertion', field: 'assertion', hidden: true }

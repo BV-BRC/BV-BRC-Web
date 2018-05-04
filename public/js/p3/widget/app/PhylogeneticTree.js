@@ -197,7 +197,7 @@ define([
         var newGenomeIds = [lrec[this[groupType].genomeToAttachPt]];
         var tr = this[groupType + 'GenomeTable'].insertRow(0);
         lrec.row = tr;
-        var td = domConstruct.create('td', { class: 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
@@ -265,7 +265,7 @@ define([
           && this[groupType].addedNum + newGenomeIds.length <= this[groupType].maxGenomes) {
           var tr = this[groupType + 'GenomeTable'].insertRow(0);
           lrec.row = tr;
-          var td = domConstruct.create('td', { class: 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
+          var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
           td.genomeRecord = lrec;
           td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + '</div>';
           var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);

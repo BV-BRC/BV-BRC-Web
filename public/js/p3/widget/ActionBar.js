@@ -220,13 +220,13 @@ define([
     addAction: function (name, classes, opts, fn, enabled, target) {
       target = target || this.containerNode;
       var wrapper = domConstruct.create('div', {
-        class: (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
+        'class': (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
         rel: name
       });
       var b = domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);
 
       if (opts && opts.label) {
-        var t = domConstruct.create('div', { innerHTML: opts.label, class: 'ActionButtonText' }, wrapper);
+        var t = domConstruct.create('div', { innerHTML: opts.label, 'class': 'ActionButtonText' }, wrapper);
       }
 
       if (opts && opts.pressAndHold && typeof opts.pressAndHold == 'function') {

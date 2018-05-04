@@ -272,7 +272,7 @@ define([
         that.expandedSubsystemData = $.extend(true, [], newSubsystemData);
       }
       else if (parentClassData && !childClassData) {
-        parentClassData.class.buckets.forEach(function (classData) {
+        parentClassData['class'].buckets.forEach(function (classData) {
           classData.chevronOpened = true;
           classData.classScope = true;
           classData.colorCodeKey = parentClassData.colorCodeKey;
@@ -282,10 +282,10 @@ define([
         });
         that.establishProps = false;
         var superClassIndex = newSubsystemData.map(function (e) { return e.val; }).indexOf(parentClassData.val);
-        for (var i = 0; i < parentClassData.class.buckets.length; i++) {
+        for (var i = 0; i < parentClassData['class'].buckets.length; i++) {
           // place behind index
           var index = superClassIndex + i + 1;
-          newSubsystemData.splice(index, 0, parentClassData.class.buckets[i]);
+          newSubsystemData.splice(index, 0, parentClassData['class'].buckets[i]);
         }
         that.expandedSubsystemData = $.extend(true, [], newSubsystemData);
       }

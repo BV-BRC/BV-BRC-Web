@@ -16,7 +16,7 @@ define([
       this.inherited(arguments);
       this.container = domConstruct.create('div', {}, this.domNode);
       this.containerNode = domConstruct.create('div', {
-        class: '',
+        'class': '',
         style: 'border: none;'
       }, this.domNode);
     },
@@ -38,7 +38,7 @@ define([
         var header = domConstruct.create('b', {
           style: {
             fontSize: '1.2em',
-            float: 'left',
+            'float': 'left',
             lineHeight: '.8em'
           },
           innerHTML: this.header + '<br>'
@@ -60,20 +60,20 @@ define([
        */
       var options = domConstruct.create('span', {
         style: {
-          float: 'right'
+          'float': 'right'
         }
       }, this.container);
 
       var statusBtns = this.statusBtns = domConstruct.create('span', {
-        class: 'JobFilters',
+        'class': 'JobFilters',
         style: {
-          float: 'right'
+          'float': 'right'
         }
       }, options);
 
       var appFilter = domConstruct.create('span', {
         style: {
-          float: 'right'
+          'float': 'right'
         }
       }, options);
 
@@ -83,7 +83,7 @@ define([
       var selector = new Select({
         name: 'type',
         style: {
-          width: '150px', float: 'right', marginRight: '2.0em'
+          width: '150px', 'float': 'right', marginRight: '2.0em'
         },
         options: [
           { label: 'All Services', value: 'all', selected: true }
@@ -109,7 +109,7 @@ define([
        */
 
       var allBtn = domConstruct.create('span', {
-        class: 'JobFilter',
+        'class': 'JobFilter',
         innerHTML: '<i class="icon-undo"></i> All statuses',
         style: {
           fontSize: '1.2em',
@@ -126,7 +126,7 @@ define([
 
 
       var queuedBtn = domConstruct.create('span', {
-        class: 'JobFilter',
+        'class': 'JobFilter',
         innerHTML: '<i class="icon-tasks Queued"></i> ' +
           '<span>-</span> queued',
         style: {
@@ -141,7 +141,7 @@ define([
       });
 
       var inProgressBtn = domConstruct.create('span', {
-        class: 'JobFilter',
+        'class': 'JobFilter',
         innerHTML: '<i class="icon-play22 JobsRunning"></i> ' +
           '<span>-</span> running',
         style: {
@@ -157,7 +157,7 @@ define([
       });
 
       var completedBtn = domConstruct.create('span', {
-        class: 'JobFilter',
+        'class': 'JobFilter',
         innerHTML: '<i class="icon-checkmark2 JobsCompleted"></i> ' +
           '<span>-</span> completed',
         style: {
@@ -174,7 +174,7 @@ define([
 
 
       var failedBtn = domConstruct.create('span', {
-        class: 'JobFilter',
+        'class': 'JobFilter',
         innerHTML: '<i class="icon-warning2 JobsFailed"></i> ' +
           '<span>-</span> failed',
         style: {

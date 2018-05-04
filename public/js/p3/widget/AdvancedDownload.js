@@ -43,7 +43,7 @@ define([
         label: 'Pathways',
         tableData: true
       },
-      default: {
+      'default': {
         label: 'Items',
         tableData: true
       }

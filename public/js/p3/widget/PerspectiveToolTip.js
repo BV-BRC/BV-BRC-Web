@@ -122,7 +122,7 @@ define([
 
       subs.forEach(function (sub) {
         var d = domConstruct.create('div', {}, dstContent);
-        domConstruct.create('a', { class: 'navigationLink', innerHTML: sub.label, href: this.perspectiveUrl + '#view_tab=' + sub.link }, d);
+        domConstruct.create('a', { 'class': 'navigationLink', innerHTML: sub.label, href: this.perspectiveUrl + '#view_tab=' + sub.link }, d);
       }, this);
 
 

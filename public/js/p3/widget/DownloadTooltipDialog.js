@@ -225,14 +225,14 @@ define([
       domConstruct.create('td', { style: 'width:10px;' }, tr);
       var oData = this.otherDownloadNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
 
-      domConstruct.create('div', { class: 'wsActionTooltip', rel: 'tsv', innerHTML: 'Text' }, tData);
-      domConstruct.create('div', { class: 'wsActionTooltip', rel: 'csv', innerHTML: 'CSV' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'tsv', innerHTML: 'Text' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'csv', innerHTML: 'CSV' }, tData);
       // domConstruct.create("div", {"class": "wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
 
       tr = domConstruct.create('tr', {}, table);
       var td = domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
       this.advancedDownloadButton = domConstruct.create('span', {
-        class: 'wsActionTooltip',
+        'class': 'wsActionTooltip',
         style: 'padding:4px;',
         rel: 'advancedDownload',
         innerHTML: 'More Options'
@@ -347,7 +347,7 @@ define([
         label: 'AMR Phenotypes',
         tableData: true
       },
-      default: {
+      'default': {
         label: 'Items',
         tableData: true
       }
@@ -358,7 +358,7 @@ define([
       var label;
       this.containerType = val;
 
-      var conf = this.downloadableConfig[val] || this.downloadableConfig.default;
+      var conf = this.downloadableConfig[val] || this.downloadableConfig['default'];
 
       this.set('label', conf.label);
 
@@ -371,7 +371,7 @@ define([
       if (conf.otherData) {
         conf.otherData.forEach(function (type) {
           domConstruct.create('div', {
-            class: 'wsActionTooltip',
+            'class': 'wsActionTooltip',
             rel: type,
             innerHTML: this.downloadableDataTypes[type]
           }, this.otherDownloadNode);

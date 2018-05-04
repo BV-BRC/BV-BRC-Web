@@ -162,10 +162,10 @@ define([
       domConstruct.create('td', { style: 'width:10px;' }, tr);
       var oData = this.otherCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
 
-      domConstruct.create('div', { class: 'wsActionTooltip', rel: 'full_w_header', innerHTML: 'Full Table (with headers)' }, tData);
-      domConstruct.create('div', { class: 'wsActionTooltip', rel: 'full_wo_header', innerHTML: 'Full Table (without headers)' }, tData);
-      domConstruct.create('div', { class: 'wsActionTooltip', rel: 'selected_w_header', innerHTML: 'Selected Columns (with headers)' }, tData);
-      domConstruct.create('div', { class: 'wsActionTooltip', rel: 'selected_wo_header', innerHTML: 'Selected Columns (without headers)' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_w_header', innerHTML: 'Full Table (with headers)' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_wo_header', innerHTML: 'Full Table (without headers)' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_w_header', innerHTML: 'Selected Columns (with headers)' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_wo_header', innerHTML: 'Selected Columns (without headers)' }, tData);
 
       tr = domConstruct.create('tr', {}, table);
       var td = domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
@@ -263,7 +263,7 @@ define([
         label: 'AMR Phenotypes',
         tableData: true
       },
-      default: {
+      'default': {
         label: 'Items',
         pk: 'id',
         tableData: true
@@ -274,7 +274,7 @@ define([
       // console.log("CopyTooltipDialog.setContainerType: ", val);
 
       this.containerType = val;
-      this.conf = this.copyableConfig[val] || this.copyableConfig.default;
+      this.conf = this.copyableConfig[val] || this.copyableConfig['default'];
       this.set('label', this.conf.label);
 
       if (!this._started) {
@@ -286,7 +286,7 @@ define([
       if (this.conf.otherData) {
         this.conf.otherData.forEach(function (type) {
           domConstruct.create('div', {
-            class: 'wsActionTooltip',
+            'class': 'wsActionTooltip',
             rel: type,
             innerHTML: null
           }, this.otherCopyNode);

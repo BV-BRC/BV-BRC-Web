@@ -103,7 +103,7 @@ define([
           var tabController = new TabController({
             containerId: self.id + '_TabContainer',
             region: 'top',
-            class: 'TextTabButtons'
+            'class': 'TextTabButtons'
           });
 
           // for charts
@@ -193,7 +193,7 @@ define([
       // other filter items
       var otherFilterPanel = new ContentPane({
         region: 'top',
-        class: 'GeneExpFilterPanel'
+        'class': 'GeneExpFilterPanel'
       });
 
       // download dialog
@@ -274,11 +274,11 @@ define([
 
       // download button
       var wrapper = domConstruct.create('div', {
-        class: 'ActionButtonWrapper',
+        'class': 'ActionButtonWrapper',
         rel: 'DownloadTable'
       });
-      var b = domConstruct.create('div', { class: 'fa icon-download fa-2x' }, wrapper);
-      var t = domConstruct.create('div', { innerHTML: 'DOWNLOAD', class: 'ActionButtonText' }, wrapper);
+      var b = domConstruct.create('div', { 'class': 'fa icon-download fa-2x' }, wrapper);
+      var t = domConstruct.create('div', { innerHTML: 'DOWNLOAD', 'class': 'ActionButtonText' }, wrapper);
       on(wrapper, 'div:click', function (evt) {
         popup.open({
           popup: downloadTT,

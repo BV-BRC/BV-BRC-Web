@@ -94,7 +94,7 @@ define([
   });
 
   return declare([BorderContainer], {
-    class: 'GridContainer',
+    'class': 'GridContainer',
     gutters: false,
     gridCtor: null,
     query: '',
@@ -227,7 +227,7 @@ define([
         // var msg = state.autoFilterMessage;
         if (!this.messagePanel) {
           this.messagePanel = new ContentPane({
-            class: 'WarningPanel',
+            'class': 'WarningPanel',
             region: 'top',
             content: msg
           });

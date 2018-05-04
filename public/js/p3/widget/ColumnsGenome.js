@@ -1,7 +1,7 @@
 define(['./formatter'], function (formatter) {
 
   return {
-    public: {
+    'public': {
       label: 'Public',
       field: 'public',
       hidden: true

@@ -151,8 +151,8 @@ define([
     postCreate: function () {
       this.inherited(arguments);
       this.filterButton = domConstr.create('i', {
-        class: 'fa icon-filter fa-1x',
-        style: { float: 'left', 'font-size': '1.2em', margin: '2px' }
+        'class': 'fa icon-filter fa-1x',
+        style: { 'float': 'left', 'font-size': '1.2em', margin: '2px' }
       });
       domConstr.place(this.filterButton, this.domNode, 'first');
 

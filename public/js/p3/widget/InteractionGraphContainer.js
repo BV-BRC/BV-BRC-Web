@@ -562,7 +562,7 @@ define([
         if (tooltipDiv.length == 0) {
           // this.tooltipLayer = domConstruct.place('<div class="tooltip" style="opacity: 0"></div>', query("body")[0], "last");
           this.tooltipLayer = domConstruct.create('div', {
-            class: 'tooltip',
+            'class': 'tooltip',
             style: { opacity: 0 }
           }, query('body')[0], 'last');
         } else {

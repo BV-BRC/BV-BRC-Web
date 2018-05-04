@@ -90,7 +90,7 @@ define([
       // console.log(lrec);
 
       var tr = this.libsTable.insertRow(0);
-      var td = domConstruct.create('td', { class: 'textcol singledata', innerHTML: '' }, tr);
+      var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
 
       td.libRecord = lrec;
       td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + '</div>';
@@ -139,7 +139,7 @@ define([
         // console.log(lrec);
 
         var tr = this.libsTable.insertRow(0);
-        var td = domConstruct.create('td', { class: 'textcol singledata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
 
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)' + '</div>';

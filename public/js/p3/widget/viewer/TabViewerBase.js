@@ -53,24 +53,24 @@ define([
       this.inherited(arguments);
       this.viewHeader = new ContentPane({
         content: '',
-        class: 'breadcrumb',
+        'class': 'breadcrumb',
         region: 'top'
       });
 
-      var headerContent = domConstruct.create('div', { class: 'PerspectiveHeader' });
+      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader' });
       domConstruct.place(headerContent, this.viewHeader.containerNode, 'last');
 
-      domConstruct.create('i', { class: 'fa PerspectiveIcon ' + this.perspectiveIconClass }, headerContent);
+      domConstruct.create('i', { 'class': 'fa PerspectiveIcon ' + this.perspectiveIconClass }, headerContent);
 
       domConstruct.create('div', {
-        class: 'PerspectiveType',
+        'class': 'PerspectiveType',
         innerHTML: this.perspectiveLabel
       }, headerContent);
 
-      this.queryNode = domConstruct.create('span', { class: 'PerspectiveQuery' }, headerContent);
+      this.queryNode = domConstruct.create('span', { 'class': 'PerspectiveQuery' }, headerContent);
 
       this.totalCountNode = domConstruct.create('span', {
-        class: 'PerspectiveTotalCount',
+        'class': 'PerspectiveTotalCount',
         innerHTML: '( loading... )'
       }, headerContent);
 

@@ -79,7 +79,7 @@ define([
         // var msg = state.autoFilterMessage;
         if (!this.messagePanel) {
           this.messagePanel = new ContentPane({
-            class: 'WarningPanel',
+            'class': 'WarningPanel',
             region: 'top',
             content: msg
           });
@@ -130,7 +130,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
 
       this.mainGridContainer = new MainGridContainer({
@@ -231,7 +231,7 @@ define([
 
       // genome list grid
       var filterGrid = new FilterGrid({
-        class: 'pfFilterGrid',
+        'class': 'pfFilterGrid',
         topicId: this.topicId,
         state: this.state
       });

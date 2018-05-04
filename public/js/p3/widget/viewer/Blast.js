@@ -73,7 +73,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
       this.addChild(tabController);
       this.addChild(this.tabContainer);

@@ -7,7 +7,7 @@ define([
 ) {
 
   var formatters = {
-    default: function (item, options) {
+    'default': function (item, options) {
       options = options || {};
 
       var table = domConstruct.create('table');
@@ -51,7 +51,7 @@ define([
 
       var eutilSearchURL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?usehistory=y&db=pubmed&term=' + term + '&retmode=json';
 
-      var div = domConstruct.create('div', { class: 'pubmed' });
+      var div = domConstruct.create('div', { 'class': 'pubmed' });
       var topLevelUl = domConstruct.create('ul', {}, div);
 
       xhr.get(eutilSearchURL, {

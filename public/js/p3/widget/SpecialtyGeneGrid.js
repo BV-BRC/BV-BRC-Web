@@ -32,7 +32,7 @@ define([
       source_org: { label: 'Source Organism', field: 'organism', hidden: true },
       gene: { label: 'Gene', field: 'gene', hidden: false },
       product: { label: 'Product', field: 'product', hidden: false },
-      function: { label: 'Function', field: 'function', hidden: true },
+      'function': { label: 'Function', field: 'function', hidden: true },
       classification: {
         label: 'Classification', field: 'classification', sortable: false, hidden: true
       },

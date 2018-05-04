@@ -71,7 +71,7 @@ define([
 
           // building action bar
           var actionBar = domConstruct.create('div', {
-            class: 'dijitDialogPaneActionBar'
+            'class': 'dijitDialogPaneActionBar'
           });
           var btnSubmit = new Button({
             label: 'Submit',
@@ -354,7 +354,7 @@ define([
     _buildPanelButtons: function (colIDs, rowIDs, geneIds, comparisonIds) {
       var _self = this;
       var actionBar = domConstruct.create('div', {
-        class: 'dijitDialogPaneActionBar'
+        'class': 'dijitDialogPaneActionBar'
       });
 
       var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';

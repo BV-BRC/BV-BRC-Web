@@ -230,14 +230,14 @@ define([
       // var sel = domConstr.create("span", {innerHTML: '<b>Selection: </b>', style: "text-align: right"}, wrap);
       this.selValNode = domConstr.create('div', {
         innerHTML: '<span class="selectedDest"><b>' + this.selectionText + ':</b> None.</span>',
-        style: { margin: '5px 0', float: 'left' }
+        style: { margin: '5px 0', 'float': 'left' }
       }, wrap);
 
 
       // create workspace button
       var createWSBtn = domConstr.create('i', {
         rel: 'createWS',
-        class: 'icon-add-workspace objSelectorActionIcon fa-2x'
+        'class': 'icon-add-workspace objSelectorActionIcon fa-2x'
       });
       on(createWSBtn, 'click', function () {
         Topic.publish('/openDialog', {
@@ -253,7 +253,7 @@ define([
       // create folder button
       var createFolderBtn = domConstr.create('i', {
         rel: 'createFolder',
-        class: 'icon-folder-plus objSelectorActionIcon fa-2x'
+        'class': 'icon-folder-plus objSelectorActionIcon fa-2x'
       });
       on(createFolderBtn, 'click', function () {
         Topic.publish('/openDialog', {
@@ -271,7 +271,7 @@ define([
         style: {
           'font-size': '.85em',
           display: 'inline-block',
-          float: 'right',
+          'float': 'right',
           'text-align': 'right'
         },
         innerHTML: ''
@@ -282,7 +282,7 @@ define([
       if (this.allowUpload) {
         var uploadBtn = domConstr.create('i', {
           rel: 'upload',
-          class: 'icon-upload objSelectorActionIcon fa-2x'
+          'class': 'icon-upload objSelectorActionIcon fa-2x'
         });
         var uploadTooltip = new Tooltip({
           connectId: uploadBtn,
@@ -387,7 +387,7 @@ define([
 
       var buttonsPane = new ContentPane({ region: 'bottom', style: 'text-align: right;border:0px;' });
 
-      var cbContainer = domConstr.create('div', { style: { float: 'left' } });
+      var cbContainer = domConstr.create('div', { style: { 'float': 'left' } });
       domConstr.place(cbContainer, buttonsPane.containerNode, 'last');
       this.showHiddenWidget = new CheckBox({ value: this.showHidden, checked: this.showHidden });
       this.showHiddenWidget.on('change', function (val) {
@@ -404,7 +404,7 @@ define([
       domConstr.create('span', { innerHTML: 'Show all files and folders ' }, cbContainer);
 
       var helpIcon = domConstr.create('i', {
-        class: 'icon-question-circle'
+        'class': 'icon-question-circle'
       });
       domConstr.place(helpIcon, cbContainer, 'last');
 

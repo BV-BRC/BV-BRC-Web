@@ -39,7 +39,7 @@ define([
   });
 
   return declare([GridContainer], {
-    class: 'GridContainer TaxonTreeGrid',
+    'class': 'GridContainer TaxonTreeGrid',
     facetFields: [],
     enableFilterPanel: false,
     dataModel: 'taxonomy',

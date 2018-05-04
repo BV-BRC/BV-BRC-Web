@@ -1114,7 +1114,7 @@ define([
         });
         cb.placeAt(checkBox);
         checkBox.appendChild(domConstruct.create('label', {
-          for: 'publicCB',
+          'for': 'publicCB',
           innerHTML: ' Publicly Readable'
         }));
 

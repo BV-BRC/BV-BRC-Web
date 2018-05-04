@@ -24,7 +24,7 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
       superclass: { label: 'Superclass', field: 'superclass' },
-      class: { label: 'Class', field: 'class' },
+      'class': { label: 'Class', field: 'class' },
       subclass: { label: 'Subclass', field: 'subclass' },
       subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
       role_id: { label: 'Role ID', field: 'role_id', hidden: true },

@@ -208,7 +208,7 @@ define([
 
     createNoneSelectedRow: function () {
       var row = domConstruct.create('tr', {
-        class: 'fileRow noneSelected'
+        'class': 'fileRow noneSelected'
       }, this.uploadTable);
       domConstruct.create('td', {
         style: {
@@ -447,7 +447,7 @@ define([
         var file = files[idx];
         if (file && file.name && file.size) {
           var row = domConstruct.create('tr', {
-            class: 'fileRow'
+            'class': 'fileRow'
           }, _self.uploadTable);
           domAttr.set(row, 'data-filename', file.name);
           domAttr.set(row, 'data-filetype', _self.dndType || _self.uploadType.get('value'));

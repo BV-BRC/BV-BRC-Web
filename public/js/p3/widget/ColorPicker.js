@@ -18,12 +18,12 @@ define([
       // domStyle.set(this.domNode,"postition", "absolute");
       this.backgroundButton = domConstruct.create('div', {
         rel: 'backgroundColor',
-        class: 'BackgroundSelector' + (this.enableBackgroundSelector ? '' : ' dijitHidden'),
+        'class': 'BackgroundSelector' + (this.enableBackgroundSelector ? '' : ' dijitHidden'),
         style: {
           'border-radius': '3px',
           border: '1px solid #333',
           display: 'inline-block',
-          float: 'left',
+          'float': 'left',
           width: this.size + 'px',
           height: this.size + 'px',
           background: this.backgroundColor
@@ -31,7 +31,7 @@ define([
       }, this.domNode);
       this.foregroundButton = domConstruct.create('div', {
         rel: 'foregroundColor',
-        class: 'ForegroundSelector' + (this.enableForegroundSelector ? '' : ' dijitHidden'),
+        'class': 'ForegroundSelector' + (this.enableForegroundSelector ? '' : ' dijitHidden'),
         style: {
           'border-radius': '3px',
           border: '1px solid #333',

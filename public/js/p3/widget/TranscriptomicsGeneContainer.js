@@ -95,7 +95,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
 
       this.mainGridContainer = new MainGridContainer({
@@ -147,7 +147,7 @@ define([
 
       // genome list grid
       var filterGrid = new FilterGrid({
-        class: 'tgFilterGrid',
+        'class': 'tgFilterGrid',
         topicId: this.topicId,
         state: this.state
       });

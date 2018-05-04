@@ -417,12 +417,12 @@ define([
       if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length) {
         lrec.icon = this.getConditionIcon();
         var tr = this.condTable.insertRow(0);
-        var td = domConstruct.create('td', { class: 'textcol conditiondata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName() + '</div>';
-        var tdinfo = domConstruct.create('td', { class: 'iconcol', innerHTML: lrec.icon }, tr);
+        var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
         var td2 = domConstruct.create('td', {
-          class: 'iconcol',
+          'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
         }, tr);
         if (this.addedCond.counter < this.initConditions) {
@@ -481,7 +481,7 @@ define([
       if (chkPassed) {
         var tr = this.libsTable.insertRow(0);
         lrec.row = tr;
-        var td = domConstruct.create('td', { class: 'textcol singledata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
         // td.libRecord=lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('single') + '</div>';
         var advPairInfo = [];
@@ -491,7 +491,7 @@ define([
         if (advPairInfo.length) {
           condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
-          var tdinfo = domConstruct.create('td', { class: 'iconcol', innerHTML: condition_icon }, tr);
+          var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
           var ihandle = new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
@@ -502,7 +502,7 @@ define([
           var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
         }
         var td2 = domConstruct.create('td', {
-          class: 'iconcol',
+          'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
         }, tr);
         if (this.addedLibs.counter < this.startingRows) {
@@ -557,7 +557,7 @@ define([
       if (chkPassed && lrec.read1 != lrec.read2) {
         var tr = this.libsTable.insertRow(0);
         lrec.row = tr;
-        var td = domConstruct.create('td', { class: 'textcol pairdata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol pairdata', innerHTML: '' }, tr);
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('paired') + '</div>';
         var advPairInfo = [];
@@ -567,7 +567,7 @@ define([
         if (advPairInfo.length) {
           lrec.design = true;
           condition_icon = this.getConditionIcon(lrec.condition);
-          var tdinfo = domConstruct.create('td', { class: 'iconcol', innerHTML: condition_icon }, tr);
+          var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
           var ihandle = new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
@@ -578,7 +578,7 @@ define([
           var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
         }
         var td2 = domConstruct.create('td', {
-          class: 'iconcol',
+          'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
         }, tr);
         if (this.addedLibs.counter < this.startingRows) {

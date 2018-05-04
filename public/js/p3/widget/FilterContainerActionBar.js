@@ -267,7 +267,7 @@ define([
 
       domConstruct.destroy(this.pathContainer);
       this.smallContentNode = domConstruct.create('div', {
-        class: 'minFilterView',
+        'class': 'minFilterView',
         style: { margin: '2px' }
       }, this.domNode);
       var table = this.smallContentNode = domConstruct.create('table', {
@@ -355,7 +355,7 @@ define([
       }
 
       this.fullViewContentNode = this.fullViewNode = domConstruct.create('div', {
-        class: 'FullFilterView',
+        'class': 'FullFilterView',
         style: {
           'white-space': 'nowrap',
           'vertical-align': 'top',
@@ -404,7 +404,7 @@ define([
       }, keywordSearchBox);
       var label = domConstruct.create('span', { innerHTML: 'KEYWORDS', style: {} }, kbot);
       var clear = domConstruct.create('i', {
-        class: 'dijitHidden fa icon-x fa-1x',
+        'class': 'dijitHidden fa icon-x fa-1x',
         style: { 'vertical-align': 'bottom', 'font-size': '14px', 'margin-left': '4px' },
         innerHTML: ''
       }, kbot);
@@ -886,13 +886,13 @@ define([
       // console.log("Add Action: ", name, classes, opts,enabled);
       target = target || this.leftButtons;
       var wrapper = domConstruct.create('div', {
-        class: (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
+        'class': (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
         rel: name
       });
       var b = domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);
 
       if (opts && opts.label) {
-        var t = domConstruct.create('div', { innerHTML: opts.label, class: 'ActionButtonText' }, wrapper);
+        var t = domConstruct.create('div', { innerHTML: opts.label, 'class': 'ActionButtonText' }, wrapper);
       }
 
       domConstruct.place(wrapper, target, 'last');

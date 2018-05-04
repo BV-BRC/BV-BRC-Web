@@ -62,7 +62,7 @@ define([
     createNavBox: function (parent) {
       var thisB = this;
       var navbox = dojo.create('div', {
-        class: 'navbox',
+        'class': 'navbox',
         id: 'navbox',
         style: { 'text-align': 'center', position: 'relative' }
       }, parent);
@@ -82,7 +82,7 @@ define([
       // moveLeft.id = "moveLeft";
       // moveLeft.className = "fa icon-filter fa-2x"; //"icon nav";
       // navbox.appendChild(moveLeft);
-      var moveLeft = domConstruct.create('I', { class: 'fa icon-arrow-left fa-2x' }, navbox);
+      var moveLeft = domConstruct.create('I', { 'class': 'fa icon-arrow-left fa-2x' }, navbox);
       dojo.connect(
         moveLeft, 'click', this,
         function (event) {
@@ -106,7 +106,7 @@ define([
       );
 
       var bigZoomOut = domConstruct.create('I', {
-        class: 'fa icon-search-minus',
+        'class': 'fa icon-search-minus',
         style: { 'font-size': '2.5em' }
       }, navbox);
       dojo.connect(
@@ -117,7 +117,7 @@ define([
         }
       );
 
-      var zoomOut = domConstruct.create('I', { class: 'fa icon-search-minus fa-2x' }, navbox);
+      var zoomOut = domConstruct.create('I', { 'class': 'fa icon-search-minus fa-2x' }, navbox);
       dojo.connect(
         zoomOut, 'click', this,
         function (event) {
@@ -126,7 +126,7 @@ define([
         }
       );
 
-      var zoomIn = domConstruct.create('I', { class: 'fa icon-search-plus fa-2x' }, navbox);
+      var zoomIn = domConstruct.create('I', { 'class': 'fa icon-search-plus fa-2x' }, navbox);
       dojo.connect(
         zoomIn, 'click', this,
         function (event) {
@@ -136,7 +136,7 @@ define([
       );
 
       var bigZoomIn = domConstruct.create('I', {
-        class: 'fa icon-search-plus',
+        'class': 'fa icon-search-plus',
         style: { 'font-size': '2.5em' }
       }, navbox);
       dojo.connect(

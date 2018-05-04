@@ -7,7 +7,7 @@ define([
 ) {
   return declare([ActionBar], {
     path: null,
-    class: 'WSContainerActionBar',
+    'class': 'WSContainerActionBar',
     tooltipPosition: ['above', 'below'],
     _setPathAttr: function (p) {
       this.path = p;
@@ -18,9 +18,9 @@ define([
 
     postCreate: function () {
       this.inherited(arguments);
-      this.pathContainer = domConstruct.create('div', { class: 'wsBreadCrumbContainer' }, this.domNode);
+      this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
       this.containerNode = domConstruct.create('span', {
-        class: 'ActionButtonContainer wsActionContainer'
+        'class': 'ActionButtonContainer wsActionContainer'
       }, this.domNode);
     },
 

@@ -7,7 +7,7 @@ define([
 ) {
   return declare([Button], {
     disabled: false,
-    class: 'GroupButton',
+    'class': 'GroupButton',
     toggleButton: false,
     toggled: false,
     data: null,

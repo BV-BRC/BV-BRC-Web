@@ -102,15 +102,15 @@ define([
         content: '',
         region: 'top'
       });
-      var headerContent = domConstruct.create('div', { class: 'PerspectiveHeader' });
+      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader' });
       domConstruct.place(headerContent, this.viewerHeader.containerNode, 'last');
-      domConstruct.create('i', { class: 'fa PerspectiveIcon icon-map-o' }, headerContent);
+      domConstruct.create('i', { 'class': 'fa PerspectiveIcon icon-map-o' }, headerContent);
       domConstruct.create('div', {
-        class: 'PerspectiveType',
+        'class': 'PerspectiveType',
         innerHTML: 'Pathway View'
       }, headerContent);
 
-      this.queryNode = domConstruct.create('span', { class: 'PerspectiveQuery' }, headerContent);
+      this.queryNode = domConstruct.create('span', { 'class': 'PerspectiveQuery' }, headerContent);
 
       this.addChild(this.viewerHeader);
       this.addChild(this.viewer);

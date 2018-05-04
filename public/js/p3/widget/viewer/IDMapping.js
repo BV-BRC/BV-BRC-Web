@@ -70,21 +70,21 @@ define([
 
       this.viewerHeader = new ContentPane({
         content: '', // [placeholder for IDMapping summary: xxx feature found etc]",
-        class: 'breadcrumb',
+        'class': 'breadcrumb',
         region: 'top'
       });
 
-      var headerContent = domConstruct.create('div', { class: 'PerspectiveHeader' });
+      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader' });
       domConstruct.place(headerContent, this.viewerHeader.containerNode, 'last');
-      domConstruct.create('i', { class: 'fa PerspectiveIcon icon-selection-FeatureList' }, headerContent);
+      domConstruct.create('i', { 'class': 'fa PerspectiveIcon icon-selection-FeatureList' }, headerContent);
       domConstruct.create('div', {
-        class: 'PerspectiveType',
+        'class': 'PerspectiveType',
         innerHTML: 'ID MAPPING'
       }, headerContent);
 
-      this.queryNode = domConstruct.create('span', { class: 'PerspectiveQuery' }, headerContent);
+      this.queryNode = domConstruct.create('span', { 'class': 'PerspectiveQuery' }, headerContent);
       this.totalCountNode = domConstruct.create('span', {
-        class: 'PerspectiveTotalCount',
+        'class': 'PerspectiveTotalCount',
         innerHTML: '( loading... )'
       }, headerContent);
 

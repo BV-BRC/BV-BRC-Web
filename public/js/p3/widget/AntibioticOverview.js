@@ -76,7 +76,7 @@ define([
       domConstruct.empty(this.descNode);
 
       data.forEach(function (row) {
-        domConstruct.create('div', { class: 'far2x', innerHTML: row }, this.descNode);
+        domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.descNode);
       }, this);
     },
 
@@ -88,7 +88,7 @@ define([
       domConstruct.empty(this.moaNode);
 
       data.forEach(function (row) {
-        domConstruct.create('div', { class: 'far2x', innerHTML: row }, this.moaNode);
+        domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.moaNode);
       }, this);
     },
 
@@ -100,13 +100,13 @@ define([
       domConstruct.empty(this.pharmacologyNode);
 
       data.pharmacology.forEach(function (row) {
-        domConstruct.create('div', { class: 'far2x', innerHTML: row }, this.pharmacologyNode);
+        domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.pharmacologyNode);
       }, this);
 
       if (data.hasOwnProperty('pharmacological_classes')) {
-        domConstruct.create('h5', { class: 'close2x', innerHTML: 'Pharmacological Classes' }, this.pharmacologyNode);
+        domConstruct.create('h5', { 'class': 'close2x', innerHTML: 'Pharmacological Classes' }, this.pharmacologyNode);
         data.pharmacological_classes.forEach(function (row) {
-          domConstruct.create('div', { class: 'close', innerHTML: row }, this.pharmacologyNode);
+          domConstruct.create('div', { 'class': 'close', innerHTML: row }, this.pharmacologyNode);
         }, this);
       }
     },
@@ -119,7 +119,7 @@ define([
       domConstruct.empty(this.synonymsNode);
 
       data.forEach(function (row) {
-        domConstruct.create('div', { class: 'keyword medium', innerHTML: row }, this.synonymsNode);
+        domConstruct.create('div', { 'class': 'keyword medium', innerHTML: row }, this.synonymsNode);
       }, this);
     },
 

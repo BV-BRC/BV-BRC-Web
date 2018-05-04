@@ -584,7 +584,7 @@ define([
         checked: 'Y',
         style: 'margin: 5px'
       }, div);
-      var color_label1 = domConstruct.create('label', { for: 'default', innerHTML: 'default' }, div);
+      var color_label1 = domConstruct.create('label', { 'for': 'default', innerHTML: 'default' }, div);
       var color_type2 = domConstruct.create('input', {
         type: 'radio',
         name: 'color_type',
@@ -592,7 +592,7 @@ define([
         value: 'false',
         style: 'margin: 5px'
       }, div);
-      var color_label1 = domConstruct.create('label', { for: 'default', innerHTML: 'alternative color' }, div);
+      var color_label1 = domConstruct.create('label', { 'for': 'default', innerHTML: 'alternative color' }, div);
 
       color_type1.addEventListener('click', function () {
         colorChoice('Y');

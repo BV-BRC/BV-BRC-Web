@@ -234,7 +234,7 @@ define([
       var featureIds = (typeof (features[0]) === 'string') ? features.join(',') : features.map(function (d) { return d.feature_id; }).join(',');
 
       var actionBar = domConstruct.create('div', {
-        class: 'dijitDialogPaneActionBar'
+        'class': 'dijitDialogPaneActionBar'
       });
 
       var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';

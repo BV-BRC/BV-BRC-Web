@@ -314,12 +314,12 @@ define([
         apiServer: this.apiServiceUrl
       });
 
-      var headerContent = domConstruct.create('div', { class: 'PerspectiveHeader' });
+      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader' });
       domConstruct.place(headerContent, this.viewerHeader.containerNode, 'last');
-      domConstruct.create('i', { class: 'fa PerspectiveIcon icon-map-o' }, headerContent);
+      domConstruct.create('i', { 'class': 'fa PerspectiveIcon icon-map-o' }, headerContent);
 
       domConstruct.create('div', {
-        class: 'PerspectiveType',
+        'class': 'PerspectiveType',
         id: 'subsystemheatmap'
       }, headerContent);
 

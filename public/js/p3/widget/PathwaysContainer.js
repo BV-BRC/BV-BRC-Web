@@ -66,7 +66,7 @@ define([
         // var msg = state.autoFilterMessage;
         if (!this.messagePanel) {
           this.messagePanel = new ContentPane({
-            class: 'WarningPanel',
+            'class': 'WarningPanel',
             region: 'top',
             content: msg
           });
@@ -114,7 +114,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
 
       var pathwayStore = this.pathwayStore = new PathwayMemoryStore({

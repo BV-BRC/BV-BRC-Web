@@ -9,7 +9,7 @@ define([
 ) {
 
   var formatters = {
-    default: function (item, options) {
+    'default': function (item, options) {
       options = options || {};
 
       var table = domConstruct.create('table');
@@ -1163,7 +1163,7 @@ define([
 
       domConstruct.create('div', {
         innerHTML: summary,
-        class: 'DataItemSummary',
+        'class': 'DataItemSummary',
         nowrap: 'nowrap'
       }, div);
 
@@ -1502,13 +1502,13 @@ define([
     var linkTitle = options && options.linkTitle || false;
 
     var titleDiv = domConstruct.create('div', {
-      class: 'DataItemHeader'
+      'class': 'DataItemHeader'
     }, parent);
 
     domConstruct.create('hr', {}, parent);
 
     // span icon
-    domConstruct.create('span', { class: iconClass }, titleDiv);
+    domConstruct.create('span', { 'class': iconClass }, titleDiv);
 
     // span label
     domConstruct.create('span', {
@@ -1565,7 +1565,7 @@ define([
     var copyBtn = new Button({
       label: icon,
       style: {
-        float: 'right',
+        'float': 'right',
         padding: 0
       },
       onClick: function (e) {
@@ -1775,7 +1775,7 @@ define([
     var tr = domConstruct.create('tr', {});
     domConstruct.create('td', {
       innerHTML: title,
-      class: 'DataItemSectionHead',
+      'class': 'DataItemSectionHead',
       colspan: 2
     }, tr);
 
@@ -1785,11 +1785,11 @@ define([
   function renderRow(property, value) {
     var tr = domConstruct.create('tr', {});
     domConstruct.create('td', {
-      class: 'DataItemProperty',
+      'class': 'DataItemProperty',
       innerHTML: property
     }, tr);
     domConstruct.create('td', {
-      class: 'DataItemValue',
+      'class': 'DataItemValue',
       innerHTML: value
     }, tr);
 
@@ -1797,31 +1797,31 @@ define([
   }
 
   function renderDataTable(data) {
-    var table = domConstruct.create('table', { class: 'p3table' });
+    var table = domConstruct.create('table', { 'class': 'p3table' });
     for (var i = 0, len = data.length; i < len; i++) {
       var k = data[i].split(':')[0],
         v = data[i].split(':')[1];
 
       var tr = domConstruct.create('tr', {}, table);
-      domConstruct.create('td', { class: 'DataItemProperty', innerHTML: k }, tr);
-      domConstruct.create('td', { class: 'DataItemValue', innerHTML: v }, tr);
+      domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: k }, tr);
+      domConstruct.create('td', { 'class': 'DataItemValue', innerHTML: v }, tr);
     }
     return table;
   }
 
   function renderMultiData(label, data) {
-    var table = domConstruct.create('table', { class: 'p3table' });
+    var table = domConstruct.create('table', { 'class': 'p3table' });
     var tr = domConstruct.create('tr', {}, table);
-    domConstruct.create('td', { class: 'DataItemProperty', innerHTML: label }, tr);
+    domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: label }, tr);
 
     var ul = domConstruct.create('ul', null, tr);
     if (typeof data == 'object') {
       for (var i = 0, len = data.length; i < len; i++) {
         var val = data[i];
-        domConstruct.create('li', { class: 'DataItemValue', innerHTML: val }, ul);
+        domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: val }, ul);
       }
     } else if (typeof data == 'string') {
-      domConstruct.create('li', { class: 'DataItemValue', innerHTML: data }, ul);
+      domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: data }, ul);
     }
 
     return table;

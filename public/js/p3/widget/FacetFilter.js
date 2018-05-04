@@ -76,7 +76,7 @@ define([
           // var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
           var n = this['_value_' + name] = domConstruct.create('div', {
             rel: name,
-            class: 'FacetValue ' + sel,
+            'class': 'FacetValue ' + sel,
             innerHTML: l
           });
           // console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)

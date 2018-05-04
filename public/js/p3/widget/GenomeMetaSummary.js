@@ -154,7 +154,7 @@ define([
       };
 
       if (!this.host_chart) {
-        var cpHostNode = domConstruct.create('div', { class: 'pie-chart-widget host_name' });
+        var cpHostNode = domConstruct.create('div', { 'class': 'pie-chart-widget host_name' });
         domConstruct.place(cpHostNode, this.chartNode, 'last');
 
         this.host_chart = new Chart2D(cpHostNode, {
@@ -173,7 +173,7 @@ define([
         // new MoveSlice(this.host_chart, "default");
         this.host_chart.connectToPlot('default', onClickEventHandler);
 
-        var cpDiseaseNode = domConstruct.create('div', { class: 'pie-chart-widget disease' });
+        var cpDiseaseNode = domConstruct.create('div', { 'class': 'pie-chart-widget disease' });
         domConstruct.place(cpDiseaseNode, this.chartNode, 'last');
 
         this.disease_chart = new Chart2D(cpDiseaseNode, {
@@ -191,7 +191,7 @@ define([
         // new MoveSlice(this.disease_chart, "default");
         this.disease_chart.connectToPlot('default', onClickEventHandler);
 
-        var cpIsolationCountry = domConstruct.create('div', { class: 'pie-chart-widget isolation_country' });
+        var cpIsolationCountry = domConstruct.create('div', { 'class': 'pie-chart-widget isolation_country' });
         domConstruct.place(cpIsolationCountry, this.chartNode, 'last');
         this.isolation_country_chart = new Chart2D(cpIsolationCountry, {
           title: 'Isolation Country',
@@ -208,7 +208,7 @@ define([
         // new MoveSlice(this.isolation_country_chart, "default");
         this.isolation_country_chart.connectToPlot('default', onClickEventHandler);
 
-        var cpGenomeStatus = domConstruct.create('div', { class: 'pie-chart-widget genome_status' });
+        var cpGenomeStatus = domConstruct.create('div', { 'class': 'pie-chart-widget genome_status' });
         domConstruct.place(cpGenomeStatus, this.chartNode, 'last');
         this.genome_status_chart = new Chart2D(cpGenomeStatus, {
           title: 'Genome Status',

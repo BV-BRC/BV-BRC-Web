@@ -365,7 +365,7 @@ define([
 
       if (!event.isReferenceTrack && event.track.hideable != false) {
         var visibleButton = domConstruct.create('i', {
-          class: 'fa ' + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + ' fa-2x',
+          'class': 'fa ' + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + ' fa-2x',
           style: { margin: '2px' }
         }, td);
         on(visibleButton, 'click', lang.hitch(this, function (evt) {
@@ -395,7 +395,7 @@ define([
 
       if (!event.isReferenceTrack && event.track.hideable != false) {
         var removeButton = domConstruct.create('i', {
-          class: 'fa icon-close fa-2x' + (event.isReferenceTrack ? ' disabled' : ''),
+          'class': 'fa icon-close fa-2x' + (event.isReferenceTrack ? ' disabled' : ''),
           style: { margin: '2px' }
         }, td);
 

@@ -225,7 +225,7 @@ define([
                 data.forEach(function (row) {
                   content.push([
                     JSON.stringify(row.superclass),
-                    JSON.stringify(row.class),
+                    JSON.stringify(row['class']),
                     JSON.stringify(row.subclass),
                     JSON.stringify(row.subsystem_name),
                     JSON.stringify(row.genome_count),
@@ -251,7 +251,7 @@ define([
                 data.forEach(function (row) {
                   content.push([
                     JSON.stringify(row.superclass),
-                    JSON.stringify(row.class),
+                    JSON.stringify(row['class']),
                     JSON.stringify(row.subclass),
                     JSON.stringify(row.subsystem_name),
                     // JSON.stringify(row.genome_count),
@@ -283,7 +283,7 @@ define([
               data.forEach(function (row) {
                 content.push([
                   JSON.stringify(row.superclass),
-                  JSON.stringify(row.class),
+                  JSON.stringify(row['class']),
                   JSON.stringify(row.subclass),
                   JSON.stringify(row.subsystem_name),
                   JSON.stringify(row.role_id),
@@ -439,7 +439,7 @@ define([
                   var selectedRow = {};
 
                   selectedRow.Superclass = row.superclass;
-                  selectedRow.Class = row.class;
+                  selectedRow.Class = row['class'];
                   selectedRow.Subclass = row.subclass;
                   selectedRow['Subsystem Name'] = row.subsystem_name;
                   if (isTaxonView) {
@@ -463,7 +463,7 @@ define([
                 var selectedRow = {};
 
                 selectedRow.Superclass = row.superclass;
-                selectedRow.Class = row.class;
+                selectedRow.Class = row['class'];
                 selectedRow.Subclass = row.subclass;
                 selectedRow['Subsystem Name'] = row.subsystem_name;
                 selectedRow['Role ID'] = row.role_id;

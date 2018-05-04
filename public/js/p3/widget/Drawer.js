@@ -10,7 +10,7 @@ define([
   return declare([WidgetBase, Templated], {
     templateString: "<div><div data-dojo-attach-event='click:toggle' class='handle' data-dojo-attach-point='handle'><div>${title}</div></div><div data-dojo-attach-point='panelContainer' class='PanelContainer'></div></div>",
     baseClass: 'Drawer',
-    class: 'LeftDrawer',
+    'class': 'LeftDrawer',
     title: '',
     topic: '/overlay',
     handleContent: null,
@@ -63,7 +63,7 @@ define([
         return;
       }
       if (typeof Panel == 'function') {
-        this.panel = new Panel({ class: 'PanelContent', content: 'Loading Panel Content' });
+        this.panel = new Panel({ 'class': 'PanelContent', content: 'Loading Panel Content' });
         domConstruct.place(this.panel.domNode, this.panelContainer, 'only');
       } else {
         this.panel = Panel;

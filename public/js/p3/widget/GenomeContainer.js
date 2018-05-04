@@ -124,7 +124,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
 
       console.log('Create FilterPanel state: ', this.state);

@@ -202,7 +202,7 @@ define([
     _setRelatedFeatureListAttr: function (summary) {
 
       domConstruct.empty(this.relatedFeatureNode);
-      var table = domConstruct.create('table', { class: 'p3basic' }, this.relatedFeatureNode);
+      var table = domConstruct.create('table', { 'class': 'p3basic' }, this.relatedFeatureNode);
       var thead = domConstruct.create('thead', {}, table);
       var tbody = domConstruct.create('tbody', {}, table);
 
@@ -307,7 +307,7 @@ define([
 
       domConstruct.empty(this.functionalPropertiesNode);
 
-      var table = domConstruct.create('table', { class: 'p3basic striped' }, this.functionalPropertiesNode);
+      var table = domConstruct.create('table', { 'class': 'p3basic striped' }, this.functionalPropertiesNode);
       var tbody = domConstruct.create('tbody', {}, table);
 
       var htr;
@@ -347,7 +347,7 @@ define([
     _setFeatureStructureAttr: function (structure) {
 
       domConstruct.empty(this.structureNode);
-      var table = domConstruct.create('table', { class: 'p3basic striped far2x' }, this.structureNode);
+      var table = domConstruct.create('table', { 'class': 'p3basic striped far2x' }, this.structureNode);
       var thead = domConstruct.create('thead', {}, table);
 
       var headTr = domConstruct.create('tr', {}, thead);

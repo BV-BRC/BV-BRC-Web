@@ -61,7 +61,7 @@ define([
       var tabController = new TabController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
 
       this.mainGridContainer = new MainGridContainer({

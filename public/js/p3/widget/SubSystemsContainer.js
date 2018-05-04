@@ -129,7 +129,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
 
       this.subsystemsOverviewGrid = new SubSystemsOverview({
@@ -158,7 +158,7 @@ define([
         columns: {
           'Selection Checkboxes': selector({ unhidable: true }),
           superclass: { label: 'Superclass', field: 'superclass' },
-          class: { label: 'Class', field: 'class' },
+          'class': { label: 'Class', field: 'class' },
           subclass: { label: 'Subclass', field: 'subclass' },
           subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
           genome_count: { label: 'Genome Count', field: 'genome_count' },
@@ -186,7 +186,7 @@ define([
         columns: {
           'Selection Checkboxes': selector({ unhidable: true }),
           superclass: { label: 'Superclass', field: 'superclass' },
-          class: { label: 'Class', field: 'class' },
+          'class': { label: 'Class', field: 'class' },
           subclass: { label: 'Subclass', field: 'subclass' },
           subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
           role_id: { label: 'Role ID', field: 'role_id', hidden: true },

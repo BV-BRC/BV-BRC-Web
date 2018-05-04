@@ -121,7 +121,7 @@ define([
           limit: -1,
           facet: {
             subsystem_count: 'unique(subsystem_id)',
-            class: {
+            'class': {
               type: 'field',
               field: 'class',
               limit: -1,

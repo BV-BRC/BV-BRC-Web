@@ -279,7 +279,7 @@ define([
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var newGenomeIds = [lrec[this.genomeToAttachPt]];
         var tr = this.genomeTable.insertRow(0);
-        var td = domConstruct.create('td', { class: 'textcol genomedata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName() + '</div>';
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
@@ -313,7 +313,7 @@ define([
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var newGenomeIds = [lrec[this.fastaToAttachPt]];
         var tr = this.genomeTable.insertRow(0);
-        var td = domConstruct.create('td', { class: 'textcol genomedata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeFastaName() + '</div>';
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
@@ -347,7 +347,7 @@ define([
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var newGenomeIds = [lrec[this.featureGroupToAttachPt]];
         var tr = this.genomeTable.insertRow(0);
-        var td = domConstruct.create('td', { class: 'textcol genomedata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeFeatureGroupName() + '</div>';
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
@@ -403,7 +403,7 @@ define([
           && count < this.maxGenomes)
         {
           var tr = this.genomeTable.insertRow(0);
-          var td = domConstruct.create('td', { class: 'textcol genomedata', innerHTML: '' }, tr);
+          var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
           td.genomeRecord = lrec;
           td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName() + '</div>';
           var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);

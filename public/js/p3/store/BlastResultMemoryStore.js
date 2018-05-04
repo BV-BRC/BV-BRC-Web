@@ -246,7 +246,7 @@ define([
       var entries = [];
       hits.forEach(function (hit) {
         var target_id = hit.description[0].id;
-        var m = metadata.hasOwnProperty(target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', function: '' };
+        var m = metadata.hasOwnProperty(target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', 'function': '' };
         var entry = {
           qseqid: query_id,
           sseqid: target_id,
@@ -259,7 +259,7 @@ define([
           bitscore: Math.round(hit.hsps[0].bit_score),
           genome_id: m.genome_id,
           genome_name: m.genome_name,
-          function: m.function,
+          'function': m.function,
           hit_from: hit.hsps[0].hit_from,
           hit_to: hit.hsps[0].hit_to,
           detail: {

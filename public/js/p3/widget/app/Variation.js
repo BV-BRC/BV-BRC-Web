@@ -350,7 +350,7 @@ define([
     addLibraryRow: function (lrec, infoLabels, mode) {
       var tr = this.libsTable.insertRow(0);
       lrec._row = tr;
-      var td = domConstruct.create('td', { class: 'textcol ' + mode, libID: this.libCreated, innerHTML: '' }, tr);
+      var td = domConstruct.create('td', { 'class': 'textcol ' + mode, libID: this.libCreated, innerHTML: '' }, tr);
       var advInfo = [];
       if (mode == 'pairdata') {
         td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('paired') + '</div>';

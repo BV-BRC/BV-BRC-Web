@@ -266,7 +266,7 @@ define([
       if (exists) return;
 
       var n = domConstr.create('div', {
-        class: 'emptyFolderNotice',
+        'class': 'emptyFolderNotice',
         style: {
           position: 'relative',
           padding: '10px',

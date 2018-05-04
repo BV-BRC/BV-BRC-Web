@@ -181,7 +181,7 @@ define([
       var tabController = new StackController({
         containerId: this.id + '_TabContainer',
         region: 'top',
-        class: 'TextTabButtons'
+        'class': 'TextTabButtons'
       });
       this.experimentsGrid = new TranscriptomicsExperimentGridContainer({
         enableFilterPanel: false,

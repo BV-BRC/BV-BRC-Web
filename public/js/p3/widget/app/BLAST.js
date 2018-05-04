@@ -342,7 +342,7 @@ define([
 
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var tr = this.genomeTable.insertRow(0);
-        var td = domConstruct.create('td', { class: 'textcol genomedata', innerHTML: '' }, tr);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName() + '</div>';
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);

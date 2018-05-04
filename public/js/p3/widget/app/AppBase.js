@@ -58,7 +58,7 @@ define([
             if (dojo.hasClass(item, 'dialoginfo')) {
               item.info_dialog = new Dialog({
                 content: help_text,
-                class: 'helpModal',
+                'class': 'helpModal',
                 draggable: true,
                 style: 'max-width: 350px;'
               });
@@ -77,7 +77,7 @@ define([
             else if (dojo.hasClass(item, 'tooltipinfo')) {
               item.info_dialog = new TooltipDialog({
                 content: help_text,
-                class: 'helpTooltip',
+                'class': 'helpTooltip',
                 style: 'overflow-y: auto; max-width: 350px; max-height: 400px',
                 onMouseLeave: function () {
                   popup.close(item.info_dialog);
