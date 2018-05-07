@@ -60,6 +60,7 @@ define([
 		},
 
 		createSummary: function(genome){
+			//console.log('genome', genome)
 			var self = this;
 			domConstruct.empty(self.genomeSummaryNode);
 

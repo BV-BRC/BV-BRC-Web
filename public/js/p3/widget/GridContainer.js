@@ -4,13 +4,15 @@ define([
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog", "./PerspectiveToolTip",
-	"./CopyTooltipDialog"
-], function(declare, BorderContainer, on, domConstruct,
-			request, when, domClass,
-			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
-			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
-		  CopyTooltipDialog){
+	"./CopyTooltipDialog", "./PermissionEditor", "../WorkspaceManager", "../DataAPI", "dojo/_base/Deferred"
+], function(
+	declare, BorderContainer, on, domConstruct,
+	request, when, domClass,
+	ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
+	Topic, query, ContentPane, IDMappingTemplate,
+	Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
+	CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred
+){
 
     var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
 	var viewMSATT = new TooltipDialog({
@@ -1089,6 +1091,65 @@ define([
 				},
 				false
 			], [
+				"Share",
+				"fa icon-user-plus fa-2x",
+				{
+					label: "SHARE",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					requireAuth: true,
+					max: 50,
+					tooltip: "Share genome(s) with other users",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection, containerWidget){
+					var self = this;
+
+					var initialPerms = self.solrPermsToObjs(selection)
+
+					var onConfirm = function(newPerms) {
+						var ids = selection.map(function(sel) {
+							return sel.genome_id
+						})
+
+						Topic.publish("/Notification", {
+							message: "<span class='default'>Updating permissions (this could take several minutes)...</span>",
+							type: "default",
+							duration: 50000
+						});
+
+						var prom = DataAPI.setGenomePermissions(ids, newPerms);
+						Deferred.when(prom).then(function(res) {
+
+							Topic.publish("/Notification", {
+								message: "Permissions updated.",
+								type: "message",
+							});
+							self.grid.refresh()
+
+						}, function(err){
+							console.log('error', err)
+							Topic.publish("/Notification", {
+								message: 'Failed. ' + err.response.status,
+								type: "error"
+							});
+						})
+					}
+
+					var permEditor = new PermissionEditor({
+						selection: selection,
+						onConfirm: onConfirm,
+						//onCancel: onCancel,
+						user: window.App.user.id || '',
+						useSolrAPI: true,
+						permissions: initialPerms
+					})
+
+					permEditor.show();
+				},
+				false
+			], [
 				"ViewTaxon",
 				"fa icon-selection-Taxonomy fa-2x",
 				{
@@ -1158,6 +1219,51 @@ define([
 				false
 			]
 		],
+
+		solrPermsToObjs: function(selection){
+			var permSets = []
+			var allPermissions = {}
+
+			selection.forEach(function(sel){
+				var id = sel.genome_id;
+
+				var readList = sel.user_read,
+					writeList = sel.user_write;
+
+				var writeObjs = (writeList || []).map(function(user){
+					var obj = {
+						user: user,
+						perm: 'Can edit'
+					}
+
+					return obj;
+				})
+
+				var readObjs = (readList || [])
+					.filter(function(user) {
+						// if user has write permission, only list that
+						return writeList.indexOf(user) == -1;
+					})
+					.map(function(user){
+						var obj =  {
+							user: user,
+							perm: 'Can view'
+						}
+
+						return obj;
+					})
+
+				var permObjs = readObjs.concat(writeObjs);
+				permSets.push(permObjs);
+			})
+
+			var permissions = permSets.reduce(
+				function(a, b) { return a.concat(b); },
+				[]
+			);
+
+			return permissions;
+		},
 
 		buildQuery: function(){
 			var q = [];
