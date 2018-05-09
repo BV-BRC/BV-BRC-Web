@@ -257,7 +257,7 @@ define([
         selection = this.selection;
 
       if (selection.lenbth == 1) {
-        var isPublic = this.selection.public;
+        var isPublic = this.selection['public']];
         var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
         var cb = new CheckBox({
           name: 'checkBox',
