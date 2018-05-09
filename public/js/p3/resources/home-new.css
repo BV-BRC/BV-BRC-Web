@@ -2601,6 +2601,31 @@
   z-index: 2;
 }
 
+#patric-homepage-wrapper .announcements #dot-navigation {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+  margin-top: 330px;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+#patric-homepage-wrapper .announcements #dot-navigation .dot {
+  height: 20px;
+  width: 20px;
+  background: #F2F2F2;
+  border-radius: 20px;
+  border: 2px solid #A0A0A0;
+  z-index: 10;
+  margin: 0 2px;
+}
+
+#patric-homepage-wrapper .announcements #dot-navigation .dot.selected {
+  background: #2B5775;
+}
+
 #patric-homepage-wrapper .announcements #feed-next {
   display: block;
   position: relative;
