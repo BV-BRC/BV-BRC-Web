@@ -8,11 +8,11 @@
 define([
   'dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
   'dojo/_base/Deferred', 'dojo/topic', './jsonrpc', 'dojo/Stateful',
-  'dojo/promise/all', 'dojo/_base/Deferred'
+  'dojo/promise/all'
 ], function (
   xhr, declare, lang,
   Deferred, Topic, RPC, Stateful,
-  All, Deferred
+  All
 ) {
 
   var DataAPI = (declare([Stateful], {

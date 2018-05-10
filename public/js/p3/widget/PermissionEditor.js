@@ -32,7 +32,7 @@
 
 define([
   'dojo', 'dojo/_base/declare', 'dijit/_WidgetBase', './Confirmation', // dojo/on
-  '../widget/UserSelector', './Formatter', 'dojo/dom-construct',
+  '../widget/UserSelector', './formatter', 'dojo/dom-construct',
   'dijit/form/Select', 'dijit/form/Button', '../WorkspaceManager',
   'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/query', 'dojo/topic',
   '../DataAPI'
@@ -257,7 +257,7 @@ define([
         selection = this.selection;
 
       if (selection.lenbth == 1) {
-        var isPublic = this.selection.public;
+        var isPublic = this.selection['public'];
         var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
         var cb = new CheckBox({
           name: 'checkBox',
