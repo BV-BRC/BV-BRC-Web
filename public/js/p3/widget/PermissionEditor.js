@@ -32,7 +32,7 @@
 
 define([
   'dojo', 'dojo/_base/declare', 'dijit/_WidgetBase', './Confirmation', // dojo/on
-  '../widget/UserSelector', './Formatter', 'dojo/dom-construct',
+  '../widget/UserSelector', './formatter', 'dojo/dom-construct',
   'dijit/form/Select', 'dijit/form/Button', '../WorkspaceManager',
   'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/query', 'dojo/topic',
   '../DataAPI'
