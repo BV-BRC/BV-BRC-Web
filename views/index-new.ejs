@@ -45,19 +45,30 @@
                   </li>`
               );
               $("#slides .slide").first().addClass("showing");
+              $("#dot-navigation .dot").first().addClass("selected");
+
+              $("#dot-navigation").append(
+                  `<div class="dot"></div>`
+              );
+
           }
 
           var slides = $('#slides .slide');
-          var currentSlide = 0;
+          var dots = $("#dot-navigation .dot");
+          var index = 0;
 
-          function nextSlide() {
-              slides[currentSlide].className = "slide";
-              currentSlide = (currentSlide + 1) % slides.length;
-              slides[currentSlide].className = "slide showing";
-          }
+          slides.eq(0).addClass("current-slide");
+          dots.eq(0).addClass("current-dot");
 
-          $('#feed-next').click(function () {
-              nextSlide();
+          dots.click(function () {
+              dots.eq(index).removeClass("current-dot");
+              slides.eq(index).removeClass("current-slide");
+
+              $(this).addClass("current-dot");
+
+              index = $(this).index();
+              slides.eq(index).addClass("current-slide");
+
           });
       });
     </script>
