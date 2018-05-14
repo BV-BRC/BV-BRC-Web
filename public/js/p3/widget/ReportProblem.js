@@ -9,7 +9,7 @@ define([
   Template, FormMixin, Topic, request, when, query
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-    baseClass: 'CreateWorkspace',
+    'baseClass': 'CreateWorkspace',
     templateString: Template,
     validate: function () {
       var valid = this.inherited(arguments);
@@ -58,10 +58,12 @@ define([
 
         domClass.add(this.domNode, 'Working');
 
+        domClass.add(this.domNode, 'Working');
+
         when(request.post('/reportProblem', {
           headers: {
-            Authorization: (window.App.authorizationToken || ''),
-            enctype: 'multipart/form-data'
+            'Authorization': (window.App.authorizationToken || ''),
+            'enctype': 'multipart/form-data'
           },
           data: formData
         }), function (results) {

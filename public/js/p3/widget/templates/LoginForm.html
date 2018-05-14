@@ -1,25 +1,47 @@
-<form dojoAttachPoint="containerNode" class="${baseClass} PanelForm"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-  <div style="padding:2px; margin:10px;">
-    <input type="text" name="username"/ data-dojo-type="dijit/form/TextBox" style="width:100%" data-dojo-props='placeholder:"Your Username or Email Address"'><br/>
+<div>
+  <div class="loginForm" style="border: 2px">
+    <form dojoAttachPoint="containerNode" class="${baseClass} PanelForm" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      <div style="padding:2px; margin:10px;">
+        <input type="text" name="username" data-dojo-attach-point="unField" data-dojo-type="dijit/form/TextBox" style="width:100%" data-dojo-props="placeholder:'Your Username or Email Address', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged"
+          required="true"><br/>
+      </div>
+      <div style="padding:2px;margin:10px;">
+        <input type="password" name="password" data-dojo-attach-point="pwField" data-dojo-type="dijit/form/TextBox" style="width:100%" data-dojo-props="placeholder:'Your Password', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true">
+      </div>
+      <div class="messageContainer workingMessage">
+        Logging into PATRIC....
+      </div>
+      <div class="messageContainer errorMessage">
+        We were unable to log you in with the credentials provided.
+      </div>
+      <div style="text-align:center;padding:2px;margin:10px;">
+        <!-- <div data-dojo-attach-point="cancelButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button" class="dijitHidden">Login</div> -->
+        <div data-dojo-attach-point="submitButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Login</div>
+        <p>&nbsp;</p>
+        <p class="loginError" style="color:red"></p>
+      </div>
+      <div style="font-size:.85em;">
+        <!-- New to PATRIC?  <a href="/register">REGISTER HERE</a> </br> -->
+        <a class="forgotPW" data-dojo-attach-event="click: makeFPform">Forgot Your password?</a>
+      </div>
+    </form>
   </div>
-  <div style="padding:2px;margin:10px;">
-    <input type="password" name="password" data-dojo-type="dijit/form/TextBox" style="width:100%" data-dojo-props='placeholder:"Your Password"'/>
+  <div class="pwReset" style="display:none; max-width:200px; margin:auto; border:2px">
+    <h2 style="margin:0px;padding:4px;font-size:1.2em;text-align:center;background:#eee;">PASSWORD RESET</h2>
+    <p>&nbsp;</p>
+    <form>
+      <input data-dojo-props="placeholder:'Email Address or Username',promptMessage:'Enter your Email Address or User Name',intermediateChanges:true" class="rpwi" data-dojo-attach-event="onChange:fieldChanged2" data-dojo-attach-point="emailAddress" style="width:100%"
+        type="text" name="rsw" data-dojo-type="dijit/form/TextBox" required="true" value="">
+      <p>&nbsp;</p>
+      <div class="RSPWbutton" data-dojo-attach-event="click:onResetClick" style="margin:auto" data-dojo-attach-point="resetPWbutton" type="button" data-dojo-type="dijit/form/Button">Reset Password</div>
+    </form>
   </div>
-  <div class="messageContainer workingMessage">
-    Logging into PATRIC....
+  <div class="pwrMessage" style="display:none; border:2px">
+    <h2 style="margin:0px;padding:4px;font-size:1.2em;text-align:center;background:#eee;">Your Password has been reset</h2>
+    <p>Please check your email for instructions to complete the reset process.</p>
   </div>
-
-  <div class="messageContainer errorMessage">
-    We were unable to log you in  with the credentials provided.
+  <p>&nbsp;</p>
+  <div class="pwrError" style="text-align: center; padding: 2px; margin: 10px; border: 1px solid red; border-radius: 4px;display:none">
+    Unable to reset the account with the provided email address
   </div>
-
-  <div style="text-align:center;padding:2px;margin:10px;">
-    <div data-dojo-attach-point="cancelButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button" class="dijitHidden">Login</div>
-    <div data-dojo-attach-point="submitButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Login</div>
-  </div>
-  <div style="font-size:.85em;">
-    <!-- New to PATRIC?  <a href="/register">REGISTER HERE</a> </br> -->
-    <a href="/reset_password">Forgot Your password?</a>
-  </div>
-</form>
+</div>
