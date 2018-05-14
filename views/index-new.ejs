@@ -55,33 +55,23 @@
 
           var slides = $('#slides .slide');
           var dots = $("#dot-navigation .dot");
-          var currentSlide = 0;
-          var currentDot = 0;
+          var index = 0;
 
-          function nextSlide() {
-              slides[currentSlide].className = "slide";
-              currentSlide = (currentSlide + 1) % slides.length;
-              slides[currentSlide].className = "slide showing";
+          slides.eq(0).addClass("current-slide");
+          dots.eq(0).addClass("current-dot");
 
-              dots[currentDot].className = "dot";
-              currentDot = (currentDot + 1) % dots.length;
-              dots[currentDot].className = "dot selected";
-          }
+          dots.click(function () {
+              // Remove Dot Class
+              dots.eq(index).removeClass("current-dot");
+              slides.eq(index).removeClass("current-slide");
 
-          function previousSlide() {
+              // Add Dot Class
+              $(this).addClass("current-dot");
 
-          }
+              // Change Dot Counter
+              index = $(this).index();
+              slides.eq(index).addClass("current-slide");
 
-          function dotClick() {
-              for (var i = 0; i < feed.length; i++) {
-                  dots[i].click(function(){
-
-                  });
-              }
-          }
-
-          $('#dot-navigation .dot').click(function () {
-              nextSlide();
           });
       });
     </script>

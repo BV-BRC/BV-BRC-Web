@@ -2562,7 +2562,7 @@
   list-style-type: none;
 }
 
-#patric-homepage-wrapper .announcements .slide {
+#patric-homepage-wrapper .announcements #slides .slide {
   position: absolute;
   left: 0px;
   top: 0px;
@@ -2574,7 +2574,7 @@
   transition: opacity 1s;
 }
 
-#patric-homepage-wrapper .announcements .slide .feed-title {
+#patric-homepage-wrapper .announcements #slides .slide .feed-title {
   font-size: 11pt;
   color: #3E5775;
   padding-bottom: 10px;
@@ -2582,23 +2582,22 @@
   margin: 0px;
 }
 
-#patric-homepage-wrapper .announcements .slide .feed-description {
+#patric-homepage-wrapper .announcements #slides .slide .feed-description {
   font-size: 10pt !important;
   padding: 5px 0px;
 }
 
-#patric-homepage-wrapper .announcements .slide .feed-description a {
+#patric-homepage-wrapper .announcements #slides .slide .feed-description a {
   text-decoration: underline;
 }
 
-#patric-homepage-wrapper .announcements .slide .feed-img {
+#patric-homepage-wrapper .announcements #slides .slide .feed-img {
   width: 100%;
   height: auto;
 }
 
-#patric-homepage-wrapper .announcements .showing {
+#patric-homepage-wrapper .announcements #slides .current-slide {
   opacity: 1;
-  z-index: 2;
 }
 
 #patric-homepage-wrapper .announcements #dot-navigation {
@@ -2622,14 +2621,8 @@
   margin: 0 2px;
 }
 
-#patric-homepage-wrapper .announcements #dot-navigation .dot.selected {
+#patric-homepage-wrapper .announcements #dot-navigation .current-dot {
   background: #2B5775;
-}
-
-#patric-homepage-wrapper .announcements #feed-next {
-  display: block;
-  position: relative;
-  margin-top: 330px;
 }
 
 #patric-homepage-wrapper .twitter-feed {
