@@ -61,14 +61,11 @@
           dots.eq(0).addClass("current-dot");
 
           dots.click(function () {
-              // Remove Dot Class
               dots.eq(index).removeClass("current-dot");
               slides.eq(index).removeClass("current-slide");
 
-              // Add Dot Class
               $(this).addClass("current-dot");
 
-              // Change Dot Counter
               index = $(this).index();
               slides.eq(index).addClass("current-slide");
 
