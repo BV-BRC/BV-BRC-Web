@@ -1,6 +1,6 @@
 var config = require('./config');
 if (config.get('newrelic_license_key')) {
-	require('newrelic');
+  require('newrelic');
 }
 var express = require('express');
 var path = require('path');
@@ -28,143 +28,83 @@ var apiProxy = httpProxy.createProxyServer();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-//app.set('query parser', 'extended');
-
-app.use(favicon(__dirname + '/public/favicon.ico'));
+app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use(logger('dev'));
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({extended: false}));
-
 app.use(cookieParser(config.get('cookieSecret')));
 
-// var sessionStore = app.sessionStore = new RedisStore(config.get("redis"));
-// app.use(session({
-// 	store: sessionStore,
-// 	key: config.get("cookieKey"),
-// 	cookie: {domain: config.get('cookieDomain'), maxAge: config.get("sessionTTL")},
-// //    secret: config.get('cookieSecret'),
-// 	resave: false,
-// 	saveUninitialized: true
-// }));
-
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-// if(config.get("enableDevAuth")){
-// 	app.use(function(req, res, next){
-// 		var user = config.get("devUser");
-// 		// console.log("Dev User: ", user, req.isAuthenticated, req.isAuthenticated());
-// 		if(user && (!req.isAuthenticated || !req.isAuthenticated() )){
-// 			// console.log("Auto Login Dev User");
-// 			req.login(user, function(err){
-// 				// console.log("login user: ", user);
-// 				if(err){
-// 					return next(err);
-// 				}
-// 				// console.log("Dev User logged in.  Setup Session");
-// 				if(user && req.session){
-// 					delete user.password;
-// 					req.session.userProfile = user;
-// 					req.session.authorizationToken = config.get("devAuthorizationToken");
-// 				}else{
-// 					console.log("NO Session");
-// 				}
-// 				next();
-// 			});
-// 		}else{
-// 			next();
-// 		}
-// 	});
-// }
-
-app.use(function(req, res, next) {
-	// console.log("Config.production: ", config.production);
-	// console.log("Session Data: ", req.session);
-	req.config = config;
-	req.production = config.get('production') || false;
-	req.productionLayers = ['p3/layer/core'];
-	req.package = packageJSON;
-	// var authToken = "";
-	// var userProf = "";
-	req.applicationOptions = {
-		version: '3.0',
-		gaID: config.get('gaID') || false,
-		workspaceServiceURL: config.get('workspaceServiceURL'),
-		appServiceURL: config.get('appServiceURL'),
-		dataServiceURL: config.get('dataServiceURL'),
-		homologyServiceURL: config.get('homologyServiceURL'),
-		genomedistanceServiceURL: config.get('genomedistanceServiceURL'),
-		compareregionServiceURL: config.get('compareregionServiceURL'),
-		docsServiceURL: config.get('docsServiceURL'),
-		enableDevTools: config.get('enableDevTools'),
-		accountURL: config.get('accountURL'),
-		appLabel: config.get('appLabel'),
-		appVersion: packageJSON.version,
-		userServiceURL: config.get('userServiceURL'),
-		localStorageCheckInterval: config.get('localStorageCheckInterval')
-	};
-	// console.log("Application Options: ", req.applicationOptions);
-	next();
+app.use(function (req, res, next) {
+  // console.log("Config.production: ", config.production);
+  // console.log("Session Data: ", req.session);
+  req.config = config;
+  req.production = config.get('production') || false;
+  req.productionLayers = ['p3/layer/core'];
+  req.package = packageJSON;
+  // var authToken = "";
+  // var userProf = "";
+  req.applicationOptions = {
+    version: '3.0',
+    gaID: config.get('gaID') || false,
+    workspaceServiceURL: config.get('workspaceServiceURL'),
+    appServiceURL: config.get('appServiceURL'),
+    dataServiceURL: config.get('dataServiceURL'),
+    homologyServiceURL: config.get('homologyServiceURL'),
+    genomedistanceServiceURL: config.get('genomedistanceServiceURL'),
+    compareregionServiceURL: config.get('compareregionServiceURL'),
+    docsServiceURL: config.get('docsServiceURL'),
+    enableDevTools: config.get('enableDevTools'),
+    accountURL: config.get('accountURL'),
+    appLabel: config.get('appLabel'),
+    appVersion: packageJSON.version,
+    userServiceURL: config.get('userServiceURL'),
+    localStorageCheckInterval: config.get('localStorageCheckInterval')
+  };
+  // console.log("Application Options: ", req.applicationOptions);
+  next();
 });
-
-// passport serialize/deserialize user
-// thise must exist to satisfy passport, but we're not really
-// deserializing at the moment to avoid forcing p3-web to depend on the p3-user
-// database directly.  However, req.session.user is populated by p3-user
-// to contain the users' profile, so this isnt' so necessary
-
-// passport.serializeUser(function(user, done){
-// 	done(null, user.id);
-// });
-//
-// passport.deserializeUser(function(id, done){
-// 	done(null, {id: id});
-// });
 
 var proxies = config.get('proxy');
 
-app.use('/p/:proxy/', function(req, res, next) {
-	if (proxies[req.params.proxy]) {
-		apiProxy.web(req, res, {target: proxies[req.params.proxy]});
-	} else {
-		next();
-	}
+app.use('/p/:proxy/', function (req, res, next) {
+  if (proxies[req.params.proxy]) {
+    apiProxy.web(req, res, { target: proxies[req.params.proxy] });
+  } else {
+    next();
+  }
 });
 
 app.use('/portal/portal/patric/Home', [
-	function(req, res, next) {
-		console.log('Got Portal Request');
-		next();
-	},
-	express.static(path.join(__dirname, 'public/cached.html'))
+  function (req, res, next) {
+    console.log('Got Portal Request');
+    next();
+  },
+  express.static(path.join(__dirname, 'public/cached.html'))
 ]);
 
 app.use('*jbrowse.conf', express.static(path.join(__dirname, 'public/js/jbrowse.conf')));
 app.use('/js/' + packageJSON.version + '/', [
-	express.static(path.join(__dirname, 'public/js/release/'), {
-		maxage: '356d',
-		/*etag:false,*/
-		setHeaders: function(res, path) {
-			var d = new Date();
-			d.setYear(d.getFullYear() + 1);
-			res.setHeader('Expires', d.toGMTString());
-		}
-	})
+  express.static(path.join(__dirname, 'public/js/release/'), {
+    maxage: '356d',
+    setHeaders: function (res, path) {
+      var d = new Date();
+      d.setYear(d.getFullYear() + 1);
+      res.setHeader('Expires', d.toGMTString());
+    }
+  })
 ]);
 app.use('/js/swfobject/', express.static(path.join(__dirname, 'node_modules/swfobject-amd/')));
 app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
-	maxage: '365d',
-	setHeaders: function(res, path) {
-		var d = new Date();
-		d.setYear(d.getFullYear() + 1);
-		res.setHeader('Expires', d.toGMTString());
-	}
+  maxage: '365d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString());
+  }
 }));
 app.use('/public/pdfs/', [
-	function(req, res, next) {
-		res.redirect('https://docs.patricbrc.org/tutorial/');
-	}
+  function (req, res, next) {
+    res.redirect('https://docs.patricbrc.org/tutorial/');
+  }
 ]);
 app.use('/patric/', express.static(path.join(__dirname, 'public/patric/')));
 app.use('/public/', express.static(path.join(__dirname, 'public/')));
@@ -186,10 +126,10 @@ app.use('/uploads', uploads);
 app.use('/users', users);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-	var err = new Error('Not Found');
-	err.status = 404;
-	next(err);
+app.use(function (req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
 // error handlers
@@ -197,23 +137,23 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-	app.use(function(err, req, res, next) {
-		res.status(err.status || 500);
-		res.render('error', {
-			message: err.message,
-			error: err
-		});
-	});
+  app.use(function (err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
 }
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-	res.status(err.status || 500);
-	res.render('error', {
-		message: err.message,
-		error: {}
-	});
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
 
 module.exports = app;

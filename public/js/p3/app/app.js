@@ -321,7 +321,7 @@ define([
         }
         var dlg = new Dialog({
           title: 'Login',
-          content: '<div class="LoginForm" data-dojo-type="p3/widget/LoginForm" style="width:300px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;" data-dojo-props="callbackURL: \"<%- callbackURL %>\""></div>'
+          content: "<div class=\"LoginForm\" data-dojo-type=\"p3/widget/LoginForm\" style=\"width:300px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
         });
         dlg.show();
       };

@@ -35,6 +35,7 @@
     "no-bitwise": ["error", { "allow": ["~"] }],
     "no-bitwise": 0,
     "radix": [1, "as-needed"],
+    "global-require": 0,
     "quote-props": 0,
     "dot-notation": 0,
     "no-multi-spaces": 0,
