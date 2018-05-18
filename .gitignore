@@ -15,7 +15,6 @@ coverage
 .stylelintrc.json
 .editorconfig
 .eslintignore
-public/js/release
 gulpified
 gulpfile.js
 src/
