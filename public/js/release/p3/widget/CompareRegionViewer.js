@@ -485,148 +485,78 @@ define("p3/widget/CompareRegionViewer", [
        * for singleclick selection, we want a delay to disambiguate from doubleclick.
        */
 
-      if (True) {
+      var clickHandler = function (evt) {
+        if (feature.fid && feature.fid.indexOf('.BLAST') > -1) {
+          return;
+        }
 
-        var clickHandler = function (evt) {
-          if (feature.fid && feature.fid.indexOf('.BLAST') > -1) {
-            return;
+        var topicId = this.topicId;
+        Topic.publish(topicId, 'showLoadingMask');
+        request.get(PathJoin(window.App.dataServiceURL, '/genome_feature/?eq(patric_id,' + encodeURIComponent(feature.fid) + ')'), {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            Authorization: (window.App.authorizationToken || '')
           }
+        }).then(function (data) {
+          // console.log(data[0]);
+          Topic.publish(topicId, 'hideLoadingMask');
 
-          var topicId = this.topicId;
-          Topic.publish(topicId, 'showLoadingMask');
-          request.get(PathJoin(window.App.dataServiceURL, '/genome_feature/?eq(patric_id,' + encodeURIComponent(feature.fid) + ')'), {
-            handleAs: 'json',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-              Authorization: (window.App.authorizationToken || '')
-            }
-          }).then(function (data) {
-            // console.log(data[0]);
-            Topic.publish(topicId, 'hideLoadingMask');
+          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle:true });
+          if (!window.featureDialog) {
+            window.featureDialog = new Dialog({ title: 'Feature Summary' });
+          }
+          window.featureDialog.set('content', content);
+          window.featureDialog.show();
+        });
+      };
 
-            var content = DataItemFormatter(data[0], 'feature_data', { linkTitle:true });
-            if (!window.featureDialog) {
-              window.featureDialog = new Dialog({ title: 'Feature Summary' });
-            }
-            window.featureDialog.set('content', content);
-            window.featureDialog.show();
-          });
+      var dbClickHandler = function (evt) {
+        Topic.publish('/navigate', { href:'/view/Feature/' + feature.fid + '#view_tab=compareRegionViewer' });
+      };
+
+      // check click events
+      var multiClickHandler = function (handlers, delay) {
+        var clicks = 0,
+          timeout,
+          delay = delay || 250;
+        return function (e) {
+          clicks++;
+          clearTimeout(timeout);
+          timeout = setTimeout(function () {
+            if (handlers[clicks]) handlers[clicks](e);
+            clicks = 0;
+          }, delay);
         };
+      };
+      glyph.on('click', multiClickHandler({
+        1: clickHandler,
+        2: dbClickHandler
+      }));
 
-        var dbClickHandler = function (evt) {
-          Topic.publish('/navigate', { href:'/view/Feature/' + feature.fid + '#view_tab=compareRegionViewer' });
-        };
-
-        // check click events
-        var multiClickHandler = function (handlers, delay) {
-          var clicks = 0,
-            timeout,
-            delay = delay || 250;
-          return function (e) {
-            clicks++;
-            clearTimeout(timeout);
-            timeout = setTimeout(function () {
-              if (handlers[clicks]) handlers[clicks](e);
-              clicks = 0;
-            }, delay);
-          };
-        };
-        glyph.on('click', multiClickHandler({
-          1: clickHandler,
-          2: dbClickHandler
-        }));
-
-        var feature_info_str = this.create_hover_text(feature, row_data);
-        /*
-        var ttinfo = {
-          content: feature_info_str,
-          around: {
-            x: Math.round(bb[0].x + this.container.offsetLeft),
-            y: Math.round(bb[0].y + this.container.offsetTop),
-            width: bb[2].x - bb[0].x,
-            height: bb[2].y - bb[0].y
-          },
-          position: ["after", "before"],
-          bb: bb
-        };
-        */
-        var tooltipDiv = query('div.tooltip');
-        if (tooltipDiv.length == 0) {
-          this.tooltipLayer = domConstruct.create('div', {
-            'class': 'tooltip',
-            style: { opacity: 0 }
-          }, query('body')[0], 'last');
-        } else {
-          this.tooltipLayer = tooltipDiv[0];
-        }
-
-        glyph.on('mouseenter', function (evt) {
-
-          domStyle.set(this.tooltipLayer, 'left', evt.x + 'px');
-          domStyle.set(this.tooltipLayer, 'top', evt.y + 'px');
-          domStyle.set(this.tooltipLayer, 'opacity', 0.95);
-          this.tooltipLayer.innerHTML = feature_info_str;
-          /*
-          Tooltip.show(ttinfo.content, ttinfo.around, ttinfo.position);
-          this.sig = glyph.on("mouseout", function(e){
-            Tooltip.hide(ttinfo.around);
-            // window.console.log("remove", sig);
-            if(this.sig)
-              this.sig.remove();
-            this.sig = null;
-          });
-          */
-        }.bind(this));
-
-        glyph.on('mouseout', function (evt) {
-          domStyle.set(this.tooltipLayer, 'opacity', 0);
-        }.bind(this));
-        /*
-        if(typeof this.menu_create_callback === 'function'){
-          glyph.on("contextmenu", function(evt){
-            Tooltip.hide(ttinfo.around);
-            if(this.sig){
-              this.sig.remove();
-              this.sig = null;
-            }
-
-            var menu = new Menu();
-            var sig2;
-            sig2 = on(menu.domNode, "mouseleave", function(){
-              popup.close(menu);
-              sig2.remove();
-              menu.destroy();
-            }.bind(this));
-
-            this.menu_create_callback(feature, row_data, menu);
-
-            menu.startup();
-
-            popup.open({
-              popup: menu,
-              parent: this.container.parent,
-              x: evt.pageX - 15,
-              y: evt.pageY - 15,
-              orient: ["below"],
-              onExecute: function(evt){
-                window.console.log("Execute", JSON.stringify(evt));
-                popup.close(menu);
-                menu.destroy();
-              },
-              onCancel: function(){
-                window.console.log("Cancel");
-                popup.close(menu);
-                menu.destroy();
-              }
-
-            });
-
-            evt.preventDefault();
-          }.bind(this));
-        }
-        */
+      var feature_info_str = this.create_hover_text(feature, row_data);
+      var tooltipDiv = query('div.tooltip');
+      if (tooltipDiv.length == 0) {
+        this.tooltipLayer = domConstruct.create('div', {
+          'class': 'tooltip',
+          style: { opacity: 0 }
+        }, query('body')[0], 'last');
+      } else {
+        this.tooltipLayer = tooltipDiv[0];
       }
+
+      glyph.on('mouseenter', function (evt) {
+
+        domStyle.set(this.tooltipLayer, 'left', evt.x + 'px');
+        domStyle.set(this.tooltipLayer, 'top', evt.y + 'px');
+        domStyle.set(this.tooltipLayer, 'opacity', 0.95);
+        this.tooltipLayer.innerHTML = feature_info_str;
+      }.bind(this));
+
+      glyph.on('mouseout', function (evt) {
+        domStyle.set(this.tooltipLayer, 'opacity', 0);
+      }.bind(this));
     },
 
     create_hover_text: function (feature, row_data) {
