@@ -37,7 +37,7 @@
     "radix": [1, "as-needed"],
     "global-require": 0,
     "quote-props": 0,
-    "dot-notation": 0,
+    "dot-notation": [0, {"allowKeywords": false}],
     "no-multi-spaces": 0,
     "consistent-return": 0,
     "no-unused-expressions": 0,
@@ -64,7 +64,6 @@
     "new-cap": 0,
     "brace-style": 0,
     "no-alert": 0,
-    "allowKeywords": 0,
     "no-dupe-args": 0
   }
 }
