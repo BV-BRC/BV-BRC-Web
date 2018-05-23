@@ -12,7 +12,7 @@ define("p3/util/searchToQuery", [], function () {
     var ors = false;
     var quoted = false;
 
-    for (var i = 0; i < expression.length;i++) {
+    for (var i = 0; i < expression.length; i++) {
       var curChar = expression[i];
       // console.log("curChar: ", curChar, i);
       switch (curChar) {

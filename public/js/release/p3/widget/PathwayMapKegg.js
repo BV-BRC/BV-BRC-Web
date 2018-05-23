@@ -111,7 +111,7 @@ define("p3/widget/PathwayMapKegg", [
         'fa icon-print fa-2x',
         { label: 'Print', multiple: false, validTypes: ['*'] },
         function () {
-          var svg = this.pNS.export();
+          var svg = this.pNS.export_to_svg();
           saveAs(new Blob([svg], { type: 'image/svg+xml' }), 'PATRIC_pathway_map.svg');
         },
         true

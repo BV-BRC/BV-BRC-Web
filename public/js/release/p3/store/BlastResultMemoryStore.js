@@ -259,7 +259,7 @@ define("p3/store/BlastResultMemoryStore", [
           bitscore: Math.round(hit.hsps[0].bit_score),
           genome_id: m.genome_id,
           genome_name: m.genome_name,
-          'function': m.function,
+          'function': m['function'],
           hit_from: hit.hsps[0].hit_from,
           hit_to: hit.hsps[0].hit_to,
           detail: {
