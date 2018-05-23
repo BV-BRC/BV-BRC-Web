@@ -17,7 +17,7 @@ var defaults = {
   'compareregionServiceURL': 'https://p3.theseed.org/services/compare_regions',
   dataServiceURL: 'https://p3.theseed.org/services/data_api',
   accountURL: 'http://user.patric.local:3002/',
-  docsServiceURL: 'https://docs.patricbrc.org',
+  docsServiceURL: 'https://docs.patricbrc.org/',
   userServiceURL: '',
   localStorageCheckInterval: 86400,
   enableDevTools: false,
