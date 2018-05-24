@@ -2199,6 +2199,7 @@
   border-bottom: 4px solid #2B5775;
   margin-top: 15px;
   margin-bottom: 20px;
+  padding: 15px 20px;
 }
 
 #patric-homepage-wrapper .browse-search p {
@@ -2377,6 +2378,7 @@
 
 #patric-homepage-wrapper .analyze-data {
   background: #F4FFE6;
+  padding: 15px 20px;
 }
 
 #patric-homepage-wrapper .analyze-data h2 {
