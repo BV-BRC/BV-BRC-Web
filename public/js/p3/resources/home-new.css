@@ -2584,6 +2584,7 @@
   border: 2px solid #A0A0A0;
   z-index: 10;
   margin: 0 2px;
+  cursor: pointer;
 }
 
 #patric-homepage-wrapper .announcements #dot-navigation .current-dot {
