@@ -128,8 +128,8 @@
   position: relative;
   width: 100%;
   min-height: 1px;
-  padding-right: 15px;
-  padding-left: 15px;
+  padding-right: 13px;
+  padding-left: 12px;
 }
 
 #patric-homepage-wrapper .col {
@@ -2194,8 +2194,8 @@
 }
 
 #patric-homepage-wrapper .browse-search {
-  background: #dddddd;
-  border-top: 4px solid #2B5775;
+  background: #FFFFFF;
+  /* border-top: 4px solid #2B5775; */
   border-bottom: 4px solid #2B5775;
   margin-top: 15px;
   margin-bottom: 20px;
@@ -2203,7 +2203,8 @@
 }
 
 #patric-homepage-wrapper .browse-search p {
-  margin-top: 5px;
+  /* margin-top: 5px; */
+  line-height: 25px;
 }
 
 #patric-homepage-wrapper .browse-search h3 {
@@ -2510,7 +2511,7 @@
   background: #FFFFFF;
   margin-top: 15px;
   margin-bottom: 20px;
-  border-top: 4px solid #2B5775;
+  /* border-top: 4px solid #2B5775; */
   border-bottom: 4px solid #a0a0a0;
   padding: 10px;
   height: 400px;
