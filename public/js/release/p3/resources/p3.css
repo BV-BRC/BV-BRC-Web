@@ -16952,6 +16952,7 @@ div.appsublabel {
 #patric-homepage-wrapper .browse-search h3 {
   margin: 0;
   margin-top: 14px;
+  color: #2B5775;
 }
 #patric-homepage-wrapper .browse-search .row {
   padding: 10px 0px 0 0;
@@ -17180,6 +17181,11 @@ div.appsublabel {
   background: #FFFFFF;
   width: 100%;
 }
+#patric-homepage-wrapper .omics-my-data .my-data .home-login-button .LoginButton.loginLink {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+}
 #patric-homepage-wrapper .omics-my-data .my-data .LoginButton.loginLink .dijitButtonNode {
   background: #CE8836;
   color: #FFFFFF !important;
@@ -17187,7 +17193,7 @@ div.appsublabel {
   font-size: 12pt !important;
   text-decoration: none;
   border: none;
-  padding: 0.375rem 0.75rem;
+  padding: 0.375rem 1.50rem;
   height: 34px;
   line-height: 1.5;
   -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
@@ -17200,41 +17206,6 @@ div.appsublabel {
   color: #FFFFFF;
   opacity: 0.9;
   text-decoration: none;
-}
-#patric-homepage-wrapper .omics-my-data .my-data .btn.button-gray {
-  height: 34px;
-}
-#patric-homepage-wrapper .omics-my-data .my-data span {
-  padding: 0 10px;
-  font-size: 11pt;
-  line-height: 1.5;
-  color: #FFFFFF;
-}
-#patric-homepage-wrapper .omics-my-data .my-data-links {
-  background: #E3E3E3;
-  margin-top: -53px;
-}
-#patric-homepage-wrapper .omics-my-data .my-data-links ul {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -ms-flex-pack: distribute;
-      justify-content: space-around;
-  padding: 0px 10px;
-}
-#patric-homepage-wrapper .omics-my-data .my-data-links ul li {
-  padding: 15px 2px;
-}
-#patric-homepage-wrapper .omics-my-data .my-data-links ul a {
-  color: #3E5775;
-  text-decoration: none;
-}
-#patric-homepage-wrapper .omics-my-data .my-data-links ul a:hover, #patric-homepage-wrapper .omics-my-data .my-data-links ul a:focus {
-  text-decoration: underline;
 }
 #patric-homepage-wrapper .announcements {
   background: #FFFFFF;
@@ -17304,6 +17275,7 @@ div.appsublabel {
   border: 2px solid #A0A0A0;
   z-index: 10;
   margin: 0 2px;
+  cursor: pointer;
 }
 #patric-homepage-wrapper .announcements #dot-navigation .current-dot {
   background: #2B5775;
