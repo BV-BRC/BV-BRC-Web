@@ -80,7 +80,7 @@
                 <span>DATA</span>
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>
-                        <div style='vertical-align: top;width:150px;display:inline-block;margin-right: 5px;'>
+                        <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
                             <div class="menuHeader">Data Types</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
@@ -98,12 +98,12 @@
                             </div>
                             <div class="menuHeader">Download Data</div>
                             <div class="menuItems">
-                                <div><a class="navigationLinkOut" href="ftp://ftp.patricbrc.org/patric2"
+                                <div><a class="navigationLinkOut" href="ftp://ftp.patricbrc.org/"
                                         target="_blank" rel="noopener">FTP Server</a>
                                 </div>
                             </div>
                         </div>
-                        <div style='vertical-align:top;width:200px;display: inline-block'>
+                        <div style="vertical-align:top;width:200px;display: inline-block">
                             <div class="menuHeader">Specialty Data Collections</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink"
@@ -131,7 +131,7 @@
 
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>
-                        <div style='vertical-align: top;width:175px;display:inline-block'>
+                        <div style="vertical-align: top;width:175px;display:inline-block">
                             <div class="HideWithAuth">
                                 Please <a class="loginLink">login</a> to view your workspaces.
                             </div>
@@ -180,17 +180,19 @@
 
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>
-                        <div style='vertical-align: top;width: 180px;margin-right:5px;display:inline-block'>
+                        <div style="vertical-align: top;width: 180px;margin-right:5px;display:inline-block">
                             <div class="menuHeader">Genomics</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
                                 <div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
+                                <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>
                                 <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder</a>
                                 </div>
                                 <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/PhylogeneticTree">Phylogenetic Tree</a></div>
+                                <div><a class="navigationLink" href="/app/MetagenomeBinning">Metagenome Binning</a></div>
                             </div>
                             <p></p>
                             <div class="menuHeader">Transcriptomics</div>
@@ -230,7 +232,8 @@
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
                     <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/tutorial/">Tutorials</a></div>
-                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/user_guide/">User Guides</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/user_guides/">User Guides</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/webinar/">Webinars</a></div>
                     <hr>
                     <div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
                     <div><a class="TopMenuLink navigationLink" href="/webpage/website/contact_us.html">Contact Us</a></div>
@@ -238,7 +241,7 @@
             </div>
 
         </div>
-        <div style="padding: 6px 10px 2px 2px; width: 120px; flex-grow: 0.85">
+        <div id="p3header-search" style="padding: 6px 10px 2px 2px; width: 120px; flex-grow: 0.85">
             <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden"
                    data-dojo-type="p3/widget/GlobalSearch"/>
         </div>
@@ -277,11 +280,10 @@
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
                     <hr>
-
-                    <div><a class="navigationLinkOut"
-                            href="<%- request.applicationOptions.accountURL %>">Account Settings</a></div>
-
-                    <div><a class="logoutLink" href="<%- request.applicationOptions.accountURL %>/logout">Logout</a></div>
+                    <div><a class="userProfile">Account Settings</a></div>
+                    <div><a class="sulogin">SU Login</a></div>
+                    <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
+                    <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>
                 </div>
             </div>
         </div>

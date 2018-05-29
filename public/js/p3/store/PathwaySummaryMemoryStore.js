@@ -1,227 +1,229 @@
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
-	"dojo/store/Memory", "dojo/store/util/QueryResults"
-], function(declare, lang, Deferred,
-			request, when, Stateful, Topic,
-			Memory, QueryResults){
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic',
+  'dojo/store/Memory', 'dojo/store/util/QueryResults'
+], function (
+  declare, lang, Deferred,
+  request, when, Stateful, Topic,
+  Memory, QueryResults
+) {
 
-	return declare([Memory, Stateful], {
-		baseQuery: {},
-		apiServer: window.App.dataServiceURL,
-		idProperty: "pathway_id",
-		state: null,
-		constructor: function(options){
-			this._loaded = false;
-			if(options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-			this.watch("state", lang.hitch(this, "onSetState"));
-		},
+  return declare([Memory, Stateful], {
+    baseQuery: {},
+    apiServer: window.App.dataServiceURL,
+    idProperty: 'pathway_id',
+    state: null,
+    constructor: function (options) {
+      this._loaded = false;
+      if (options.apiServer) {
+        this.apiServer = options.apiServer;
+      }
+      this.watch('state', lang.hitch(this, 'onSetState'));
+    },
 
-		clear: function(){
-			delete this._loadingDeferred;
-			this._loaded = false;
-		},
+    clear: function () {
+      delete this._loadingDeferred;
+      this._loaded = false;
+    },
 
-		query: function(query, opts){
-			query = query || {};
-			if(this._loaded){
-				return this.inherited(arguments);
-			}
-			else{
-				var _self = this;
-				var results;
-				var qr = QueryResults(when(this.loadData(), function(){
-					results = _self.query(query, opts);
-					qr.total = when(results, function(results){
-						return results.total || results.length
-					});
-					return results;
-				}));
+    query: function (query, opts) {
+      query = query || {};
+      if (this._loaded) {
+        return this.inherited(arguments);
+      }
 
-				return qr;
-			}
-		},
+      var _self = this;
+      var results;
+      var qr = QueryResults(when(this.loadData(), function () {
+        results = _self.query(query, opts);
+        qr.total = when(results, function (results) {
+          return results.total || results.length;
+        });
+        return results;
+      }));
 
-		get: function(id, opts){
-			if(this._loaded){
-				return this.inherited(arguments);
-			}else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
-			}
-		},
+      return qr;
 
-		onSetState: function(attr, oldState, state){
-			if(!state || !state.feature_ids || state.feature_ids.length < 1){
-				return;
-			}
-			this.clear();
-		},
+    },
 
-		loadData: function(){
-			if(this._loadingDeferred){
-				return this._loadingDeferred;
-			}
+    get: function (id, opts) {
+      if (this._loaded) {
+        return this.inherited(arguments);
+      }
+      var _self = this;
+      return when(this.loadData(), function () {
+        return _self.get(id, options);
+      });
 
-			var _self = this;
+    },
 
-			// console.warn(this.state.genome_ids, !this.state.genome_ids);
-			if(!this.state || !this.state.feature_ids){
+    onSetState: function (attr, oldState, state) {
+      if (!state || !state.feature_ids || state.feature_ids.length < 1) {
+        return;
+      }
+      this.clear();
+    },
 
-				//this is done as a deferred instead of returning an empty array
-				//in order to make it happen on the next tick.  Otherwise it
-				//in the query() function above, the callback happens before qr exists
-				var def = new Deferred();
-				setTimeout(lang.hitch(_self, function(){
-					this.setData([]);
-					this._loaded = true;
-					// def.resolve(true);
-				}), 0);
-				return def.promise;
-			}
+    loadData: function () {
+      if (this._loadingDeferred) {
+        return this._loadingDeferred;
+      }
 
-			Topic.publish("PathwaySummary", "showLoadingMask");
+      var _self = this;
 
-			var postData = {
-				q: "feature_id:(" + _self.state.feature_ids.join(" OR ") + ")",
-				fl: "pathway_id,pathway_name,feature_id,genome_id",
-				rows: 25000,
-				facet: true,
-				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
-			};
+      // console.warn(this.state.genome_ids, !this.state.genome_ids);
+      if (!this.state || !this.state.feature_ids) {
 
-			this._loadingDeferred = when(request.post(_self.apiServer + '/pathway/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/solr+json",
-					'Content-Type': "application/solrquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': (window.App.authorizationToken || "")
-				},
-				data: postData
-			}), function(response){
+        // this is done as a deferred instead of returning an empty array
+        // in order to make it happen on the next tick.  Otherwise it
+        // in the query() function above, the callback happens before qr exists
+        var def = new Deferred();
+        setTimeout(lang.hitch(_self, function () {
+          this.setData([]);
+          this._loaded = true;
+          // def.resolve(true);
+        }), 0);
+        return def.promise;
+      }
 
-				var features = response.response.docs;
+      Topic.publish('PathwaySummary', 'showLoadingMask');
 
-				if(features.length == 0){
+      var postData = {
+        q: 'feature_id:(' + _self.state.feature_ids.join(' OR ') + ')',
+        fl: 'pathway_id,pathway_name,feature_id,genome_id',
+        rows: 25000,
+        facet: true,
+        'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
+      };
 
-					var summary = {
-						total: _self.state.feature_ids.length,
-						found: 0,
-						pathways: 0
-					};
-					Topic.publish("PathwaySummary", "updateHeader", summary);
+      this._loadingDeferred = when(request.post(_self.apiServer + '/pathway/', {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        data: postData
+      }), function (response) {
 
-					_self.setData([]);
-					_self._loaded = true;
-					Topic.publish("PathwaySummary", "hideLoadingMask");
-					return true;
-				}
+        var features = response.response.docs;
 
-				var facets = response.facets.stat.buckets;
+        if (features.length == 0) {
 
-				var featureIdMap = {};
-				var genomeIdMap = {};
-				var pathwayIdMap = {};
-				var pathwayNameMap = {};
-				var pathwayFeatureMap = {};
-				var genesSelected = {};
+          var summary = {
+            total: _self.state.feature_ids.length,
+            found: 0,
+            pathways: 0
+          };
+          Topic.publish('PathwaySummary', 'updateHeader', summary);
 
-				features.forEach(function(f){
-					if(!pathwayNameMap.hasOwnProperty(f['pathway_id'])){
-						pathwayNameMap[f['pathway_id']] = f['pathway_name'];
-					}
-					if(!pathwayFeatureMap.hasOwnProperty(f['pathway_id'])){
-						pathwayFeatureMap[f['pathway_id']] = {};
-						if(!pathwayFeatureMap[f['pathway_id']].hasOwnProperty(f['feature_id'])){
-							pathwayFeatureMap[f['pathway_id']][f['feature_id']] = true;
-						}
-					}else{
-						if(!pathwayFeatureMap[f['pathway_id']].hasOwnProperty(f['feature_id'])){
-							pathwayFeatureMap[f['pathway_id']][f['feature_id']] = true;
-						}
-					}
-					if(!genomeIdMap.hasOwnProperty(f['genome_id'])){
-						genomeIdMap[f['genome_id']] = true;
-					}
-					if(!pathwayIdMap.hasOwnProperty(f['pathway_id'])){
-						pathwayIdMap[f['pathway_id']] = true;
-					}
-					if(!featureIdMap.hasOwnProperty(f['feature_id'])){
-						featureIdMap[f['feature_id']] = true;
-					}
-				});
+          _self.setData([]);
+          _self._loaded = true;
+          Topic.publish('PathwaySummary', 'hideLoadingMask');
+          return true;
+        }
 
-				facets.forEach(function(bucket){
-					genesSelected[bucket['val']] = bucket['gene_count'];
-				});
+        var facets = response.facets.stat.buckets;
 
-				var query = {
-					q: "genome_id:(" + Object.keys(genomeIdMap).join(' OR ') + ") AND pathway_id:(" + Object.keys(pathwayIdMap).join(' OR ') + ")",
-					fq: "annotation:PATRIC",
-					rows: 0,
-					facet: true,
-					'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
-				};
-				var q = Object.keys(query).map(function(p){
-					return p + "=" + query[p]
-				}).join("&");
+        var featureIdMap = {};
+        var genomeIdMap = {};
+        var pathwayIdMap = {};
+        var pathwayNameMap = {};
+        var pathwayFeatureMap = {};
+        var genesSelected = {};
 
-				return when(request.post(_self.apiServer + '/pathway/', {
-					handleAs: 'json',
-					headers: {
-						'Accept': "application/solr+json",
-						'Content-Type': "application/solrquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': (window.App.authorizationToken || "")
-					},
-					data: q
-				}), function(response){
+        features.forEach(function (f) {
+          if (!pathwayNameMap.hasOwnProperty(f.pathway_id)) {
+            pathwayNameMap[f.pathway_id] = f.pathway_name;
+          }
+          if (!pathwayFeatureMap.hasOwnProperty(f.pathway_id)) {
+            pathwayFeatureMap[f.pathway_id] = {};
+            if (!pathwayFeatureMap[f.pathway_id].hasOwnProperty(f.feature_id)) {
+              pathwayFeatureMap[f.pathway_id][f.feature_id] = true;
+            }
+          } else {
+            if (!pathwayFeatureMap[f.pathway_id].hasOwnProperty(f.feature_id)) {
+              pathwayFeatureMap[f.pathway_id][f.feature_id] = true;
+            }
+          }
+          if (!genomeIdMap.hasOwnProperty(f.genome_id)) {
+            genomeIdMap[f.genome_id] = true;
+          }
+          if (!pathwayIdMap.hasOwnProperty(f.pathway_id)) {
+            pathwayIdMap[f.pathway_id] = true;
+          }
+          if (!featureIdMap.hasOwnProperty(f.feature_id)) {
+            featureIdMap[f.feature_id] = true;
+          }
+        });
 
-					var facets = response.facets.stat.buckets;
+        facets.forEach(function (bucket) {
+          genesSelected[bucket.val] = bucket.gene_count;
+        });
 
-					var genesAnnotated = {};
-					facets.forEach(function(bucket){
-						genesAnnotated[bucket['val']] = bucket['gene_count'];
-					});
+        var query = {
+          q: 'genome_id:(' + Object.keys(genomeIdMap).join(' OR ') + ') AND pathway_id:(' + Object.keys(pathwayIdMap).join(' OR ') + ')',
+          fq: 'annotation:PATRIC',
+          rows: 0,
+          facet: true,
+          'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
+        };
+        var q = Object.keys(query).map(function (p) {
+          return p + '=' + query[p];
+        }).join('&');
 
-					var data = [];
-					Object.keys(genesSelected).forEach(function(pathway_id){
+        return when(request.post(_self.apiServer + '/pathway/', {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          data: q
+        }), function (response) {
 
-						var pw = {
-							pathway_id: pathway_id,
-							pathway_name: pathwayNameMap[pathway_id],
-							genes_selected: genesSelected[pathway_id],
-							genes_annotated: genesAnnotated[pathway_id],
-							coverage: parseInt(genesSelected[pathway_id] / genesAnnotated[pathway_id] * 100),
-							genome_ids: Object.keys(genomeIdMap),
-							feature_ids: Object.keys(pathwayFeatureMap[pathway_id])
-						};
+          var facets = response.facets.stat.buckets;
 
-						data.push(pw);
-					});
+          var genesAnnotated = {};
+          facets.forEach(function (bucket) {
+            genesAnnotated[bucket.val] = bucket.gene_count;
+          });
 
-					var summary = {
-						total: _self.state.feature_ids.length,
-						found: Object.keys(featureIdMap).length,
-						pathways: Object.keys(pathwayIdMap).length
-					};
-					// console.log("update header: ", summary);
-					Topic.publish("PathwaySummary", "updateHeader", summary);
+          var data = [];
+          Object.keys(genesSelected).forEach(function (pathway_id) {
 
-					_self.setData(data);
-					_self._loaded = true;
-					Topic.publish("PathwaySummary", "hideLoadingMask");
-					return true;
-				}, function(err){
-					console.error("Error in PathwaySummaryMemoryStore: ", err)
-				});
-			});
-			return this._loadingDeferred;
-		}
-	});
+            var pw = {
+              pathway_id: pathway_id,
+              pathway_name: pathwayNameMap[pathway_id],
+              genes_selected: genesSelected[pathway_id],
+              genes_annotated: genesAnnotated[pathway_id],
+              coverage: parseInt(genesSelected[pathway_id] / genesAnnotated[pathway_id] * 100),
+              genome_ids: Object.keys(genomeIdMap),
+              feature_ids: Object.keys(pathwayFeatureMap[pathway_id])
+            };
+
+            data.push(pw);
+          });
+
+          var summary = {
+            total: _self.state.feature_ids.length,
+            found: Object.keys(featureIdMap).length,
+            pathways: Object.keys(pathwayIdMap).length
+          };
+          // console.log("update header: ", summary);
+          Topic.publish('PathwaySummary', 'updateHeader', summary);
+
+          _self.setData(data);
+          _self._loaded = true;
+          Topic.publish('PathwaySummary', 'hideLoadingMask');
+          return true;
+        }, function (err) {
+          console.error('Error in PathwaySummaryMemoryStore: ', err);
+        });
+      });
+      return this._loadingDeferred;
+    }
+  });
 });

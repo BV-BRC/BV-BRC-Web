@@ -1,155 +1,157 @@
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../TranscriptomicsComparisonGridContainer",
-	"../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../DataItemFormatter"
-], function(declare, TabViewerBase, on,
-			domClass, ContentPane, domConstruct,
-			Grid, formatter, TranscriptomicsComparisonGridContainer,
-			PathJoin, xhr, lang, DataItemFormatter){
-	return declare([TabViewerBase], {
-		"baseClass": "ExperimentComparison",
-		"disabled": false,
-		"containerType": "experiment_data",
-		"query": null,
-		"experiment": null,
-		"eid": null,
-		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Experiment View",
-		perspectiveIconClass: "icon-selection-Experiment",
-		defaultTab: "Overview",
+  'dojo/_base/declare', './TabViewerBase', 'dojo/on',
+  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
+  '../PageGrid', '../formatter', '../TranscriptomicsComparisonGridContainer',
+  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter'
+], function (
+  declare, TabViewerBase, on,
+  domClass, ContentPane, domConstruct,
+  Grid, formatter, TranscriptomicsComparisonGridContainer,
+  PathJoin, xhr, lang, DataItemFormatter
+) {
+  return declare([TabViewerBase], {
+    baseClass: 'ExperimentComparison',
+    disabled: false,
+    containerType: 'experiment_data',
+    query: null,
+    experiment: null,
+    eid: null,
+    apiServiceUrl: window.App.dataAPI,
+    perspectiveLabel: 'Experiment View',
+    perspectiveIconClass: 'icon-selection-Experiment',
+    defaultTab: 'Overview',
 
-		_setStateAttr: function(state){
-			this.state = this.state || {};
-			var parts = state.pathname.split("/");
-			this.set("eid", parts[parts.length - 1]);
-			state.eid = parts[parts.length - 1];
-			this.eid = state.eid;
-			if(state.experiment){
-				this.set("experiment", state.experiment);
-			}
-			this._set("state", state);
-		},
+    _setStateAttr: function (state) {
+      this.state = this.state || {};
+      var parts = state.pathname.split('/');
+      this.set('eid', parts[parts.length - 1]);
+      state.eid = parts[parts.length - 1];
+      this.eid = state.eid;
+      if (state.experiment) {
+        this.set('experiment', state.experiment);
+      }
+      this._set('state', state);
+    },
 
-		"_setExperimentAttr": function(experiment){
-			if(!experiment){
-				return;
-			}
+    _setExperimentAttr: function (experiment) {
+      if (!experiment) {
+        return;
+      }
 
-			this.queryNode.innerHTML = experiment.title;
-			this.totalCountNode.innerHTML = " ( " + experiment.samples + " Comparisons )";
+      this.queryNode.innerHTML = experiment.title;
+      this.totalCountNode.innerHTML = ' ( ' + experiment.samples + ' Comparisons )';
 
-			if(this.eid == experiment.eid){
-				return;
-			}
-		},
+      // if (this.eid == experiment.eid) {
 
-		onSetState: function(attr, oldVal, state){
-			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+      // }
+    },
 
-			var parts = state.pathname.split("/");
-			this.set("eid", parts[parts.length - 1]);
-			state.eid = parts[parts.length - 1];
-			if(!state){
-				return;
-			}
+    onSetState: function (attr, oldVal, state) {
+      // console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
-			if(state && state.eid && !state.experiment){
-				state.experiment = this.experiment;
-			}
+      var parts = state.pathname.split('/');
+      this.set('eid', parts[parts.length - 1]);
+      state.eid = parts[parts.length - 1];
+      if (!state) {
+        return;
+      }
 
-			if(state.hashParams && state.hashParams.view_tab){
-				// console.log("state.hashParams.view_tab=", state.hashParams.view_tab);
+      if (state && state.eid && !state.experiment) {
+        state.experiment = this.experiment;
+      }
 
-				if(this[state.hashParams.view_tab]){
-					var vt = this[state.hashParams.view_tab];
-					vt.set("visible", true);
-					this.viewer.selectChild(vt);
-				}else{
-					console.log("No view-tab supplied in State Object");
-				}
-			}
+      if (state.hashParams && state.hashParams.view_tab) {
+        // console.log("state.hashParams.view_tab=", state.hashParams.view_tab);
 
-			this.setActivePanelState();
-		},
+        if (this[state.hashParams.view_tab]) {
+          var vt = this[state.hashParams.view_tab];
+          vt.set('visible', true);
+          this.viewer.selectChild(vt);
+        } else {
+          console.log('No view-tab supplied in State Object');
+        }
+      }
 
-		setActivePanelState: function(){
-			var activeQueryState;
-			if(!this._started){
-				console.log("Feature Viewer not started");
-				return;
-			}
+      this.setActivePanelState();
+    },
 
-			if(this.state.eid){
-				activeQueryState = lang.mixin({}, this.state, {search: "eq(eid," + this.state.eid + ")"});
-			}
+    setActivePanelState: function () {
+      var activeQueryState;
+      if (!this._started) {
+        console.log('Feature Viewer not started');
+        return;
+      }
 
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+      if (this.state.eid) {
+        activeQueryState = lang.mixin({}, this.state, { search: 'eq(eid,' + this.state.eid + ')' });
+      }
 
-			var activeTab = this[active];
-			// console.log("Active: ", active, "state: ", this.state, " this=", this, " activeTab", this['overview']);
+      var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
 
-			if(!activeTab){
-				console.log("ACTIVE TAB NOT FOUND: ", active);
-				return;
-			}
+      var activeTab = this[active];
+      // console.log("Active: ", active, "state: ", this.state, " this=", this, " activeTab", this['overview']);
 
-			switch(active){
-				default:
-					if(activeQueryState){
-						activeTab.set("state", activeQueryState);
-					}
-					// console.log("SET ACTIVE STATE for default tab: ", this.state);
-					break;
-			}
-			// console.log("Set Active State COMPLETE");
-		},
+      if (!activeTab) {
+        console.log('ACTIVE TAB NOT FOUND: ', active);
+        return;
+      }
 
-		createOverviewPanel: function(state){
-			return new ContentPane({
-				title: "Overview",
-				id: this.viewer.id + "_" + "overview",
-				state: this.state
-			});
-		},
+      switch (active) {
+        default:
+          if (activeQueryState) {
+            activeTab.set('state', activeQueryState);
+          }
+          // console.log("SET ACTIVE STATE for default tab: ", this.state);
+          break;
+      }
+      // console.log("Set Active State COMPLETE");
+    },
 
-		postCreate: function(){
-			if(!this.state){
-				this.state = {};
-			}
+    createOverviewPanel: function (state) {
+      return new ContentPane({
+        title: 'Overview',
+        id: this.viewer.id + '_' + 'overview',
+        state: this.state
+      });
+    },
 
-			this.inherited(arguments);
+    postCreate: function () {
+      if (!this.state) {
+        this.state = {};
+      }
 
-			// this.totalCountNode.innerHTML = " (1 Experiment) ";
+      this.inherited(arguments);
 
-			xhr.get(PathJoin(this.apiServiceUrl, "transcriptomics_experiment", this.eid), {
-				headers: {
-					accept: "application/json",
-					'X-Requested-With': null,
-					'Authorization': (window.App.authorizationToken || "")
-				},
-				handleAs: "json"
-			}).then(lang.hitch(this, function(experiment){
-				console.log("experiment result ", experiment);
-				this.overview = this.createOverviewPanel(this.state);
-				this.comparisons = new TranscriptomicsComparisonGridContainer({
-					title: "Comparisons",
-					enableFilterPanel: false,
-					id: this.viewer.id + "_" + "comparisons",
-					disabled: false
-				});
+      // this.totalCountNode.innerHTML = " (1 Experiment) ";
 
-				this.viewer.addChild(this.overview);
-				this.viewer.addChild(this.comparisons);
+      xhr.get(PathJoin(this.apiServiceUrl, 'transcriptomics_experiment', this.eid), {
+        headers: {
+          accept: 'application/json',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (experiment) {
+        console.log('experiment result ', experiment);
+        this.overview = this.createOverviewPanel(this.state);
+        this.comparisons = new TranscriptomicsComparisonGridContainer({
+          title: 'Comparisons',
+          enableFilterPanel: false,
+          id: this.viewer.id + '_' + 'comparisons',
+          disabled: false
+        });
 
-				this.set("experiment", experiment);
-				// console.log('Experiment : ', experiment);
-				this.state.experiment = experiment;
-				this.setActivePanelState();
+        this.viewer.addChild(this.overview);
+        this.viewer.addChild(this.comparisons);
 
-				var node = domConstruct.create("div", {style: "width: 90%"}, this.overview.containerNode);
-				domConstruct.place(DataItemFormatter(experiment, "transcriptomics_experiment_data", {}), node, "first");
-			}));
-		}
-	});
+        this.set('experiment', experiment);
+        // console.log('Experiment : ', experiment);
+        this.state.experiment = experiment;
+        this.setActivePanelState();
+
+        var node = domConstruct.create('div', { style: 'width: 90%' }, this.overview.containerNode);
+        domConstruct.place(DataItemFormatter(experiment, 'transcriptomics_experiment_data', {}), node, 'first');
+      }));
+    }
+  });
 });

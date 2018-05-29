@@ -1,0 +1,31 @@
+<div>
+  <p>&nbsp;</p>
+  <div style="max-width:380px; margin:auto">
+    <form dojoAttachPoint="containerNode" class="${baseClass} PanelForm" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      <div class="UserProfileForm" style="max-width:380px; display:block">
+        <table style="border-spacing:0">
+          <tbody>
+            <tr><th style="padding:0">FIRST NAME</th><th style="padding:0">LAST NAME</th></tr>
+            <tr><td style="padding-top:0">
+              <div style="width:100%" data-dojo-type="dijit/form/ValidationTextBox" name="first_name" data-dojo-attach-point="fname" value="" >
+              </div>
+            </td><td style="padding-top:0">
+              <div data-dojo-type="dijit/form/ValidationTextBox" style="width:100%" name="last_name" value="" data-dojo-attach-point="lname" >
+              </div>
+            </td></tr>
+            <tr><th style="padding:0">EMAIL ADDRESS</th></tr>
+            <tr><td style="padding-top:0">
+              <input type="text" name="email" style="width:100%" data-dojo-attach-point="emailField" data-dojo-type="dijit/form/ValidationTextBox" >
+            </td></tr>
+            <tr><th colspan="2" style="padding:0">ORGANIZATION</th></tr>
+            <tr><td colspan="2" style="padding-top:0"><div style="width:100%" data-dojo-type="dijit/form/TextBox" name="affiliation" value=""></div></td></tr>
+            <tr><th colspan="2" style="padding:0">ORGANISMS</th></tr>
+            <tr><td colspan="2" style="padding-top:0"><div name="organisms" data-dojo-type="dijit/form/Textarea" value=""></div></td></tr>
+            <tr><th colspan="2" style="padding:0">INTERESTS</th></tr>
+            <tr><td colspan="2" style="padding-top:0"><div rows="5" name="interests" style="height:75px;max-width:99%" data-dojo-type="dijit/form/SimpleTextarea" value=""></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </div>
+</div>
