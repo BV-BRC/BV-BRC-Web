@@ -1227,10 +1227,10 @@ define([
       selection.forEach(function (sel) {
         var id = sel.genome_id;
 
-        var readList = sel.user_read,
-          writeList = sel.user_write;
+        var readList = sel.user_read || [],
+          writeList = sel.user_write || [];
 
-        var writeObjs = (writeList || []).map(function (user) {
+        var writeObjs = writeList.map(function (user) {
           var obj = {
             user: user,
             perm: 'Can edit'
@@ -1239,19 +1239,17 @@ define([
           return obj;
         });
 
-        var readObjs = (readList || [])
-          .filter(function (user) {
-            // if user has write permission, only list that
-            return writeList.indexOf(user) == -1;
-          })
-          .map(function (user) {
-            var obj =  {
-              user: user,
-              perm: 'Can view'
-            };
+        var readObjs = readList.filter(function (user) {
+          // if user has write permission, only list that
+          return writeList.indexOf(user) == -1;
+        }).map(function (user) {
+          var obj =  {
+            user: user,
+            perm: 'Can view'
+          };
 
-            return obj;
-          });
+          return obj;
+        });
 
         var permObjs = readObjs.concat(writeObjs);
         permSets.push(permObjs);
