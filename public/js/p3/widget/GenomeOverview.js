@@ -4,14 +4,16 @@ define([
   'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin', 'dijit/Dialog',
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
   './ExternalItemFormatter', './AdvancedDownload', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
-  './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor'
+  './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor', 
+  '../DataAPI', './PermissionEditor'
 ], function (
   declare, lang, on, xhr, Topic,
   domClass, domQuery, domStyle, Template, domConstruct,
   WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
   ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
-  InputList, TextArea, DateTextBox, MetaEditor
+  InputList, TextArea, DateTextBox, MetaEditor, 
+  DataAPI, PermissionEditor
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
@@ -59,6 +61,13 @@ define([
         // private, hide button
         domStyle.set(domQuery('div.ActionButtonWrapper.btnDownloadGenome')[0], 'display', 'none');
       }
+
+      // hide share button if genome not owned by user
+      if (genome.owner === window.App.user.id) {
+        domStyle.set(domQuery('div.ActionButtonWrapper.btnShareGenome')[0], 'display', 'inline-block');
+      } else {
+        domStyle.set(domQuery('div.ActionButtonWrapper.btnShareGenome')[0], 'display', 'none');
+      }      
     },
 
     createSummary: function (genome) {
@@ -136,6 +145,70 @@ define([
       stg.startup();
       dlg.startup();
       dlg.show();
+    },
+
+    onShareGenome: function () {
+      if (!window.App.user || !window.App.user.id) {
+        Topic.publish('/login');
+        return;
+      }
+
+      var self = this;
+
+      var initialPerms = DataAPI.solrPermsToObjs([this.genome]);
+
+      var onConfirm = function (newPerms) {
+        var ids = [self.genome.genome_id]
+
+        Topic.publish('/Notification', {
+          message: "<span class='default'>Updating permissions (this could take several minutes)...</span>",
+          type: 'default',
+          duration: 50000
+        });
+
+        var prom = DataAPI.setGenomePermissions(ids, newPerms).then(function (res) {
+          self.refreshSummary();
+
+          Topic.publish('/Notification', {
+            message: 'Permissions updated.',
+            type: 'message'
+          });
+
+        }, function (err) {
+          console.log('error', err);
+          Topic.publish('/Notification', {
+            message: 'Failed. ' + err.response.status,
+            type: 'error'
+          });
+        });
+      };
+
+      var permEditor = new PermissionEditor({
+        selection: [this.genome],
+        onConfirm: onConfirm,
+        user: window.App.user.id || '',
+        useSolrAPI: true,
+        permissions: initialPerms
+      });
+
+      permEditor.show();
+
+    },
+    
+
+    refreshSummary: function() {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome', this.genome.genome_id), {
+        headers: {
+          accept: 'application/json',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (genome) {
+        this.createSummary(genome);
+      }), lang.hitch(this, function (error) {
+        console.log('error fetching genome', error)
+      }));      
     },
 
     onDownload: function () {
