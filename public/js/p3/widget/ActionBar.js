@@ -77,10 +77,22 @@ define([
         }, this);
       }
 
+      // Todo: if humanly possible, refactor this into show/hide callbacks or such!
       var types = Object.keys(selectionTypes);
       valid = valid.filter(function (an) {
         var act = this._actions[an];
         var validTypes = act.options.validTypes || [];
+
+        // only allow genome sharing if all genomes are owned by user
+        if (sel[0] && an === 'Share') {
+          var notOwnedList = sel.filter(function (obj) {
+            return obj.owner !== window.App.user.id;
+          })
+
+          if (notOwnedList.length) {
+            return false;
+          }
+        }
 
         // if top level "workspace", hide actions
         if (sel[0] && 'isWorkspace' in sel[0] && ['CreateFolder', 'Upload', 'ShowHidden'].indexOf(an) !== -1) {

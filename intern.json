@@ -1,0 +1,17 @@
+{
+  "loader": {
+    "script": "dojo",
+    "options": {
+      "packages": [
+        { "name": "app", "location": "public/js/p3/app" },
+        { "name": "dojo", "location": "public/js/dojo" },
+        { "name": "dojox", "location": "public/js/dojox" },
+        { "name": "dijit", "location": "public/js/dijit" }
+      ]
+    }
+  },
+  "suites": "tests/intern/unit/**/*.js",
+  "filterErrorStack": false,
+  "functionalSuites": "tests/intern/functional/**/*.js",
+  "environments": [ "chrome", "node" ]
+}

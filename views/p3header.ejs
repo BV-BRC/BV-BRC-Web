@@ -80,7 +80,7 @@
                 <span>DATA</span>
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>
-                        <div style='vertical-align: top;width:150px;display:inline-block;margin-right: 5px;'>
+                        <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
                             <div class="menuHeader">Data Types</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
@@ -103,7 +103,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div style='vertical-align:top;width:200px;display: inline-block'>
+                        <div style="vertical-align:top;width:200px;display: inline-block">
                             <div class="menuHeader">Specialty Data Collections</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink"
@@ -131,7 +131,7 @@
 
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>
-                        <div style='vertical-align: top;width:175px;display:inline-block'>
+                        <div style="vertical-align: top;width:175px;display:inline-block">
                             <div class="HideWithAuth">
                                 Please <a class="loginLink">login</a> to view your workspaces.
                             </div>
@@ -180,7 +180,7 @@
 
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>
-                        <div style='vertical-align: top;width: 180px;margin-right:5px;display:inline-block'>
+                        <div style="vertical-align: top;width: 180px;margin-right:5px;display:inline-block">
                             <div class="menuHeader">Genomics</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
@@ -280,11 +280,10 @@
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
                     <hr>
-
-                    <div><a class="navigationLinkOut"
-                            href="<%- request.applicationOptions.accountURL %>">Account Settings</a></div>
-
-                    <div><a class="logoutLink" href="<%- request.applicationOptions.accountURL %>/logout">Logout</a></div>
+                    <div><a class="userProfile">Account Settings</a></div>
+                    <div><a class="sulogin">SU Login</a></div>
+                    <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
+                    <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>
                 </div>
             </div>
         </div>

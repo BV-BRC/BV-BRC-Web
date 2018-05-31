@@ -256,7 +256,10 @@ define([
         form = self.form,
         selection = this.selection;
 
-      if (selection.lenbth == 1) {
+      /**
+       * not yet allowing publication
+       *
+      if (selection.length == 1) {
         var isPublic = this.selection['public'];
         var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
         var cb = new CheckBox({
@@ -264,11 +267,6 @@ define([
           value: 'isPublic',
           checked: isPublic,
           onChange: function (e) {
-            // var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
-            Deferred.when(prom, function (res) {
-            }, function (e) {
-              alert('oh no, something has went wrong!');
-            });
           }
         });
         cb.placeAt(checkBox);
@@ -278,7 +276,6 @@ define([
         }));
         domConstruct.place(checkBox, form, 'first');
 
-
         domConstruct.place(
           '<h4 style="margin-bottom: 5px;">' +
             'Share with Everybody' +
@@ -286,6 +283,7 @@ define([
           form, 'first'
         );
       }
+      */
 
 
       // user perms

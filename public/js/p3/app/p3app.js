@@ -59,21 +59,21 @@ define([
         var docEl = document.documentElement;
         /* istanbul ignore next */
         if (docEl && docEl.addEventListener) {
-          docEl.addEventListener('DOMSubtreeModified', function (evt) {
+          docEl.addEventListener('DOMSubtreeModified', function(evt) {
             var t = evt.target;
             if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
               onDocumentTitleChanged();
             }
           }, false);
         } else {
-          document.onpropertychange = function () {
+          document.onpropertychange = function() {
             if (window.event.propertyName === 'title') {
               onDocumentTitleChanged();
             }
           };
         }
         /* istanbul ignore next */
-        var onDocumentTitleChanged = function () {
+        var onDocumentTitleChanged = function() {
           // var meta = document.getElementsByTagName("meta[name='Keyword']");
           var meta = domQuery("meta[name='Keywords']")[0];
           if (meta) {
@@ -87,7 +87,7 @@ define([
         };
 
         /*
-        Router.register("\/$", function (params, oldPath, newPath, state){
+        Router.register("\/$", function(params, oldPath, newPath, state){
         console.log("HOME route", params.newPath);
         var newState = {href: params.newPath}
         for (var prop in params.state){
@@ -101,12 +101,12 @@ define([
     });
     */
 
-    Router.register('/remote', function (params, oldPath, newPath, state) {
+    Router.register('/remote', function(params, oldPath, newPath, state) {
       console.log('REMOTE WINDOW, WAIT FOR /navigate message');
       window.postMessage('RemoteReady', '*');
     });
 
-    Router.register('\/job(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/job(\/.*)', function(params, oldPath, newPath, state) {
       // console.log("Workspace URL Callback", params.newPath);
       var newState = {href: params.newPath};
       for (var prop in params.state) {
@@ -123,7 +123,7 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/search/(.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/search/(.*)', function(params, oldPath, newPath, state) {
       // console.log("Search Route: ", arguments);
       var newState = getState(params, oldPath);
       newState.widgetClass = 'p3/widget/AdvancedSearch';
@@ -132,7 +132,7 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/uploads(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/uploads(\/.*)', function(params, oldPath, newPath, state) {
       // console.log("Upload URL Callback", params.newPath);
       var newState = {href: params.newPath};
       for (var prop in params.state) {
@@ -148,9 +148,9 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/content(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/content(\/.*)', function(params, oldPath, newPath, state) {
       // console.log("Upload URL Callback", params.newPath);
-      var newState = { href: params.newPath };
+      var newState = {href: params.newPath};
       for (var prop in params.state) {
         newState[prop] = params.state[prop];
       }
@@ -166,7 +166,7 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/webpage(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/webpage(\/.*)', function(params, oldPath, newPath, state) {
       // console.log("webpage", params);
       /* istanbul ignore next */
       var path = params.params[0] || '/';
@@ -180,7 +180,7 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/user(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/user(\/.*)', function(params, oldPath, newPath, state) {
       //console.log('user', params);
       /* istanbul ignore next */
       var path = params.params[0] || '/';
@@ -193,7 +193,7 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/sulogin', function (params, oldPath, newPath, state) {
+    Router.register('\/sulogin', function(params, oldPath, newPath, state) {
       //console.log('sulogin', params);
       /* istanbul ignore next */
       var path = params.params[0] || '/';
@@ -206,9 +206,9 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/help(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/help(\/.*)', function(params, oldPath, newPath, state) {
       // console.log("Upload URL Callback", params.newPath);
-      var newState = { href: params.newPath };
+      var newState = {href: params.newPath};
       for (var prop in params.state) {
         newState[prop] = params.state[prop];
       }
@@ -216,7 +216,7 @@ define([
       var path = params.params[0] || '/';
       newState.widgetClass = 'dijit/layout/ContentPane';
       newState.style = 'padding:0';
-      newState.value = /* _self.dataAPI +*/ '/public/help/' + path;
+      newState.value = /*_self.dataAPI +*/ '/public/help/' + path;
       newState.set = 'href';
       newState.requireAuth = false;
       newState.pageTitle = 'PATRIC';
@@ -225,16 +225,15 @@ define([
     });
 
 
-    Router.register('\/workspace(\/.*)', function (params, oldPath, newPath, state) {
+    Router.register('\/workspace(\/.*)', function(params, oldPath, newPath, state) {
       // console.log("Workspace URL Callback", params.newPath);
-      var newState = { href: params.newPath };
+      var newState = {href: params.newPath};
       for (var prop in params.state) {
         newState[prop] = params.state[prop];
       }
       /* istanbul ignore next */
       var path = params.params[0] || ('/' + _self.user.id ); //  + "/home/")
       var parts = path.split('/');
-
       /* istanbul ignore next */
       if (path.replace(/\/+/g, '') === 'public') {
         path = '/public/';
@@ -279,7 +278,7 @@ define([
         newState.hashParams = newState.hashParams || {};
 
         var hps = newState.hash.split('&');
-        hps.forEach(function (t) {
+        hps.forEach(function(t) {
           var tup = t.split('=');
           if (tup[0] && tup[1]) {
             newState.hashParams[tup[0]] = tup[1];
@@ -290,7 +289,7 @@ define([
       return newState;
     }
 
-    Router.register('\/view(\/.*)', function (params, path) {
+    Router.register('\/view(\/.*)', function(params, path) {
       // console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
       var newState = getState(params, path);
 
@@ -305,7 +304,7 @@ define([
       _self.navigate(newState);
     });
 
-    Router.register('\/app(\/.*)', function (params, path) {
+    Router.register('\/app(\/.*)', function(params, path) {
       // console.log("view URL Callback", arguments);
 
       var parts = path.split('/');
@@ -399,22 +398,22 @@ define([
   this.timeout();
   //check if mouse has moved
   var mouseMove;
-  on(document, 'mousemove', function () {
+  on(document, 'mousemove', function() {
     clearTimeout(mouseMove);
     window.App.activeMouse = true;
     console.log(window.App.activeMouse);
-    mouseMove = setTimeout(function () {console.log('move your mouse'); window.App.activeMouse = false;}, 20000);
+    mouseMove = setTimeout(function() {console.log('move your mouse'); window.App.activeMouse = false;}, 20000);
   });
 
-  // document.onmousemove = function () {
+  // document.onmousemove = function() {
   // 	clearTimeout(mouseMove);
   // 	window.App.activeMouse = true;
   // 	console.log(window.App.activeMouse);
-  // 	mouseMove = setTimeout(function () {console.log('move your mouse'); window.App.activeMouse = false;}, 20000);
+  // 	mouseMove = setTimeout(function() {console.log('move your mouse'); window.App.activeMouse = false;}, 20000);
   // };
 },
-timeout: function () {
-  setTimeout(function () {
+timeout: function() {
+  setTimeout(function() {
     //check if logged out and another tab is open
     if (localStorage.getItem('tokenstring') === null) {
       if (document.getElementsByClassName('Authenticated').length > 0) {
@@ -431,7 +430,7 @@ timeout: function () {
     window.App.timeout();
   }, window.App.localStorageCheckInterval);
 },
-checkLogin: function () {
+checkLogin: function() {
   //console.log(window.App.uploadInProgress);
   console.log('checking for login');
   if (localStorage.getItem('tokenstring') !== null) {
@@ -474,7 +473,7 @@ checkLogin: function () {
             'Authorization': window.App.authorizationToken
           }
         })
-        .then(function (data) {
+        .then(function(data) {
           console.log('storing new token');
           console.log(data);
           localStorage.setItem('tokenstring', data);
@@ -490,7 +489,7 @@ checkLogin: function () {
           window.App.checkLogin();
         },
         /* istanbul ignore next */
-        function (err) {
+        function(err) {
           console.log(err);
         });
       } else {
@@ -500,7 +499,7 @@ checkLogin: function () {
     }
   }
 },
-checkSU: function (){
+checkSU: function(){
   var suLink = document.getElementsByClassName('sulogin');
   var sbLink = document.getElementsByClassName('suSwitchBack');
   var auth = localStorage.getItem('auth');
@@ -528,7 +527,7 @@ checkSU: function (){
     }
   }
 },
-suSwitchBack: function (){
+suSwitchBack: function(){
   console.log('I clicked the switch back button');
   localStorage.setItem('auth', localStorage.getItem('Aauth'));
   localStorage.setItem('tokenstring', localStorage.getItem('Atokenstring'));
@@ -542,7 +541,7 @@ suSwitchBack: function (){
   window.App.user = JSON.parse(localStorage.getItem('userProfile'));
   window.location.href = '/';
 },
-checkExpToken: function (date) {
+checkExpToken: function(date) {
   var d = new Date();
   var checkd = d.valueOf() / 1000;
   //console.log(checkd);
@@ -551,7 +550,7 @@ checkExpToken: function (date) {
     return false;
   } return true;
 },
-login: function (data, token) {
+login: function(data, token) {
   //console.log(data);
   /* istanbul ignore else */
   if (data !== undefined) {
@@ -568,7 +567,7 @@ login: function (data, token) {
         'Authorization': token
       }
     })
-    .then(function (user) {
+    .then(function(user) {
       //console.log(user);
       var userObj = JSON.parse(user);
       //console.log(userObj);
@@ -581,14 +580,14 @@ login: function (data, token) {
       window.location.reload();
     },
     /* istanbul ignore next */
-    function (err) {
+    function(err) {
       console.log(err);
     });
   } else {
     console.log('i am not logged in yet');
   }
 },
-uploadJobsWidget: function (action){
+uploadJobsWidget: function(action){
   if(action === 'show'){
     console.log('I want to see the upload and jobs widget');
     var wsc = new WorkspaceController({region: 'bottom'});
@@ -606,14 +605,14 @@ uploadJobsWidget: function (action){
     console.log('I should not see the upload and jobs widget');
   }
 },
-refreshUser: function () {
+refreshUser: function() {
   xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
     headers: {
       'Accept': 'application/json',
       'Authorization': window.App.authorizationToken
     }
   })
-  .then(function (user) {
+  .then(function(user) {
     var userObj = JSON.parse(user);
     //console.log(userObj);
     userObj.id = userObj.id + '@patricbrc.org';
@@ -625,11 +624,11 @@ refreshUser: function () {
     window.location.reload();
   },
   /* istanbul ignore next */
-  function (err) {
+  function(err) {
     console.log(err);
   });
 },
-logout:function () {
+logout:function() {
   if (!window.App.uploadInProgress) {
     localStorage.removeItem('tokenstring');
     localStorage.removeItem('userProfile');
@@ -646,10 +645,10 @@ logout:function () {
     alert('upload is in progress, try Logout again later');
   }
 },
-updateUserWorkspaceList: function (data) {
+updateUserWorkspaceList: function(data) {
   var wsNode = dom.byId('YourWorkspaces');
   domConstruct.empty('YourWorkspaces');
-  data.forEach(function (ws) {
+  data.forEach(function(ws) {
     /* istanbul ignore if */
     if (ws.name !== 'home') return;
     var d = domConstruct.create('div', {style: {'padding-left': '12px'}}, wsNode);

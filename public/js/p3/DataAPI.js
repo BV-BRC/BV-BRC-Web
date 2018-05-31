@@ -72,6 +72,50 @@ define([
       // implement if needed
     },
 
+
+    solrPermsToObjs: function (selection) {
+      var permSets = [];
+      var allPermissions = {};
+
+      selection.forEach(function (sel) {
+        var id = sel.genome_id;
+
+        var readList = sel.user_read || [],
+          writeList = sel.user_write || [];
+
+        var writeObjs = writeList.map(function (user) {
+          var obj = {
+            user: user,
+            perm: 'Can edit'
+          };
+
+          return obj;
+        });
+
+        var readObjs = readList.filter(function (user) {
+          // if user has write permission, only list that
+          return writeList.indexOf(user) == -1;
+        }).map(function (user) {
+          var obj =  {
+            user: user,
+            perm: 'Can view'
+          };
+
+          return obj;
+        });
+
+        var permObjs = readObjs.concat(writeObjs);
+        permSets.push(permObjs);
+      });
+
+      var permissions = permSets.reduce(
+        function (a, b) { return a.concat(b); },
+        []
+      );
+
+      return permissions;
+    },
+
     init: function (apiUrl, token) {
       if (!apiUrl || !token) {
         console.log('Unable to initialize data api. Args: ', arguments);
