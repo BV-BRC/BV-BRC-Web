@@ -359,7 +359,7 @@ define([
 
       var out = ['<div style="width:700px;margin:auto;font-size:1.5em;border:1px solid #333;background:#efefef;border-radius:3px;padding:4px;"><table>'];
 
-      for (var i = 0; i < keys.length;i += 3) {
+      for (var i = 0; i < keys.length; i += 3) {
         out.push('<tr>');
         out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[i], resultCounts[keys[i]].docs, resultCounts[keys[i]].total) + '">' + this.labelsByType[keys[i]] + ': ' + resultCounts[keys[i]].total + '</a></td>');
         if (keys[i + 1]) {

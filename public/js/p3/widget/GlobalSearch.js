@@ -144,8 +144,33 @@ define([
       }
 
       var q = processQuery(query, searchOption);
+      switch (searchFilter) {
+        case 'everything':
+          Topic.publish('/navigate', { href: '/search/?' + q });
+          break;
+        case 'sp_genes':
+          Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
+          break;
+        case 'genome_features':
+          Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
+          break;
+        case 'genomes':
+          Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
+          break;
+        case 'transcriptomics_experiments':
+          Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
+          break;
+        case 'taxonomy':
+          Topic.publish('/navigate', { href: '/view/TaxonList/?' + q });
+          break;
+        case 'antibiotic':
+          Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
+          break;
+        default:
+          Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });
+          // console.log('Do Search: ', searchFilter, query);
+      }
 
-      Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });
       // this.searchInput.set("value", '');
     },
     onInputChange: function (val) {

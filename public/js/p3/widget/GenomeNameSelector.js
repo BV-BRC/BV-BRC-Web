@@ -229,7 +229,7 @@ define([
     }, */
     labelFunc: function (item, store) {
       var label = '';
-      if (!item.public && (typeof item.public != 'undefined')) {
+      if (!item['public'] && (typeof item['public'] != 'undefined')) {
         label += "<i class='fa icon-lock fa-1x' />&nbsp;";
       }
       else {

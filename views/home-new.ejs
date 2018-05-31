@@ -1,5 +1,6 @@
 <div id="patric-homepage-wrapper">
     <div class="container" style="position: relative;">
+        <!--
         <div class="row">
             <div class="col-md-12">
                 <p class="banner-yellow" style="margin-top:2px">
@@ -7,13 +8,14 @@
                 </p>
             </div>
         </div>
+        -->
         <div class="row">
             <!-- Homepage Main Content -->
-            <div class="col-md-8">
+            <div class="col-md-9">
                 <div class="homepage-main-content">
                     <div class="browse-search">
-                        <p>PATRIC is Bacterial Bioinformatics Resource Center, providing integrated data and analysis tools
-                            to supportbiomedical research.
+                        <p>PATRIC is the Bacterial Bioinformatics Resource Center, providing integrated data and analysis tools
+                            to support biomedical research.
                         </p>
 
                         <div class="row">
@@ -116,6 +118,8 @@
                             <div class="col-md-12">
                                 <a href="https://docs.patricbrc.org/tutorial/" class="btn button-blue">TUTORIALS</a>
                                 <a href="http://docs.patricbrc.org/user_guides/index.html" class="btn button-blue">USER GUIDES</a>
+                                <a href="http://docs.patricbrc.org/webinar/" class="btn button-blue">WEBINARS</a>
+                                <a href="http://docs.patricbrc.org/cli_tutorial/" class="btn button-blue">COMMAND LINE INTERFACE</a>
                             </div>
                         </div>
                     </div>
@@ -125,10 +129,13 @@
                             <div class="col-md-6">
                                 <div class="omics">
                                     <h3>OMICS DATA</h3>
-                                    <p>PATRIC provides data and analysis tools for multiple omics data types</p>
+                                    <p>PATRIC provides data and analysis tools for multiple omics data types. For more information please click <a href="https://docs.patricbrc.org/user_guides/data.html">here</a></p>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <ul class="list-unstyled">
+                                                <li>
+                                                    <a href="./view/DataType/AntibioticResistance">Antibiotic Resistance</a>
+                                                </li>
                                                 <li>
                                                     <a href="./view/DataType/Genomes">Genomes</a>
                                                 </li>
@@ -136,26 +143,20 @@
                                                     <a href="./view/DataType/GenomicFeatures">Genomic Features</a>
                                                 </li>
                                                 <li>
-                                                    <a href="./view/DataType/ProteinFamilies">Protein Families</a>
-                                                </li>
-                                                <li>
-                                                    <a href="./view/DataType/Pathways">Metabolic Pathways</a>
+                                                    <a href="./view/DataType/Pathways">Pathways</a>
                                                 </li>
                                             </ul>
                                         </div>
                                         <div class="col-md-6">
                                             <ul class="list-unstyled">
                                                 <li>
-                                                    <a href="#">Antibiotics</a>
+                                                    <a href="./view/DataType/ProteinFamilies">Protein Families</a>
                                                 </li>
                                                 <li>
-                                                    <a href="#">AMR Data</a>
+                                                    <a href="./view/DataType/SpecialtyGenes">Specialty Genes</a>
                                                 </li>
                                                 <li>
                                                     <a href="./view/DataType/Transcriptomics">Transcriptomes</a>
-                                                </li>
-                                                <li>
-                                                    <a href="#">Interactions</a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -167,28 +168,10 @@
                                     <h3>MY DATA</h3>
                                     <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools
                                     </p>
-
-                                    <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
-                                    <span>or</span>
-                                    <a href="https://user.patricbrc.org/register" target="_blank" class="btn button-gray">REGISTER</a>
-
-
-                                </div>
-                                <div class="my-data-links">
-                                    <ul class="list-unstyled list-inline">
-                                        <li class="list-inline-item">
-                                            <a href="./webpage/website/workshops.html" style="text-decoration: none;">WORKSHOPS</a>
-                                        </li>
-                                        <li class="list-inline-item">
-                                            <a href="#" style="text-decoration: none;">TOOLS</a>
-                                        </li>
-                                        <li class="list-inline-item">
-                                            <a href="http://docs.patricbrc.org/webinar/index.html" style="text-decoration: none;">WEBINARS</a>
-                                        </li>
-                                        <li class="list-inline-item">
-                                            <a href="./webpage/website/cite_patric.html" style="text-decoration: none;">CITE</a>
-                                        </li>
-                                    </ul>
+                                    <hr>
+                                    <div class="home-login-button">
+                                        <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -198,13 +181,13 @@
             <!-- End Homepage Main Content -->
 
             <!-- Homepage Sidebar Content -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="homepage-sidebar-content">
 
                     <div class="announcements">
                         <h3>ANNOUNCEMENTS</h3>
                         <ul id="slides"></ul>
-                        <button id="feed-next" class="">Next</button>
+                        <div id="dot-navigation"></div>
                     </div>
 
                     <div class="twitter-feed">
@@ -217,9 +200,9 @@
 
         </div>
     </div>
-</div>
+  </div>
 
-<footer class="ondark linkstyle-highlight-c smallest main-footer sans-alternate footer">
+  <footer class="ondark linkstyle-highlight-c smallest main-footer sans-alternate footer">
     <div class="layer">
         <div class="container">
             <div class="column" style="border: 0px;">
@@ -272,11 +255,11 @@
             </div>
         </div>
     </div>
-</footer>
+  </footer>
 
-<!-- Hide Global Search in p3header when on new homepage -->
-<style>
+  <!-- Hide Global Search in p3header when on new homepage -->
+  <style>
     #p3header-search {
         display: none;
     }
-</style>
+  </style>

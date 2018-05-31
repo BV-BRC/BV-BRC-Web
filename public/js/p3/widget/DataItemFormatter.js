@@ -1761,7 +1761,7 @@ define([
         return tr;
       } else if (column.type == 'date') {
         var d = new Date(item[key]);
-        var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear() ;
+        var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
 
         return renderRow(label, dateStr);
       } else if (!mini || column.mini) {
