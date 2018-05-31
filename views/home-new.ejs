@@ -1,208 +1,158 @@
-<div id="patric-homepage-wrapper">
-    <div class="container" style="position: relative;">
-        <!--
-        <div class="row">
-            <div class="col-md-12">
-                <p class="banner-yellow" style="margin-top:2px">
-                The PATRIC Team is working on a new homepage design, shown below, and we would like hear from you. Please <a class="DialogButton" rel="reportProblem:">provide your feedback.</a>
+<div id="patric-homepage">
+    <div id="patric-homepage-container">
+        <div class="grid-container">
+            <div class="browse-search">
+                <h2>BACTERIAL BIOINFORMATICS RESOURCE CENTER</h2>
+                <p>
+                    PATRIC is an information system designed to support the biomedical research community’s work on bacterial infectious diseases.
                 </p>
-            </div>
-        </div>
-        -->
-        <div class="row">
-            <!-- Homepage Main Content -->
-            <div class="col-md-9">
-                <div class="homepage-main-content">
-                    <div class="browse-search">
-                        <p>PATRIC is the Bacterial Bioinformatics Resource Center, providing integrated data and analysis tools
-                            to support biomedical research.
-                        </p>
-
-                        <div class="row">
-                            <div class="col-md-2">
-                                <h3>BROWSE</h3>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="./view/Taxonomy/2" class="btn button-green">ALL BACTERIA</a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="./view/Taxonomy/2157" class="btn button-green">ALL ARCHAEA</a>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="./view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="btn button-green">EUKARYOTIC HOSTS</a>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-2">
-                                <h3>SEARCH</h3>
-                            </div>
-                            <div class="col-md-10">
-                                <div class="global-search">
-                                    <div style="padding: 6px 0px 2px 2px; flex-grow: 1">
-                                        <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="analyze-data">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <h2>ANALYZE DATA IN PATRIC</h2>
-                                <p>At PATRIC, you can upload your private data in a workspace, analyze it using high-throughput
-                                    services, and compare it with other public databases using visual analytics tools. Please
-                                    <a href="https://user.patricbrc.org/register" target="_blank">Register</a> or
-                                    <a href="https://user.patricbrc.org/login">Login</a> to get started.</p>
-                            </div>
-                            <div class="col-md-4">
-                                <h3>UPLOAD</h3>
-                                <ul class="list-unstyled">
-                                    <li>
-                                        <a href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Upload Data</a>
-                                    </li>
-                                    <li>
-                                        <a href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Manage Workspace</a>
-                                    </li>
-                                    <li>
-                                        <a href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Share or Publish</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <h3>ANALYZE</h3>
-                                <ul class="list-unstyled">
-                                    <li>
-                                        <a href="./app/Assembly">Genome Assembly</a>
-                                    </li>
-                                    <li>
-                                        <a href="./app/Annotation">Genome Annotation</a>
-                                    </li>
-                                    <li>
-                                        <a href="./app/Rnaseq">RNA-Seq Analysis</a>
-                                    </li>
-                                    <li>
-                                        <a href="./app/MetagenomeBinning">Metagenome Binning</a>
-                                    </li>
-                                    <li>
-                                        <a href=" http://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <h3>COMPARE</h3>
-                                <ul class="list-unstyled">
-                                    <li>
-                                        <a href="./app/BLAST">BLAST</a>
-                                    </li>
-                                    <li>
-                                        <a href="./app/ProteinFamily">Protein Families</a>
-                                    </li>
-                                    <li>
-                                        <a href="./app/SeqComparison">Proteome Comparison</a>
-                                    </li>
-                                    <li>
-                                        <a href="./app/ComparativePathway">Metabolic Pathways</a>
-                                    </li>
-                                    <li>
-                                        <a href=" http://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tut-ug-buttons">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <a href="https://docs.patricbrc.org/tutorial/" class="btn button-blue">TUTORIALS</a>
-                                <a href="http://docs.patricbrc.org/user_guides/index.html" class="btn button-blue">USER GUIDES</a>
-                                <a href="http://docs.patricbrc.org/webinar/" class="btn button-blue">WEBINARS</a>
-                                <a href="http://docs.patricbrc.org/cli_tutorial/" class="btn button-blue">COMMAND LINE INTERFACE</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="omics-my-data">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="omics">
-                                    <h3>OMICS DATA</h3>
-                                    <p>PATRIC provides data and analysis tools for multiple omics data types. For more information please click <a href="https://docs.patricbrc.org/user_guides/data.html">here</a></p>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <ul class="list-unstyled">
-                                                <li>
-                                                    <a href="./view/DataType/AntibioticResistance">Antibiotic Resistance</a>
-                                                </li>
-                                                <li>
-                                                    <a href="./view/DataType/Genomes">Genomes</a>
-                                                </li>
-                                                <li>
-                                                    <a href="./view/DataType/GenomicFeatures">Genomic Features</a>
-                                                </li>
-                                                <li>
-                                                    <a href="./view/DataType/Pathways">Pathways</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <ul class="list-unstyled">
-                                                <li>
-                                                    <a href="./view/DataType/ProteinFamilies">Protein Families</a>
-                                                </li>
-                                                <li>
-                                                    <a href="./view/DataType/SpecialtyGenes">Specialty Genes</a>
-                                                </li>
-                                                <li>
-                                                    <a href="./view/DataType/Transcriptomics">Transcriptomes</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="my-data">
-                                    <h3>MY DATA</h3>
-                                    <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools
-                                    </p>
-                                    <hr>
-                                    <div class="home-login-button">
-                                        <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="browse">
+                    <h3>BROWSE</h3>
+                    <a href="./view/Taxonomy/2" class="btn btn-green">BACTERIA</a>
+                    <a href="./view/Taxonomy/2157" class="btn btn-green">ARCHAEA</a>
+                    <a href="./view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="btn btn-green">EUKARYOTIC HOSTS</a>
+                </div>
+                <div class="search">
+                    <h3>SEARCH</h3>
+                    <div class="global-search">
+                        <div style="padding: 6px 0px 2px 2px; flex-grow: 1">
+                            <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" />
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- End Homepage Main Content -->
 
-            <!-- Homepage Sidebar Content -->
-            <div class="col-md-3">
-                <div class="homepage-sidebar-content">
 
-                    <div class="announcements">
-                        <h3>ANNOUNCEMENTS</h3>
-                        <ul id="slides"></ul>
-                        <div id="dot-navigation"></div>
+            <div class="analyze-data">
+                <h2>ANALYZE DATA IN PATRIC</h2>
+                <p>
+                    At PATRIC, you can upload your private data in a workspace, analyze it using high-throughput services, and compare it with
+                    other public databases using visual analytics tools. Please
+                    <a class="registrationLink">Register</a> or
+                    <a class="loginLink">Login</a> to get started.
+                </p>
+                <div class="analyze-data-links">
+                    <div class="upload-links">
+                        <h3>UPLOAD</h3>
+                        <ul>
+                            <li>
+                                <a href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Upload Data</a>
+                            </li>
+                            <li>
+                                <a href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Manage Workspace</a>
+                            </li>
+                            <li>
+                                <a href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Share or Publish</a>
+                            </li>
+                        </ul>
                     </div>
 
-                    <div class="twitter-feed">
-                        <a class="twitter-timeline" data-lang="en" data-height="400" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
-                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                    <div class="analyze-links">
+                        <h3>ANALYZE</h3>
+                        <ul>
+                            <li>
+                                <a href="./app/Assembly">Genome Assembly</a>
+                            </li>
+                            <li>
+                                <a href="./app/Annotation">Genome Annotation</a>
+                            </li>
+                            <li>
+                                <a href="./app/Rnaseq">RNA-Seq Analysis</a>
+                            </li>
+                            <li>
+                                <a href="./app/MetagenomeBinning">Metagenome Binning</a>
+                            </li>
+                            <li>
+                                <a href=" http://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="compare-links">
+                        <h3>COMPARE</h3>
+                        <ul>
+                            <li>
+                                <a href="./app/BLAST">BLAST</a>
+                            </li>
+                            <li>
+                                <a href="./app/ProteinFamily">Protein Families</a>
+                            </li>
+                            <li>
+                                <a href="./app/SeqComparison">Proteome Comparison</a>
+                            </li>
+                            <li>
+                                <a href="./app/ComparativePathway">Metabolic Pathways</a>
+                            </li>
+                            <li>
+                                <a href=" http://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
+                <div class="analyze-data-buttons">
+                    <a href="https://docs.patricbrc.org/tutorial/" class="btn btn-blue">TUTORIALS</a>
+                    <a href="http://docs.patricbrc.org/user_guides/index.html" class="btn btn-blue">USER GUIDES</a>
+                    <a href="http://docs.patricbrc.org/webinar/" class="btn btn-blue">WEBINARS</a>
+                    <a href="http://docs.patricbrc.org/cli_tutorial/" class="btn btn-blue">COMMAND LINE INTERFACE</a>
+                </div>
             </div>
-            <!-- End Homepage Sidebar Content -->
 
+            <div class="omics-data">
+                <h2>OMICS DATA</h2>
+                <p>PATRIC provides data and analysis tools for multiple omics data types</p>
+                <div class="omics-links">
+                    <ul>
+                        <li>
+                            <a href="./view/DataType/AntibioticResistance">Antibiotic Resistance</a>
+                        </li>
+                        <li>
+                            <a href="./view/DataType/Genomes">Genomes</a>
+                        </li>
+                        <li>
+                            <a href="./view/DataType/GenomicFeatures">Genomic Features</a>
+                        </li>
+                        <li>
+                            <a href="./view/DataType/Pathways">Pathways</a>
+                        </li>
+                    </ul>
+                    <ul>
+                        <li>
+                            <a href="./view/DataType/ProteinFamilies">Protein Families</a>
+                        </li>
+                        <li>
+                            <a href="./view/DataType/SpecialtyGenes">Specialty Genes</a>
+                        </li>
+                        <li>
+                            <a href="./view/DataType/Transcriptomics">Transcriptomes</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="my-data">
+                <h2>MY DATA</h2>
+                <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
+                <hr>
+                <div class="home-login-button">
+                    <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
+                </div>
+            </div>
+
+            <div class="announcements">
+                <h2>ANNOUNCEMENTS</h2>
+                <ul id="slides"></ul>
+                <div id="dot-navigation"></div>
+            </div>
+
+            <div class="twitter-feed">
+                <a class="twitter-timeline" data-lang="en" data-height="385" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            </div>
         </div>
     </div>
-  </div>
+</div>
 
-  <footer class="ondark linkstyle-highlight-c smallest main-footer sans-alternate footer">
+<footer class="ondark linkstyle-highlight-c smallest main-footer sans-alternate footer">
     <div class="layer">
         <div class="container">
             <div class="column" style="border: 0px;">
@@ -255,11 +205,15 @@
             </div>
         </div>
     </div>
-  </footer>
+</footer>
 
-  <!-- Hide Global Search in p3header when on new homepage -->
-  <style>
+<!-- Hide Global Search in p3header when on new homepage -->
+<style>
+    body.patric {
+        min-width: 830px;
+    }
+
     #p3header-search {
         display: none;
     }
-  </style>
+</style>
