@@ -361,6 +361,16 @@
   padding: 15px 10px;
 }
 
+#patric-homepage .my-data a {
+  color: #FFFFFF;
+}
+
+#patric-homepage .my-data .sub-block {
+  vertical-align: top;
+  width: 205px;
+  display: inline-block;
+}
+
 #patric-homepage .my-data h2 {
   color: #FFFFFF;
 }

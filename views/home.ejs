@@ -131,10 +131,26 @@
 
             <div class="my-data">
                 <h2>MY DATA</h2>
-                <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
-                <hr>
-                <div class="home-login-button">
-                    <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
+                <div class="ShowWithAuth">
+                    <div class="sub-block">
+                        <div><a class="navigationLink" id="YourWorkspaceLink2">View My Workspaces</a></div>
+                        <div><a class="navigationLink" href="/workspace/public">View Public Workspaces</a></div>
+                    </div>
+                    <div class="sub-block">
+                        <div><a class="navigationLink" id="MyDataGenomeGroup">00 Genome Groups</a></div>
+                        <div><a class="navigationLink" id="MyDataFeatureGroup">00 Feature Groups</a></div>
+                        <div><a class="navigationLink" id="MyDataExperimentGroup">00 Experiment Groups</a></div>
+                        <br>
+                        <div><a class="navigationLink" href="/job/" id="MyDataJobs">00 Completed Jobs</a></div>
+                        <div><a class="navigationLink" href="/view/GenomeList/?eq(public,false)" id="MyDataGenomes">00 Private Genomes</a></div>
+                    </div>
+                </div>
+                <div class="HideWithAuth showOnLoad">
+                    <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
+                    <hr>
+                    <div class="home-login-button">
+                        <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
+                    </div>
                 </div>
             </div>
 
