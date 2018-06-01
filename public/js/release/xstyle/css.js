@@ -13,7 +13,7 @@ define("xstyle/css", ["require"], function(moduleRequire){
 		var docElement = document.documentElement;
 		var testDiv = docElement.insertBefore(document.createElement(tag), docElement.firstChild);
 		testDiv.id = id;
-		var styleValue = (testDiv.currentStyle || getComputedStyle(testDiv, null))[property];
+		var styleValue = (testDiv.currentStyle || getComputedStyle(testDiv, null) || {})[property];
 		docElement.removeChild(testDiv);
  		return styleValue;
  	} 
@@ -48,7 +48,7 @@ define("xstyle/css", ["require"], function(moduleRequire){
 				var parser = testElementStyle('x-parse', null, 'content');
 				var sheet = styleSheetElement && 
 					(styleSheetElement.sheet || styleSheetElement.styleSheet);
-				if(parser && parser != 'none'){
+				if(parser && parser != 'none' && parser != 'normal'){
 					// TODO: wait for parser to load
 					require([eval(parser)], function(parser){
 						if(styleSheetElement){
