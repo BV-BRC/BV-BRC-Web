@@ -89,7 +89,7 @@ define("p3/widget/PermissionEditor", [
 
     rmUser: function (userId) {
       this._userPerms = this._userPerms.filter(function (perm) {
-        return userId != perm.user ;
+        return userId != perm.user;
       });
     },
 

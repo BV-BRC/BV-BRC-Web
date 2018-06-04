@@ -7,6 +7,5 @@ gulpified
 gulpfile.js
 public/js/release
 public/js/p3/resources/
-public/js/p3/app
 public/js/p3/widget/GenomeBrowser.js
 public/js/p3/widget/util/touch.js

@@ -326,13 +326,13 @@ define([
         dlg.show();
       };
 
-      var showUserProfile = function(evt) {
+      var showUserProfile = function (evt) {
         /* istanbul ignore else */
         if (evt) {
           evt.preventDefault();
           evt.stopPropagation();
         }
-        //console.log(evt);
+        // console.log(evt);
         var dlg = new Dialog({
           title: 'User Profile',
           content: "<div class=\"UserProfileForm\" data-dojo-type=\"p3/widget/UserProfileForm\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
@@ -340,13 +340,13 @@ define([
         dlg.show();
       };
 
-      var showSuLogin = function(evt) {
+      var showSuLogin = function (evt) {
         /* istanbul ignore else */
         if (evt) {
           evt.preventDefault();
           evt.stopPropagation();
         }
-        //console.log(evt);
+        // console.log(evt);
         var dlg = new Dialog({
           title: 'SU Login',
           content: "<div class=\"SuLogin\" data-dojo-type=\"p3/widget/SuLogin\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
@@ -354,13 +354,13 @@ define([
         dlg.show();
       };
 
-      var showNewUser = function(evt) {
+      var showNewUser = function (evt) {
         /* istanbul ignore else */
         if (evt) {
           evt.preventDefault();
           evt.stopPropagation();
         }
-        //console.log(evt);
+        // console.log(evt);
         var dlg = new Dialog({
           title: 'Register User',
           content: "<div class=\"UserProfileForm\" data-dojo-type=\"p3/widget/UserProfileForm\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
@@ -381,22 +381,9 @@ define([
           rel = target.attributes.rel.value;
         }
 
-        // console.log('SELECT ', rel);
-        // console.log('Child: ', Registry.byId(rel));
         Registry.byId('p3carousel').selectChild(Registry.byId(rel));
         query('.HomeServiceLink').removeClass('selected');
         domClass.add(target, 'selected');
-
-
-            /*
-            if (timer){
-            clearTimeout(timer);
-          }
-
-          timer = setTimeout(function(){
-          Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
-        },120000)
-        */
       });
 
       on(document, '.loginLink:click', showAuthDlg);
@@ -486,9 +473,8 @@ define([
     },
     getCurrentContainer: function () {
       var ac = this.getApplicationContainer();
-      // console.log("AppContainer: ", ac);
+
       var ch = ac.getChildren().filter(function (child) {
-        // console.log("Child Region: ", child.region, child);
         return child.region === 'center';
       });
       /* istanbul ignore next */
@@ -518,10 +504,6 @@ define([
 
       var appContainer = this.getApplicationContainer();
 
-      // if (newNavState.set && (typeof newNavState.value != 'undefined')){
-      //   this.getCurrentContainer().set(newNavState.set,newNavState.value);
-      //   return;
-      // }
       /*  istanbul ignore else */
       if (newNavState.widgetClass) {
         ctor = this.getConstructor(newNavState.widgetClass);
@@ -531,7 +513,7 @@ define([
 
       // console.log("newNavState.requireAuth: ", newNavState.requireAuth, window.App);
       if (newNavState.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
-        //console.log(window.App.authorizationToken);
+        // console.log(window.App.authorizationToken);
         var cur = _self.getCurrentContainer();
         /* istanbul ignore else */
         if (cur) {
@@ -574,17 +556,7 @@ define([
           if (instance.resize) {
             instance.resize();
           }
-          // if ((instance instanceof ContentPane) && !newNavState.content) {
 
-          //   var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
-          //   instance.set('href', dest);
-          // }else if (newNavState){
-          //   instance.set("state", newNavState);
-          // }
-
-          // if (instance.resize){
-          //    instance.resize();
-          // }
           return;
         }
         /*  istanbul ignore next */
@@ -593,16 +565,15 @@ define([
         if (newNavState.set) {
           opts[newNavState.set] = newNavState.value;
         }
-        // console.log("New Instance Opts: ", opts);
+
         /*  istanbul ignore next */
         instance = new ctor(opts);
-        // console.log("new instance: ", instance);
+
         /*  istanbul ignore next */
         if (cur) {
           appContainer.removeChild(cur, true);
         }
 
-        // console.log("Add Instance: ", instance);
         /*  istanbul ignore next */
         appContainer.addChild(instance);
       });
@@ -621,22 +592,10 @@ define([
         query: (acceptType === 'text/html') ? { 'http_templateStyle': 'embedded' } : '',
         withCredentials: true
       });
-      /* .then(function(res){
-        if (acceptType == "text/html") {
 
-      }
-      var cp = new ContentPane({content: "<div class='wideLayer'>"+res+"</div>", region: "center"});
-      _self._containers[href]=cp;
-      if (_self._currentContainer){
-      ac.removeChild(_self._currentContainer,true)
-    }
-
-    ac.addChild(cp);
-    _self._currentContainer = cp;
-    }); */
     },
     navigate: function (msg) {
-      // console.log("Navigate to ", msg);
+
       /*  istanbul ignore else */
       if (!msg.href) {
         /*  istanbul ignore else */
@@ -648,12 +607,6 @@ define([
       if (msg.pageTitle) {
         window.document.title = msg.pageTitle;
       }
-      // }else{
-      //   if ((msg.href==(window.location.pathname + window.location.search)) ||
-      //     (msg.href==window.location.href)) {
-      //     return;
-      //   }
-      // }
 
       this._doNavigation(msg);
     }

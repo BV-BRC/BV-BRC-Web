@@ -33,7 +33,7 @@ define("p3/app/p3app", [
     startup: function () {
       var _self = this;
       this.checkLogin();
-      //this.upploadInProgress = false;
+      // this.upploadInProgress = false;
       on(document.body, 'keypress', function (evt) {
         var charOrCode = evt.charCode || evt.keyCode;
         // console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
@@ -54,59 +54,59 @@ define("p3/app/p3app", [
         }
       });
 
-        // listening document.title change event
-        var titleEl = document.getElementsByTagName('title')[0];
-        var docEl = document.documentElement;
-        /* istanbul ignore next */
-        if (docEl && docEl.addEventListener) {
-          docEl.addEventListener('DOMSubtreeModified', function (evt) {
-            var t = evt.target;
-            if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
-              onDocumentTitleChanged();
-            }
-          }, false);
-        } else {
-          document.onpropertychange = function () {
-            if (window.event.propertyName === 'title') {
-              onDocumentTitleChanged();
-            }
-          };
-        }
-        /* istanbul ignore next */
-        var onDocumentTitleChanged = function () {
-          // var meta = document.getElementsByTagName("meta[name='Keyword']");
-          var meta = domQuery("meta[name='Keywords']")[0];
-          if (meta) {
-            meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+      // listening document.title change event
+      var titleEl = document.getElementsByTagName('title')[0];
+      var docEl = document.documentElement;
+      /* istanbul ignore next */
+      if (docEl && docEl.addEventListener) {
+        docEl.addEventListener('DOMSubtreeModified', function (evt) {
+          var t = evt.target;
+          if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
+            onDocumentTitleChanged();
           }
-          if (window.gtag) {
-            // console.log("document title changed to", document.title);
-            var pagePath = window.location.pathname + window.location.hash;
-            gtag('config', window.App.gaID, { 'page_path': pagePath });
+        }, false);
+      } else {
+        document.onpropertychange = function () {
+          if (window.event.propertyName === 'title') {
+            onDocumentTitleChanged();
           }
         };
+      }
+      /* istanbul ignore next */
+      var onDocumentTitleChanged = function () {
+        // var meta = document.getElementsByTagName("meta[name='Keyword']");
+        var meta = domQuery("meta[name='Keywords']")[0];
+        if (meta) {
+          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+        }
+        if (window.gtag) {
+          // console.log("document title changed to", document.title);
+          var pagePath = window.location.pathname + window.location.hash;
+          gtag('config', window.App.gaID, { 'page_path': pagePath });
+        }
+      };
 
-        /*
-        Router.register("\/$", function(params, oldPath, newPath, state){
+      /*
+      Router.register("\/$", function(params, oldPath, newPath, state){
         console.log("HOME route", params.newPath);
         var newState = {href: params.newPath}
         for (var prop in params.state){
-        newState[prop]=params.state[prop]
-      }
+          newState[prop]=params.state[prop]
+        }
 
-      newState.widgetClass="dijit/layout/ContentPane";
-      newState.requireAuth=false;
-      console.log("Navigate to ", newState);
-      _self.navigate(newState);
-    });
-    */
+        newState.widgetClass="dijit/layout/ContentPane";
+        newState.requireAuth=false;
+        console.log("Navigate to ", newState);
+        _self.navigate(newState);
+      });
+      */
 
       Router.register('/remote', function (params, oldPath, newPath, state) {
         console.log('REMOTE WINDOW, WAIT FOR /navigate message');
         window.postMessage('RemoteReady', '*');
       });
 
-      Router.register('\/job(\/.*)', function (params, oldPath, newPath, state) {
+      Router.register('/job(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
         var newState = { href: params.newPath };
         for (var prop in params.state) {
@@ -123,7 +123,7 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/search/(.*)', function (params, oldPath, newPath, state) {
+      Router.register('/search/(.*)', function (params, oldPath, newPath, state) {
         // console.log("Search Route: ", arguments);
         var newState = getState(params, oldPath);
         newState.widgetClass = 'p3/widget/AdvancedSearch';
@@ -132,7 +132,7 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/uploads(\/.*)', function (params, oldPath, newPath, state) {
+      Router.register('/uploads(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
         var newState = { href: params.newPath };
         for (var prop in params.state) {
@@ -148,7 +148,7 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/content(\/.*)', function (params, oldPath, newPath, state) {
+      Router.register('/content(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
         var newState = { href: params.newPath };
         for (var prop in params.state) {
@@ -166,7 +166,7 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/webpage(\/.*)', function (params, oldPath, newPath, state) {
+      Router.register('/webpage(/.*)', function (params, oldPath, newPath, state) {
         // console.log("webpage", params);
         /* istanbul ignore next */
         var path = params.params[0] || '/';
@@ -180,8 +180,8 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/user(\/.*)', function (params, oldPath, newPath, state) {
-        //console.log('user', params);
+      Router.register('/user(/.*)', function (params, oldPath, newPath, state) {
+        // console.log('user', params);
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         var newState = getState(params, oldPath);
@@ -193,8 +193,8 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/sulogin', function (params, oldPath, newPath, state) {
-        //console.log('sulogin', params);
+      Router.register('/sulogin', function (params, oldPath, newPath, state) {
+        // console.log('sulogin', params);
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         var newState = getState(params, oldPath);
@@ -206,7 +206,7 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      Router.register('\/help(\/.*)', function (params, oldPath, newPath, state) {
+      Router.register('/help(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
         var newState = { href: params.newPath };
         for (var prop in params.state) {
@@ -225,7 +225,7 @@ define("p3/app/p3app", [
       });
 
 
-      Router.register('\/workspace(\/.*)', function (params, oldPath, newPath, state) {
+      Router.register('/workspace(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
         var newState = { href: params.newPath };
         for (var prop in params.state) {
@@ -261,7 +261,7 @@ define("p3/app/p3app", [
         // console.log("parser getState: ", parser);
         /* istanbul ignore next */
         if (newState.search) {
-
+          // pass
         } else if (parser.search) {
           newState.search = (parser.search.charAt(0) === '?') ? parser.search.substr(1) : parser.search;
         } else {
@@ -289,22 +289,18 @@ define("p3/app/p3app", [
         return newState;
       }
 
-      Router.register('\/view(\/.*)', function (params, path) {
-        // console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
+      Router.register('/view(/.*)', function (params, path) {
         var newState = getState(params, path);
-
-        // console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
-
         var parts = newState.pathname.split('/');
         parts.shift();
         var type = parts.shift();
 
         newState.widgetClass = 'p3/widget/viewer/' + type;
-        // console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
+
         _self.navigate(newState);
       });
 
-      Router.register('\/app(\/.*)', function (params, path) {
+      Router.register('/app(/.*)', function (params, path) {
         // console.log("view URL Callback", arguments);
 
         var parts = path.split('/');
@@ -357,31 +353,12 @@ define("p3/app/p3app", [
         if (this.dataAPI.charAt(-1) !== '/') {
           this.dataAPI = this.dataAPI + '/';
         }
-        DataAPI.init(this.dataAPI, this.authorizationToken || '')
+        DataAPI.init(this.dataAPI, this.authorizationToken || '');
         this.api.data = RPC(this.dataAPI, this.authorizationToken);
       }
-      /*
-      Topic.subscribe("/ActiveWorkspace", function(as){
-      console.log("SET App.activeWorkspace",as)
-      _self.activeWorkspace=as.workspace;
-      _self.activeWorkspacePath=as.path;
-    });
-    */
-    // console.log("go()")
-    // setTimeout(function(){
-    // 	Router.go("/workspace/dmachi/foo/bar");
-
-    // },2000);
 
       this.toaster = new Toaster({ positionDirection: 'bl-up', messageTopic: '/Notification', duration: 3000 });
-      // this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
-      // this.leftDrawer.startup();
 
-      // this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
-      // this.rightDrawer.startup();
-      // setTimeout(function(){
-      // 	Topic.publish("/overlay/right", {action: "set", panel: ContentPane});
-      // }, 1000);
       /* istanbul ignore else */
       if (this.user && this.user.id) {
         domAttr.set('YourWorkspaceLink', 'href', '/workspace/' + this.user.id);
@@ -394,60 +371,59 @@ define("p3/app/p3app", [
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateUserWorkspaceList'));
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
       Topic.subscribe('/JobStatus', function (status) {
-        // console.warn(status)
-        var node = dom.byId('MyDataJobs')
-        node.innerHTML = status.completed + ' Completed Jobs'
-      })
+        var node = dom.byId('MyDataJobs');
+        node.innerHTML = status.completed + ' Completed Jobs';
+      });
 
       this.inherited(arguments);
       this.timeout();
     },
     timeout: function () {
       setTimeout(function () {
-        //check if logged out and another tab is open
+        // check if logged out and another tab is open
         if (localStorage.getItem('tokenstring') === null) {
           if (document.getElementsByClassName('Authenticated').length > 0) {
-            //console.log(document.body.className);
+            // console.log(document.body.className);
             document.body.className = document.body.className.replace('Authenticated', '');
-            //console.log(document.body.className);
+            // console.log(document.body.className);
             window.location.assign('/');
             console.log('you are logged out now');
           }
         } else {
-          //check if token has expired
+          // check if token has expired
           window.App.checkLogin();
         }
         window.App.timeout();
       }, window.App.localStorageCheckInterval);
     },
     checkLogin: function () {
-      //console.log(window.App.uploadInProgress);
+      // console.log(window.App.uploadInProgress);
       // console.log('checking for login');
       if (localStorage.getItem('tokenstring') !== null) {
         var auth = localStorage.getItem('auth');
         auth = JSON.parse(auth);
         var validToken = this.checkExpToken(auth.expiry);
-        console.log('this is a valid token: '+ validToken );
-        if(validToken && window.App.alreadyLoggedIn){
+        console.log('this is a valid token: ' + validToken );
+        if (validToken && window.App.alreadyLoggedIn) {
           return;
         }
-        //console.log(validToken);
+        // console.log(validToken);
         if (validToken && !window.App.alreadyLoggedIn) {
           if (!document.body.className.includes('Authenticated')) {
             document.body.className += 'Authenticated';
             // console.log('add to body class');
             // console.log(document.body.className);
           }
-          //var docbody = document.getElementsByClassName('patric')[0];
-          //console.log(docbody);
+          // var docbody = document.getElementsByClassName('patric')[0];
+          // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
           window.App.authorizationToken = localStorage.getItem('tokenstring');
-          //show the upload and jobs widget
+          // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
           window.App.checkSU();
           window.App.alreadyLoggedIn = true;
         } else {
-          //if mouse has moved in past x minutes then refresh the token
+          // if mouse has moved in past x minutes then refresh the token
           // or if upload is in progress then refresh the token
           // console.log('I am uploading a file');
           console.log(window.App.uploadInProgress);
@@ -463,25 +439,27 @@ define("p3/app/p3app", [
                 'Authorization': window.App.authorizationToken
               }
             })
-            .then(function(data) {
-              // console.log('storing new token');
-              console.log(data);
-              localStorage.setItem('tokenstring', data);
-              window.App.authorizationToken = data;
-              var dataArr = data.split('|');
-              var keyValueArr = [];
-              var dataobj = {};
-              for (var i = 0; i < dataArr.length; i++) {
-                keyValueArr = dataArr[i].split('=');
-                dataobj[keyValueArr[0]] = keyValueArr[1];
-              }
-              localStorage.setItem('auth', JSON.stringify(dataobj));
-              window.App.checkLogin();
-            },
-            /* istanbul ignore next */
-            function(err) {
-              console.log(err);
-            });
+              .then(
+                function (data) {
+                  // console.log('storing new token');
+                  console.log(data);
+                  localStorage.setItem('tokenstring', data);
+                  window.App.authorizationToken = data;
+                  var dataArr = data.split('|');
+                  var keyValueArr = [];
+                  var dataobj = {};
+                  for (var i = 0; i < dataArr.length; i++) {
+                    keyValueArr = dataArr[i].split('=');
+                    dataobj[keyValueArr[0]] = keyValueArr[1];
+                  }
+                  localStorage.setItem('auth', JSON.stringify(dataobj));
+                  window.App.checkLogin();
+                },
+                /* istanbul ignore next */
+                function (err) {
+                  console.log(err);
+                }
+              );
           } else {
             console.log('logging you out now, sorry');
             window.App.logout();
@@ -489,15 +467,15 @@ define("p3/app/p3app", [
         }
       }
     },
-    checkSU: function(){
+    checkSU: function () {
       var suLink = document.getElementsByClassName('sulogin');
       var sbLink = document.getElementsByClassName('suSwitchBack');
       var auth = localStorage.getItem('auth');
       var Aauth = localStorage.getItem('Aauth');
       auth = JSON.parse(auth);
       Aauth = JSON.parse(Aauth);
-      if (auth.roles !== null && auth.roles !== undefined){
-        if(auth.roles.includes('admin')){
+      if (auth.roles !== null && auth.roles !== undefined) {
+        if (auth.roles.includes('admin')) {
           suLink[0].style.display = 'block';
         } else {
           suLink[0].style.display = 'none';
@@ -505,9 +483,9 @@ define("p3/app/p3app", [
       } else {
         suLink[0].style.display = 'none';
       }
-      if(Aauth !== undefined && Aauth !== null){
-        if (Aauth.roles !== null && Aauth.roles !== undefined){
-          if(Aauth.roles.includes('admin')){
+      if (Aauth !== undefined && Aauth !== null) {
+        if (Aauth.roles !== null && Aauth.roles !== undefined) {
+          if (Aauth.roles.includes('admin')) {
             sbLink[0].style.display = 'block';
           } else {
             sbLink[0].style.display = 'none';
@@ -517,7 +495,7 @@ define("p3/app/p3app", [
         }
       }
     },
-    suSwitchBack: function(){
+    suSwitchBack: function () {
       console.log('I clicked the switch back button');
       localStorage.setItem('auth', localStorage.getItem('Aauth'));
       localStorage.setItem('tokenstring', localStorage.getItem('Atokenstring'));
@@ -531,22 +509,22 @@ define("p3/app/p3app", [
       window.App.user = JSON.parse(localStorage.getItem('userProfile'));
       window.location.href = '/';
     },
-    checkExpToken: function(date) {
+    checkExpToken: function (date) {
       var d = new Date();
       var checkd = d.valueOf() / 1000;
-      //console.log(checkd);
+      // console.log(checkd);
       if (checkd > date) {
-        //console.log('expired');
+        // console.log('expired');
         return false;
       } return true;
     },
-    login: function(data, token) {
-      //console.log(data);
+    login: function (data, token) {
+      // console.log(data);
       /* istanbul ignore else */
       if (data !== undefined) {
         localStorage.setItem('auth', JSON.stringify(data));
         localStorage.setItem('tokenstring', token);
-        //localStorage.setItem('tokenid', data.tokenid);
+        // localStorage.setItem('tokenid', data.tokenid);
         var userid = data.un.replace('@patricbrc.org', '');
         localStorage.setItem('userid', userid);
         var userServiceURL = window.App.userServiceURL;
@@ -557,68 +535,64 @@ define("p3/app/p3app", [
             'Authorization': token
           }
         })
-        .then(function(user) {
-          //console.log(user);
-          var userObj = JSON.parse(user);
-          //console.log(userObj);
-          userObj.id = userObj.id + '@patricbrc.org';
-          //console.log(userObj);
-          user = JSON.stringify(userObj);
-          localStorage.removeItem('userProfile');
-          localStorage.setItem('userProfile', user);
-          //document.body.className += 'Authenticated';
-          window.location.reload();
-        },
-        /* istanbul ignore next */
-        function(err) {
-          console.log(err);
-        });
+          .then(
+            function (user) {
+              var userObj = JSON.parse(user);
+              userObj.id += '@patricbrc.org';
+              user = JSON.stringify(userObj);
+              localStorage.removeItem('userProfile');
+              localStorage.setItem('userProfile', user);
+              window.location.reload();
+            },
+            /* istanbul ignore next */
+            function (err) {
+              console.log(err);
+            }
+          );
       } else {
         console.log('i am not logged in yet');
       }
     },
-    uploadJobsWidget: function(action){
-      if(action === 'show'){
+    uploadJobsWidget: function (action) {
+      if (action === 'show') {
         // console.log('I want to see the upload and jobs widget');
-        var wsc = new WorkspaceController({region: 'bottom'});
+        var wsc = new WorkspaceController({ region: 'bottom' });
         var ac = this.getApplicationContainer();
-          // console.log(ac);
-          var uploadBar = ac.domNode.getElementsByClassName('WorkspaceController');
-          // console.log('this is the upload bar:');
-          // console.log(uploadBar);
-          if(uploadBar.length === 0) {
-            //console.log(ac.domNode.getElementsByClassName('WorkspaceController'));
-            //if(ac.domNode)
-            ac.addChild(wsc);
-          }
+        // console.log(ac);
+        var uploadBar = ac.domNode.getElementsByClassName('WorkspaceController');
+        if (uploadBar.length === 0) {
+          ac.addChild(wsc);
+        }
       } else {
         console.log('I should not see the upload and jobs widget');
       }
     },
-    refreshUser: function() {
+    refreshUser: function () {
       xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
         headers: {
           'Accept': 'application/json',
           'Authorization': window.App.authorizationToken
         }
       })
-      .then(function(user) {
-        var userObj = JSON.parse(user);
-        //console.log(userObj);
-        userObj.id = userObj.id + '@patricbrc.org';
-        //console.log(userObj);
-        user = JSON.stringify(userObj);
-        localStorage.removeItem('userProfile');
-        localStorage.setItem('userProfile', user);
-        //document.body.className += 'Authenticated';
-        window.location.reload();
-      },
-      /* istanbul ignore next */
-      function(err) {
-        console.log(err);
-      });
+        .then(
+          function (user) {
+            var userObj = JSON.parse(user);
+            // console.log(userObj);
+            userObj.id += '@patricbrc.org';
+            // console.log(userObj);
+            user = JSON.stringify(userObj);
+            localStorage.removeItem('userProfile');
+            localStorage.setItem('userProfile', user);
+            // document.body.className += 'Authenticated';
+            window.location.reload();
+          },
+          /* istanbul ignore next */
+          function (err) {
+            console.log(err);
+          }
+        );
     },
-    logout:function() {
+    logout:function () {
       if (!window.App.uploadInProgress) {
         localStorage.removeItem('tokenstring');
         localStorage.removeItem('userProfile');
@@ -629,7 +603,7 @@ define("p3/app/p3app", [
         localStorage.removeItem('AuserProfile');
         localStorage.removeItem('Auserid');
         window.location.assign('/');
-        //remove the upload and jobs widget
+        // remove the upload and jobs widget
         window.App.uploadJobsWidget('hide');
       } else {
         alert('upload is in progress, try Logout again later');
@@ -638,32 +612,32 @@ define("p3/app/p3app", [
     updateMyDataSection: function (data) {
       // console.warn(data)
       domAttr.set('YourWorkspaceLink2', 'href', '/workspace/' + this.user.id);
-      data.filter(function(ws) {
-        return ws.name === 'home'
-      }).forEach(function(ws) {
+      data.filter(function (ws) {
+        return ws.name === 'home';
+      }).forEach(function (ws) {
         // console.log(ws)
-        var wsGGNode = dom.byId('MyDataGenomeGroup')
-        var wsFGNode = dom.byId('MyDataFeatureGroup')
-        var wsEGNode = dom.byId('MyDataExperimentGroup')
+        var wsGGNode = dom.byId('MyDataGenomeGroup');
+        var wsFGNode = dom.byId('MyDataFeatureGroup');
+        var wsEGNode = dom.byId('MyDataExperimentGroup');
 
         // update links
-        wsGGNode.href = '/workspace' + ws.path + '/Genome%20Groups'
-        wsFGNode.href = '/workspace' + ws.path + '/Feature%20Groups'
-        wsEGNode.href = '/workspace' + ws.path + '/Experiment%20Groups'
+        wsGGNode.href = '/workspace' + ws.path + '/Genome%20Groups';
+        wsFGNode.href = '/workspace' + ws.path + '/Feature%20Groups';
+        wsEGNode.href = '/workspace' + ws.path + '/Experiment%20Groups';
 
         // update counts for workspace groups
         WorkspaceManager.getFolderContents(ws.path + '/Genome Groups')
-        .then(function (items) {
-          wsGGNode.innerHTML = items.length + ' Genome Groups'
-        });
+          .then(function (items) {
+            wsGGNode.innerHTML = items.length + ' Genome Groups';
+          });
         WorkspaceManager.getFolderContents(ws.path + '/Feature Groups')
-        .then(function (items) {
-          wsFGNode.innerHTML = items.length + ' Feature Groups'
-        });
+          .then(function (items) {
+            wsFGNode.innerHTML = items.length + ' Feature Groups';
+          });
         WorkspaceManager.getFolderContents(ws.path + '/Experiment Groups')
-        .then(function (items) {
-          wsEGNode.innerHTML = items.length + ' Experiment Groups'
-        });
+          .then(function (items) {
+            wsEGNode.innerHTML = items.length + ' Experiment Groups';
+          });
 
         // update counts for private genomes
         xhr.get(window.App.dataServiceURL + '/genome/?eq(public,false)', {
@@ -675,10 +649,10 @@ define("p3/app/p3app", [
           handleAs: 'json'
         }).then(function (data) {
           // console.warn(data.response)
-          var node = dom.byId('MyDataGenomes')
-          node.innerHTML = data.response.numFound + ' Private Genomes'
-        })
-      })
+          var node = dom.byId('MyDataGenomes');
+          node.innerHTML = data.response.numFound + ' Private Genomes';
+        });
+      });
     },
     updateUserWorkspaceList: function (data) {
       var wsNode = dom.byId('YourWorkspaces');
