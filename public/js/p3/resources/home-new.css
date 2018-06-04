@@ -181,6 +181,15 @@
   background: #F2F2F2;
 }
 
+#patric-homepage .home-banner {
+  width: 1220px;
+  margin: 0 auto;
+}
+
+#patric-homepage .home-banner p {
+  text-align: center;
+}
+
 #patric-homepage #patric-homepage-container {
   background: #F2F2F2;
   padding: 20px 0px;
