@@ -15075,9 +15075,6 @@ div.appsublabel {
   padding-top: 5px;
   margin: 0 auto;
 }
-#patric-homepage .home-banner p {
-  text-align: center;
-}
 #patric-homepage .home-banner a {
   color: #454545;
   text-decoration: underline
@@ -17357,8 +17354,7 @@ body footer.main-footer ul.left {
     border: 0;
 }
 .banner-yellow {
-    font-size: 18px;
-    padding: 11px;
+    padding: 10px;
     color: #454545 !important;
     background-color: #f0ad4e;
     border-color: #eea236;
