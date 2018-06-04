@@ -28,7 +28,7 @@ define([
     uploadInProgress: false,
     activeMouse: true,
     alreadyLoggedIn: false,
-    authorizationToken: '',
+    authorizationToken: null,
     user: '',
     startup: function () {
       var _self = this;
