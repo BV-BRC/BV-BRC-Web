@@ -610,6 +610,10 @@ define("p3/app/p3app", [
       }
     },
     updateMyDataSection: function (data) {
+      var node = dom.byId('YourWorkspaceLink2');
+      if (!node) {
+        return;
+      }
       // console.warn(data)
       domAttr.set('YourWorkspaceLink2', 'href', '/workspace/' + this.user.id);
       data.filter(function (ws) {

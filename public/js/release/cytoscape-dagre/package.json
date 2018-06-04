@@ -1,10 +1,4 @@
 {
-  "_args": [
-    [
-      "cytoscape-dagre@2.1.0",
-      "/Users/hsyoo/dev/deploy/p3_web"
-    ]
-  ],
   "_from": "cytoscape-dagre@2.1.0",
   "_id": "cytoscape-dagre@2.1.0",
   "_inBundle": false,
@@ -22,17 +16,21 @@
     "fetchSpec": "2.1.0"
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-2.1.0.tgz",
-  "_spec": "2.1.0",
+  "_shasum": "74345af05af4b9297dea736497a5f0f77d97e16c",
+  "_spec": "cytoscape-dagre@2.1.0",
   "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-dagre/issues"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "dagre": "~0.7.4"
   },
+  "deprecated": false,
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js ",
   "devDependencies": {
     "gulp": "^3.8.8",
