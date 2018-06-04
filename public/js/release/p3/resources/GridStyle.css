@@ -7,14 +7,13 @@
         border-right: 1px solid #bbb;
 }
 .ui-icon.dgrid-hider-toggle {
-	background-position: 0 -190px;
-	background-color: transparent;
-	transform: scale(1.4);
-	border: none;
-	cursor: pointer;
-	position: absolute;
-	right: 0;
-	top: 0;
+    background-position: 0 -190px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    width: 0px;
 }
 .patric .dgrid-cell.field-genome_id {
     width: 8%;

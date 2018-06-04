@@ -6,9 +6,10 @@ define("p3/widget/WorkspaceBrowser", [
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select', 'dijit/form/CheckBox',
-  './ContainerActionBar', './GroupExplore', './PerspectiveToolTip', '../widget/UserSelector',
-  'dijit/form/Button', './formatter', 'dijit/form/TextBox', './WorkspaceObjectSelector',
+  'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
+  './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
+  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
+
   'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on, query,
@@ -16,9 +17,9 @@ define("p3/widget/WorkspaceBrowser", [
   WorkspaceExplorerView, Topic, ItemDetailPanel,
   ActionBar, Deferred, WorkspaceManager, lang,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-  popup, IDMappingTemplate, xhr, Select, CheckBox,
-  ContainerActionBar, GroupExplore, PerspectiveToolTipDialog, UserSelector,
-  Button, Formatter, TextBox, WSObjectSelector
+  popup, IDMappingTemplate, xhr, Select,
+  ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
+  TextBox, WSObjectSelector, PermissionEditor
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -647,6 +648,41 @@ define("p3/widget/WorkspaceBrowser", [
         false
       );
 
+      /* Assuming we want to allow deletion of all types for now
+      this.actionPanel.addAction("DeleteItem", "fa icon-trash-o fa-2x", {
+        label: "DELETE",
+        allowMultiTypes: true,
+        multiple: true,
+        validTypes: [
+          "genome_group", "feature_group", "experiment_group", "job_result",
+          "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata",
+          "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"
+        ],
+        tooltip: "Delete Selection"
+      }, function(selection){
+        var objs = selection.map(function(s){
+          return s.path || s.data.path;
+        });
+        var conf = "Are you sure you want to delete" +
+          ((objs.length > 1) ? " these objects" : " this object") +
+          " from your workspace?"
+
+        var dlg = new Confirmation({
+          content: conf,
+          onConfirm: function(evt){
+            var prom = WorkspaceManager.deleteObject(objs, true, false);
+            Deferred.when(prom, function(){
+              self.activePanel.clearSelection();
+            }, function(e){
+              console.log('e', e)
+            })
+          }
+        });
+        dlg.startup();
+        dlg.show();
+      }, false);
+      */
+
       this.actionPanel.addAction('Delete', 'fa icon-trash-o fa-2x', {
         label: 'DELETE',
         allowMultiTypes: true,
@@ -690,16 +726,6 @@ define("p3/widget/WorkspaceBrowser", [
 
       }, false);
 
-
-      this.actionPanel.addAction('ShareFolder', 'fa icon-user-plus fa-2x', {
-        label: 'SHARE',
-        allowMultiTypes: false,
-        multiple: false,
-        validTypes: ['folder'],
-        tooltip: 'Share Folder'
-      }, function (selection) {
-        self.userPermDialog(selection[0]);
-      }, false);
 
       this.actionPanel.addAction('Rename', 'fa icon-pencil-square-o fa-2x', {
         label: 'RENAME',
@@ -866,7 +892,6 @@ define("p3/widget/WorkspaceBrowser", [
         objSelector.openChooser();
       }, false);
 
-
       this.actionPanel.addAction('EditType', 'fa icon-tag fa-2x', {
         label: 'EDIT TYPE',
         validTypes: ['*'],
@@ -877,10 +902,20 @@ define("p3/widget/WorkspaceBrowser", [
         self.editTypeDialog(sel);
       }, false);
 
+      this.actionPanel.addAction('ShareFolder', 'fa icon-user-plus fa-2x', {
+        label: 'SHARE',
+        allowMultiTypes: false,
+        multiple: false,
+        validTypes: ['folder'],
+        tooltip: 'Share Folder'
+      }, function (selection) {
+        self.showPermDialog(selection);
+      }, false);
+
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
-        self.userPermDialog(selection);
+        self.showPermDialog(selection);
       });
 
       this.itemDetailPanel = new ItemDetailPanel({
@@ -895,6 +930,62 @@ define("p3/widget/WorkspaceBrowser", [
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
+    },
+
+    showPermDialog: function (selection) {
+      var self = this,
+        selection = selection[0], // only allows one selection
+        existingPerms = selection.permissions;
+
+      // update workspace list on confirm
+      var onConfirm = function (newPerms) {
+        // set any deleted users' permissions to 'n'
+        var newUsers = newPerms.map(function (p) { return p.user; });
+        existingPerms.forEach(function (p) {
+          var user = p[0];
+
+          if (p[0] == 'global_permission') return;
+
+          if (newUsers.indexOf(user) == -1)
+          { newPerms.push({ user: user, permission: 'n' }); }
+        });
+
+        Topic.publish('/Notification', {
+          message: "<span class='default'>Updating permissions...</span>",
+          type: 'default',
+          duration: 50000
+        });
+
+        var prom = WorkspaceManager.setPermissions(selection.path, newPerms);
+        Deferred.when(prom).then(function (res) {
+
+          Topic.publish('/Notification', {
+            message: 'Permissions updated.',
+            type: 'message'
+          });
+
+          Topic.publish('/refreshWorkspace');
+
+          // refresh list in detail panel
+          self.activePanel.clearSelection();
+
+        }, function (err) {
+          console.log('error', err);
+          Topic.publish('/Notification', {
+            message: 'Failed. ' + err.response.status,
+            type: 'error'
+          });
+        });
+      };
+
+      var permEditor = new PermissionEditor({
+        selection: selection,
+        onConfirm: onConfirm,
+        user: window.App.user.id || '',
+        permissions: existingPerms
+      });
+
+      permEditor.show();
     },
 
     renameDialog: function (path, isJob) {
@@ -954,230 +1045,6 @@ define("p3/widget/WorkspaceBrowser", [
       dlg.startup();
       dlg.show();
     },
-
-    userPermDialog: function (selection) {
-      var self = this;
-
-      var folderPath = selection.path;
-
-      /**
-       * Data model and data model helpers
-       */
-      var userPerms = [];
-
-      function rmUser(userId) {
-        userPerms = userPerms.filter(function (perm) { return userId != perm.user; });
-      }
-
-      function addUser(userId, perm) {
-        var alreadyExists = findUser(userId);
-        if (alreadyExists) return false;
-
-        userPerms.push({
-          user: userId,
-          permission: perm
-        });
-
-        return true;
-      }
-
-      function findUser(userId) {
-        return userPerms.find(function (perm) { return userId == perm.user; });
-      }
-
-
-      /**
-       * Build the form and events
-       */
-      var ownerId = Formatter.baseUsername(selection.owner_id);
-
-      var form = domConstruct.toDom('<div class="userPermForm">');
-      domConstruct.place(
-        '<h4 style="margin-bottom: 5px;">' +
-          'Share with Specific Users' +
-        '</h4>'
-        , form
-      );
-      var currentUsers = domConstruct.toDom('<table class="currentUsers p3basic striped" style="margin-bottom: 10px;">' +
-        '<thead>' +
-          '<tr>' +
-            '<th>User Name' +
-            '<th>Permission' +
-            '<th>&nbsp;' +
-        '<tbody>' +
-          '<tr>' +
-            '<td><i>' + selection.owner_id.split('@')[0] + ' ' + (ownerId == 'me' ? '(me)' : '') + '</i>' +
-            '<td>Owner' +
-            '<td>&nbsp;');
-
-      // user search box
-      var userSelector = new UserSelector({ name: 'user' });
-
-      // user's permission
-      var permSelect = new Select({
-        name: 'perm',
-        style: { width: '100px', margin: '0 10px' },
-        options: [
-          {
-            label: 'Can view',
-            value: 'r',
-            selected: true
-          }, {
-            label: 'Can edit',
-            value: 'w'
-          }
-        ]
-      });
-
-      // add user's permission button
-      // Note: on click, the user is added server side.
-      var addUserBtn = new Button({
-        label: '<i class="icon-plus"></i> Add User',
-        // disabled: true,
-        onClick: function () {
-          var userId = userSelector.getSelected();
-          perm = permSelect.attr('value');
-
-          if (!userId) return;
-
-          // don't add already existing users
-          if (findUser(userId)) return;
-
-          var prom = WorkspaceManager.setPermissions(folderPath, [[userId, perm]]);
-          Deferred.when(prom, lang.hitch(this, function (result) {
-            // console.log('adding user to dom', userId, perm)
-            dojo.place(
-              '<tr>' +
-              '<td data-user="' + userId + '">' + Formatter.baseUsername(userId) +
-              '<td data-perm="' + perm + '">' + Formatter.permissionMap(perm) +
-              '<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-              query('tbody', currentUsers)[0]
-            );
-
-            reinitDeleteEvents();
-
-            // reset filter select
-            userSelector.reset();
-          }));
-        }
-      });
-
-      domConstruct.place(currentUsers, form);
-      domConstruct.place(userSelector.domNode, form);
-      domConstruct.place(permSelect.domNode, form, 'last');
-      domConstruct.place(addUserBtn.domNode, form, 'last');
-
-      // open form in dialog
-      var dlg = new Confirmation({
-        title: 'Edit Sharing',
-        okLabel: 'Done',
-        cancelLabel: false,
-        content: form,
-        style: { width: '500px' },
-        onConfirm: function (evt) {
-          this.hideAndDestroy();
-          Topic.publish('/refreshWorkspace');
-
-          // refresh list in detail panel
-          self.activePanel.clearSelection();
-        },
-        onCancel: function () { // also do updates on close checkbox
-          this.hideAndDestroy();
-          Topic.publish('/refreshWorkspace');
-
-          // refresh list in detail panel
-          self.activePanel.clearSelection();
-        }
-      });
-
-      /*
-        * list current permissions
-        */
-      var prom = WorkspaceManager.listPermissions(folderPath);
-      Deferred.when(prom, function (perms) {
-
-        // add global permission toggle
-        var globalPerm = perms.filter(function (perm) { return perm[0] == 'global_permission'; })[0][1];
-        var isPublic = globalPerm != 'n';
-
-        var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
-        var cb = new CheckBox({
-          id: 'publicCB',
-          name: 'checkBox',
-          value: 'isPublic',
-          checked: isPublic,
-          onChange: function (e) {
-            var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
-            Deferred.when(prom, function (res) {
-            }, function (e) {
-              alert('oh no, something has went wrong!');
-            });
-          }
-        });
-        cb.placeAt(checkBox);
-        checkBox.appendChild(domConstruct.create('label', {
-          'for': 'publicCB',
-          innerHTML: ' Publicly Readable'
-        }));
-
-        domConstruct.place(checkBox, form, 'first');
-        domConstruct.place(
-          '<h4 style="margin-bottom: 5px;">' +
-            'Share with Everybody' +
-          '</h4>',
-          form, 'first'
-        );
-
-        // user perms
-        perms.forEach(function (perm) {
-          // server sometimes returns 'none' permissions, so ignore them.
-          if (perm[0] == 'global_permission' || perm[1] == 'n') return;
-
-          userPerms.push({
-            user: perm[0],
-            permission: perm[1]
-          });
-
-          dojo.place(
-            '<tr>' +
-            '<td data-user="' + perm[0] + '">' + Formatter.baseUsername(perm[0]) +
-            '<td data-perm="' + perm[1] + '">' + Formatter.permissionMap(perm[1]) +
-            '<td style="width: 1px;"><i class="fa icon-trash-o fa-2x">',
-            query('tbody', currentUsers)[0]
-          );
-        });
-
-        // event for deleting users
-        reinitDeleteEvents();
-      });
-
-
-      function reinitDeleteEvents() {
-        query('tbody .icon-trash-o', currentUsers).on('click', function () {
-          var _self = this;
-          var userRow = query(this).parents('tr')[0],
-            userId = dojo.attr(query('[data-user]', userRow)[0], 'data-user');
-
-          var prom = WorkspaceManager.setPermissions(folderPath, [[userId, 'n']]);
-          Deferred.when(prom, lang.hitch(this, function (result) {
-            domConstruct.destroy(userRow);
-
-            rmUser(userId);
-          }, function (err) {
-            var parts = err.split('_ERROR_');
-            var d = new Dialog({
-              content: parts[1] || parts[0],
-              title: 'Error deleting user: ' + userId,
-              style: 'width: 250px !important;'
-            }).show();
-          }));
-        });
-      }
-
-      dlg.startup();
-      dlg.show();
-    },
-
 
     editTypeDialog: function (selection) {
       var self = this;
@@ -1276,11 +1143,9 @@ define("p3/widget/WorkspaceBrowser", [
         dlg.okButton.setDisabled(false);
       });
 
-
       dlg.startup();
       dlg.show();
     },
-
 
     _setPathAttr: function (val) {
       // console.log("WorkspaceBrowser setPath()", val)

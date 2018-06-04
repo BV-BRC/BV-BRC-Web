@@ -234,7 +234,6 @@ define("p3/widget/DataItemFormatter", [
               + '<button onclick="clipboard.copy(\'' + obj.na_sequence + '\')">copy</button>';
           }
           return obj.na_sequence.substr(0, 30) + '... ' + '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
-
         }
       }, {
         name: 'AA Length',
@@ -248,7 +247,6 @@ define("p3/widget/DataItemFormatter", [
               + '<button onclick="clipboard.copy(\'' + obj.aa_sequence + '\')">copy</button>';
           }
           return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
-
         }
       }];
 
@@ -1172,7 +1170,7 @@ define("p3/widget/DataItemFormatter", [
       return div;
     },
     genome_meta_table_names: function () {
-      return ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+      return ['Organism Info', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
     },
 
     genome_meta_spec: function () {
@@ -1240,6 +1238,19 @@ define("p3/widget/DataItemFormatter", [
           name: 'Reference Genome',
           text: 'reference_genome'
         }],
+
+        Sharing: [{
+          name: 'Can view',
+          text: 'user_read',
+          editable: false,
+          isList: true
+        }, {
+          name: 'Can edit',
+          text: 'user_write',
+          editable: false,
+          isList: true
+        }
+        ],
 
         'Project Info': [{
           name: 'Sequencing Center',

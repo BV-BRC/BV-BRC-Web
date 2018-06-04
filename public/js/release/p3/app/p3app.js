@@ -6,7 +6,7 @@ define("p3/app/p3app", [
   'dojo/store/JsonRest', 'dojox/widget/Toaster',
   'dojo/ready', './app', '../router',
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
-  '../jsonrpc', '../panels', '../WorkspaceManager', 'dojo/keys',
+  '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/Dialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController'
 ], function (
   declare,
@@ -17,42 +17,42 @@ define("p3/app/p3app", [
   Ready, App,
   Router, Window,
   Drawer, ContentPane,
-  RPC, Panels, WorkspaceManager, Keys,
+  RPC, Panels, WorkspaceManager, DataAPI, Keys,
   Dialog, PathJoin, xhr, WorkspaceController
 ) {
-    return declare([App], {
-      panels: Panels,
-      activeWorkspace: null,
-      activeWorkspacePath: '/',
-      publicApps: ['BLAST', 'ProteinFamily', 'ComparativePathway', 'GenomeDistance'],
-      uploadInProgress: false,
-      activeMouse: true,
-      alreadyLoggedIn: false,
-      // authorizationToken: '',
-      // user: '',
-      startup: function() {
-        var _self = this;
-        this.checkLogin();
-
-        on(document.body, 'keypress', function (evt) {
-          var charOrCode = evt.charCode || evt.keyCode;
-          // console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
-          /* istanbul ignore next */
-          if ((charOrCode === 4) && evt.ctrlKey && evt.shiftKey) {
-            if (!this._devDlg) {
-              this._devDlg = new Dialog({
-                title: 'Debugging Panel',
-                content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'
-              });
-            }
-            // console.log("Dialog: ", this._devDlg);
-            if (this._devDlg.open) {
-              this._devDlg.hide();
-            } else {
-              this._devDlg.show();
-            }
+  return declare([App], {
+    panels: Panels,
+    activeWorkspace: null,
+    activeWorkspacePath: '/',
+    publicApps: ['BLAST', 'ProteinFamily', 'ComparativePathway', 'GenomeDistance'],
+    uploadInProgress: false,
+    activeMouse: true,
+    alreadyLoggedIn: false,
+    authorizationToken: '',
+    user: '',
+    startup: function () {
+      var _self = this;
+      this.checkLogin();
+      //this.upploadInProgress = false;
+      on(document.body, 'keypress', function (evt) {
+        var charOrCode = evt.charCode || evt.keyCode;
+        // console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
+        /* istanbul ignore next */
+        if ((charOrCode === 4) && evt.ctrlKey && evt.shiftKey) {
+          if (!this._devDlg) {
+            this._devDlg = new Dialog({
+              title: 'Debugging Panel',
+              content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'
+            });
           }
-        });
+          // console.log("Dialog: ", this._devDlg);
+          if (this._devDlg.open) {
+            this._devDlg.hide();
+          } else {
+            this._devDlg.show();
+          }
+        }
+      });
 
         // listening document.title change event
         var titleEl = document.getElementsByTagName('title')[0];
@@ -357,6 +357,7 @@ define("p3/app/p3app", [
         if (this.dataAPI.charAt(-1) !== '/') {
           this.dataAPI = this.dataAPI + '/';
         }
+        DataAPI.init(this.dataAPI, this.authorizationToken || '')
         this.api.data = RPC(this.dataAPI, this.authorizationToken);
       }
       /*
@@ -391,6 +392,12 @@ define("p3/app/p3app", [
         }
       }
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateUserWorkspaceList'));
+      Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
+      Topic.subscribe('/JobStatus', function (status) {
+        // console.warn(status)
+        var node = dom.byId('MyDataJobs')
+        node.innerHTML = status.completed + ' Completed Jobs'
+      })
 
       this.inherited(arguments);
       this.timeout();
@@ -627,6 +634,51 @@ define("p3/app/p3app", [
       } else {
         alert('upload is in progress, try Logout again later');
       }
+    },
+    updateMyDataSection: function (data) {
+      // console.warn(data)
+      domAttr.set('YourWorkspaceLink2', 'href', '/workspace/' + this.user.id);
+      data.filter(function(ws) {
+        return ws.name === 'home'
+      }).forEach(function(ws) {
+        // console.log(ws)
+        var wsGGNode = dom.byId('MyDataGenomeGroup')
+        var wsFGNode = dom.byId('MyDataFeatureGroup')
+        var wsEGNode = dom.byId('MyDataExperimentGroup')
+
+        // update links
+        wsGGNode.href = '/workspace' + ws.path + '/Genome%20Groups'
+        wsFGNode.href = '/workspace' + ws.path + '/Feature%20Groups'
+        wsEGNode.href = '/workspace' + ws.path + '/Experiment%20Groups'
+
+        // update counts for workspace groups
+        WorkspaceManager.getFolderContents(ws.path + '/Genome Groups')
+        .then(function (items) {
+          wsGGNode.innerHTML = items.length + ' Genome Groups'
+        });
+        WorkspaceManager.getFolderContents(ws.path + '/Feature Groups')
+        .then(function (items) {
+          wsFGNode.innerHTML = items.length + ' Feature Groups'
+        });
+        WorkspaceManager.getFolderContents(ws.path + '/Experiment Groups')
+        .then(function (items) {
+          wsEGNode.innerHTML = items.length + ' Experiment Groups'
+        });
+
+        // update counts for private genomes
+        xhr.get(window.App.dataServiceURL + '/genome/?eq(public,false)', {
+          headers: {
+            'Accept': 'application/solr+json',
+            'Content-Type': 'application/rqlquery+x-www-urlencoded',
+            'Authorization': window.App.authorizationToken
+          },
+          handleAs: 'json'
+        }).then(function (data) {
+          // console.warn(data.response)
+          var node = dom.byId('MyDataGenomes')
+          node.innerHTML = data.response.numFound + ' Private Genomes'
+        })
+      })
     },
     updateUserWorkspaceList: function (data) {
       var wsNode = dom.byId('YourWorkspaces');

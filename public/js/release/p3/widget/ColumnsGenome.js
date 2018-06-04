@@ -13,11 +13,29 @@ define("p3/widget/ColumnsGenome", ['./formatter'], function (formatter) {
     },
     genome_name: {
       label: 'Genome Name',
-      field: 'genome_name'
+      // field: 'genome_name',
+      get: function (item) {
+        return item;
+      },
+      formatter: formatter.genomeName
     },
     genome_id: {
       label: 'Genome ID',
       field: 'genome_id'
+    },
+    owner: {
+      label: 'Owner',
+      field: 'owner',
+      formatter: formatter.baseUsername,
+      hidden: true
+    },
+    members: {
+      label: 'Members (shared with)',
+      get: function (item) {
+        return item;
+      },
+      formatter: formatter.genomeMembers,
+      hidden: true
     },
     taxon_id: {
       label: 'NCBI Taxon ID',
