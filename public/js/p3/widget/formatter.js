@@ -219,6 +219,22 @@ define(
 
     var formatters = {
       getExternalLinks: getExternalLinks,
+      genomeName: function (obj) {
+        if (obj.user_read || obj.user_write) {
+          return '<i class="fa icon-users" title="shared"></i> ' + obj.genome_name;
+        }
+
+        return obj.genome_name;
+      },
+      genomeMembers: function (obj) {
+        var members = (obj.user_read || []).concat(obj.user_write || []);
+        if (members.length >= 1) {
+          return (members.length + 1) + ' members';
+        }
+
+        return 'Only me';
+      },
+
       dateOnly: function (obj) {
         return dateFormatter(obj, { selector: 'date', formatLength: 'short' });
       },

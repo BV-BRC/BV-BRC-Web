@@ -6,7 +6,7 @@ define([
   'dojo/store/JsonRest', 'dojox/widget/Toaster',
   'dojo/ready', './app', '../router',
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
-  '../jsonrpc', '../panels', '../WorkspaceManager', 'dojo/keys',
+  '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/Dialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController'
 ], function (
   declare,
@@ -17,42 +17,42 @@ define([
   Ready, App,
   Router, Window,
   Drawer, ContentPane,
-  RPC, Panels, WorkspaceManager, Keys,
+  RPC, Panels, WorkspaceManager, DataAPI, Keys,
   Dialog, PathJoin, xhr, WorkspaceController
 ) {
-    return declare([App], {
-      panels: Panels,
-      activeWorkspace: null,
-      activeWorkspacePath: '/',
-      publicApps: ['BLAST', 'ProteinFamily', 'ComparativePathway', 'GenomeDistance'],
-      uploadInProgress: false,
-      activeMouse: true,
-      alreadyLoggedIn: false,
-      // authorizationToken: '',
-      // user: '',
-      startup: function() {
-        var _self = this;
-        this.checkLogin();
-
-        on(document.body, 'keypress', function (evt) {
-          var charOrCode = evt.charCode || evt.keyCode;
-          // console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
-          /* istanbul ignore next */
-          if ((charOrCode === 4) && evt.ctrlKey && evt.shiftKey) {
-            if (!this._devDlg) {
-              this._devDlg = new Dialog({
-                title: 'Debugging Panel',
-                content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'
-              });
-            }
-            // console.log("Dialog: ", this._devDlg);
-            if (this._devDlg.open) {
-              this._devDlg.hide();
-            } else {
-              this._devDlg.show();
-            }
+  return declare([App], {
+    panels: Panels,
+    activeWorkspace: null,
+    activeWorkspacePath: '/',
+    publicApps: ['BLAST', 'ProteinFamily', 'ComparativePathway', 'GenomeDistance'],
+    uploadInProgress: false,
+    activeMouse: true,
+    alreadyLoggedIn: false,
+    authorizationToken: '',
+    user: '',
+    startup: function () {
+      var _self = this;
+      this.checkLogin();
+      //this.upploadInProgress = false;
+      on(document.body, 'keypress', function (evt) {
+        var charOrCode = evt.charCode || evt.keyCode;
+        // console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
+        /* istanbul ignore next */
+        if ((charOrCode === 4) && evt.ctrlKey && evt.shiftKey) {
+          if (!this._devDlg) {
+            this._devDlg = new Dialog({
+              title: 'Debugging Panel',
+              content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'
+            });
           }
-        });
+          // console.log("Dialog: ", this._devDlg);
+          if (this._devDlg.open) {
+            this._devDlg.hide();
+          } else {
+            this._devDlg.show();
+          }
+        }
+      });
 
         // listening document.title change event
         var titleEl = document.getElementsByTagName('title')[0];
@@ -357,6 +357,7 @@ define([
         if (this.dataAPI.charAt(-1) !== '/') {
           this.dataAPI = this.dataAPI + '/';
         }
+        DataAPI.init(this.dataAPI, this.authorizationToken || '')
         this.api.data = RPC(this.dataAPI, this.authorizationToken);
       }
       /*
