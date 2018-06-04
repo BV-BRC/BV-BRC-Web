@@ -220,12 +220,16 @@
 
 #patric-homepage .home-banner {
   width: 1220px;
+  padding-top: 5px;
   margin: 0 auto;
 }
 
 #patric-homepage .home-banner p {
   text-align: center;
-  background: #93A971 !important;
+}
+#patric-homepage .home-banner a {
+  color: #454545;
+  text-decoration: underline
 }
 
 @media (max-width: 991px) {
@@ -243,6 +247,10 @@
   background: #cee4f9;
   border-bottom: 4px solid #2B5775;
   padding: 15px 10px;
+}
+
+#patric-homepage .browse-search p {
+  margin-bottom: 4px;
 }
 
 #patric-homepage .browse-search h3 {
