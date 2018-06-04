@@ -4,7 +4,7 @@ define([
   'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin', 'dijit/Dialog',
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
   './ExternalItemFormatter', './AdvancedDownload', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
-  './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor', 
+  './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor',
   '../DataAPI', './PermissionEditor'
 ], function (
   declare, lang, on, xhr, Topic,
@@ -12,7 +12,7 @@ define([
   WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
   ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
-  InputList, TextArea, DateTextBox, MetaEditor, 
+  InputList, TextArea, DateTextBox, MetaEditor,
   DataAPI, PermissionEditor
 ) {
 
@@ -67,7 +67,7 @@ define([
         domStyle.set(domQuery('div.ActionButtonWrapper.btnShareGenome')[0], 'display', 'inline-block');
       } else {
         domStyle.set(domQuery('div.ActionButtonWrapper.btnShareGenome')[0], 'display', 'none');
-      }      
+      }
     },
 
     createSummary: function (genome) {
@@ -158,7 +158,7 @@ define([
       var initialPerms = DataAPI.solrPermsToObjs([this.genome]);
 
       var onConfirm = function (newPerms) {
-        var ids = [self.genome.genome_id]
+        var ids = [self.genome.genome_id];
 
         Topic.publish('/Notification', {
           message: "<span class='default'>Updating permissions (this could take several minutes)...</span>",
@@ -194,9 +194,8 @@ define([
       permEditor.show();
 
     },
-    
 
-    refreshSummary: function() {
+    refreshSummary: function () {
       xhr.get(PathJoin(this.apiServiceUrl, 'genome', this.genome.genome_id), {
         headers: {
           accept: 'application/json',
@@ -207,8 +206,8 @@ define([
       }).then(lang.hitch(this, function (genome) {
         this.createSummary(genome);
       }), lang.hitch(this, function (error) {
-        console.log('error fetching genome', error)
-      }));      
+        console.log('error fetching genome', error);
+      }));
     },
 
     onDownload: function () {

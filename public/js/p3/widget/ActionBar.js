@@ -87,7 +87,7 @@ define([
         if (sel[0] && an === 'Share') {
           var notOwnedList = sel.filter(function (obj) {
             return obj.owner !== window.App.user.id;
-          })
+          });
 
           if (notOwnedList.length) {
             return false;
