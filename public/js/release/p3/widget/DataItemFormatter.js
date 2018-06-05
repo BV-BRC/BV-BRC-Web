@@ -1328,12 +1328,9 @@ define("p3/widget/DataItemFormatter", [
           text: 'plasmids'
         }, {
           name: 'Contigs',
-          text: 'contigs'
-        }, {
-          name: 'Sequences',
-          text: 'sequences',
+          text: 'contigs',
           link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.sequences}</a>', { obj: obj });
+            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.contigs}</a>', { obj: obj });
           }
         }, {
           name: 'Genome Length',

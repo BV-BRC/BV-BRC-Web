@@ -63,21 +63,11 @@ define("p3/widget/ColumnsGenome", ['./formatter'], function (formatter) {
     },
     contigs: {
       label: 'Contigs',
-      field: 'contigs',
-      hidden: true
-    },
-    sequences: {
-      label: 'Sequences',
-      field: 'sequences'
+      field: 'contigs'
     },
     patric_cds: {
       label: 'PATRIC CDS',
       field: 'patric_cds'
-    },
-    brc1_cds: {
-      label: 'BRC1 CDS',
-      field: 'brc1_cds',
-      hidden: true
     },
     refseq_cds: {
       label: 'RefSeq CDS',
