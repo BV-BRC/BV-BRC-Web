@@ -63,12 +63,7 @@ define(['./formatter'], function (formatter) {
     },
     contigs: {
       label: 'Contigs',
-      field: 'contigs',
-      hidden: true
-    },
-    sequences: {
-      label: 'Sequences',
-      field: 'sequences'
+      field: 'contigs'
     },
     patric_cds: {
       label: 'PATRIC CDS',
