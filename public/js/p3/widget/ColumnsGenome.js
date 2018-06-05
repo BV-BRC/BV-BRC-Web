@@ -69,11 +69,6 @@ define(['./formatter'], function (formatter) {
       label: 'PATRIC CDS',
       field: 'patric_cds'
     },
-    brc1_cds: {
-      label: 'BRC1 CDS',
-      field: 'brc1_cds',
-      hidden: true
-    },
     refseq_cds: {
       label: 'RefSeq CDS',
       field: 'refseq_cds',
