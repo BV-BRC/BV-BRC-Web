@@ -373,7 +373,6 @@ define([
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
 
       // update "My Data" > "Completed Jobs" count on homepage
-
       this.api.service('AppService.query_task_summary', []).then(function (status) {
         var node = dom.byId('MyDataJobs');
         if (!node) return;
