@@ -368,16 +368,20 @@ define([
           n.innerHTML = this.user.id.replace('@patricbrc.org', '');
         }
       }
+
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateUserWorkspaceList'));
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
-      Topic.subscribe('/JobStatus', function (status) {
+
+      // update "My Data" > "Completed Jobs" count on homepage
+      this.api.service('AppService.query_task_summary', []).then(function (status) {
         var node = dom.byId('MyDataJobs');
-        node.innerHTML = status.completed + ' Completed Jobs';
+        node.innerHTML = status[0].completed + ' Completed Jobs';
       });
 
       this.inherited(arguments);
       this.timeout();
     },
+
     timeout: function () {
       setTimeout(function () {
         // check if logged out and another tab is open
