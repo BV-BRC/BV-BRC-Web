@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.5.16",
+  "version": "3.5.17",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
