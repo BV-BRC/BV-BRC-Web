@@ -1757,8 +1757,18 @@ define([
         domConstruct.place(renderDataTable(item[key]), td);
         return tr;
       } else if (column.type == 'date') {
+        // display dates as MM/DD/YYYY, unless collection date or not parseable
         var d = new Date(item[key]);
-        var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+        if (key === 'collection_date') {
+          var dateStr = item[key];
+        } else {
+          var d = new Date(item[key]);
+          if (d instanceof Date && !isNaN(d)) {
+            var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+          } else {
+            var dateStr = item[key];
+          }
+        }
 
         return renderRow(label, dateStr);
       } else if (!mini || column.mini) {

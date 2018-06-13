@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.5.16",
+  "version": "3.5.17",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -36,7 +36,7 @@
     "nodemailer-smtp-transport": "^0.1.13",
     "promised-io": "^0.3.5",
     "pug": "^2.0.0-rc.3",
-    "request": "^2.83.0",
+    "request": "^2.87.0",
     "rql": "^0.3.3",
     "serve-favicon": "^2.5.0",
     "swfobject-amd": "~2.3.1",
