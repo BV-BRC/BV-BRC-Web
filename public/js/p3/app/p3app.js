@@ -53,6 +53,19 @@ define([
           }
         }
       });
+      /* istanbul ignore next */
+      var onDocumentTitleChanged = function () {
+        // var meta = document.getElementsByTagName("meta[name='Keyword']");
+        var meta = domQuery("meta[name='Keywords']")[0];
+        if (meta) {
+          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+        }
+        if (window.gtag) {
+          // console.log("document title changed to", document.title);
+          var pagePath = window.location.pathname + window.location.hash;
+          gtag('config', window.App.gaID, { 'page_path': pagePath });
+        }
+      };
 
       // listening document.title change event
       var titleEl = document.getElementsByTagName('title')[0];
@@ -72,19 +85,45 @@ define([
           }
         };
       }
-      /* istanbul ignore next */
-      var onDocumentTitleChanged = function () {
-        // var meta = document.getElementsByTagName("meta[name='Keyword']");
-        var meta = domQuery("meta[name='Keywords']")[0];
-        if (meta) {
-          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+
+      function getState(params, path) {
+        var parser = document.createElement('a');
+        parser.href = path;
+        /* istanbul ignore next */
+        var newState = params.state || {};
+
+        newState.href = path;
+        newState.prev = params.oldPath;
+        // console.log("parser getState: ", parser);
+        /* istanbul ignore next */
+        if (newState.search) {
+          // pass
+        } else if (parser.search) {
+          newState.search = (parser.search.charAt(0) === '?') ? parser.search.substr(1) : parser.search;
+        } else {
+          newState.search = '';
         }
-        if (window.gtag) {
-          // console.log("document title changed to", document.title);
-          var pagePath = window.location.pathname + window.location.hash;
-          gtag('config', window.App.gaID, { 'page_path': pagePath });
+
+        // console.log("New State Search: ", newState.search);
+        newState.hash = parser.hash;
+        newState.pathname = parser.pathname;
+        /* istanbul ignore next */
+        if (newState.hash) {
+          newState.hash = (newState.hash.charAt(0) === '#') ? newState.hash.substr(1) : newState.hash;
+          // console.log("PARSE HASH: ", newState.hash)
+          newState.hashParams = newState.hashParams || {};
+
+          var hps = newState.hash.split('&');
+          hps.forEach(function (t) {
+            var tup = t.split('=');
+            if (tup[0] && tup[1]) {
+              newState.hashParams[tup[0]] = tup[1];
+            }
+          });
+          // console.log("newState.hashParams: ", newState.hashParams)
         }
-      };
+        return newState;
+      }
 
       /*
       Router.register("\/$", function(params, oldPath, newPath, state){
@@ -249,45 +288,6 @@ define([
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
-
-      function getState(params, path) {
-        var parser = document.createElement('a');
-        parser.href = path;
-        /* istanbul ignore next */
-        var newState = params.state || {};
-
-        newState.href = path;
-        newState.prev = params.oldPath;
-        // console.log("parser getState: ", parser);
-        /* istanbul ignore next */
-        if (newState.search) {
-          // pass
-        } else if (parser.search) {
-          newState.search = (parser.search.charAt(0) === '?') ? parser.search.substr(1) : parser.search;
-        } else {
-          newState.search = '';
-        }
-
-        // console.log("New State Search: ", newState.search);
-        newState.hash = parser.hash;
-        newState.pathname = parser.pathname;
-        /* istanbul ignore next */
-        if (newState.hash) {
-          newState.hash = (newState.hash.charAt(0) === '#') ? newState.hash.substr(1) : newState.hash;
-          // console.log("PARSE HASH: ", newState.hash)
-          newState.hashParams = newState.hashParams || {};
-
-          var hps = newState.hash.split('&');
-          hps.forEach(function (t) {
-            var tup = t.split('=');
-            if (tup[0] && tup[1]) {
-              newState.hashParams[tup[0]] = tup[1];
-            }
-          });
-          // console.log("newState.hashParams: ", newState.hashParams)
-        }
-        return newState;
-      }
 
       Router.register('/view(/.*)', function (params, path) {
         var newState = getState(params, path);

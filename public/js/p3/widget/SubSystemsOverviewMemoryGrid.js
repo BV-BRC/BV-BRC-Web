@@ -148,6 +148,13 @@ define([
         .value(function (d) { return d.count; })
         .sort(null);
 
+      var tooltip = d3.select('body')
+        .append('div')
+        .style('position', 'absolute')
+        .style('z-index', '10')
+        .style('background-color', 'white')
+        .style('visibility', 'hidden');
+
       var path = svg.selectAll('path')
         .data(pie(subsystemData))
         .enter()
@@ -175,13 +182,6 @@ define([
         });
 
       this.drawSubsystemLegend(subsystemData, svg, radius, false, false);
-
-      var tooltip = d3.select('body')
-        .append('div')
-        .style('position', 'absolute')
-        .style('z-index', '10')
-        .style('background-color', 'white')
-        .style('visibility', 'hidden');
 
       if (this.genomeView) {
         var summaryBarWidth = width / 4;

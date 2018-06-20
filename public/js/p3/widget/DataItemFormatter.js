@@ -8,6 +8,345 @@ define([
   query, PathJoin, request, when
 ) {
 
+  function renderNoInfoFound(sectionName, parent) {
+    domConstruct.create('tr', {
+      innerHTML: '<td></td><td class="DataItemSectionNotFound">None available</td>'
+    }, parent);
+  }
+
+  function renderSectionHeader(title) {
+    var tr = domConstruct.create('tr', {});
+    domConstruct.create('td', {
+      innerHTML: title,
+      'class': 'DataItemSectionHead',
+      colspan: 2
+    }, tr);
+
+    return tr;
+  }
+
+  function evaluateLink(link, value, item) {
+    return (link && value !== '-' && value !== '0') ? (
+      (typeof (link) == 'function') ? link.apply(this, [item]) : '<a href="' + link + value + '" target="_blank">' + value + '</a>'
+    ) : value;
+  }
+
+  function renderRow(property, value) {
+    var tr = domConstruct.create('tr', {});
+    domConstruct.create('td', {
+      'class': 'DataItemProperty',
+      innerHTML: property
+    }, tr);
+    domConstruct.create('td', {
+      'class': 'DataItemValue',
+      innerHTML: value
+    }, tr);
+
+    return tr;
+  }
+
+  function renderDataTable(data) {
+    var table = domConstruct.create('table', { 'class': 'p3table' });
+    for (var i = 0, len = data.length; i < len; i++) {
+      var k = data[i].split(':')[0],
+        v = data[i].split(':')[1];
+
+      var tr = domConstruct.create('tr', {}, table);
+      domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: k }, tr);
+      domConstruct.create('td', { 'class': 'DataItemValue', innerHTML: v }, tr);
+    }
+    return table;
+  }
+
+  function renderMultiData(label, data) {
+    var table = domConstruct.create('table', { 'class': 'p3table' });
+    var tr = domConstruct.create('tr', {}, table);
+    domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: label }, tr);
+
+    var ul = domConstruct.create('ul', null, tr);
+    if (typeof data == 'object') {
+      for (var i = 0, len = data.length; i < len; i++) {
+        var val = data[i];
+        domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: val }, ul);
+      }
+    } else if (typeof data == 'string') {
+      domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: data }, ul);
+    }
+
+    return table;
+  }
+
+  function renderProperty(column, item, options) {
+    var key = column.text;
+    var label = column.name;
+    var multiValued = column.multiValued || false;
+    var mini = options && options.mini || false;
+    // console.log("column=", column, "item=", item, "key=", key, "label=", label);
+    if (key && item[key] && !column.data_hide) {
+      if (column.isList) {
+        var tr = domConstruct.create('tr', {});
+        var td = domConstruct.create('td', { colspan: 2 }, tr);
+
+        domConstruct.place(renderMultiData(label, item[key]), td);
+        return tr;
+      } else if (multiValued) {
+        var tr = domConstruct.create('tr', {});
+        var td = domConstruct.create('td', { colspan: 2 }, tr);
+
+        domConstruct.place(renderDataTable(item[key]), td);
+        return tr;
+      } else if (column.type == 'date') {
+        // display dates as MM/DD/YYYY, unless collection date or not parseable
+        var d = new Date(item[key]);
+        if (key === 'collection_date') {
+          var dateStr = item[key];
+        } else {
+          var d = new Date(item[key]);
+          if (d instanceof Date && !isNaN(d)) {
+            var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+          } else {
+            var dateStr = item[key];
+          }
+        }
+
+        return renderRow(label, dateStr);
+      } else if (!mini || column.mini) {
+        var l = evaluateLink(column.link, item[key], item);
+        // console.log("item[key]=", item[key]);
+        // a special case for service app
+        if (label == 'Service') {
+          l = formatter.serviceLabel(item[key]);
+        }
+        return renderRow(label, l);
+      }
+    }
+  }
+
+  function displayHeader(parent, label, iconClass, url, options) {
+    var linkTitle = options && options.linkTitle || false;
+
+    var titleDiv = domConstruct.create('div', {
+      'class': 'DataItemHeader'
+    }, parent);
+
+    domConstruct.create('hr', {}, parent);
+
+    // span icon
+    domConstruct.create('span', { 'class': iconClass }, titleDiv);
+
+    // span label
+    domConstruct.create('span', {
+      innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', { url: url, label: label }) : label
+    }, titleDiv);
+  }
+
+  function displayDetailBySections(item, sections, meta_data, parent, options) {
+
+    var mini = options && options.mini || false;
+
+    var table = domConstruct.create('table', {}, parent);
+    var tbody = domConstruct.create('tbody', {}, table);
+
+    sections.forEach(function (section) {
+      if (!mini) {
+        var header = renderSectionHeader(section);
+        domConstruct.place(header, tbody);
+      }
+
+      var rowCount = 0;
+      meta_data[section].forEach(function (column) {
+        var row = renderProperty(column, item, options);
+        if (row) {
+          domConstruct.place(row, tbody);
+          rowCount++;
+        }
+      });
+
+      // if no data found, say so
+      if (!rowCount && !mini)
+      { renderNoInfoFound(section, tbody); }
+    });
+  }
+
+  function displayStdoutPanels(parent, item) {
+    var stpDiv = domConstruct.create('div', {}, parent);
+    var stdTitle = 'Standard Output';
+    var stddlg = new TitlePane({
+      title: stdTitle,
+      style: 'margin-bottom:5px;',
+      open: false
+    }, stpDiv);
+
+    var tpDiv = domConstruct.create('div', {}, parent);
+    var stderrTitle = 'Error Output';
+    var dlg = new TitlePane({
+      title: stderrTitle,
+      open: false
+    }, tpDiv);
+
+    // add copy to clipboard button
+    var icon = '<i class="icon-clipboard2 pull-right"></i>';
+    var copyBtn = new Button({
+      label: icon,
+      style: {
+        'float': 'right',
+        padding: 0
+      },
+      onClick: function (e) {
+        e.stopPropagation();
+        var self = this;
+
+        // get text
+        var pane = query(self.domNode).parents('.dijitTitlePane')[0];
+        var content = query('pre', pane)[0].innerText;
+
+        // copy contents
+        clipboard.copy(content);
+
+        self.set('label', 'copied');
+        setTimeout(function () {
+          self.set('label', icon);
+        }, 2000);
+      }
+    });
+
+    // on stdout panel open
+    stddlg.watch('open', function (attr, oldVal, open) {
+      if (!open) {
+        return;
+      }
+
+      JobManager.queryTaskDetail(item.id, true, false).then(function (detail) {
+        var titleBar = query('.dijitTitlePaneTextNode',  stddlg.domNode)[0];
+        domConstruct.place(copyBtn.domNode, titleBar);
+
+        console.log('JOB DETAIL: ', detail);
+        if (detail.stdout) {
+          stddlg.set('content', "<pre style='overflow: scroll;'>" + detail.stdout + '</pre>');
+        } else {
+          stddlg.set('content', 'Unable to retreive STDOUT of this task.<br><pre>' + JSON.stringify(detail, null, 4) + '</pre>');
+        }
+
+      }, function (err) {
+        stddlg.set('content', 'No standard output for this task found.<br>');
+      });
+    });
+
+    // on error panel open
+    dlg.watch('open', function (attr, oldVal, open) {
+      if (!open) {
+        return;
+      }
+
+      JobManager.queryTaskDetail(item.id, false, true).then(function (detail) {
+        var titleBar = query('.dijitTitlePaneTextNode',  dlg.domNode)[0];
+        domConstruct.place(copyBtn.domNode, titleBar);
+
+        console.log('JOB DETAIL: ', detail);
+        if (detail.stderr) {
+          dlg.set('content', "<pre style='overflow: scroll;'>" + detail.stderr + '</pre>');
+        } else {
+          dlg.set('content', 'Unable to retreive STDERR of this task.<br><pre>' + JSON.stringify(detail, null, 4) + '</pre>');
+        }
+
+      }, function (err) {
+        dlg.set('content', 'No standard error for this task found.<br>');
+      });
+    });
+  }
+
+  function displayDetail(item, columns, parent, options) {
+    var table = domConstruct.create('table', {}, parent);
+    var tbody = domConstruct.create('tbody', {}, table);
+
+    columns.forEach(function (column) {
+      var row = renderProperty(column, item, options);
+      if (row) {
+        domConstruct.place(row, tbody);
+      }
+    });
+  }
+
+  function displayDetailSubsystems(item, columns, parent, options) {
+    var table = domConstruct.create('table', {}, parent);
+    var tbody = domConstruct.create('tbody', {}, table);
+
+    columns.forEach(function (column) {
+
+      if (column.text === 'role_name') {
+        // TODO: 1. why are we counting role_name distribution?
+        // 2. this is a wrong taxon id to use (e.g. 1763 -> 1765)
+        // 3. need to de-duplicate fecet query
+
+        if (item.genome_count > 1) {
+
+          var query = 'q=genome_id:(' + options.genome_ids.join(' OR ') + ') AND subsystem_id:("' + item.subsystem_id + '")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000';
+          when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/solr+json',
+              'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            },
+            data: query
+          }), function (response) {
+
+            var role_list = '';
+            var role_items = response.facet_counts.facet_fields.role_name;
+
+            for (var i = 0; i < role_items.length; i += 2) {
+              var role = '&#8226 ' + role_items[i] + ' <span style="font-weight: bold;">(' + role_items[i + 1] + ')</span><br>';
+              role_list += role;
+            }
+
+            item.role_name = role_list;
+
+            var row = renderProperty(column, item, options);
+            if (row) {
+              domConstruct.place(row, tbody);
+            }
+          });
+        } else {
+          var query = 'q=genome_id:(' + item.genome_id + ') AND subsystem_id:("' + item.subsystem_id + '")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000';
+
+          when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/solr+json',
+              'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            },
+            data: query
+          }), function (response) {
+
+            var role_list = '';
+            var role_items = response.facet_counts.facet_fields.role_name;
+
+            for (var i = 0; i < role_items.length; i += 2) {
+              var role = '&#8226 ' + role_items[i] + ' <span style="font-weight: bold;">(' + role_items[i + 1] + ')</span><br>';
+              role_list += role;
+            }
+
+            // var role_list = role_names.join("<br>");
+            item.role_name = role_list;
+
+            var row = renderProperty(column, item, options);
+            if (row) {
+              domConstruct.place(row, tbody);
+            }
+          });
+        }
+      } else {
+        var row = renderProperty(column, item, options);
+        if (row) {
+          domConstruct.place(row, tbody);
+        }
+      }
+    });
+  }
+
   var formatters = {
     'default': function (item, options) {
       options = options || {};
@@ -1504,347 +1843,6 @@ define([
     }
 
   };
-
-
-  function displayHeader(parent, label, iconClass, url, options) {
-    var linkTitle = options && options.linkTitle || false;
-
-    var titleDiv = domConstruct.create('div', {
-      'class': 'DataItemHeader'
-    }, parent);
-
-    domConstruct.create('hr', {}, parent);
-
-    // span icon
-    domConstruct.create('span', { 'class': iconClass }, titleDiv);
-
-    // span label
-    domConstruct.create('span', {
-      innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', { url: url, label: label }) : label
-    }, titleDiv);
-  }
-
-  function displayDetailBySections(item, sections, meta_data, parent, options) {
-
-    var mini = options && options.mini || false;
-
-    var table = domConstruct.create('table', {}, parent);
-    var tbody = domConstruct.create('tbody', {}, table);
-
-    sections.forEach(function (section) {
-      if (!mini) {
-        var header = renderSectionHeader(section);
-        domConstruct.place(header, tbody);
-      }
-
-      var rowCount = 0;
-      meta_data[section].forEach(function (column) {
-        var row = renderProperty(column, item, options);
-        if (row) {
-          domConstruct.place(row, tbody);
-          rowCount++;
-        }
-      });
-
-      // if no data found, say so
-      if (!rowCount && !mini)
-      { renderNoInfoFound(section, tbody); }
-    });
-  }
-
-  function displayStdoutPanels(parent, item) {
-    var stpDiv = domConstruct.create('div', {}, parent);
-    var stdTitle = 'Standard Output';
-    var stddlg = new TitlePane({
-      title: stdTitle,
-      style: 'margin-bottom:5px;',
-      open: false
-    }, stpDiv);
-
-    var tpDiv = domConstruct.create('div', {}, parent);
-    var stderrTitle = 'Error Output';
-    var dlg = new TitlePane({
-      title: stderrTitle,
-      open: false
-    }, tpDiv);
-
-    // add copy to clipboard button
-    var icon = '<i class="icon-clipboard2 pull-right"></i>';
-    var copyBtn = new Button({
-      label: icon,
-      style: {
-        'float': 'right',
-        padding: 0
-      },
-      onClick: function (e) {
-        e.stopPropagation();
-        var self = this;
-
-        // get text
-        var pane = query(self.domNode).parents('.dijitTitlePane')[0];
-        var content = query('pre', pane)[0].innerText;
-
-        // copy contents
-        clipboard.copy(content);
-
-        self.set('label', 'copied');
-        setTimeout(function () {
-          self.set('label', icon);
-        }, 2000);
-      }
-    });
-
-    // on stdout panel open
-    stddlg.watch('open', function (attr, oldVal, open) {
-      if (!open) {
-        return;
-      }
-
-      JobManager.queryTaskDetail(item.id, true, false).then(function (detail) {
-        var titleBar = query('.dijitTitlePaneTextNode',  stddlg.domNode)[0];
-        domConstruct.place(copyBtn.domNode, titleBar);
-
-        console.log('JOB DETAIL: ', detail);
-        if (detail.stdout) {
-          stddlg.set('content', "<pre style='overflow: scroll;'>" + detail.stdout + '</pre>');
-        } else {
-          stddlg.set('content', 'Unable to retreive STDOUT of this task.<br><pre>' + JSON.stringify(detail, null, 4) + '</pre>');
-        }
-
-      }, function (err) {
-        stddlg.set('content', 'No standard output for this task found.<br>');
-      });
-    });
-
-    // on error panel open
-    dlg.watch('open', function (attr, oldVal, open) {
-      if (!open) {
-        return;
-      }
-
-      JobManager.queryTaskDetail(item.id, false, true).then(function (detail) {
-        var titleBar = query('.dijitTitlePaneTextNode',  dlg.domNode)[0];
-        domConstruct.place(copyBtn.domNode, titleBar);
-
-        console.log('JOB DETAIL: ', detail);
-        if (detail.stderr) {
-          dlg.set('content', "<pre style='overflow: scroll;'>" + detail.stderr + '</pre>');
-        } else {
-          dlg.set('content', 'Unable to retreive STDERR of this task.<br><pre>' + JSON.stringify(detail, null, 4) + '</pre>');
-        }
-
-      }, function (err) {
-        dlg.set('content', 'No standard error for this task found.<br>');
-      });
-    });
-  }
-
-  function renderNoInfoFound(sectionName, parent) {
-    domConstruct.create('tr', {
-      innerHTML: '<td></td><td class="DataItemSectionNotFound">None available</td>'
-    }, parent);
-  }
-
-  function displayDetail(item, columns, parent, options) {
-    var table = domConstruct.create('table', {}, parent);
-    var tbody = domConstruct.create('tbody', {}, table);
-
-    columns.forEach(function (column) {
-      var row = renderProperty(column, item, options);
-      if (row) {
-        domConstruct.place(row, tbody);
-      }
-    });
-  }
-
-  function displayDetailSubsystems(item, columns, parent, options) {
-    var table = domConstruct.create('table', {}, parent);
-    var tbody = domConstruct.create('tbody', {}, table);
-
-    columns.forEach(function (column) {
-
-      if (column.text === 'role_name') {
-        // TODO: 1. why are we counting role_name distribution?
-        // 2. this is a wrong taxon id to use (e.g. 1763 -> 1765)
-        // 3. need to de-duplicate fecet query
-
-        if (item.genome_count > 1) {
-
-          var query = 'q=genome_id:(' + options.genome_ids.join(' OR ') + ') AND subsystem_id:("' + item.subsystem_id + '")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000';
-          when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
-            handleAs: 'json',
-            headers: {
-              Accept: 'application/solr+json',
-              'Content-Type': 'application/solrquery+x-www-form-urlencoded',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
-            data: query
-          }), function (response) {
-
-            var role_list = '';
-            var role_items = response.facet_counts.facet_fields.role_name;
-
-            for (var i = 0; i < role_items.length; i += 2) {
-              var role = '&#8226 ' + role_items[i] + ' <span style="font-weight: bold;">(' + role_items[i + 1] + ')</span><br>';
-              role_list += role;
-            }
-
-            item.role_name = role_list;
-
-            var row = renderProperty(column, item, options);
-            if (row) {
-              domConstruct.place(row, tbody);
-            }
-          });
-        } else {
-          var query = 'q=genome_id:(' + item.genome_id + ') AND subsystem_id:("' + item.subsystem_id + '")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000';
-
-          when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
-            handleAs: 'json',
-            headers: {
-              Accept: 'application/solr+json',
-              'Content-Type': 'application/solrquery+x-www-form-urlencoded',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
-            data: query
-          }), function (response) {
-
-            var role_list = '';
-            var role_items = response.facet_counts.facet_fields.role_name;
-
-            for (var i = 0; i < role_items.length; i += 2) {
-              var role = '&#8226 ' + role_items[i] + ' <span style="font-weight: bold;">(' + role_items[i + 1] + ')</span><br>';
-              role_list += role;
-            }
-
-            // var role_list = role_names.join("<br>");
-            item.role_name = role_list;
-
-            var row = renderProperty(column, item, options);
-            if (row) {
-              domConstruct.place(row, tbody);
-            }
-          });
-        }
-      } else {
-        var row = renderProperty(column, item, options);
-        if (row) {
-          domConstruct.place(row, tbody);
-        }
-      }
-    });
-  }
-
-  function renderProperty(column, item, options) {
-    var key = column.text;
-    var label = column.name;
-    var multiValued = column.multiValued || false;
-    var mini = options && options.mini || false;
-    // console.log("column=", column, "item=", item, "key=", key, "label=", label);
-    if (key && item[key] && !column.data_hide) {
-      if (column.isList) {
-        var tr = domConstruct.create('tr', {});
-        var td = domConstruct.create('td', { colspan: 2 }, tr);
-
-        domConstruct.place(renderMultiData(label, item[key]), td);
-        return tr;
-      } else if (multiValued) {
-        var tr = domConstruct.create('tr', {});
-        var td = domConstruct.create('td', { colspan: 2 }, tr);
-
-        domConstruct.place(renderDataTable(item[key]), td);
-        return tr;
-      } else if (column.type == 'date') {
-        // display dates as MM/DD/YYYY, unless collection date or not parseable
-        var d = new Date(item[key]);
-        if (key === 'collection_date') {
-          var dateStr = item[key];
-        } else {
-          var d = new Date(item[key]);
-          if (d instanceof Date && !isNaN(d)) {
-            var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
-          } else {
-            var dateStr = item[key];
-          }
-        }
-
-        return renderRow(label, dateStr);
-      } else if (!mini || column.mini) {
-        var l = evaluateLink(column.link, item[key], item);
-        // console.log("item[key]=", item[key]);
-        // a special case for service app
-        if (label == 'Service') {
-          l = formatter.serviceLabel(item[key]);
-        }
-        return renderRow(label, l);
-      }
-    }
-  }
-
-  function evaluateLink(link, value, item) {
-    return (link && value !== '-' && value !== '0') ? (
-      (typeof (link) == 'function') ? link.apply(this, [item]) : '<a href="' + link + value + '" target="_blank">' + value + '</a>'
-    ) : value;
-  }
-
-  function renderSectionHeader(title) {
-    var tr = domConstruct.create('tr', {});
-    domConstruct.create('td', {
-      innerHTML: title,
-      'class': 'DataItemSectionHead',
-      colspan: 2
-    }, tr);
-
-    return tr;
-  }
-
-  function renderRow(property, value) {
-    var tr = domConstruct.create('tr', {});
-    domConstruct.create('td', {
-      'class': 'DataItemProperty',
-      innerHTML: property
-    }, tr);
-    domConstruct.create('td', {
-      'class': 'DataItemValue',
-      innerHTML: value
-    }, tr);
-
-    return tr;
-  }
-
-  function renderDataTable(data) {
-    var table = domConstruct.create('table', { 'class': 'p3table' });
-    for (var i = 0, len = data.length; i < len; i++) {
-      var k = data[i].split(':')[0],
-        v = data[i].split(':')[1];
-
-      var tr = domConstruct.create('tr', {}, table);
-      domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: k }, tr);
-      domConstruct.create('td', { 'class': 'DataItemValue', innerHTML: v }, tr);
-    }
-    return table;
-  }
-
-  function renderMultiData(label, data) {
-    var table = domConstruct.create('table', { 'class': 'p3table' });
-    var tr = domConstruct.create('tr', {}, table);
-    domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: label }, tr);
-
-    var ul = domConstruct.create('ul', null, tr);
-    if (typeof data == 'object') {
-      for (var i = 0, len = data.length; i < len; i++) {
-        var val = data[i];
-        domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: val }, ul);
-      }
-    } else if (typeof data == 'string') {
-      domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: data }, ul);
-    }
-
-    return table;
-  }
-
 
   return function (item, type, options) {
 

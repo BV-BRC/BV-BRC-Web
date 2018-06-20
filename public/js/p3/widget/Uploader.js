@@ -323,12 +323,6 @@ define([
     initDragAndDrop: function () {
       var self = this;
 
-      // add dnd events
-      this.dndZone = document.getElementById('dnd-zone');
-      this.dndZone.addEventListener('dragover', onDragOver);
-      this.dndZone.addEventListener('dragleave', onDragLeave);
-      this.dndZone.addEventListener('drop', onDragDrop);
-
       function onDragLeave(e) {
         if (e.target.className.indexOf('dnd-active') != -1)
         { self.dndZone.classList.remove('dnd-active'); }
@@ -353,6 +347,12 @@ define([
         self.onFileSelectionChange(null, files);
         self.validate();
       }
+
+      // add dnd events
+      this.dndZone = document.getElementById('dnd-zone');
+      this.dndZone.addEventListener('dragover', onDragOver);
+      this.dndZone.addEventListener('dragleave', onDragLeave);
+      this.dndZone.addEventListener('drop', onDragDrop);
     },
 
     validate: function () {

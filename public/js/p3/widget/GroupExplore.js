@@ -23,6 +23,106 @@ define([
   var myPath = null;
   var id_array = [];
 
+  function createRegionName(selectedRegions) {
+    var max_mask = 0;
+    var mask_array = [];
+    var name_array = [];
+    regionName = '';
+    if (groups.length == 2) {
+      max_mask = 3;
+    } else if (groups.length == 3) {
+      max_mask = 7;
+    }
+
+    for (var i = 0, ilen = max_mask; i < ilen; ++i) {
+      mask_array[i] = 0;
+      name_array[i] = '';
+    }
+
+    for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
+      if (i == 0) {
+        regionName = selectedRegions[i].region_name;
+      } else {
+        regionName = '(' + regionName + ') U (' + selectedRegions[i].region_name + ')';
+      }
+      mask_array[selectedRegions[i].region_mask - 1] = 1;
+      name_array[selectedRegions[i].region_mask - 1] = selectedRegions[i].region_name;
+      // console.log("i=" + i + " region_mask=" + selectedRegions[i].region_mask + " name=" +selectedRegions[i].region_name);
+    }
+
+    if (max_mask == 3) {
+      if (mask_array[0] && mask_array[1] && mask_array[2]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
+      } else if (mask_array[0] && mask_array[2]) {
+        regionName = groups[0].name;
+      } else if (mask_array[1] && mask_array[2]) {
+        regionName = groups[1].name;
+      }
+    } else if (max_mask == 7) {
+      var center_name = '(' + groups[0].name + ') + (' + groups[1].name + ') + (' + groups[2].name + ')';
+      if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ') U (' + name_array[1] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[1] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[2] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = groups[2].name;
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[4] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = groups[1].name;
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[5] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = groups[0].name;
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] == 0
+        && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') - (' + groups[2].name + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] == 0
+        && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ') - (' + groups[1].name + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] == 0 && mask_array[5]
+        && mask_array[6] == 0) {
+        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ') - (' + groups[0].name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
+          + groups[0].name + ') + (' + groups[1].name + ') - (' + groups[2].name + ')' + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
+          + groups[1].name + ') + (' + groups[2].name + ') - (' + groups[0].name + ')' + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
+          + groups[0].name + ') + (' + groups[2].name + ') - (' + groups[1].name + ')' + ')';
+      }
+    }
+    return regionName;
+  }
+
   var selectionListener = function () {
     var selected = groupCompare.getSelectedMembers();
     var regions = groupCompare.getSelectedRegions();
@@ -176,106 +276,6 @@ define([
     }
   };
 
-  function createRegionName(selectedRegions) {
-    var max_mask = 0;
-    var mask_array = [];
-    var name_array = [];
-    regionName = '';
-    if (groups.length == 2) {
-      max_mask = 3;
-    } else if (groups.length == 3) {
-      max_mask = 7;
-    }
-
-    for (var i = 0, ilen = max_mask; i < ilen; ++i) {
-      mask_array[i] = 0;
-      name_array[i] = '';
-    }
-
-    for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
-      if (i == 0) {
-        regionName = selectedRegions[i].region_name;
-      } else {
-        regionName = '(' + regionName + ') U (' + selectedRegions[i].region_name + ')';
-      }
-      mask_array[selectedRegions[i].region_mask - 1] = 1;
-      name_array[selectedRegions[i].region_mask - 1] = selectedRegions[i].region_name;
-      // console.log("i=" + i + " region_mask=" + selectedRegions[i].region_mask + " name=" +selectedRegions[i].region_name);
-    }
-
-    if (max_mask == 3) {
-      if (mask_array[0] && mask_array[1] && mask_array[2]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
-      } else if (mask_array[0] && mask_array[2]) {
-        regionName = groups[0].name;
-      } else if (mask_array[1] && mask_array[2]) {
-        regionName = groups[1].name;
-      }
-    } else if (max_mask == 7) {
-      var center_name = '(' + groups[0].name + ') + (' + groups[1].name + ') + (' + groups[2].name + ')';
-      if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ') U (' + name_array[1] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[1] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[2] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = groups[2].name;
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[4] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = groups[1].name;
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[5] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = groups[0].name;
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] == 0
-        && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') - (' + groups[2].name + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] == 0
-        && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ') - (' + groups[1].name + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] == 0 && mask_array[5]
-        && mask_array[6] == 0) {
-        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ') - (' + groups[0].name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[0].name + ') + (' + groups[1].name + ') - (' + groups[2].name + ')' + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[1].name + ') + (' + groups[2].name + ') - (' + groups[0].name + ')' + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[0].name + ') + (' + groups[2].name + ') - (' + groups[1].name + ')' + ')';
-      }
-    }
-    return regionName;
-  }
-
   function createGroup() {
     if (regionGroupName && ids.length > 0) {
       var idType = 'genome_id';
@@ -411,6 +411,18 @@ define([
     return replace_svghtml;
   }
 
+  function groupsLoaded(length) {
+    if (length == 1 || length > 3) {
+      alert('Please select two or three groups to compare');
+    } else if (length == 2) {
+      groupCompare.createDisplayTwo();
+      populateGroupTable();
+    } else {
+      groupCompare.createDisplay();
+      populateGroupTable();
+    }
+  }
+
   function init_g(group_data, groupType) {
     groupCompare = null;
     myHash = null;
@@ -460,18 +472,6 @@ define([
     }
     console.log(' groups ', groups);
     groupsLoaded(groups.length);
-  }
-
-  function groupsLoaded(length) {
-    if (length == 1 || length > 3) {
-      alert('Please select two or three groups to compare');
-    } else if (length == 2) {
-      groupCompare.createDisplayTwo();
-      populateGroupTable();
-    } else {
-      groupCompare.createDisplay();
-      populateGroupTable();
-    }
   }
 
   function saveSVG() {
