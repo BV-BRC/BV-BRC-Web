@@ -27,7 +27,7 @@ define(
         return obj;
       }
       for (var i in obj) {
-        if (obj.hasOwnProperty(i)) {
+        if (Object.prototype.hasOwnProperty.call(obj, i)) {
           var foundLabel = findObjectByLabel(obj[i], label);
           if (foundLabel) {
             return foundLabel;
@@ -204,18 +204,18 @@ define(
     };
 
     // source: http://stackoverflow.com/questions/3426404/create-a-hexadecimal-colour-based-on-a-string-with-javascript
-    var colorHash = function (str) {
-      var hash = 0;
-      for (var i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      var colour = '#';
-      for (var i = 0; i < 3; i++) {
-        var value = (hash >> (i * 8)) & 0xFF;
-        colour += ('00' + value.toString(16)).substr(-2);
-      }
-      return colour;
-    };
+    // var colorHash = function (str) {
+    //   var hash = 0;
+    //   for (var i = 0; i < str.length; i++) {
+    //     hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    //   }
+    //   var colour = '#';
+    //   for (var i = 0; i < 3; i++) {
+    //     var value = (hash >> (i * 8)) & 0xFF;
+    //     colour += ('00' + value.toString(16)).substr(-2);
+    //   }
+    //   return colour;
+    // };
 
     var formatters = {
       getExternalLinks: getExternalLinks,
@@ -423,7 +423,7 @@ define(
         _autoLabels = {};
         if (ws_location == 'itemDetail') {
           _app_label = null;
-          if (autoData.hasOwnProperty('app') && autoData.app.hasOwnProperty('id')) {
+          if (Object.prototype.hasOwnProperty.call(autoData, 'app') && Object.prototype.hasOwnProperty.call(autoData.app, 'id')) {
             _app_label = autoData.app.id;
           }
           if (_app_label == 'GenomeAnnotation') {
@@ -455,8 +455,8 @@ define(
             size: { label: 'File Size', format: this.humanFileSize }
           };
           Object.keys(autoData).forEach(function (key) {
-            if (_autoLabels.hasOwnProperty(key)) {
-              if (_autoLabels[key].hasOwnProperty('format')) {
+            if (Object.prototype.hasOwnProperty.call(_autoLabels, key)) {
+              if (Object.prototype.hasOwnProperty.call(_autoLabels[key], 'format')) {
                 _autoLabels[key].value = _autoLabels[key].format(autoData[key]);
               }
               else {
@@ -513,7 +513,10 @@ define(
           }
         } else {
           for (var item in spec) {
-            table.push('<tr><td width="10%"><b>' +  spec[item].label + '</b></td><td>' + spec[item].value + '</td></tr>');
+            // guard-for-in
+            if (Object.prototype.hasOwnProperty.call(spec, item)) {
+              table.push('<tr><td width="10%"><b>' +  spec[item].label + '</b></td><td>' + spec[item].value + '</td></tr>');
+            }
           }
         }
         table.push('</tbody></table>');

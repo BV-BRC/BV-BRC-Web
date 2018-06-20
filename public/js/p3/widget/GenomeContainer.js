@@ -50,8 +50,6 @@ define([
     onSetState: function (attr, oldVal, state) {
       console.log('GenomeContainer set STATE.  genome_ids: ', state.genome_ids, ' state: ', state);
 
-      var q = [];
-
       if (this.filterPanel) {
         console.log('SET FILTERPANEL STATE: ', state);
         this.filterPanel.set('state', state);

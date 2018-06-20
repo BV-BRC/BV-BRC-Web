@@ -76,7 +76,7 @@ define([
 
       var wikiApiUrl = 'https://en.wikipedia.org/w/api.php';
 
-      var token = '?action=centralauthtoken&format=json';
+      // var token = '?action=centralauthtoken&format=json';
       var query = '?action=query&prop=extracts&exintro=&format=json&titles=';
 
       var origin = '&origin=' + window.location.origin;

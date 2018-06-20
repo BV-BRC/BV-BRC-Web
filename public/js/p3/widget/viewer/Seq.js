@@ -100,7 +100,7 @@ define([
                 // console.log('[Seq] object:', o);
                 // console.log('[Seq] partner:', partner);
                 record = {
-                  path:o.url, keyAndLabel:o.name, store:o.id, trackType:jBrowseTrackType, storeType:jBrowseStoreType, baiPath:partner.url
+                  path: o.url, keyAndLabel: o.name, store: o.id, trackType: jBrowseTrackType, storeType: jBrowseStoreType, baiPath: partner.url
                 };
               } catch (err) {
                 // console.log('[Seq] Missing .bai file; no track can be read');
@@ -110,14 +110,14 @@ define([
               jBrowseTrackType = 'JBrowse/Store/BigWig';
               jBrowseStoreType = 'JBrowse/View/Track/Wiggle/XYPlot';
               record = {
-                path:o.url, keyAndLabel:o.name, store:o.id, trackType:jBrowseTrackType, storeType:jBrowseStoreType
+                path: o.url, keyAndLabel: o.name, store: o.id, trackType: jBrowseTrackType, storeType: jBrowseStoreType
               };
               break;
             case 'gff':
               jBrowseStoreType = 'JBrowse/Store/SeqFeature/GFF3';
               jBrowseTrackType = 'JBrowse/View/Track/CanvasFeatures';
               record = {
-                path:o.url, keyAndLabel:o.name, store:o.id, trackType:jBrowseTrackType, storeType:jBrowseStoreType
+                path: o.url, keyAndLabel: o.name, store: o.id, trackType: jBrowseTrackType, storeType: jBrowseStoreType
               };
               break;
             case 'vcf.gz':
@@ -128,7 +128,7 @@ define([
                 // console.log('[Seq] object:', o);
                 // console.log('[Seq] partner:', partner);
                 record = {
-                  path:o.url, keyAndLabel:o.name, store:o.id, trackType:jBrowseTrackType, storeType:jBrowseStoreType, tbiPath:partner.url
+                  path: o.url, keyAndLabel: o.name, store: o.id, trackType: jBrowseTrackType, storeType: jBrowseStoreType, tbiPath: partner.url
                 };
               } catch (err) {
                 // console.log('[Seq] Missing .bai file; no track can be read');

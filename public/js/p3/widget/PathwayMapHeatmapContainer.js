@@ -126,7 +126,7 @@ define([
         // dedupe features
         var featureSet = {};
         response.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });
@@ -167,7 +167,7 @@ define([
         // dedupe features
         var featureSet = {};
         response.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });
@@ -348,7 +348,7 @@ define([
 
         var dlg = new Dialog({ title: 'Add This Feature To Group' });
         var stg = new SelectionToGroup({
-          selection: features.map(function (f) { return { feature_id:f }; }),
+          selection: features.map(function (f) { return { feature_id: f }; }),
           type: 'feature_group'
         });
         on(dlg.domNode, 'dialogAction', function (evt) {

@@ -95,7 +95,6 @@ define([
         createUploadNodes: createUploadNode,
         overwrite: overwrite
       }]), function (results) {
-        var res;
         if (!results[0][0] || !results[0][0]) {
           throw new Error('Error Creating Object');
         } else {
@@ -365,7 +364,6 @@ define([
     },
 
     getObjectsByType: function (types, showHidden, specialPath) {
-      var _self = this;
       types = (types instanceof Array) ? types : [types];
       // console.log("Get ObjectsByType: ", types);
 
@@ -576,7 +574,7 @@ define([
         });
 
         if (hiddenFolders.length) {
-          var jobProms = this.moveJobData(hiddenFolders, dest, true /* should move */);
+          this.moveJobData(hiddenFolders, dest, true /* should move */);
 
           Topic.publish('/Notification', {
             message: "<span class='default'>Moving associated job result data...</span>"

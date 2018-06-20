@@ -235,7 +235,7 @@ define([
         var depth = 0;
         var beg_intergenic_id,
           beg_intergenic_pos;
-        var intergenic = [];
+        // var intergenic = [];
         endpoints.forEach(function (elt) {
           var peg = elt[0];
           var pos = elt[1];
@@ -401,11 +401,11 @@ define([
 
       var glyph;
 
-      var make_bg = function () {
-        // Draw a background highlight.
-        var bg = this.make_rect(row, x1, x2, height + 4);
-        bg.setFill('rgb(220,220,220)');
-      }.bind(this);
+      // var make_bg = function () {
+      //   // Draw a background highlight.
+      //   var bg = this.make_rect(row, x1, x2, height + 4);
+      //   bg.setFill('rgb(220,220,220)');
+      // }.bind(this);
 
       // Skip active sites for now.
       if (feature.type == 'site_annotation')
@@ -467,7 +467,7 @@ define([
         }
       }
 
-      var bb = glyph.getTransformedBoundingBox();
+      // var bb = glyph.getTransformedBoundingBox();
 
       glyph.feature = feature;
 
@@ -503,7 +503,7 @@ define([
           // console.log(data[0]);
           Topic.publish(topicId, 'hideLoadingMask');
 
-          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle:true });
+          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
           if (!window.featureDialog) {
             window.featureDialog = new Dialog({ title: 'Feature Summary' });
           }
@@ -513,7 +513,7 @@ define([
       };
 
       var dbClickHandler = function (evt) {
-        Topic.publish('/navigate', { href:'/view/Feature/' + feature.fid + '#view_tab=compareRegionViewer' });
+        Topic.publish('/navigate', { href: '/view/Feature/' + feature.fid + '#view_tab=compareRegionViewer' });
       };
 
       // check click events

@@ -277,8 +277,8 @@ define([
         'class': 'ActionButtonWrapper',
         rel: 'DownloadTable'
       });
-      var b = domConstruct.create('div', { 'class': 'fa icon-download fa-2x' }, wrapper);
-      var t = domConstruct.create('div', { innerHTML: 'DOWNLOAD', 'class': 'ActionButtonText' }, wrapper);
+      domConstruct.create('div', { 'class': 'fa icon-download fa-2x' }, wrapper);
+      domConstruct.create('div', { innerHTML: 'DOWNLOAD', 'class': 'ActionButtonText' }, wrapper);
       on(wrapper, 'div:click', function (evt) {
         popup.open({
           popup: downloadTT,

@@ -91,7 +91,10 @@ define([
       /* istanbul ignore next */
       if (opts) {
         for (var prop in opts) {
-          this[prop] = opts[prop];
+          // guard-for-in
+          if (Object.prototype.hasOwnProperty.call(opts, prop)) {
+            this[prop] = opts[prop];
+          }
         }
       }
 
@@ -442,7 +445,10 @@ define([
 
           if (typeof params === 'object') {
             for (prop in params) {
-              w.set(prop, params[prop]);
+              // guard-for-in
+              if (Object.prototype.hasOwnProperty.call(params, prop)) {
+                w.set(prop, params[prop]);
+              }
             }
           } else if (params && p.dataParam) {
             w.set(p.dataParam, params);

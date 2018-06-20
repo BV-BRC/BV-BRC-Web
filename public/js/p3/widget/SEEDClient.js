@@ -119,7 +119,7 @@ define([
         id: this.id++
       };
 
-      var beforeSend = null;
+      // var beforeSend = null;
 
       var headers = {};
 

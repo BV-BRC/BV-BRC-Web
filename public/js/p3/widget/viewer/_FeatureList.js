@@ -68,7 +68,7 @@ define([
     },
 
     onSetQuery: function (attr, oldVal, newVal) {
-      var qe = QueryToEnglish(newVal);
+      // var qe = QueryToEnglish(newVal);
 
       this.queryNode.innerHTML = ''; // Features: " + qe;
     },
@@ -125,12 +125,12 @@ define([
       this.overview = new Overview({
         content: 'Overview',
         title: 'Feature List Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
 
       this.features = new FeatureGridContainer({
         title: 'Features',
-        id: this.viewer.id + '_' + 'features',
+        id: this.viewer.id + '_features',
         tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
         disabled: false
       });

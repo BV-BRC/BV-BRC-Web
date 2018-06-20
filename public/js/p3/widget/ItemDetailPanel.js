@@ -169,7 +169,7 @@ define([
               _self[key + 'Node'].set('displayedValue', val);
               _self[key + 'Node'].cancel();
 
-              if (this.changeableTypes.hasOwnProperty(val)) {
+              if (Object.prototype.hasOwnProperty.call(this.changeableTypes, val)) {
                 // build change type dropdown
                 _self[key + 'Node'].set('disabled', false);
                 domStyle.set(_self[key + 'Node'].domNode, 'text-decoration', 'underline');
@@ -243,10 +243,10 @@ define([
                 if (!curAuto[prop] || prop == 'inspection_started') {
                   return;
                 }
-                if (curAuto[prop].hasOwnProperty('label') && curAuto[prop].hasOwnProperty('value')) {
+                if (Object.prototype.hasOwnProperty.call(curAuto[prop], 'label') && Object.prototype.hasOwnProperty.call(curAuto[prop], 'value')) {
                   subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + ': <span class="ItemDetailAttributeValue">' + curAutoLabel[prop].value + '</span></div></br>');
                 }
-                else if (curAuto[prop].hasOwnProperty('label')) {
+                else if (Object.prototype.hasOwnProperty.call(curAuto[prop], 'label')) {
                   subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + '</div></br>');
                 }
               }, this);

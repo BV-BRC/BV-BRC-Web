@@ -127,7 +127,7 @@ define([
       /**
        * Build the form and events
        */
-      var ownerId = Formatter.baseUsername(this.user);
+      // var ownerId = Formatter.baseUsername(this.user);
 
       var form = self.form = domConstruct.toDom('<div class="userPermForm">');
       domConstruct.place(
@@ -252,9 +252,9 @@ define([
       * list solr (initial) permissions in dom
     */
     listSolrPermissions: function () {
-      var self = this,
-        form = self.form,
-        selection = this.selection;
+      var self = this;
+      // var form = self.form;
+      var selection = this.selection;
 
       /**
        * not yet allowing publication

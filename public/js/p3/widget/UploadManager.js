@@ -24,7 +24,7 @@ define([
         }
 
         keys.forEach(function (fname) {
-          var f = data.activeFiles[fname];
+          // var f = data.activeFiles[fname];
           domConstruct.create('div', { innerHTML: fname }, this.domNode);
 
         }, this);

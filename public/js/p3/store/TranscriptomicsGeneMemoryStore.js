@@ -370,7 +370,7 @@ define([
           }));
           var pbExpIds = {};
           pbComparisons.forEach(function (d) {
-            if (!pbExpIds.hasOwnProperty(d.eid)) {
+            if (!Object.prototype.hasOwnProperty.call(pbExpIds, d.eid)) {
               pbExpIds[d.eid] = true;
             }
           });
@@ -413,7 +413,7 @@ define([
       var genomeNameMap = {},
         genomeCountMap = {};
       data.forEach(function (d) {
-        if (!genomeCountMap.hasOwnProperty(d.genome_id)) {
+        if (!Object.prototype.hasOwnProperty.call(genomeCountMap, d.genome_id)) {
           genomeNameMap[d.genome_id] = d.genome_name;
           genomeCountMap[d.genome_id] = 1;
         } else {

@@ -27,7 +27,6 @@ define([
         return;
       }
 
-      var display_reference_genomes = this.getStateParams(state);
       var that = this;
       var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
 
@@ -79,7 +78,7 @@ define([
     getSubsystemDescription: function (subsystemId) {
 
       var def = new Deferred();
-      var ref_query = 'q=subsystem_id:"' +  subsystemId + '"' + '&fl=description,pmid&rows=1';
+      var ref_query = 'q=subsystem_id:"' +  subsystemId + '"&fl=description,pmid&rows=1';
 
       when(request.post(window.App.dataAPI + 'subsystem_ref/', {
         handleAs: 'json',
@@ -241,7 +240,7 @@ define([
 
             $('#subsystemheatmapheader').append( '<br><br>');
             // $('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
-            $('#subsystemheatmapheader').append( '<br><p>' + '<span style="font-size: 1.1em;font-weight: bold">' + 'Associated Publication IDs: ' + pmidString + '</span>' + '</p>');
+            $('#subsystemheatmapheader').append( '<br><p><span style="font-size: 1.1em;font-weight: bold">Associated Publication IDs: ' + pmidString + '</span></p>');
 
 
           } else if ( data && data.description ) {
@@ -256,7 +255,7 @@ define([
             });
             var pmidString = pmids.join(', ');
             $('#subsystemheatmapheader').append( '<br><br>');
-            $('#subsystemheatmapheader').append( '<br><p>' + '<span style="font-size: 1.1em;font-weight: bold">' + 'Associated Publication IDs: ' + pmidString + '</span>' + '</p>');
+            $('#subsystemheatmapheader').append( '<br><p><span style="font-size: 1.1em;font-weight: bold">Associated Publication IDs: ' + pmidString + '</span></p>');
           }
 
         });
@@ -265,7 +264,7 @@ define([
         var genomeIds = response.facet_counts.facet_fields.genome_id;
 
         for (var key in genomeIds) {
-          if (genomeIds.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(genomeIds, key)) {
             genomeIdList.push(key);
           }
         }
@@ -282,8 +281,8 @@ define([
       var that = this;
 
       Topic.subscribe('SubSystemMapResize', lang.hitch(self, function () {
-        var key = arguments[0],
-          value = arguments[1];
+        var key = arguments[0];
+        // var value = arguments[1];
         switch (key) {
           case 'toggleDescription':
             if (that.showHeader) {
