@@ -23,6 +23,7 @@ define([
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
+    //in case an empty string is returned, handle coloring gracefully
     superClassColorCodes: {
       'CELLULAR PROCESSES':                   Theme.colors[0],
       'MEMBRANE TRANSPORT':                   Theme.colors[1],
@@ -36,10 +37,11 @@ define([
       'MISCELLANEOUS':                        Theme.colors[9],
       'PROTEIN PROCESSING':                   Theme.colors[10],
       'RNA PROCESSING':                       Theme.colors[11],
+      '':                                     Theme.colors[12]
     },
 
     // x + "Other" as aggregation of what is left over
-    subsystemMaxNumToDisplay: 12,
+    subsystemMaxNumToDisplay: 13,
 
     onSetState: function (attr, oldState, state) {
 
