@@ -18,32 +18,30 @@ define([
     firstLoad: true,
     establishProps: true,
     selectedClassDictionary: {},
-
+    
     constructor: function () {
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
+    //in case an empty string is returned, handle coloring gracefully
     superClassColorCodes: {
       'CELLULAR PROCESSES':                   Theme.colors[0],
       'MEMBRANE TRANSPORT':                   Theme.colors[1],
-      METABOLISM:                           Theme.colors[2],
+      'METABOLISM':                           Theme.colors[2],
       'REGULATION AND CELL SIGNALING':        Theme.colors[3],
       'STRESS RESPONSE, DEFENSE, VIRULENCE':  Theme.colors[4],
       'CELL ENVELOPE':                        Theme.colors[5],
       'CELLULAR PROCESSES':                   Theme.colors[6],
       'DNA PROCESSING':                       Theme.colors[7],
-      ENERGY:                               Theme.colors[8],
-      'MEMBRANE TRANSPORT':                   Theme.colors[9],
-      METABOLISM:                           Theme.colors[10],
-      MISCELLANEOUS:                        Theme.colors[11],
-      'PROTEIN PROCESSING':                   Theme.colors[12],
-      'REGULATION AND CELL SIGNALING':        Theme.colors[13],
-      'RNA PROCESSING':                       Theme.colors[14],
-      'STRESS RESPONSE, DEFENSE, VIRULENCE':  Theme.colors[15]
+      'ENERGY':                               Theme.colors[8],
+      'MISCELLANEOUS':                        Theme.colors[9],
+      'PROTEIN PROCESSING':                   Theme.colors[10],
+      'RNA PROCESSING':                       Theme.colors[11],
+      '':                                     Theme.colors[12]
     },
 
     // x + "Other" as aggregation of what is left over
-    subsystemMaxNumToDisplay: 16,
+    subsystemMaxNumToDisplay: 13,
 
     onSetState: function (attr, oldState, state) {
 
