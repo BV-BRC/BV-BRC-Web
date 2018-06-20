@@ -151,8 +151,11 @@ define(['dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
       req.open('PUT', url, true);
 
       for (var prop in this.headers) {
-        // console.log("Set Request Header: ", prop, this.headers[prop]);
-        req.setRequestHeader(prop, this.headers[prop]);
+        // guard-for-in
+        if (Object.prototype.hasOwnProperty.call(this.headers, prop)) {
+          // console.log("Set Request Header: ", prop, this.headers[prop]);
+          req.setRequestHeader(prop, this.headers[prop]);
+        }
       }
 
       Topic.publish('/upload', {

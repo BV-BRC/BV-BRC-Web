@@ -125,6 +125,17 @@ define([
         return newState;
       }
 
+      function populateState(params) {
+        var newState = { href: params.newPath };
+        for (var prop in params.state) {
+          // guard-for-in
+          if (Object.prototype.hasOwnProperty.call(params.state, prop)) {
+            newState[prop] = params.state[prop];
+          }
+        }
+        return newState;
+      }
+
       /*
       Router.register("\/$", function(params, oldPath, newPath, state){
         console.log("HOME route", params.newPath);
@@ -147,10 +158,8 @@ define([
 
       Router.register('/job(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'p3/widget/JobManager';
@@ -173,10 +182,8 @@ define([
 
       Router.register('/uploads(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'p3/widget/UploadManager';
@@ -189,10 +196,8 @@ define([
 
       Router.register('/content(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'dijit/layout/ContentPane';
@@ -247,10 +252,8 @@ define([
 
       Router.register('/help(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'dijit/layout/ContentPane';
@@ -266,10 +269,8 @@ define([
 
       Router.register('/workspace(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || ('/' + _self.user.id ); //  + "/home/")
         var parts = path.split('/');
@@ -314,10 +315,7 @@ define([
         }
         // console.log("Parts:", parts, type, viewerParams)
 
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
 
         // console.log("Parts:", parts, type, path)
         newState.widgetClass = 'p3/widget/app/' + type;

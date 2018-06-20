@@ -35,7 +35,10 @@ define(['dojo/_base/declare', 'dojo/router/RouterBase'
       callbackArgs = callbackArgs.concat(params);
     } else {
       for (var key in params) {
-        callbackArgs.push(params[key]);
+        // guard-for-in
+        if (Object.prototype.hasOwnProperty.call(params, key)) {
+          callbackArgs.push(params[key]);
+        }
       }
     }
 

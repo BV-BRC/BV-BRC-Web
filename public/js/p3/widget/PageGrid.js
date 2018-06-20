@@ -228,8 +228,11 @@ define([
         this.allSelected = true;
         this.selection = {}; // we do this to clear out pages from previous sorts
         for (var i in this._rowIdToObject) {
-          var row = this.row(this._rowIdToObject[i]);
-          this._select(row.id, null, true);
+          // guard-for-in
+          if (Object.prototype.hasOwnProperty.call(this._rowIdToObject, i)) {
+            var row = this.row(this._rowIdToObject[i]);
+            this._select(row.id, null, true);
+          }
         }
         this._fireSelectionEvents();
       }

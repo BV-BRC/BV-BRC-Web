@@ -646,7 +646,10 @@ define([
       }
 
       for (var fakeColumnName in that.clusterHeaderDictionary) {
-        header.push(fakeColumnName);
+        // guard-for-in
+        if (Object.prototype.hasOwnProperty.call(that.clusterHeaderDictionary, fakeColumnName)) {
+          header.push(fakeColumnName);
+        }
       }
 
       tablePass.push(header.join('\t'));

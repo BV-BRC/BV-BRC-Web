@@ -513,7 +513,10 @@ define(
           }
         } else {
           for (var item in spec) {
-            table.push('<tr><td width="10%"><b>' +  spec[item].label + '</b></td><td>' + spec[item].value + '</td></tr>');
+            // guard-for-in
+            if (Object.prototype.hasOwnProperty.call(spec, item)) {
+              table.push('<tr><td width="10%"><b>' +  spec[item].label + '</b></td><td>' + spec[item].value + '</td></tr>');
+            }
           }
         }
         table.push('</tbody></table>');
