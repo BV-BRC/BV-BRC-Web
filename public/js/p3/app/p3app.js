@@ -375,7 +375,9 @@ define([
       // update "My Data" > "Completed Jobs" count on homepage
       this.api.service('AppService.query_task_summary', []).then(function (status) {
         var node = dom.byId('MyDataJobs');
-        node.innerHTML = status[0].completed + ' Completed Jobs';
+        if (node) {
+          node.innerHTML = status[0].completed + ' Completed Jobs';
+        }
       });
 
       this.inherited(arguments);
