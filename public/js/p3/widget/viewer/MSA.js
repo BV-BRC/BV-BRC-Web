@@ -423,10 +423,10 @@ define([
       opts.el = msaDiv;
       opts.bootstrapMenu = false;
       if (this.alignType == 'protein') {
-        opts.colorscheme = { scheme:'taylor' };
+        opts.colorscheme = { scheme: 'taylor' };
       }
       else if (this.alignType == 'dna') {
-        opts.colorscheme = { scheme:'nucleotide' };
+        opts.colorscheme = { scheme: 'nucleotide' };
       }
       opts.vis = {
         conserv: false,

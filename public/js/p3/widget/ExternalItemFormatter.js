@@ -103,7 +103,7 @@ define([
           }));
 
           // add show more link
-          domConstruct.create('a', { href: 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + term, target:'_blank', innerHTML: 'show more >>' }, div);
+          domConstruct.create('a', { href: 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + term, target: '_blank', innerHTML: 'show more >>' }, div);
         }
         else {
           domConstruct.create('li', { innerHTML: 'No recent articles found.' }, topLevelUl);

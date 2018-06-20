@@ -596,7 +596,7 @@ define([
           }
         );
     },
-    logout:function () {
+    logout: function () {
       if (!window.App.uploadInProgress) {
         localStorage.removeItem('tokenstring');
         localStorage.removeItem('userProfile');

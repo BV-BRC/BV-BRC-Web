@@ -356,11 +356,11 @@ define([
           {
             label: 'Workspaces',
             value: 'mine',
-            selected:  _self.path.split('/')[1] != 'public'
+            selected: _self.path.split('/')[1] != 'public'
           }, {
             label: 'Public Workspaces',
             value: 'public',
-            selected:  _self.path.split('/')[1] == 'public'
+            selected: _self.path.split('/')[1] == 'public'
           }
         ]
       });

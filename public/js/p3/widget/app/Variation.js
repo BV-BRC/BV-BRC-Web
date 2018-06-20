@@ -23,7 +23,7 @@ define([
     defaultPath: '',
     startingRows: 7,
 
-    listValues:function (obj) {
+    listValues: function (obj) {
       var results = [];
       Object.keys(obj).forEach(function (key) {
         results.append(obj[key]);
@@ -32,24 +32,24 @@ define([
 
     constructor: function () {
 
-      this.addedLibs = { counter:0 };
-      this.addedCond = { counter:0 };
+      this.addedLibs = { counter: 0 };
+      this.addedCond = { counter: 0 };
       // these objects map dojo attach points to desired alias for ingestAttachPoint function
       // key is attach point array of values is alias
       // if there is no alias the key in the resulting object will be the same name as attach point
-      this.pairToAttachPt1 = { read1:null, read2:null };
-      this.pairConditionToAttachPt = { read1:null, read2:null, condition_paired:['condition'] };
-      this.advPairToAttachPt = { interleaved:null, insert_size_mean:null, insert_size_stdev:null };
-      this.paramToAttachPt = { output_path:null, output_file:null };
-      this.singleToAttachPt = { read:null };
-      this.singleConditionToAttachPt = { read:null, condition_single:['condition'] };
-      this.conditionToAttachPt = { condition:['condition', 'id', 'label'] };
+      this.pairToAttachPt1 = { read1: null, read2: null };
+      this.pairConditionToAttachPt = { read1: null, read2: null, condition_paired: ['condition'] };
+      this.advPairToAttachPt = { interleaved: null, insert_size_mean: null, insert_size_stdev: null };
+      this.paramToAttachPt = { output_path: null, output_file: null };
+      this.singleToAttachPt = { read: null };
+      this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
+      this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
       this.targetGenomeID = '';
       this.shapes = ['icon-square', 'icon-circle'];
       this.colors = ['blue', 'green', 'red', 'purple', 'orange'];
       this.color_counter = 0;
       this.shape_counter = 0;
-      this.libraryStore = new Memory({ data: [], idProperty:'_id' });
+      this.libraryStore = new Memory({ data: [], idProperty: '_id' });
       this.libraryID = 0;
     },
 
@@ -80,7 +80,7 @@ define([
       this._started = true;
     },
 
-    emptyTable:function (target, rowLimit) {
+    emptyTable: function (target, rowLimit) {
       for (i = 0; i < rowLimit; i++) {
         var tr =  target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
@@ -89,13 +89,13 @@ define([
       }
     },
 
-    getValues:function () {
+    getValues: function () {
       var submit_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ _type:'paired' });
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
-      var singleList = this.libraryStore.query({ _type:'single' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
       var condLibs = [];
       var pairedLibs = [];
       var singleLibs = [];
@@ -212,7 +212,7 @@ define([
       var label = item.condition + ' ' + item.icon;
       return label;
     },
-    makeLibraryName:function (mode) {
+    makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
         var fn2 = this.read2.searchBox.get('displayedValue');
@@ -235,7 +235,7 @@ define([
       return 'S(' + fn + ')';
 
     },
-    makeLibraryID:function (mode) {
+    makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
@@ -263,7 +263,7 @@ define([
     },
 
 
-    makeConditionName:function () {
+    makeConditionName: function () {
       return this.condition.get('displayedValue');
     },
 
@@ -284,18 +284,18 @@ define([
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { _type:'single' };
+      var lrec = { _type: 'single' };
       var toIngest = this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
         infoLabels = {
-          read:{ label:'Read File', value:1 }
+          read: { label: 'Read File', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'singledata');
       }
     },
 
-    destroyLibRow:function (query_id, id_type) {
+    destroyLibRow: function (query_id, id_type) {
       console.log('Delete Rows');
       var query_obj = {};
       query_obj[id_type] = query_id;
@@ -325,7 +325,7 @@ define([
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
-      var lrec = { _type:'paired' };
+      var lrec = { _type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
       var pairToIngest = this.pairToAttachPt1;
@@ -334,8 +334,8 @@ define([
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
       if (chkPassed && lrec.read1 != lrec.read2) {
         infoLabels = {
-          read1:{ label:'Read1', value:1 },
-          read2:{ label:'Read2', value:1 }
+          read1: { label: 'Read1', value: 1 },
+          read2: { label: 'Read2', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'pairdata');
       }

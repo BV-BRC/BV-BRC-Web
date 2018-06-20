@@ -1023,7 +1023,7 @@ define([
               _self.hideAndDestroy();
             }, function (error) {
               new Dialog({
-                content:  'The name <i>' + newName + '</i> already exists!  Please pick a unique name.',
+                content: 'The name <i>' + newName + '</i> already exists!  Please pick a unique name.',
                 title: 'Sorry!',
                 style: 'width: 400px;'
               }).show();

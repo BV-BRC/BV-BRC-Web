@@ -18,26 +18,24 @@ define([
     firstLoad: true,
     establishProps: true,
     selectedClassDictionary: {},
-    
     constructor: function () {
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
-    //in case an empty string is returned, handle coloring gracefully
     superClassColorCodes: {
-      'CELLULAR PROCESSES':                   Theme.colors[0],
-      'MEMBRANE TRANSPORT':                   Theme.colors[1],
-      'METABOLISM':                           Theme.colors[2],
-      'REGULATION AND CELL SIGNALING':        Theme.colors[3],
-      'STRESS RESPONSE, DEFENSE, VIRULENCE':  Theme.colors[4],
-      'CELL ENVELOPE':                        Theme.colors[5],
-      'CELLULAR PROCESSES':                   Theme.colors[6],
-      'DNA PROCESSING':                       Theme.colors[7],
-      'ENERGY':                               Theme.colors[8],
-      'MISCELLANEOUS':                        Theme.colors[9],
-      'PROTEIN PROCESSING':                   Theme.colors[10],
-      'RNA PROCESSING':                       Theme.colors[11],
-      '':                                     Theme.colors[12]
+      'CELLULAR PROCESSES': Theme.colors[0],
+      'MEMBRANE TRANSPORT': Theme.colors[1],
+      'METABOLISM': Theme.colors[2],
+      'REGULATION AND CELL SIGNALING': Theme.colors[3],
+      'STRESS RESPONSE, DEFENSE, VIRULENCE': Theme.colors[4],
+      'CELL ENVELOPE': Theme.colors[5],
+      'CELLULAR PROCESSES': Theme.colors[6],
+      'DNA PROCESSING': Theme.colors[7],
+      'ENERGY': Theme.colors[8],
+      'MISCELLANEOUS': Theme.colors[9],
+      'PROTEIN PROCESSING': Theme.colors[10],
+      'RNA PROCESSING': Theme.colors[11],
+      '': Theme.colors[12]
     },
 
     // x + "Other" as aggregation of what is left over
@@ -567,10 +565,10 @@ define([
       var that = this;
 
       All({
-        totalSubsystems:              this.getTotalSubsystems(),
-        totalSubsystemsHypothetical:  this.getTotalSubsystemsHypothetical(),
-        totalGenomes:                 this.getTotalGenomes(),
-        totalGenomesHypothetical:     this.getTotalGenomesHypothetical()
+        totalSubsystems: this.getTotalSubsystems(),
+        totalSubsystemsHypothetical: this.getTotalSubsystemsHypothetical(),
+        totalGenomes: this.getTotalGenomes(),
+        totalGenomesHypothetical: this.getTotalGenomesHypothetical()
       }).then(function (subsystemCoverageData) {
         that.renderSubsystemCoverageData(subsystemCoverageData, width, height);
       });

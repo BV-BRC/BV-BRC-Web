@@ -503,7 +503,7 @@ define([
           // console.log(data[0]);
           Topic.publish(topicId, 'hideLoadingMask');
 
-          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle:true });
+          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
           if (!window.featureDialog) {
             window.featureDialog = new Dialog({ title: 'Feature Summary' });
           }
@@ -513,7 +513,7 @@ define([
       };
 
       var dbClickHandler = function (evt) {
-        Topic.publish('/navigate', { href:'/view/Feature/' + feature.fid + '#view_tab=compareRegionViewer' });
+        Topic.publish('/navigate', { href: '/view/Feature/' + feature.fid + '#view_tab=compareRegionViewer' });
       };
 
       // check click events

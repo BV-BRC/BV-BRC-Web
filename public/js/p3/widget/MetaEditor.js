@@ -131,7 +131,7 @@ define([
             input = new InputList({
               type: item.type,
               name: item.text,
-              values:  data[item.text] || [],
+              values: data[item.text] || [],
               placeHolder: item.editable ? 'Enter ' + item.name + '...' : '-',
               onChange: function () {
                 self.dialog.okButton.setDisabled(false);

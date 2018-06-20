@@ -27,7 +27,7 @@ define([
     maxConditions: 10,
     conditionStore: null,
     hostGenomes: {
-      9606.33:'', 6239.6:'', 7955.5:'', 7227.4:'', 9031.4:'', 9544.2:'', 10090.24:'', 9669.1:'', 10116.5:'', 9823.5:''
+      9606.33: '', 6239.6: '', 7955.5: '', 7227.4: '', 9031.4: '', 9544.2: '', 10090.24: '', 9669.1: '', 10116.5: '', 9823.5: ''
     },
 
     listValues: function (obj) {
@@ -57,9 +57,9 @@ define([
       this.color_counter = 0;
       this.shape_counter = 0;
       this.conditionStore = new Memory({ data: [] });
-      this.libraryStore = new Memory({ data: [], idProperty:'id' });
+      this.libraryStore = new Memory({ data: [], idProperty: 'id' });
       this.libraryID = 0;
-      this.exp_design = { checked:false };
+      this.exp_design = { checked: false };
     },
 
     startup: function () {
@@ -77,10 +77,10 @@ define([
 
       // for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
       var control = {
-        id: 'control', condition: 'control', label: 'Control', icon:this.getConditionIcon()
+        id: 'control', condition: 'control', label: 'Control', icon: this.getConditionIcon()
       };
       var treatment = {
-        id: 'treatment', condition: 'treatment', label: 'Treatment', icon:this.getConditionIcon()
+        id: 'treatment', condition: 'treatment', label: 'Treatment', icon: this.getConditionIcon()
       };
       // temporary until contrasts table added
       this.updateConditionStore(record = control, remove = false);
@@ -199,7 +199,7 @@ define([
         });
         // pairedLibs.push(toAdd);
         if ( !(curCond in allLibs)) {
-          allLibs[curCond] = { replicates:[], library:curCond };
+          allLibs[curCond] = { replicates: [], library: curCond };
         }
         allLibs[curCond].replicates.push(toAdd);
       }, this);
@@ -223,7 +223,7 @@ define([
           toAdd[attr] = libRecord[attr];
         });
         if ( !(curCond in allLibs)) {
-          allLibs[curCond] = { replicates:[], library:curCond };
+          allLibs[curCond] = { replicates: [], library: curCond };
         }
         // singleLibs.push(toAdd);
         allLibs[curCond].replicates.push(toAdd);
@@ -316,7 +316,7 @@ define([
       var label = item.condition + ' ' + item.icon;
       return label;
     },
-    makeLibraryName:function (mode) {
+    makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
         var fn2 = this.read2.searchBox.get('displayedValue');
@@ -339,7 +339,7 @@ define([
       return 'S(' + fn + ')';
 
     },
-    makeLibraryID:function (mode) {
+    makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
@@ -469,7 +469,7 @@ define([
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { type:'single' };
+      var lrec = { type: 'single' };
       var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
@@ -541,7 +541,7 @@ define([
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
-      var lrec = { type:'paired' };
+      var lrec = { type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
       var pairToIngest = this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;

@@ -180,7 +180,7 @@ define([
           }
         })
       });
-      domStyle.set(show_all_strain.domNode, { width:'36px' });
+      domStyle.set(show_all_strain.domNode, { width: '36px' });
       domStyle.set(show_all_strain.domNode.firstChild, 'display', 'block');
 
       domConstruct.place(show_all_strain.domNode, this.cp1.containerNode, 'last');
@@ -200,7 +200,7 @@ define([
           }
         })
       });
-      domStyle.set(show_top_strain.domNode, { width:'36px' });
+      domStyle.set(show_top_strain.domNode, { width: '36px' });
       domStyle.set(show_top_strain.domNode.firstChild, 'display', 'block');
 
       domConstruct.place(show_top_strain.domNode, this.cp1.containerNode, 'last');
@@ -220,7 +220,7 @@ define([
           }
         })
       });
-      domStyle.set(show_all_mutant.domNode, { width:'36px' });
+      domStyle.set(show_all_mutant.domNode, { width: '36px' });
       domStyle.set(show_all_mutant.domNode.firstChild, 'display', 'block');
 
       domConstruct.place(show_all_mutant.domNode, this.cp2.containerNode, 'last');
@@ -240,7 +240,7 @@ define([
           }
         })
       });
-      domStyle.set(show_top_mutant.domNode, { width:'36px' });
+      domStyle.set(show_top_mutant.domNode, { width: '36px' });
       domStyle.set(show_top_mutant.domNode.firstChild, 'display', 'block');
 
       domConstruct.place(show_top_mutant.domNode, this.cp2.containerNode, 'last');
@@ -260,7 +260,7 @@ define([
           }
         })
       });
-      domStyle.set(show_all_condition.domNode, { width:'36px' });
+      domStyle.set(show_all_condition.domNode, { width: '36px' });
       domStyle.set(show_all_condition.domNode.firstChild, 'display', 'block');
 
       domConstruct.place(show_all_condition.domNode, this.cp3.containerNode, 'last');
@@ -280,7 +280,7 @@ define([
           }
         })
       });
-      domStyle.set(show_top_condition.domNode, { width:'36px' });
+      domStyle.set(show_top_condition.domNode, { width: '36px' });
       domStyle.set(show_top_condition.domNode.firstChild, 'display', 'block');
 
       domConstruct.place(show_top_condition.domNode, this.cp3.containerNode, 'last');
@@ -334,7 +334,7 @@ define([
         type: this.Donut,
         radius: 100,
         // labelOffset: -10,
-        stroke:'black',
+        stroke: 'black',
         // labelWiring: "cccc",
         labelStyle: 'columns'
       }).setTheme(Distinctive);
@@ -357,7 +357,7 @@ define([
         type: this.Donut,
         radius: 100,
         // labelOffset: -10,
-        stroke:'black',
+        stroke: 'black',
         // labelWiring: "cccc",
         labelStyle: 'columns'
       }).setTheme(Distinctive);
@@ -380,7 +380,7 @@ define([
         type: this.Donut,
         radius: 100,
         // labelOffset: -10,
-        stroke:'black',
+        stroke: 'black',
         // labelWiring: "cccc",
         labelStyle: 'columns'
       }).setTheme(Distinctive);
@@ -434,7 +434,7 @@ define([
         type: this.Donut,
         radius: 100,
         // labelOffset: -10,
-        stroke:'black',
+        stroke: 'black',
         // labelWiring: "cccc",
         labelStyle: 'columns',
         style: 'position:absolute; left:200px; float:left'
@@ -463,7 +463,7 @@ define([
         type: this.Donut,
         radius: 100,
         // labelOffset: -10,
-        stroke:'black',
+        stroke: 'black',
         // labelWiring: "cccc",
         labelStyle: 'columns'
       }).setTheme(Distinctive);
@@ -491,7 +491,7 @@ define([
         type: this.Donut,
         radius: 100,
         // labelOffset: -10,
-        stroke:'black',
+        stroke: 'black',
         // labelWiring: "cccc",
         labelStyle: 'columns'
       }).setTheme(Distinctive);
