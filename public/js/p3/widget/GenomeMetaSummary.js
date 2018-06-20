@@ -39,7 +39,7 @@ define([
       field: 'value',
       renderCell: function (obj, val, node) {
         node.innerHTML = val.map(function (d) {
-          return '<a href="' + d.link + '">' + d.label + ' (' + d.count + ')' + '</a>';
+          return '<a href="' + d.link + '">' + d.label + ' (' + d.count + ')</a>';
         }).join('<br/>');
       }
     }],

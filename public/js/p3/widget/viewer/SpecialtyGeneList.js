@@ -99,7 +99,7 @@ define([
       return new ContentPane({
         content: 'Overview',
         title: 'Specialty Gene List Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },
@@ -113,7 +113,7 @@ define([
 
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
-        id: this.viewer.id + '_' + 'specialtyGenes',
+        id: this.viewer.id + '_specialtyGenes',
         disabled: false
       });
       this.viewer.addChild(this.specialtyGenes);

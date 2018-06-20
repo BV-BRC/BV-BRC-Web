@@ -110,14 +110,14 @@ define([
         && mask_array[6] == 0) {
         regionName = '(' + groups[1].name + ') U (' + groups[2].name + ') - (' + groups[0].name + ')';
       } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[0].name + ') + (' + groups[1].name + ') - (' + groups[2].name + ')' + ')';
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (('
+          + groups[0].name + ') + (' + groups[1].name + ') - (' + groups[2].name + '))';
       } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[1].name + ') + (' + groups[2].name + ') - (' + groups[0].name + ')' + ')';
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (('
+          + groups[1].name + ') + (' + groups[2].name + ') - (' + groups[0].name + '))';
       } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[0].name + ') + (' + groups[2].name + ') - (' + groups[1].name + ')' + ')';
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (('
+          + groups[0].name + ') + (' + groups[2].name + ') - (' + groups[1].name + '))';
       }
     }
     return regionName;
@@ -293,7 +293,7 @@ define([
       console.log('ids=', id_array);
       console.log('myPath=', myPath);
       WorkspaceManager.createGroup(regionGroupName, myType, myPath, idType, id_array);
-      document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + '/' + regionGroupName + "' target=_blank>" + 'here' + '</a> to view.</b>';
+      document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + '/' + regionGroupName + "' target=_blank>here</a> to view.</b>";
       document.getElementById('create_msg').style = 'color: green';
       // alert("Please refresh the workspace folder to view.");
     } else if (regionGroupName) {

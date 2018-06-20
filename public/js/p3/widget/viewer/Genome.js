@@ -156,7 +156,7 @@ define([
         var out = visibleIndexes.map(function (idx) {
           return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
         });
-        this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; ' + '<span class="current">' + genome.genome_name + '</span>';
+        this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; <span class="current">' + genome.genome_name + '</span>';
       }));
     },
 
@@ -252,76 +252,76 @@ define([
 
       this.overview = new GenomeOverview({
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
 
       this.phylogeny = new Phylogeny({
         title: 'Phylogeny',
-        id: this.viewer.id + '_' + 'phylogeny'
+        id: this.viewer.id + '_phylogeny'
       });
 
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
-        id: this.viewer.id + '_' + 'sequences',
+        id: this.viewer.id + '_sequences',
         state: lang.mixin({}, this.state, { search: (this.genome_id ? '?eq(genome_id,' + this.genome_id + ')' : '?ne(genome_id,*)' ) })
       });
 
       this.amr = new AMRPanelGridContainer({
         title: 'AMR Phenotypes',
-        id: this.viewer.id + '_' + 'amr'
+        id: this.viewer.id + '_amr'
       });
 
       this.features = new FeatureGridContainer({
         title: 'Features',
-        id: this.viewer.id + '_' + 'features'
+        id: this.viewer.id + '_features'
       });
 
       this.browser = new GenomeBrowser({
         title: 'Genome Browser',
-        id: this.viewer.id + '_' + 'browser',
+        id: this.viewer.id + '_browser',
         state: lang.mixin({}, this.state),
         tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser'
       });
 
       this.circular = new CircularViewerContainer({
         title: 'Circular Viewer',
-        id: this.viewer.id + '_' + 'circular',
+        id: this.viewer.id + '_circular',
         state: lang.mixin({}, this.state)
       });
 
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
-        id: this.viewer.id + '_' + 'specialtyGenes',
+        id: this.viewer.id + '_specialtyGenes',
         state: lang.mixin({}, this.state, { search: (this.genome_id ? '?eq(genome_id,' + this.genome_id + ')' : '?ne(genome_id,*)' ) })
       });
 
       this.pathways = new PathwaysContainer({
         apiServer: this.apiServiceUrl,
         title: 'Pathways',
-        id: this.viewer.id + '_' + 'pathways'
+        id: this.viewer.id + '_pathways'
       });
 
       this.subsystems = new SubSystemsContainer({
         title: 'Subsystems',
-        id: this.viewer.id + '_' + 'subsystems'
+        id: this.viewer.id + '_subsystems'
       });
 
       this.proteinFamilies = new ProteinFamiliesContainer({
         title: 'Protein Families',
-        id: this.viewer.id + '_' + 'proteinFamilies',
+        id: this.viewer.id + '_proteinFamilies',
         state: this.state
       });
 
       this.transcriptomics = new TranscriptomicsContainer({
         title: 'Transcriptomics',
-        id: this.viewer.id + '_' + 'transcriptomics',
+        id: this.viewer.id + '_transcriptomics',
         state: this.state
       });
 
       this.interactions = new InteractionsContainer({
         title: 'Interactions',
-        id: this.viewer.id + '_' + 'interactions',
+        id: this.viewer.id + '_interactions',
         state: this.state
       });
 

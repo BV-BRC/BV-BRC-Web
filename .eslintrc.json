@@ -1,12 +1,11 @@
 {
   "extends": "airbnb-base/legacy",
   "rules": {
-    "_comment_reactivate_later": ["no-useless-concat", "block-scoped-var", "no-restricted-globals", "no-redeclare",
+    "_comment_reactivate_later": ["block-scoped-var", "no-restricted-globals", "no-redeclare",
       "no-nested-ternary", "no-return-assign", "no-restricted-syntax", "no-multi-assign", "no-loop-func",
       "array-callback-return", "no-use-before-define", "no-template-curly-in-string", "no-new", "no-cond-assign",
       "no-throw-literal", "no-dupe-keys", "no-extend-native",
       "no-plusplus", "no-unused-vars", "no-bitwise"],
-    "no-useless-concat": 0,
     "block-scoped-var": 0,
     "no-restricted-globals": 0,
     "no-redeclare": 0,

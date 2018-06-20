@@ -593,7 +593,7 @@ define([
     },
 
     labelFunc: function (item, store) {
-      var label = "<div style='font-size:1em; border-bottom:1px solid grey;'>" + '/';
+      var label = '<div style="font-size:1em; border-bottom:1px solid grey;">/';
       var pathParts = item.path.split('/');
       var workspace = pathParts[2];
       var labelParts = [workspace];
@@ -609,7 +609,7 @@ define([
         var objName = pathParts[pathParts.length - 1];
         labelParts.push(objName);
       }
-      labelParts[labelParts.length - 1] = '</br>' + "<span style='font-size:1.05em; font-weight:bold;'>" + labelParts[labelParts.length - 1] + '</span></div>';
+      labelParts[labelParts.length - 1] = '</br><span style="font-size:1.05em; font-weight:bold;">' + labelParts[labelParts.length - 1] + '</span></div>';
       label += labelParts.join('/');
       return label;
     },

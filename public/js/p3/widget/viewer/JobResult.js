@@ -88,7 +88,7 @@ define([
         if (this.data.autoMeta && this.data.autoMeta.app) {
           jobHeader = jobHeader + this._appLabel + ' ';
         }
-        jobHeader = jobHeader + 'Job Result' + '</span></h3>';
+        jobHeader += 'Job Result</span></h3>';
         // this.viewer.set('content',jobHeader);
 
         var output = [];

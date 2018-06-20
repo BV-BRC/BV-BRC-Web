@@ -229,7 +229,7 @@ define([
       this.overview = new FeatureOverview({
         content: 'Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
 
       this.genomeBrowser = new GenomeBrowser({

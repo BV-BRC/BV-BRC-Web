@@ -79,7 +79,7 @@ define([
     getSubsystemDescription: function (subsystemId) {
 
       var def = new Deferred();
-      var ref_query = 'q=subsystem_id:"' +  subsystemId + '"' + '&fl=description,pmid&rows=1';
+      var ref_query = 'q=subsystem_id:"' +  subsystemId + '"&fl=description,pmid&rows=1';
 
       when(request.post(window.App.dataAPI + 'subsystem_ref/', {
         handleAs: 'json',
@@ -241,7 +241,7 @@ define([
 
             $('#subsystemheatmapheader').append( '<br><br>');
             // $('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
-            $('#subsystemheatmapheader').append( '<br><p>' + '<span style="font-size: 1.1em;font-weight: bold">' + 'Associated Publication IDs: ' + pmidString + '</span>' + '</p>');
+            $('#subsystemheatmapheader').append( '<br><p><span style="font-size: 1.1em;font-weight: bold">Associated Publication IDs: ' + pmidString + '</span></p>');
 
 
           } else if ( data && data.description ) {
@@ -256,7 +256,7 @@ define([
             });
             var pmidString = pmids.join(', ');
             $('#subsystemheatmapheader').append( '<br><br>');
-            $('#subsystemheatmapheader').append( '<br><p>' + '<span style="font-size: 1.1em;font-weight: bold">' + 'Associated Publication IDs: ' + pmidString + '</span>' + '</p>');
+            $('#subsystemheatmapheader').append( '<br><p><span style="font-size: 1.1em;font-weight: bold">Associated Publication IDs: ' + pmidString + '</span></p>');
           }
 
         });

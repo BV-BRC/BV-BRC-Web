@@ -247,12 +247,12 @@ define([
       var idMenuDivs = [];
       if (this.labels) {
         this.tree.setTree(this.newick, this.labels, 'Organism Names');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Organism Names' + '">' + 'Organism Names' + '</div>');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Default ID' + '">' + 'Genome ID' + '</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Organism Names">Organism Names</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
       }
       else {
         this.tree.setTree(this.newick);
-        idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Default ID' + '">' + 'Genome ID' + '</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
       }
       idMenu.set('content', idMenuDivs.join(''));
       this.tree.startup();
@@ -494,8 +494,8 @@ define([
           // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
           var snapMenuDivs = [];
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + 'Tree svg' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + 'Tree newick' + '</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">Tree svg</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">Tree newick</div>');
 
           snapMenu.set('content', snapMenuDivs.join(''));
           snapMenu.selection = selection;

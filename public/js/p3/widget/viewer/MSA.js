@@ -460,9 +460,9 @@ define([
 
       var idMenuDivs = [];
       this.tree.addLabels(this.alt_labels.genome_name, 'Genome Name');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Genome Name' + '">' + 'Genome Name' + '</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
       this.tree.addLabels(this.alt_labels.patric_id, 'Gene ID');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Gene ID' + '">' + 'Gene ID' + '</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Gene ID">Gene ID</div>');
       idMenu.set('content', idMenuDivs.join(''));
 
       this.tree.startup();
@@ -1158,10 +1158,10 @@ define([
             innerHTML: "Tree newick",
             alt: "tree_newick.txt"
           }); */
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">' + 'MSA txt' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-fasta">' + 'MSA fasta' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + 'Tree svg' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + 'Tree newick' + '</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">MSA txt</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-fasta">MSA fasta</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">Tree svg</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">Tree newick</div>');
 
           snapMenu.set('content', snapMenuDivs.join(''));
           snapMenu.selection = selection;

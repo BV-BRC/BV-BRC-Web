@@ -53,9 +53,7 @@ define([
           // console.log("genome_size=", genome_size);
           return r;
         });
-        // .sort(function(a, b){ // use query sorting instead: sort(+accession)
-        //   return a.name > b.name;
-        // })
+
         return refseqs;
       }));
     },
@@ -64,7 +62,7 @@ define([
       var fields = ['feature_id', 'feature_type', 'sequence_id', 'segments', 'gi', 'na_length', 'pos_group', 'strand', 'public', 'aa_length', 'patric_id', 'owner',
         'location', 'protein_id', 'refseq_locus_tag', 'taxon_id', 'accession', 'end', 'genome_name', 'product', 'genome_id', 'annotation', 'start'];
 
-      var query = '?and(eq(genome_id,' + gid + '),ne(feature_type,source),' + filter + ')&sort(+accession,+start)' + '&select(' + fields.join(',') + ')&limit(25000)';
+      var query = '?and(eq(genome_id,' + gid + '),ne(feature_type,source),' + filter + ')&sort(+accession,+start)&select(' + fields.join(',') + ')&limit(25000)';
       // console.log("******track title:", title, " query:", PathJoin(this.apiServiceUrl, "genome_feature", query));
 
       var track = this.viewer.addTrack({
@@ -136,7 +134,7 @@ define([
       // var sp_fields = ["feature_id","patric_id", "evidence", "property", "source"];
       // var sp_query = "?eq(genome_id," + this.state.genome_ids[0] + ")&in(property,(%22Antibiotic%20Resistance%22,%22Virulence%20Factor%22,%22Transporter%22,%22Essential%20Gene%22))&sort(+patric_id,+property)" + "&select(" + sp_fields.join(",") + ")&limit(25000)";
       // var sp_query = "?eq(genome_id," + this.state.genome_ids[0] + ")" + filter + "&sort(+patric_id,+property)" + "&select(" + sp_fields.join(",") + ")&limit(25000)";
-      var sp_query = '?eq(genome_id,' + this.state.genome_ids[0] + ')' + filter + '&select(feature_id)' + '&limit(25000)';
+      var sp_query = '?eq(genome_id,' + this.state.genome_ids[0] + ')' + filter + '&select(feature_id)&limit(25000)';
       // console.log("sp_query: ", sp_query);
 
       var track = this.viewer.addTrack({
@@ -180,7 +178,7 @@ define([
           feature_ids.push(spgenes[i].feature_id);
         }
 
-        var query = 'in(feature_id,(' + feature_ids.join(',') + '))&sort(+accession,+start)' + '&select(' + fields.join(',') + ')&limit(25000)';
+        var query = 'in(feature_id,(' + feature_ids.join(',') + '))&sort(+accession,+start)&select(' + fields.join(',') + ')&limit(25000)';
         // console.log(" query:",  PathJoin(this.apiServiceUrl, "genome_feature", query));
 
         xhr.post(PathJoin(this.apiServiceUrl, 'genome_feature/'), {

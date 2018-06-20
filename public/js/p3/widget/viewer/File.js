@@ -132,7 +132,7 @@ define([
                 var iframe_contents = this.file.data;
                 var bookmark_regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi;
                 if (iframe_contents.search(bookmark_regex)) {
-                  iframe_contents = iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, '$&' + "  onclick='return false;'");
+                  iframe_contents = iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, '$&  onclick="return false;"');
                 }
 
                 iframe.srcdoc = iframe_contents;

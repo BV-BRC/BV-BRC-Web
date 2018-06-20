@@ -142,7 +142,7 @@ define([
         var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
 
         td.libRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)' + '</div>';
+        td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)</div>';
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x'/>" }, tr);
 

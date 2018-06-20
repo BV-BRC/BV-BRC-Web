@@ -304,60 +304,60 @@ define([
 
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
-        id: this.viewer.id + '_' + 'genomes',
+        id: this.viewer.id + '_genomes',
         state: this.state,
         disable: false
       });
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
-        id: this.viewer.id + '_' + 'sequences',
+        id: this.viewer.id + '_sequences',
         state: this.state,
         disable: false
       });
 
       this.amr = new AMRPanelGridContainer({
         title: 'AMR Phenotypes',
-        id: this.viewer.id + '_' + 'amr'
+        id: this.viewer.id + '_amr'
       });
 
       this.features = new FeatureGridContainer({
         title: 'Features',
-        id: this.viewer.id + '_' + 'features',
+        id: this.viewer.id + '_features',
         disabled: false
       });
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
-        id: this.viewer.id + '_' + 'specialtyGenes',
+        id: this.viewer.id + '_specialtyGenes',
         disabled: false,
         state: this.state
       });
       this.pathways = new PathwaysContainer({
         title: 'Pathways',
-        id: this.viewer.id + '_' + 'pathways',
+        id: this.viewer.id + '_pathways',
         disabled: false
       });
 
       this.subsystems = new SubSystemsContainer({
         title: 'Subsystems',
-        id: this.viewer.id + '_' + 'subsystems',
+        id: this.viewer.id + '_subsystems',
         disabled: false
       });
 
       this.proteinFamilies = new ProteinFamiliesContainer({
         title: 'Protein Families',
-        id: this.viewer.id + '_' + 'proteinFamilies',
+        id: this.viewer.id + '_proteinFamilies',
         disabled: false
       });
       this.transcriptomics = new TranscriptomicsContainer({
         title: 'Transcriptomics',
-        id: this.viewer.id + '_' + 'transcriptomics',
+        id: this.viewer.id + '_transcriptomics',
         disabled: false,
         state: this.state
       });
 
       this.interactions = new InteractionsContainer({
         title: 'Interactions',
-        id: this.viewer.id + '_' + 'interactions',
+        id: this.viewer.id + '_interactions',
         state: this.state
       });
 

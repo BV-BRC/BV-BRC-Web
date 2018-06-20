@@ -77,7 +77,7 @@ define([
       return new ContentPane({
         content: 'Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },

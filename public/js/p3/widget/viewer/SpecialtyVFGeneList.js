@@ -108,7 +108,7 @@ define([
 
       this.specialtyVFGenes = new SpecialtyVFGeneGridContainer({
         title: 'Specialty Genes',
-        id: this.viewer.id + '_' + 'specialtyVFGenes',
+        id: this.viewer.id + '_specialtyVFGenes',
         disabled: false
       });
       this.viewer.addChild(this.specialtyVFGenes);

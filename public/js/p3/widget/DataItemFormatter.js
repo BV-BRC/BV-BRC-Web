@@ -569,10 +569,10 @@ define([
         text: 'na_sequence',
         link: function (obj) {
           if (obj.na_sequence !== ' ') {
-            return obj.na_sequence.substr(0, 30) + '... ' + '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
+            return obj.na_sequence.substr(0, 30) + '... <button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
               + '<button onclick="clipboard.copy(\'' + obj.na_sequence + '\')">copy</button>';
           }
-          return obj.na_sequence.substr(0, 30) + '... ' + '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+          return obj.na_sequence.substr(0, 30) + '... <button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
         }
       }, {
         name: 'AA Length',
@@ -582,10 +582,10 @@ define([
         text: 'aa_sequence',
         link: function (obj) {
           if (obj.aa_sequence !== ' ') {
-            return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
+            return obj.aa_sequence.substr(0, 22) + '... <button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
               + '<button onclick="clipboard.copy(\'' + obj.aa_sequence + '\')">copy</button>';
           }
-          return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+          return obj.aa_sequence.substr(0, 22) + '... <button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
         }
       }];
 

@@ -129,7 +129,7 @@ define([
               content: '<p>No PATRIC curation data found</p>'
             });
             this.viewer.addChild(messagePane);
-            this.totalCountNode.innerHTML = 'Specialty Genes > ' + '<a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+            this.totalCountNode.innerHTML = 'Specialty Genes > <a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
             return;
           }
           var node = domConstruct.create('div', { style: 'width: 50%' }, this.viewer.containerNode);

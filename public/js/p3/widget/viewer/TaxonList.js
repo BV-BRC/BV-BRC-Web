@@ -1,4 +1,4 @@
-define([
+([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/topic',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../TaxonGridContainer', '../../util/QueryToEnglish',
@@ -32,7 +32,7 @@ define([
       var _self = this;
       // console.log('TaxonList setQuery - this.query: ', this.query);
 
-      var url = PathJoin(this.apiServiceUrl, 'taxonomy', '?' + (this.query) + '&gt(genomes,1)' + '&limit(1)'); // &facet((field,genome_id),(limit,35000))");
+      var url = PathJoin(this.apiServiceUrl, 'taxonomy', '?' + (this.query) + '&gt(genomes,1)&limit(1)'); // &facet((field,genome_id),(limit,35000))");
 
       console.log('taxonomy query url: ', url);
       xhr.get(url, {
@@ -106,7 +106,7 @@ define([
       return new ContentPane({
         content: 'Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },
@@ -117,7 +117,7 @@ define([
       this.watch('query', lang.hitch(this, 'onSetQuery'));
       this.taxons = new TaxonGridContainer({
         title: 'Taxa',
-        id: this.viewer.id + '_' + 'taxons',
+        id: this.viewer.id + '_taxons',
         disabled: false
       });
 
