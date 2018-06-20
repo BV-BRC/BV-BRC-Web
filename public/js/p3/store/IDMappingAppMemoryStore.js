@@ -283,13 +283,13 @@ define([
                   var gi = accessionGiMap[accession];
 
                   if (toId === 'UniProtKB-Accession') {
-                    if (!giTarget.hasOwnProperty(gi)) {
+                    if (!Object.prototype.hasOwnProperty.call(giTarget, gi)) {
                       giTarget[gi] = [accession];
                     } else {
                       giTarget[gi].push(accession);
                     }
                   } else {
-                    if (!giTarget.hasOwnProperty(gi)) {
+                    if (!Object.prototype.hasOwnProperty.call(giTarget, gi)) {
                       giTarget[gi] = [target];
                     } else {
                       giTarget[gi].push(target);
@@ -303,7 +303,7 @@ define([
                 var data = [];
                 features.forEach(function (d) {
                   var item = Object.create(d);
-                  if (d.hasOwnProperty(joinId.genome_feature)) {
+                  if (Object.prototype.hasOwnProperty.call(d, joinId.genome_feature)) {
                     var target = giTarget[d[joinId.genome_feature]];
                     if (target) {
                       target.forEach(function (t) {

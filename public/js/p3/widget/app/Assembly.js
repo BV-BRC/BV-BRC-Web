@@ -121,13 +121,13 @@ define([
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
-      if (values.hasOwnProperty('pipeline') && values.pipeline) {
+      if (Object.prototype.hasOwnProperty.call(values, 'pipeline') && values.pipeline) {
         assembly_values.pipeline = values.pipeline;
       }
-      if (values.hasOwnProperty('min_contig_len') && values.min_contig_len) {
+      if (Object.prototype.hasOwnProperty.call(values, 'min_contig_len') && values.min_contig_len) {
         assembly_values.min_contig_len = values.min_contig_len;
       }
-      if (values.hasOwnProperty('min_contig_cov') && values.min_contig_cov) {
+      if (Object.prototype.hasOwnProperty.call(values, 'min_contig_cov') && values.min_contig_cov) {
         assembly_values.min_contig_cov = values.min_contig_cov;
       }
       var pairedList = this.libraryStore.query({ _type: 'paired' });

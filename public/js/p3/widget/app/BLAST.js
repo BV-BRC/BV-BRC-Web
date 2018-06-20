@@ -252,7 +252,7 @@ define([
               objs.forEach(function (obj) {
                 var data = JSON.parse(obj.data);
                 data.id_list.genome_id.forEach(function (d) {
-                  if (!genomeIdHash.hasOwnProperty(d)) {
+                  if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
                     genomeIdHash[d] = true;
                   }
                 });

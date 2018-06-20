@@ -27,7 +27,7 @@
     "no-unused-vars": ["error", { "vars": "all", "args": "none", "ignoreRestSiblings": false }],
     "no-plusplus": 0,
     "no-lonely-if": 0,
-    "no-prototype-builtins": 0,
+    "no-prototype-builtins": 1,
     "no-bitwise": ["error", { "allow": ["~"] }],
     "no-bitwise": 0,
     "radix": [1, "as-needed"],

@@ -182,7 +182,7 @@ define([
             Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
             break;
           case 'heatmapOrdering':
-            if (self.hasOwnProperty('originalPmState') ) {
+            if (Object.prototype.hasOwnProperty.call(self, 'originalPmState') ) {
               Topic.publish('SubSystemMap', 'requestHeatmapData', self.originalPmState);
             } else {
               Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
@@ -291,7 +291,7 @@ define([
       }), function (response) {
         var featureSet = {};
         response.response.docs.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });
@@ -335,7 +335,7 @@ define([
 
         var featureSet = {};
         response.response.docs.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });

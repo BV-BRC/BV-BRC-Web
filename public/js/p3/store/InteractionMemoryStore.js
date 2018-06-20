@@ -52,7 +52,7 @@ define([
 
       var query = this.state.search;
       if (this.state.hashParams
-        && this.state.hashParams.hasOwnProperty('filter')
+        && Object.prototype.hasOwnProperty.call(this.state.hashParams, 'filter')
         && this.state.hashParams.filter !== 'false') {
         query += '&' + this.state.hashParams.filter;
       }

@@ -27,7 +27,7 @@ define(
         return obj;
       }
       for (var i in obj) {
-        if (obj.hasOwnProperty(i)) {
+        if (Object.prototype.hasOwnProperty.call(obj, i)) {
           var foundLabel = findObjectByLabel(obj[i], label);
           if (foundLabel) {
             return foundLabel;
@@ -423,7 +423,7 @@ define(
         _autoLabels = {};
         if (ws_location == 'itemDetail') {
           _app_label = null;
-          if (autoData.hasOwnProperty('app') && autoData.app.hasOwnProperty('id')) {
+          if (Object.prototype.hasOwnProperty.call(autoData, 'app') && Object.prototype.hasOwnProperty.call(autoData.app, 'id')) {
             _app_label = autoData.app.id;
           }
           if (_app_label == 'GenomeAnnotation') {
@@ -455,8 +455,8 @@ define(
             size: { label: 'File Size', format: this.humanFileSize }
           };
           Object.keys(autoData).forEach(function (key) {
-            if (_autoLabels.hasOwnProperty(key)) {
-              if (_autoLabels[key].hasOwnProperty('format')) {
+            if (Object.prototype.hasOwnProperty.call(_autoLabels, key)) {
+              if (Object.prototype.hasOwnProperty.call(_autoLabels[key], 'format')) {
                 _autoLabels[key].value = _autoLabels[key].format(autoData[key]);
               }
               else {

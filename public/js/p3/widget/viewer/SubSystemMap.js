@@ -264,7 +264,7 @@ define([
         var genomeIds = response.facet_counts.facet_fields.genome_id;
 
         for (var key in genomeIds) {
-          if (genomeIds.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(genomeIds, key)) {
             genomeIdList.push(key);
           }
         }

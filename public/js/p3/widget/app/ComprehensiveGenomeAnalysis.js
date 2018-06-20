@@ -72,7 +72,7 @@ define([
       // inputs that are NOT needed by the backend
       var not_needed_inputs = ['startWith', 'libdat_file1pair', 'libdat_file2pair', 'libdat_readfile'];
       not_needed_inputs.forEach(function (key) {
-        if (values.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(values, key)) {
           delete values[key];
         }
       });

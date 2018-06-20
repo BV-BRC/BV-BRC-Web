@@ -126,7 +126,7 @@ define([
         // dedupe features
         var featureSet = {};
         response.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });
@@ -167,7 +167,7 @@ define([
         // dedupe features
         var featureSet = {};
         response.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });

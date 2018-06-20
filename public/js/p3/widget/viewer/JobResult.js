@@ -24,7 +24,7 @@ define([
       parameters: {
         label: 'Parameters',
         format: function (d) {
-          if (d.hasOwnProperty('ustring')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'ustring')) {
             d.ustring = JSON.parse(d.ustring);
           }
           return '<pre style="font-size:.8em; overflow: scroll;">' + JSON.stringify(d, null, 2) + '</pre>';
@@ -107,10 +107,10 @@ define([
             return;
           }
 
-          if (this._jobOut.hasOwnProperty(prop)) {
+          if (Object.prototype.hasOwnProperty.call(this._jobOut, prop)) {
             // this._jobOut[prop]["value"]=this.data.autoMeta[prop];
             // var tableLabel = this._jobOut[prop].hasOwnProperty('label') ? this._jobOut[prop].label : prop;
-            var tableValue = this._jobOut[prop].hasOwnProperty('format') ? this._jobOut[prop].format(this.data.autoMeta[prop]) : this.data.autoMeta[prop];
+            var tableValue = Object.prototype.hasOwnProperty.call(this._jobOut[prop], 'format') ? this._jobOut[prop].format(this.data.autoMeta[prop]) : this.data.autoMeta[prop];
             if (prop == 'parameters') {
               job_output.push('<tr class="alt"><td class="last" colspan=2><div data-dojo-type="dijit/TitlePane" data-dojo-props="title: \'Parameters\', open:false">' + tableValue + '</div></td></tr>');
             } else {

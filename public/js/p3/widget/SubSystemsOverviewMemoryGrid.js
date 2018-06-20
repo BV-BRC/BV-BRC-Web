@@ -166,7 +166,7 @@ define([
         .attr('stroke-width', '1px')
         .attr('fill', function (d) {
           // return color(d.data.val + " (" + d.data.count + ")");
-          if (that.superClassColorCodes.hasOwnProperty(d.data.val.toUpperCase())) {
+          if (Object.prototype.hasOwnProperty.call(that.superClassColorCodes, d.data.val.toUpperCase())) {
             return that.superClassColorCodes[d.data.val.toUpperCase()];
           }
 
@@ -312,9 +312,9 @@ define([
         .attr('fill', 'white')
         .attr('class', 'dgrid-expando-icon ui-icon ui-icon-triangle-1-e')
         .attr('style', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return 'margin-left: 40px';
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return 'margin-left: 20px';
           }
           return 0;
@@ -364,9 +364,9 @@ define([
           }
         })
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return 40;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return 20;
           }
           return 0;
@@ -381,9 +381,9 @@ define([
 
       subsystemslegend.append('rect')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return 40 + legendRectSize;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return 20 + legendRectSize;
           }
           return 0 + legendRectSize;
@@ -398,7 +398,7 @@ define([
           return that.superClassColorCodes[d.colorCodeKey];
         })
         .on('click', function (d) {
-          if (d.hasOwnProperty('classScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -407,9 +407,9 @@ define([
 
       subsystemslegend.append('text')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 40;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 20;
           }
           return legendRectSize + legendRectSize + legendSpacing;
@@ -420,9 +420,9 @@ define([
           return d.val;
         })
         .on('click', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             that.navigateToSubsystemsSubTabSubclass(d);
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -431,9 +431,9 @@ define([
 
       subsystemslegend.append('text')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 40 + this.parentElement.children[3].getComputedTextLength() + 10;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 20 + this.parentElement.children[3].getComputedTextLength() + 10;
           }
           return legendRectSize + legendRectSize + legendSpacing + this.parentElement.children[3].getComputedTextLength() + 10;
@@ -445,9 +445,9 @@ define([
         })
         .style('fill', '#76a72d')
         .on('click', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             that.navigateToSubsystemsSubTabSubclass(d);
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -456,9 +456,9 @@ define([
 
       subsystemslegend.append('text')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 40 + this.parentElement.children[3].getComputedTextLength() + this.parentElement.children[4].getComputedTextLength() + 15;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 20 + this.parentElement.children[3].getComputedTextLength() + this.parentElement.children[4].getComputedTextLength() + 15;
           }
           return legendRectSize + legendRectSize + legendSpacing + this.parentElement.children[3].getComputedTextLength() + this.parentElement.children[4].getComputedTextLength() + 15;
@@ -470,9 +470,9 @@ define([
         })
         .style('fill', '#ffcb00')
         .on('click', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             that.navigateToSubsystemsSubTabSubclass(d);
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);

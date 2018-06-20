@@ -128,7 +128,7 @@ define([
         objs.forEach(function (obj) {
           var data = JSON.parse(obj.data);
           data.id_list.genome_id.forEach(function (d) {
-            if (!genomeIdHash.hasOwnProperty(d)) {
+            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
               genomeIdHash[d] = true;
             }
           });
@@ -170,7 +170,7 @@ define([
         var values = this.getValues();
 
         var filter;
-        if (values.hasOwnProperty('keyword') && values.keyword !== '') {
+        if (Object.prototype.hasOwnProperty.call(values, 'keyword') && values.keyword !== '') {
           switch (values.search_on) {
             case 'keyword':
               filter = '&filter=and(eq(annotation,PATRIC),keyword(' + encodeURIComponent(values.keyword) + '))';

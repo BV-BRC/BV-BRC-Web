@@ -263,7 +263,7 @@ define([
 
         var sortable_genes = [];
         for (var key in pmState.genomeFilterStatus) {
-          if (pmState.genomeFilterStatus.hasOwnProperty(key) && this.state.genome_ids_without_reference.indexOf(key) > -1) {
+          if (Object.prototype.hasOwnProperty.call(pmState.genomeFilterStatus, key) && this.state.genome_ids_without_reference.indexOf(key) > -1) {
             sortable_genes.push({ gene_id: key, genome_name: pmState.genomeFilterStatus[key].label });
           }
         }
