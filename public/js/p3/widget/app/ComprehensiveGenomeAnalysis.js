@@ -77,12 +77,6 @@ define([
         }
       });
       if (this.startWithRead.checked) { // start from read file
-        // ???
-        if (typeof String.prototype.startsWith !== 'function') {
-          String.prototype.startsWith = function (str) {
-            return this.slice(0, str.length) == str;
-          };
-        }
         var pairedList = this.libraryStore.query({ _type: 'paired' });
         var singleList = this.libraryStore.query({ _type: 'single' });
         var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
