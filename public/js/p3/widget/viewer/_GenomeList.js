@@ -80,7 +80,7 @@ define([
 
     getReferenceAndRepresentativeGenomes: function () {
       // console.log("GET REFERENCE AND REPRESENTATIVE GENOMES")
-      var query = this.get('query');
+      // var query = this.get('query');
 
       var _self = this;
 

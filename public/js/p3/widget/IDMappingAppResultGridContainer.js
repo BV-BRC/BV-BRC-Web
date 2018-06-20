@@ -316,7 +316,6 @@ define([
           }
         },
         function (selection) {
-          var sel = selection[0];
           Topic.publish('/navigate', {
             href: '/view/FeatureList/?in(feature_id,(' + selection.map(function (x) {
               return x.feature_id;

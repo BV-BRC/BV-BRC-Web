@@ -109,7 +109,7 @@ define([
 
           if (this._jobOut.hasOwnProperty(prop)) {
             // this._jobOut[prop]["value"]=this.data.autoMeta[prop];
-            var tableLabel = this._jobOut[prop].hasOwnProperty('label') ? this._jobOut[prop].label : prop;
+            // var tableLabel = this._jobOut[prop].hasOwnProperty('label') ? this._jobOut[prop].label : prop;
             var tableValue = this._jobOut[prop].hasOwnProperty('format') ? this._jobOut[prop].format(this.data.autoMeta[prop]) : this.data.autoMeta[prop];
             if (prop == 'parameters') {
               job_output.push('<tr class="alt"><td class="last" colspan=2><div data-dojo-type="dijit/TitlePane" data-dojo-props="title: \'Parameters\', open:false">' + tableValue + '</div></td></tr>');

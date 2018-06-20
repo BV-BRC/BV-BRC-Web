@@ -29,7 +29,7 @@ define([
 
   on(downloadTT.domNode, 'div:click', function (evt) {
     var rel = evt.target.attributes.rel.value;
-    var selection = self.actionPanel.get('selection');
+    // var selection = self.actionPanel.get('selection');
     var dataType = (self.actionPanel.currentContainerWidget.containerType == 'genome_group') ? 'genome' : 'genome_feature';
     var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 

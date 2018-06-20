@@ -68,7 +68,7 @@ define([
     },
 
     onSetQuery: function (attr, oldVal, newVal) {
-      var qe = QueryToEnglish(newVal);
+      // var qe = QueryToEnglish(newVal);
 
       this.queryNode.innerHTML = ''; // Features: " + qe;
     },

@@ -216,9 +216,9 @@ define([
             });
           });
 
-          var roleIDsInQuote = roleIDs.map(function (idstr) {
-            return '"' + idstr + '"';
-          }).join(' OR ');
+          // var roleIDsInQuote = roleIDs.map(function (idstr) {
+          //   return '"' + idstr + '"';
+          // }).join(' OR ');
 
           var data = [];
           roleGenomeDist.forEach(function (element) {

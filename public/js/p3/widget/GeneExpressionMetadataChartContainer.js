@@ -124,7 +124,7 @@ define([
       if (!state) {
         return;
       }
-      var self = this;
+
       this._set('state', state);
       // console.log("In GeneExpressionMetadataChartContainer _setStateAttr: state", state);
       if (!this.store) {
@@ -312,9 +312,9 @@ define([
           this.inherited(arguments);
 
           // Draw a white circle in the middle
-          var rx = (dim.width - offsets.l - offsets.r) / 2,
-            ry = (dim.height - offsets.t - offsets.b) / 2,
-            r = Math.min(rx, ry) / 2;
+          var rx = (dim.width - offsets.l - offsets.r) / 2;
+          var ry = (dim.height - offsets.t - offsets.b) / 2;
+          // var r = Math.min(rx, ry) / 2;
           var circle = {
             cx: offsets.l + rx,
             cy: offsets.t + ry,

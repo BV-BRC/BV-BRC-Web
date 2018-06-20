@@ -89,7 +89,6 @@ define([
     },
 
     formatFileMetaData: function () {
-      var output = [];
       var fileMeta = this.file.metadata;
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
@@ -107,7 +106,6 @@ define([
     },
 
     refresh: function () {
-      var _self = this;
       if (!this._started) {
         return;
       }

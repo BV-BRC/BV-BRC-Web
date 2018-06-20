@@ -1,15 +1,5 @@
 define(['dojo/_base/declare', 'dojo/router/RouterBase'
 ], function (declare, Router) {
-  var trim;
-  if (String.prototype.trim) {
-    trim = function (str) {
-      return str.trim();
-    };
-  } else {
-    trim = function (str) {
-      return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-    };
-  }
 
   // Firing of routes on the route object is always the same,
   // no clean way to expose this on the prototype since it's for the

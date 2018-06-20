@@ -145,9 +145,9 @@ define([
     emptyTable: function (target, rowLimit) {
       for (i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
     },
 
@@ -161,7 +161,6 @@ define([
       var singleList = this.libraryStore.query({ type: 'single' });
       var condLibs = [];
       var allLibs = {};
-      var singleLibs = [];
       this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       var defaultCond = 'control';
       // for (var k in values) {
@@ -415,7 +414,7 @@ define([
         var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName() + '</div>';
-        var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
         var td2 = domConstruct.create('td', {
           'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
@@ -431,9 +430,9 @@ define([
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
           if (this.addedCond.counter < this.maxConditions) {
             var ntr = this.condTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           this.condition_single.reset();
           this.condition_paired.reset();
@@ -487,7 +486,7 @@ define([
           condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-          var ihandle = new Tooltip({
+          new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
           });
@@ -522,9 +521,9 @@ define([
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj.handle.remove();
         this.libraryStore.remove(obj.id);
@@ -532,7 +531,7 @@ define([
     },
 
     onSuggestNameChange: function () {
-      var curRecipe = this.recipe.value;
+      // var curRecipe = this.recipe.value;
     },
 
     onAddPair: function () {
@@ -563,7 +562,7 @@ define([
           lrec.design = true;
           condition_icon = this.getConditionIcon(lrec.condition);
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-          var ihandle = new Tooltip({
+          new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
           });

@@ -46,7 +46,7 @@ define([
     onTaxIDChange: function (val) {
       this._autoNameSet = true;
       var tax_id = this.tax_idWidget.get('item').taxon_id;
-      var sci_name = this.tax_idWidget.get('item').taxon_name;
+      // var sci_name = this.tax_idWidget.get('item').taxon_name;
       // var tax_obj=this.tax_idWidget.get("item");
       if (tax_id) {
         var name_promise = this.scientific_nameWidget.store.get(tax_id);

@@ -49,8 +49,6 @@ define([
 
       this.loadingMask.show();
 
-      var ov,
-        nv;
       if (oldState) {
         ov = oldState.search;
         if (oldState.hashParams.filter) {
@@ -115,7 +113,7 @@ define([
 
       var radius = Math.min(width, height) / 2 - 50;
 
-      var color = d3.scale.category20();
+      // var color = d3.scale.category20();
 
       var viewBoxWidth = width * 2;
       var viewBoxHeight = height * 2;
@@ -155,7 +153,7 @@ define([
         .style('background-color', 'white')
         .style('visibility', 'hidden');
 
-      var path = svg.selectAll('path')
+      svg.selectAll('path')
         .data(pie(subsystemData))
         .enter()
         .append('path')
@@ -592,7 +590,7 @@ define([
       var proportionCovered = (subsystemCoverageData.totalSubsystems / subsystemCoverageData.totalGenomes).toFixed(2);
       var proportionNotCovered = (subsystemCoverageData.totalNotCovered / subsystemCoverageData.totalGenomes).toFixed(2);
 
-      var marginAdjustedTotalbarHeight = height * 0.9;
+      // var marginAdjustedTotalbarHeight = height * 0.9;
       var marginTop = 100;
       // var marginTop = height - marginAdjustedTotalbarHeight - 200;
 
@@ -604,17 +602,15 @@ define([
       var percentCovered = Math.round(proportionCovered * 100);
       var percentNotCovered = Math.round(proportionNotCovered * 100);
 
-      var totalHeight = divHeightCovered + divHeightNotCovered;
+      // var totalHeight = divHeightCovered + divHeightNotCovered;
 
-      var svg = d3.select('#subsystemspiechart svg'),
-        margin = {
-          top: 0, right: 20, bottom: 30, left: 100
-        },
-        // width = +svg.attr("width") - margin.left - margin.right,
-        // height = +svg.attr("height") - margin.top - margin.bottom,
-        g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      var svg = d3.select('#subsystemspiechart svg');
+      var margin = {
+        top: 0, right: 20, bottom: 30, left: 100
+      };
+      svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-      var coveredRect = svg.append('rect')
+      svg.append('rect')
         .attr('x', 120)
         .attr('y', marginTopWithBuffer)
         .attr('width', 50)
@@ -625,7 +621,7 @@ define([
           that.navigateToSubsystemsSubTabFromCoverageBar();
         });
 
-      var notCoveredRect = svg.append('rect')
+      svg.append('rect')
         .attr('x', 120)
         .attr('y', divHeightCovered + marginTopWithBuffer)
         .attr('width', 50)

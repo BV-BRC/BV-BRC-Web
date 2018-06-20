@@ -154,7 +154,7 @@ define([
     },
 
     showError: function (err) {
-      var n = domConstr.create('div', {
+      domConstr.create('div', {
         style: {
           position: 'relative',
           zIndex: 999,
@@ -265,7 +265,7 @@ define([
       var exists = query('.emptyFolderNotice', this.domNode)[0];
       if (exists) return;
 
-      var n = domConstr.create('div', {
+      domConstr.create('div', {
         'class': 'emptyFolderNotice',
         style: {
           position: 'relative',
@@ -397,7 +397,6 @@ define([
 
     _setPath: function (val) {
       this.path = val;
-      var _self = this;
       // console.log("WorkspaceExplorerView setPath", val)
       if (this._started) {
         this.refreshWorkspace();

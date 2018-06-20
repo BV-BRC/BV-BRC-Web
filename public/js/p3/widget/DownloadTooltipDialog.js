@@ -205,7 +205,7 @@ define([
           d.show();
           return;
         }
-        var conf = _self.downloadableConfig[_self.containerType];
+        // var conf = _self.downloadableConfig[_self.containerType];
 
         // var sel = _self.selection.map(function(sel){
         //   return sel[conf.field || conf.pk]
@@ -223,7 +223,7 @@ define([
       var tData = this.tableDownloadsNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
       // spacer
       domConstruct.create('td', { style: 'width:10px;' }, tr);
-      var oData = this.otherDownloadNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
+      this.otherDownloadNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
 
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'tsv', innerHTML: 'Text' }, tData);
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'csv', innerHTML: 'CSV' }, tData);
@@ -355,7 +355,6 @@ define([
 
     _setContainerTypeAttr: function (val) {
       // console.log("setContainerType: ", val);
-      var label;
       this.containerType = val;
 
       var conf = this.downloadableConfig[val] || this.downloadableConfig['default'];

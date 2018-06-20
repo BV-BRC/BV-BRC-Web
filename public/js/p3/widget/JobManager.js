@@ -27,7 +27,7 @@ define([
     },
 
     showError: function (err) {
-      var n = domConstr.create('div', {
+      domConstr.create('div', {
         style: {
           position: 'relative',
           zIndex: 999,

@@ -363,36 +363,36 @@ define([
       return table;
     },
 
-    job_parameters: function (item, options) {
-      function renderObject(obj, target, depth) {
-        if (!depth) {
-          depth = 1;
-        }
-        if (typeof obj == 'object') {
-          var props = Object.keys(obj);
-          props.forEach(function (p) {
-            if (typeof obj[p] == 'object') {
-              var tr = domConstruct.create('tr', {}, tbody);
-              domConstruct.create('td', {
-                style: { 'padding-left': (depth * 5) + 'px' },
-                innerHTML: p,
-                nowrap: 'nowrap'
-              }, tr);
-              domConstruct.create('td', {}, tr);
-              renderObject(obj[p], tbody, depth + 1);
-            } else {
-              var tr = domConstruct.create('tr', {}, tbody);
-              domConstruct.create('td', {
-                style: { 'padding-left': (depth * 10) + 'px' },
-                innerHTML: p,
-                nowrap: 'nowrap'
-              }, tr);
-              domConstruct.create('td', { innerHTML: obj[p] }, tr);
-            }
-          });
-        }
-      }
-    },
+    // job_parameters: function (item, options) {
+    //   function renderObject(obj, target, depth) {
+    //     if (!depth) {
+    //       depth = 1;
+    //     }
+    //     if (typeof obj == 'object') {
+    //       var props = Object.keys(obj);
+    //       props.forEach(function (p) {
+    //         if (typeof obj[p] == 'object') {
+    //           var tr = domConstruct.create('tr', {}, tbody);
+    //           domConstruct.create('td', {
+    //             style: { 'padding-left': (depth * 5) + 'px' },
+    //             innerHTML: p,
+    //             nowrap: 'nowrap'
+    //           }, tr);
+    //           domConstruct.create('td', {}, tr);
+    //           renderObject(obj[p], tbody, depth + 1);
+    //         } else {
+    //           var tr = domConstruct.create('tr', {}, tbody);
+    //           domConstruct.create('td', {
+    //             style: { 'padding-left': (depth * 10) + 'px' },
+    //             innerHTML: p,
+    //             nowrap: 'nowrap'
+    //           }, tr);
+    //           domConstruct.create('td', { innerHTML: obj[p] }, tr);
+    //         }
+    //       });
+    //     }
+    //   }
+    // },
     completed_job: function (item, options) {
       options = options || {};
 

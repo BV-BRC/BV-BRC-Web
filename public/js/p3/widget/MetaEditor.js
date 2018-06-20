@@ -77,7 +77,7 @@ define([
       /**
        * Create form
        */
-      var content = dom.toDom('<div>');
+      // var content = dom.toDom('<div>');
       var form = new Form();
 
       // put form in dialog
@@ -278,8 +278,6 @@ define([
      *  }]
      */
     getJsonPatch: function () {
-      var self = this;
-
       var hash = this.getValues();
       var editableList = this.getEditableList();
 

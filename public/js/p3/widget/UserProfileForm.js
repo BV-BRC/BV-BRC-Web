@@ -103,7 +103,6 @@ define([
       this.submitButton.set('disabled', true);
       this.udProfButton.set('disabled', true);
       var vals = this.getValues();
-      var _self = this;
       this.userServiceURL = window.App.userServiceURL;
       this.userServiceURL.replace(/\/+$/, '');
       // console.log(vals);

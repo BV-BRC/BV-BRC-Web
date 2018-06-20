@@ -37,8 +37,6 @@ define([
       return;
     }
 
-    var _self = this;
-
     var parsed = {
       parsed: _parsed,
       selected: [],
@@ -144,7 +142,7 @@ define([
 
     _refresh: function () {
       // console.log("Refresh FilterContainerActionBar");
-      var parsedQuery = {};
+      // var parsedQuery = {};
       var parsedFilter = {};
       var state = this.get('state') || {};
 
@@ -184,7 +182,7 @@ define([
       // console.log("_refresh() parsedFilter.selected: ", parsedFilter.selected);
 
       // for each of the facet widgets, get updated facet counts and update the content.
-      var toClear = [];
+      // var toClear = [];
       Object.keys(this._ffWidgets).forEach(function (category) {
         // console.log("Category: ", category)
         this._ffWidgets[category].clearSelection();
@@ -310,7 +308,7 @@ define([
 
       var _self = this;
       var setAnchor = function () {
-        var q = _self.query;
+        // var q = _self.query;
         // console.log("Anchor: ", this.state)
         if (_self.state && _self.state.hashParams && _self.state.hashParams.filter) {
 
@@ -371,7 +369,7 @@ define([
       // this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
       on(this.fullViewNode, 'mousewheel', function (event) {
         var maxX = this.scrollWidth - this.offsetWidth;
-        var maxY = this.scrollHeight - this.offsetHeight;
+        // var maxY = this.scrollHeight - this.offsetHeight;
 
         if (((this.scrollLeft + event.deltaX) < 0) || ((this.scrollLeft + event.deltaX) > maxX)) {
           event.preventDefault();
@@ -402,7 +400,7 @@ define([
           'text-align': 'left'
         }
       }, keywordSearchBox);
-      var label = domConstruct.create('span', { innerHTML: 'KEYWORDS', style: {} }, kbot);
+      domConstruct.create('span', { innerHTML: 'KEYWORDS', style: {} }, kbot);
       var clear = domConstruct.create('i', {
         'class': 'dijitHidden fa icon-x fa-1x',
         style: { 'vertical-align': 'bottom', 'font-size': '14px', 'margin-left': '4px' },
@@ -888,7 +886,7 @@ define([
         'class': (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
         rel: name
       });
-      var b = domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);
+      domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);
 
       if (opts && opts.label) {
         var t = domConstruct.create('div', { innerHTML: opts.label, 'class': 'ActionButtonText' }, wrapper);

@@ -235,7 +235,7 @@ define([
         var depth = 0;
         var beg_intergenic_id,
           beg_intergenic_pos;
-        var intergenic = [];
+        // var intergenic = [];
         endpoints.forEach(function (elt) {
           var peg = elt[0];
           var pos = elt[1];
@@ -401,11 +401,11 @@ define([
 
       var glyph;
 
-      var make_bg = function () {
-        // Draw a background highlight.
-        var bg = this.make_rect(row, x1, x2, height + 4);
-        bg.setFill('rgb(220,220,220)');
-      }.bind(this);
+      // var make_bg = function () {
+      //   // Draw a background highlight.
+      //   var bg = this.make_rect(row, x1, x2, height + 4);
+      //   bg.setFill('rgb(220,220,220)');
+      // }.bind(this);
 
       // Skip active sites for now.
       if (feature.type == 'site_annotation')
@@ -467,7 +467,7 @@ define([
         }
       }
 
-      var bb = glyph.getTransformedBoundingBox();
+      // var bb = glyph.getTransformedBoundingBox();
 
       glyph.feature = feature;
 

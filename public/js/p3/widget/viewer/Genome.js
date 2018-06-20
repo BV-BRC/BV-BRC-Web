@@ -50,7 +50,7 @@ define([
         this.set('genome', genome);
       }), lang.hitch(this, function (error) {
         if (error.response.status == 404) {
-          var d = new Dialog({
+          new Dialog({
             content: 'Genome <i>' + this.genome_id + '</i> was not found.  This could be because it' +
               ' is currently being indexed in the PATRIC database, it' +
               ' does not exist, or' +

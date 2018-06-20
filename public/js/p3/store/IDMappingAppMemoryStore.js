@@ -492,8 +492,8 @@ define([
               }
             }), function (response) {
               var data = [];
-              var giNumbers = []; // response.map(function(d){ return d.id_value;});
-              var giSource = [];
+              // var giNumbers = []; // response.map(function(d){ return d.id_value;});
+              // var giSource = [];
               var idx = 0;
               response.forEach(function (d) {
                 var accession = d.uniprotkb_accession;

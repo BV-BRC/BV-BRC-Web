@@ -287,9 +287,9 @@ define([
       // this.addFeatureTrack("rRNA", "rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
 
       // test heatmap plot
-      var heatmapFill = function () {
-        return 'red';
-      };
+      // var heatmapFill = function () {
+      //   return 'red';
+      // };
 
       /*
       var gcContentTrack3 = this.viewer.addTrack({
@@ -408,8 +408,8 @@ define([
       var gcData = [];
       // console.log("GC CONTENT: gcContentData data=", data, "windowSize=", windowSize);
       function calculateGC(accession, seq, ws) {
-        var cur = seq;
-        var slen = seq.length;
+        // var cur = seq;
+        // var slen = seq.length;
         var gc = [];
         var current = 0;
         for (current = 0; current < seq.length; current += ws) {
@@ -476,7 +476,7 @@ define([
           // console.log("CircularViewerContainer removeTrack viewer", this.viewer);
         }
         else if (key === 'addCustomTrack') {
-          var track_name = 'Custom track ' + value.index;
+          // var track_name = 'Custom track ' + value.index;
           // var filter = "&keyword(" + encodeURIComponent(value.keyword);
           // use searchToQuery for advanced keyword search
           var filter = searchToQuery(value.keyword);
@@ -510,7 +510,7 @@ define([
           if (value.type === 'tiles') {
             fill_color = user_colors[(value.index - 1) % user_colors.length];
             // console.log("CircularViewerContainer SectionTrack, fill_color = ", fill_color);
-            var userTrack = this.viewer.addTrack({
+            this.viewer.addTrack({
               type: SectionTrack,
               options: {
                 title: 'User Track ' + value.index,
@@ -540,7 +540,7 @@ define([
             }, 'outer');
           }
           else if (value.type === 'line') {
-            var userTrack = this.viewer.addTrack({
+            this.viewer.addTrack({
               type: LineTrack,
               options: {
                 title: 'User Track ' + value.index,
@@ -558,7 +558,7 @@ define([
             }, 'outer');
           }
           else if (value.type === 'histogram') {
-            var userTrack = this.viewer.addTrack({
+            this.viewer.addTrack({
               type: HistogramTrack,
               options: {
                 title: 'User Track ' + value.index,
@@ -585,7 +585,7 @@ define([
             var heatmapFill = function () {
               return 'red';
             };
-            var userTrack = this.viewer.addTrack({
+            this.viewer.addTrack({
               type: HeatmapTrack,
               options: {
                 title: 'User Track ' + value.index,

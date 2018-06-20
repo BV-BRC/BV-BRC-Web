@@ -142,7 +142,7 @@ define([
       if (!val) {
         domAttr.set(this.fileInput, 'accept', '*.*');
       } else {
-        var type = this.uploadType.get('value');
+        // var type = this.uploadType.get('value');
         var formats = this.knownTypes[this.uploadType.get('value')].formats;
         domAttr.set(this.fileInput, 'accept', formats.join(','));
       }
@@ -451,13 +451,13 @@ define([
           }, _self.uploadTable);
           domAttr.set(row, 'data-filename', file.name);
           domAttr.set(row, 'data-filetype', _self.dndType || _self.uploadType.get('value'));
-          var nameNode = domConstruct.create('td', {
+          domConstruct.create('td', {
             innerHTML: file.name
           }, row);
-          var typeNode = domConstruct.create('td', {
+          domConstruct.create('td', {
             innerHTML: _self.uploadType.get('value')
           }, row);
-          var sizeNode = domConstruct.create('td', {
+          domConstruct.create('td', {
             innerHTML: file.size
           }, row);
           var delNode = domConstruct.create('td', {

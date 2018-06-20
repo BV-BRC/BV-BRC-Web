@@ -285,7 +285,6 @@ define([
         return;
       }
       var q = [];
-      var _self = this;
       if (state.search) {
         q.push(state.search);
       }

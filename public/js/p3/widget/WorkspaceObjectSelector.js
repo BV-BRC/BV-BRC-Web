@@ -616,7 +616,6 @@ define([
 
     validate: function (/* Boolean */ isFocused) {
       // possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
-      var message = '';
       var isValid = this.disabled || this.searchBox.isValid(isFocused);
       this._set('state', isValid ? '' : this.searchBox.state);
       this.focusNode.setAttribute('aria-invalid', this.state == 'Error' ? 'true' : 'false');

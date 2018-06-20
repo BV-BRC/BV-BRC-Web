@@ -5,7 +5,7 @@ define(['dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
   Deferred, Topic, WorkspaceManager
 ) {
 
-  var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+  // var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
   var UploadManager = (declare([], {
     constructor: function () {
       this.activeCount = 0;

@@ -83,9 +83,9 @@ define([
     emptyTable:function (target, rowLimit) {
       for (i = 0; i < rowLimit; i++) {
         var tr =  target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
     },
 
@@ -105,7 +105,7 @@ define([
       //     submit_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList);
+      pairedList.concat(singleList);
       submit_values.reference_genome_id = values.genome_name;
       submit_values.mapper = values.mapper;
       submit_values.caller = values.caller;
@@ -305,9 +305,9 @@ define([
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj._handle.remove();
         this.libraryStore.remove(obj._id);

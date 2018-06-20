@@ -11,12 +11,12 @@ define([
   ColumnReorder, on, has, touchUtil, Confirmation
 ) {
 
-  var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey',
-    hasUserSelect = has('css-user-select'),
-    hasPointer = has('pointer'),
-    hasMSPointer = hasPointer && hasPointer.slice(0, 2) === 'MS',
-    downType = hasPointer ? hasPointer + (hasMSPointer ? 'Down' : 'down') : 'mousedown',
-    upType = hasPointer ? hasPointer + (hasMSPointer ? 'Up' : 'up') : 'mouseup';
+  var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
+  // var hasUserSelect = has('css-user-select');
+  var hasPointer = has('pointer');
+  var hasMSPointer = hasPointer && hasPointer.slice(0, 2) === 'MS';
+  // var downType = hasPointer ? hasPointer + (hasMSPointer ? 'Down' : 'down') : 'mousedown';
+  var upType = hasPointer ? hasPointer + (hasMSPointer ? 'Up' : 'up') : 'mouseup';
 
   function byId(id) {
     return document.getElementById(id);

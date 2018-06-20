@@ -39,9 +39,9 @@ define([
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
       this.numlibs.startup();
       this._started = true;
@@ -94,7 +94,7 @@ define([
 
       td.libRecord = lrec;
       td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + '</div>';
-      var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+      domConstruct.create('td', { innerHTML: '' }, tr);
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x'/>" }, tr);
 
       if (this.addedLibs < this.startingRows) {
@@ -105,9 +105,9 @@ define([
         this.decreaseLib(lrec);
         if (this.addedLibs < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
       }));
@@ -143,7 +143,7 @@ define([
 
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)</div>';
-        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+        domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x library-rm'/>" }, tr);
 
         if (this.addedLibs < this.startingRows) {
@@ -154,9 +154,9 @@ define([
           this.decreaseLib(lrec);
           if (this.addedLibs < this.startingRows) {
             var ntr = this.libsTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
         }));

@@ -67,7 +67,7 @@ define([
         data: query + '&limit(1)'
       }), lang.hitch(this, function (res) {
 
-        var numFound = res.response.numFound;
+        // var numFound = res.response.numFound;
 
         var fetchSize = 5000;
         // var steps = Math.ceil(numFound / fetchSize);

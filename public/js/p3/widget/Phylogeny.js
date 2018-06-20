@@ -108,7 +108,7 @@ define([
       this.setupActions();
       on(idMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
-        var sel = idMenu.selection;
+        // var sel = idMenu.selection;
         delete idMenu.selection;
 
         this.tree.selectLabels(rel);
@@ -117,7 +117,7 @@ define([
 
       on(snapMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
-        var sel = snapMenu.selection;
+        // var sel = snapMenu.selection;
         delete snapMenu.selection;
         if (rel == 'tree-svg') {
           // console.log("this...",this);

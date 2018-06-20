@@ -13,7 +13,7 @@ define([
 ) {
 
   var groupCompare = null;
-  var myHash = null;
+  // var myHash = null;
   var myURL = null;
   var myType = null;
   var ids = '';
@@ -143,7 +143,7 @@ define([
       var memberArea = d3.select('#gse-members');
       var memberTable = memberArea.append('div').attr('id', 'gse-members-tbl').attr('style', 'overflow-y:scroll');
       memberTable.append('div').text('Region: ' + regionGroupName).attr('style', 'font-weight: bold');
-      var memberGrid = memberTable.append('div').attr('id', 'gse-members-grid');
+      memberTable.append('div').attr('id', 'gse-members-grid');
 
       console.log('in selectionListener, selected', selected);
       console.log('in selectionListener, region', regions);
@@ -567,11 +567,10 @@ define([
       }));
 
       domConstruct.empty(this.containerNode);
-      var path = '/js/p3/resources/gse.css';
-      var link = domConstruct.create('link', {
+      domConstruct.create('link', {
         rel: 'stylesheet',
         type: 'text/css',
-        href: path
+        href: '/js/p3/resources/gse.css'
       }, this.containerNode, 'last');
 
       var div = domConstruct.create('div', { id: 'gse' }, this.containerNode);
@@ -584,7 +583,7 @@ define([
         checked: 'Y',
         style: 'margin: 5px'
       }, div);
-      var color_label1 = domConstruct.create('label', { 'for': 'default', innerHTML: 'default' }, div);
+      domConstruct.create('label', { 'for': 'default', innerHTML: 'default' }, div);
       var color_type2 = domConstruct.create('input', {
         type: 'radio',
         name: 'color_type',
@@ -592,7 +591,7 @@ define([
         value: 'false',
         style: 'margin: 5px'
       }, div);
-      var color_label1 = domConstruct.create('label', { 'for': 'default', innerHTML: 'alternative color' }, div);
+      domConstruct.create('label', { 'for': 'default', innerHTML: 'alternative color' }, div);
 
       color_type1.addEventListener('click', function () {
         colorChoice('Y');
@@ -621,12 +620,12 @@ define([
         createGroup();
       });
 
-      var div2 = domConstruct.create('div', { id: 'gse-members' }, div);
-      var div1 = domConstruct.create('div', {
+      domConstruct.create('div', { id: 'gse-members' }, div);
+      domConstruct.create('div', {
         id: 'create_msg',
         innerHTML: '<b>Please select one or more regions to view members.</b>'
       }, div);
-      var div3 = domConstruct.create('div', { id: 'gse-venndiagram' }, div);
+      domConstruct.create('div', { id: 'gse-venndiagram' }, div);
     },
 
     startup: function () {

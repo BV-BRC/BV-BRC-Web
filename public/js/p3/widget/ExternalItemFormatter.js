@@ -15,8 +15,8 @@ define([
 
       Object.keys(item).sort().forEach(function (key) {
         var tr = domConstruct.create('tr', {}, tbody);
-        var tda = domConstruct.create('td', { innerHTML: key }, tr);
-        var tdb = domConstruct.create('td', { innerHTML: item[key] }, tr);
+        domConstruct.create('td', { innerHTML: key }, tr);
+        domConstruct.create('td', { innerHTML: item[key] }, tr);
       }, this);
 
       return table;
