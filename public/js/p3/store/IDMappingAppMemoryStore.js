@@ -13,10 +13,10 @@ define([
     apiServer: window.App.dataServiceURL,
     idProperty: 'idx',
     state: null,
-    rowLimit :25000,
+    rowLimit: 25000,
     sourceToTarget: {}, // models one to many, and no mapping relationships
     summary: {
-      total: 0, found: 0, type: 'None', mapped:0
+      total: 0, found: 0, type: 'None', mapped: 0
     },
 
     onSetState: function (attr, oldVal, state) {
@@ -83,7 +83,7 @@ define([
         Object.keys(_self.sourceToTarget).forEach(function (source) {
           var numTargets = Object.keys(_self.sourceToTarget[source]).length;
           if ( numTargets == 0) {
-            data.push({ source:source, idx:idx });
+            data.push({ source: source, idx: idx });
             idx += 1;
           }
           else {
@@ -140,16 +140,16 @@ define([
       // the joinID is what creates Advanced Search
       var joinId = null;
       if (via == 'gene_id') {
-        joinId = { genome_feature:'gene_id', id_ref:'GeneID' };
+        joinId = { genome_feature: 'gene_id', id_ref: 'GeneID' };
       }
       else if (via == 'refseq_locus_tag') {
-        joinId = { genome_feature:'refseq_locus_tag', id_ref:'Gene_OrderedLocusName' };
+        joinId = { genome_feature: 'refseq_locus_tag', id_ref: 'Gene_OrderedLocusName' };
       }
       else if (via == 'protein_id') {
-        joinId = { genome_feature:'protein_id', id_ref:'RefSeq' };
+        joinId = { genome_feature: 'protein_id', id_ref: 'RefSeq' };
       }
       else {
-        joinId = { genome_feature:'gi', id_ref:'GI' };
+        joinId = { genome_feature: 'gi', id_ref: 'GI' };
       }
 
       _self.sourceToTarget = {};
@@ -283,13 +283,13 @@ define([
                   var gi = accessionGiMap[accession];
 
                   if (toId === 'UniProtKB-Accession') {
-                    if (!giTarget.hasOwnProperty(gi)) {
+                    if (!Object.prototype.hasOwnProperty.call(giTarget, gi)) {
                       giTarget[gi] = [accession];
                     } else {
                       giTarget[gi].push(accession);
                     }
                   } else {
-                    if (!giTarget.hasOwnProperty(gi)) {
+                    if (!Object.prototype.hasOwnProperty.call(giTarget, gi)) {
                       giTarget[gi] = [target];
                     } else {
                       giTarget[gi].push(target);
@@ -303,7 +303,7 @@ define([
                 var data = [];
                 features.forEach(function (d) {
                   var item = Object.create(d);
-                  if (d.hasOwnProperty(joinId.genome_feature)) {
+                  if (Object.prototype.hasOwnProperty.call(d, joinId.genome_feature)) {
                     var target = giTarget[d[joinId.genome_feature]];
                     if (target) {
                       target.forEach(function (t) {
@@ -373,7 +373,7 @@ define([
                 var gi = d.id_value;
                 giNumbers.push(gi);
                 var accession = d.uniprotkb_accession;
-                giSource[gi] = { uniprotkb_accession: accession, source:accessionSource[accession] };
+                giSource[gi] = { uniprotkb_accession: accession, source: accessionSource[accession] };
               });
 
               return when(request.post(_self.apiServer + '/genome_feature/', {
@@ -492,8 +492,8 @@ define([
               }
             }), function (response) {
               var data = [];
-              var giNumbers = []; // response.map(function(d){ return d.id_value;});
-              var giSource = [];
+              // var giNumbers = []; // response.map(function(d){ return d.id_value;});
+              // var giSource = [];
               var idx = 0;
               response.forEach(function (d) {
                 var accession = d.uniprotkb_accession;

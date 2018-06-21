@@ -101,7 +101,7 @@ define([
 
       this.Antibiotics = new AntibioticGridContainer({
         title: 'Antibiotics',
-        id: this.viewer.id + '_' + 'specialtyGenes',
+        id: this.viewer.id + '_specialtyGenes',
         disabled: false
       });
       this.viewer.addChild(this.Antibiotics);

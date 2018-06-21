@@ -68,7 +68,7 @@ define([
     },
 
     validator: function (val, constraints) {
-      var valid = false;
+      // var valid = false;
       var re = /(\(|\)|\/|:)/g;
       var match = val.match(re);
 

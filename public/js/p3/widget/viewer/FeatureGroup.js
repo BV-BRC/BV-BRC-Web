@@ -88,12 +88,12 @@ define([
         content: 'Feature Group Overview',
         title: 'Overview',
         isFeatureGroup: true,
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
 
       this.features = new GroupFeatureGridContainer({
         title: 'Features',
-        id: this.viewer.id + '_' + 'features',
+        id: this.viewer.id + '_features',
         tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
         disabled: false,
         onRefresh: lang.hitch(this, function () {

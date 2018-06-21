@@ -103,7 +103,7 @@ define([
         domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.pharmacologyNode);
       }, this);
 
-      if (data.hasOwnProperty('pharmacological_classes')) {
+      if (Object.prototype.hasOwnProperty.call(data, 'pharmacological_classes')) {
         domConstruct.create('h5', { 'class': 'close2x', innerHTML: 'Pharmacological Classes' }, this.pharmacologyNode);
         data.pharmacological_classes.forEach(function (row) {
           domConstruct.create('div', { 'class': 'close', innerHTML: row }, this.pharmacologyNode);
@@ -156,16 +156,16 @@ define([
 
           this.set('antibioticSummary', summary);
 
-          if (d.hasOwnProperty('description')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'description')) {
             this.set('description', d.description);
           }
-          if (d.hasOwnProperty('mechanism_of_action')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'mechanism_of_action')) {
             this.set('mechanism', d.mechanism_of_action);
           }
-          if (d.hasOwnProperty('pharmacology')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'pharmacology')) {
             this.set('pharmacology', d);
           }
-          if (d.hasOwnProperty('synonyms')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'synonyms')) {
             this.set('synonyms', d.synonyms);
           }
         }));

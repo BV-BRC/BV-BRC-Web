@@ -22,38 +22,6 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     data: []
   });
 
-  // kick off the polling
-  setTimeout(PollJobs, 1000);
-
-  function PollJobs() {
-    // leaving this here since instantiation order is unpredictable
-    if (!(window.App && window.App.api && window.App.api.service)) {
-      setTimeout(PollJobs, 1000);
-      return;
-    }
-
-    // check for status change.  if change, update jobs list
-    var prom = getStatus();
-    prom.then(function (statusChange) {
-      if (statusChange) {
-        updateJobsList().then(function () {
-          setTimeout(PollJobs, TIME_OUT);
-        });
-        return;
-      }
-
-      setTimeout(PollJobs, TIME_OUT);
-    });
-  }
-
-  /**
-   * listen for job filtering to store filter state locally
-   */
-  Topic.subscribe('/JobFilter', function (filter) {
-    Object.assign(self.filters, filter);
-  });
-
-
   /**
    * updates the job list (see JobsGrid.js)
    */
@@ -111,6 +79,37 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       return change; // bool
     });
   }
+
+  function PollJobs() {
+    // leaving this here since instantiation order is unpredictable
+    if (!(window.App && window.App.api && window.App.api.service)) {
+      setTimeout(PollJobs, 1000);
+      return;
+    }
+
+    // check for status change.  if change, update jobs list
+    var prom = getStatus();
+    prom.then(function (statusChange) {
+      if (statusChange) {
+        updateJobsList().then(function () {
+          setTimeout(PollJobs, TIME_OUT);
+        });
+        return;
+      }
+
+      setTimeout(PollJobs, TIME_OUT);
+    });
+  }
+
+  // kick off the polling
+  setTimeout(PollJobs, 1000);
+
+  /**
+   * listen for job filtering to store filter state locally
+   */
+  Topic.subscribe('/JobFilter', function (filter) {
+    Object.assign(self.filters, filter);
+  });
 
   return {
     queryTaskDetail: function (id, stdout, stderr) {

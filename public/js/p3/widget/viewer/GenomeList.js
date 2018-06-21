@@ -14,7 +14,7 @@ define([
       return new GenomeListOverview({
         content: 'Genome List Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
     }
   });

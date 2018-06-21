@@ -27,7 +27,7 @@ define([
     },
 
     showError: function (err) {
-      var n = domConstr.create('div', {
+      domConstr.create('div', {
         style: {
           position: 'relative',
           zIndex: 999,
@@ -111,8 +111,8 @@ define([
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
               'App Name: ' + sel.app + '\n\n' +
-              'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout' + '\n' +
-              'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr' + '\n\n' +
+              'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout\n' +
+              'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr\n\n' +
               'Submit Time: ' + sel.submit_time + '\n' +
               'Start Time: ' + sel.submit_time + '\n' +
               'Completed Time: ' + sel.submit_time + '\n\n' +

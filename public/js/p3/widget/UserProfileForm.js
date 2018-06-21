@@ -54,7 +54,7 @@ define([
       } else {
         console.log('they match, yeah');
         var vals = {
-          'id': 1, 'jsonrpc':'2.0', 'method': 'setPassword', 'params': [window.localStorage.userid, this.pw0.get('value'), this.pw1.get('value')]
+          'id': 1, 'jsonrpc': '2.0', 'method': 'setPassword', 'params': [window.localStorage.userid, this.pw0.get('value'), this.pw1.get('value')]
         };
         var def = xhr(this.userServiceURL + '/user/', {
           data: JSON.stringify(vals),
@@ -103,7 +103,6 @@ define([
       this.submitButton.set('disabled', true);
       this.udProfButton.set('disabled', true);
       var vals = this.getValues();
-      var _self = this;
       this.userServiceURL = window.App.userServiceURL;
       this.userServiceURL.replace(/\/+$/, '');
       // console.log(vals);

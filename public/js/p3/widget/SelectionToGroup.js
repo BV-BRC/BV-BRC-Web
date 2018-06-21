@@ -104,11 +104,11 @@ define([
       }
     },
     startup: function () {
-      var _self = this;
+      // var _self = this;
       if (this._started) {
         return;
       }
-      var currentIcon;
+      // var currentIcon;
       this.watch('selection', lang.hitch(this, function (prop, oldVal, item) {
         console.log('set selection(): ', arguments);
       }));

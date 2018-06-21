@@ -206,10 +206,10 @@ define([
 
       }), lang.hitch(this, function (response) {
 
-        var docs = [];
-        var props = {
-          subsystems_overview: 'subsystem_id'
-        };
+        // var docs = [];
+        // var props = {
+        //   subsystems_overview: 'subsystem_id'
+        // };
 
         // flat queries return a different data format
         if ( response && response.facets ) {

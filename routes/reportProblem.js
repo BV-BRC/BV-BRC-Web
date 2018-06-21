@@ -1,5 +1,3 @@
-var express = require('express');
-var bodyParser = require('body-parser');
 var config = require('../config');
 var email = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');

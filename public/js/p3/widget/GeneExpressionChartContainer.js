@@ -106,7 +106,7 @@ define([
       if (!state) {
         return;
       }
-      var self = this;
+
       this._set('state', state);
       // console.log("In GeneExpressionChartContainer _setStateAttr: state", state);
       if (!this.store) {

@@ -58,7 +58,7 @@ define([
     getValues: function () {
       // console.log("getValues is called")
 
-      var values = this.inherited(arguments);
+      this.inherited(arguments);
 
       var assembly_values = {};
 

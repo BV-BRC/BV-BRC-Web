@@ -228,7 +228,6 @@ define([
 
       on(downloadTT.domNode, 'div:click', function (evt) {
         var rel = evt.target.attributes.rel.value;
-        var selection = self.actionPanel.get('selection');
         var dataType = (self.actionPanel.currentContainerWidget.containerType == 'genome_group') ? 'genome' : 'genome_feature';
         var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 
@@ -456,7 +455,7 @@ define([
         { domAttr.set(text, 'textContent', 'SHOW HIDDEN'); }
       }, false);
 
-      var addWSBtn = this.browserHeader.addAction('CreateWorkspace', 'fa icon-add-workspace fa-2x', {
+      this.browserHeader.addAction('CreateWorkspace', 'fa icon-add-workspace fa-2x', {
         label: 'NEW WS',
         validTypes: ['folder'],
         tooltip: 'Create Workspace'
@@ -748,7 +747,7 @@ define([
         try {
           self.renameDialog(path, isJob);
         } catch (e) {
-          var d = new Dialog({
+          new Dialog({
             content: e.toString(),
             title: "Sorry, you can't rename that...",
             style: 'width: 250px;'
@@ -988,7 +987,6 @@ define([
 
     renameDialog: function (path, isJob) {
       var self = this;
-      var conf = '';
 
       var currentName = path.slice(path.lastIndexOf('/') + 1);
       var nameInput = new TextBox({
@@ -1025,7 +1023,7 @@ define([
               _self.hideAndDestroy();
             }, function (error) {
               new Dialog({
-                content:  'The name <i>' + newName + '</i> already exists!  Please pick a unique name.',
+                content: 'The name <i>' + newName + '</i> already exists!  Please pick a unique name.',
                 title: 'Sorry!',
                 style: 'width: 400px;'
               }).show();
@@ -1164,7 +1162,7 @@ define([
         return decodeURIComponent(c);
       });
       // console.log("[WorkspaceBrowser] parts:",parts)
-      var workspace = parts[0] + '/' + parts[1];
+      // var workspace = parts[0] + '/' + parts[1];
       var obj;
 
       if (parts[0] == 'public') {
@@ -1321,12 +1319,12 @@ define([
             }
           }
 
-          var parts = this.path.split('/').filter(function (x) {
-            return x != '';
-          }).map(function (c) {
-            return decodeURIComponent(c);
-          });
-          var workspace = parts[0] + '/' + parts[1];
+          // var parts = this.path.split('/').filter(function (x) {
+          //   return x != '';
+          // }).map(function (c) {
+          //   return decodeURIComponent(c);
+          // });
+          // var workspace = parts[0] + '/' + parts[1];
 
           // don't set current path in workspace manager for now
           // WorkspaceManager.set("currentPath", val);
