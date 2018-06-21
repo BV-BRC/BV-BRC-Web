@@ -20,7 +20,7 @@ define([
       domClass.remove(this.domNode, 'Error');
       this.submitButton.set('disabled', true);
       var vals = this.getValues();
-      var _self = this;
+
       var def = xhr.post('/sulogin', {
         data: vals,
         withCredentials: true

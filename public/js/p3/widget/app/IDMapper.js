@@ -149,7 +149,7 @@ define([
       var fromIdGroup = null;
       var toIdGroup = null;
       var patricIdGroup = {
-        patric_id:'', feature_id:'', P2_feature_id:'', alt_locus_tag:'', refseq_locus_tag:'', gene_id:'', gi:'', protein_id:''
+        patric_id: '', feature_id: '', P2_feature_id: '', alt_locus_tag: '', refseq_locus_tag: '', gene_id: '', gi: '', protein_id: ''
       };
 
       fromIdGroup = (from in patricIdGroup) ? 'PATRIC' : 'OTHER';
@@ -163,7 +163,7 @@ define([
         query('.idmap_result_div .GridContainer').style('visibility', 'visible');
         query('.PerspectiveTotalCount').style('visibility', 'visible');
         _self.result.set('state', {
-          fromIdGroup: fromIdGroup, joinId:via, fromId: from, toIdGroup:toIdGroup, toId:to, fromIdValue:ids
+          fromIdGroup: fromIdGroup, joinId: via, fromId: from, toIdGroup: toIdGroup, toId: to, fromIdValue: ids
         });
       }
 

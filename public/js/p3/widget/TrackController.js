@@ -265,7 +265,7 @@ define([
       var color = domConstruct.create('td', { style: 'width: 35px;' }, tr);
       var fg,
         bg;
-      var foregroundIsStroke = false;
+      // var foregroundIsStroke = false;
 
       if (event.track) {
         if (event.track.fill) {

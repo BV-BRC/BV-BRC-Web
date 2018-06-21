@@ -331,7 +331,6 @@ define([
     _setSearchResultsAttr: function (val) {
       this.searchResults = val;
 
-      var foundContent = false;
       var resultCounts = {};
       var singleResults = {};
 

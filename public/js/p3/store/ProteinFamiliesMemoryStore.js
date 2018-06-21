@@ -488,7 +488,7 @@ define([
           var fId = doc[familyIdName];
           if (fId === '') return;
 
-          if (!familyIdSet.hasOwnProperty(fId)) {
+          if (!Object.prototype.hasOwnProperty.call(familyIdSet, fId)) {
             familyIdSet[fId] = idx;
             // order.push({groupId: fId, syntonyAt: idx});
             idx++;
@@ -520,7 +520,7 @@ define([
           leftOver = [];
         this.query('', {}).forEach(function (d) {
 
-          if (newFamilyOrderSet.hasOwnProperty(d.family_id)) {
+          if (Object.prototype.hasOwnProperty.call(newFamilyOrderSet, d.family_id)) {
             highlighted[newFamilyOrderSet[d.family_id]] = d.family_id;
           } else {
             leftOver.push(d.family_id);

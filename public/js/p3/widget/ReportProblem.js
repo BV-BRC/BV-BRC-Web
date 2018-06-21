@@ -22,10 +22,10 @@ define([
     },
     startup: function () {
       if (this.issueSubject) {
-        var msgBox = query('[name="subject"]')[0].value = this.issueSubject;
+        query('[name="subject"]')[0].value = this.issueSubject;
       }
       if (this.issueText) {
-        var msgBox = query('[name="content"]')[0].value = this.issueText;
+        query('[name="content"]')[0].value = this.issueText;
       }
     },
 

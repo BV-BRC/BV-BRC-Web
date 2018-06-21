@@ -56,7 +56,7 @@ define([
               if (!bubbleUpMeta[prop] || prop == 'inspection_started') {
                 return;
               }
-              var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop].label : prop;
+              var label = Object.prototype.hasOwnProperty.call(this._autoLabels, prop) ? this._autoLabels[prop].label : prop;
               subRecord.push(label + ' (' + bubbleUpMeta[prop] + ')');
             }, this);
 

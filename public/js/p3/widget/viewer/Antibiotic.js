@@ -94,23 +94,23 @@ define([
 
       this.overview = new AntibioticOverview({
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
 
       this.amr = new AMRPanelGridContainer({
         title: 'AMR Phenotypes',
-        id: this.viewer.id + '_' + 'amr'
+        id: this.viewer.id + '_amr'
       });
 
       this.amrGenes = new SpecialtyGeneGridContainer({
         title: 'AMR Genes',
         facetFields: ['source', 'evidence', 'classification', 'antibiotics_class', 'antibiotics'],
-        id: this.viewer.id + '_' + 'amrGenes'
+        id: this.viewer.id + '_amrGenes'
       });
 
       this.amrRegions = new FeatureGridContainer({
         title: 'AMR Regions',
-        id: this.viewer.id + '_' + 'amrRegions',
+        id: this.viewer.id + '_amrRegions',
         defaultFilter: ''
       });
 

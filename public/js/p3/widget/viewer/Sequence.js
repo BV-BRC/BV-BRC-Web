@@ -26,15 +26,12 @@ define([
       if (!id) {
         return;
       }
-      var state = this.state = this.state || {};
+      this.state = this.state || {};
       this.patric_id = id;
       this.state.patric_id = id;
     },
 
     onSetState: function (attr, oldVal, state) {
-      var parts = this.state.pathname.split('/');
-      // this.set("feature_id", parts[parts.length - 1]);
-
       if (!state) {
         return;
       }
@@ -83,7 +80,7 @@ define([
       return new ContentPane({
         content: 'Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },

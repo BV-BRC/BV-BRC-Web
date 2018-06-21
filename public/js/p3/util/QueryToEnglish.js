@@ -55,7 +55,7 @@ define([
 
           vals = v.map(walk);
 
-          out = '<span class="searchField">' + f + ' </span>' + '<span class="searchOperator"> is </span> ';
+          out = '<span class="searchField">' + f + ' </span><span class="searchOperator"> is </span> ';
 
           if (vals.length == 1) {
             out = out + ' IN ' + vals.join('');
@@ -74,7 +74,7 @@ define([
         case 'eq':
           var f = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
           var v = decodeURIComponent(term.args[1]);
-          out =  '<span class="searchField">' + f  + ' </span><span class="searchOperator"> is </span>' + '<span class="searchValue">' + v + '</span>';
+          out =  '<span class="searchField">' + f  + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + v + '</span>';
           break;
         case 'keyword':
           out = '<span class="searchValue"> '  + decodeURIComponent(term.args[0]) + '</span>';

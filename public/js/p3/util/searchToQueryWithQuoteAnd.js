@@ -11,14 +11,14 @@ define([], function () {
     return quoted;
   }
 
-  function removeLastSpecialChar(str) {
-    var newstr = str;
-    if (str.charAt(str.length - 1) == ',' || str.charAt(str.length - 1) == ';') {
-      newstr = str.substring(0, str.length - 1);
-    }
+  // function removeLastSpecialChar(str) {
+  //   var newstr = str;
+  //   if (str.charAt(str.length - 1) == ',' || str.charAt(str.length - 1) == ';') {
+  //     newstr = str.substring(0, str.length - 1);
+  //   }
 
-    return newstr;
-  }
+  //   return newstr;
+  // }
 
   return function parseExpression(expression, field) {
     // console.log("Parse Expression: ", expression, field);

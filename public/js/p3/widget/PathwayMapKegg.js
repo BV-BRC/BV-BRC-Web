@@ -178,13 +178,13 @@ define([
       var defEcCoordinates;
       var defFeatureCoordinates;
 
-      if (pmState.hasOwnProperty('feature_id')) {
+      if (Object.prototype.hasOwnProperty.call(pmState, 'feature_id')) {
         defFeatureCoordinates = self.getKeggCoordinates(pmState.pathway_id, 'feature', pmState.feature_id);
       } else {
         defFeatureCoordinates = Deferred.resolved;
       }
 
-      if (pmState.hasOwnProperty('ec_number')) {
+      if (Object.prototype.hasOwnProperty.call(pmState, 'ec_number')) {
         defEcCoordinates = self.getKeggCoordinates(pmState.pathway_id, 'ec_number', pmState.ec_number);
       } else {
         defEcCoordinates = Deferred.resolved;
