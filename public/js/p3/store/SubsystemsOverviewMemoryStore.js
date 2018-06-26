@@ -215,7 +215,7 @@ define([
         if ( response && response.facets ) {
           var buckets = response.facets.stat.buckets;
 
-          _self.setData(buckets);
+          _self.setData(buckets.filter(function (row) { return row.val !== ''; }));
           _self._loaded = true;
           return true;
         }
