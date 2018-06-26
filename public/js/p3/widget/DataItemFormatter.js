@@ -81,46 +81,49 @@ define([
     var label = column.name;
     var multiValued = column.multiValued || false;
     var mini = options && options.mini || false;
-    // console.log("column=", column, "item=", item, "key=", key, "label=", label);
-    if (key && item[key] && !column.data_hide) {
-      if (column.isList) {
-        var tr = domConstruct.create('tr', {});
-        var td = domConstruct.create('td', { colspan: 2 }, tr);
 
-        domConstruct.place(renderMultiData(label, item[key]), td);
-        return tr;
-      } else if (multiValued) {
-        var tr = domConstruct.create('tr', {});
-        var td = domConstruct.create('td', { colspan: 2 }, tr);
+    if (!key || !item[key] || column.data_hide) {
+      return;
+    }
 
-        domConstruct.place(renderDataTable(item[key]), td);
-        return tr;
-      } else if (column.type == 'date') {
-        // display dates as MM/DD/YYYY, unless collection date or not parseable
+    if (column.isList) {
+      var tr = domConstruct.create('tr', {});
+      var td = domConstruct.create('td', { colspan: 2 }, tr);
+
+      domConstruct.place(renderMultiData(label, item[key]), td);
+      return tr;
+    } else if (multiValued) {
+      var tr = domConstruct.create('tr', {});
+      var td = domConstruct.create('td', { colspan: 2 }, tr);
+
+      domConstruct.place(renderDataTable(item[key]), td);
+      return tr;
+    } else if (column.type == 'date') {
+      // display dates as MM/DD/YYYY, unless collection date or not parseable
+      var d = new Date(item[key]);
+      if (key === 'collection_date') {
+        var dateStr = item[key];
+      } else {
         var d = new Date(item[key]);
-        if (key === 'collection_date') {
-          var dateStr = item[key];
+        if (d instanceof Date && !isNaN(d)) {
+          var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
         } else {
-          var d = new Date(item[key]);
-          if (d instanceof Date && !isNaN(d)) {
-            var dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
-          } else {
-            var dateStr = item[key];
-          }
+          var dateStr = item[key];
         }
-
-        return renderRow(label, dateStr);
-      } else if (!mini || column.mini) {
-        var l = evaluateLink(column.link, item[key], item);
-        // console.log("item[key]=", item[key]);
-        // a special case for service app
-        if (label == 'Service') {
-          l = formatter.serviceLabel(item[key]);
-        }
-        return renderRow(label, l);
       }
+
+      return renderRow(label, dateStr);
+    } else if (!mini || column.mini) {
+      var l = evaluateLink(column.link, item[key], item);
+
+      // a special case for service app
+      if (label == 'Service') {
+        l = formatter.serviceLabel(item[key]);
+      }
+      return renderRow(label, l);
     }
   }
+
 
   function displayHeader(parent, label, iconClass, url, options) {
     var linkTitle = options && options.linkTitle || false;
@@ -1567,12 +1570,11 @@ define([
         }, {
           name: 'Antimicrobial Resistance',
           text: 'antimicrobial_resistance',
+          link: function (obj) {
+            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=amr">{obj.antimicrobial_resistance_evidence}</a>', { obj: obj });
+          },
           editable: true,
-          isList: true
-        }, {
-          name: 'Antimicrobial Resistance Evidence',
-          text: 'antimicrobial_resistance_evidence',
-          editable: true
+          isList: false // not displayed as list although returned as list
         }, {
           name: 'Reference Genome',
           text: 'reference_genome'
