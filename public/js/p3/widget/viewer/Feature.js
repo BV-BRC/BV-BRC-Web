@@ -187,8 +187,10 @@ define([
       if (feature.annotation === 'PATRIC') {
         this.set('feature', feature);
       } else {
-        if (Object.prototype.hasOwnProperty.call(feature, 'pos_group')) {
-          xhr.get(PathJoin(this.apiServiceUrl, '/genome_feature/?and(eq(annotation,PATRIC),eq(pos_group,' + encodeURIComponent('"' + feature.pos_group + '"') + '))'), {
+        if (Object.prototype.hasOwnProperty.call(feature, 'sequence_id')
+            && Object.prototype.hasOwnProperty.call(feature, 'end')
+            && Object.prototype.hasOwnProperty.call(feature, 'strand')) {
+          xhr.get(PathJoin(this.apiServiceUrl, '/genome_feature/?and(eq(annotation,PATRIC),eq(sequence_id,' + feature.sequence_id + '),eq(end,' + feature.end + '),eq(strand,' + encodeURIComponent('"' + feature.strand + '"') + '))'), {
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,

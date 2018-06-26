@@ -59,7 +59,7 @@ define([
     },
 
     addFeatureTrack: function (title, title_tooltip, gid, filter, strand, fill, stroke, background) {
-      var fields = ['feature_id', 'feature_type', 'sequence_id', 'segments', 'gi', 'na_length', 'pos_group', 'strand', 'public', 'aa_length', 'patric_id', 'owner',
+      var fields = ['feature_id', 'feature_type', 'sequence_id', 'segments', 'gi', 'na_length', 'strand', 'public', 'aa_length', 'patric_id', 'owner',
         'location', 'protein_id', 'refseq_locus_tag', 'taxon_id', 'accession', 'end', 'genome_name', 'product', 'genome_id', 'annotation', 'start'];
 
       var query = '?and(eq(genome_id,' + gid + '),ne(feature_type,source),' + filter + ')&sort(+accession,+start)&select(' + fields.join(',') + ')&limit(25000)';
@@ -128,7 +128,7 @@ define([
     },
 
     addSpGeneTrack: function (title, title_tooltip, gid, filter, strand, fill, stroke, background) {
-      var fields = ['feature_id', 'feature_type', 'sequence_id', 'segments', 'gi', 'na_length', 'pos_group', 'strand', 'public', 'aa_length', 'patric_id', 'owner',
+      var fields = ['feature_id', 'feature_type', 'sequence_id', 'segments', 'gi', 'na_length', 'strand', 'public', 'aa_length', 'patric_id', 'owner',
         'location', 'protein_id', 'refseq_locus_tag', 'taxon_id', 'accession', 'end', 'genome_name', 'product', 'genome_id', 'annotation', 'start'];
 
       // var sp_fields = ["feature_id","patric_id", "evidence", "property", "source"];
