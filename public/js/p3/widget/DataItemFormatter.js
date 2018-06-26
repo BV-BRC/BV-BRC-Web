@@ -1049,11 +1049,15 @@ define([
         link: '/view/Genome/'
       }, {
         name: 'Accession',
-        text: 'accession'
+        text: 'accession',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+        mini: true
       }, {
         name: 'Sequence ID',
         text: 'sequence_id',
-        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+        link: function (obj) {
+            return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))"' + ' target="_blank">{obj.sequence_id}</a>', { obj: obj });
+        },
         mini: true
       }, {
         name: 'Length',
