@@ -355,8 +355,9 @@ define([
       var gfs = this.pmState.genomeFilterStatus;
 
       var genomeName = gfs[genomeId].getLabel();
-      // var description = '';
-      // var memberCount = 0;
+      /*
+      var description = '';
+      var memberCount = 0;
       var index = 0;
 
       if (isTransposed) {
@@ -381,6 +382,7 @@ define([
           }
         });
       }
+      */
 
       var text = [];
 

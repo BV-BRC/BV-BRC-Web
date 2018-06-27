@@ -1059,7 +1059,7 @@ define([
         name: 'Sequence ID',
         text: 'sequence_id',
         link: function (obj) {
-            return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))"' + ' target="_blank">{obj.sequence_id}</a>', { obj: obj });
+          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
         },
         mini: true
       }, {

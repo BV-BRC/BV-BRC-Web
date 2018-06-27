@@ -178,7 +178,7 @@ define([
         label: '<i class="icon-plus"></i> Add User',
         onClick: function () {
           var user = userSelector.getSelected();
-          perm = newPermSelect.attr('value');
+          var perm = newPermSelect.attr('value');
 
           if (!user) return;
 

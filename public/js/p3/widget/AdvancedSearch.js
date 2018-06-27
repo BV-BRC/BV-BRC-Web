@@ -343,7 +343,7 @@ define([
 
         if (total > 0) { // && total<4){
           var out = [];
-          foundContent = true;
+          // foundContent = true;
           if (this['format' + type]) {
             singleResults[type] = this['format' + type](docs, total);
             out.push(singleResults[type]);

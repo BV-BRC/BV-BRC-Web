@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/when', 'dojo/request', 'dojo/dom-construct',
-  'dijit/layout/ContentPane', 'dojo/_base/Deferred',
+  'dijit/dijit', 'dijit/layout/ContentPane', 'dojo/_base/Deferred',
   './Base', '../../util/PathJoin', '../SubsystemMapContainer', 'dojo/topic'
 ], function (
   declare, lang, when, request, domConstruct,
-  ContentPane, Deferred,
+  dijit, ContentPane, Deferred,
   ViewerBase, PathJoin, SubsystemMapContainer, Topic
 ) {
   return declare([ViewerBase], {
@@ -26,7 +26,7 @@ define([
       if (!state) {
         return;
       }
-
+      this.getStateParams(state);
       var that = this;
       var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
 
@@ -103,6 +103,7 @@ define([
       return str.slice(0, str.indexOf(pattern));
     },
 
+    /* TODO: reorganize this function. This function not only returns display_reference_genomes but also reorganize object internally. */
     getStateParams: function (state) {
 
       var decodedSelectionData = JSON.stringify(state.search);

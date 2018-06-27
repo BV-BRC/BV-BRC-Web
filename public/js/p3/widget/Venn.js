@@ -39,7 +39,7 @@ define([
       };
 
       // Creates a bit mask, with set bits for the indices of included groups
-      createMask = function (includeGroups) {
+      var createMask = function (includeGroups) {
         var mask = 0;
         if (includeGroups) {
           for (var i = 0, ilen = includeGroups.length; i < ilen; ++i) {
@@ -60,7 +60,7 @@ define([
       };
 
       // returns an array of members for the region represented by the mask
-      getMatchingMembers = function (mask) {
+      var getMatchingMembers = function (mask) {
         var r = [];
         console.log('In getMatchedMembers, mask=' + mask);
         console.log(regions[mask]);
@@ -90,13 +90,13 @@ define([
         return r;
       };
 
-      arraysEqual = function (a, b) {
-        var r = ((a.length == b.length));
-        for (var i = 0, ilen = a.length; r && i < ilen; ++i) {
-          r = a[i] == b[i];
-        }
-        return r;
-      };
+      // var arraysEqual = function (a, b) {
+      //   var r = ((a.length == b.length));
+      //   for (var i = 0, ilen = a.length; r && i < ilen; ++i) {
+      //     r = a[i] == b[i];
+      //   }
+      //   return r;
+      // };
 
       this.createDisplayTwo = function () {
         var vennPanel = d3.select('#' + vennPanelId);
@@ -410,7 +410,7 @@ define([
           .classed('active', false);
         var regionBitMask = createMask([groups[0]]);
         var members = getMatchingMembers(regionBitMask);
-        region_name = '(' + groups[0].name + ') - (' + groups[1].name + ') - (' + groups[2].name + ')';
+        var region_name = '(' + groups[0].name + ') - (' + groups[1].name + ') - (' + groups[2].name + ')';
         regions[regionBitMask] = {
           region: region,
           region_name: region_name,
@@ -605,7 +605,7 @@ define([
         });
       };
 
-      dragLabel = function () {
+      var dragLabel = function () {
         this.parentNode.appendChild(this);
         var dragTarget = d3.select(this);
         dragTarget.attr('x', function () {
@@ -616,7 +616,7 @@ define([
 
       };
 
-      vennClicked = function () {
+      var vennClicked = function () {
         // console.log(d3.event);
         var clickX = d3.event.clientX;
         var clickY = d3.event.clientY;
@@ -682,7 +682,7 @@ define([
         fireChangeEvent();
       };
 
-      deselectAllRegions = function () {
+      var deselectAllRegions = function () {
         // de-select any currently selected regions
         for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
           var inactiveRegion = selectedRegions[i];
@@ -717,7 +717,7 @@ define([
         }
       };
 
-      fireChangeEvent = function () {
+      var fireChangeEvent = function () {
         for (var i = 0, ilen = listeners.length; i < ilen; ++i) {
           listeners[i]();
         }

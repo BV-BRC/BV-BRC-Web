@@ -81,7 +81,7 @@ define([
     },
 
     emptyTable: function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr =  target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
@@ -258,7 +258,7 @@ define([
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, '_id');
+        this.destroyLibRow(id, '_id');
       }));
     },
 
@@ -288,7 +288,7 @@ define([
       var toIngest = this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
-        infoLabels = {
+        var infoLabels = {
           read: { label: 'Read File', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'singledata');
@@ -333,7 +333,7 @@ define([
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
       if (chkPassed && lrec.read1 != lrec.read2) {
-        infoLabels = {
+        var infoLabels = {
           read1: { label: 'Read1', value: 1 },
           read2: { label: 'Read2', value: 1 }
         };
@@ -392,7 +392,7 @@ define([
         this.libsTable.deleteRow(-1);
       }
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        this.destroyLibRow(query_id = lrec._id, '_id');
+        this.destroyLibRow(lrec._id, '_id');
       }));
       this.libraryStore.put(lrec);
       lrec._handle = handle;

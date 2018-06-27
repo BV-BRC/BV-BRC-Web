@@ -318,7 +318,7 @@ define([
         chartData[0] = xLabel;
         // chartData[1]=yData;
         chartData[1] = yData.map(function (val) { return { y: val, text: val.toFixed(0) }; });
-        console.log('GeneExpressionChartContainer processData: yData, xLabel, chartData[1]', yData, xLabel, chartData[1]);
+        // console.log('GeneExpressionChartContainer processData: yData, xLabel, chartData[1]', yData, xLabel, chartData[1]);
         return chartData;
       });
     }

@@ -110,8 +110,8 @@ define([
       }
     },
 
-    onSetFeatureIds: function (attr, oldVal, genome_ids) {
-      // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+    onSetFeatureIds: function (attr, oldVal, feature_ids) {
+    // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
       this.state.feature_ids = feature_ids;
       this.setActivePanelState();
     },
@@ -195,7 +195,7 @@ define([
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

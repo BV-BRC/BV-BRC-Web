@@ -167,7 +167,6 @@ define(
           });
         });
 
-        _selection = {};
         Topic.publish('/select', []);
 
         this.on('dgrid-select', function (evt) {

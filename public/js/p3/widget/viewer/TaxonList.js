@@ -97,10 +97,10 @@
       // console.log("Set Active State COMPLETE");
     },
 
-    onSetTaxonIds: function (attr, oldVal, genome_ids) {
-      this.state.taxon_ids = feature_ids;
-      this.setActivePanelState();
-    },
+    // onSetTaxonIds: function (attr, oldVal, genome_ids) {
+    // this.state.taxon_ids = feature_ids;
+    // this.setActivePanelState();
+    // },
 
     createOverviewPanel: function (state) {
       return new ContentPane({
@@ -179,7 +179,7 @@
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

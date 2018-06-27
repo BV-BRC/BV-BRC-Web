@@ -66,7 +66,7 @@ define([
     },
 
     emptyTable: function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.genomeTableBody);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);

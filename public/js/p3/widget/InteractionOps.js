@@ -71,7 +71,7 @@ define([], function () {
   this.getSubGraphs = function (cy, minSize) {
     var boolGetLargestMode = false;
     var selectedEles = {};
-    var rootNodes = getUniqueRootNodes(cy);
+    var rootNodes = this.getUniqueRootNodes(cy);
 
     if (typeof (minSize) == 'undefined' || minSize == 'max') {
       boolGetLargestMode = true;

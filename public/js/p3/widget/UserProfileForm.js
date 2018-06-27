@@ -20,7 +20,7 @@ define([
       console.log('field changed');
       console.log(this.emailField.state);
       var userNameValue = 'none';
-      if (uidfield = document.getElementsByClassName('useridField')[0] !== undefined) {
+      if (document.getElementsByClassName('useridField')[0] !== undefined) {
         userNameValue = this.UNF.get('value');
       }
       if (userNameValue !== '' && this.emailField.state !== 'Incomplete' && this.fname.get('value') !== '' && this.lname.get('value') !== '') {

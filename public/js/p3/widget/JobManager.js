@@ -14,6 +14,7 @@ define([
     path: '/',
 
     listJobs: function () {
+      var _self = this;
       return Deferred.when(JobManager.getJobs(), function (res) {
         return res;
       }, function (err) {

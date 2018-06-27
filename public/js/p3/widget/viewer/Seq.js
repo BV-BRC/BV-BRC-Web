@@ -55,8 +55,8 @@ define([
       this._resultObjects.forEach(function (o) {
         var name_parts = o.name.split('.');
         var extension = name_parts.pop();
-        if (extension == "gz") {
-            extension = name_parts.pop()+"."+extension;
+        if (extension === 'gz') {
+          extension = name_parts.pop() + '.' + extension;
         }
         if (_self.downloadableTypes.indexOf(o.type) > -1 || _self.downloadableTypes.indexOf(extension) > -1) {
           paths.push(o.path);

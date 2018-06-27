@@ -45,20 +45,6 @@ define([
 
       this.loadingMask.show();
 
-      if (oldState) {
-        ov = oldState.search;
-        if (oldState.hashParams.filter) {
-          ov += oldState.hashParams.filter;
-        }
-      }
-
-      if (state) {
-        nv = state.search;
-        if (state.hashParams.filter) {
-          nv += state.hashParams.filter;
-        }
-      }
-
       this.state = state;
 
       if (!this.store) {

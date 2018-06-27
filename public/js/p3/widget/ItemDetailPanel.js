@@ -238,13 +238,13 @@ define([
               _self[key + 'Widget'].set('value', val);
             } else if (key == 'autoMeta') {
               var curAuto = formatter.autoLabel('itemDetail', item.autoMeta);
-              subRecord = [];
+              var subRecord = [];
               Object.keys(curAuto).forEach(function (prop) {
                 if (!curAuto[prop] || prop == 'inspection_started') {
                   return;
                 }
                 if (Object.prototype.hasOwnProperty.call(curAuto[prop], 'label') && Object.prototype.hasOwnProperty.call(curAuto[prop], 'value')) {
-                  subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + ': <span class="ItemDetailAttributeValue">' + curAutoLabel[prop].value + '</span></div></br>');
+                  subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + ': <span class="ItemDetailAttributeValue">' + curAuto[prop].value + '</span></div></br>');
                 }
                 else if (Object.prototype.hasOwnProperty.call(curAuto[prop], 'label')) {
                   subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + '</div></br>');

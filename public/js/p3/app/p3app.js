@@ -307,6 +307,7 @@ define([
         var parts = path.split('/');
         parts.shift();
         var type = parts.shift();
+        var viewerParams;
         /* istanbul ignore if */
         if (parts.length > 0) {
           viewerParams = parts.join('/');

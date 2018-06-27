@@ -1020,7 +1020,7 @@ define([
         label: 'Details',
         // disabled: true,
         onClick: function () {
-          new Dialog({
+          var dlg = new Dialog({
             title: 'Group Comparison',
             style: 'width: 1250px !important; height: 750px !important;',
             onHide: function () {

@@ -22,7 +22,7 @@ define([
       //              Promise object that resolves when the display animation is complete
 
       if (this.open) {
-        return resolvedDeferred.promise;
+        return Deferred.promise;
       }
 
       if (!this._started) {
@@ -168,7 +168,7 @@ define([
         var panel = _self.panels[type];
         /* istanbul ignore if */
         if (!panel) {
-          throw error('Ivalid Panel: ' + type);
+          throw Error('Ivalid Panel: ' + type);
 
         }
         /* istanbul ignore next */
@@ -218,7 +218,7 @@ define([
         var panel = _self.panels[type];
         /* istanbul ignore if */
         if (!panel) {
-          throw error('Ivalid Panel: ' + type);
+          throw Error('Ivalid Panel: ' + type);
 
         }
         /* istanbul ignore next */
@@ -509,6 +509,7 @@ define([
       // console.log("Do Navigation to href: ", newNavState);
 
       var appContainer = this.getApplicationContainer();
+      var ctor;
 
       /*  istanbul ignore else */
       if (newNavState.widgetClass) {

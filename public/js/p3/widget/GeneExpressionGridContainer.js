@@ -1,9 +1,9 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GeneExpressionGrid', './GridContainer'
 ], function (
-  declare, lang, on, Topic,
+  declare, lang, on, Topic, domConstruct,
   popup, TooltipDialog,
   GeneExpressionGrid, GridContainer
 ) {
