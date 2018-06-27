@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/Sleep.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
-  '../../util/PathJoin', 'dojo/dom-class',
+  '../../util/PathJoin',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
-  PathJoin, domClass,
+  PathJoin,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
