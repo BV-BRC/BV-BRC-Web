@@ -151,7 +151,7 @@ define("p3/widget/viewer/Host", [
     createOverviewPanel: function () {
       return new ContentPane({
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
     },
     postCreate: function () {
@@ -165,19 +165,19 @@ define("p3/widget/viewer/Host", [
 
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
-        id: this.viewer.id + '_' + 'genomes',
+        id: this.viewer.id + '_genomes',
         state: this.state,
         disable: false
       });
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
-        id: this.viewer.id + '_' + 'sequences',
+        id: this.viewer.id + '_sequences',
         state: this.state,
         disable: false
       });
       this.features = new FeatureGridContainer({
         title: 'Features',
-        id: this.viewer.id + '_' + 'features',
+        id: this.viewer.id + '_features',
         disabled: false
       });
 

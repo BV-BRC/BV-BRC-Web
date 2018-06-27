@@ -235,10 +235,10 @@ define("p3/widget/ActionBar", [
         'class': (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
         rel: name
       });
-      var b = domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);
+      domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);
 
       if (opts && opts.label) {
-        var t = domConstruct.create('div', { innerHTML: opts.label, 'class': 'ActionButtonText' }, wrapper);
+        domConstruct.create('div', { innerHTML: opts.label, 'class': 'ActionButtonText' }, wrapper);
       }
 
       if (opts && opts.pressAndHold && typeof opts.pressAndHold == 'function') {

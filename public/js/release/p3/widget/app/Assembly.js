@@ -49,11 +49,11 @@ define("p3/widget/app/Assembly", [
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
-      for (i = 0; i < this.startingRows; i++) {
+      for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
       this.numlibs.startup();
       // create help dialog for infobutton's with infobuttoninfo div's
@@ -121,20 +121,15 @@ define("p3/widget/app/Assembly", [
     },
 
     getValues: function () {
-      if (typeof String.prototype.startsWith !== 'function') {
-        String.prototype.startsWith = function (str) {
-          return this.slice(0, str.length) == str;
-        };
-      }
       var assembly_values = {};
       var values = this.inherited(arguments);
-      if (values.hasOwnProperty('pipeline') && values.pipeline) {
+      if (Object.prototype.hasOwnProperty.call(values, 'pipeline') && values.pipeline) {
         assembly_values.pipeline = values.pipeline;
       }
-      if (values.hasOwnProperty('min_contig_len') && values.min_contig_len) {
+      if (Object.prototype.hasOwnProperty.call(values, 'min_contig_len') && values.min_contig_len) {
         assembly_values.min_contig_len = values.min_contig_len;
       }
-      if (values.hasOwnProperty('min_contig_cov') && values.min_contig_cov) {
+      if (Object.prototype.hasOwnProperty.call(values, 'min_contig_cov') && values.min_contig_cov) {
         assembly_values.min_contig_cov = values.min_contig_cov;
       }
       var pairedList = this.libraryStore.query({ _type: 'paired' });
@@ -299,7 +294,7 @@ define("p3/widget/app/Assembly", [
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, '_id');
+        this.destroyLibRow(id, '_id');
       }));
     },
     // counter is a widget for requirements checking
@@ -323,7 +318,7 @@ define("p3/widget/app/Assembly", [
       var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
       this.ingestAttachPoints(this.advSingleToAttachPt, lrec, false);
       if (chkPassed) {
-        infoLabels = {
+        var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
         };
@@ -345,17 +340,17 @@ define("p3/widget/app/Assembly", [
       this.srr_accession.set('disabled', true);
       xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
         .then(lang.hitch(this, function (xml_resp) {
-          resp = xmlParser.parse(xml_resp).documentElement;
+          var resp = xmlParser.parse(xml_resp).documentElement;
           this.srr_accession.set('disabled', false);
           try {
-            title = resp.children[0].childNodes[3].innerHTML;
+            var title = resp.children[0].childNodes[3].innerHTML;
 
             this.srr_accession.set('state', '');
             var lrec = { _type: 'srr_accession', title: title };
 
             var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
             if (chkPassed) {
-              infoLabels = {
+              var infoLabels = {
                 title: { label: 'Title', value: 1 }
               };
               this.addLibraryRow(lrec, infoLabels, 'srrdata');
@@ -379,9 +374,9 @@ define("p3/widget/app/Assembly", [
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj._handle.remove();
         this.libraryStore.remove(obj._id);
@@ -402,7 +397,7 @@ define("p3/widget/app/Assembly", [
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       this.ingestAttachPoints(this.advPairToAttachPt, lrec, false);
       if (chkPassed) {
-        infoLabels = {
+        var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read1: { label: 'Read1', value: 1 },
           read2: { label: 'Read2', value: 1 },
@@ -474,7 +469,7 @@ define("p3/widget/app/Assembly", [
         this.libsTable.deleteRow(-1);
       }
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        this.destroyLibRow(query_id = lrec._id, '_id');
+        this.destroyLibRow(lrec._id, '_id');
       }));
       this.libraryStore.put(lrec);
       lrec._handle = handle;

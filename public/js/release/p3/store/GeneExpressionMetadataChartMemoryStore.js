@@ -142,7 +142,7 @@ define("p3/store/GeneExpressionMetadataChartMemoryStore", [
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -221,7 +221,7 @@ define("p3/store/GeneExpressionMetadataChartMemoryStore", [
         },
         handleAs: 'json'
       }), function (response) {
-        console.log('!!!!In GeneExpressionChartMemoryStore loadData(): response.response:', response.facet_counts);
+        // console.log('!!!!In GeneExpressionChartMemoryStore loadData(): response.response:', response.facet_counts);
 
         var strainArray = response.facet_counts.facet_fields.strain;
         var mutantArray = response.facet_counts.facet_fields.mutant;
@@ -231,7 +231,7 @@ define("p3/store/GeneExpressionMetadataChartMemoryStore", [
         data.push(mutantArray);
         data.push(conditionArray);
         _self.setData(data);
-        console.log('!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:', _self.data);
+        // console.log('!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:', _self.data);
         _self._loaded = true;
         // return;
       });

@@ -1,4 +1,4 @@
-define("p3/widget/viewer/TaxonList", [
+([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/topic',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../TaxonGridContainer', '../../util/QueryToEnglish',
@@ -32,7 +32,7 @@ define("p3/widget/viewer/TaxonList", [
       var _self = this;
       // console.log('TaxonList setQuery - this.query: ', this.query);
 
-      var url = PathJoin(this.apiServiceUrl, 'taxonomy', '?' + (this.query) + '&gt(genomes,1)' + '&limit(1)'); // &facet((field,genome_id),(limit,35000))");
+      var url = PathJoin(this.apiServiceUrl, 'taxonomy', '?' + (this.query) + '&gt(genomes,1)&limit(1)'); // &facet((field,genome_id),(limit,35000))");
 
       console.log('taxonomy query url: ', url);
       xhr.get(url, {
@@ -97,16 +97,16 @@ define("p3/widget/viewer/TaxonList", [
       // console.log("Set Active State COMPLETE");
     },
 
-    onSetTaxonIds: function (attr, oldVal, genome_ids) {
-      this.state.taxon_ids = feature_ids;
-      this.setActivePanelState();
-    },
+    // onSetTaxonIds: function (attr, oldVal, genome_ids) {
+    // this.state.taxon_ids = feature_ids;
+    // this.setActivePanelState();
+    // },
 
     createOverviewPanel: function (state) {
       return new ContentPane({
         content: 'Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },
@@ -117,7 +117,7 @@ define("p3/widget/viewer/TaxonList", [
       this.watch('query', lang.hitch(this, 'onSetQuery'));
       this.taxons = new TaxonGridContainer({
         title: 'Taxa',
-        id: this.viewer.id + '_' + 'taxons',
+        id: this.viewer.id + '_taxons',
         disabled: false
       });
 
@@ -179,7 +179,7 @@ define("p3/widget/viewer/TaxonList", [
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

@@ -78,7 +78,7 @@ define("p3/store/GeneExpressionMemoryStore", [
     },
 
     query: function (query, opts) {
-      console.log('In MemoryStore query ... ', query, ',', opts);
+      // console.log('In MemoryStore query ... ', query, ',', opts);
       query = query || {};
       if (this._loaded) {
         return this.inherited(arguments);
@@ -91,7 +91,7 @@ define("p3/store/GeneExpressionMemoryStore", [
         qr.total = when(results, function (results) {
           return results.total || results.length;
         });
-        console.log('In MemoryStore query, results ... ', results);
+        // console.log('In MemoryStore query, results ... ', results);
         return results;
       }));
 
@@ -105,7 +105,7 @@ define("p3/store/GeneExpressionMemoryStore", [
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -172,8 +172,8 @@ define("p3/store/GeneExpressionMemoryStore", [
       // var q = this.state.search + range + "&select(pid,feature_id,refseq_locus_tag,pid,expname,accession,pmid,genome_id,strain,mutant,condition,timepoint,avg_intensity,log_ratio,z_score)&sort(+expname)&limit(25000)";
       var q = this.state.search + range + '&sort(+expname)&limit(25000)';
 
-      console.log('In MemoryStore query: q:', q);
-      console.log('In MemoryStore query: window.App.dataServiceURL:', window.App.dataServiceURL);
+      // console.log('In MemoryStore query: q:', q);
+      // console.log('In MemoryStore query: window.App.dataServiceURL:', window.App.dataServiceURL);
 
       this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
         data: q,
@@ -185,7 +185,7 @@ define("p3/store/GeneExpressionMemoryStore", [
         },
         handleAs: 'json'
       }), function (response) {
-        console.log('In MemoryStore loadData(): response.response:', response.response);
+        // console.log('In MemoryStore loadData(): response.response:', response.response);
 
         _self.setData(response.response.docs);
         _self._loaded = true;

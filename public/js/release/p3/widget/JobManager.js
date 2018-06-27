@@ -14,6 +14,7 @@ define("p3/widget/JobManager", [
     path: '/',
 
     listJobs: function () {
+      var _self = this;
       return Deferred.when(JobManager.getJobs(), function (res) {
         return res;
       }, function (err) {
@@ -27,7 +28,7 @@ define("p3/widget/JobManager", [
     },
 
     showError: function (err) {
-      var n = domConstr.create('div', {
+      domConstr.create('div', {
         style: {
           position: 'relative',
           zIndex: 999,
@@ -111,8 +112,8 @@ define("p3/widget/JobManager", [
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
               'App Name: ' + sel.app + '\n\n' +
-              'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout' + '\n' +
-              'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr' + '\n\n' +
+              'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout\n' +
+              'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr\n\n' +
               'Submit Time: ' + sel.submit_time + '\n' +
               'Start Time: ' + sel.submit_time + '\n' +
               'Completed Time: ' + sel.submit_time + '\n\n' +
@@ -220,8 +221,15 @@ define("p3/widget/JobManager", [
       // listen for filtering
       Topic.subscribe('/JobFilter', function (filters) {
         // remove any non-specific filter states
-        if (filters.app == 'all') delete filters.app;
+        if (filters.app === 'all') delete filters.app;
         if (!filters.status) delete filters.status;
+
+        // need to filter on all possible AWE-defined statuses
+        if (filters.status === 'queued') {
+          filters.status = new RegExp('queued|init|pending');
+        } else if (filters.status === 'failed') {
+          filters.status = new RegExp('failed|deleted');
+        }
 
         _self.grid.set('query', filters);
       });

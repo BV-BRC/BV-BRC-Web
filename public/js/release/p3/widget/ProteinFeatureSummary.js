@@ -122,7 +122,7 @@ define("p3/widget/ProteinFeatureSummary", [
         return row;
       });
 
-      var data = { PATRIC:[], RefSeq:[] };
+      var data = { PATRIC: [], RefSeq: [] };
       results.forEach(function (row, idx) {
         data.PATRIC.push({ label: labels[idx], y: row.PATRIC || 0 });
         data.RefSeq.push({ label: labels[idx], y: row.RefSeq || 0 });

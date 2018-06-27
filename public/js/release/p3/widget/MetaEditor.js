@@ -77,7 +77,7 @@ define("p3/widget/MetaEditor", [
       /**
        * Create form
        */
-      var content = dom.toDom('<div>');
+      // var content = dom.toDom('<div>');
       var form = new Form();
 
       // put form in dialog
@@ -131,7 +131,7 @@ define("p3/widget/MetaEditor", [
             input = new InputList({
               type: item.type,
               name: item.text,
-              values:  data[item.text] || [],
+              values: data[item.text] || [],
               placeHolder: item.editable ? 'Enter ' + item.name + '...' : '-',
               onChange: function () {
                 self.dialog.okButton.setDisabled(false);
@@ -278,8 +278,6 @@ define("p3/widget/MetaEditor", [
      *  }]
      */
     getJsonPatch: function () {
-      var self = this;
-
       var hash = this.getValues();
       var editableList = this.getEditableList();
 

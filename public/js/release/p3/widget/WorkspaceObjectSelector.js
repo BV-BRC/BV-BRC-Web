@@ -358,11 +358,11 @@ define("p3/widget/WorkspaceObjectSelector", [
           {
             label: 'Workspaces',
             value: 'mine',
-            selected:  _self.path.split('/')[1] != 'public'
+            selected: _self.path.split('/')[1] != 'public'
           }, {
             label: 'Public Workspaces',
             value: 'public',
-            selected:  _self.path.split('/')[1] == 'public'
+            selected: _self.path.split('/')[1] == 'public'
           }
         ]
       });
@@ -595,7 +595,7 @@ define("p3/widget/WorkspaceObjectSelector", [
     },
 
     labelFunc: function (item, store) {
-      var label = "<div style='font-size:1em; border-bottom:1px solid grey;'>" + '/';
+      var label = '<div style="font-size:1em; border-bottom:1px solid grey;">/';
       var pathParts = item.path.split('/');
       var workspace = pathParts[2];
       var labelParts = [workspace];
@@ -611,14 +611,13 @@ define("p3/widget/WorkspaceObjectSelector", [
         var objName = pathParts[pathParts.length - 1];
         labelParts.push(objName);
       }
-      labelParts[labelParts.length - 1] = '</br>' + "<span style='font-size:1.05em; font-weight:bold;'>" + labelParts[labelParts.length - 1] + '</span></div>';
+      labelParts[labelParts.length - 1] = '</br><span style="font-size:1.05em; font-weight:bold;">' + labelParts[labelParts.length - 1] + '</span></div>';
       label += labelParts.join('/');
       return label;
     },
 
     validate: function (/* Boolean */ isFocused) {
       // possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
-      var message = '';
       var isValid = this.disabled || this.searchBox.isValid(isFocused);
       this._set('state', isValid ? '' : this.searchBox.state);
       this.focusNode.setAttribute('aria-invalid', this.state == 'Error' ? 'true' : 'false');

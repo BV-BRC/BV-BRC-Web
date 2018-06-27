@@ -56,11 +56,11 @@ define("p3/widget/app/PhylogeneticTree", [
     },
 
     emptyTable: function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.genomeTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
     },
 
@@ -202,7 +202,7 @@ define("p3/widget/app/PhylogeneticTree", [
         var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
-        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+        domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
         if (this[groupType].addedNum < this.startingRows) {
           this[groupType + 'GenomeTable'].deleteRow(-1);
@@ -213,9 +213,9 @@ define("p3/widget/app/PhylogeneticTree", [
           this.decreaseGenome(groupType, newGenomeIds);
           if (this[groupType].addedNum < this.startingRows) {
             var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
         }));
@@ -270,7 +270,7 @@ define("p3/widget/app/PhylogeneticTree", [
           var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
           td.genomeRecord = lrec;
           td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + '</div>';
-          var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+          domConstruct.create('td', { innerHTML: '' }, tr);
           var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
           if (this[groupType].addedNum < this.startingRows) {
             this[groupType + 'GenomeTable'].deleteRow(-1);
@@ -281,9 +281,9 @@ define("p3/widget/app/PhylogeneticTree", [
             this.decreaseGenome(groupType, newGenomeIds);
             if (this[groupType].addedNum < this.startingRows) {
               var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-              var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             }
             handle.remove();
           }));
@@ -352,11 +352,11 @@ define("p3/widget/app/PhylogeneticTree", [
       this.selectedTR.forEach(lang.hitch(this, function (lrec) {
         domConstruct.destroy(lrec.row);
         lrec.handle.remove();
-        groupType = lrec.groupType;
+        var groupType = lrec.groupType;
         var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-        var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-        var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-        var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
       }));
       this.selectedTR = [];
       this.inGroup.addedList = [];

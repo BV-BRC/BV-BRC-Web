@@ -29,7 +29,7 @@ define("p3/widget/app/Tnseq", [
     maxConditions: 10,
     conditionStore: null,
     hostGenomes: {
-      9606.33:'', 6239.6:'', 7955.5:'', 7227.4:'', 9031.4:'', 9544.2:'', 10090.24:'', 9669.1:'', 10116.5:'', 9823.5:''
+      9606.33: '', 6239.6: '', 7955.5: '', 7227.4: '', 9031.4: '', 9544.2: '', 10090.24: '', 9669.1: '', 10116.5: '', 9823.5: ''
     },
 
     listValues: function (obj) {
@@ -59,9 +59,9 @@ define("p3/widget/app/Tnseq", [
       this.color_counter = 0;
       this.shape_counter = 0;
       this.conditionStore = new Memory({ data: [] });
-      this.libraryStore = new Memory({ data: [], idProperty:'id' });
+      this.libraryStore = new Memory({ data: [], idProperty: 'id' });
       this.libraryID = 0;
-      this.exp_design = { checked:false };
+      this.exp_design = { checked: false };
     },
 
     startup: function () {
@@ -79,14 +79,14 @@ define("p3/widget/app/Tnseq", [
 
       // for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
       var control = {
-        id: 'control', condition: 'control', label: 'Control', icon:this.getConditionIcon()
+        id: 'control', condition: 'control', label: 'Control', icon: this.getConditionIcon()
       };
       var treatment = {
-        id: 'treatment', condition: 'treatment', label: 'Treatment', icon:this.getConditionIcon()
+        id: 'treatment', condition: 'treatment', label: 'Treatment', icon: this.getConditionIcon()
       };
       // temporary until contrasts table added
-      this.updateConditionStore(record = control, remove = false);
-      this.updateConditionStore(record = treatment, remove = false);
+      this.updateConditionStore(control, false);
+      this.updateConditionStore(treatment, false);
       this.addedCond.counter = 2;
 
 
@@ -133,32 +133,27 @@ define("p3/widget/app/Tnseq", [
       if (disable) {
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
-        this.destroyLibRow(query_id = true, id_type = 'design');
+        this.destroyLibRow(true, 'design');
         // dojo.addClass(this.condTable, "disabled");
       }
       else {
         // this.block_condition.hide();
         this.numCondWidget.set('value', Number(this.addedCond.counter));
-        this.destroyLibRow(query_id = false, id_type = 'design');
+        this.destroyLibRow(false, 'design');
         // dojo.removeClass(this.condTable, "disabled");
       }
     },
 
     emptyTable: function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
     },
 
     getValues: function () {
-      if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function (str) {
-          return this.slice(0, str.length) == str;
-        };
-      }
       var assembly_values = {};
       var values = this.inherited(arguments);
       var pairedList = this.libraryStore.query({ type: 'paired' });
@@ -168,7 +163,6 @@ define("p3/widget/app/Tnseq", [
       var singleList = this.libraryStore.query({ type: 'single' });
       var condLibs = [];
       var allLibs = {};
-      var singleLibs = [];
       this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       var defaultCond = 'control';
       // for (var k in values) {
@@ -207,7 +201,7 @@ define("p3/widget/app/Tnseq", [
         });
         // pairedLibs.push(toAdd);
         if ( !(curCond in allLibs)) {
-          allLibs[curCond] = { replicates:[], library:curCond };
+          allLibs[curCond] = { replicates: [], library: curCond };
         }
         allLibs[curCond].replicates.push(toAdd);
       }, this);
@@ -231,7 +225,7 @@ define("p3/widget/app/Tnseq", [
           toAdd[attr] = libRecord[attr];
         });
         if ( !(curCond in allLibs)) {
-          allLibs[curCond] = { replicates:[], library:curCond };
+          allLibs[curCond] = { replicates: [], library: curCond };
         }
         // singleLibs.push(toAdd);
         allLibs[curCond].replicates.push(toAdd);
@@ -324,7 +318,7 @@ define("p3/widget/app/Tnseq", [
       var label = item.condition + ' ' + item.icon;
       return label;
     },
-    makeLibraryName:function (mode) {
+    makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
         var fn2 = this.read2.searchBox.get('displayedValue');
@@ -347,7 +341,7 @@ define("p3/widget/app/Tnseq", [
       return 'S(' + fn + ')';
 
     },
-    makeLibraryID:function (mode) {
+    makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
@@ -369,7 +363,7 @@ define("p3/widget/app/Tnseq", [
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, 'id');
+        this.destroyLibRow(id, 'id');
       }));
     },
 
@@ -413,7 +407,7 @@ define("p3/widget/app/Tnseq", [
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       var conditionSize = this.conditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
-        this.updateConditionStore(record = lrec, remove = false);
+        this.updateConditionStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
       if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length) {
@@ -422,7 +416,7 @@ define("p3/widget/app/Tnseq", [
         var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName() + '</div>';
-        var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
         var td2 = domConstruct.create('td', {
           'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
@@ -434,18 +428,18 @@ define("p3/widget/app/Tnseq", [
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
-          this.updateConditionStore(record = lrec, remove = true);
+          this.updateConditionStore(lrec, true);
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
           if (this.addedCond.counter < this.maxConditions) {
             var ntr = this.condTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           this.condition_single.reset();
           this.condition_paired.reset();
           handle.remove();
-          this.destroyLibRow(query_id = lrec.condition, id_type = 'condition');
+          this.destroyLibRow(lrec.condition, 'condition');
         }));
         this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
       }
@@ -461,7 +455,7 @@ define("p3/widget/app/Tnseq", [
         // remove condition from data store
         toRemove.forEach(function (obj) {
           if (obj.libraries) {
-            libraries.forEach(function (lib_row) {
+            obj.libraries.forEach(function (lib_row) {
               lib_row.remove();
             });
           }
@@ -477,7 +471,7 @@ define("p3/widget/app/Tnseq", [
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { type:'single' };
+      var lrec = { type: 'single' };
       var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
@@ -491,10 +485,10 @@ define("p3/widget/app/Tnseq", [
           advPairInfo.push('Condition:' + lrec.condition);
         }
         if (advPairInfo.length) {
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-          var ihandle = new Tooltip({
+          new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
           });
@@ -511,7 +505,7 @@ define("p3/widget/app/Tnseq", [
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLibRow(query_id = lrec.id, 'id');
+          this.destroyLibRow(lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.libraryStore.put(lrec);
@@ -529,9 +523,9 @@ define("p3/widget/app/Tnseq", [
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj.handle.remove();
         this.libraryStore.remove(obj.id);
@@ -539,7 +533,7 @@ define("p3/widget/app/Tnseq", [
     },
 
     onSuggestNameChange: function () {
-      var curRecipe = this.recipe.value;
+      // var curRecipe = this.recipe.value;
     },
 
     onAddPair: function () {
@@ -549,7 +543,7 @@ define("p3/widget/app/Tnseq", [
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
-      var lrec = { type:'paired' };
+      var lrec = { type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
       var pairToIngest = this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
@@ -568,9 +562,9 @@ define("p3/widget/app/Tnseq", [
         }
         if (advPairInfo.length) {
           lrec.design = true;
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-          var ihandle = new Tooltip({
+          new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
           });
@@ -587,7 +581,7 @@ define("p3/widget/app/Tnseq", [
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLibRow(query_id = lrec.id, id_type = 'id');
+          this.destroyLibRow(lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.libraryStore.put(lrec);

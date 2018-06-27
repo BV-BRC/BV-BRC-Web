@@ -11,31 +11,6 @@ define("p3/widget/SubSystemsContainer", [
   SubSystemMemoryStore, SubsystemsOverviewMemoryStore, domConstruct, Topic,
   selector, SubSystemsOverview, Standby
 ) {
-  var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
-  var viewFASTATT = new TooltipDialog({
-    content: vfc,
-    onMouseLeave: function () {
-      popup.close(viewFASTATT);
-    }
-  });
-
-  var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-  var downloadTT = new TooltipDialog({
-    content: dfc,
-    onMouseLeave: function () {
-      popup.close(downloadTT);
-    }
-  });
-
-  on(downloadTT.domNode, 'div:click', function (evt) {
-    var rel = evt.target.attributes.rel.value;
-    var selection = self.actionPanel.get('selection');
-    var dataType = (self.actionPanel.currentContainerWidget.containerType == 'genome_group') ? 'genome' : 'genome_feature';
-    var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-
-    window.open('/api/' + dataType + '/' + currentQuery + '&http_authorization=' + encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download');
-    popup.close(downloadTT);
-  });
 
   return declare([BorderContainer], {
     gutters: false,

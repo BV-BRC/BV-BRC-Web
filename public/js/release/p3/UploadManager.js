@@ -5,7 +5,7 @@ define("p3/UploadManager", ['dojo/request', 'dojo/_base/declare', 'dojo/_base/la
   Deferred, Topic, WorkspaceManager
 ) {
 
-  var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+  // var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
   var UploadManager = (declare([], {
     constructor: function () {
       this.activeCount = 0;
@@ -94,7 +94,7 @@ define("p3/UploadManager", ['dojo/request', 'dojo/_base/declare', 'dojo/_base/la
       fd.append('upload', file);
       this.inProgress[file.name] = { name: file.name, size: file.size, workspacePath: workspacePath };
       var _self = this;
-      req = new XMLHttpRequest();
+      var req = new XMLHttpRequest();
       req.upload.addEventListener('progress', function (evt) {
         // console.log("evt: ", evt);
         // console.log("progress: ", (evt.loaded / evt.total) * 100);
@@ -151,8 +151,11 @@ define("p3/UploadManager", ['dojo/request', 'dojo/_base/declare', 'dojo/_base/la
       req.open('PUT', url, true);
 
       for (var prop in this.headers) {
-        // console.log("Set Request Header: ", prop, this.headers[prop]);
-        req.setRequestHeader(prop, this.headers[prop]);
+        // guard-for-in
+        if (Object.prototype.hasOwnProperty.call(this.headers, prop)) {
+          // console.log("Set Request Header: ", prop, this.headers[prop]);
+          req.setRequestHeader(prop, this.headers[prop]);
+        }
       }
 
       Topic.publish('/upload', {

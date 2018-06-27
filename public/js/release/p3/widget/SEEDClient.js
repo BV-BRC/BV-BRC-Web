@@ -119,7 +119,7 @@ define("p3/widget/SEEDClient", [
         id: this.id++
       };
 
-      var beforeSend = null;
+      // var beforeSend = null;
 
       var headers = {};
 

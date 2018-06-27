@@ -201,7 +201,7 @@ define("p3/widget/SubSystemsMemoryGridContainer", [
             filename;
 
           var isTaxonView = false;
-          if (this.state.hasOwnProperty('taxon_id')) {
+          if (Object.prototype.hasOwnProperty.call(this.state, 'taxon_id')) {
             isTaxonView = true;
           }
 
@@ -404,7 +404,7 @@ define("p3/widget/SubSystemsMemoryGridContainer", [
           var selectedRows = [];
 
           var isTaxonView = false;
-          if (this.state.hasOwnProperty('taxon_id')) {
+          if (Object.prototype.hasOwnProperty.call(this.state, 'taxon_id')) {
             isTaxonView = true;
           }
 
@@ -659,7 +659,7 @@ define("p3/widget/SubSystemsMemoryGridContainer", [
           var display_reference_genomes = 'true';
 
           var url = {};
-          if (this.state.hasOwnProperty('taxon_id')) {
+          if (Object.prototype.hasOwnProperty.call(this.state, 'taxon_id')) {
             url.taxon_id = this.state.taxon_id;
             display_reference_genomes = 'false';
           }

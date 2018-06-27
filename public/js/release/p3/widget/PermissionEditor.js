@@ -127,7 +127,7 @@ define("p3/widget/PermissionEditor", [
       /**
        * Build the form and events
        */
-      var ownerId = Formatter.baseUsername(this.user);
+      // var ownerId = Formatter.baseUsername(this.user);
 
       var form = self.form = domConstruct.toDom('<div class="userPermForm">');
       domConstruct.place(
@@ -178,7 +178,7 @@ define("p3/widget/PermissionEditor", [
         label: '<i class="icon-plus"></i> Add User',
         onClick: function () {
           var user = userSelector.getSelected();
-          perm = newPermSelect.attr('value');
+          var perm = newPermSelect.attr('value');
 
           if (!user) return;
 
@@ -252,9 +252,9 @@ define("p3/widget/PermissionEditor", [
       * list solr (initial) permissions in dom
     */
     listSolrPermissions: function () {
-      var self = this,
-        form = self.form,
-        selection = this.selection;
+      var self = this;
+      // var form = self.form;
+      var selection = this.selection;
 
       /**
        * not yet allowing publication

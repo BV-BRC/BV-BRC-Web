@@ -24,8 +24,8 @@ define("p3/widget/viewer/Blast", [
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         // console.log("BlastResult:", arguments);
-        var key = arguments[0],
-          value = arguments[1];
+        var key = arguments[0];
+        // var value = arguments[1];
 
         switch (key) {
           case 'showLoadingMask':

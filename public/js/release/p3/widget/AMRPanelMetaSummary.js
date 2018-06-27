@@ -81,7 +81,7 @@ define("p3/widget/AMRPanelMetaSummary", [
           // process chart data
           var dist = [0, 0, 0];
           d.pivot.forEach(function (phenotype) {
-            if (phenotypeDef.hasOwnProperty(phenotype.value)) {
+            if (Object.prototype.hasOwnProperty.call(phenotypeDef, phenotype.value)) {
               dist[phenotypeDef[phenotype.value]] = phenotype.pivot.length;
             }
           });

@@ -10,7 +10,7 @@ define("p3/widget/PathwayMapKegg", [
   on, Topic, domConstruct, dom, Query, when, request, All,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, saveAs
+  ContainerActionBar, saveAs, KeggMapPainter
 ) {
 
   var legend = '<div class="kegg-map-legend-color-box white"></div><div class="kegg-map-legend-label">Not Annotated</div><div class="clear"></div>' +
@@ -178,13 +178,13 @@ define("p3/widget/PathwayMapKegg", [
       var defEcCoordinates;
       var defFeatureCoordinates;
 
-      if (pmState.hasOwnProperty('feature_id')) {
+      if (Object.prototype.hasOwnProperty.call(pmState, 'feature_id')) {
         defFeatureCoordinates = self.getKeggCoordinates(pmState.pathway_id, 'feature', pmState.feature_id);
       } else {
         defFeatureCoordinates = Deferred.resolved;
       }
 
-      if (pmState.hasOwnProperty('ec_number')) {
+      if (Object.prototype.hasOwnProperty.call(pmState, 'ec_number')) {
         defEcCoordinates = self.getKeggCoordinates(pmState.pathway_id, 'ec_number', pmState.ec_number);
       } else {
         defEcCoordinates = Deferred.resolved;
@@ -197,11 +197,11 @@ define("p3/widget/PathwayMapKegg", [
         var data = result[0];
 
         // initialize
-        self.pNS = new PathwayPainter();
+        self.pNS = new KeggMapPainter.PathwayPainter();
 
         // process all ECs
         data.all_coordinates.forEach(function (box) {
-          self.pNS.data.push(new boxData(box));
+          self.pNS.data.push(new KeggMapPainter.boxData(box));
         });
 
         // present

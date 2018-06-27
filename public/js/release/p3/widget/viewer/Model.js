@@ -64,11 +64,14 @@ define("p3/widget/viewer/Model", [
             output.push('<br><h3 class="section-title-plain close2x">Downloads</h3>');
             var table = ['<table class="p3basic"><thead><tr><th>File</th><th>Size</th></thead>'];
             for (var i in dls) {
-              var dl = dls[i];
-              table.push('<tr>' +
-                '<td><a href="' + dl.url + '"><i class="fa icon-download"></i> ' + dl.name + '</a></td>' +
-                '<td>' + dl.size + '</td>' +
-              '<tr>');
+              // guard-for-in
+              if (Object.prototype.hasOwnProperty.call(dls, i)) {
+                var dl = dls[i];
+                table.push('<tr>' +
+                  '<td><a href="' + dl.url + '"><i class="fa icon-download"></i> ' + dl.name + '</a></td>' +
+                  '<td>' + dl.size + '</td>' +
+                '<tr>');
+              }
             }
             table.push('</table>');
 

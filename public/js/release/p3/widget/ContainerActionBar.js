@@ -34,7 +34,7 @@ define("p3/widget/ContainerActionBar", [
       if (parts[0] == '') {
         parts.shift();
       }
-      var len = parts.length;
+
       var out = ["<span class='wsBreadCrumb'>"];
       var bp = ['workspace'];
 

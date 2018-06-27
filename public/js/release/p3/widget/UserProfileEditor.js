@@ -31,7 +31,6 @@ define("p3/widget/UserProfileEditor", [
       this.submitButton.set('disabled', true);
       var vals = this.getValues();
       vals.id = this.userId;
-      var _self = this;
 
       console.log('Submit Vals: ', vals);
 

@@ -75,10 +75,10 @@ define("p3/DataAPI", [
 
     solrPermsToObjs: function (selection) {
       var permSets = [];
-      var allPermissions = {};
+      // var allPermissions = {};
 
       selection.forEach(function (sel) {
-        var id = sel.genome_id;
+        // var id = sel.genome_id;
 
         var readList = sel.user_read || [],
           writeList = sel.user_write || [];

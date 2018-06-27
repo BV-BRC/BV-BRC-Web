@@ -25,7 +25,7 @@ define("p3/widget/app/Variation", [
     defaultPath: '',
     startingRows: 7,
 
-    listValues:function (obj) {
+    listValues: function (obj) {
       var results = [];
       Object.keys(obj).forEach(function (key) {
         results.append(obj[key]);
@@ -34,24 +34,24 @@ define("p3/widget/app/Variation", [
 
     constructor: function () {
 
-      this.addedLibs = { counter:0 };
-      this.addedCond = { counter:0 };
+      this.addedLibs = { counter: 0 };
+      this.addedCond = { counter: 0 };
       // these objects map dojo attach points to desired alias for ingestAttachPoint function
       // key is attach point array of values is alias
       // if there is no alias the key in the resulting object will be the same name as attach point
-      this.pairToAttachPt1 = { read1:null, read2:null };
-      this.pairConditionToAttachPt = { read1:null, read2:null, condition_paired:['condition'] };
-      this.advPairToAttachPt = { interleaved:null, insert_size_mean:null, insert_size_stdev:null };
-      this.paramToAttachPt = { output_path:null, output_file:null };
-      this.singleToAttachPt = { read:null };
-      this.singleConditionToAttachPt = { read:null, condition_single:['condition'] };
-      this.conditionToAttachPt = { condition:['condition', 'id', 'label'] };
+      this.pairToAttachPt1 = { read1: null, read2: null };
+      this.pairConditionToAttachPt = { read1: null, read2: null, condition_paired: ['condition'] };
+      this.advPairToAttachPt = { interleaved: null, insert_size_mean: null, insert_size_stdev: null };
+      this.paramToAttachPt = { output_path: null, output_file: null };
+      this.singleToAttachPt = { read: null };
+      this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
+      this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
       this.targetGenomeID = '';
       this.shapes = ['icon-square', 'icon-circle'];
       this.colors = ['blue', 'green', 'red', 'purple', 'orange'];
       this.color_counter = 0;
       this.shape_counter = 0;
-      this.libraryStore = new Memory({ data: [], idProperty:'_id' });
+      this.libraryStore = new Memory({ data: [], idProperty: '_id' });
       this.libraryID = 0;
     },
 
@@ -82,27 +82,22 @@ define("p3/widget/app/Variation", [
       this._started = true;
     },
 
-    emptyTable:function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+    emptyTable: function (target, rowLimit) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr =  target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
     },
 
-    getValues:function () {
-      if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function (str) {
-          return this.slice(0, str.length) == str;
-        };
-      }
+    getValues: function () {
       var submit_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ _type:'paired' });
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
-      var singleList = this.libraryStore.query({ _type:'single' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
       var condLibs = [];
       var pairedLibs = [];
       var singleLibs = [];
@@ -112,7 +107,7 @@ define("p3/widget/app/Variation", [
       //     submit_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList);
+      pairedList.concat(singleList);
       submit_values.reference_genome_id = values.genome_name;
       submit_values.mapper = values.mapper;
       submit_values.caller = values.caller;
@@ -219,7 +214,7 @@ define("p3/widget/app/Variation", [
       var label = item.condition + ' ' + item.icon;
       return label;
     },
-    makeLibraryName:function (mode) {
+    makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
         var fn2 = this.read2.searchBox.get('displayedValue');
@@ -242,7 +237,7 @@ define("p3/widget/app/Variation", [
       return 'S(' + fn + ')';
 
     },
-    makeLibraryID:function (mode) {
+    makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
@@ -265,12 +260,12 @@ define("p3/widget/app/Variation", [
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, '_id');
+        this.destroyLibRow(id, '_id');
       }));
     },
 
 
-    makeConditionName:function () {
+    makeConditionName: function () {
       return this.condition.get('displayedValue');
     },
 
@@ -291,18 +286,18 @@ define("p3/widget/app/Variation", [
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { _type:'single' };
+      var lrec = { _type: 'single' };
       var toIngest = this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
-        infoLabels = {
-          read:{ label:'Read File', value:1 }
+        var infoLabels = {
+          read: { label: 'Read File', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'singledata');
       }
     },
 
-    destroyLibRow:function (query_id, id_type) {
+    destroyLibRow: function (query_id, id_type) {
       console.log('Delete Rows');
       var query_obj = {};
       query_obj[id_type] = query_id;
@@ -312,9 +307,9 @@ define("p3/widget/app/Variation", [
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj._handle.remove();
         this.libraryStore.remove(obj._id);
@@ -332,7 +327,7 @@ define("p3/widget/app/Variation", [
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
-      var lrec = { _type:'paired' };
+      var lrec = { _type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
       var pairToIngest = this.pairToAttachPt1;
@@ -340,9 +335,9 @@ define("p3/widget/app/Variation", [
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
       if (chkPassed && lrec.read1 != lrec.read2) {
-        infoLabels = {
-          read1:{ label:'Read1', value:1 },
-          read2:{ label:'Read2', value:1 }
+        var infoLabels = {
+          read1: { label: 'Read1', value: 1 },
+          read2: { label: 'Read2', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'pairdata');
       }
@@ -399,7 +394,7 @@ define("p3/widget/app/Variation", [
         this.libsTable.deleteRow(-1);
       }
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        this.destroyLibRow(query_id = lrec._id, '_id');
+        this.destroyLibRow(lrec._id, '_id');
       }));
       this.libraryStore.put(lrec);
       lrec._handle = handle;

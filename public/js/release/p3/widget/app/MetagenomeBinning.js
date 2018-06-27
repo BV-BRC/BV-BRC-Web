@@ -60,7 +60,7 @@ define("p3/widget/app/MetagenomeBinning", [
     getValues: function () {
       // console.log("getValues is called")
 
-      var values = this.inherited(arguments);
+      this.inherited(arguments);
 
       var assembly_values = {};
 
@@ -73,9 +73,9 @@ define("p3/widget/app/MetagenomeBinning", [
           }, this);
           break;
 
-        case 'sra':
-          assembly_values.srr_ids = srrAccessions;
-          break;
+        // case 'sra':
+        //   assembly_values.srr_ids = srrAccessions;
+        //   break;
 
         case 'contigs':
           assembly_values.contigs = this.contig.searchBox.value;
@@ -215,17 +215,17 @@ define("p3/widget/app/MetagenomeBinning", [
       this.srr_accession.set('disabled', true);
       xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
         .then(lang.hitch(this, function (xml_resp) {
-          resp = xmlParser.parse(xml_resp).documentElement;
+          var resp = xmlParser.parse(xml_resp).documentElement;
           this.srr_accession.set('disabled', false);
           try {
-            title = resp.children[0].childNodes[3].innerHTML;
+            var title = resp.children[0].childNodes[3].innerHTML;
 
             this.srr_accession.set('state', '');
             var lrec = { _type: 'srr_accession', title: title };
 
             var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
             if (chkPassed) {
-              infoLabels = {
+              var infoLabels = {
                 title: { label: 'Title', value: 1 }
               };
               this.addLibraryRow(lrec, infoLabels, 'srrdata');

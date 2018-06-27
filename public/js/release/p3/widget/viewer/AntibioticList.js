@@ -86,11 +86,11 @@ define("p3/widget/viewer/AntibioticList", [
       // console.log("Set Active State COMPLETE");
     },
 
-    onSetSpecialtyGeneIds: function (attr, oldVal, genome_ids) {
-      // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
-      this.state.feature_ids = feature_ids;
-      this.setActivePanelState();
-    },
+    // onSetSpecialtyGeneIds: function (attr, oldVal, genome_ids) {
+    // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+    // this.state.feature_ids = feature_ids;
+    // this.setActivePanelState();
+    // },
 
     postCreate: function () {
       this.inherited(arguments);
@@ -101,7 +101,7 @@ define("p3/widget/viewer/AntibioticList", [
 
       this.Antibiotics = new AntibioticGridContainer({
         title: 'Antibiotics',
-        id: this.viewer.id + '_' + 'specialtyGenes',
+        id: this.viewer.id + '_specialtyGenes',
         disabled: false
       });
       this.viewer.addChild(this.Antibiotics);

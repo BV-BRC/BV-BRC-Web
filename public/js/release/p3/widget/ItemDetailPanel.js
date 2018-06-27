@@ -171,7 +171,7 @@ define("p3/widget/ItemDetailPanel", [
               _self[key + 'Node'].set('displayedValue', val);
               _self[key + 'Node'].cancel();
 
-              if (this.changeableTypes.hasOwnProperty(val)) {
+              if (Object.prototype.hasOwnProperty.call(this.changeableTypes, val)) {
                 // build change type dropdown
                 _self[key + 'Node'].set('disabled', false);
                 domStyle.set(_self[key + 'Node'].domNode, 'text-decoration', 'underline');
@@ -240,15 +240,15 @@ define("p3/widget/ItemDetailPanel", [
               _self[key + 'Widget'].set('value', val);
             } else if (key == 'autoMeta') {
               var curAuto = formatter.autoLabel('itemDetail', item.autoMeta);
-              subRecord = [];
+              var subRecord = [];
               Object.keys(curAuto).forEach(function (prop) {
                 if (!curAuto[prop] || prop == 'inspection_started') {
                   return;
                 }
-                if (curAuto[prop].hasOwnProperty('label') && curAuto[prop].hasOwnProperty('value')) {
-                  subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + ': <span class="ItemDetailAttributeValue">' + curAutoLabel[prop].value + '</span></div></br>');
+                if (Object.prototype.hasOwnProperty.call(curAuto[prop], 'label') && Object.prototype.hasOwnProperty.call(curAuto[prop], 'value')) {
+                  subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + ': <span class="ItemDetailAttributeValue">' + curAuto[prop].value + '</span></div></br>');
                 }
-                else if (curAuto[prop].hasOwnProperty('label')) {
+                else if (Object.prototype.hasOwnProperty.call(curAuto[prop], 'label')) {
                   subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop].label + '</div></br>');
                 }
               }, this);

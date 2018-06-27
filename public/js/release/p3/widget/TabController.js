@@ -76,7 +76,7 @@ define("p3/widget/TabController", [
         // console.log("Updated Prev State: ", this._prevState[this._currentChild.id]);
 
       }
-      var container = registry.byId(this.containerId);
+      // var container = registry.byId(this.containerId);
 
       var pageId = page.id.replace(this.containerId + '_', '');
 

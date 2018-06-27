@@ -98,19 +98,19 @@ define("p3/store/HeatmapDataTypes", [], function () {
     for (var i = 1; i <= maxIntensity; i++) {
       switch (true) {
         case i < 5:
-          colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
+          colorStop.push(new this.ColorStop(i / maxIntensity, this.getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
           break;
         case i == 5:
-          colorStop.push(new ColorStop(i / maxIntensity, colorSignificantDown));
+          colorStop.push(new this.ColorStop(i / maxIntensity, colorSignificantDown));
           break;
         case i > 5 && i < 10:
-          colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
+          colorStop.push(new this.ColorStop(i / maxIntensity, this.getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
           break;
         case i == 10:
-          colorStop.push(new ColorStop(i / maxIntensity, colorSignificantUp));
+          colorStop.push(new this.ColorStop(i / maxIntensity, colorSignificantUp));
           break;
         case i == 11:
-          colorStop.push(new ColorStop(i / maxIntensity, colorZero));
+          colorStop.push(new this.ColorStop(i / maxIntensity, colorZero));
           break;
         default:
           break;
@@ -127,18 +127,18 @@ define("p3/store/HeatmapDataTypes", [], function () {
       },
       hsv = {};
 
-    rgbTohsv(rgb, hsv);
+    this.rgbTohsv(rgb, hsv);
     hsv.v = parseInt(light);
-    hsvTorgb(hsv, rgb);
+    this.hsvTorgb(hsv, rgb);
 
     if (scheme === 'rbw') {
       if (value === 'up') {
-        return rgbTohex(255, rgb.g, rgb.b);
+        return this.rgbTohex(255, rgb.g, rgb.b);
       }
-      return rgbTohex(rgb.r, rgb.g, 255);
+      return this.rgbTohex(rgb.r, rgb.g, 255);
 
     }
-    return rgbTohex(rgb.r, rgb.g, rgb.b);
+    return this.rgbTohex(rgb.r, rgb.g, rgb.b);
 
   };
 
@@ -241,7 +241,7 @@ define("p3/store/HeatmapDataTypes", [], function () {
   };
 
   this.rgbTohex = function (r, g, b) {
-    return '0x' + componentToHex(~~r) + componentToHex(~~g) + componentToHex(~~b);
+    return '0x' + this.componentToHex(~~r) + this.componentToHex(~~g) + this.componentToHex(~~b);
   };
 
   this.distributionTransformer = function (dist, map) {

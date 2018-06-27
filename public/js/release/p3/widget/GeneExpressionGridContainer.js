@@ -1,9 +1,9 @@
 define("p3/widget/GeneExpressionGridContainer", [
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GeneExpressionGrid', './GridContainer'
 ], function (
-  declare, lang, on, Topic,
+  declare, lang, on, Topic, domConstruct,
   popup, TooltipDialog,
   GeneExpressionGrid, GridContainer
 ) {
@@ -20,7 +20,7 @@ define("p3/widget/GeneExpressionGridContainer", [
     var rel = evt.target.attributes.rel.value;
     var self = this;
 
-    var selection = self.actionPanel.get('selection');
+    // var selection = self.actionPanel.get('selection');
     var dataType = (self.actionPanel.currentContainerWidget.containerType == 'genome_group') ? 'genome' : 'genome_feature';
     var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 

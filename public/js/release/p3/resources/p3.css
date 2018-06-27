@@ -15320,6 +15320,7 @@ div.appsublabel {
   left: 0px;
   top: 0px;
   opacity: 0;
+  visibility: hidden;
   z-index: 1;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
@@ -15346,6 +15347,7 @@ div.appsublabel {
 }
 #patric-homepage .announcements #slides .current-slide {
   opacity: 1;
+  visibility: visible;
 }
 #patric-homepage .announcements #dot-navigation {
   display: -webkit-box;

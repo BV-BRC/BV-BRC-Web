@@ -207,9 +207,9 @@ define("p3/widget/TaxonInfoSelector", [
         priorityChange = false;
       }
 
-      if (typeof text != 'undefined') {
-        text = text.replace(/ /g, '%20');
-      }
+      // if (typeof text != 'undefined') {
+      //   text = text.replace(/ /g, '%20');
+      // }
       if (priorityChange) {
         return;
       }

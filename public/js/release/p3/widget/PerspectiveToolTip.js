@@ -106,10 +106,10 @@ define("p3/widget/PerspectiveToolTip", [
       }
       on(this.domNode, Mouse.enter, lang.hitch(this, 'onMouseEnter'));
       on(this.domNode, Mouse.leave, lang.hitch(this, 'onMouseLeave'));
-      var _self = this;
+      // var _self = this;
       on(this.domNode, '.wsActionTooltip:click', function (evt) {
         // console.log("evt.target: ", evt.target, evt.target.attributes);
-        var rel = evt.target.attributes.rel.value;
+        // var rel = evt.target.attributes.rel.value;
 
       });
 
