@@ -1098,7 +1098,6 @@ define([
           multiple: true,
           validTypes: ['*'],
           requireAuth: true,
-          max: 50,
           tooltip: 'Share genome(s) with other users',
           validContainerTypes: ['genome_data']
         },
