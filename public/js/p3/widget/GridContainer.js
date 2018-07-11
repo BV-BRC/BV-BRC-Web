@@ -425,7 +425,10 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
+          Topic.publish('/navigate', {
+          	href: '/view/Feature/' + sel.feature_id + '#view_tab=overview',
+          	target: 'blank'
+          });
         },
         false
       ], [
@@ -487,7 +490,10 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id });
+          Topic.publish('/navigate', {
+          	href: '/view/Feature/' + sel.feature_id,
+          	target: 'blank'
+          });
           // console.log("View SP GENE: ", sel)
           // Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
         },
