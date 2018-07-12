@@ -592,7 +592,7 @@ define([
           function (res) {
             Topic.publish('/refreshWorkspace', {});
             Topic.publish('/Notification', {
-              message: 'Moved contents of ' + paths.length + (paths.length > 1 ? ' items' : 'item'),
+              message: 'Moved contents of ' + paths.length + (paths.length > 1 ? ' items' : ' item'),
               type: 'message'
             });
             return res;
