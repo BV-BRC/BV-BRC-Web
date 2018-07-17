@@ -1,4 +1,4 @@
-([
+define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/topic',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../TaxonGridContainer', '../../util/QueryToEnglish',
