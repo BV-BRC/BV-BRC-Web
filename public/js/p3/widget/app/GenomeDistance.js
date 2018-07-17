@@ -35,7 +35,7 @@ define([
         this.fasta = new WorkspaceObjectSelector();
         // console.log("default path: ", this.defaultPath);
         this.fasta.set('path', this.defaultPath);
-        this.fasta.set('type', ['contigs','reads']);
+        this.fasta.set('type', ['contigs', 'reads']);
         this.fasta.set('required', false);
         this.fasta.on('change', lang.hitch(this, 'onFastaChange'));
         this.fasta.placeAt(fastaDom, 'only');
@@ -132,7 +132,7 @@ define([
         }
         document.getElementsByClassName('searchBy')[0].innerHTML = path;
         WorkspaceManager.getObject(path, true).then(lang.hitch(this, function (file) {
-          var isZip = (file.name.endsWith(".gz") || file.name.endsWith(".zip"));
+          var isZip = (file.name.endsWith('.gz') || file.name.endsWith('.zip'));
           if (file.link_reference && file.size > 0 && this.fasta.type.indexOf(file.type) >= 0 && !isZip) {
             var q = {
               method: 'Minhash.compute_genome_distance_for_fasta',
@@ -140,9 +140,9 @@ define([
             };
             def.resolve(q);
           } else {
-            var message='File is not loaded completely.';
-            if (isZip){
-                message='Currently compressed files not supported';
+            var message = 'File is not loaded completely.';
+            if (isZip) {
+              message = 'Currently compressed files not supported';
             }
             Topic.publish('GenomeDistance_UI', 'showErrorMessage', message);
             def.reject();
