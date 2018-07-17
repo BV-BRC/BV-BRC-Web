@@ -25,12 +25,14 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   /**
    * updates the job list (see JobsGrid.js)
    */
-  function updateJobsList() {
+  function updateJobsList(cb) {
     Topic.publish('/Jobs', { status: 'loading' });
 
-    var prom = window.App.api.service('AppService.enumerate_tasks', [0, 20000]);
+    var prom = window.App.api.service('AppService.enumerate_tasks', [0, 30000]);
     return prom.then(function (res) {
-      var jobs = res[0];
+      // filter out jobs marked as deleted (includes killed jobs)
+      var jobs = res[0].filter(function (job) { return job.status !== 'deleted'; });
+
       _DataStore.setData(jobs);
 
       if (self.filters.app || self.filters.status) {
@@ -40,6 +42,8 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       }
 
       Topic.publish('/Jobs', { status: 'updated', jobs: _DataStore.data });
+
+      if (cb) cb();
     });
   }
 
@@ -150,6 +154,25 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
     getStore: function () {
       return _DataStore;
+    },
+
+    killJob: function (id) {
+
+      Topic.publish('/Notification', {
+        message: '<span class="default">Terminating job '+id+'...</span>',
+        type: 'default',
+        duration: 50000
+      });
+
+      window.App.api.service('AppService.kill_task', [id]).then(function (res) {
+        updateJobsList(function () {
+          Topic.publish('/Notification', {
+            message: 'Job terminated.',
+            type: 'message'
+          });
+        });
+      });
+
     }
   };
 });

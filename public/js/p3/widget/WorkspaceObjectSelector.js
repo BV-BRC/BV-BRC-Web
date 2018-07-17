@@ -178,7 +178,10 @@ define([
       return this.searchBox.get('value', value);
     },
 
+    // sets selection of object selector form field
     _setSelectionAttr: function (val) {
+      // allowing object selector to be used without form
+      if (!val) return;
 
       this.selection = val;
       // ensures item is in store (for public workspaces),

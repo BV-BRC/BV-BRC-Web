@@ -338,7 +338,7 @@ define(
         else if (val == 'in-progress')
         { return '<b style="color: #ffa900;" title="Running">running</b>'; }
         else if (val == 'deleted' || val == 'failed')
-        { return '<b style="color: #a94442" title="Failed">failed</b>'; }
+        { return '<b style="color: #a94442" title="Failed">' + val + '</b>'; }
         else if (val == 'completed')
         { return '<b style="color: #3c763d;" title="Completed">completed</b>'; }
         return val;
