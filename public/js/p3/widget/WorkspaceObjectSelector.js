@@ -742,8 +742,10 @@ define([
       });
 
       grid.on('deselect', function (evt) {
-        // This is causing flickering.  Is it really safe to remove it?  Seems to be.
-        // self.set('selection', "");
+        // This is causing "none-selected" flickering.  How can we remove this?
+        // Idealy user should be able to double click on a different item (once),
+        // resulting in that item being selected.
+        self.set('selection', '');
       });
 
 
