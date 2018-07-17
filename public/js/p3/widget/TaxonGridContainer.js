@@ -1,14 +1,14 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './TaxonGrid', 'dijit/popup', 'dojo/topic',
-  'dijit/TooltipDialog', './FacetFilterPanel',
-  'dojo/_base/lang', 'dojo/dom-construct'
+  './TaxonGrid', 'dijit/popup',
+  'dijit/TooltipDialog',
+  'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  TaxonGrid, popup, Topic,
-  TooltipDialog, FacetFilterPanel,
-  lang, domConstruct
+  TaxonGrid, popup,
+  TooltipDialog,
+  domConstruct
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -21,7 +21,7 @@ define([
 
   return declare([GridContainer], {
     gridCtor: TaxonGrid,
-    containerType: 'taxon_data',
+    containerType: 'taxonomy_data',
     facetFields: [],
     filter: '',
     maxGenomeCount: 10000,
