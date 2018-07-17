@@ -109,7 +109,7 @@ define([
                      '<b>Job ID</b>: ' + id + '<br><br>';
 
           var dlg = new Confirmation({
-            title: 'Delete Job',
+            title: 'Kill Job',
             content: conf,
             style: { width: '375px' },
             onConfirm: function (evt) {
