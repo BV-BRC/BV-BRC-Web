@@ -62,12 +62,9 @@ define([
       }
     },
     sortAlpha: function () {
-      // console.log('sort me');
+      // but, isSortAlpha is never set to false
+      // it should be possible to toggle instead
       this.isSortAlpha = true;
-      // var wos = document.getElementsByClassName('WorkspaceObjectSelector')[0];
-      // console.log(wos);
-      // console.log(window.App);
-      // console.log(window);
       this.refreshWorkspaceItems();
     },
     _setShowHiddenAttr: function (val) {
@@ -162,6 +159,8 @@ define([
       this.cancelRefresh();
       this.refreshWorkspaceItems();
     },
+
+    // sets value of object selector dropdown
     _setValueAttr: function (value, refresh) {
       this.value = value;
       if (this._started) {
@@ -184,7 +183,8 @@ define([
       if (!val) return;
 
       this.selection = val;
-      // ensures item is in store (for public workspaces),
+
+      // need to ensure item is in store (for public workspaces),
       // this is more efficient than recursively grabing all public objects of a certain type
       try {
         this.store.add(this.selection);
@@ -488,7 +488,6 @@ define([
         });
 
         on(uploader.domNode, 'dialogAction', function (evt) {
-          // console.log("Uploader Dialog Action: ", evt);
           if (evt.files && evt.files[0] && evt.action == 'close') {
             var file = evt.files[0];
             _self.set('selection', file);
@@ -539,7 +538,7 @@ define([
       this._refreshing = WorkspaceManager.getObjectsByType(this.type, true)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
-          // console.log('am i here?');
+
           // sort by most recent
           items.sort(function (a, b) {
             return b.timestamp - a.timestamp;
@@ -547,10 +546,9 @@ define([
           this.store = new Memory({ data: items, idProperty: 'path' });
           if (this.isSortAlpha) {
             // sort alphabetically
-            // console.log(this.store.data);
             var dataArr = this.store.data;
             dataArr.sort(compare);
-            // console.log(dataArr);
+
             this.store.data = dataArr;
           }
           this.searchBox.set('store', this.store);
@@ -574,7 +572,7 @@ define([
       if (this._started) {
         return;
       }
-      // console.log("call getObjectsByType(); ", this.type);
+
       this.inherited(arguments);
 
       var _self = this;
@@ -591,7 +589,7 @@ define([
       this.searchBox.set('required', this.required);
       this.searchBox.set('placeHolder', this.placeHolder);
       this.searchBox.labelFunc = this.labelFunc;
-      // console.log(this.searchBox);
+
       // window.App.refreshSelector = this.refreshWorkspaceItems;
     },
 
@@ -730,12 +728,10 @@ define([
 
       grid.on('ItemDblClick', function (evt) {
         if (evt.item && evt.item.type == 'folder' || evt.item.type == 'parentfolder') {
-          self.set('path', evt.item_path);
+          self.set('path', evt.item.path);
         } else {
-          if (self.selection) {
-            self.set('value', self.selection.path);
-            self.dialog.hide();
-          }
+          self.set('value', evt.item.path);
+          self.dialog.hide();
         }
       });
 
