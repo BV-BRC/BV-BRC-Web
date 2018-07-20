@@ -35,9 +35,10 @@ define([
     allowUpload: true,          // whether or not to add the upload button
     uploadingSelection: '',     // uploading in progress, to be copied to selection
     title: 'Choose or Upload a Workspace Object',
-    autoSelectParent: false,    // if true, the folder currently being viewed is selected by default
+    autoSelectCurrent: false,    // if true, the folder currently being viewed is selected by default
     onlyWritable: false,        // only list writable workspaces
     selectionText: 'Selection', // the text used beside "selected" indicator
+    allowUserSpaceSelection: false,   // this allows the user to select /user@patricbrc (for operations such as moving)
     reset: function () {
       this.searchBox.set('value', '');
     },
@@ -94,9 +95,12 @@ define([
       }
     },
 
+    // sets path, which is used for the dialog state (not for the dropbox)
     _setPathAttr: function (val) {
       var self = this;
-      this.path = val;
+
+      // remove trailing '/' in path for consistency
+      this.path = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
       if (this.grid) {
         this.grid.set('path', val);
       }
@@ -141,12 +145,22 @@ define([
       this.cancelRefresh();
       this.refreshWorkspaceItems();
 
+      // whether or not to allow top level
+      var allowedLevel = this.allowUserSpaceSelection ? true : self.path.split('/').length > 2;
+
       // auto select the current folder if option is given
-      if (this.autoSelectParent) {
+      if (this.autoSelectCurrent && allowedLevel) {
+        var sel = self.sanitizeSelection(self.path);
+
         self.set('selection', {
-          path: self.path,
-          name: self.path.slice(self.path.lastIndexOf('/') + 1)
+          path: sel.path,
+          name: sel.name
         });
+      }
+
+      // if level is not allowed, mark as N/A (dispalying a message)
+      if (this.autoSelectCurrent && !allowedLevel) {
+        self.set('selection', '*N/A*');
       }
 
     },
@@ -185,11 +199,14 @@ define([
       this.selection = val;
 
       // need to ensure item is in store (for public workspaces),
-      // this is more efficient than recursively grabing all public objects of a certain type
-      try {
-        this.store.add(this.selection);
-      } catch (e) {
-        //
+      // this is more  thefficientan recursively grabing all public objects of a certain type
+      if (this.selection !== '*none*') {
+        try {
+          this.store.add(this.selection);
+        } catch (e) {
+          // ignore error about duplicates
+          // console.log('error adding ' + this.selection + ' to data store:', e);
+        }
       }
 
       // ensure there is a dom node put selection info in
@@ -197,13 +214,18 @@ define([
 
       // give help text for auto selecting parent folder
       var isCurrentlyViewed = (
-        this.autoSelectParent &&
+        this.autoSelectCurrent &&
           this.type.length == 1 &&
           this.type[0] == 'folder' &&
-          val.name == this.path.slice(val.path.lastIndexOf('/') + 1)
+          val.path == this.path
       );
 
-      if (!val) {
+      if(val == '*N/A*') {
+        this.selValNode.innerHTML =
+          '<span class="selectedDest"><b>' + this.selectionText +
+          ':</b> (you must select a workspace or folder)</span>';
+        this.okButton.set('disabled', true);
+      } else if (!val) {
         this.selValNode.innerHTML =
           '<span class="selectedDest"><b>' + this.selectionText + ':</b> None.</span>';
         this.okButton.set('disabled', true);
@@ -426,10 +448,18 @@ define([
       cancelButton.on('click', function () {
         _self.dialog.hide();
       });
-      var okButton = this.okButton = new Button({ label: 'OK' });
+      var okButton = this.okButton = new Button({
+        label: 'OK',
+        disabled: true
+      });
 
       okButton.on('click', function (evt) {
         if (_self.selection) {
+          // if autoSelectCurrent we need to implicitly select current
+          if (_self.autoSelectCurrent) {
+            _self.set('selection', _self.selection);
+          }
+
           _self.set('value', _self.selection.path);
         }
 
@@ -628,6 +658,21 @@ define([
 
       return isValid;
     },
+
+    sanitizeSelection: function (path) {
+      var parts = path.split('/');
+      if (parts[parts.length - 1] === '') {
+        parts.pop();
+      }
+
+      var obj = {
+        name: parts[parts.length - 1],
+        path: parts.join('/')
+      };
+
+      return obj;
+    },
+
     createGrid: function () {
       var self = this;
 
@@ -726,7 +771,12 @@ define([
         return false;
       };
 
+
+      // Note: this event also applies to clicking on folder/object icons grid
       grid.on('ItemDblClick', function (evt) {
+        // When navigating to select files, we don't want to select folders.
+        // But, if we are navigating to select (output) folders, we want the value (path)
+        // to be automatically selected (autoSelectCurrent)
         if (evt.item && evt.item.type == 'folder' || evt.item.type == 'parentfolder') {
           self.set('path', evt.item.path);
         } else {
@@ -741,17 +791,17 @@ define([
       });
 
       grid.on('deselect', function (evt) {
-        // This is causing "none-selected" flickering.  How can we remove this?
-        // Idealy user should be able to double click on a different item (once),
-        // resulting in that item being selected.
+        // This (was) causing "none-selected" flickering.
         self.set('selection', '');
       });
 
+      console.log('selfpath', self.path)
+      if (this.autoSelectCurrent) {
+        var sel = self.sanitizeSelection(self.path);
 
-      if (this.autoSelectParent) {
         self.set('selection', {
-          path: self.path,
-          name: self.path.slice(self.path.lastIndexOf('/') + 1)
+          path: sel.path,
+          name: sel.name
         });
       }
 
