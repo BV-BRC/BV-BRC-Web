@@ -199,7 +199,7 @@ define([
       this.selection = val;
 
       // need to ensure item is in store (for public workspaces),
-      // this is more  thefficientan recursively grabing all public objects of a certain type
+      // this is more efficient than recursively grabing all public objects of a certain type
       if (this.selection !== '*none*') {
         try {
           this.store.add(this.selection);
