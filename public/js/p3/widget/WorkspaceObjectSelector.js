@@ -97,6 +97,8 @@ define([
 
     // sets path, which is used for the dialog state (not for the dropbox)
     _setPathAttr: function (val) {
+      if (!val) return; // for group selection (hacky)
+
       var self = this;
 
       // remove trailing '/' in path for consistency
