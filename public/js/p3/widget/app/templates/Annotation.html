@@ -83,7 +83,8 @@
         <div class="appRow">
           <div class="appFieldLong">
             <label>Output Folder</label><br>
-            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
+            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true"
+              data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
             data-dojo-attach-event="onChange:onOutputPathChange"></div>
           </div>
         </div>

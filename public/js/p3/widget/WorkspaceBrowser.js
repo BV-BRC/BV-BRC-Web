@@ -768,7 +768,8 @@ define([
         // open object selector to get destination
         var objSelector = new WSObjectSelector({
           allowUpload: false,
-          autoSelectParent: true,
+          autoSelectCurrent: true,
+          allowUserSpaceSelection: true,
           onlyWritable: true,
           selectionText: 'Destination'
         });
@@ -844,7 +845,8 @@ define([
         // open object selector to get destination
         var objSelector = new WSObjectSelector({
           allowUpload: false,
-          autoSelectParent: true,
+          autoSelectCurrent: true,
+          allowUserSpaceSelection: true,
           onlyWritable: true,
           selectionText: 'Destination'
         });
