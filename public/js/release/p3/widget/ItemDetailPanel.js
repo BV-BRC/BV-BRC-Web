@@ -293,7 +293,7 @@ define("p3/widget/ItemDetailPanel", [
 
     // opens works permission editor for given item
     openPermEditor: function (item) {
-      Topic.publish('/openUserPerms', item);
+      Topic.publish('/openUserPerms', [item]);
     },
 
     saveType: function (val, val2) {

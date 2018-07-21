@@ -13,8 +13,8 @@
  *
  *  var editor = PermissionEditor({
  *    path: 'my/object',
- *    owner_id: user@patricbrc.org
- *  })
+ *    user: user@patricbrc.org
+*  })
  *  editor.onConfirm = function(){ //do something }
  *  editor.show()
  *

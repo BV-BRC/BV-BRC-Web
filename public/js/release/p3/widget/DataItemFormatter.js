@@ -515,6 +515,12 @@ define("p3/widget/DataItemFormatter", [
       }, {
         name: 'Feature Type',
         text: 'feature_type'
+      }, {
+        name: 'Classifier Score',
+        text: 'classifier_score'
+      }, {
+        name: 'Classifier Round',
+        text: 'classifier_round'
       }];
 
       section.Identifiers = [{
