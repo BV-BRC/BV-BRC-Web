@@ -1,10 +1,8 @@
 define("p3/widget/TaxonGrid", [
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/on',
   './PageGrid', './formatter', '../store/TaxonomyJsonRest', './GridSelector'
 ], function (
-  declare, BorderContainer, on,
-  domClass, ContentPane, domConstruct,
+  declare, on,
   Grid, formatter, Store, selector
 ) {
 
@@ -30,7 +28,7 @@ define("p3/widget/TaxonGrid", [
       taxon_rank: { label: 'Taxon Rank', field: 'taxon_rank', hidden: false },
       taxon_name: { label: 'Taxon Name', field: 'taxon_name', hidden: false },
       genomes: { label: 'Genomes', field: 'genomes', hidden: false },
-      lineage: { label: 'Taxon ID', field: 'lineage_names', hidden: true }
+      lineage: { label: 'Lineage', field: 'lineage_names', hidden: true }
     },
 
     startup: function () {

@@ -18,15 +18,13 @@ define("p3/widget/ActionBar", [
     currentContainerWidget: null,
     tooltipPosition: ['before', 'above'],
     _setCurrentContainerWidgetAttr: function (widget) {
-      // console.log("_set Current Container Widget: ", widget);
-      // console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
 
       if (widget.currentContainer === this.currentContainerWidget) {
         return;
       }
       this.currentContainerType = widget.containerType;
       this.currentContainerWidget = widget;
-      // console.log("CurrentContainerType: ", this.currentContainerType)
+
       this.set('selection', []);
     },
     _setSelectionAttr: function (sel) {
@@ -52,16 +50,14 @@ define("p3/widget/ActionBar", [
             }
           }
         }
-        // console.log("Type: ", type);
+
         selectionTypes[type] = true;
       });
-      // console.log("selectionTypes: ", selectionTypes);
-      // console.log("_actions: ", this._actions);
+
       if (sel.length > 1) {
         var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
-        // console.log("isMultiTyped: ", multiTypedSelection);
+
         valid = Object.keys(this._actions).filter(function (an) {
-          // console.log("Check action: ", an, this._actions[an].options);
           return this._actions[an] && this._actions[an].options &&
             (this._actions[an].options.multiple &&
             ((this._actions[an].options.ignoreDataType || !multiTypedSelection ||
@@ -94,8 +90,13 @@ define("p3/widget/ActionBar", [
           }
         }
 
+        // allow kill job if any of the below
+        if (sel[0] && an === 'KillJob') {
+          if (['init', 'pending', 'queued', 'in-progress'].indexOf(sel[0].status) == -1) return false;
+        }
+
         // if top level "workspace", hide actions
-        if (sel[0] && 'isWorkspace' in sel[0] && ['CreateFolder', 'Upload', 'ShowHidden'].indexOf(an) !== -1) {
+        else if (sel[0] && 'isWorkspace' in sel[0] && ['CreateFolder', 'Upload', 'ShowHidden'].indexOf(an) !== -1) {
           return false;
         }
 
@@ -112,7 +113,7 @@ define("p3/widget/ActionBar", [
         // if public or not owner, hide ability for upload, create folder, delete, share, etc
         else if (sel[0] && (
           'isPublic' in sel[0] ||
-            ['r', 'n'].indexOf(sel[0].user_permissions) !== -1 ||
+            ['r', 'n'].indexOf(sel[0].user_permission) !== -1 ||
             (sel[0].global_permission == 'r' && window.App.user.id != sel[0].owner_id) ) &&
           ['Upload', 'CreateFolder', 'Delete', 'ShareFolder', 'Move', 'Rename', 'EditType'].indexOf(an) !== -1) {
           return false;
@@ -131,9 +132,6 @@ define("p3/widget/ActionBar", [
         var validContainerTypes = act.options.validContainerTypes || null;
 
         if (validContainerTypes) {
-          // console.log("checkValidContainerTypes", validContainerTypes);
-          // console.log("Current ContainerType: ", this.currentContainerType);
-          // console.log("Current Container Widget: ", this.currentContainerWidget);
           if (!validContainerTypes.some(function (t) {
             return ((t == '*') || (t == this.currentContainerType));
           }, this)) {

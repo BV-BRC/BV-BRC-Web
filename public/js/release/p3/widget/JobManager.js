@@ -1,12 +1,12 @@
 define("p3/widget/JobManager", [
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/_base/lang',  'dojo/query',
+  'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang',  'dojo/query',
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
-  'dojo/_base/Deferred', 'dojo/dom-geometry', '../JobManager',
+  'dojo/_base/Deferred', '../JobManager', './Confirmation',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel'
 ], function (
-  declare, WidgetBase, on, lang, query,
+  declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
-  Deferred, domGeometry, JobManager,
+  Deferred, JobManager, Confirmation,
   Topic, BorderContainer, ActionBar, ItemDetailPanel
 ) {
   return declare([BorderContainer], {
@@ -90,6 +90,36 @@ define("p3/widget/JobManager", [
         function (selection) {
           var sel = selection[0];
           Topic.publish('/navigate', { href: '/workspace' + sel.parameters.output_path + '/' + sel.parameters.output_file });
+        },
+        false
+      ], [
+        'KillJob',
+        'MultiButton fa icon-ban fa-2x',
+        {
+          label: 'KILL JOB',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Kill (Cancel) Selected Job',
+          validContainerTypes: ['*']
+        },
+        function (selection) {
+          var sel = selection[0],
+            id = sel.id;
+
+          var conf = 'Are you sure you want to terminate this ' + sel.app + ' job?<br><br>' +
+                     '<b>Job ID</b>: ' + id + '<br><br>';
+
+          var dlg = new Confirmation({
+            title: 'Kill Job',
+            content: conf,
+            style: { width: '375px' },
+            onConfirm: function (evt) {
+              JobManager.killJob(id);
+            }
+          });
+          dlg.startup();
+          dlg.show();
+
         },
         false
       ], [
