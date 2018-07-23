@@ -228,8 +228,9 @@ define([
               }
               genome_ids = this.state.genome_ids;
             }
+            var searchStr = (genome_ids.length > 0) ? 'or(in(genome_id_a,(' + genome_ids.join(',') + ')),in(genome_id_b,(' + genome_ids.join(',') + ')))' : 'eq(genome_id_a,NONE)';
             activeTab.set('state', lang.mixin({}, this.state, {
-              search: 'or(in(genome_id_a,(' + genome_ids.join(',') + ')),in(genome_id_b,(' + genome_ids.join(',') + ')))'
+              search: searchStr
             }));
           }
           break;
