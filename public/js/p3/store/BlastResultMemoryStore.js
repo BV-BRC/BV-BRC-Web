@@ -121,6 +121,8 @@ define([
         if (this.type == 'genome_sequence') {
           resultIds = resultIds.map(function (d) {
             return d.replace('accn|', '');
+          }).filter(function (d) {
+            return d !== '';
           });
           query.q = 'accession:(' + resultIds.join(' OR ') + ')';
           query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,description';
