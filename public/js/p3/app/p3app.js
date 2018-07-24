@@ -389,8 +389,8 @@ define([
         if (!localStorage.getItem('tokenstring')) {
           if (document.getElementsByClassName('Authenticated').length > 0) {
             document.body.className = document.body.className.replace('Authenticated', '');
-	    //console.log("Redirect");
-	    window.location.assign('/');
+            // console.log("Redirect");
+            window.location.assign('/');
           }
         } else {
           // check if token has expired
