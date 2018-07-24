@@ -108,6 +108,8 @@ define([
     defaultFilter: '',
     store: null,
     apiServer: window.App.dataServiceURL,
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/',
     queryOptions: null,
     columns: null,
     enableAnchorButton: false,
@@ -334,6 +336,20 @@ define([
               domClass.add(node, 'icon-chevron-circle-right');
             });
           }
+        },
+        true
+      ], [
+        'UserGuide',
+        'fa icon-question-circle-o fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        function (selection, container) {
+          console.log('USER GUIDE action', container);
+          window.open(this.docsServiceURL + this.tutorialLink);
         },
         true
       ], [

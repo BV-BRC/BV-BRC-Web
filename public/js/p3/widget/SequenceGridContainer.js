@@ -21,6 +21,7 @@ define([
 
   return declare([GridContainer], {
     containerType: 'sequence_data',
+    tutorialLink: 'user_guides/organisms_taxon/sequences.html',
     facetFields: ['sequence_type', 'topology'],
     maxGenomeCount: 10000,
     dataModel: 'genome_sequence',

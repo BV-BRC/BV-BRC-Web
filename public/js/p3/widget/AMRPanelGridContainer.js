@@ -20,6 +20,7 @@ define([
 
   return declare([GridContainer], {
     containerType: 'genome_amr_data',
+    tutorialLink: 'user_guides/organisms_taxon/amr_phenotypes.html',
     facetFields: ['public', 'antibiotic', 'resistant_phenotype', 'laboratory_typing_method', 'laboratory_typing_platform', 'testing_standard'],
     dataModel: 'genome_amr',
     primaryKey: 'id',
