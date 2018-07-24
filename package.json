@@ -7,6 +7,7 @@
     "test": "cross-env NODE_ENV=test gulp srcfiles && npm run move-src && eslint . && jest --config jest.config.json --notify",
     "move-src": "cp gulpified/app/app.js src/app/ && cp gulpified/app/p3app.js src/app/ && cp gulpified/widget/LoginForm.js src/widget",
     "eslint:fix": "./node_modules/eslint/bin/eslint.js --fix public/js/p3",
+    "eslint:test": "./node_modules/eslint/bin/eslint.js public/js/p3",
     "test:intern": "./node_modules/.bin/intern"
   },
   "dependencies": {
