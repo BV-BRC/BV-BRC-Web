@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
   'dijit/form/Button', 'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
-  'dojo/dom-class', './formatter'
+  'dojo/dom-class', './formatter', '../util/getTime'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
   Button, Select, Topic, query, JobManager,
-  domClass, formatter
+  domClass, formatter, getTime
 ) {
   return declare([ActionBar], {
     path: null,
@@ -198,7 +198,7 @@ define([
         query('span', failedBtn)[0].innerHTML = status.failed;
 
         if (!loadingJobList)
-        { lastUpdated.innerHTML = 'Last updated: ' + self.getTime(); }
+        { lastUpdated.innerHTML = 'Last updated: ' + getTime(); }
       });
 
       /**
@@ -212,13 +212,13 @@ define([
           var labels = self.getFilterLabels(info.jobs);
           selector.set('options', labels).reset();
 
-          lastUpdated.innerHTML = 'Last updated: ' + self.getTime();
+          lastUpdated.innerHTML = 'Last updated: ' + getTime();
           loadingJobList = false;
         } else if (info.status == 'filtered') {
           var labels = self.getFilterLabels(info.jobs);
           selector.set('options', labels);
 
-          lastUpdated.innerHTML = 'Last updated: ' + self.getTime();
+          lastUpdated.innerHTML = 'Last updated: ' + getTime();
           loadingJobList = false;
         }
       });
@@ -234,15 +234,6 @@ define([
 
       domClass.add(node, 'active');
     },
-
-    // returns current time in HH:MM:SS, 12 hour format
-    getTime: function () {
-      var time = new Date().toTimeString().split(' ')[0];
-      var hours = parseInt(time.split(':')[0]);
-      hours = (hours + 11) % 12 + 1;
-      return hours + time.slice(time.indexOf(':'));
-    },
-
 
     // takes job objects, returns sorted list of objects of form:
     // [{label: 'AppName  (count)', value: 'AppName', count: x}, ... ]
