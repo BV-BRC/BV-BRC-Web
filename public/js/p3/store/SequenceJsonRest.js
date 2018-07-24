@@ -13,9 +13,6 @@ define([
       'accession', 'length', 'gi', 'public', 'genome_name', 'genome_id', 'date_inserted', 'topology'],
 
     query: function (query, opts) {
-      if (query === '') {
-        return [];
-      }
       // we have to make the default query exclude the actual sequences themselves or it is way too slow
       var sel = '&select(' + this.defaultFieldList.join(',') + ')';
       query += sel;

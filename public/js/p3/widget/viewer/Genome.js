@@ -264,7 +264,7 @@ define([
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
         id: this.viewer.id + '_sequences',
-        state: this.state
+        state: lang.mixin({}, this.state, { search: (this.genome_id ? '?eq(genome_id,' + this.genome_id + ')' : '?ne(genome_id,*)' ) })
       });
 
       this.amr = new AMRPanelGridContainer({
@@ -293,7 +293,7 @@ define([
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
         id: this.viewer.id + '_specialtyGenes',
-        state: this.state
+        state: lang.mixin({}, this.state, { search: (this.genome_id ? '?eq(genome_id,' + this.genome_id + ')' : '?ne(genome_id,*)' ) })
       });
 
       this.pathways = new PathwaysContainer({
