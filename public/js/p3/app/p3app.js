@@ -406,25 +406,25 @@ define([
       // console.log('checking for login');
       if (localStorage.getItem('tokenstring')) {
         var auth = localStorage.getItem('auth');
-	console.log("Auth: ", auth);
-	var validToken=false;
-	if (auth) {
-		console.log("Parse auth json", auth);
-	        auth = JSON.parse(auth);
-		console.log("Auth: ", auth);
-		console.log("CheckExpToken", auth.expiry);
-		if (auth.expiry) {
-			validToken = this.checkExpToken(auth.expiry);
-			console.log('this is a valid token: ' + validToken );
-			if (validToken && window.App.alreadyLoggedIn) {
-				return;
-			}
-		}else{
-			validToken=false;
-		}
-	}
+        // console.log('Auth: ', auth);
+        var validToken = false;
+        if (auth) {
+          // console.log('Parse auth json', auth);
+          auth = JSON.parse(auth);
+          // console.log('Auth: ', auth);
+          // console.log('CheckExpToken', auth.expiry);
+          if (auth.expiry) {
+            validToken = this.checkExpToken(auth.expiry);
+            // console.log('this is a valid token: ' + validToken );
+            if (validToken && window.App.alreadyLoggedIn) {
+              return;
+            }
+          } else {
+            validToken = false;
+          }
+        }
 
-        console.log("Valid Token: ", validToken);
+        console.log('Valid Token: ', validToken);
         if (validToken) { // && !window.App.alreadyLoggedIn) {
           if (!document.body.className.includes('Authenticated')) {
             document.body.className += 'Authenticated';
@@ -491,7 +491,7 @@ define([
       var Aauth = localStorage.getItem('Aauth');
       auth = JSON.parse(auth);
       Aauth = JSON.parse(Aauth);
-      if (auth && auth.roles){
+      if (auth && auth.roles) {
         if (auth.roles.includes('admin')) {
           suLink[0].style.display = 'block';
         } else {
@@ -500,7 +500,7 @@ define([
       } else {
         suLink[0].style.display = 'none';
       }
-      if (Aauth){
+      if (Aauth) {
         if (Aauth.roles && Aauth.roles instanceof Array) {
           if (Aauth.roles.includes('admin')) {
             sbLink[0].style.display = 'block';
@@ -529,11 +529,11 @@ define([
     checkExpToken: function (date) {
       var d = new Date();
       var checkd = d.valueOf() / 1000;
-      console.log("Current Date: ", checkd);
+      console.log('Current Date: ', checkd);
       if (checkd > date) {
         console.log('expired');
         return false;
-      } 
+      }
       return true;
     },
     login: function (data, token) {
