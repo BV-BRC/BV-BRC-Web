@@ -353,8 +353,8 @@ define([
           tooltip: 'Open User Guide in a new Tab'
         },
         function (selection, container) {
-          console.log('USER GUIDE action', container);
-          window.open(this.docsServiceURL + this.tutorialLink);
+          // console.log('USER GUIDE action', container);
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
         },
         true
       ],
