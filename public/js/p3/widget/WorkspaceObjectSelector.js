@@ -325,7 +325,7 @@ define([
       domConstr.place(createWSBtn, buttonContainer);
       domConstr.place(createFolderBtn, buttonContainer);
 
-      if (this.path.split('/').length <= 3) {
+      if (this.path.split('/').length <= 2) {
         domClass.add(query('[rel="createFolder"]', wrap)[0], 'dijitHidden');
         if (this.allowUpload)
         { domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden'); }
