@@ -160,7 +160,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     killJob: function (id) {
 
       Topic.publish('/Notification', {
-        message: '<span class="default">Terminating job '+id+'...</span>',
+        message: '<span class="default">Terminating job ' + id + '...</span>',
         type: 'default',
         duration: 50000
       });
