@@ -386,13 +386,11 @@ define([
     timeout: function () {
       setTimeout(function () {
         // check if logged out and another tab is open
-        if (localStorage.getItem('tokenstring')) {
+        if (!localStorage.getItem('tokenstring')) {
           if (document.getElementsByClassName('Authenticated').length > 0) {
-            // console.log(document.body.className);
             document.body.className = document.body.className.replace('Authenticated', '');
-            // console.log(document.body.className);
-            window.location.assign('/');
-            console.log('you are logged out now');
+	    //console.log("Redirect");
+	    window.location.assign('/');
           }
         } else {
           // check if token has expired
