@@ -37,8 +37,6 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run:
-        name: lint
-        command: npm run eslint:fix
+      - run: npm run eslint:fix
 
 
