@@ -22,7 +22,7 @@ define("p3/app/app", [
       //              Promise object that resolves when the display animation is complete
 
       if (this.open) {
-        return resolvedDeferred.promise;
+        return Deferred.promise;
       }
 
       if (!this._started) {
@@ -91,7 +91,10 @@ define("p3/app/app", [
       /* istanbul ignore next */
       if (opts) {
         for (var prop in opts) {
-          this[prop] = opts[prop];
+          // guard-for-in
+          if (Object.prototype.hasOwnProperty.call(opts, prop)) {
+            this[prop] = opts[prop];
+          }
         }
       }
 
@@ -165,7 +168,7 @@ define("p3/app/app", [
         var panel = _self.panels[type];
         /* istanbul ignore if */
         if (!panel) {
-          throw error('Ivalid Panel: ' + type);
+          throw Error('Ivalid Panel: ' + type);
 
         }
         /* istanbul ignore next */
@@ -215,7 +218,7 @@ define("p3/app/app", [
         var panel = _self.panels[type];
         /* istanbul ignore if */
         if (!panel) {
-          throw error('Ivalid Panel: ' + type);
+          throw Error('Ivalid Panel: ' + type);
 
         }
         /* istanbul ignore next */
@@ -442,7 +445,10 @@ define("p3/app/app", [
 
           if (typeof params === 'object') {
             for (prop in params) {
-              w.set(prop, params[prop]);
+              // guard-for-in
+              if (Object.prototype.hasOwnProperty.call(params, prop)) {
+                w.set(prop, params[prop]);
+              }
             }
           } else if (params && p.dataParam) {
             w.set(p.dataParam, params);
@@ -503,6 +509,7 @@ define("p3/app/app", [
       // console.log("Do Navigation to href: ", newNavState);
 
       var appContainer = this.getApplicationContainer();
+      var ctor;
 
       /*  istanbul ignore else */
       if (newNavState.widgetClass) {

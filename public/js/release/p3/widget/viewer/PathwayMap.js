@@ -31,14 +31,14 @@ define("p3/widget/viewer/PathwayMap", [
       if (!state.pathway_id) return;
 
       // taxon_id -> state.genome_ids or genome_id ->state.genome_ids
-      if (state.hasOwnProperty('genome_id')) {
+      if (Object.prototype.hasOwnProperty.call(state, 'genome_id')) {
         state.genome_ids = [state.genome_id];
         this.viewer.set('visible', true);
       }
-      else if (state.hasOwnProperty('genome_ids')) {
+      else if (Object.prototype.hasOwnProperty.call(state, 'genome_ids')) {
         this.viewer.set('visible', true);
       }
-      else if (state.hasOwnProperty('taxon_id')) {
+      else if (Object.prototype.hasOwnProperty.call(state, 'taxon_id')) {
         var self = this;
         when(this.getGenomeIdsByTaxonId(state.taxon_id), function (genomeIds) {
           state.genome_ids = genomeIds;

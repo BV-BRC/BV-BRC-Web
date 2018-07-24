@@ -54,7 +54,9 @@ define([
       product: { label: 'Product', field: 'product', hidden: false },
       go: {
         label: 'GO Terms', field: 'go', sortable: false, hidden: true
-      }
+      },
+      classifier_score: { label: 'Classifier Score', field: 'classifier_score', hidden: true },
+      classifier_round: { label: 'Classifier Round', field: 'classifier_round', hidden: true }
     },
     _setQuery: function (query) {
       this.inherited(arguments);
@@ -79,6 +81,20 @@ define([
         _self.toggleColumnHiddenState('start', true);
         _self.toggleColumnHiddenState('end', true);
         _self.toggleColumnHiddenState('strand', true);
+      } else if (query.match(/eq\(feature_type,%22classifier_predicted_region%22\)/)) {
+        _self.toggleColumnHiddenState('refseq_locus_tag', true);
+        _self.toggleColumnHiddenState('gene', true);
+
+        _self.toggleColumnHiddenState('plfam', true);
+        _self.toggleColumnHiddenState('pgfam', true);
+
+        _self.toggleColumnHiddenState('feature_type', false);
+        _self.toggleColumnHiddenState('start', false);
+        _self.toggleColumnHiddenState('end', false);
+        _self.toggleColumnHiddenState('strand', false);
+
+        _self.toggleColumnHiddenState('classifier_score', false);
+        _self.toggleColumnHiddenState('classifier_round', false);
       } else {
         _self.toggleColumnHiddenState('plfam', true);
         _self.toggleColumnHiddenState('pgfam', true);

@@ -61,7 +61,7 @@ define("p3/widget/FeatureOverview", [
 
       domConstruct.empty(this.externalLinkNode);
 
-      if (feature.hasOwnProperty('aa_sequence')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence')) {
         var linkCDDSearch = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E';
         var dispSequenceID = [];
         if (feature.annotation === 'PATRIC') {
@@ -90,7 +90,7 @@ define("p3/widget/FeatureOverview", [
         domConstruct.place('<br>', cdd, 'after');
       }
 
-      if (feature.hasOwnProperty('refseq_locus_tag')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
         var linkSTRING = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
         var string = domConstruct.create('a', {
           href: linkSTRING,
@@ -266,44 +266,44 @@ define("p3/widget/FeatureOverview", [
         ipLink,
         pwLink,
         ssLink;
-      if (feature.hasOwnProperty('go')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'go')) {
         goLink = feature.go.map(function (goStr) {
           var go = goStr.split('|');
           return '<a href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=' + go[0] + '" target=_blank>' + go[0] + '</a>&nbsp;' + go[1];
         }).join('<br>');
       }
 
-      if (feature.hasOwnProperty('ec')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'ec')) {
         ecLink = feature.ec.map(function (ecStr) {
           var ec = ecStr.split('|');
           return '<a href="http://enzyme.expasy.org/EC/' + ec[0] + '" target=_blank>' + ec[0] + '</a>&nbsp;' + ec[1];
         }).join('<br>');
       }
 
-      if (feature.hasOwnProperty('plfam_id')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'plfam_id')) {
         plfamLink = '<a href="/view/FeatureList/?eq(plfam_id,' + feature.plfam_id + ')#view_tab=features" target="_blank">' + feature.plfam_id + '</a>';
       }
 
-      if (feature.hasOwnProperty('pgfam_id')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'pgfam_id')) {
         pgfamLink = '<a href="/view/FeatureList/?eq(pgfam_id,' + feature.pgfam_id + ')#view_tab=features" target="_blank">' + feature.pgfam_id + '</a>';
       }
 
-      if (feature.hasOwnProperty('figfam_id')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'figfam_id')) {
         figfamLink = '<a href="/view/FeatureList/?eq(figfam_id,' + feature.figfam_id + ')#view_tab=features" target="_blank">' + feature.figfam_id + '</a>';
       }
 
-      if (feature.hasOwnProperty('aa_sequence_md5')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
         ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View in new Tab</a>';
       }
 
-      if (feature.hasOwnProperty('pathway')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'pathway')) {
         pwLink = feature.pathway.map(function (pwStr) {
           var pw = pwStr.split('|');
           return '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
         }).join('<br>');
       }
 
-      if (feature.hasOwnProperty('subsystem')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'subsystem')) {
         ssLink = feature.subsystem.join('<br>');
       }
 

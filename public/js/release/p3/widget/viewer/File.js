@@ -89,7 +89,6 @@ define("p3/widget/viewer/File", [
     },
 
     formatFileMetaData: function () {
-      var output = [];
       var fileMeta = this.file.metadata;
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
@@ -107,7 +106,6 @@ define("p3/widget/viewer/File", [
     },
 
     refresh: function () {
-      var _self = this;
       if (!this._started) {
         return;
       }
@@ -132,7 +130,7 @@ define("p3/widget/viewer/File", [
                 var iframe_contents = this.file.data;
                 var bookmark_regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi;
                 if (iframe_contents.search(bookmark_regex)) {
-                  iframe_contents = iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, '$&' + "  onclick='return false;'");
+                  iframe_contents = iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, '$&  onclick="return false;"');
                 }
 
                 iframe.srcdoc = iframe_contents;

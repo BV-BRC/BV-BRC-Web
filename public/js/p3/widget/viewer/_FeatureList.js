@@ -68,7 +68,7 @@ define([
     },
 
     onSetQuery: function (attr, oldVal, newVal) {
-      var qe = QueryToEnglish(newVal);
+      // var qe = QueryToEnglish(newVal);
 
       this.queryNode.innerHTML = ''; // Features: " + qe;
     },
@@ -110,8 +110,8 @@ define([
       }
     },
 
-    onSetFeatureIds: function (attr, oldVal, genome_ids) {
-      // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+    onSetFeatureIds: function (attr, oldVal, feature_ids) {
+    // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
       this.state.feature_ids = feature_ids;
       this.setActivePanelState();
     },
@@ -125,12 +125,12 @@ define([
       this.overview = new Overview({
         content: 'Overview',
         title: 'Feature List Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
 
       this.features = new FeatureGridContainer({
         title: 'Features',
-        id: this.viewer.id + '_' + 'features',
+        id: this.viewer.id + '_features',
         tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
         disabled: false
       });
@@ -195,7 +195,7 @@ define([
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

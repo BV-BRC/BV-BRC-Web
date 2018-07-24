@@ -29,13 +29,13 @@ define("p3/widget/viewer/Taxonomy", [
 
       this.phylogeny = new Phylogeny({
         title: 'Phylogeny',
-        id: this.viewer.id + '_' + 'phylogeny',
+        id: this.viewer.id + '_phylogeny',
         state: this.state
       });
 
       this.taxontree = new TaxonomyTreeGrid({
         title: 'Taxonomy',
-        id: this.viewer.id + '_' + 'taxontree',
+        id: this.viewer.id + '_taxontree',
         state: this.state
       });
       this.viewer.addChild(this.phylogeny, 1);
@@ -382,7 +382,7 @@ define("p3/widget/viewer/Taxonomy", [
     createOverviewPanel: function () {
       return new TaxonomyOverview({
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
     },
 

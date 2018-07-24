@@ -150,7 +150,7 @@ define("p3/widget/FacetFilter", [
         selected.push(domAttr.get(node, 'rel'));
       });
       // console.log("_refreshFilter selected() : ", selected);
-      var curFilter = this.filter;
+      // var curFilter = this.filter;
       // this.filter =  "in(" + this.category + ",(" + selected.join(",") + "))";
       if (selected.length < 1) {
         this.filter = '';
@@ -188,7 +188,7 @@ define("p3/widget/FacetFilter", [
     },
 
     toggleItem: function (evt) {
-      var rel = domAttr.get(evt.target, 'rel');
+      // var rel = domAttr.get(evt.target, 'rel');
       // console.log("onToggle: ", rel)
       domClass.toggle(evt.target, 'selected');
       this._refreshFilter();

@@ -8,7 +8,7 @@ define([
   declare, on, domConstruct, domAttr,
   lang, Mouse, WidgetBase, WidgetsInTemplate,
   Topic, TemplatedMixin, Template,
-  Dialog
+  Dialog, query
 ) {
   return declare([WidgetBase, TemplatedMixin, WidgetsInTemplate], {
     templateString: Template,
@@ -54,7 +54,7 @@ define([
       });
       console.log('Downloading genomes: ', ids);
       var types = [];
-      dojo.query('input', this.fileTypesTable).forEach(function (node) {
+      query('input', this.fileTypesTable).forEach(function (node) {
         console.log('node: ', node, node.checked, node.value);
         if (node.checked) {
 

@@ -17,16 +17,16 @@ define([
       }
       else {
 
-        for (i = 0; i < parsed.children.length; i++) {
+        for (var i = 0; i < parsed.children.length; i++) {
           // console.log(parsed.children[i])
           if (parsed.children[i].tagName === 'TITLE') {
             window.document.title  = parsed.children[i].innerHTML;
           } else if (parsed.children[i].tagName === 'DIV') {
-            rootDivNode = parsed.children[i];
-            sectionNode = rootDivNode.children[1];
-            contentDivNode = sectionNode.children[1];
-            articleNode = contentDivNode.children[0].children[1];
-            articleBody = articleNode.children[0];
+            var rootDivNode = parsed.children[i];
+            var sectionNode = rootDivNode.children[1];
+            var contentDivNode = sectionNode.children[1];
+            var articleNode = contentDivNode.children[0].children[1];
+            var articleBody = articleNode.children[0];
 
             arguments[0] = articleBody;
           }

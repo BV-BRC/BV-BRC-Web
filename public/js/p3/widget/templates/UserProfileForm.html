@@ -21,7 +21,10 @@
           <tr><td style="padding-top:0">
             <input type="text" name="email" style="width:100%" data-dojo-attach-point="emailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Email Address',promptMessage:'Enter your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: fieldChanged">
           </td><td style="padding-top:0">
-            <input class="useridField" type="text" style="display:block; width:60%" name="username" data-dojo-attach-point="UNF" data-dojo-type="dijit/form/ValidationTextBox" value="" required="true" data-dojo-props="regExp:'[A-Za-z0-9_\.]+',invalidMessage:'Username can only contain characters, dijits, underscores, and periods',placeholder:'Username',promptMessage:'Enter your username', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged">
+            <input class="useridField" type="text" style="display:block; width:100%" name="username" data-dojo-attach-point="UNF"
+              data-dojo-type="dijit/form/ValidationTextBox" value="" required="true"
+              data-dojo-props="placeholder:'Username', promptMessage:'Enter your username', intermediateChanges: true, regExp:'[\\w.-]+', invalidMessage: 'Enter a combination of letters, numbers, underscore(_), dot(.), and dash(-)'"
+              data-dojo-attach-event="onChange: fieldChanged" />
           </td></tr>
           <tr><th colspan="2" style="padding:0">ORGANIZATION</th></tr>
           <tr><td colspan="2" style="padding-top:0"><div style="width:100%" data-dojo-type="dijit/form/TextBox" name="affiliation" value=""></div></td></tr>

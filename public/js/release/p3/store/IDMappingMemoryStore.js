@@ -55,7 +55,7 @@ define("p3/store/IDMappingMemoryStore", [
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -230,13 +230,13 @@ define("p3/store/IDMappingMemoryStore", [
                   var gi = accessionGiMap[accession];
 
                   if (toId === 'UniProtKB-Accession') {
-                    if (!giTarget.hasOwnProperty(gi)) {
+                    if (!Object.prototype.hasOwnProperty.call(giTarget, gi)) {
                       giTarget[gi] = [accession];
                     } else {
                       giTarget[gi].push(accession);
                     }
                   } else {
-                    if (!giTarget.hasOwnProperty(gi)) {
+                    if (!Object.prototype.hasOwnProperty.call(giTarget, gi)) {
                       giTarget[gi] = [target];
                     } else {
                       giTarget[gi].push(target);
@@ -249,7 +249,7 @@ define("p3/store/IDMappingMemoryStore", [
 
                 var data = [];
                 features.forEach(function (d) {
-                  if (d.hasOwnProperty('gi')) {
+                  if (Object.prototype.hasOwnProperty.call(d, 'gi')) {
                     var target = giTarget[d.gi];
                     if (target) {
                       target.forEach(function (t) {

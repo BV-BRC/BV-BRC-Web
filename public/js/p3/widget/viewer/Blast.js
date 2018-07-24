@@ -24,8 +24,8 @@ define([
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         // console.log("BlastResult:", arguments);
-        var key = arguments[0],
-          value = arguments[1];
+        var key = arguments[0];
+        // var value = arguments[1];
 
         switch (key) {
           case 'showLoadingMask':
@@ -126,6 +126,8 @@ define([
           patric_id: { label: 'PATRIC ID', field: 'patric_id' },
           refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
           gene: { label: 'Gene', field: 'gene' },
+          plfam: { label: 'PATRIC Local family', field: 'plfam_id', hidden: true },
+          pgfam: { label: 'PATRIC Global family', field: 'pgfam_id', hidden: true },
           product: { label: 'Product', field: 'function' },
           na_length: { label: 'Length (NT)', field: 'na_length' },
           aa_length: { label: 'Length (AA)', field: 'aa_length' },

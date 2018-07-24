@@ -24,7 +24,7 @@ define("p3/widget/viewer/JobResult", [
       parameters: {
         label: 'Parameters',
         format: function (d) {
-          if (d.hasOwnProperty('ustring')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'ustring')) {
             d.ustring = JSON.parse(d.ustring);
           }
           return '<pre style="font-size:.8em; overflow: scroll;">' + JSON.stringify(d, null, 2) + '</pre>';
@@ -88,7 +88,7 @@ define("p3/widget/viewer/JobResult", [
         if (this.data.autoMeta && this.data.autoMeta.app) {
           jobHeader = jobHeader + this._appLabel + ' ';
         }
-        jobHeader = jobHeader + 'Job Result' + '</span></h3>';
+        jobHeader += 'Job Result</span></h3>';
         // this.viewer.set('content',jobHeader);
 
         var output = [];
@@ -107,10 +107,10 @@ define("p3/widget/viewer/JobResult", [
             return;
           }
 
-          if (this._jobOut.hasOwnProperty(prop)) {
+          if (Object.prototype.hasOwnProperty.call(this._jobOut, prop)) {
             // this._jobOut[prop]["value"]=this.data.autoMeta[prop];
-            var tableLabel = this._jobOut[prop].hasOwnProperty('label') ? this._jobOut[prop].label : prop;
-            var tableValue = this._jobOut[prop].hasOwnProperty('format') ? this._jobOut[prop].format(this.data.autoMeta[prop]) : this.data.autoMeta[prop];
+            // var tableLabel = this._jobOut[prop].hasOwnProperty('label') ? this._jobOut[prop].label : prop;
+            var tableValue = Object.prototype.hasOwnProperty.call(this._jobOut[prop], 'format') ? this._jobOut[prop].format(this.data.autoMeta[prop]) : this.data.autoMeta[prop];
             if (prop == 'parameters') {
               job_output.push('<tr class="alt"><td class="last" colspan=2><div data-dojo-type="dijit/TitlePane" data-dojo-props="title: \'Parameters\', open:false">' + tableValue + '</div></td></tr>');
             } else {
@@ -138,7 +138,7 @@ define("p3/widget/viewer/JobResult", [
         return;
       }
       this.inherited(arguments);
-      this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style:'width:90%;height:30%;' });
+      this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
       this.viewer = new WorkspaceExplorerView({ region: 'center', path: this._hiddenPath });
       this.addChild(this.viewHeader);
       this.addChild(this.viewer);

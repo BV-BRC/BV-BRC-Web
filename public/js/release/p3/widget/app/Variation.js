@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/app/templates/Variation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>Variation Analysis\n        <div name=\"overview\" class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n        </div>\n        <div class=\"infobox iconbox tutorialButton tutorialInfo\">\n          <i class=\"fa icon-books fa-1x\" title=\"click to open tutorial\"></i>\n        </div>\n      </h3>\n      <p>The Variation Analysis Service can be used to identify and annotate sequence variations. For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">Variation Analysis Service User Guide</a> and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n    </div>\n    <div class=\"formFieldsContainer\">\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numCondWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <table class=\"assemblyblocks\" style=\"width:100%\">\n        <tr>\n          <td>\n            <div id=\"pairedBox\" class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\"> Paired read library</label>\n                  <div name=\"paired-read-library\" class=\"infobox iconbox infobutton dialoginfo\">\n                    <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                  </div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\">\n                  <i data-dojo-attach-event=\"click:onAddPair\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File 1</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <div data-dojo-attach-point=\"read2block\">\n                  <label class=\"paramlabel\">Read File 2</label><br>\n                  <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n                </div>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">Single read library</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"read\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div class=\"appBox appShadow\" style=\"min-height: 224px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Selected libraries</label>\n                <div name=\"selected-libraries\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n                <div class=\"appsublabel\">Place read files here using the arrow buttons.</div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"libsTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n          </td>\n        </tr>\n        <tr>\n          <td>\n            <div id=\"pipelineBox\" class=\"appBox appShadow\">\n              <div style=\"width:85%;display:inline-block;\">\n                <label class=\"appBoxLabel\">Parameters</label>\n                <div name=\"parameters\" class=\"infobox iconbox infobutton dialoginfo\">\n                  <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Aligner</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" name=\"mapper\" data-dojo-attach-point=\"mapper\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'A strategy must be chosen',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"BWA-mem\">BWA-mem</option>\n                  <option value=\"BWA-mem-strict\">BWA-mem-strict</option>\n                  <option value=\"Bowtie2\">Bowtie2</option>\n                  <option value=\"MOSAIK\">MOSAIK</option>\n                  <option value=\"LAST\">LAST</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">SNP caller</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" name=\"caller\" data-dojo-attach-point=\"caller\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'SNP calling software to use',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"FreeBayes\">FreeBayes</option>\n                  <option value=\"SAMtools\">SAMtools</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appField\">\n                  <label>Target Genome</label><br>\n                  <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"genome_name\" maxHeight=\"200\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"genome_nameWidget\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Folder</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Name</label><span class=\"charError\" style=\"color:red; font-size:8pt; padding-left:10px; font-weight:bold\">&nbsp;</span><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" data-dojo-attach-event=\"onChange:checkOutputName\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n          </td>\n        </tr>\n      </table>\n    </div>\n    <div class=\"appSubmissionArea\">\n      <div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n        Submitting Variation job\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n        Variation job has been queued.\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n        <div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Job</div>\n        <p data-dojo-attach-point=\"errorMessage\">Error</p>\n      </div>\n      <div style=\"margin-top: 10px; text-align:center;\">\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel\n        </div>\n        <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n        <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
+'url:p3/widget/app/templates/Variation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>Variation Analysis\n        <div name=\"overview\" class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n        </div>\n        <div class=\"infobox iconbox tutorialButton tutorialInfo\">\n          <i class=\"fa icon-books fa-1x\" title=\"click to open tutorial\"></i>\n        </div>\n      </h3>\n      <p>The Variation Analysis Service can be used to identify and annotate sequence variations. For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">Variation Analysis Service User Guide</a> and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n    </div>\n    <div class=\"formFieldsContainer\">\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numCondWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <table class=\"assemblyblocks\" style=\"width:100%\">\n        <tr>\n          <td>\n            <div id=\"pairedBox\" class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\"> Paired read library</label>\n                  <div name=\"paired-read-library\" class=\"infobox iconbox infobutton dialoginfo\">\n                    <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                  </div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\">\n                  <i data-dojo-attach-event=\"click:onAddPair\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File 1</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <div data-dojo-attach-point=\"read2block\">\n                  <label class=\"paramlabel\">Read File 2</label><br>\n                  <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n                </div>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">Single read library</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"read\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div class=\"appBox appShadow\" style=\"min-height: 224px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Selected libraries</label>\n                <div name=\"selected-libraries\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n                <div class=\"appsublabel\">Place read files here using the arrow buttons.</div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"libsTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n          </td>\n        </tr>\n        <tr>\n          <td>\n            <div id=\"pipelineBox\" class=\"appBox appShadow\">\n              <div style=\"width:85%;display:inline-block;\">\n                <label class=\"appBoxLabel\">Parameters</label>\n                <div name=\"parameters\" class=\"infobox iconbox infobutton dialoginfo\">\n                  <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Aligner</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" name=\"mapper\" data-dojo-attach-point=\"mapper\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'A strategy must be chosen',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"BWA-mem\">BWA-mem</option>\n                  <option value=\"BWA-mem-strict\">BWA-mem-strict</option>\n                  <option value=\"Bowtie2\">Bowtie2</option>\n                  <option value=\"LAST\">LAST</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">SNP caller</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" name=\"caller\" data-dojo-attach-point=\"caller\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'SNP calling software to use',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"FreeBayes\">FreeBayes</option>\n                  <option value=\"SAMtools\">SAMtools</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appField\">\n                  <label>Target Genome</label><br>\n                  <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"genome_name\" maxHeight=\"200\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"genome_nameWidget\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Folder</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Name</label><span class=\"charError\" style=\"color:red; font-size:8pt; padding-left:10px; font-weight:bold\">&nbsp;</span><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" data-dojo-attach-event=\"onChange:checkOutputName\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n          </td>\n        </tr>\n      </table>\n    </div>\n    <div class=\"appSubmissionArea\">\n      <div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n        Submitting Variation job\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n        Variation job has been queued.\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n        <div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Job</div>\n        <p data-dojo-attach-point=\"errorMessage\">Error</p>\n      </div>\n      <div style=\"margin-top: 10px; text-align:center;\">\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel\n        </div>\n        <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n        <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
 define("p3/widget/app/Variation", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class',
@@ -25,7 +25,7 @@ define("p3/widget/app/Variation", [
     defaultPath: '',
     startingRows: 7,
 
-    listValues:function (obj) {
+    listValues: function (obj) {
       var results = [];
       Object.keys(obj).forEach(function (key) {
         results.append(obj[key]);
@@ -34,24 +34,24 @@ define("p3/widget/app/Variation", [
 
     constructor: function () {
 
-      this.addedLibs = { counter:0 };
-      this.addedCond = { counter:0 };
+      this.addedLibs = { counter: 0 };
+      this.addedCond = { counter: 0 };
       // these objects map dojo attach points to desired alias for ingestAttachPoint function
       // key is attach point array of values is alias
       // if there is no alias the key in the resulting object will be the same name as attach point
-      this.pairToAttachPt1 = { read1:null, read2:null };
-      this.pairConditionToAttachPt = { read1:null, read2:null, condition_paired:['condition'] };
-      this.advPairToAttachPt = { interleaved:null, insert_size_mean:null, insert_size_stdev:null };
-      this.paramToAttachPt = { output_path:null, output_file:null };
-      this.singleToAttachPt = { read:null };
-      this.singleConditionToAttachPt = { read:null, condition_single:['condition'] };
-      this.conditionToAttachPt = { condition:['condition', 'id', 'label'] };
+      this.pairToAttachPt1 = { read1: null, read2: null };
+      this.pairConditionToAttachPt = { read1: null, read2: null, condition_paired: ['condition'] };
+      this.advPairToAttachPt = { interleaved: null, insert_size_mean: null, insert_size_stdev: null };
+      this.paramToAttachPt = { output_path: null, output_file: null };
+      this.singleToAttachPt = { read: null };
+      this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
+      this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
       this.targetGenomeID = '';
       this.shapes = ['icon-square', 'icon-circle'];
       this.colors = ['blue', 'green', 'red', 'purple', 'orange'];
       this.color_counter = 0;
       this.shape_counter = 0;
-      this.libraryStore = new Memory({ data: [], idProperty:'_id' });
+      this.libraryStore = new Memory({ data: [], idProperty: '_id' });
       this.libraryID = 0;
     },
 
@@ -82,27 +82,22 @@ define("p3/widget/app/Variation", [
       this._started = true;
     },
 
-    emptyTable:function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+    emptyTable: function (target, rowLimit) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr =  target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
     },
 
-    getValues:function () {
-      if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function (str) {
-          return this.slice(0, str.length) == str;
-        };
-      }
+    getValues: function () {
       var submit_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ _type:'paired' });
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
-      var singleList = this.libraryStore.query({ _type:'single' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
       var condLibs = [];
       var pairedLibs = [];
       var singleLibs = [];
@@ -112,7 +107,7 @@ define("p3/widget/app/Variation", [
       //     submit_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList);
+      pairedList.concat(singleList);
       submit_values.reference_genome_id = values.genome_name;
       submit_values.mapper = values.mapper;
       submit_values.caller = values.caller;
@@ -219,7 +214,7 @@ define("p3/widget/app/Variation", [
       var label = item.condition + ' ' + item.icon;
       return label;
     },
-    makeLibraryName:function (mode) {
+    makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
         var fn2 = this.read2.searchBox.get('displayedValue');
@@ -242,7 +237,7 @@ define("p3/widget/app/Variation", [
       return 'S(' + fn + ')';
 
     },
-    makeLibraryID:function (mode) {
+    makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
@@ -265,12 +260,12 @@ define("p3/widget/app/Variation", [
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, '_id');
+        this.destroyLibRow(id, '_id');
       }));
     },
 
 
-    makeConditionName:function () {
+    makeConditionName: function () {
       return this.condition.get('displayedValue');
     },
 
@@ -291,18 +286,18 @@ define("p3/widget/app/Variation", [
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { _type:'single' };
+      var lrec = { _type: 'single' };
       var toIngest = this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
-        infoLabels = {
-          read:{ label:'Read File', value:1 }
+        var infoLabels = {
+          read: { label: 'Read File', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'singledata');
       }
     },
 
-    destroyLibRow:function (query_id, id_type) {
+    destroyLibRow: function (query_id, id_type) {
       console.log('Delete Rows');
       var query_obj = {};
       query_obj[id_type] = query_id;
@@ -312,9 +307,9 @@ define("p3/widget/app/Variation", [
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj._handle.remove();
         this.libraryStore.remove(obj._id);
@@ -332,7 +327,7 @@ define("p3/widget/app/Variation", [
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
-      var lrec = { _type:'paired' };
+      var lrec = { _type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
       var pairToIngest = this.pairToAttachPt1;
@@ -340,9 +335,9 @@ define("p3/widget/app/Variation", [
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
       if (chkPassed && lrec.read1 != lrec.read2) {
-        infoLabels = {
-          read1:{ label:'Read1', value:1 },
-          read2:{ label:'Read2', value:1 }
+        var infoLabels = {
+          read1: { label: 'Read1', value: 1 },
+          read2: { label: 'Read2', value: 1 }
         };
         this.addLibraryRow(lrec, infoLabels, 'pairdata');
       }
@@ -399,7 +394,7 @@ define("p3/widget/app/Variation", [
         this.libsTable.deleteRow(-1);
       }
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        this.destroyLibRow(query_id = lrec._id, '_id');
+        this.destroyLibRow(lrec._id, '_id');
       }));
       this.libraryStore.put(lrec);
       lrec._handle = handle;

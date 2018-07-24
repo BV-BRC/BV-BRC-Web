@@ -303,7 +303,6 @@ define([
       this.data.alignment.split('\n').forEach(function (line) {
         if (line.slice(0, 1) == '>') {
           var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
-          var match;
           var headerInfo = regex.exec(line);
           var record = { sequence: [] };
           // console.log("headerInfo ", headerInfo);
@@ -383,7 +382,7 @@ define([
     },
 
     createViewerData: function () {
-      results = {};
+      // results = {};
     },
 
     render: function () {
@@ -424,10 +423,10 @@ define([
       opts.el = msaDiv;
       opts.bootstrapMenu = false;
       if (this.alignType == 'protein') {
-        opts.colorscheme = { scheme:'taylor' };
+        opts.colorscheme = { scheme: 'taylor' };
       }
       else if (this.alignType == 'dna') {
-        opts.colorscheme = { scheme:'nucleotide' };
+        opts.colorscheme = { scheme: 'nucleotide' };
       }
       opts.vis = {
         conserv: false,
@@ -460,9 +459,9 @@ define([
 
       var idMenuDivs = [];
       this.tree.addLabels(this.alt_labels.genome_name, 'Genome Name');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Genome Name' + '">' + 'Genome Name' + '</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
       this.tree.addLabels(this.alt_labels.patric_id, 'Gene ID');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Gene ID' + '">' + 'Gene ID' + '</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Gene ID">Gene ID</div>');
       idMenu.set('content', idMenuDivs.join(''));
 
       this.tree.startup();
@@ -484,35 +483,35 @@ define([
       // var msaDiv = document.getElementById('msaDiv');
       msaDiv.setAttribute('style', 'white-space: nowrap;');
       menuOpts.msa = m;
-      var defMenu = new msa.menu.defaultmenu(menuOpts);
+      new msa.menu.defaultmenu(menuOpts);
 
       on(colorMenu.domNode, 'click', function (evt) {
         var rel = evt.target.attributes.rel.value;
-        var sel = colorMenu.selection;
+        // var sel = colorMenu.selection;
         delete colorMenu.selection;
-        var idType;
+        // var idType;
 
-        var ids = sel.map(function (d, idx) {
-          if (!idType) {
-            if (d.feature_id) {
-              idType = 'feature_id';
-            } else if (d.patric_id) {
-              idType = 'patric_id';
-            } else if (d.alt_locus_tag) {
-              idType = 'alt_locus_tag';
-            }
-            // console.log("SET ID TYPE TO: ", idType)
-          }
+        // var ids = sel.map(function (d, idx) {
+        //   if (!idType) {
+        //     if (d.feature_id) {
+        //       idType = 'feature_id';
+        //     } else if (d.patric_id) {
+        //       idType = 'patric_id';
+        //     } else if (d.alt_locus_tag) {
+        //       idType = 'alt_locus_tag';
+        //     }
+        //     // console.log("SET ID TYPE TO: ", idType)
+        //   }
 
-          return d[idType];
-        });
+        //   return d[idType];
+        // });
         m.g.colorscheme.set('scheme', rel);
         popup.close(colorMenu);
       });
 
       on(idMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
-        var sel = idMenu.selection;
+        // var sel = idMenu.selection;
         delete idMenu.selection;
 
         this.tree.selectLabels(rel);
@@ -521,7 +520,7 @@ define([
 
       on(filterMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
-        var sel = filterMenu.selection;
+        // var sel = filterMenu.selection;
         delete filterMenu.selection;
         var maxLen = m.seqs.getMaxLength();
         // console.log("maxLen=", maxLen);
@@ -674,7 +673,7 @@ define([
 
       on(snapMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
-        var sel = snapMenu.selection;
+
         delete snapMenu.selection;
         if (rel == 'msa') {
           msa.utils.export.saveAsImg(m, 'PATRIC_msa.png');
@@ -712,7 +711,7 @@ define([
       // m.el.parentElement.parentElement.parentElement.insertBefore(menuOpts.el, combineDiv);
 
       // m.el.parentElement.insertBefore(menuOpts.el, combineDiv);
-      var initialHidden = 0;
+      // var initialHidden = 0;
       // var treeDiv2=document.getElementsByClassName("tnt_groupDiv");
       var treeHeight = parseInt(treeDiv.childNodes[0].getAttribute('height'));
       // var msaDiv=document.getElementsByClassName("biojs_msa_stage");
@@ -724,7 +723,7 @@ define([
       msaDiv.style.verticalAlign = 'bottom';
       msaDiv.style.paddingBottom = '10px';
       msaDiv.style.height = (treeHeight + 115).toString() + 'px';
-      treeLoaded = true;
+      // treeLoaded = true;
     },
 
     setTreeType: function (treeType) {
@@ -1028,7 +1027,6 @@ define([
           }
         },
         function (selection) {
-          var sel = selection[0];
           Topic.publish('/navigate', {
             href: '/view/FeatureList/?in(feature_id,(' + selection.map(function (x) {
               return x.feature_id;
@@ -1158,10 +1156,10 @@ define([
             innerHTML: "Tree newick",
             alt: "tree_newick.txt"
           }); */
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">' + 'MSA txt' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-fasta">' + 'MSA fasta' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + 'Tree svg' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + 'Tree newick' + '</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">MSA txt</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-fasta">MSA fasta</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">Tree svg</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">Tree newick</div>');
 
           snapMenu.set('content', snapMenuDivs.join(''));
           snapMenu.selection = selection;

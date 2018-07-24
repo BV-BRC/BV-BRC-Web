@@ -15,8 +15,8 @@ define([
 
       Object.keys(item).sort().forEach(function (key) {
         var tr = domConstruct.create('tr', {}, tbody);
-        var tda = domConstruct.create('td', { innerHTML: key }, tr);
-        var tdb = domConstruct.create('td', { innerHTML: item[key] }, tr);
+        domConstruct.create('td', { innerHTML: key }, tr);
+        domConstruct.create('td', { innerHTML: item[key] }, tr);
       }, this);
 
       return table;
@@ -26,23 +26,23 @@ define([
       options = options || {};
 
       var term;
-      if (item.hasOwnProperty('feature_id')) { // feature
+      if (Object.prototype.hasOwnProperty.call(item, 'feature_id')) { // feature
         var organism = item.genome_name.split(' ').slice(0, -1).join(' ');
         var opts = [];
-        item.hasOwnProperty('product') ? opts.push(item.product) : {};
-        item.hasOwnProperty('patric_id') ? opts.push(item.patric_id) : {};
-        item.hasOwnProperty('gene') ? opts.push(item.gene) : {};
-        item.hasOwnProperty('refseq_locus_tag') ? opts.push(item.refseq_locus_tag) : {};
-        item.hasOwnProperty('protein_id') ? opts.push(item.protein_id) : {};
+        Object.prototype.hasOwnProperty.call(item, 'product') ? opts.push(item.product) : {};
+        Object.prototype.hasOwnProperty.call(item, 'patric_id') ? opts.push(item.patric_id) : {};
+        Object.prototype.hasOwnProperty.call(item, 'gene') ? opts.push(item.gene) : {};
+        Object.prototype.hasOwnProperty.call(item, 'refseq_locus_tag') ? opts.push(item.refseq_locus_tag) : {};
+        Object.prototype.hasOwnProperty.call(item, 'protein_id') ? opts.push(item.protein_id) : {};
 
         term = '("' + organism + '") AND (' + opts.map(function (d) {
           return '"' + d + '"';
         }).join(' OR ') + ')';
       }
-      else if (item.hasOwnProperty('genome_name')) {
+      else if (Object.prototype.hasOwnProperty.call(item, 'genome_name')) {
         term = item.genome_name;
       }
-      else if (item.hasOwnProperty('taxon_name')) {
+      else if (Object.prototype.hasOwnProperty.call(item, 'taxon_name')) {
         term = item.taxon_name;
       } else {
         // item is keyword string
@@ -103,7 +103,7 @@ define([
           }));
 
           // add show more link
-          domConstruct.create('a', { href: 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + term, target:'_blank', innerHTML: 'show more >>' }, div);
+          domConstruct.create('a', { href: 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + term, target: '_blank', innerHTML: 'show more >>' }, div);
         }
         else {
           domConstruct.create('li', { innerHTML: 'No recent articles found.' }, topLevelUl);

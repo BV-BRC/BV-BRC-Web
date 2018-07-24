@@ -13,7 +13,6 @@ define("p3/widget/GroupExplore", [
 ) {
 
   var groupCompare = null;
-  var myHash = null;
   var myURL = null;
   var myType = null;
   var ids = '';
@@ -22,6 +21,106 @@ define("p3/widget/GroupExplore", [
   var groups = [];
   var myPath = null;
   var id_array = [];
+
+  function createRegionName(selectedRegions) {
+    var max_mask = 0;
+    var mask_array = [];
+    var name_array = [];
+    regionName = '';
+    if (groups.length == 2) {
+      max_mask = 3;
+    } else if (groups.length == 3) {
+      max_mask = 7;
+    }
+
+    for (var i = 0, ilen = max_mask; i < ilen; ++i) {
+      mask_array[i] = 0;
+      name_array[i] = '';
+    }
+
+    for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
+      if (i == 0) {
+        regionName = selectedRegions[i].region_name;
+      } else {
+        regionName = '(' + regionName + ') U (' + selectedRegions[i].region_name + ')';
+      }
+      mask_array[selectedRegions[i].region_mask - 1] = 1;
+      name_array[selectedRegions[i].region_mask - 1] = selectedRegions[i].region_name;
+      // console.log("i=" + i + " region_mask=" + selectedRegions[i].region_mask + " name=" +selectedRegions[i].region_name);
+    }
+
+    if (max_mask == 3) {
+      if (mask_array[0] && mask_array[1] && mask_array[2]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
+      } else if (mask_array[0] && mask_array[2]) {
+        regionName = groups[0].name;
+      } else if (mask_array[1] && mask_array[2]) {
+        regionName = groups[1].name;
+      }
+    } else if (max_mask == 7) {
+      var center_name = '(' + groups[0].name + ') + (' + groups[1].name + ') + (' + groups[2].name + ')';
+      if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ') U (' + name_array[1] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[1] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[2].name + ') U (' + name_array[2] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = groups[2].name;
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[1].name + ') U (' + name_array[4] + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
+        regionName = groups[1].name;
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[3] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
+        regionName = '(' + groups[0].name + ') U (' + name_array[5] + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
+        regionName = groups[0].name;
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] == 0
+        && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') - (' + groups[2].name + ')';
+      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] == 0
+        && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ') - (' + groups[1].name + ')';
+      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] == 0 && mask_array[5]
+        && mask_array[6] == 0) {
+        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ') - (' + groups[0].name + ')';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (('
+          + groups[0].name + ') + (' + groups[1].name + ') - (' + groups[2].name + '))';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (('
+          + groups[1].name + ') + (' + groups[2].name + ') - (' + groups[0].name + '))';
+      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0) {
+        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (('
+          + groups[0].name + ') + (' + groups[2].name + ') - (' + groups[1].name + '))';
+      }
+    }
+    return regionName;
+  }
 
   var selectionListener = function () {
     var selected = groupCompare.getSelectedMembers();
@@ -43,7 +142,7 @@ define("p3/widget/GroupExplore", [
       var memberArea = d3.select('#gse-members');
       var memberTable = memberArea.append('div').attr('id', 'gse-members-tbl').attr('style', 'overflow-y:scroll');
       memberTable.append('div').text('Region: ' + regionGroupName).attr('style', 'font-weight: bold');
-      var memberGrid = memberTable.append('div').attr('id', 'gse-members-grid');
+      memberTable.append('div').attr('id', 'gse-members-grid');
 
       console.log('in selectionListener, selected', selected);
       console.log('in selectionListener, region', regions);
@@ -176,106 +275,6 @@ define("p3/widget/GroupExplore", [
     }
   };
 
-  function createRegionName(selectedRegions) {
-    var max_mask = 0;
-    var mask_array = [];
-    var name_array = [];
-    regionName = '';
-    if (groups.length == 2) {
-      max_mask = 3;
-    } else if (groups.length == 3) {
-      max_mask = 7;
-    }
-
-    for (var i = 0, ilen = max_mask; i < ilen; ++i) {
-      mask_array[i] = 0;
-      name_array[i] = '';
-    }
-
-    for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
-      if (i == 0) {
-        regionName = selectedRegions[i].region_name;
-      } else {
-        regionName = '(' + regionName + ') U (' + selectedRegions[i].region_name + ')';
-      }
-      mask_array[selectedRegions[i].region_mask - 1] = 1;
-      name_array[selectedRegions[i].region_mask - 1] = selectedRegions[i].region_name;
-      // console.log("i=" + i + " region_mask=" + selectedRegions[i].region_mask + " name=" +selectedRegions[i].region_name);
-    }
-
-    if (max_mask == 3) {
-      if (mask_array[0] && mask_array[1] && mask_array[2]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
-      } else if (mask_array[0] && mask_array[2]) {
-        regionName = groups[0].name;
-      } else if (mask_array[1] && mask_array[2]) {
-        regionName = groups[1].name;
-      }
-    } else if (max_mask == 7) {
-      var center_name = '(' + groups[0].name + ') + (' + groups[1].name + ') + (' + groups[2].name + ')';
-      if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ') U (' + name_array[1] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[0] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[1] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[2].name + ') U (' + name_array[2] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = groups[2].name;
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[0] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[1].name + ') U (' + name_array[4] + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-        regionName = groups[1].name;
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[1] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[3] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-        regionName = '(' + groups[0].name + ') U (' + name_array[5] + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-        regionName = groups[0].name;
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] == 0
-        && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') - (' + groups[2].name + ')';
-      } else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] == 0
-        && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[2].name + ') - (' + groups[1].name + ')';
-      } else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] == 0 && mask_array[5]
-        && mask_array[6] == 0) {
-        regionName = '(' + groups[1].name + ') U (' + groups[2].name + ') - (' + groups[0].name + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[0].name + ') + (' + groups[1].name + ') - (' + groups[2].name + ')' + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[1].name + ') + (' + groups[2].name + ') - (' + groups[0].name + ')' + ')';
-      } else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0) {
-        regionName = '(' + groups[0].name + ') U (' + groups[1].name + ') U (' + groups[2].name + ') - (' + center_name + ') - (' + '('
-          + groups[0].name + ') + (' + groups[2].name + ') - (' + groups[1].name + ')' + ')';
-      }
-    }
-    return regionName;
-  }
-
   function createGroup() {
     if (regionGroupName && ids.length > 0) {
       var idType = 'genome_id';
@@ -293,7 +292,7 @@ define("p3/widget/GroupExplore", [
       console.log('ids=', id_array);
       console.log('myPath=', myPath);
       WorkspaceManager.createGroup(regionGroupName, myType, myPath, idType, id_array);
-      document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + '/' + regionGroupName + "' target=_blank>" + 'here' + '</a> to view.</b>';
+      document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + '/' + regionGroupName + "' target=_blank>here</a> to view.</b>";
       document.getElementById('create_msg').style = 'color: green';
       // alert("Please refresh the workspace folder to view.");
     } else if (regionGroupName) {
@@ -411,9 +410,20 @@ define("p3/widget/GroupExplore", [
     return replace_svghtml;
   }
 
+  function groupsLoaded(length) {
+    if (length == 1 || length > 3) {
+      alert('Please select two or three groups to compare');
+    } else if (length == 2) {
+      groupCompare.createDisplayTwo();
+      populateGroupTable();
+    } else {
+      groupCompare.createDisplay();
+      populateGroupTable();
+    }
+  }
+
   function init_g(group_data, groupType) {
     groupCompare = null;
-    myHash = null;
     myURL = null;
     myType = null;
     ids = '';
@@ -423,7 +433,6 @@ define("p3/widget/GroupExplore", [
     id_array = [];
 
     myType = groupType;
-    myHash = [];
 
     var gcConfig = {
       vennPanel: 'gse-venndiagram',
@@ -460,18 +469,6 @@ define("p3/widget/GroupExplore", [
     }
     console.log(' groups ', groups);
     groupsLoaded(groups.length);
-  }
-
-  function groupsLoaded(length) {
-    if (length == 1 || length > 3) {
-      alert('Please select two or three groups to compare');
-    } else if (length == 2) {
-      groupCompare.createDisplayTwo();
-      populateGroupTable();
-    } else {
-      groupCompare.createDisplay();
-      populateGroupTable();
-    }
   }
 
   function saveSVG() {
@@ -567,11 +564,10 @@ define("p3/widget/GroupExplore", [
       }));
 
       domConstruct.empty(this.containerNode);
-      var path = '/js/p3/resources/gse.css';
-      var link = domConstruct.create('link', {
+      domConstruct.create('link', {
         rel: 'stylesheet',
         type: 'text/css',
-        href: path
+        href: '/js/p3/resources/gse.css'
       }, this.containerNode, 'last');
 
       var div = domConstruct.create('div', { id: 'gse' }, this.containerNode);
@@ -584,7 +580,7 @@ define("p3/widget/GroupExplore", [
         checked: 'Y',
         style: 'margin: 5px'
       }, div);
-      var color_label1 = domConstruct.create('label', { 'for': 'default', innerHTML: 'default' }, div);
+      domConstruct.create('label', { 'for': 'default', innerHTML: 'default' }, div);
       var color_type2 = domConstruct.create('input', {
         type: 'radio',
         name: 'color_type',
@@ -592,7 +588,7 @@ define("p3/widget/GroupExplore", [
         value: 'false',
         style: 'margin: 5px'
       }, div);
-      var color_label1 = domConstruct.create('label', { 'for': 'default', innerHTML: 'alternative color' }, div);
+      domConstruct.create('label', { 'for': 'default', innerHTML: 'alternative color' }, div);
 
       color_type1.addEventListener('click', function () {
         colorChoice('Y');
@@ -621,12 +617,12 @@ define("p3/widget/GroupExplore", [
         createGroup();
       });
 
-      var div2 = domConstruct.create('div', { id: 'gse-members' }, div);
-      var div1 = domConstruct.create('div', {
+      domConstruct.create('div', { id: 'gse-members' }, div);
+      domConstruct.create('div', {
         id: 'create_msg',
         innerHTML: '<b>Please select one or more regions to view members.</b>'
       }, div);
-      var div3 = domConstruct.create('div', { id: 'gse-venndiagram' }, div);
+      domConstruct.create('div', { id: 'gse-venndiagram' }, div);
     },
 
     startup: function () {

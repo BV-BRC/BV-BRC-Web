@@ -252,7 +252,7 @@ define([
               objs.forEach(function (obj) {
                 var data = JSON.parse(obj.data);
                 data.id_list.genome_id.forEach(function (d) {
-                  if (!genomeIdHash.hasOwnProperty(d)) {
+                  if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
                     genomeIdHash[d] = true;
                   }
                 });
@@ -345,7 +345,7 @@ define([
         var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName() + '</div>';
-        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+        domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
         if (this.addedGenomes < this.startingRows) {
           this.genomeTable.deleteRow(-1);

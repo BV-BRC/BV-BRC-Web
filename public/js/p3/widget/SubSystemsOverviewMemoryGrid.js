@@ -18,52 +18,32 @@ define([
     firstLoad: true,
     establishProps: true,
     selectedClassDictionary: {},
-
     constructor: function () {
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
     superClassColorCodes: {
-      'CELLULAR PROCESSES':                   Theme.colors[0],
-      'MEMBRANE TRANSPORT':                   Theme.colors[1],
-      METABOLISM:                           Theme.colors[2],
-      'REGULATION AND CELL SIGNALING':        Theme.colors[3],
-      'STRESS RESPONSE, DEFENSE, VIRULENCE':  Theme.colors[4],
-      'CELL ENVELOPE':                        Theme.colors[5],
-      'CELLULAR PROCESSES':                   Theme.colors[6],
-      'DNA PROCESSING':                       Theme.colors[7],
-      ENERGY:                               Theme.colors[8],
-      'MEMBRANE TRANSPORT':                   Theme.colors[9],
-      METABOLISM:                           Theme.colors[10],
-      MISCELLANEOUS:                        Theme.colors[11],
-      'PROTEIN PROCESSING':                   Theme.colors[12],
-      'REGULATION AND CELL SIGNALING':        Theme.colors[13],
-      'RNA PROCESSING':                       Theme.colors[14],
-      'STRESS RESPONSE, DEFENSE, VIRULENCE':  Theme.colors[15]
+      'CELLULAR PROCESSES': Theme.colors[0],
+      'MEMBRANE TRANSPORT': Theme.colors[1],
+      'METABOLISM': Theme.colors[2],
+      'REGULATION AND CELL SIGNALING': Theme.colors[3],
+      'STRESS RESPONSE, DEFENSE, VIRULENCE': Theme.colors[4],
+      'CELL ENVELOPE': Theme.colors[5],
+      'CELLULAR PROCESSES': Theme.colors[6],
+      'DNA PROCESSING': Theme.colors[7],
+      'ENERGY': Theme.colors[8],
+      'MISCELLANEOUS': Theme.colors[9],
+      'PROTEIN PROCESSING': Theme.colors[10],
+      'RNA PROCESSING': Theme.colors[11],
+      '': Theme.colors[12]
     },
 
     // x + "Other" as aggregation of what is left over
-    subsystemMaxNumToDisplay: 16,
+    subsystemMaxNumToDisplay: 13,
 
     onSetState: function (attr, oldState, state) {
 
       this.loadingMask.show();
-
-      var ov,
-        nv;
-      if (oldState) {
-        ov = oldState.search;
-        if (oldState.hashParams.filter) {
-          ov += oldState.hashParams.filter;
-        }
-      }
-
-      if (state) {
-        nv = state.search;
-        if (state.hashParams.filter) {
-          nv += state.hashParams.filter;
-        }
-      }
 
       this.state = state;
 
@@ -115,7 +95,7 @@ define([
 
       var radius = Math.min(width, height) / 2 - 50;
 
-      var color = d3.scale.category20();
+      // var color = d3.scale.category20();
 
       var viewBoxWidth = width * 2;
       var viewBoxHeight = height * 2;
@@ -148,7 +128,14 @@ define([
         .value(function (d) { return d.count; })
         .sort(null);
 
-      var path = svg.selectAll('path')
+      var tooltip = d3.select('body')
+        .append('div')
+        .style('position', 'absolute')
+        .style('z-index', '10')
+        .style('background-color', 'white')
+        .style('visibility', 'hidden');
+
+      svg.selectAll('path')
         .data(pie(subsystemData))
         .enter()
         .append('path')
@@ -165,7 +152,7 @@ define([
         .attr('stroke-width', '1px')
         .attr('fill', function (d) {
           // return color(d.data.val + " (" + d.data.count + ")");
-          if (that.superClassColorCodes.hasOwnProperty(d.data.val.toUpperCase())) {
+          if (Object.prototype.hasOwnProperty.call(that.superClassColorCodes, d.data.val.toUpperCase())) {
             return that.superClassColorCodes[d.data.val.toUpperCase()];
           }
 
@@ -175,13 +162,6 @@ define([
         });
 
       this.drawSubsystemLegend(subsystemData, svg, radius, false, false);
-
-      var tooltip = d3.select('body')
-        .append('div')
-        .style('position', 'absolute')
-        .style('z-index', '10')
-        .style('background-color', 'white')
-        .style('visibility', 'hidden');
 
       if (this.genomeView) {
         var summaryBarWidth = width / 4;
@@ -318,9 +298,9 @@ define([
         .attr('fill', 'white')
         .attr('class', 'dgrid-expando-icon ui-icon ui-icon-triangle-1-e')
         .attr('style', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return 'margin-left: 40px';
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return 'margin-left: 20px';
           }
           return 0;
@@ -370,9 +350,9 @@ define([
           }
         })
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return 40;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return 20;
           }
           return 0;
@@ -387,9 +367,9 @@ define([
 
       subsystemslegend.append('rect')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return 40 + legendRectSize;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return 20 + legendRectSize;
           }
           return 0 + legendRectSize;
@@ -404,7 +384,7 @@ define([
           return that.superClassColorCodes[d.colorCodeKey];
         })
         .on('click', function (d) {
-          if (d.hasOwnProperty('classScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -413,9 +393,9 @@ define([
 
       subsystemslegend.append('text')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 40;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 20;
           }
           return legendRectSize + legendRectSize + legendSpacing;
@@ -426,9 +406,9 @@ define([
           return d.val;
         })
         .on('click', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             that.navigateToSubsystemsSubTabSubclass(d);
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -437,9 +417,9 @@ define([
 
       subsystemslegend.append('text')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 40 + this.parentElement.children[3].getComputedTextLength() + 10;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 20 + this.parentElement.children[3].getComputedTextLength() + 10;
           }
           return legendRectSize + legendRectSize + legendSpacing + this.parentElement.children[3].getComputedTextLength() + 10;
@@ -451,9 +431,9 @@ define([
         })
         .style('fill', '#76a72d')
         .on('click', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             that.navigateToSubsystemsSubTabSubclass(d);
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -462,9 +442,9 @@ define([
 
       subsystemslegend.append('text')
         .attr('x', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 40 + this.parentElement.children[3].getComputedTextLength() + this.parentElement.children[4].getComputedTextLength() + 15;
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             return legendRectSize + legendRectSize + legendSpacing + 20 + this.parentElement.children[3].getComputedTextLength() + this.parentElement.children[4].getComputedTextLength() + 15;
           }
           return legendRectSize + legendRectSize + legendSpacing + this.parentElement.children[3].getComputedTextLength() + this.parentElement.children[4].getComputedTextLength() + 15;
@@ -476,9 +456,9 @@ define([
         })
         .style('fill', '#ffcb00')
         .on('click', function (d) {
-          if (d.hasOwnProperty('subclassScope')) {
+          if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
             that.navigateToSubsystemsSubTabSubclass(d);
-          } else if (d.hasOwnProperty('classScope')) {
+          } else if (Object.prototype.hasOwnProperty.call(d, 'classScope')) {
             that.navigateToSubsystemsSubTabClass(d);
           } else {
             that.navigateToSubsystemsSubTabSuperclass(d);
@@ -571,10 +551,10 @@ define([
       var that = this;
 
       All({
-        totalSubsystems:              this.getTotalSubsystems(),
-        totalSubsystemsHypothetical:  this.getTotalSubsystemsHypothetical(),
-        totalGenomes:                 this.getTotalGenomes(),
-        totalGenomesHypothetical:     this.getTotalGenomesHypothetical()
+        totalSubsystems: this.getTotalSubsystems(),
+        totalSubsystemsHypothetical: this.getTotalSubsystemsHypothetical(),
+        totalGenomes: this.getTotalGenomes(),
+        totalGenomesHypothetical: this.getTotalGenomesHypothetical()
       }).then(function (subsystemCoverageData) {
         that.renderSubsystemCoverageData(subsystemCoverageData, width, height);
       });
@@ -592,7 +572,7 @@ define([
       var proportionCovered = (subsystemCoverageData.totalSubsystems / subsystemCoverageData.totalGenomes).toFixed(2);
       var proportionNotCovered = (subsystemCoverageData.totalNotCovered / subsystemCoverageData.totalGenomes).toFixed(2);
 
-      var marginAdjustedTotalbarHeight = height * 0.9;
+      // var marginAdjustedTotalbarHeight = height * 0.9;
       var marginTop = 100;
       // var marginTop = height - marginAdjustedTotalbarHeight - 200;
 
@@ -604,17 +584,15 @@ define([
       var percentCovered = Math.round(proportionCovered * 100);
       var percentNotCovered = Math.round(proportionNotCovered * 100);
 
-      var totalHeight = divHeightCovered + divHeightNotCovered;
+      // var totalHeight = divHeightCovered + divHeightNotCovered;
 
-      var svg = d3.select('#subsystemspiechart svg'),
-        margin = {
-          top: 0, right: 20, bottom: 30, left: 100
-        },
-        // width = +svg.attr("width") - margin.left - margin.right,
-        // height = +svg.attr("height") - margin.top - margin.bottom,
-        g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      var svg = d3.select('#subsystemspiechart svg');
+      var margin = {
+        top: 0, right: 20, bottom: 30, left: 100
+      };
+      svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-      var coveredRect = svg.append('rect')
+      svg.append('rect')
         .attr('x', 120)
         .attr('y', marginTopWithBuffer)
         .attr('width', 50)
@@ -625,7 +603,7 @@ define([
           that.navigateToSubsystemsSubTabFromCoverageBar();
         });
 
-      var notCoveredRect = svg.append('rect')
+      svg.append('rect')
         .attr('x', 120)
         .attr('y', divHeightCovered + marginTopWithBuffer)
         .attr('width', 50)

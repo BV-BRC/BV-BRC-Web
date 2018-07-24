@@ -163,7 +163,7 @@ define([
 
 
     findLabels: function (treeDat, idType, labelType) {
-      _self = this;
+      var _self = this;
       var ids = treeDat.tree.match(/[^(,)]+(?=:)/g);
       var toQuery = [];
       ids.forEach(function (id) {

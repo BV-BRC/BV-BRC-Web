@@ -234,7 +234,7 @@ define([
         },
         function (selection) {
 
-          query = 'and(in(genome_id,(' + this.pfState.genomeIds.join(',') + ')),in(' + this.pfState.familyType + '_id,(' + selection.map(function (s) {
+          var query = 'and(in(genome_id,(' + this.pfState.genomeIds.join(',') + ')),in(' + this.pfState.familyType + '_id,(' + selection.map(function (s) {
             return s.family_id;
           }).join(',') + ')))';
 

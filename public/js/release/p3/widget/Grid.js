@@ -121,12 +121,12 @@ define(
         });
         console.log('store: ', store);
         return store;
-      },
-
-      getFilterPanel: function () {
-        console.log('getFilterPanel()');
-        return FilterPanel;
       }
+
+      // getFilterPanel: function () {
+      //   console.log('getFilterPanel()');
+      //   return FilterPanel;
+      // }
 
     });
 

@@ -89,17 +89,17 @@ define([
       // console.log("Set Active State COMPLETE");
     },
 
-    onSetSpecialtyGeneIds: function (attr, oldVal, genome_ids) {
-      // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
-      this.state.feature_ids = feature_ids;
-      this.setActivePanelState();
-    },
+    // onSetSpecialtyGeneIds: function (attr, oldVal, genome_ids) {
+    // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+    // this.state.feature_ids = feature_ids;
+    // this.setActivePanelState();
+    // },
 
     createOverviewPanel: function (state) {
       return new ContentPane({
         content: 'Overview',
         title: 'Specialty Gene List Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },
@@ -113,7 +113,7 @@ define([
 
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
-        id: this.viewer.id + '_' + 'specialtyGenes',
+        id: this.viewer.id + '_specialtyGenes',
         disabled: false
       });
       this.viewer.addChild(this.specialtyGenes);
@@ -173,7 +173,7 @@ define([
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

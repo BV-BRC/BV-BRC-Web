@@ -29,7 +29,6 @@ define([
       this.submitButton.set('disabled', true);
       var vals = this.getValues();
       vals.id = this.userId;
-      var _self = this;
 
       console.log('Submit Vals: ', vals);
 

@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/app/templates/Rnaseq.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>RNA-Seq Analysis\n        <div name=\"overview\" class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n        </div>\n        <div class=\"infobox iconbox tutorialButton tutorialInfo\">\n          <i class=\"fa icon-books fa-1x\" title=\"click to open tutorial\"></i>\n        </div>\n      </h3>\n      <p>The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data. For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">RNA-Seq Analysis Service User Guide</a>        and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n    </div>\n    <div class=\"formFieldsContainer\">\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numCondWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numContrastWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <table class=\"assemblyblocks\" style=\"width:100%\">\n        <tr>\n          <td>\n            <div id=\"pipelineBox\" class=\"appBox appShadow\">\n              <div style=\"width:85%;display:inline-block;\">\n                <label class=\"appBoxLabel\">Parameters</label>\n                <div name=\"parameters\" class=\"infobox iconbox infobutton dialoginfo\">\n                  <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Strategy</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" name=\"recipe\" data-dojo-attach-point=\"recipe\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"RNA-Rocket\">Tuxedo</option>\n                  <option value=\"Host\">Host HISAT2</option>\n                  <option value=\"Rockhopper\">Rockhopper</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appField\">\n                  <label>Target Genome</label><br>\n                  <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"genome_name\" maxHeight=\"200\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"genome_nameWidget\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Folder</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Name</label><span class=\"charError\" style=\"color:red; font-size:8pt; padding-left:10px; font-weight:bold\">&nbsp;</span><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" data-dojo-attach-event=\"onChange:checkOutputName\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div id=\"conditionbox\" class=\"appBox appShadow\" style=\"min-height: 217px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Groups/Conditions</label>\n                <div name=\"groups-conditions\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <!--<div class=\"mblSwRoundShape1\" style=\"margin-bottom:10px\" data-dojo-attach-point=\"exp_design\" data-dojo-attach-event=\"stateChanged:onDesignToggle\" data-dojo-props=\"value:'off'\" style=\"font-size: 13px; width: 80px;\" data-dojo-type=\"dojox/mobile/Switch\"></div>-->\n                <div style=\"margin-left:10px\" data-dojo-attach-point=\"group_switch\" class=\"onoffswitch\">\n                  <input type=\"checkbox\" value=\"off\" name=\"onoffswitch\" class=\"onoffswitch-checkbox\" data-dojo-attach-point=\"exp_design\">\n                  <label class=\"onoffswitch-label\">\n                    <span class=\"onoffswitch-inner\"></span>\n                    <span class=\"onoffswitch-switch\"></span>\n                  </label>\n                </div>\n              </div>\n              <div class=\"appRow\" style=\"width:270px; padding-left:10px; padding-right:40px;\" data-dojo-attach-point=\"advrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"condition\" data-dojo-attach-point=\"condition\" required=\"false\" data-dojo-props=\"disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'\"></div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddCondition\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"condTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"condTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n        <tr>\n          <td>\n            <div id=\"pairedBox\" class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\"> Paired read library</label>\n                  <div name=\"paired-read-library\" class=\"infobox iconbox infobutton dialoginfo\">\n                    <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                  </div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddPair\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File 1</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <div data-dojo-attach-point=\"read2block\">\n                  <label class=\"paramlabel\">Read File 2</label><br>\n                  <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_paired\" data-dojo-attach-point=\"condition_paired\" style=\"width:300px\" required=\"false\" data-dojo-props=\"disabled: true,labelType:'html', searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">Single read library</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"read\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_single\" data-dojo-attach-point=\"condition_single\" style=\"width:300px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div class=\"appBox appShadow\" style=\"min-height: 320px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Selected libraries</label>\n                <div name=\"selected-libraries\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n                <div class=\"appsublabel\">Place read files here using the arrow buttons.</div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"libsTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n          </td>\n        </tr>\n        <tr>\n          <td colspan=\"2\">\n            <div class=\"appBox appShadow\" style=\"padding-left: 38px; min-height: 217px; height:auto; width:660px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Contrasts </label>\n                <div name=\"contrastinfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-info-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appRowSegment\" style=\"text-align: left;\">\n                  <label class=\"paramlabel\">Condition 1</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd1\" data-dojo-attach-point=\"contrast_cd1\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div class=\"appRowSegment\" style=\"text-align: left\">\n                  <label class=\"paramlabel\">Condition 2</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd2\" data-dojo-attach-point=\"contrast_cd2\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div style=\"width:10%;display:inline-block;margin-left:10px\"><i data-dojo-attach-event=\"click:onAddContrast\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"contrastTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"contrastTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n      </table>\n    </div>\n    <div class=\"appSubmissionArea\">\n      <div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n        Submitting RNA-Seq job\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n        RNA-Seq job has been queued.\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n        <div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Assembly Job</div>\n        <p data-dojo-attach-point=\"errorMessage\">Error</p>\n      </div>\n      <div style=\"margin-top: 10px; text-align:center;\">\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel\n        </div>\n        <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n        <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
+'url:p3/widget/app/templates/Rnaseq.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>RNA-Seq Analysis\n        <div name=\"overview\" class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n        </div>\n        <div class=\"infobox iconbox tutorialButton tutorialInfo\">\n          <i class=\"fa icon-books fa-1x\" title=\"click to open tutorial\"></i>\n        </div>\n      </h3>\n      <p>The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data. For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">RNA-Seq Analysis Service User Guide</a>        and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n    </div>\n    <div class=\"formFieldsContainer\">\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numCondWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numContrastWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <table class=\"assemblyblocks\" style=\"width:100%\">\n        <tr>\n          <td>\n            <div id=\"pipelineBox\" class=\"appBox appShadow\">\n              <div style=\"width:85%;display:inline-block;\">\n                <label class=\"appBoxLabel\">Parameters</label>\n                <div name=\"parameters\" class=\"infobox iconbox infobutton dialoginfo\">\n                  <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Strategy</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" name=\"recipe\" data-dojo-attach-point=\"recipe\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"RNA-Rocket\">Tuxedo</option>\n                  <option value=\"Host\">Host HISAT2</option>\n                  <option value=\"Rockhopper\">Rockhopper</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appField\">\n                  <label>Target Genome</label><br>\n                  <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"genome_name\" maxHeight=\"200\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"genome_nameWidget\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Folder</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Name</label><span class=\"charError\" style=\"color:red; font-size:8pt; padding-left:10px; font-weight:bold\">&nbsp;</span><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" data-dojo-attach-event=\"onChange:checkOutputName\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div id=\"conditionbox\" class=\"appBox appShadow\" style=\"min-height: 217px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Groups/Conditions</label>\n                <div name=\"groups-conditions\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <!--<div class=\"mblSwRoundShape1\" style=\"margin-bottom:10px\" data-dojo-attach-point=\"exp_design\" data-dojo-attach-event=\"stateChanged:onDesignToggle\" data-dojo-props=\"value:'off'\" style=\"font-size: 13px; width: 80px;\" data-dojo-type=\"dojox/mobile/Switch\"></div>-->\n                <div style=\"margin-left:10px\" data-dojo-attach-point=\"group_switch\" class=\"onoffswitch\">\n                  <input type=\"checkbox\" value=\"off\" name=\"onoffswitch\" class=\"onoffswitch-checkbox\" data-dojo-attach-point=\"exp_design\">\n                  <label class=\"onoffswitch-label\">\n                    <span class=\"onoffswitch-inner\"></span>\n                    <span class=\"onoffswitch-switch\"></span>\n                  </label>\n                </div>\n              </div>\n              <div class=\"appRow\" style=\"width:270px; padding-left:10px; padding-right:40px;\" data-dojo-attach-point=\"advrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"condition\" data-dojo-attach-point=\"condition\" required=\"false\" data-dojo-props=\"disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'\"></div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddCondition\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"condTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"condTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n        <tr>\n          <td>\n            <div id=\"pairedBox\" class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\"> Paired read library</label>\n                  <div name=\"paired-read-library\" class=\"infobox iconbox infobutton dialoginfo\">\n                    <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                  </div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddPair\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File 1</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <div data-dojo-attach-point=\"read2block\">\n                  <label class=\"paramlabel\">Read File 2</label><br>\n                  <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_paired\" data-dojo-attach-point=\"condition_paired\" style=\"width:300px\" required=\"false\" data-dojo-props=\"disabled: true,labelType:'html', searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">Single read library</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"read\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_single\" data-dojo-attach-point=\"condition_single\" style=\"width:300px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div class=\"appBox appShadow\" style=\"min-height: 320px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Selected libraries</label>\n                <div name=\"selected-libraries\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n                <div class=\"appsublabel\">Place read files here using the arrow buttons.</div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"libsTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n          </td>\n        </tr>\n        <tr>\n          <td colspan=\"2\">\n            <div class=\"appBox appShadow\" style=\"padding-left: 38px; min-height: 217px; height:auto; width:660px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Contrasts </label>\n                <div name=\"contrastinfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-info-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appRowSegment\" style=\"text-align: left;\">\n                  <label class=\"paramlabel\">Condition 1</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd1\" data-dojo-attach-point=\"contrast_cd1\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div class=\"appRowSegment\" style=\"text-align: left\">\n                  <label class=\"paramlabel\">Condition 2</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd2\" data-dojo-attach-point=\"contrast_cd2\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div style=\"width:10%;display:inline-block;margin-left:10px\"><i data-dojo-attach-event=\"click:onAddContrast\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"contrastTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"contrastTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n      </table>\n    </div>\n    <div class=\"appSubmissionArea\">\n      <div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n        Submitting RNA-Seq job\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n        RNA-Seq job has been queued.\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n        <div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Assembly Job</div>\n        <p data-dojo-attach-point=\"errorMessage\">Error</p>\n      </div>\n      <div style=\"margin-top: 10px; text-align:center;\">\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel\n        </div>\n        <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n        <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
 define("p3/widget/app/Rnaseq", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class',
@@ -31,7 +31,7 @@ define("p3/widget/app/Rnaseq", [
     maxContrasts: 100,
     conditionStore: null,
     hostGenomes: {
-      9606.33:'', 6239.6:'', 7955.5:'', 7227.4:'', 9031.4:'', 9544.2:'', 10090.24:'', 9669.1:'', 10116.5:'', 9823.5:''
+      9606.33: '', 6239.6: '', 7955.5: '', 7227.4: '', 9031.4: '', 9544.2: '', 10090.24: '', 9669.1: '', 10116.5: '', 9823.5: ''
     },
 
     listValues: function (obj) {
@@ -56,7 +56,7 @@ define("p3/widget/app/Rnaseq", [
       this.singleToAttachPt = { read: null };
       this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
       this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
-      this.contrastToAttachPt = { contrast_cd1: ['condition1'], contrast_cd2:['condition2'] };
+      this.contrastToAttachPt = { contrast_cd1: ['condition1'], contrast_cd2: ['condition2'] };
       this.targetGenomeID = '';
       this.shapes = ['icon-square', 'icon-circle'];
       this.colors = ['blue', 'green', 'red', 'purple', 'orange'];
@@ -65,7 +65,7 @@ define("p3/widget/app/Rnaseq", [
       this.conditionStore = new Memory({ data: [] });
       this.contrastStore = new Memory({ data: [] });
       this.activeConditionStore = new Memory({ data: [] }); // used to store conditions with more than 0 libraries assigned
-      this.libraryStore = new Memory({ data: [], idProperty:'id' });
+      this.libraryStore = new Memory({ data: [], idProperty: 'id' });
       this.libraryID = 0;
     },
 
@@ -91,7 +91,7 @@ define("p3/widget/app/Rnaseq", [
             (this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
         });
       }));
-      var handle = on(this.group_switch, 'click', lang.hitch(this, function (evt) {
+      on(this.group_switch, 'click', lang.hitch(this, function (evt) {
         this.exp_design.checked = !this.exp_design.checked;
         this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
         this.onDesignToggle();
@@ -120,40 +120,35 @@ define("p3/widget/app/Rnaseq", [
       if (disable) {
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
-        this.destroyLib(lrec = {}, query_id = true, id_type = 'design');
-        dojo.addClass(this.condTable, 'disabled');
+        this.destroyLib({}, true, 'design');
+        domClass.add(this.condTable, 'disabled');
         this.numContrastWidget.set('value', Number(1));
-        this.destroyContrastRow(query_id = true, id_type = 'contrast');
-        dojo.addClass(this.contrastTable, 'disabled');
+        this.destroyContrastRow(true, 'contrast');
+        domClass.add(this.contrastTable, 'disabled');
       }
       else {
         // this.block_condition.hide();
         this.numCondWidget.set('value', Number(this.addedCond.counter));
-        this.destroyLib(lrec = {}, query_id = false, id_type = 'design');
-        dojo.removeClass(this.condTable, 'disabled');
+        this.destroyLib({}, false, 'design');
+        domClass.remove(this.condTable, 'disabled');
         this.numContrastWidget.set('value', Number(this.addedContrast.counter));
-        this.destroyContrastRow(query_id = false, id_type = 'contrast');
+        this.destroyContrastRow(false, 'contrast');
         if (this.contrastEnabled) {
-          dojo.removeClass(this.contrastTable, 'disabled');
+          domClass.remove(this.contrastTable, 'disabled');
         }
       }
     },
 
     emptyTable: function (target, rowLimit, colNum) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        for (j = 0; j < colNum; j++) {
+        for (var j = 0; j < colNum; j++) {
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         }
       }
     },
 
     getValues: function () {
-      if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function (str) {
-          return this.slice(0, str.length) == str;
-        };
-      }
       var assembly_values = {};
       var values = this.inherited(arguments);
       var pairedList = this.libraryStore.query({ type: 'paired' });
@@ -296,7 +291,7 @@ define("p3/widget/app/Rnaseq", [
       var label = item.condition + ' ' + item.icon;
       return label;
     },
-    makeLibraryName:function (mode) {
+    makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
         var fn2 = this.read2.searchBox.get('displayedValue');
@@ -319,7 +314,7 @@ define("p3/widget/app/Rnaseq", [
       return 'S(' + fn + ')';
 
     },
-    makeStoreID:function (mode) {
+    makeStoreID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
@@ -345,7 +340,7 @@ define("p3/widget/app/Rnaseq", [
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLib(lrec = {}, query_id = id, 'id');
+        this.destroyLib({}, id, 'id');
       }));
     },
 
@@ -383,13 +378,13 @@ define("p3/widget/app/Rnaseq", [
 
     onAddCondition: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { count:0 }; // initialized to the number of libraries assigned
+      var lrec = { count: 0 }; // initialized to the number of libraries assigned
       var toIngest = this.conditionToAttachPt;
       var disable = !this.exp_design.checked;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       var conditionSize = this.conditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
-        this.updateConditionStore(record = lrec, remove = false);
+        this.updateConditionStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
       if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length) {
@@ -398,7 +393,7 @@ define("p3/widget/app/Rnaseq", [
         var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
         td.libRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName(this.condition.get('displayedValue')) + '</div>';
-        var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
         var td2 = domConstruct.create('td', {
           'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
@@ -410,15 +405,15 @@ define("p3/widget/app/Rnaseq", [
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
-          this.destroyLib(lrec, query_id = lrec.condition, id_type = 'condition');
+          this.destroyLib(lrec, lrec.condition, 'condition');
           // this.destroyContrastRow(query_id = lrec["condition"]);
-          this.updateConditionStore(record = lrec, remove = true);
+          this.updateConditionStore(lrec, true);
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
           if (this.addedCond.counter < this.maxConditions) {
             var ntr = this.condTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           this.condition_single.reset();
           this.condition_paired.reset();
@@ -438,7 +433,7 @@ define("p3/widget/app/Rnaseq", [
         // remove condition from data store
         toRemove.forEach(function (obj) {
           if (obj.libraries) {
-            libraries.forEach(function (lib_row) {
+            obj.libraries.forEach(function (lib_row) {
               lib_row.remove();
             });
           }
@@ -464,7 +459,7 @@ define("p3/widget/app/Rnaseq", [
         // remove condition from data store
         toRemove.forEach(function (obj) {
           if (obj.contrasts) {
-            contrasts.forEach(function (contrast_row) {
+            obj.contrasts.forEach(function (contrast_row) {
               contrast_row.remove();
             });
           }
@@ -478,12 +473,12 @@ define("p3/widget/app/Rnaseq", [
 
     onAddContrast: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { type:'contrast' };
+      var lrec = { type: 'contrast' };
       var disable = !this.exp_design.checked;
       var chkPassed = this.ingestAttachPoints(this.contrastToAttachPt, lrec);
       var contrastSize = this.contrastStore.data.length;
       if (this.addedContrast.counter < this.maxContrasts) {
-        this.updateContrastStore(record = lrec, remove = false);
+        this.updateContrastStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
       if (chkPassed && !disable && this.addedContrast.counter < this.maxContrasts && contrastSize < this.contrastStore.data.length) {
@@ -496,11 +491,11 @@ define("p3/widget/app/Rnaseq", [
 
         var td_cd1 = domConstruct.create('td', { 'class': 'conditiondata', innerHTML: '' }, tr);
         td_cd1.innerHTML = "<div class='contrastrow'>" + this.makeConditionName(condition1) + '</div>';
-        var tdinfo1 = domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon1 }, tr);
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon1 }, tr);
 
         var td_cd2 = domConstruct.create('td', { 'class': 'conditiondata', innerHTML: '' }, tr);
         td_cd2.innerHTML = "<div class='contrastrow'>" + this.makeConditionName(condition2) + '</div>';
-        var tdinfo2 = domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon2 }, tr);
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon2 }, tr);
 
         var tdx = domConstruct.create('td', { 'class': 'iconcol', innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
         if (this.addedContrast.counter < this.initContrasts) {
@@ -510,18 +505,18 @@ define("p3/widget/app/Rnaseq", [
         var handle = on(tdx, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
-          this.updateContrastStore(record = lrec, remove = true);
+          this.updateContrastStore(lrec, true);
           this.decreaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
           if (this.addedContrast.counter < this.maxContrasts) {
             var ntr = this.condTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd4 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd5 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.destroyContrastRow(query_id = lrec.contrast, id_type = 'contrast');
+          this.destroyContrastRow(lrec.contrast, 'contrast');
         }));
         this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
       }
@@ -531,7 +526,7 @@ define("p3/widget/app/Rnaseq", [
     createLib: function (lrec) {
       this.libraryStore.put(lrec);
       if (lrec.condition) {
-        var query_obj = { id:lrec.condition };
+        var query_obj = { id: lrec.condition };
         var toUpdate = this.conditionStore.query(query_obj);
         toUpdate.forEach(function (obj) {
           obj.count += 1;
@@ -543,7 +538,7 @@ define("p3/widget/app/Rnaseq", [
     destroyLib: function (lrec, query_id, id_type) {
       this.destroyLibRow(query_id, id_type);
       if (lrec.condition) {
-        var query_obj = { id:lrec.condition };
+        var query_obj = { id: lrec.condition };
         var toUpdate = this.conditionStore.query(query_obj);
         toUpdate.forEach(function (obj) {
           obj.count -= 1;
@@ -563,7 +558,7 @@ define("p3/widget/app/Rnaseq", [
         // var disableConditions = this.conditionStore.query({"count":0});
         var disableConditions = this.conditionStore.query(function (obj) { return obj.count == 0; });
         var enableConditions = this.conditionStore.query(function (obj) { return obj.count > 0; });
-        var newOptions = [];
+
         disableConditions.forEach(lang.hitch(this, function (obj) {
           // disable in contrast_cd widget
           this.activeConditionStore.remove(obj.id); // used to store conditions with more than 0 libraries assigned
@@ -581,7 +576,7 @@ define("p3/widget/app/Rnaseq", [
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { type:'single' };
+      var lrec = { type: 'single' };
       var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
@@ -595,10 +590,10 @@ define("p3/widget/app/Rnaseq", [
           advPairInfo.push('Condition:' + lrec.condition);
         }
         if (advPairInfo.length) {
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-          var ihandle = new Tooltip({
+          new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
           });
@@ -615,7 +610,7 @@ define("p3/widget/app/Rnaseq", [
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLib(lrec, query_id = lrec.id, 'id');
+          this.destroyLib(lrec, lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.createLib(lrec);
@@ -634,9 +629,9 @@ define("p3/widget/app/Rnaseq", [
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         obj.handle.remove();
         this.libraryStore.remove(obj.id);
@@ -656,11 +651,11 @@ define("p3/widget/app/Rnaseq", [
           this.decreaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
           if (this.addedContrast.counter < this.initContrasts) {
             var ntr = this.contrastTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd4 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd5 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           this.contrastStore.remove(obj.id);
         }, this);
@@ -672,13 +667,13 @@ define("p3/widget/app/Rnaseq", [
       if (this.genome_nameWidget.value in this.hostGenomes) {
         var newOptions = [
           {
-            label:'Tuxedo', value:'RNA-Rocket', selected:false, disabled:true
+            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: true
           },
           {
-            label:'Host HISAT2', value:'Host', selected:true, disabled:false
+            label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
           },
           {
-            label:'Rockhopper', value:'Rockhopper', selected:false, disabled:true
+            label: 'Rockhopper', value: 'Rockhopper', selected: false, disabled: true
           }];
         this.recipe.set('options', newOptions).reset();
         this.recipe.set('value', 'Host');
@@ -686,13 +681,13 @@ define("p3/widget/app/Rnaseq", [
       else {
         var newOptions = [
           {
-            label:'Tuxedo', value:'RNA-Rocket', selected:false, disabled:false
+            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
           },
           {
-            label:'Host HISAT2', value:'Host', selected:false, disabled:true
+            label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
           },
           {
-            label:'Rockhopper', value:'Rockhopper', selected:true, disabled:false
+            label: 'Rockhopper', value: 'Rockhopper', selected: true, disabled: false
           }];
         this.recipe.set('options', newOptions).reset();
         if (curRecipe == 'RNA-Rocket') {
@@ -708,7 +703,7 @@ define("p3/widget/app/Rnaseq", [
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
-      var lrec = { type:'paired' };
+      var lrec = { type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
       var pairToIngest = this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
@@ -727,9 +722,9 @@ define("p3/widget/app/Rnaseq", [
         }
         if (advPairInfo.length) {
           lrec.design = true;
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-          var ihandle = new Tooltip({
+          new Tooltip({
             connectId: [tdinfo],
             label: advPairInfo.join('</br>')
           });
@@ -746,7 +741,7 @@ define("p3/widget/app/Rnaseq", [
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLib(lrec, query_id = lrec.id, 'id');
+          this.destroyLib(lrec, lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.createLib(lrec);

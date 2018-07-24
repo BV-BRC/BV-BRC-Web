@@ -53,7 +53,7 @@ define([
       });
 
       // sort based on the columns defined elsewhere on the UI
-      columns = this.grid.columns;
+      var columns = this.grid.columns;
       var key_list = Array.from(Object.keys(columns));
 
       // filter out blacklisted columns
@@ -85,7 +85,7 @@ define([
       clean_selection.forEach(function (obj) {
         var io = [];
         key_list.forEach(function (col_key) {
-          key = columns[col_key].field;
+          var key = columns[col_key].field;
           if (obj[key] instanceof Array) {
             io.push(obj[key].join(';'));
           } else {
@@ -103,7 +103,7 @@ define([
       // format the text
       var includeHeader;
       var selectedOnly;
-      var pkOnly;
+      // var pkOnly;
       switch (type) {
         case 'full_w_header':
           includeHeader = true;
@@ -160,7 +160,7 @@ define([
       var tData = this.tableCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
       // spacer
       domConstruct.create('td', { style: 'width:10px;' }, tr);
-      var oData = this.otherCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
+      this.otherCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
 
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_w_header', innerHTML: 'Full Table (with headers)' }, tData);
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_wo_header', innerHTML: 'Full Table (without headers)' }, tData);
@@ -168,7 +168,7 @@ define([
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_wo_header', innerHTML: 'Selected Columns (without headers)' }, tData);
 
       tr = domConstruct.create('tr', {}, table);
-      var td = domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
+      domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
 
       this.set('content', dstContent);
 

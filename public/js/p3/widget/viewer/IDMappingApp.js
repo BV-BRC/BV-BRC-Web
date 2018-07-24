@@ -24,7 +24,7 @@ define([
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         var key = arguments[0];
-        summary = { total:0, found:0, mapped:0 };
+        var summary = { total: 0, found: 0, mapped: 0 };
         if (arguments.length > 1) {
           summary = arguments[1];
         }
@@ -74,12 +74,12 @@ define([
         region: 'top'
       });
 
-      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader', style:{ 'padding-left':'20px' } });
+      var headerContent = domConstruct.create('div', { 'class': 'PerspectiveHeader', style: { 'padding-left': '20px' } });
       domConstruct.place(headerContent, this.viewerHeader.containerNode, 'last');
       this.totalCountNode = domConstruct.create('span', {
         'class': 'PerspectiveTotalCount',
         innerHTML: '( loading... )',
-        style: { color:'black' }
+        style: { color: 'black' }
       }, headerContent);
 
       var gsStore = new ResultMemoryStore({

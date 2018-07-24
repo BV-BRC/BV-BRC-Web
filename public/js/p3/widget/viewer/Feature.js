@@ -164,16 +164,16 @@ define([
       }));
 
       var content = [];
-      if (feature.hasOwnProperty('patric_id')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'patric_id')) {
         content.push(feature.patric_id);
       }
-      if (feature.hasOwnProperty('refseq_locus_tag')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
         content.push(feature.refseq_locus_tag);
       }
-      if (feature.hasOwnProperty('gene')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'gene')) {
         content.push(feature.gene);
       }
-      if (feature.hasOwnProperty('product')) {
+      if (Object.prototype.hasOwnProperty.call(feature, 'product')) {
         content.push(feature.product);
       }
 
@@ -187,8 +187,10 @@ define([
       if (feature.annotation === 'PATRIC') {
         this.set('feature', feature);
       } else {
-        if (feature.hasOwnProperty('pos_group')) {
-          xhr.get(PathJoin(this.apiServiceUrl, '/genome_feature/?and(eq(annotation,PATRIC),eq(pos_group,' + encodeURIComponent('"' + feature.pos_group + '"') + '))'), {
+        if (Object.prototype.hasOwnProperty.call(feature, 'sequence_id')
+            && Object.prototype.hasOwnProperty.call(feature, 'end')
+            && Object.prototype.hasOwnProperty.call(feature, 'strand')) {
+          xhr.get(PathJoin(this.apiServiceUrl, '/genome_feature/?and(eq(annotation,PATRIC),eq(sequence_id,' + feature.sequence_id + '),eq(end,' + feature.end + '),eq(strand,' + encodeURIComponent('"' + feature.strand + '"') + '))'), {
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
@@ -229,7 +231,7 @@ define([
       this.overview = new FeatureOverview({
         content: 'Overview',
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
 
       this.genomeBrowser = new GenomeBrowser({

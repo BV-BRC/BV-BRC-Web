@@ -105,7 +105,7 @@ define([
 
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -206,16 +206,16 @@ define([
 
       }), lang.hitch(this, function (response) {
 
-        var docs = [];
-        var props = {
-          subsystems_overview: 'subsystem_id'
-        };
+        // var docs = [];
+        // var props = {
+        //   subsystems_overview: 'subsystem_id'
+        // };
 
         // flat queries return a different data format
         if ( response && response.facets ) {
           var buckets = response.facets.stat.buckets;
 
-          _self.setData(buckets);
+          _self.setData(buckets.filter(function (row) { return row.val !== ''; }));
           _self._loaded = true;
           return true;
         }

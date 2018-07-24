@@ -166,7 +166,7 @@ define([
           duration: 50000
         });
 
-        var prom = DataAPI.setGenomePermissions(ids, newPerms).then(function (res) {
+        DataAPI.setGenomePermissions(ids, newPerms).then(function (res) {
           self.refreshSummary();
 
           Topic.publish('/Notification', {

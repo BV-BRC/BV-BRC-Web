@@ -182,7 +182,7 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
             Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
             break;
           case 'heatmapOrdering':
-            if (self.hasOwnProperty('originalPmState') ) {
+            if (Object.prototype.hasOwnProperty.call(self, 'originalPmState') ) {
               Topic.publish('SubSystemMap', 'requestHeatmapData', self.originalPmState);
             } else {
               Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
@@ -291,7 +291,7 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
       }), function (response) {
         var featureSet = {};
         response.response.docs.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });
@@ -335,7 +335,7 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
 
         var featureSet = {};
         response.response.docs.forEach(function (d) {
-          if (!featureSet.hasOwnProperty(d.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureSet, d.feature_id)) {
             featureSet[d.feature_id] = true;
           }
         });
@@ -355,9 +355,10 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
       var gfs = this.pmState.genomeFilterStatus;
 
       var genomeName = gfs[genomeId].getLabel();
-      var description = '',
-        memberCount = 0,
-        index = 0;
+      /*
+      var description = '';
+      var memberCount = 0;
+      var index = 0;
 
       if (isTransposed) {
         // rows: families, columns: genomes
@@ -381,6 +382,7 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
           }
         });
       }
+      */
 
       var text = [];
 
@@ -545,7 +547,7 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
 
         var dlg = new Dialog({ title: 'Add This Feature To Group' });
         var stg = new SelectionToGroup({
-          selection: features.map(function (f) { return { feature_id:f }; }),
+          selection: features.map(function (f) { return { feature_id: f }; }),
           type: 'feature_group'
         });
         on(dlg.domNode, 'dialogAction', function (evt) {
@@ -646,7 +648,10 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
       }
 
       for (var fakeColumnName in that.clusterHeaderDictionary) {
-        header.push(fakeColumnName);
+        // guard-for-in
+        if (Object.prototype.hasOwnProperty.call(that.clusterHeaderDictionary, fakeColumnName)) {
+          header.push(fakeColumnName);
+        }
       }
 
       tablePass.push(header.join('\t'));

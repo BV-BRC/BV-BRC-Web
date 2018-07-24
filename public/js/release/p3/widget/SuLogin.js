@@ -44,8 +44,8 @@ define("p3/widget/SuLogin", [
       // this.submitButton.set('disabled', true);
       var vals = this.getValues();
       vals.username = localStorage.getItem('userid');
-      console.log(vals);
-      var _self = this;
+      // console.log(vals);
+
       var userServiceURL = window.App.userServiceURL;
       userServiceURL.replace(/\/+$/, '');
       var def = xhr.post(userServiceURL + '/authenticate/sulogin', {
@@ -54,7 +54,7 @@ define("p3/widget/SuLogin", [
         // headers: { 'Content-Type': 'application/json' }
       });
       def.then(function (data) {
-        console.log(data);
+        // console.log(data);
         // set the localStorage variables
         localStorage.setItem('Aauth', localStorage.getItem('auth'));
         localStorage.setItem('Atokenstring', localStorage.getItem('tokenstring'));
@@ -83,14 +83,14 @@ define("p3/widget/SuLogin", [
     },
     constructor: function () {
       var wrongRole = true;
-      console.log(window.location.href);
+      // console.log(window.location.href);
       var auth = localStorage.getItem('auth');
       auth = JSON.parse(auth);
       if (auth.roles !== null && auth.roles !== undefined) {
         if (auth.roles.includes('admin')) {
           wrongRole = false;
         }
-        console.log(auth.roles);
+        // console.log(auth.roles);
       }
       var suLogged = localStorage.getItem('Aauth');
       suLogged = JSON.parse(suLogged);
@@ -114,7 +114,7 @@ define("p3/widget/SuLogin", [
       this.submitButton.set('disabled', true);
       var suLogged = localStorage.getItem('Aauth');
       suLogged = JSON.parse(suLogged);
-      console.log(suLogged);
+      // console.log(suLogged);
       if (suLogged !== null && suLogged !== undefined) {
         if (suLogged.roles !== undefined) {
           if (suLogged.roles.includes('admin')) {

@@ -41,9 +41,9 @@ define("p3/widget/app/ComparativePathway", [
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);
-        var td = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        var td3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
       this.numlibs.startup();
       this._started = true;
@@ -96,7 +96,7 @@ define("p3/widget/app/ComparativePathway", [
 
       td.libRecord = lrec;
       td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + '</div>';
-      var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+      domConstruct.create('td', { innerHTML: '' }, tr);
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x'/>" }, tr);
 
       if (this.addedLibs < this.startingRows) {
@@ -107,9 +107,9 @@ define("p3/widget/app/ComparativePathway", [
         this.decreaseLib(lrec);
         if (this.addedLibs < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
-          var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
       }));
@@ -130,7 +130,7 @@ define("p3/widget/app/ComparativePathway", [
         objs.forEach(function (obj) {
           var data = JSON.parse(obj.data);
           data.id_list.genome_id.forEach(function (d) {
-            if (!genomeIdHash.hasOwnProperty(d)) {
+            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
               genomeIdHash[d] = true;
             }
           });
@@ -144,8 +144,8 @@ define("p3/widget/app/ComparativePathway", [
         var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
 
         td.libRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)' + '</div>';
-        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+        td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)</div>';
+        domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x'/>" }, tr);
 
         if (this.addedLibs < this.startingRows) {
@@ -156,9 +156,9 @@ define("p3/widget/app/ComparativePathway", [
           this.decreaseLib(lrec);
           if (this.addedLibs < this.startingRows) {
             var ntr = this.libsTable.insertRow(-1);
-            var ntd = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd2 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            var ntd3 = domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
         }));
@@ -172,7 +172,7 @@ define("p3/widget/app/ComparativePathway", [
         var values = this.getValues();
 
         var filter;
-        if (values.hasOwnProperty('keyword') && values.keyword !== '') {
+        if (Object.prototype.hasOwnProperty.call(values, 'keyword') && values.keyword !== '') {
           switch (values.search_on) {
             case 'keyword':
               filter = '&filter=and(eq(annotation,PATRIC),keyword(' + encodeURIComponent(values.keyword) + '))';

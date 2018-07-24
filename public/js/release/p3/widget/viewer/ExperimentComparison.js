@@ -110,7 +110,7 @@ define("p3/widget/viewer/ExperimentComparison", [
     createOverviewPanel: function (state) {
       return new ContentPane({
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview',
+        id: this.viewer.id + '_overview',
         state: this.state
       });
     },
@@ -137,7 +137,7 @@ define("p3/widget/viewer/ExperimentComparison", [
         this.comparisons = new TranscriptomicsComparisonGridContainer({
           title: 'Comparisons',
           enableFilterPanel: false,
-          id: this.viewer.id + '_' + 'comparisons',
+          id: this.viewer.id + '_comparisons',
           disabled: false
         });
 

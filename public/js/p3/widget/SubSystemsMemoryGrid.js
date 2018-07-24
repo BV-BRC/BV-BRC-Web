@@ -47,37 +47,37 @@ define([
     updateColumnHiddenState: function () {
       var _self = this;
       var multipleGenomes;
-      if (this.state.hasOwnProperty('taxon_id') || ( this.state.hasOwnProperty('genome_ids') && this.state.genome_ids.length > 1) ) {
+      if (Object.prototype.hasOwnProperty.call(this.state, 'taxon_id') || ( Object.prototype.hasOwnProperty.call(this.state, 'genome_ids') && this.state.genome_ids.length > 1) ) {
         multipleGenomes = true;
       } else {
         multipleGenomes = false;
       }
       if (multipleGenomes) {
 
-        if (_self.columns.hasOwnProperty('active')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'active')) {
           _self.toggleColumnHiddenState('active', true);
         }
-        if (_self.columns.hasOwnProperty('refseq_locus_tag')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'refseq_locus_tag')) {
           _self.toggleColumnHiddenState('refseq_locus_tag', false);
         }
-        if (_self.columns.hasOwnProperty('genome_id')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'genome_id')) {
           _self.toggleColumnHiddenState('genome_id', false);
         }
-        if (_self.columns.hasOwnProperty('genome_name')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'genome_name')) {
           _self.toggleColumnHiddenState('genome_name', false);
         }
       } else {
 
-        if (_self.columns.hasOwnProperty('active')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'active')) {
           _self.toggleColumnHiddenState('active', false);
         }
-        if (_self.columns.hasOwnProperty('refseq_locus_tag')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'refseq_locus_tag')) {
           _self.toggleColumnHiddenState('refseq_locus_tag', true);
         }
-        if (_self.columns.hasOwnProperty('genome_id')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'genome_id')) {
           _self.toggleColumnHiddenState('genome_id', true);
         }
-        if (_self.columns.hasOwnProperty('genome_name')) {
+        if (Object.prototype.hasOwnProperty.call(_self.columns, 'genome_name')) {
           _self.toggleColumnHiddenState('genome_name', true);
         }
       }

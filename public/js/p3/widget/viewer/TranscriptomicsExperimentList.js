@@ -128,14 +128,14 @@ define([
       // this.overview = this.createOverviewPanel(this.state);
       this.experiments = new TranscriptomicsExperimentGridContainer({
         title: 'Experiments',
-        id: this.viewer.id + '_' + 'experiments',
+        id: this.viewer.id + '_experiments',
         disabled: false
       });
 
       this.comparisons = new TranscriptomicsComparisonGridContainer({
         title: 'Comparisons',
         enableFilterPanel: false,
-        id: this.viewer.id + '_' + 'comparisons',
+        id: this.viewer.id + '_comparisons',
         disabled: false
       });
 

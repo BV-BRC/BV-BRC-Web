@@ -40,7 +40,7 @@ define("p3/widget/GridContainer", [
       return d.feature_id;
     });
     delete viewMSATT.selection;
-    var idType;
+    // var idType;
 
     Topic.publish('/navigate', { href: '/view/MSA/' + rel + '/?in(feature_id,(' + ids.map(encodeURIComponent).join(',') + '))', target: 'blank' });
   });
@@ -427,7 +427,10 @@ define("p3/widget/GridContainer", [
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
+          Topic.publish('/navigate', {
+            href: '/view/Feature/' + sel.feature_id + '#view_tab=overview',
+            target: 'blank'
+          });
         },
         false
       ], [
@@ -458,7 +461,6 @@ define("p3/widget/GridContainer", [
           }
         },
         function (selection) {
-          var sel = selection[0];
           Topic.publish('/navigate', {
             href: '/view/FeatureList/?in(feature_id,(' + selection.map(function (x) {
               return x.feature_id;
@@ -490,7 +492,10 @@ define("p3/widget/GridContainer", [
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id });
+          Topic.publish('/navigate', {
+            href: '/view/Feature/' + sel.feature_id,
+            target: 'blank'
+          });
           // console.log("View SP GENE: ", sel)
           // Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
         },
@@ -1101,7 +1106,6 @@ define("p3/widget/GridContainer", [
           multiple: true,
           validTypes: ['*'],
           requireAuth: true,
-          max: 50,
           tooltip: 'Share genome(s) with other users',
           validContainerTypes: ['genome_data']
         },

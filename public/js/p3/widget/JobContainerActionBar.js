@@ -263,13 +263,16 @@ define([
 
       // organize options by app count
       for (var k in info) {
-        var facet = {
-          label: formatter.serviceLabel(k) + ' (' + info[k] + ')',
-          value: k,
-          count: info[k]
-        };
-        if (k == self.filters.app) facet.selected = true;
-        apps.push(facet);
+        // guard-for-in
+        if (Object.prototype.hasOwnProperty.call(info, k)) {
+          var facet = {
+            label: formatter.serviceLabel(k) + ' (' + info[k] + ')',
+            value: k,
+            count: info[k]
+          };
+          if (k == self.filters.app) facet.selected = true;
+          apps.push(facet);
+        }
       }
       apps.sort(function (a, b) { return b.count - a.count; });
 

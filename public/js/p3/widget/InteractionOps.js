@@ -71,7 +71,7 @@ define([], function () {
   this.getSubGraphs = function (cy, minSize) {
     var boolGetLargestMode = false;
     var selectedEles = {};
-    var rootNodes = getUniqueRootNodes(cy);
+    var rootNodes = this.getUniqueRootNodes(cy);
 
     if (typeof (minSize) == 'undefined' || minSize == 'max') {
       boolGetLargestMode = true;
@@ -138,11 +138,11 @@ define([], function () {
         var connectedNodes = {};
         node.connectedEdges().forEach(function (edge) {
           if (node.same(edge.source())) {
-            if (!connectedNodes.hasOwnProperty(edge.target().data('id'))) {
+            if (!Object.prototype.hasOwnProperty.call(connectedNodes, edge.target().data('id'))) {
               connectedNodes[edge.target().data('id')] = true;
             }
           } else if (node.same(edge.target())) {
-            if (!connectedNodes.hasOwnProperty(edge.source().data('id'))) {
+            if (!Object.prototype.hasOwnProperty.call(connectedNodes, edge.source().data('id'))) {
               connectedNodes[edge.source().data('id')] = true;
             }
           }

@@ -1,13 +1,14 @@
 define([
   'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry',
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', 'dgrid/extensions/ColumnHider',
-  'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang',
+  'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/dom-construct',
   'dojo/topic', 'dgrid/editor', 'dijit/Menu', 'dijit/MenuItem', '../WorkspaceManager', 'dojo/on', 'dijit/form/TextBox'
 ], function (
   declare, Grid, Store, DijitRegistry,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
-  Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox
+  Deferred, aspect, lang, domConstruct,
+  Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox
 ) {
   return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
     columns: {
@@ -92,7 +93,7 @@ define([
     constructor: function () {
       this.dndParams.creator = lang.hitch(this, function (item, hint) {
         // console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
-        var avatar = dojo.create('div', {
+        var avatar = domConstruct.create('div', {
           innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
         });
         avatar.data = item;
@@ -254,12 +255,12 @@ define([
       });
       // console.log("store: ", store);
       return store;
-    },
-
-    getFilterPanel: function () {
-      // console.log("getFilterPanel()");
-      return FilterPanel;
     }
+
+    // getFilterPanel: function () {
+    //   // console.log("getFilterPanel()");
+    //   return FilterPanel;
+    // }
 
   });
 

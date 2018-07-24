@@ -64,7 +64,7 @@ define("p3/store/BlastResultMemoryStore", [
         return this.inherited(arguments);
       }
       return when(this.loadData(), lang.hitch(this, function () {
-        return this.get(id, options);
+        return this.get(id, opts);
       }));
 
     },
@@ -246,7 +246,7 @@ define("p3/store/BlastResultMemoryStore", [
       var entries = [];
       hits.forEach(function (hit) {
         var target_id = hit.description[0].id;
-        var m = metadata.hasOwnProperty(target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', 'function': '' };
+        var m = Object.prototype.hasOwnProperty.call(metadata, target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', 'function': '' };
         var entry = {
           qseqid: query_id,
           sseqid: target_id,
@@ -271,7 +271,7 @@ define("p3/store/BlastResultMemoryStore", [
           }
         };
         if (this.type === 'genome_feature') {
-          if (features.hasOwnProperty(target_id)) {
+          if (Object.prototype.hasOwnProperty.call(features, target_id)) {
             entry.feature_id = features[target_id].feature_id;
             entry = lang.mixin(entry, features[target_id]);
           } else if (target_id.indexOf('gi|') > -1) {
@@ -283,14 +283,14 @@ define("p3/store/BlastResultMemoryStore", [
           }
         } else if (this.type === 'genome_sequence') {
           target_id = target_id.replace('accn|', '');
-          if (features.hasOwnProperty(target_id)) {
+          if (Object.prototype.hasOwnProperty.call(features, target_id)) {
             entry.genome_id = features[target_id].genome_id;
             entry = lang.mixin(entry, features[target_id]);
           } else {
             console.log('missing id: ', target_id);
           }
         } else if (this.type === 'specialty_genes') {
-          if (metadata.hasOwnProperty(target_id)) {
+          if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
             var m = metadata[target_id];
             var org = hit.description[0].title.match(/\[(.*)\]/)[1];
             entry = lang.mixin(entry, { database: m.locus_tag, source_id: m.alt_locus_tag, organism: org });

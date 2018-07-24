@@ -108,7 +108,7 @@ define([
 
       this.specialtyVFGenes = new SpecialtyVFGeneGridContainer({
         title: 'Specialty Genes',
-        id: this.viewer.id + '_' + 'specialtyVFGenes',
+        id: this.viewer.id + '_specialtyVFGenes',
         disabled: false
       });
       this.viewer.addChild(this.specialtyVFGenes);
@@ -168,7 +168,7 @@ define([
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

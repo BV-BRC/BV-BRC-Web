@@ -52,7 +52,7 @@ define([
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -134,26 +134,26 @@ define([
         var genesSelected = {};
 
         features.forEach(function (f) {
-          if (!pathwayNameMap.hasOwnProperty(f.pathway_id)) {
+          if (!Object.prototype.hasOwnProperty.call(pathwayNameMap, f.pathway_id)) {
             pathwayNameMap[f.pathway_id] = f.pathway_name;
           }
-          if (!pathwayFeatureMap.hasOwnProperty(f.pathway_id)) {
+          if (!Object.prototype.hasOwnProperty.call(pathwayFeatureMap, f.pathway_id)) {
             pathwayFeatureMap[f.pathway_id] = {};
-            if (!pathwayFeatureMap[f.pathway_id].hasOwnProperty(f.feature_id)) {
+            if (!Object.prototype.hasOwnProperty.call(pathwayFeatureMap[f.pathway_id], f.feature_id)) {
               pathwayFeatureMap[f.pathway_id][f.feature_id] = true;
             }
           } else {
-            if (!pathwayFeatureMap[f.pathway_id].hasOwnProperty(f.feature_id)) {
+            if (!Object.prototype.hasOwnProperty.call(pathwayFeatureMap[f.pathway_id], f.feature_id)) {
               pathwayFeatureMap[f.pathway_id][f.feature_id] = true;
             }
           }
-          if (!genomeIdMap.hasOwnProperty(f.genome_id)) {
+          if (!Object.prototype.hasOwnProperty.call(genomeIdMap, f.genome_id)) {
             genomeIdMap[f.genome_id] = true;
           }
-          if (!pathwayIdMap.hasOwnProperty(f.pathway_id)) {
+          if (!Object.prototype.hasOwnProperty.call(pathwayIdMap, f.pathway_id)) {
             pathwayIdMap[f.pathway_id] = true;
           }
-          if (!featureIdMap.hasOwnProperty(f.feature_id)) {
+          if (!Object.prototype.hasOwnProperty.call(featureIdMap, f.feature_id)) {
             featureIdMap[f.feature_id] = true;
           }
         });

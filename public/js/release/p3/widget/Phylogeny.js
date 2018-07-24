@@ -5,7 +5,7 @@ define("p3/widget/Phylogeny", [
   'dijit/form/DropDownButton', 'dijit/DropDownMenu', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', './SelectionToGroup',
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
-  './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer',
+  './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
   'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic'
 ], function (
   declare, PhyloTree, TreeNavSVG,
@@ -14,7 +14,7 @@ define("p3/widget/Phylogeny", [
   DropDownButton, DropDownMenu,
   Button, MenuItem, TooltipDialog, popup,
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
-  ActionBar, ContainerActionBar, BorderContainer,
+  ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
   ContentPane, domClass, on, Topic
 ) {
 
@@ -108,7 +108,7 @@ define("p3/widget/Phylogeny", [
       this.setupActions();
       on(idMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
-        var sel = idMenu.selection;
+        // var sel = idMenu.selection;
         delete idMenu.selection;
 
         this.tree.selectLabels(rel);
@@ -117,7 +117,7 @@ define("p3/widget/Phylogeny", [
 
       on(snapMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
-        var sel = snapMenu.selection;
+        // var sel = snapMenu.selection;
         delete snapMenu.selection;
         if (rel == 'tree-svg') {
           // console.log("this...",this);
@@ -210,7 +210,7 @@ define("p3/widget/Phylogeny", [
         this.set('labels', treeDat.labels);
       }
       if (treeDat.info) {
-        headerParts = [];
+        var headerParts = [];
         if (treeDat.info.taxon_name && treeDat.info.taxon_name != 'unknown') {
           headerParts.push(treeDat.info.taxon_name);
         }
@@ -247,12 +247,12 @@ define("p3/widget/Phylogeny", [
       var idMenuDivs = [];
       if (this.labels) {
         this.tree.setTree(this.newick, this.labels, 'Organism Names');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Organism Names' + '">' + 'Organism Names' + '</div>');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Default ID' + '">' + 'Genome ID' + '</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Organism Names">Organism Names</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
       }
       else {
         this.tree.setTree(this.newick);
-        idMenuDivs.push('<div class="wsActionTooltip" rel="' + 'Default ID' + '">' + 'Genome ID' + '</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
       }
       idMenu.set('content', idMenuDivs.join(''));
       this.tree.startup();
@@ -494,8 +494,8 @@ define("p3/widget/Phylogeny", [
           // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
           var snapMenuDivs = [];
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">' + 'Tree svg' + '</div>');
-          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">' + 'Tree newick' + '</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">Tree svg</div>');
+          snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">Tree newick</div>');
 
           snapMenu.set('content', snapMenuDivs.join(''));
           snapMenu.selection = selection;
