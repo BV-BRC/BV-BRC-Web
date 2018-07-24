@@ -1,8 +1,7 @@
-var fs = require('fs');
-var nconf = require('nconf');
-var path = require('path');
+const nconf = require('nconf');
+const path = require('path');
 
-var defaults = {
+const defaults = {
   'http_port': 3000,
   'application_id': 'patric3',
   'p3_clientId': 'patric3',
@@ -27,14 +26,14 @@ var defaults = {
     'defaultFrom': 'PATRIC <do-not-reply@patricbrc.org>',
     'defaultSender': 'PATRIC <do-not-reply@patricbrc.org>',
     'host': '',
-    'port':587
+    'port': 587
   },
   proxy: {
     'brcdownloads': 'http://brcdownloads.patricbrc.org'
   }
 };
 
-var config_filename = 'p3-web.conf';
-var config_file = path.join(__dirname, config_filename);
+const config_filename = 'p3-web.conf';
+const config_file = path.join(__dirname, config_filename);
 
 module.exports = nconf.argv().env().file(config_file).defaults(defaults);
