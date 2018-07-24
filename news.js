@@ -8,7 +8,7 @@ function GetNews() {
   console.log('Refreshing News from RSS Feed');
   var news = [];
   var req = request(conf.get('newsFeedRSS'));
-  feedparser = new FeedParser([]);
+  var feedparser = new FeedParser([]);
 
   req.on('error', function (error) {
     // handle any request errors
@@ -27,9 +27,9 @@ function GetNews() {
 
   feedparser.on('readable', function () {
     // This is where the action is!
-    var stream = this,
-      meta = this.meta, // **NOTE** the "meta" is always available in the context of the feedparser instance
-      item;
+    var stream = this;
+    // meta = this.meta, // **NOTE** the "meta" is always available in the context of the feedparser instance
+    var item;
 
     while (item = stream.read()) {
       news.push(item);
