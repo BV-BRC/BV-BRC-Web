@@ -775,7 +775,7 @@ define("p3/widget/FilterContainerActionBar", [
         }
         // console.log("Missing Facet Data In Response.  Index: ", idx," Url: ", url, " Response: ", res);
         // console.log("Missing data for facet query: ", q)
-        throw new Error('Missing Facet Data In Response');
+        // throw new Error('Missing Facet Data In Response');
 
       }, function (err) {
         console.error('XHR Error with Facet Request  ' + idx + '. There was an error retreiving facets from: ' + url);

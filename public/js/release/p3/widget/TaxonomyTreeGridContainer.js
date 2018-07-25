@@ -44,6 +44,7 @@ define("p3/widget/TaxonomyTreeGridContainer", [
     enableFilterPanel: false,
     dataModel: 'taxonomy',
     containerType: 'taxonomy_data',
+    tutorialLink: 'user_guides/organisms_taxon/taxonomy.html',
     tooltip: 'The "Taxonomy" tab provides taxonomy subtree for the current taxon level',
     onSetState: function (attr, oldState, state) {
       // console.log("GridContainer onSetState: ", state, " oldState:", oldState);

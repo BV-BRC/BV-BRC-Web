@@ -56,6 +56,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
   return declare([GridContainer], {
     gridCtor: PathwaysGrid,
     containerType: 'pathway_data',
+    tutorialLink: 'user_guides/organisms_taxon/pathways.html',
     defaultFilter: 'eq(annotation,%22PATRIC%22)',
     facetFields: ['annotation'],
     enableFilterPanel: true,

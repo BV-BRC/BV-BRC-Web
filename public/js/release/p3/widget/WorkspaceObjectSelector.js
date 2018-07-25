@@ -224,7 +224,7 @@ define("p3/widget/WorkspaceObjectSelector", [
           val.path == this.path
       );
 
-      if(val == '*N/A*') {
+      if (val == '*N/A*') {
         this.selValNode.innerHTML =
           '<span class="selectedDest"><b>' + this.selectionText +
           ':</b> (you must select a workspace or folder)</span>';
@@ -327,7 +327,7 @@ define("p3/widget/WorkspaceObjectSelector", [
       domConstr.place(createWSBtn, buttonContainer);
       domConstr.place(createFolderBtn, buttonContainer);
 
-      if (this.path.split('/').length <= 3) {
+      if (this.path.split('/').length <= 2) {
         domClass.add(query('[rel="createFolder"]', wrap)[0], 'dijitHidden');
         if (this.allowUpload)
         { domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden'); }
@@ -799,7 +799,7 @@ define("p3/widget/WorkspaceObjectSelector", [
         self.set('selection', '');
       });
 
-      console.log('selfpath', self.path)
+      console.log('selfpath', self.path);
       if (this.autoSelectCurrent) {
         var sel = self.sanitizeSelection(self.path);
 

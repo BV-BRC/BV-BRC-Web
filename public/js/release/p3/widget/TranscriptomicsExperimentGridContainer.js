@@ -21,6 +21,7 @@ define("p3/widget/TranscriptomicsExperimentGridContainer", [
   return declare([GridContainer], {
     gridCtor: Grid,
     containerType: 'transcriptomics_experiment_data',
+    tutorialLink: 'user_guides/organisms_taxon/experiments_comparisons_tables.html',
     facetFields: ['organism', 'strain', 'mutant', 'condition', 'timeseries'],
     maxGenomeCount: 5000,
     dataModel: 'transcriptomics_experiment',

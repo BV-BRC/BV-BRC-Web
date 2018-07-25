@@ -22,6 +22,7 @@ define("p3/widget/FeatureGridContainer", [
   return declare([GridContainer], {
     gridCtor: FeatureGrid,
     containerType: 'feature_data',
+    tutorialLink: 'user_guides/organisms_taxon/features.html',
     facetFields: ['public', 'annotation', 'feature_type'],
     filter: '',
     maxGenomeCount: 10000,

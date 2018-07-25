@@ -51,6 +51,8 @@ define("p3/widget/Phylogeny", [
     apiServer: window.App.dataAPI,
     phylogram: true,
     containerType: 'genome_data',
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/organisms_taxon/phylogeny.html',
     selection: null,
     tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
     startup: function () {
@@ -339,6 +341,20 @@ define("p3/widget/Phylogeny", [
               domClass.add(node, 'icon-chevron-circle-right');
             });
           }
+        },
+        true
+      ], [
+        'UserGuide',
+        'fa icon-question-circle-o fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        function (selection, container) {
+          // console.log('USER GUIDE action', container);
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
         },
         true
       ],

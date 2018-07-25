@@ -46,6 +46,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
   return declare([GridContainer], {
     gridCtor: ProteinFamiliesGrid,
     containerType: 'proteinfamily_data',
+    tutorialLink: 'user_guides/organisms_taxon/protein_families.html',
     facetFields: [],
     maxGenomeCount: 500,
     showAutoFilterMessage: false,

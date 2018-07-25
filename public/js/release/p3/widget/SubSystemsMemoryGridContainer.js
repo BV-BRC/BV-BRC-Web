@@ -85,6 +85,7 @@ define("p3/widget/SubSystemsMemoryGridContainer", [
   return declare([GridContainer], {
     gridCtor: SubSystemsGrid,
     containerType: 'subsystem_data',
+    tutorialLink: 'user_guides/organisms_taxon/subsystems_tab.html',
     enableFilterPanel: true,
     apiServer: window.App.dataServiceURL,
     store: null,
