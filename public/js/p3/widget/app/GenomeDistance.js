@@ -34,7 +34,7 @@ define([
 
         this.fasta = new WorkspaceObjectSelector();
         // console.log("default path: ", this.defaultPath);
-        this.fasta.set('path', this.defaultPath);
+        // this.fasta.set('path', this.defaultPath);
         this.fasta.set('type', ['contigs', 'reads']);
         this.fasta.set('required', false);
         this.fasta.on('change', lang.hitch(this, 'onFastaChange'));
