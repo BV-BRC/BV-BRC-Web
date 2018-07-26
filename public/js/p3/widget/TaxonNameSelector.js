@@ -38,7 +38,7 @@ define([
 
       var orig = this.store.query;
       this.store.query = lang.hitch(this.store, function (query, options) {
-        console.log('query: ', query);
+        // console.log('query: ', query);
         // console.log("Store Headers: ", _self.store.headers);
         var q = '?q=';
         var extraSearch = [];
@@ -95,7 +95,7 @@ define([
         }
         // var re = new RegExp("\\s+","gi");
         // q=q.replace(re,"+"); //hack appropriate web api handling spaces
-        console.log('Q: ', q);
+        // console.log('Q: ', q);
         return orig.apply(_self.store, [q, options]);
       });
     },
