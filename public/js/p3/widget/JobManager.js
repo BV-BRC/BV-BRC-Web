@@ -134,9 +134,12 @@ define([
         function (selection) {
           var sel = selection[0];
 
+          var descriptRequired = sel.status !== 'failed';
+
           try {
             var content =
-              '\n[Please feel free to add any additional information regarding this issue here.]\n\n\n' +
+              (descriptRequired ? '' :
+                '\n[Please feel free to add any additional information regarding this issue here.]\n\n\n') +
               '********************** JOB INFO *************************\n\n' +
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
@@ -158,7 +161,9 @@ define([
             type: 'reportProblem',
             params: {
               issueText: content,
-              issueSubject: 'Reporting Issue with ' + sel.app
+              issueSubject: 'Reporting Issue with ' + sel.app,
+              jobDescriptRequired: descriptRequired,
+              jobStatus: sel.status
             }
           });
         },
