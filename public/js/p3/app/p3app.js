@@ -498,16 +498,15 @@ define([
       } else {
         suLink[0].style.display = 'none';
       }
-      if (Aauth) {
-        if (Aauth.roles && Aauth.roles instanceof Array) {
-          if (Aauth.roles.includes('admin')) {
-            sbLink[0].style.display = 'block';
-          } else {
-            sbLink[0].style.display = 'none';
-          }
+      // condition for suSwitchBack button
+      if (Aauth && Aauth.roles) {
+        if (Aauth.roles.includes('admin')) {
+          sbLink[0].style.display = 'block';
         } else {
           sbLink[0].style.display = 'none';
         }
+      } else {
+        sbLink[0].style.display = 'none';
       }
     },
     suSwitchBack: function () {
