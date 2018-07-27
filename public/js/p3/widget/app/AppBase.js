@@ -47,7 +47,7 @@ define([
             // var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
             // basic flat child workaround for getting help in safari. will break if nested.
             var help_text = null;
-            for (i = 0; i < this.help_doc.childNodes.length; i++) {
+            for (var i = 0; i < this.help_doc.childNodes.length; i++) {
               if (this.help_doc.childNodes[i].id == item.attributes.name.value) {
                 help_text = this.help_doc.childNodes[i];
               }
@@ -55,7 +55,7 @@ define([
             help_text = help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom('<div>Help text missing</div>');
             help_text.style.overflowY = 'auto';
             help_text.style.maxHeight = '400px';
-            if (dojo.hasClass(item, 'dialoginfo')) {
+            if (domClass.contains(item, 'dialoginfo')) {
               item.info_dialog = new Dialog({
                 content: help_text,
                 'class': 'helpModal',
@@ -74,7 +74,7 @@ define([
                 }
               });
             }
-            else if (dojo.hasClass(item, 'tooltipinfo')) {
+            else if (domClass.contains(item, 'tooltipinfo')) {
               item.info_dialog = new TooltipDialog({
                 content: help_text,
                 'class': 'helpTooltip',
@@ -100,7 +100,7 @@ define([
       var tutorials = query('.tutorialButton');
       var tutorialLink = PathJoin(this.docsServiceURL, (this.tutorialLink || 'tutorial/'));
       tutorials.forEach(function (item) {
-        if (dojo.hasClass(item, 'tutorialInfo')) {
+        if (domClass.contains(item, 'tutorialInfo')) {
           on(item, 'click', function () {
             // console.log(tutorialLink)
             window.open(tutorialLink, 'Tutorials');

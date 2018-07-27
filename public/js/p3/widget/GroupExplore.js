@@ -13,7 +13,6 @@ define([
 ) {
 
   var groupCompare = null;
-  // var myHash = null;
   var myURL = null;
   var myType = null;
   var ids = '';
@@ -425,7 +424,6 @@ define([
 
   function init_g(group_data, groupType) {
     groupCompare = null;
-    myHash = null;
     myURL = null;
     myType = null;
     ids = '';
@@ -435,7 +433,6 @@ define([
     id_array = [];
 
     myType = groupType;
-    myHash = [];
 
     var gcConfig = {
       vennPanel: 'gse-venndiagram',

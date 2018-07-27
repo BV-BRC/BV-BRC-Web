@@ -70,7 +70,7 @@ define([
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -99,12 +99,11 @@ define([
 
     },
     findFailure: function (fromIdValue, toId) {
-      _self = this;
-      _self.summary.found = 0;
+      this.summary.found = 0;
       var data = [];
-      _self.expandNoMap(data);
-      _self.setData(data);
-      _self._loaded = true;
+      this.expandNoMap(data);
+      this.setData(data);
+      this._loaded = true;
       return true;
     },
 

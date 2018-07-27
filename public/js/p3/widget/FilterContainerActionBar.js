@@ -142,17 +142,10 @@ define([
 
     _refresh: function () {
       // console.log("Refresh FilterContainerActionBar");
-      // var parsedQuery = {};
       var parsedFilter = {};
       var state = this.get('state') || {};
 
       // console.log("Refresh State: ", state);
-
-      if (state.search) {
-        // console.log("state.search: ", state.search)
-        parsedQuery = parseQuery(state.search);
-
-      }
 
       if (state && state.hashParams && state.hashParams.filter) {
         // console.log("_refresh() state.hashParams.filter: ", state.hashParams.filter);
@@ -165,7 +158,6 @@ define([
         // console.log("CALL _set(filter): ", state.hashParams.filter)
         this._set('filter', state.hashParams.filter);
       }
-      // console.log("Parsed Query: ", parsedQuery);
       // console.log("Parsed Filter: ", parsedFilter);
 
       this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length > 0) ? parsedFilter.keywords.join(' ') : '');
@@ -758,7 +750,7 @@ define([
       // console.log(idx, " q: ", query);
       // console.log(idx, " Facets: ", f);
 
-      // var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
+      var url = this.apiServer + '/' + this.dataModel + '/' + q + '&limit(1)' + f;
       var q = ((q && q.charAt && (q.charAt(0) == '?')) ? q.substr(1) : q) + '&limit(1)' + f;
       // console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
@@ -783,7 +775,7 @@ define([
         }
         // console.log("Missing Facet Data In Response.  Index: ", idx," Url: ", url, " Response: ", res);
         // console.log("Missing data for facet query: ", q)
-        throw new Error('Missing Facet Data In Response');
+        // throw new Error('Missing Facet Data In Response');
 
       }, function (err) {
         console.error('XHR Error with Facet Request  ' + idx + '. There was an error retreiving facets from: ' + url);

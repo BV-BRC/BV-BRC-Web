@@ -207,9 +207,9 @@ define([
         priorityChange = false;
       }
 
-      if (typeof text != 'undefined') {
-        text = text.replace(/ /g, '%20');
-      }
+      // if (typeof text != 'undefined') {
+      //   text = text.replace(/ /g, '%20');
+      // }
       if (priorityChange) {
         return;
       }

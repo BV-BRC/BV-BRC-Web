@@ -47,7 +47,7 @@ define([
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
-      for (i = 0; i < this.startingRows; i++) {
+      for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
@@ -292,7 +292,7 @@ define([
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, '_id');
+        this.destroyLibRow(id, '_id');
       }));
     },
     // counter is a widget for requirements checking
@@ -316,7 +316,7 @@ define([
       var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
       this.ingestAttachPoints(this.advSingleToAttachPt, lrec, false);
       if (chkPassed) {
-        infoLabels = {
+        var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
         };
@@ -338,17 +338,17 @@ define([
       this.srr_accession.set('disabled', true);
       xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
         .then(lang.hitch(this, function (xml_resp) {
-          resp = xmlParser.parse(xml_resp).documentElement;
+          var resp = xmlParser.parse(xml_resp).documentElement;
           this.srr_accession.set('disabled', false);
           try {
-            title = resp.children[0].childNodes[3].innerHTML;
+            var title = resp.children[0].childNodes[3].innerHTML;
 
             this.srr_accession.set('state', '');
             var lrec = { _type: 'srr_accession', title: title };
 
             var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
             if (chkPassed) {
-              infoLabels = {
+              var infoLabels = {
                 title: { label: 'Title', value: 1 }
               };
               this.addLibraryRow(lrec, infoLabels, 'srrdata');
@@ -395,7 +395,7 @@ define([
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       this.ingestAttachPoints(this.advPairToAttachPt, lrec, false);
       if (chkPassed) {
-        infoLabels = {
+        var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read1: { label: 'Read1', value: 1 },
           read2: { label: 'Read2', value: 1 },
@@ -467,7 +467,7 @@ define([
         this.libsTable.deleteRow(-1);
       }
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        this.destroyLibRow(query_id = lrec._id, '_id');
+        this.destroyLibRow(lrec._id, '_id');
       }));
       this.libraryStore.put(lrec);
       lrec._handle = handle;

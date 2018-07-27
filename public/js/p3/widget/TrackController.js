@@ -138,7 +138,7 @@ define([
           var lines = this.result.trim().split(/[\r\n]/g);
           if (lines) {
             lines.map(function (item) {
-              tabs = item.split('\t');
+              var tabs = item.split('\t');
               // console.log("tabs.length", tabs.length , "0",tabs[0], "1",tabs[1], "2",tabs[2],"3", tabs[3],"4");
               if (tabs.length > 3 && tabs[0] && Number.isInteger(parseInt(tabs[1]))) {
                 user_data.push({
@@ -272,7 +272,7 @@ define([
           fg = event.track.fill;
         } else if (event.track.stroke) {
           fg = event.track.stroke.color || event.track.stroke;
-          foregroundIsStroke = true;
+          // foregroundIsStroke = true;
         } else {
           fg = null;
         }

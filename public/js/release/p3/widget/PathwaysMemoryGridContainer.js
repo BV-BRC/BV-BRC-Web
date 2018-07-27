@@ -56,6 +56,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
   return declare([GridContainer], {
     gridCtor: PathwaysGrid,
     containerType: 'pathway_data',
+    tutorialLink: 'user_guides/organisms_taxon/pathways.html',
     defaultFilter: 'eq(annotation,%22PATRIC%22)',
     facetFields: ['annotation'],
     enableFilterPanel: true,
@@ -246,12 +247,12 @@ define("p3/widget/PathwaysMemoryGridContainer", [
           // console.log(selection, this.type, this.state);
           var url = { annotation: 'PATRIC' };
 
-          if (this.state.hasOwnProperty('taxon_id')) {
+          if (Object.prototype.hasOwnProperty.call(this.state, 'taxon_id')) {
             url.taxon_id = this.state.taxon_id;
-          } else if (this.state.hasOwnProperty('genome')) {
+          } else if (Object.prototype.hasOwnProperty.call(this.state, 'genome')) {
             url.genome_id = this.state.genome.genome_id;
           }
-          if (this.state.hasOwnProperty('genome_ids')) {
+          if (Object.prototype.hasOwnProperty.call(this.state, 'genome_ids')) {
             url.genome_ids = this.state.genome_ids;
           }
 
@@ -285,7 +286,6 @@ define("p3/widget/PathwaysMemoryGridContainer", [
         return;
       }
       var q = [];
-      var _self = this;
       if (state.search) {
         q.push(state.search);
       }

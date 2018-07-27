@@ -6,7 +6,7 @@ define([
     containerType: 'Seq',
     streamables: null,
     streamableTypes: ['bam', 'gff', 'vcf.gz', 'bigwig', 'gtf'],
-    downloadableTypes: ['bam', 'gff', 'vcf.gz', 'bigwig', 'gtf', 'bai'],
+    downloadableTypes: ['bam', 'gff', 'vcf.gz', 'bigwig', 'gtf', 'bai', 'tbi'],
     setupResultType: function () {
       if (this.data.autoMeta.app.id) {
         this._resultType = this.data.autoMeta.app.id;
@@ -55,6 +55,9 @@ define([
       this._resultObjects.forEach(function (o) {
         var name_parts = o.name.split('.');
         var extension = name_parts.pop();
+        if (extension === 'gz') {
+          extension = name_parts.pop() + '.' + extension;
+        }
         if (_self.downloadableTypes.indexOf(o.type) > -1 || _self.downloadableTypes.indexOf(extension) > -1) {
           paths.push(o.path);
           _self._downloadableObjects.push(o);

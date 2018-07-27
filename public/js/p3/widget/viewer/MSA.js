@@ -382,7 +382,7 @@ define([
     },
 
     createViewerData: function () {
-      results = {};
+      // results = {};
     },
 
     render: function () {
@@ -723,7 +723,7 @@ define([
       msaDiv.style.verticalAlign = 'bottom';
       msaDiv.style.paddingBottom = '10px';
       msaDiv.style.height = (treeHeight + 115).toString() + 'px';
-      treeLoaded = true;
+      // treeLoaded = true;
     },
 
     setTreeType: function (treeType) {

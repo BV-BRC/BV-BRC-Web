@@ -48,7 +48,7 @@ define("p3/store/P3MemoryStore", [
         return this.inherited(arguments);
       }
       return when(this.loadData(), lang.hitch(this, function () {
-        return this.get(id, options);
+        return this.get(id, opts);
       }));
 
     }

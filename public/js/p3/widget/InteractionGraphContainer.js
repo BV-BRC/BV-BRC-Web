@@ -113,7 +113,7 @@ define([
 
             cy.elements().unselect();
 
-            var selected = getSubGraphs(cy, rel);
+            var selected = InteractionOps.getSubGraphs(cy, rel);
             // console.log("selected: ", selected.length);
             cy.collection(selected).select();
           }));
@@ -142,7 +142,7 @@ define([
 
             cy.elements().unselect();
 
-            var selected = getHubs(cy, rel);
+            var selected = InteractionOps.getHubs(cy, rel);
             // console.log("selected: ", selected.length);
             cy.collection(selected).select();
           }));
@@ -748,10 +748,10 @@ define([
           var i_b = d.interactor_b;
 
           if (cy.getElementById(i_a).empty()) {
-            cy.add(createInteractorCyEle(d, 'a'));
+            cy.add(InteractionOps.createInteractorCyEle(d, 'a'));
           }
           if (cy.getElementById(i_b).empty()) {
-            cy.add(createInteractorCyEle(d, 'b'));
+            cy.add(InteractionOps.createInteractorCyEle(d, 'b'));
           }
 
           var edgeClass = (d.evidence.indexOf('experimental') > -1 ) ? 'typeA' : '';

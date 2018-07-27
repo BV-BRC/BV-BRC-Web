@@ -263,7 +263,7 @@ define(
         // console.log("Has UserMeta: ", obj.userMeta);
 
         if (obj.autoMeta && obj.autoMeta.item_count) {
-          out = obj.autoMeta.item_count;
+          var out = obj.autoMeta.item_count;
           switch (obj.type) {
             case 'genome_group':
               out += ' genomes';
@@ -420,9 +420,9 @@ define(
         }
       },
       autoLabel: function (ws_location, autoData) {
-        _autoLabels = {};
+        var _autoLabels = {};
         if (ws_location == 'itemDetail') {
-          _app_label = null;
+          var _app_label = null;
           if (Object.prototype.hasOwnProperty.call(autoData, 'app') && Object.prototype.hasOwnProperty.call(autoData.app, 'id')) {
             _app_label = autoData.app.id;
           }

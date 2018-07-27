@@ -17,16 +17,16 @@ define("p3/widget/InteractionGrid", [
       genome_id_a: { label: 'Genome ID A', field: 'genome_id_a', hidden: true },
       genome_name_a: { label: 'Genome Name A', field: 'genome_name_a', hidden: true },
       interactor_a: { label: 'Interactor A', field: 'interactor_a' },
-      feature_id_a: { label: 'Feature ID A', field: 'feature_id_a', hidden:true },
-      refseq_locus_tag_a: { label: 'RefSeq Locus Tag A', field: 'refseq_locus_tag_a', hidden:true },
+      feature_id_a: { label: 'Feature ID A', field: 'feature_id_a', hidden: true },
+      refseq_locus_tag_a: { label: 'RefSeq Locus Tag A', field: 'refseq_locus_tag_a', hidden: true },
       gene_a: { label: 'Gene A', field: 'gene_a' },
       int_desc_a: { label: 'Desc A', field: 'interactor_desc_a' },
 
       genome_id_b: { label: 'Genome ID B', field: 'genome_id_b', hidden: true },
       genome_name_b: { label: 'Genome Name B', field: 'genome_name_b', hidden: true },
       interactor_b: { label: 'Interactor B', field: 'interactor_b' },
-      feature_id_b: { label: 'Feature ID B', field: 'feature_id_b', hidden:true },
-      refseq_locus_tag_b: { label: 'RefSeq Locus Tag B', field: 'refseq_locus_tag_b', hidden:true },
+      feature_id_b: { label: 'Feature ID B', field: 'feature_id_b', hidden: true },
+      refseq_locus_tag_b: { label: 'RefSeq Locus Tag B', field: 'refseq_locus_tag_b', hidden: true },
       gene_b: { label: 'Gene B', field: 'gene_b' },
       int_desc_b: { label: 'Desc B', field: 'interactor_desc_b' },
 
@@ -34,7 +34,7 @@ define("p3/widget/InteractionGrid", [
       i_type: { label: 'Interaction Type', field: 'interaction_type' },
       d_method: { label: 'Detection Method', field: 'detection_method' },
       evidence: { label: 'Evidence', field: 'evidence' },
-      pubmed: { label: 'Pubmed', field: 'pmid', hidden:true },
+      pubmed: { label: 'Pubmed', field: 'pmid', hidden: true },
       score: { label: 'Score', field: 'score', hidden: true }
     },
     constructor: function (options, parent) {

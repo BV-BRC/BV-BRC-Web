@@ -29,13 +29,13 @@ define("p3/widget/viewer/Taxonomy", [
 
       this.phylogeny = new Phylogeny({
         title: 'Phylogeny',
-        id: this.viewer.id + '_' + 'phylogeny',
+        id: this.viewer.id + '_phylogeny',
         state: this.state
       });
 
       this.taxontree = new TaxonomyTreeGrid({
         title: 'Taxonomy',
-        id: this.viewer.id + '_' + 'taxontree',
+        id: this.viewer.id + '_taxontree',
         state: this.state
       });
       this.viewer.addChild(this.phylogeny, 1);
@@ -228,8 +228,9 @@ define("p3/widget/viewer/Taxonomy", [
               }
               genome_ids = this.state.genome_ids;
             }
+            var searchStr = (genome_ids.length > 0) ? 'or(in(genome_id_a,(' + genome_ids.join(',') + ')),in(genome_id_b,(' + genome_ids.join(',') + ')))' : 'eq(genome_id_a,NONE)';
             activeTab.set('state', lang.mixin({}, this.state, {
-              search: 'or(in(genome_id_a,(' + genome_ids.join(',') + ')),in(genome_id_b,(' + genome_ids.join(',') + ')))'
+              search: searchStr
             }));
           }
           break;
@@ -382,7 +383,7 @@ define("p3/widget/viewer/Taxonomy", [
     createOverviewPanel: function () {
       return new TaxonomyOverview({
         title: 'Overview',
-        id: this.viewer.id + '_' + 'overview'
+        id: this.viewer.id + '_overview'
       });
     },
 

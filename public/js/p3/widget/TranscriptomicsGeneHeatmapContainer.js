@@ -504,7 +504,7 @@ define([
           { value: 'rbw', label: '<i class="fa icon-arrow-up"></i> Red-White-Blue <i class="fa icon-arrow-down"></i>' }]
       });
       colorSelect.on('change', lang.hitch(self, function (scheme) {
-        self.currentData.colorStops = getColorStops(scheme, self.tgState.maxIntensity);
+        self.currentData.colorStops = self.getColorStops(scheme, self.tgState.maxIntensity);
         self.flashDom.refreshData();
         popup.close();
       }));

@@ -42,6 +42,7 @@ define([
   return declare([GridContainer], {
     gridCtor: CorrelatedGenesGrid,
     containerType: 'feature_data',
+    tutorialLink: '/user_guides/organisms_gene/correlated_genes.html',
     enableFilterPanel: true,
     apiServer: window.App.dataServiceURL,
 

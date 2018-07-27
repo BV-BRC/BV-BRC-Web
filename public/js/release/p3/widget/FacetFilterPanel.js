@@ -182,7 +182,7 @@ define("p3/widget/FacetFilterPanel", [
         if (!this._started) {
           return;
         }
-        query('TD').forEach(function (node) {
+        Query('TD').forEach(function (node) {
           var rel = domAttr.get(node, 'rel');
           if (rel && this.selected && this.selected.indexOf(rel) >= 0) {
             domClass.add(node, 'FacetSelection');
@@ -191,7 +191,7 @@ define("p3/widget/FacetFilterPanel", [
           }
         }, this);
       } else {
-        query('TD').forEach(function (node) {
+        Query('TD').forEach(function (node) {
           domClass.remove(node, 'FacetSelection');
         }, this);
       }

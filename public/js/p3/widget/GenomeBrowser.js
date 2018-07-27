@@ -44,7 +44,7 @@ define([
   Dialog, keys
 ) {
   window.featureDialogContent = function (feature) {
-    var content = DataItemFormatter(feature.data, 'feature_data', { linkTitle:true });
+    var content = DataItemFormatter(feature.data, 'feature_data', { linkTitle: true });
     if (!window.featureDialog) {
       window.featureDialog = new Dialog({ title: 'Feature Summary' });
     }
@@ -292,7 +292,7 @@ define([
         var locLength = this.config.locationBoxLength || function () {
 
           // if we have no refseqs, just use 20 chars
-          if (!this.refSeqOrder.length)
+          if (!this.refSeqOrder || !this.refSeqOrder.length)
           { return 20; }
 
           // if there are not tons of refseqs, pick the longest-named
@@ -377,7 +377,7 @@ define([
           dojo.mixin( {}, (this.config.queryParams || {}) ),
           dojo.mixin(
             {
-              loc:    this.view.visibleRegionLocString(),
+              loc: this.view.visibleRegionLocString(),
               tracks: this.view.visibleTrackNames().join(','),
               highlight: (this.getHighlight() || '').toString()
             },
@@ -536,20 +536,20 @@ define([
             })
           );
 
-          function showHelp() {
-            new HelpDialog(lang.mixin(thisObj.config.quickHelp || {}, { browser: thisObj })).show();
-          }
+          // function showHelp() {
+          //   new HelpDialog(lang.mixin(thisObj.config.quickHelp || {}, { browser: thisObj })).show();
+          // }
 
-          this.setGlobalKeyboardShortcut('?', showHelp);
-          this.addGlobalMenuItem(
-            'help',
-            new dijitMenuItem({
-              // id: 'menubar_generalhelp',
-              label: 'General',
-              iconClass: 'jbrowseIconHelp',
-              onClick: showHelp
-            })
-          );
+          // this.setGlobalKeyboardShortcut('?', showHelp);
+          // this.addGlobalMenuItem(
+          //   'help',
+          //   new dijitMenuItem({
+          //     // id: 'menubar_generalhelp',
+          //     label: 'General',
+          //     iconClass: 'jbrowseIconHelp',
+          //     onClick: showHelp
+          //   })
+          // );
 
           this.renderGlobalMenu('help', {}, menuBar);
         }
@@ -578,13 +578,13 @@ define([
         // hook up GenomeView
         this.view = this.viewElem.view =
           new GenomeView({
-              browser: this,
-              elem: this.viewElem,
-              config: this.config.view,
-              stripeWidth: 1000,
-              refSeq: this.refSeq,
-              zoomLevel: 1 / 200
-            });
+            browser: this,
+            elem: this.viewElem,
+            config: this.config.view,
+            stripeWidth: 1000,
+            refSeq: this.refSeq,
+            zoomLevel: 1 / 200
+          });
 
         dojo.connect(this.view, 'onFineMove', this, 'onFineMove');
         dojo.connect(this.view, 'onCoarseMove', this, 'onCoarseMove');
@@ -717,6 +717,10 @@ define([
               if (refseqConfig.length > 0 && !('defaultLocation' in this.config)) {
                 var initSize = Math.min(100000, refseqConfig[0].length);
                 this.config.defaultLocation = refseqConfig[0].accn + ':1..' + initSize.toString();
+              }
+              else if (refseqConfig.length == 0) {
+                deferred.reject('missing sequences or contigs')
+                return
               }
 
               refseqConfig.forEach(function (seq) {
@@ -888,6 +892,62 @@ define([
           })
         );
       });
+    },
+    fatalError: function (error) {
+
+      function formatError(error) {
+        if ( error ) {
+          console.error( error.stack || '' + error );
+          error += '';
+          if ( !/\.$/.exec(error) )
+          { error += '.'; }
+        }
+        return error;
+      }
+
+      if ( !this.renderedFatalErrors ) {
+        // if the error is just that there are no ref seqs defined,
+        // and there are datasets defined in the conf file, then just
+        // show a little HTML list of available datasets
+        if ( /^Could not load reference sequence/.test( error )
+              && this.config.datasets
+              && !this.config.datasets._DEFAULT_EXAMPLES
+        ) {
+          // new StandaloneDatasetList({ datasets: this.config.datasets })
+          //   .placeAt( this.container );
+        } else {
+          var container = this.container || document.body;
+          // var thisB = this;
+
+          dojo.addClass( document.body, this.config.theme || 'tundra'); // < tundra dijit theme
+
+          if ( !Util.isElectron() ) {
+            require([
+              'dojo/text!p3/widget/templates/GenomeBrowserError.html'
+            ], function (Welcome_old) {
+              container.innerHTML = Welcome_old;
+              if ( error ) {
+                var errors_div = dojo.byId('fatal_error_list');
+                dojo.create('div', { className: 'error', innerHTML: formatError(error) + '' }, errors_div );
+              }
+              // request( 'sample_data/json/volvox/successfully_run' ).then( function() {
+              //        try {
+              //            dojo.byId('volvox_data_placeholder').innerHTML = 'However, it appears you have successfully run <code>./setup.sh</code>, so you can see the <a href="?data=sample_data/json/volvox">Volvox test data here</a>.';
+              //        } catch(e) {}
+              //    });
+
+            });
+          }
+          else {
+            this.welcomeScreen( container, formatError(error) );
+          }
+
+          this.renderedFatalErrors = true;
+        }
+      } else {
+        var errors_div = dojo.byId('fatal_error_list') || document.body;
+        dojo.create('div', { className: 'error', innerHTML: formatError(error) + '' }, errors_div );
+      }
     }
   });
 

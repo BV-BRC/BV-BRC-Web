@@ -57,9 +57,9 @@ define("p3/widget/ReferenceGenomeSummary", [
           render: function (dim, offsets) {
             this.inherited(arguments);
 
-            var rx = (dim.width - offsets.l - offsets.r) / 2,
-              ry = (dim.height - offsets.t - offsets.b) / 2,
-              r = Math.min(rx, ry) / 2;
+            var rx = (dim.width - offsets.l - offsets.r) / 2;
+            var ry = (dim.height - offsets.t - offsets.b) / 2;
+            // var r = Math.min(rx, ry) / 2;
             var circle = {
               cx: offsets.l + rx,
               cy: offsets.t + ry,

@@ -52,7 +52,7 @@ define("p3/store/InteractionMemoryStore", [
 
       var query = this.state.search;
       if (this.state.hashParams
-        && this.state.hashParams.hasOwnProperty('filter')
+        && Object.prototype.hasOwnProperty.call(this.state.hashParams, 'filter')
         && this.state.hashParams.filter !== 'false') {
         query += '&' + this.state.hashParams.filter;
       }
@@ -67,7 +67,7 @@ define("p3/store/InteractionMemoryStore", [
         data: query + '&limit(1)'
       }), lang.hitch(this, function (res) {
 
-        var numFound = res.response.numFound;
+        // var numFound = res.response.numFound;
 
         var fetchSize = 5000;
         // var steps = Math.ceil(numFound / fetchSize);

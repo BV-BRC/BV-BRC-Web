@@ -6,7 +6,8 @@ define([
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic, All,
-  Memory, QueryResults
+  Memory, QueryResults,
+  HeatmapDataTypes
 ) {
 
   var pmState = {
@@ -85,7 +86,7 @@ define([
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -138,7 +139,7 @@ define([
         });
 
         genomes.forEach(function (genome, idx) {
-          var gfs = new FilterStatus();
+          var gfs = new HeatmapDataTypes.FilterStatus();
           gfs.init(genomeIndexMap[genome.genome_id], genome.genome_name);
           _self.pmState.genomeFilterStatus[genome.genome_id] = gfs;
         });
@@ -322,7 +323,7 @@ define([
           }
         });
 
-        return new Column(
+        return new HeatmapDataTypes.Column(
           order, colId, label, filtered.join(''),
           ((isEven) ? 0x000066 : null) /* label color */,
           ((isEven) ? 0xF4F4F4 : 0xd6e4f4) /* bg color */,
@@ -351,7 +352,7 @@ define([
           var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
           // console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
-          rows.push(new Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
+          rows.push(new HeatmapDataTypes.Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
         }
       });
 
@@ -385,7 +386,7 @@ define([
           members: role.genome_count
         };
         if (genomeOrderChangeMap.length > 0) {
-          role.genomes = distributionTransformer(role.genomes, genomeOrderChangeMap);
+          role.genomes = HeatmapDataTypes.distributionTransformer(role.genomes, genomeOrderChangeMap);
         }
         var order = roleOrderMap[role.role_name];
         cols[order] = createColumn(order, role.role_name, role.description, role.genomes, meta);
@@ -393,11 +394,11 @@ define([
 
       // colorStop
       if (maxIntensity == 1) {
-        colorStop = [new ColorStop(1, 0xfadb4e)];
+        colorStop = [new HeatmapDataTypes.ColorStop(1, 0xfadb4e)];
       } else if (maxIntensity == 2) {
-        colorStop = [new ColorStop(0.5, 0xfadb4e), new ColorStop(1, 0xf6b437)];
+        colorStop = [new HeatmapDataTypes.ColorStop(0.5, 0xfadb4e), new HeatmapDataTypes.ColorStop(1, 0xf6b437)];
       } else if (maxIntensity >= 3) {
-        colorStop = [new ColorStop(1 / maxIntensity, 0xfadb4e), new ColorStop(2 / maxIntensity, 0xf6b437), new ColorStop(3 / maxIntensity, 0xff6633), new ColorStop(maxIntensity / maxIntensity, 0xff6633)];
+        colorStop = [new HeatmapDataTypes.ColorStop(1 / maxIntensity, 0xfadb4e), new HeatmapDataTypes.ColorStop(2 / maxIntensity, 0xf6b437), new HeatmapDataTypes.ColorStop(3 / maxIntensity, 0xff6633), new HeatmapDataTypes.ColorStop(maxIntensity / maxIntensity, 0xff6633)];
       }
 
       // console.log(rows, cols, colorStop);
@@ -433,12 +434,12 @@ define([
         // create new rows
         var newRows = [];
         currentData.columns.forEach(function (col, colID) {
-          newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+          newRows.push(new HeatmapDataTypes.Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
         });
         // create new columns
         var newColumns = [];
         currentData.rows.forEach(function (row, rowID) {
-          newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta));
+          newColumns.push(new HeatmapDataTypes.Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta));
         });
 
         currentData = lang.mixin(currentData, {

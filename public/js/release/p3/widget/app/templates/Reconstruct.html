@@ -81,7 +81,7 @@
         <div class="appRow">
           <div class="appField">
             <label>Output Folder</label>
-            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Reconstruction Results',missingMessage:'Output Folder must be selected.'"
+            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Reconstruction Results',missingMessage:'Output Folder must be selected.'"
               data-dojo-attach-event="onChange:onOutputPathChange"></div>
             <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
             <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>

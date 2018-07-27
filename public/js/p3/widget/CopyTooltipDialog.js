@@ -53,7 +53,7 @@ define([
       });
 
       // sort based on the columns defined elsewhere on the UI
-      columns = this.grid.columns;
+      var columns = this.grid.columns;
       var key_list = Array.from(Object.keys(columns));
 
       // filter out blacklisted columns
@@ -85,7 +85,7 @@ define([
       clean_selection.forEach(function (obj) {
         var io = [];
         key_list.forEach(function (col_key) {
-          key = columns[col_key].field;
+          var key = columns[col_key].field;
           if (obj[key] instanceof Array) {
             io.push(obj[key].join(';'));
           } else {

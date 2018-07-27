@@ -53,6 +53,19 @@ define("p3/app/p3app", [
           }
         }
       });
+      /* istanbul ignore next */
+      var onDocumentTitleChanged = function () {
+        // var meta = document.getElementsByTagName("meta[name='Keyword']");
+        var meta = domQuery("meta[name='Keywords']")[0];
+        if (meta) {
+          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+        }
+        if (window.gtag) {
+          // console.log("document title changed to", document.title);
+          var pagePath = window.location.pathname + window.location.hash;
+          gtag('config', window.App.gaID, { 'page_path': pagePath });
+        }
+      };
 
       // listening document.title change event
       var titleEl = document.getElementsByTagName('title')[0];
@@ -72,19 +85,56 @@ define("p3/app/p3app", [
           }
         };
       }
-      /* istanbul ignore next */
-      var onDocumentTitleChanged = function () {
-        // var meta = document.getElementsByTagName("meta[name='Keyword']");
-        var meta = domQuery("meta[name='Keywords']")[0];
-        if (meta) {
-          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+
+      function getState(params, path) {
+        var parser = document.createElement('a');
+        parser.href = path;
+        /* istanbul ignore next */
+        var newState = params.state || {};
+
+        newState.href = path;
+        newState.prev = params.oldPath;
+        // console.log("parser getState: ", parser);
+        /* istanbul ignore next */
+        if (newState.search) {
+          // pass
+        } else if (parser.search) {
+          newState.search = (parser.search.charAt(0) === '?') ? parser.search.substr(1) : parser.search;
+        } else {
+          newState.search = '';
         }
-        if (window.gtag) {
-          // console.log("document title changed to", document.title);
-          var pagePath = window.location.pathname + window.location.hash;
-          gtag('config', window.App.gaID, { 'page_path': pagePath });
+
+        // console.log("New State Search: ", newState.search);
+        newState.hash = parser.hash;
+        newState.pathname = parser.pathname;
+        /* istanbul ignore next */
+        if (newState.hash) {
+          newState.hash = (newState.hash.charAt(0) === '#') ? newState.hash.substr(1) : newState.hash;
+          // console.log("PARSE HASH: ", newState.hash)
+          newState.hashParams = newState.hashParams || {};
+
+          var hps = newState.hash.split('&');
+          hps.forEach(function (t) {
+            var tup = t.split('=');
+            if (tup[0] && tup[1]) {
+              newState.hashParams[tup[0]] = tup[1];
+            }
+          });
+          // console.log("newState.hashParams: ", newState.hashParams)
         }
-      };
+        return newState;
+      }
+
+      function populateState(params) {
+        var newState = { href: params.newPath };
+        for (var prop in params.state) {
+          // guard-for-in
+          if (Object.prototype.hasOwnProperty.call(params.state, prop)) {
+            newState[prop] = params.state[prop];
+          }
+        }
+        return newState;
+      }
 
       /*
       Router.register("\/$", function(params, oldPath, newPath, state){
@@ -108,10 +158,8 @@ define("p3/app/p3app", [
 
       Router.register('/job(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'p3/widget/JobManager';
@@ -134,10 +182,8 @@ define("p3/app/p3app", [
 
       Router.register('/uploads(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'p3/widget/UploadManager';
@@ -150,10 +196,8 @@ define("p3/app/p3app", [
 
       Router.register('/content(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'dijit/layout/ContentPane';
@@ -208,10 +252,8 @@ define("p3/app/p3app", [
 
       Router.register('/help(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Upload URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || '/';
         newState.widgetClass = 'dijit/layout/ContentPane';
@@ -227,10 +269,8 @@ define("p3/app/p3app", [
 
       Router.register('/workspace(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
+
         /* istanbul ignore next */
         var path = params.params[0] || ('/' + _self.user.id ); //  + "/home/")
         var parts = path.split('/');
@@ -250,45 +290,6 @@ define("p3/app/p3app", [
         _self.navigate(newState);
       });
 
-      function getState(params, path) {
-        var parser = document.createElement('a');
-        parser.href = path;
-        /* istanbul ignore next */
-        var newState = params.state || {};
-
-        newState.href = path;
-        newState.prev = params.oldPath;
-        // console.log("parser getState: ", parser);
-        /* istanbul ignore next */
-        if (newState.search) {
-          // pass
-        } else if (parser.search) {
-          newState.search = (parser.search.charAt(0) === '?') ? parser.search.substr(1) : parser.search;
-        } else {
-          newState.search = '';
-        }
-
-        // console.log("New State Search: ", newState.search);
-        newState.hash = parser.hash;
-        newState.pathname = parser.pathname;
-        /* istanbul ignore next */
-        if (newState.hash) {
-          newState.hash = (newState.hash.charAt(0) === '#') ? newState.hash.substr(1) : newState.hash;
-          // console.log("PARSE HASH: ", newState.hash)
-          newState.hashParams = newState.hashParams || {};
-
-          var hps = newState.hash.split('&');
-          hps.forEach(function (t) {
-            var tup = t.split('=');
-            if (tup[0] && tup[1]) {
-              newState.hashParams[tup[0]] = tup[1];
-            }
-          });
-          // console.log("newState.hashParams: ", newState.hashParams)
-        }
-        return newState;
-      }
-
       Router.register('/view(/.*)', function (params, path) {
         var newState = getState(params, path);
         var parts = newState.pathname.split('/');
@@ -306,6 +307,7 @@ define("p3/app/p3app", [
         var parts = path.split('/');
         parts.shift();
         var type = parts.shift();
+        var viewerParams;
         /* istanbul ignore if */
         if (parts.length > 0) {
           viewerParams = parts.join('/');
@@ -314,10 +316,7 @@ define("p3/app/p3app", [
         }
         // console.log("Parts:", parts, type, viewerParams)
 
-        var newState = { href: params.newPath };
-        for (var prop in params.state) {
-          newState[prop] = params.state[prop];
-        }
+        var newState = populateState(params);
 
         // console.log("Parts:", parts, type, path)
         newState.widgetClass = 'p3/widget/app/' + type;
@@ -375,7 +374,9 @@ define("p3/app/p3app", [
       // update "My Data" > "Completed Jobs" count on homepage
       this.api.service('AppService.query_task_summary', []).then(function (status) {
         var node = dom.byId('MyDataJobs');
-        node.innerHTML = status[0].completed + ' Completed Jobs';
+        if (node) {
+          node.innerHTML = status[0].completed + ' Completed Jobs';
+        }
       });
 
       this.inherited(arguments);
@@ -385,13 +386,11 @@ define("p3/app/p3app", [
     timeout: function () {
       setTimeout(function () {
         // check if logged out and another tab is open
-        if (localStorage.getItem('tokenstring') === null) {
+        if (!localStorage.getItem('tokenstring')) {
           if (document.getElementsByClassName('Authenticated').length > 0) {
-            // console.log(document.body.className);
             document.body.className = document.body.className.replace('Authenticated', '');
-            // console.log(document.body.className);
+            // console.log("Redirect");
             window.location.assign('/');
-            console.log('you are logged out now');
           }
         } else {
           // check if token has expired
@@ -403,16 +402,28 @@ define("p3/app/p3app", [
     checkLogin: function () {
       // console.log(window.App.uploadInProgress);
       // console.log('checking for login');
-      if (localStorage.getItem('tokenstring') !== null) {
+      if (localStorage.getItem('tokenstring')) {
         var auth = localStorage.getItem('auth');
-        auth = JSON.parse(auth);
-        var validToken = this.checkExpToken(auth.expiry);
-        console.log('this is a valid token: ' + validToken );
-        if (validToken && window.App.alreadyLoggedIn) {
-          return;
+        // console.log('Auth: ', auth);
+        var validToken = false;
+        if (auth) {
+          // console.log('Parse auth json', auth);
+          auth = JSON.parse(auth);
+          // console.log('Auth: ', auth);
+          // console.log('CheckExpToken', auth.expiry);
+          if (auth.expiry) {
+            validToken = this.checkExpToken(auth.expiry);
+            // console.log('this is a valid token: ' + validToken );
+            if (validToken && window.App.alreadyLoggedIn) {
+              return;
+            }
+          } else {
+            validToken = false;
+          }
         }
-        // console.log(validToken);
-        if (validToken && !window.App.alreadyLoggedIn) {
+
+        console.log('Valid Token: ', validToken);
+        if (validToken) { // && !window.App.alreadyLoggedIn) {
           if (!document.body.className.includes('Authenticated')) {
             document.body.className += 'Authenticated';
             // console.log('add to body class');
@@ -478,7 +489,7 @@ define("p3/app/p3app", [
       var Aauth = localStorage.getItem('Aauth');
       auth = JSON.parse(auth);
       Aauth = JSON.parse(Aauth);
-      if (auth.roles !== null && auth.roles !== undefined) {
+      if (auth && auth.roles) {
         if (auth.roles.includes('admin')) {
           suLink[0].style.display = 'block';
         } else {
@@ -487,8 +498,8 @@ define("p3/app/p3app", [
       } else {
         suLink[0].style.display = 'none';
       }
-      if (Aauth !== undefined && Aauth !== null) {
-        if (Aauth.roles !== null && Aauth.roles !== undefined) {
+      if (Aauth) {
+        if (Aauth.roles && Aauth.roles instanceof Array) {
           if (Aauth.roles.includes('admin')) {
             sbLink[0].style.display = 'block';
           } else {
@@ -516,11 +527,12 @@ define("p3/app/p3app", [
     checkExpToken: function (date) {
       var d = new Date();
       var checkd = d.valueOf() / 1000;
-      // console.log(checkd);
+      console.log('Current Date: ', checkd);
       if (checkd > date) {
-        // console.log('expired');
+        console.log('expired');
         return false;
-      } return true;
+      }
+      return true;
     },
     login: function (data, token) {
       // console.log(data);
@@ -596,7 +608,7 @@ define("p3/app/p3app", [
           }
         );
     },
-    logout:function () {
+    logout: function () {
       if (!window.App.uploadInProgress) {
         localStorage.removeItem('tokenstring');
         localStorage.removeItem('userProfile');

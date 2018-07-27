@@ -4,14 +4,14 @@ define([
   './ActionBar', './FilterContainerActionBar', 'dojo/_base/lang', './ItemDetailPanel', './SelectionToGroup',
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
-  './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred'
+  './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
   ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
-  CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred
+  CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -108,6 +108,8 @@ define([
     defaultFilter: '',
     store: null,
     apiServer: window.App.dataServiceURL,
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/',
     queryOptions: null,
     columns: null,
     enableAnchorButton: false,
@@ -337,6 +339,20 @@ define([
         },
         true
       ], [
+        'UserGuide',
+        'fa icon-question-circle-o fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        function (selection, container) {
+          // console.log('USER GUIDE action', container);
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+        },
+        true
+      ], [
         'DownloadSelection',
         'fa icon-download fa-2x',
         {
@@ -425,7 +441,10 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
+          Topic.publish('/navigate', {
+            href: '/view/Feature/' + sel.feature_id + '#view_tab=overview',
+            target: 'blank'
+          });
         },
         false
       ], [
@@ -487,7 +506,10 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id });
+          Topic.publish('/navigate', {
+            href: '/view/Feature/' + sel.feature_id,
+            target: 'blank'
+          });
           // console.log("View SP GENE: ", sel)
           // Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
         },

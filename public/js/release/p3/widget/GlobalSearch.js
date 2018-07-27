@@ -88,35 +88,35 @@ define("p3/widget/GlobalSearch", [
         var q = processQuery(query, searchOption);
         console.log('Search query q=: ', q);
 
-        var clear = false;
+        // var clear = false;
         switch (searchFilter) {
           case 'everything':
             Topic.publish('/navigate', { href: '/search/?' + q });
-            clear = true;
+            // clear = true;
             break;
           case 'sp_genes':
             Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
-            clear = true;
+            // clear = true;
             break;
           case 'genome_features':
             Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
-            clear = true;
+            // clear = true;
             break;
           case 'genomes':
             Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
-            clear = true;
+            // clear = true;
             break;
           case 'transcriptomics_experiments':
             Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
-            clear = true;
+            // clear = true;
             break;
           case 'taxonomy':
             Topic.publish('/navigate', { href: '/view/TaxonList/?' + q });
-            clear = true;
+            // clear = true;
             break;
           case 'antibiotic':
             Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
-            clear = true;
+            // clear = true;
             break;
           default:
             console.log('Do Search: ', searchFilter, query);

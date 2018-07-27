@@ -83,8 +83,8 @@ define([
         id: 'treatment', condition: 'treatment', label: 'Treatment', icon: this.getConditionIcon()
       };
       // temporary until contrasts table added
-      this.updateConditionStore(record = control, remove = false);
-      this.updateConditionStore(record = treatment, remove = false);
+      this.updateConditionStore(control, false);
+      this.updateConditionStore(treatment, false);
       this.addedCond.counter = 2;
 
 
@@ -131,19 +131,19 @@ define([
       if (disable) {
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
-        this.destroyLibRow(query_id = true, id_type = 'design');
+        this.destroyLibRow(true, 'design');
         // dojo.addClass(this.condTable, "disabled");
       }
       else {
         // this.block_condition.hide();
         this.numCondWidget.set('value', Number(this.addedCond.counter));
-        this.destroyLibRow(query_id = false, id_type = 'design');
+        this.destroyLibRow(false, 'design');
         // dojo.removeClass(this.condTable, "disabled");
       }
     },
 
     emptyTable: function (target, rowLimit) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
@@ -361,7 +361,7 @@ define([
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLibRow(query_id = id, 'id');
+        this.destroyLibRow(id, 'id');
       }));
     },
 
@@ -405,7 +405,7 @@ define([
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       var conditionSize = this.conditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
-        this.updateConditionStore(record = lrec, remove = false);
+        this.updateConditionStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
       if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length) {
@@ -426,7 +426,7 @@ define([
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
-          this.updateConditionStore(record = lrec, remove = true);
+          this.updateConditionStore(lrec, true);
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
           if (this.addedCond.counter < this.maxConditions) {
             var ntr = this.condTable.insertRow(-1);
@@ -437,7 +437,7 @@ define([
           this.condition_single.reset();
           this.condition_paired.reset();
           handle.remove();
-          this.destroyLibRow(query_id = lrec.condition, id_type = 'condition');
+          this.destroyLibRow(lrec.condition, 'condition');
         }));
         this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
       }
@@ -453,7 +453,7 @@ define([
         // remove condition from data store
         toRemove.forEach(function (obj) {
           if (obj.libraries) {
-            libraries.forEach(function (lib_row) {
+            obj.libraries.forEach(function (lib_row) {
               lib_row.remove();
             });
           }
@@ -483,7 +483,7 @@ define([
           advPairInfo.push('Condition:' + lrec.condition);
         }
         if (advPairInfo.length) {
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
           new Tooltip({
@@ -503,7 +503,7 @@ define([
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLibRow(query_id = lrec.id, 'id');
+          this.destroyLibRow(lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.libraryStore.put(lrec);
@@ -560,7 +560,7 @@ define([
         }
         if (advPairInfo.length) {
           lrec.design = true;
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
           new Tooltip({
             connectId: [tdinfo],
@@ -579,7 +579,7 @@ define([
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLibRow(query_id = lrec.id, id_type = 'id');
+          this.destroyLibRow(lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.libraryStore.put(lrec);

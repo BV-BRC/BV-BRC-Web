@@ -1,16 +1,16 @@
 define("p3/widget/IDMappingAppResultGridContainer", [
   'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/on', 'dojo/topic',
+  'dojo/on', 'dojo/topic', 'dojo/query', 'dojo/dom-class', 'dojo/when', 'dojo/request',
   'dijit/popup', 'dijit/TooltipDialog',
-  './ContainerActionBar', 'FileSaver',
+  './ContainerActionBar', 'FileSaver', './PerspectiveToolTip',
   './GridContainer', './IDMappingAppResultGrid',
   './DownloadTooltipDialog', 'dijit/Dialog',
   './SelectionToGroup', 'dojo/dom-construct'
 ], function (
   declare, lang,
-  on, Topic,
+  on, Topic, query, domClass, when, request,
   popup, TooltipDialog,
-  ContainerActionBar, saveAs,
+  ContainerActionBar, saveAs, PerspectiveToolTipDialog,
   GridContainer, IDMappingAppResultGrid,
   DownloadTooltipDialog, Dialog,
   SelectionToGroup, domConstruct
@@ -316,7 +316,6 @@ define("p3/widget/IDMappingAppResultGridContainer", [
           }
         },
         function (selection) {
-          var sel = selection[0];
           Topic.publish('/navigate', {
             href: '/view/FeatureList/?in(feature_id,(' + selection.map(function (x) {
               return x.feature_id;

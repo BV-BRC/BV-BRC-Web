@@ -86,11 +86,11 @@ define([
       // console.log("Set Active State COMPLETE");
     },
 
-    onSetSpecialtyGeneIds: function (attr, oldVal, genome_ids) {
-      // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
-      this.state.feature_ids = feature_ids;
-      this.setActivePanelState();
-    },
+    // onSetSpecialtyGeneIds: function (attr, oldVal, genome_ids) {
+    // console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+    // this.state.feature_ids = feature_ids;
+    // this.setActivePanelState();
+    // },
 
     postCreate: function () {
       this.inherited(arguments);

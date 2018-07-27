@@ -39,7 +39,7 @@ define("p3/widget/GenomeMetaSummary", [
       field: 'value',
       renderCell: function (obj, val, node) {
         node.innerHTML = val.map(function (d) {
-          return '<a href="' + d.link + '">' + d.label + ' (' + d.count + ')' + '</a>';
+          return '<a href="' + d.link + '">' + d.label + ' (' + d.count + ')</a>';
         }).join('<br/>');
       }
     }],
@@ -119,9 +119,9 @@ define("p3/widget/GenomeMetaSummary", [
           render: function (dim, offsets) {
             this.inherited(arguments);
 
-            var rx = (dim.width - offsets.l - offsets.r) / 2,
-              ry = (dim.height - offsets.t - offsets.b) / 2,
-              r = Math.min(rx, ry) / 2;
+            var rx = (dim.width - offsets.l - offsets.r) / 2;
+            var ry = (dim.height - offsets.t - offsets.b) / 2;
+            // var r = Math.min(rx, ry) / 2;
             var circle = {
               cx: offsets.l + rx,
               cy: offsets.t + ry,

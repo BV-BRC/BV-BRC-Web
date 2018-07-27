@@ -1,12 +1,12 @@
 define("p3/widget/JobManager", [
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/_base/lang',  'dojo/query',
+  'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang',  'dojo/query',
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
-  'dojo/_base/Deferred', 'dojo/dom-geometry', '../JobManager',
+  'dojo/_base/Deferred', '../JobManager', './Confirmation',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel'
 ], function (
-  declare, WidgetBase, on, lang, query,
+  declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
-  Deferred, domGeometry, JobManager,
+  Deferred, JobManager, Confirmation,
   Topic, BorderContainer, ActionBar, ItemDetailPanel
 ) {
   return declare([BorderContainer], {
@@ -14,6 +14,7 @@ define("p3/widget/JobManager", [
     path: '/',
 
     listJobs: function () {
+      var _self = this;
       return Deferred.when(JobManager.getJobs(), function (res) {
         return res;
       }, function (err) {
@@ -27,7 +28,7 @@ define("p3/widget/JobManager", [
     },
 
     showError: function (err) {
-      var n = domConstr.create('div', {
+      domConstr.create('div', {
         style: {
           position: 'relative',
           zIndex: 999,
@@ -92,6 +93,36 @@ define("p3/widget/JobManager", [
         },
         false
       ], [
+        'KillJob',
+        'MultiButton fa icon-ban fa-2x',
+        {
+          label: 'KILL JOB',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Kill (Cancel) Selected Job',
+          validContainerTypes: ['*']
+        },
+        function (selection) {
+          var sel = selection[0],
+            id = sel.id;
+
+          var conf = 'Are you sure you want to terminate this ' + sel.app + ' job?<br><br>' +
+                     '<b>Job ID</b>: ' + id + '<br><br>';
+
+          var dlg = new Confirmation({
+            title: 'Kill Job',
+            content: conf,
+            style: { width: '375px' },
+            onConfirm: function (evt) {
+              JobManager.killJob(id);
+            }
+          });
+          dlg.startup();
+          dlg.show();
+
+        },
+        false
+      ], [
         'ReportIssue',
         'MultiButton fa icon-commenting-o fa-2x',
         {
@@ -111,8 +142,8 @@ define("p3/widget/JobManager", [
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
               'App Name: ' + sel.app + '\n\n' +
-              'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout' + '\n' +
-              'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr' + '\n\n' +
+              'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout\n' +
+              'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr\n\n' +
               'Submit Time: ' + sel.submit_time + '\n' +
               'Start Time: ' + sel.submit_time + '\n' +
               'Completed Time: ' + sel.submit_time + '\n\n' +
@@ -220,8 +251,15 @@ define("p3/widget/JobManager", [
       // listen for filtering
       Topic.subscribe('/JobFilter', function (filters) {
         // remove any non-specific filter states
-        if (filters.app == 'all') delete filters.app;
+        if (filters.app === 'all') delete filters.app;
         if (!filters.status) delete filters.status;
+
+        // need to filter on all possible AWE-defined statuses
+        if (filters.status === 'queued') {
+          filters.status = new RegExp('queued|init|pending');
+        } else if (filters.status === 'failed') {
+          filters.status = new RegExp('failed|deleted');
+        }
 
         _self.grid.set('query', filters);
       });

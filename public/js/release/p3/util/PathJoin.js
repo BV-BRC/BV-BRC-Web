@@ -4,8 +4,8 @@ define("p3/util/PathJoin", [], function () {
     // console.log("JOIN PATH PARTS: ", arguments);
     // Split the inputs into a list of path commands.
     var parts = [];
-    var hasRoot = false;
-    var root;
+    // var hasRoot = false;
+    // var root;
     for (var i = 0, l = arguments.length; i < l; i++) {
       // console.log("arguments[i]",i, arguments[i]);
 

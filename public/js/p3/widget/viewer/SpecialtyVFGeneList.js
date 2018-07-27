@@ -168,7 +168,7 @@ define([
       } else {
         hp = {};
       }
-      l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
       // console.log("NavigateTo: ", l);

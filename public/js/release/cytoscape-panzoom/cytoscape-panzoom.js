@@ -20,21 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-;(function(){ 'use strict';
+(function () { 'use strict';
 
   // registers the extension on a cytoscape lib ref
-  var register = function( cytoscape, $ ){
-    if( !cytoscape || !$ ){ return; } // can't register if cytoscape or jquery unspecified
+  var register = function ( cytoscape, $ ) {
+    if ( !cytoscape || !$ ) { return; } // can't register if cytoscape or jquery unspecified
 
-    $.fn.cyPanzoom = $.fn.cytoscapePanzoom = function( options ){
-      panzoom.apply( this, [ options, cytoscape, $ ] );
+    $.fn.cyPanzoom = $.fn.cytoscapePanzoom = function ( options ) {
+      panzoom.apply( this, [options, cytoscape, $] );
 
       return this; // chainability
     };
 
     // if you want a core extension
-    cytoscape('core', 'panzoom', function( options ){ // could use options object, but args are up to you
-      panzoom.apply( this, [ options, cytoscape, $ ] );
+    cytoscape('core', 'panzoom', function ( options ) { // could use options object, but args are up to you
+      panzoom.apply( this, [options, cytoscape, $] );
 
       return this; // chainability
     });
@@ -55,7 +55,7 @@ SOFTWARE.
     panIndicatorMinOpacity: 0.5, // min opacity of pan indicator (the draggable nib); scales from this to 1.0
     zoomOnly: false, // a minimal version of the ui only with zooming (useful on systems with bad mousewheel resolution)
     fitSelector: undefined, // selector of elements to fit
-    animateOnFit: function(){ // whether to animate on fit
+    animateOnFit: function () { // whether to animate on fit
       return false;
     },
     fitAnimationDuration: 1000, // duration of animation on fit
@@ -67,48 +67,48 @@ SOFTWARE.
     resetIcon: 'fa fa-expand'
   };
 
-  var panzoom = function( params, cytoscape, $ ){
+  var panzoom = function ( params, cytoscape, $ ) {
     var cyRef = this;
     var options = $.extend(true, {}, defaults, params);
     var fn = params;
 
     var functions = {
-      destroy: function(){
+      destroy: function () {
         var $this = $(cyRef.container());
-        var $pz = $this.find(".cy-panzoom");
+        var $pz = $this.find('.cy-panzoom');
 
-        $pz.data('winbdgs').forEach(function( l ){
+        $pz.data('winbdgs').forEach(function ( l ) {
           $(window).unbind( l.evt, l.fn );
         });
 
-        $pz.data('cybdgs').forEach(function( l ){
+        $pz.data('cybdgs').forEach(function ( l ) {
           cyRef.off( l.evt, l.fn );
         });
 
         $pz.remove();
       },
 
-      init: function(){
+      init: function () {
         var browserIsMobile = 'ontouchstart' in window;
 
-        return $(cyRef.container()).each(function(){
+        return $(cyRef.container()).each(function () {
           var $container = $(this);
           $container.cytoscape = cytoscape;
 
           var winbdgs = [];
           var $win = $(window);
 
-          var windowBind = function( evt, fn ){
+          var windowBind = function ( evt, fn ) {
             winbdgs.push({ evt: evt, fn: fn });
 
             $win.bind( evt, fn );
           };
 
-          var windowUnbind = function( evt, fn ){
-            for( var i = 0; i < winbdgs.length; i++ ){
+          var windowUnbind = function ( evt, fn ) {
+            for ( var i = 0; i < winbdgs.length; i++ ) {
               var l = winbdgs[i];
 
-              if( l.evt === evt && l.fn === fn ){
+              if ( l.evt === evt && l.fn === fn ) {
                 winbdgs.splice( i, 1 );
                 break;
               }
@@ -119,17 +119,17 @@ SOFTWARE.
 
           var cybdgs = [];
 
-          var cyOn = function( evt, fn ){
+          var cyOn = function ( evt, fn ) {
             cybdgs.push({ evt: evt, fn: fn });
 
             cyRef.on( evt, fn );
           };
 
-          var cyOff = function( evt, fn ){
-            for( var i = 0; i < cybdgs.length; i++ ){
+          var cyOff = function ( evt, fn ) {
+            for ( var i = 0; i < cybdgs.length; i++ ) {
               var l = cybdgs[i];
 
-              if( l.evt === evt && l.fn === fn ){
+              if ( l.evt === evt && l.fn === fn ) {
                 cybdgs.splice( i, 1 );
                 break;
               }
@@ -146,14 +146,14 @@ SOFTWARE.
           $panzoom.data('winbdgs', winbdgs);
           $panzoom.data('cybdgs', cybdgs);
 
-          if( options.zoomOnly ){
-            $panzoom.addClass("cy-panzoom-zoom-only");
+          if ( options.zoomOnly ) {
+            $panzoom.addClass('cy-panzoom-zoom-only');
           }
 
           // add base html elements
-          /////////////////////////
+          // ///////////////////////
 
-          var $zoomIn = $('<div class="cy-panzoom-zoom-in cy-panzoom-zoom-button"><span class="icon '+ options.zoomInIcon +'"></span></div>');
+          var $zoomIn = $('<div class="cy-panzoom-zoom-in cy-panzoom-zoom-button"><span class="icon ' + options.zoomInIcon + '"></span></div>');
           $panzoom.append( $zoomIn );
 
           var $zoomOut = $('<div class="cy-panzoom-zoom-out cy-panzoom-zoom-button"><span class="icon ' + options.zoomOutIcon + '"></span></div>');
@@ -189,19 +189,19 @@ SOFTWARE.
           $panner.append( $pIndicator );
 
           // functions for calculating panning
-          ////////////////////////////////////
+          // //////////////////////////////////
 
-          function handle2pan(e){
+          function handle2pan(e) {
             var v = {
-              x: e.originalEvent.pageX - $panner.offset().left - $panner.width()/2,
-              y: e.originalEvent.pageY - $panner.offset().top - $panner.height()/2
-            }
+              x: e.originalEvent.pageX - $panner.offset().left - $panner.width() / 2,
+              y: e.originalEvent.pageY - $panner.offset().top - $panner.height() / 2
+            };
 
             var r = options.panDragAreaSize;
-            var d = Math.sqrt( v.x*v.x + v.y*v.y );
-            var percent = Math.min( d/r, 1 );
+            var d = Math.sqrt( v.x * v.x + v.y * v.y );
+            var percent = Math.min( d / r, 1 );
 
-            if( d < options.panInactiveArea ){
+            if ( d < options.panInactiveArea ) {
               return {
                 x: NaN,
                 y: NaN
@@ -209,8 +209,8 @@ SOFTWARE.
             }
 
             v = {
-              x: v.x/d,
-              y: v.y/d
+              x: v.x / d,
+              y: v.y / d
             };
 
             percent = Math.max( options.panMinPercentSpeed, percent );
@@ -223,57 +223,58 @@ SOFTWARE.
             return vnorm;
           }
 
-          function donePanning(){
+          function donePanning() {
             clearInterval(panInterval);
-            windowUnbind("mousemove", handler);
+            windowUnbind('mousemove', handler);
 
             $pIndicator.hide();
           }
 
-          function positionIndicator(pan){
+          function positionIndicator(pan) {
             var v = pan;
-            var d = Math.sqrt( v.x*v.x + v.y*v.y );
+            var d = Math.sqrt( v.x * v.x + v.y * v.y );
             var vnorm = {
-              x: -1 * v.x/d,
-              y: -1 * v.y/d
+              x: -1 * v.x / d,
+              y: -1 * v.y / d
             };
 
             var w = $panner.width();
             var h = $panner.height();
-            var percent = d/options.panDistance;
+            var percent = d / options.panDistance;
             var opacity = Math.max( options.panIndicatorMinOpacity, percent );
             var color = 255 - Math.round( opacity * 255 );
 
             $pIndicator.show().css({
-              left: w/2 * vnorm.x + w/2,
-              top: h/2 * vnorm.y + h/2,
-              background: "rgb(" + color + ", " + color + ", " + color + ")"
+              left: w / 2 * vnorm.x + w / 2,
+              top: h / 2 * vnorm.y + h / 2,
+              background: 'rgb(' + color + ', ' + color + ', ' + color + ')'
             });
           }
 
-          function calculateZoomCenterPoint(){
+          function calculateZoomCenterPoint() {
             var pan = cyRef.pan();
             var zoom = cyRef.zoom();
 
-            zx = $container.width()/2;
-            zy = $container.height()/2;
+            zx = $container.width() / 2;
+            zy = $container.height() / 2;
           }
 
           var zooming = false;
-          function startZooming(){
+          function startZooming() {
             zooming = true;
 
             calculateZoomCenterPoint();
           }
 
 
-          function endZooming(){
+          function endZooming() {
             zooming = false;
           }
 
-          var zx, zy;
-          function zoomTo(level){
-            if( !zooming ){ // for non-continuous zooming (e.g. click slider at pt)
+          var zx,
+            zy;
+          function zoomTo(level) {
+            if ( !zooming ) { // for non-continuous zooming (e.g. click slider at pt)
               calculateZoomCenterPoint();
             }
 
@@ -285,46 +286,45 @@ SOFTWARE.
 
           var panInterval;
 
-          var handler = function(e){
+          var handler = function (e) {
             e.stopPropagation(); // don't trigger dragging of panzoom
             e.preventDefault(); // don't cause text selection
             clearInterval(panInterval);
 
             var pan = handle2pan(e);
 
-            if( isNaN(pan.x) || isNaN(pan.y) ){
+            if ( isNaN(pan.x) || isNaN(pan.y) ) {
               $pIndicator.hide();
               return;
             }
 
             positionIndicator(pan);
-            panInterval = setInterval(function(){
+            panInterval = setInterval(function () {
               cyRef.panBy(pan);
             }, options.panSpeed);
           };
 
-          $pHandle.bind("mousedown", function(e){
+          $pHandle.bind('mousedown', function (e) {
             // handle click of icon
             handler(e);
 
             // update on mousemove
-            windowBind("mousemove", handler);
+            windowBind('mousemove', handler);
           });
 
-          $pHandle.bind("mouseup", function(){
+          $pHandle.bind('mouseup', function () {
             donePanning();
           });
 
-          windowBind("mouseup blur", function(){
+          windowBind('mouseup blur', function () {
             donePanning();
           });
-
 
 
           // set up slider behaviour
-          //////////////////////////
+          // ////////////////////////
 
-          $slider.bind('mousedown', function(){
+          $slider.bind('mousedown', function () {
             return false; // so we don't pan close to the slider handle
           });
 
@@ -332,19 +332,19 @@ SOFTWARE.
           var sliding = false;
           var sliderPadding = 2;
 
-          function setSliderFromMouse(evt, handleOffset){
-            if( handleOffset === undefined ){
+          function setSliderFromMouse(evt, handleOffset) {
+            if ( handleOffset === undefined ) {
               handleOffset = 0;
             }
 
             var padding = sliderPadding;
             var min = 0 + padding;
-            var max = $slider.height() - $sliderHandle.height() - 2*padding;
+            var max = $slider.height() - $sliderHandle.height() - 2 * padding;
             var top = evt.pageY - $slider.offset().top - handleOffset;
 
             // constrain to slider bounds
-            if( top < min ){ top = min }
-            if( top > max ){ top = max }
+            if ( top < min ) { top = min; }
+            if ( top > max ) { top = max; }
 
             var percent = 1 - (top - min) / ( max - min );
 
@@ -356,35 +356,36 @@ SOFTWARE.
 
             // assume (zoom = zmax ^ p) where p ranges on (x, 1) with x negative
             var x = Math.log(zmin) / Math.log(zmax);
-            var p = (1 - x)*percent + x;
+            var p = (1 - x) * percent + x;
 
             // change the zoom level
             var z = Math.pow( zmax, p );
 
             // bound the zoom value in case of floating pt rounding error
-            if( z < zmin ){
+            if ( z < zmin ) {
               z = zmin;
-            } else if( z > zmax ){
+            } else if ( z > zmax ) {
               z = zmax;
             }
 
             zoomTo( z );
           }
 
-          var sliderMdownHandler, sliderMmoveHandler;
-          $sliderHandle.bind('mousedown', sliderMdownHandler = function( mdEvt ){
+          var sliderMdownHandler,
+            sliderMmoveHandler;
+          $sliderHandle.bind('mousedown', sliderMdownHandler = function ( mdEvt ) {
             var handleOffset = mdEvt.target === $sliderHandle[0] ? mdEvt.offsetY : 0;
             sliding = true;
 
             startZooming();
-            $sliderHandle.addClass("active");
+            $sliderHandle.addClass('active');
 
             var lastMove = 0;
-            windowBind('mousemove', sliderMmoveHandler = function( mmEvt ){
-              var now = +new Date;
+            windowBind('mousemove', sliderMmoveHandler = function ( mmEvt ) {
+              var now = +new Date();
 
               // throttle the zooms every 10 ms so we don't call zoom too often and cause lag
-              if( now > lastMove + 10 ){
+              if ( now > lastMove + 10 ) {
                 lastMove = now;
               } else {
                 return false;
@@ -396,25 +397,25 @@ SOFTWARE.
             });
 
             // unbind when
-            windowBind('mouseup', function(){
+            windowBind('mouseup', function () {
               windowUnbind('mousemove', sliderMmoveHandler);
               sliding = false;
 
-              $sliderHandle.removeClass("active");
+              $sliderHandle.removeClass('active');
               endZooming();
             });
 
             return false;
           });
 
-          $slider.bind('mousedown', function(e){
-            if( e.target !== $sliderHandle[0] ){
+          $slider.bind('mousedown', function (e) {
+            if ( e.target !== $sliderHandle[0] ) {
               sliderMdownHandler(e);
               setSliderFromMouse(e);
             }
           });
 
-          function positionSliderFromZoom(){
+          function positionSliderFromZoom() {
             var z = cyRef.zoom();
             var zmin = options.minZoom;
             var zmax = options.maxZoom;
@@ -425,12 +426,12 @@ SOFTWARE.
             var percent = 1 - (p - x) / (1 - x); // the 1- bit at the front b/c up is in the -ve y direction
 
             var min = sliderPadding;
-            var max = $slider.height() - $sliderHandle.height() - 2*sliderPadding;
+            var max = $slider.height() - $sliderHandle.height() - 2 * sliderPadding;
             var top = percent * ( max - min );
 
             // constrain to slider bounds
-            if( top < min ){ top = min }
-            if( top > max ){ top = max }
+            if ( top < min ) { top = min; }
+            if ( top > max ) { top = max; }
 
             // move the handle
             $sliderHandle.css('top', top);
@@ -438,14 +439,14 @@ SOFTWARE.
 
           positionSliderFromZoom();
 
-          cyOn('zoom', function(){
-            if( !sliding ){
+          cyOn('zoom', function () {
+            if ( !sliding ) {
               positionSliderFromZoom();
             }
           });
 
           // set the position of the zoom=1 tick
-          (function(){
+          (function () {
             var z = 1;
             var zmin = options.minZoom;
             var zmax = options.maxZoom;
@@ -455,51 +456,51 @@ SOFTWARE.
             var p = Math.log(z) / Math.log(zmax);
             var percent = 1 - (p - x) / (1 - x); // the 1- bit at the front b/c up is in the -ve y direction
 
-            if( percent > 1 || percent < 0 ){
+            if ( percent > 1 || percent < 0 ) {
               $noZoomTick.hide();
               return;
             }
 
             var min = sliderPadding;
-            var max = $slider.height() - $sliderHandle.height() - 2*sliderPadding;
+            var max = $slider.height() - $sliderHandle.height() - 2 * sliderPadding;
             var top = percent * ( max - min );
 
             // constrain to slider bounds
-            if( top < min ){ top = min }
-            if( top > max ){ top = max }
+            if ( top < min ) { top = min; }
+            if ( top > max ) { top = max; }
 
             $noZoomTick.css('top', top);
-          })();
+          }());
 
           // set up zoom in/out buttons
-          /////////////////////////////
+          // ///////////////////////////
 
-          function bindButton($button, factor){
+          function bindButton($button, factor) {
             var zoomInterval;
 
-            $button.bind("mousedown", function(e){
+            $button.bind('mousedown', function (e) {
               e.preventDefault();
               e.stopPropagation();
 
-              if( e.button != 0 ){
+              if ( e.button != 0 ) {
                 return;
               }
 
-              var doZoom = function(){
+              var doZoom = function () {
                 var zoom = cyRef.zoom();
                 var lvl = cyRef.zoom() * factor;
 
-                if( lvl < options.minZoom ){
+                if ( lvl < options.minZoom ) {
                   lvl = options.minZoom;
                 }
 
-                if( lvl > options.maxZoom ){
+                if ( lvl > options.maxZoom ) {
                   lvl = options.maxZoom;
                 }
 
-                if( (lvl == options.maxZoom && zoom == options.maxZoom) ||
+                if ( (lvl == options.maxZoom && zoom == options.maxZoom) ||
                   (lvl == options.minZoom && zoom == options.minZoom)
-                ){
+                ) {
                   return;
                 }
 
@@ -513,7 +514,7 @@ SOFTWARE.
               return false;
             });
 
-            windowBind("mouseup blur", function(){
+            windowBind('mouseup blur', function () {
               clearInterval(zoomInterval);
               endZooming();
             });
@@ -522,18 +523,18 @@ SOFTWARE.
           bindButton( $zoomIn, (1 + options.zoomFactor) );
           bindButton( $zoomOut, (1 - options.zoomFactor) );
 
-          $reset.bind("mousedown", function(e){
-            if( e.button != 0 ){
+          $reset.bind('mousedown', function (e) {
+            if ( e.button != 0 ) {
               return;
             }
 
-            var elesToFit = options.fitSelector?cyRef.elements(options.fitSelector):cyRef.elements();
+            var elesToFit = options.fitSelector ? cyRef.elements(options.fitSelector) : cyRef.elements();
 
-            if( elesToFit.size() === 0 ){
+            if ( elesToFit.size() === 0 ) {
               cyRef.reset();
             } else {
               var animateOnFit = typeof options.animateOnFit === 'function' ? options.animateOnFit.call() : options.animateOnFit;
-              if(animateOnFit){
+              if (animateOnFit) {
                 cyRef.animate({
                   fit: {
                     eles: elesToFit,
@@ -543,7 +544,7 @@ SOFTWARE.
                   duration: options.fitAnimationDuration
                 });
               }
-              else{
+              else {
                 cyRef.fit( elesToFit, options.fitPadding );
               }
 
@@ -553,35 +554,34 @@ SOFTWARE.
           });
 
 
-
         });
       }
     };
 
-    if( functions[fn] ){
+    if ( functions[fn] ) {
       return functions[fn].apply(this, Array.prototype.slice.call( arguments, 1 ));
-    } else if( typeof fn == 'object' || !fn ) {
+    } else if ( typeof fn == 'object' || !fn ) {
       return functions.init.apply( this, arguments );
-    } else {
-      $.error("No such function `"+ fn +"` for jquery.cytoscapePanzoom");
     }
+    $.error('No such function `' + fn + '` for jquery.cytoscapePanzoom');
+
 
     return $(this);
   };
 
 
-  if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
-    module.exports = function( cytoscape, jquery ){
+  if ( typeof module !== 'undefined' && module.exports ) { // expose as a commonjs module
+    module.exports = function ( cytoscape, jquery ) {
       register( cytoscape, jquery || require('jquery') );
-    }
-  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
-    define('cytoscape-panzoom', function(){
+    };
+  } else if ( typeof define !== 'undefined' && define.amd ) { // expose as an amd/requirejs module
+    define('cytoscape-panzoom', function () {
       return register;
     });
   }
 
-  if( typeof cytoscape !== 'undefined' && typeof jQuery !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
+  if ( typeof cytoscape !== 'undefined' && typeof jQuery !== 'undefined' ) { // expose to global cytoscape (i.e. window.cytoscape)
     register( cytoscape, jQuery );
   }
 
-})();
+}());

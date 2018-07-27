@@ -46,6 +46,7 @@ define([
   return declare([GridContainer], {
     gridCtor: ProteinFamiliesGrid,
     containerType: 'proteinfamily_data',
+    tutorialLink: 'user_guides/organisms_taxon/protein_families.html',
     facetFields: [],
     maxGenomeCount: 500,
     showAutoFilterMessage: false,
@@ -234,7 +235,7 @@ define([
         },
         function (selection) {
 
-          query = 'and(in(genome_id,(' + this.pfState.genomeIds.join(',') + ')),in(' + this.pfState.familyType + '_id,(' + selection.map(function (s) {
+          var query = 'and(in(genome_id,(' + this.pfState.genomeIds.join(',') + ')),in(' + this.pfState.familyType + '_id,(' + selection.map(function (s) {
             return s.family_id;
           }).join(',') + ')))';
 

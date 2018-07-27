@@ -7,7 +7,7 @@ define([
   declare, lang, Deferred,
   request, when, Stateful, Topic, All,
   Memory, QueryResults,
-  ArrangeableMemoryStore, WorkspaceManager
+  ArrangeableMemoryStore, WorkspaceManager, HeatmapDataTypes
 ) {
 
   var tgStateDefault = {
@@ -220,7 +220,7 @@ define([
         return this.inherited(arguments);
       }
       return when(this.loadData(), lang.hitch(this, function () {
-        return this.get(id, options);
+        return this.get(id, opts);
       }));
 
     },
@@ -381,7 +381,7 @@ define([
 
         this.tgState.comparisonIds = comparisonIdList;
         allComparisons.forEach(function (comparison, idx) {
-          var cfs = new FilterStatus();
+          var cfs = new HeatmapDataTypes.FilterStatus();
           cfs.init(idx, comparison.expname);
           this.tgState.comparisonFilterStatus[comparison.pid.toString()] = cfs;
         }, this);
@@ -458,7 +458,7 @@ define([
           }
         });
 
-        return new Column(
+        return new HeatmapDataTypes.Column(
           order, colId, label, filtered.join(''),
           ((isEven) ? 0x000066 : null) /* label color */,
           ((isEven) ? 0xF4F4F4 : 0xd6e4f4) /* bg color */,
@@ -484,7 +484,7 @@ define([
         var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
         var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
-        rows.push(new Row(gfs.getIndex(), comparisonId, gfs.getLabel(), labelColor, rowColor));
+        rows.push(new HeatmapDataTypes.Row(gfs.getIndex(), comparisonId, gfs.getLabel(), labelColor, rowColor));
         // }
       });
 
@@ -615,7 +615,7 @@ define([
       }, this);
 
       this.tgState.maxIntensity = maxIntensity; // store for later use
-      var colorStop = getColorStops(this.tgState.colorScheme, maxIntensity);
+      var colorStop = HeatmapDataTypes.getColorStops(this.tgState.colorScheme, maxIntensity);
 
       // console.warn(rows, cols, colorStop);
 
@@ -651,12 +651,12 @@ define([
         // create new rows
         var newRows = [];
         currentData.columns.forEach(function (col, colID) {
-          newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+          newRows.push(new HeatmapDataTypes.Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
         });
         // create new columns
         var newColumns = [];
         currentData.rows.forEach(function (row, rowID) {
-          newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta));
+          newColumns.push(new HeatmapDataTypes.Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta));
         });
 
         currentData = lang.mixin(currentData, {

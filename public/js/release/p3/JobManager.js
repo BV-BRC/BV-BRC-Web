@@ -22,48 +22,21 @@ define("p3/JobManager", ['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr'
     data: []
   });
 
-  // kick off the polling
-  setTimeout(PollJobs, 1000);
-
-  function PollJobs() {
-    // leaving this here since instantiation order is unpredictable
-    if (!(window.App && window.App.api && window.App.api.service)) {
-      setTimeout(PollJobs, 1000);
-      return;
-    }
-
-    // check for status change.  if change, update jobs list
-    var prom = getStatus();
-    prom.then(function (statusChange) {
-      if (statusChange) {
-        updateJobsList().then(function () {
-          setTimeout(PollJobs, TIME_OUT);
-        });
-        return;
-      }
-
-      setTimeout(PollJobs, TIME_OUT);
-    });
-  }
-
-  /**
-   * listen for job filtering to store filter state locally
-   */
-  Topic.subscribe('/JobFilter', function (filter) {
-    Object.assign(self.filters, filter);
-  });
-
-
   /**
    * updates the job list (see JobsGrid.js)
    */
-  function updateJobsList() {
+  function updateJobsList(cb) {
     Topic.publish('/Jobs', { status: 'loading' });
 
-    var prom = window.App.api.service('AppService.enumerate_tasks', [0, 20000]);
+    var prom = window.App.api.service('AppService.enumerate_tasks', [0, 30000]);
     return prom.then(function (res) {
-      var jobs = res[0];
+      // filter out jobs marked as deleted (includes killed jobs)
+      var jobs = res[0].filter(function (job) { return job.status !== 'deleted'; });
+
       _DataStore.setData(jobs);
+
+      // perform any callback action before filtering
+      if (cb) cb();
 
       if (self.filters.app || self.filters.status) {
         Topic.publish('/Jobs', { status: 'filtered', jobs: _DataStore.data });
@@ -112,6 +85,37 @@ define("p3/JobManager", ['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr'
     });
   }
 
+  function PollJobs() {
+    // leaving this here since instantiation order is unpredictable
+    if (!(window.App && window.App.api && window.App.api.service)) {
+      setTimeout(PollJobs, 1000);
+      return;
+    }
+
+    // check for status change.  if change, update jobs list
+    var prom = getStatus();
+    prom.then(function (statusChange) {
+      if (statusChange) {
+        updateJobsList().then(function () {
+          setTimeout(PollJobs, TIME_OUT);
+        });
+        return;
+      }
+
+      setTimeout(PollJobs, TIME_OUT);
+    });
+  }
+
+  // kick off the polling
+  setTimeout(PollJobs, 1000);
+
+  /**
+   * listen for job filtering to store filter state locally
+   */
+  Topic.subscribe('/JobFilter', function (filter) {
+    Object.assign(self.filters, filter);
+  });
+
   return {
     queryTaskDetail: function (id, stdout, stderr) {
       return Deferred.when(window.App.api.service('AppService.query_task_details', [id]), function (detail) {
@@ -151,6 +155,25 @@ define("p3/JobManager", ['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr'
 
     getStore: function () {
       return _DataStore;
+    },
+
+    killJob: function (id) {
+
+      Topic.publish('/Notification', {
+        message: '<span class="default">Terminating job ' + id + '...</span>',
+        type: 'default',
+        duration: 50000
+      });
+
+      window.App.api.service('AppService.kill_task', [id]).then(function (res) {
+        updateJobsList(function () {
+          Topic.publish('/Notification', {
+            message: 'Job terminated.',
+            type: 'message'
+          });
+        });
+      });
+
     }
   };
 });

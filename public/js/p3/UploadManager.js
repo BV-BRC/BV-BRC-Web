@@ -94,7 +94,7 @@ define(['dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
       fd.append('upload', file);
       this.inProgress[file.name] = { name: file.name, size: file.size, workspacePath: workspacePath };
       var _self = this;
-      req = new XMLHttpRequest();
+      var req = new XMLHttpRequest();
       req.upload.addEventListener('progress', function (evt) {
         // console.log("evt: ", evt);
         // console.log("progress: ", (evt.loaded / evt.total) * 100);

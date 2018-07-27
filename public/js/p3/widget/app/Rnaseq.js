@@ -118,29 +118,29 @@ define([
       if (disable) {
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
-        this.destroyLib(lrec = {}, query_id = true, id_type = 'design');
-        dojo.addClass(this.condTable, 'disabled');
+        this.destroyLib({}, true, 'design');
+        domClass.add(this.condTable, 'disabled');
         this.numContrastWidget.set('value', Number(1));
-        this.destroyContrastRow(query_id = true, id_type = 'contrast');
-        dojo.addClass(this.contrastTable, 'disabled');
+        this.destroyContrastRow(true, 'contrast');
+        domClass.add(this.contrastTable, 'disabled');
       }
       else {
         // this.block_condition.hide();
         this.numCondWidget.set('value', Number(this.addedCond.counter));
-        this.destroyLib(lrec = {}, query_id = false, id_type = 'design');
-        dojo.removeClass(this.condTable, 'disabled');
+        this.destroyLib({}, false, 'design');
+        domClass.remove(this.condTable, 'disabled');
         this.numContrastWidget.set('value', Number(this.addedContrast.counter));
-        this.destroyContrastRow(query_id = false, id_type = 'contrast');
+        this.destroyContrastRow(false, 'contrast');
         if (this.contrastEnabled) {
-          dojo.removeClass(this.contrastTable, 'disabled');
+          domClass.remove(this.contrastTable, 'disabled');
         }
       }
     },
 
     emptyTable: function (target, rowLimit, colNum) {
-      for (i = 0; i < rowLimit; i++) {
+      for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
-        for (j = 0; j < colNum; j++) {
+        for (var j = 0; j < colNum; j++) {
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         }
       }
@@ -338,7 +338,7 @@ define([
       }));
       // because its removing rows cells from array needs separate loop
       toDestroy.forEach(lang.hitch(this, function (id) {
-        this.destroyLib(lrec = {}, query_id = id, 'id');
+        this.destroyLib({}, id, 'id');
       }));
     },
 
@@ -382,7 +382,7 @@ define([
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       var conditionSize = this.conditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
-        this.updateConditionStore(record = lrec, remove = false);
+        this.updateConditionStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
       if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length) {
@@ -403,9 +403,9 @@ define([
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
-          this.destroyLib(lrec, query_id = lrec.condition, id_type = 'condition');
+          this.destroyLib(lrec, lrec.condition, 'condition');
           // this.destroyContrastRow(query_id = lrec["condition"]);
-          this.updateConditionStore(record = lrec, remove = true);
+          this.updateConditionStore(lrec, true);
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
           if (this.addedCond.counter < this.maxConditions) {
             var ntr = this.condTable.insertRow(-1);
@@ -431,7 +431,7 @@ define([
         // remove condition from data store
         toRemove.forEach(function (obj) {
           if (obj.libraries) {
-            libraries.forEach(function (lib_row) {
+            obj.libraries.forEach(function (lib_row) {
               lib_row.remove();
             });
           }
@@ -457,7 +457,7 @@ define([
         // remove condition from data store
         toRemove.forEach(function (obj) {
           if (obj.contrasts) {
-            contrasts.forEach(function (contrast_row) {
+            obj.contrasts.forEach(function (contrast_row) {
               contrast_row.remove();
             });
           }
@@ -476,7 +476,7 @@ define([
       var chkPassed = this.ingestAttachPoints(this.contrastToAttachPt, lrec);
       var contrastSize = this.contrastStore.data.length;
       if (this.addedContrast.counter < this.maxContrasts) {
-        this.updateContrastStore(record = lrec, remove = false);
+        this.updateContrastStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
       if (chkPassed && !disable && this.addedContrast.counter < this.maxContrasts && contrastSize < this.contrastStore.data.length) {
@@ -503,7 +503,7 @@ define([
         var handle = on(tdx, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
-          this.updateContrastStore(record = lrec, remove = true);
+          this.updateContrastStore(lrec, true);
           this.decreaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
           if (this.addedContrast.counter < this.maxContrasts) {
             var ntr = this.condTable.insertRow(-1);
@@ -514,7 +514,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.destroyContrastRow(query_id = lrec.contrast, id_type = 'contrast');
+          this.destroyContrastRow(lrec.contrast, 'contrast');
         }));
         this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
       }
@@ -588,7 +588,7 @@ define([
           advPairInfo.push('Condition:' + lrec.condition);
         }
         if (advPairInfo.length) {
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
           new Tooltip({
@@ -608,7 +608,7 @@ define([
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLib(lrec, query_id = lrec.id, 'id');
+          this.destroyLib(lrec, lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.createLib(lrec);
@@ -720,7 +720,7 @@ define([
         }
         if (advPairInfo.length) {
           lrec.design = true;
-          condition_icon = this.getConditionIcon(lrec.condition);
+          var condition_icon = this.getConditionIcon(lrec.condition);
           var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
           new Tooltip({
             connectId: [tdinfo],
@@ -739,7 +739,7 @@ define([
           this.libsTable.deleteRow(-1);
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          this.destroyLib(lrec, query_id = lrec.id, 'id');
+          this.destroyLib(lrec, lrec.id, 'id');
         }));
         lrec.handle = handle;
         this.createLib(lrec);

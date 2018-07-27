@@ -10,7 +10,7 @@ define([
   on, Topic, domConstruct, dom, Query, when, request, All,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, saveAs
+  ContainerActionBar, saveAs, KeggMapPainter
 ) {
 
   var legend = '<div class="kegg-map-legend-color-box white"></div><div class="kegg-map-legend-label">Not Annotated</div><div class="clear"></div>' +
@@ -165,7 +165,7 @@ define([
         _self.addChild(new ContentPane({
           region: 'center',
           style: 'padding:0',
-          content: '<svg id="map_wrapper" style="width:' + width + 'px;height:' + height + 'px;position:absolute;"><g><image width="' + width + '" height="' + height + '" xlink:href="' + base64Img + '" /></g><g id="map_div"></g></svg>'
+          content: '<svg id="map_wrapper" style="width:' + width + 'px;height:' + height + 'px;position:absolute;"><g><image width="' + width + '" height="' + height + '" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + base64Img + '" /></g><g id="map_div"></g></svg>'
         }));
       });
 
@@ -197,11 +197,11 @@ define([
         var data = result[0];
 
         // initialize
-        self.pNS = new PathwayPainter();
+        self.pNS = new KeggMapPainter.PathwayPainter();
 
         // process all ECs
         data.all_coordinates.forEach(function (box) {
-          self.pNS.data.push(new boxData(box));
+          self.pNS.data.push(new KeggMapPainter.boxData(box));
         });
 
         // present

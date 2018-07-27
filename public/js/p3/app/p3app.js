@@ -321,6 +321,7 @@ define([
         var parts = path.split('/');
         parts.shift();
         var type = parts.shift();
+        var viewerParams;
         /* istanbul ignore if */
         if (parts.length > 0) {
           viewerParams = parts.join('/');
@@ -399,13 +400,11 @@ define([
     timeout: function () {
       setTimeout(function () {
         // check if logged out and another tab is open
-        if (localStorage.getItem('tokenstring') === null) {
+        if (!localStorage.getItem('tokenstring')) {
           if (document.getElementsByClassName('Authenticated').length > 0) {
-            // console.log(document.body.className);
             document.body.className = document.body.className.replace('Authenticated', '');
-            // console.log(document.body.className);
+            // console.log("Redirect");
             window.location.assign('/');
-            console.log('you are logged out now');
           }
         } else {
           // check if token has expired
@@ -417,16 +416,28 @@ define([
     checkLogin: function () {
       // console.log(window.App.uploadInProgress);
       // console.log('checking for login');
-      if (localStorage.getItem('tokenstring') !== null) {
+      if (localStorage.getItem('tokenstring')) {
         var auth = localStorage.getItem('auth');
-        auth = JSON.parse(auth);
-        var validToken = this.checkExpToken(auth.expiry);
-        console.log('this is a valid token: ' + validToken );
-        if (validToken && window.App.alreadyLoggedIn) {
-          return;
+        // console.log('Auth: ', auth);
+        var validToken = false;
+        if (auth) {
+          // console.log('Parse auth json', auth);
+          auth = JSON.parse(auth);
+          // console.log('Auth: ', auth);
+          // console.log('CheckExpToken', auth.expiry);
+          if (auth.expiry) {
+            validToken = this.checkExpToken(auth.expiry);
+            // console.log('this is a valid token: ' + validToken );
+            if (validToken && window.App.alreadyLoggedIn) {
+              return;
+            }
+          } else {
+            validToken = false;
+          }
         }
-        // console.log(validToken);
-        if (validToken && !window.App.alreadyLoggedIn) {
+
+        console.log('Valid Token: ', validToken);
+        if (validToken) { // && !window.App.alreadyLoggedIn) {
           if (!document.body.className.includes('Authenticated')) {
             document.body.className += 'Authenticated';
             // console.log('add to body class');
@@ -492,7 +503,7 @@ define([
       var Aauth = localStorage.getItem('Aauth');
       auth = JSON.parse(auth);
       Aauth = JSON.parse(Aauth);
-      if (auth.roles !== null && auth.roles !== undefined) {
+      if (auth && auth.roles) {
         if (auth.roles.includes('admin')) {
           suLink[0].style.display = 'block';
         } else {
@@ -501,16 +512,15 @@ define([
       } else {
         suLink[0].style.display = 'none';
       }
-      if (Aauth !== undefined && Aauth !== null) {
-        if (Aauth.roles !== null && Aauth.roles !== undefined) {
-          if (Aauth.roles.includes('admin')) {
-            sbLink[0].style.display = 'block';
-          } else {
-            sbLink[0].style.display = 'none';
-          }
+      // condition for suSwitchBack button
+      if (Aauth && Aauth.roles) {
+        if (Aauth.roles.includes('admin')) {
+          sbLink[0].style.display = 'block';
         } else {
           sbLink[0].style.display = 'none';
         }
+      } else {
+        sbLink[0].style.display = 'none';
       }
     },
     suSwitchBack: function () {
@@ -530,11 +540,12 @@ define([
     checkExpToken: function (date) {
       var d = new Date();
       var checkd = d.valueOf() / 1000;
-      // console.log(checkd);
+      console.log('Current Date: ', checkd);
       if (checkd > date) {
-        // console.log('expired');
+        console.log('expired');
         return false;
-      } return true;
+      }
+      return true;
     },
     login: function (data, token) {
       // console.log(data);

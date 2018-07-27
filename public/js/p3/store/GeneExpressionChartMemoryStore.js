@@ -130,7 +130,7 @@ define([
         qr.total = when(results, function (results) {
           return results.total || results.length;
         });
-        console.log('In MemoryStore query, results ... ', results);
+        // console.log('In MemoryStore query, results ... ', results);
         return results;
       }));
 
@@ -144,7 +144,7 @@ define([
       }
       var _self = this;
       return when(this.loadData(), function () {
-        return _self.get(id, options);
+        return _self.get(id, opts);
       });
 
     },
@@ -223,7 +223,7 @@ define([
         },
         handleAs: 'json'
       }), function (response) {
-        console.log('!!!!In GeneExpressionChartMemoryStore loadData(): response.response:', response);
+        // console.log('!!!!In GeneExpressionChartMemoryStore loadData(): response.response:', response);
         var data = [];
         var logRatioArray = [];
         var zscoreArray = [];

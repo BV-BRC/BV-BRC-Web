@@ -333,7 +333,6 @@ define("p3/widget/AdvancedSearch", [
     _setSearchResultsAttr: function (val) {
       this.searchResults = val;
 
-      var foundContent = false;
       var resultCounts = {};
       var singleResults = {};
 
@@ -346,7 +345,7 @@ define("p3/widget/AdvancedSearch", [
 
         if (total > 0) { // && total<4){
           var out = [];
-          foundContent = true;
+          // foundContent = true;
           if (this['format' + type]) {
             singleResults[type] = this['format' + type](docs, total);
             out.push(singleResults[type]);

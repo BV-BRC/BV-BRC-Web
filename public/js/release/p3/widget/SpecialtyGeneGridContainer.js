@@ -20,6 +20,7 @@ define("p3/widget/SpecialtyGeneGridContainer", [
 
   return declare([GridContainer], {
     containerType: 'spgene_data',
+    tutorialLink: 'user_guides/organisms_taxon/specialty_genes.html',
     facetFields: ['public', 'property', 'source', 'evidence', 'classification', 'antibiotics_class', 'antibiotics'],
     maxGenomeCount: 10000,
     dataModel: 'sp_gene',
