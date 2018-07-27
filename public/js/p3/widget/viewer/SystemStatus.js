@@ -30,11 +30,11 @@ define([
         link: 'https://github.com/TheSEED/app_service'
       }, {
         name: 'Shock',
-        endpoint: 'http://p3.theseed.org/services/shock_api',
+        configKey: 'shockServiceURL',
         link: 'https://github.com/MG-RAST/Shock'
       }, {
         name: 'ProbModelSEED',
-        endpoint: 'http://p3.theseed.org/services/ProbModelSEED/',
+        configKey: 'probModelSeedServiceURL',
         link: 'https://github.com/ModelSEED/ProbModelSEED'
       },
       // need ping endpoint

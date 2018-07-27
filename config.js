@@ -14,6 +14,8 @@ const defaults = {
   'homologyServiceURL': 'https://p3.theseed.org/services/homology_service',
   'genomedistanceServiceURL': 'https://p3.theseed.org/services/minhash_service',
   'compareregionServiceURL': 'https://p3.theseed.org/services/compare_regions',
+  'probModelSeedServiceURL': 'https://p3.theseed.org/services/ProbModelSEED', // only for status dashboard
+  'shockServiceURL': 'https://p3.theseed.org/services/shock_api', // only for status dashboard
   dataServiceURL: 'https://p3.theseed.org/services/data_api',
   accountURL: 'http://user.patric.local:3002/',
   docsServiceURL: 'https://docs.patricbrc.org/',
