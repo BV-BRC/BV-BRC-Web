@@ -19,6 +19,10 @@ define([
         valid = valid && v.description;
       }
 
+      if (!window.App.authorizationToken) {
+        valid = valid && v.email;
+      }
+
       if (valid) {
         this.saveButton.set('disabled', false);
       } else {
