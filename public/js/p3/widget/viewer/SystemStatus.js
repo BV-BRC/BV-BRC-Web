@@ -175,7 +175,8 @@ define([
       }
 
       if (this.token) {
-        var p6 = Deferred.when(this.msAPI('ProbModelSEED.list_models', [{ path: '/' }]),
+        var path = '/' + window.App.user.id;
+        var p6 = Deferred.when(this.msAPI('ProbModelSEED.list_models', [{ path: path }]),
           function (res) {
             self.setDomStatus('ProbModelSEED', 'success');
           }, function () {
