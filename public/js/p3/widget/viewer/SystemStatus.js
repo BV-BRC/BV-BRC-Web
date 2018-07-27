@@ -104,15 +104,15 @@ define([
       // render init dom
       this.render();
 
-      this.token = token = window.App.authorizationToken;
+      this.token = window.App.authorizationToken;
       this.headers =  {
         headers: {
-          'Authorization': 'OAuth ' + token,
+          'Authorization': 'OAuth ' + this.token,
           'X-Requested-With': false       // for shock
         }
-      }
+      };
 
-      this.msAPI = RPC(this.getUrl('ProbModelSEED'), token);
+      this.msAPI = RPC(this.getUrl('ProbModelSEED'), this.token);
 
       if (this.noPolling()) return;
       this.pollStatus();
@@ -139,7 +139,7 @@ define([
               return;
             }
           } catch (e) {
-            console.log('Error with Data API: ', e)
+            console.log('Error with Data API: ', e);
             self.setDomStatus('Data API', 'fail');
             return;
           }
@@ -232,7 +232,7 @@ define([
         // results will be an Array
         self.updateTime();
         setTimeout(function () {
-          self.pollStatus()
+          self.pollStatus();
         }, self.timeout);
       });
     },
