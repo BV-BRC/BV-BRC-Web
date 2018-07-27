@@ -286,7 +286,6 @@ define([
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'PATRIC Workspace';
-        // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
 
@@ -300,6 +299,21 @@ define([
 
         _self.navigate(newState);
       });
+
+      Router.register('/status', function (params, path) {
+        var newState = populateState(params);
+
+        /* istanbul ignore next */
+        var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/viewer/SystemStatus';
+        newState.value = path;
+        newState.set = 'path';
+        newState.requireAuth = false;
+        newState.pageTitle = 'System Status';
+
+        _self.navigate(newState);
+      });
+
 
       Router.register('/app(/.*)', function (params, path) {
         // console.log("view URL Callback", arguments);

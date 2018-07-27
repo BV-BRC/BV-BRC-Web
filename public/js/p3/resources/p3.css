@@ -1286,3 +1286,20 @@ body footer.main-footer ul.left {
     background-color: #f0ad4e;
     border-color: #eea236;
 }
+
+
+/**
+ * system status page
+ */
+
+.SystemStatus {
+    margin: 50px 150px 0 150px;
+}
+
+.SystemStatus i.success{
+    color: #22b900;
+}
+
+.SystemStatus i.fail {
+    color: #bd0000;
+}

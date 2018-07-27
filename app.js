@@ -20,6 +20,7 @@ var contentViewer = require('./routes/content');
 var apps = require('./routes/apps');
 var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
+var systemStatus = require('./routes/systemStatus');
 var help = require('./routes/help');
 var app = express();
 var httpProxy = require('http-proxy');
@@ -121,6 +122,7 @@ app.use('/view', viewers);
 app.use('/search', search);
 app.use('/app', apps);
 app.use('/job', jobs);
+app.use('/status', systemStatus);  // system status page
 app.use('/help', help);
 app.use('/uploads', uploads);
 app.use('/users', users);
