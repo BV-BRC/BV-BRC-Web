@@ -802,7 +802,6 @@ define([
         self.set('selection', '');
       });
 
-      console.log('selfpath', self.path);
       if (this.autoSelectCurrent) {
         var sel = self.sanitizeSelection(self.path);
 
