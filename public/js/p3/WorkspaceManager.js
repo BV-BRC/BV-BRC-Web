@@ -123,6 +123,11 @@ define([
     },
 
     addToGroup: function (groupPath, idType, ids) {
+      Topic.publish('/Notification', {
+        message: '<span class="default">Adding ' + ids.length +
+        ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
+      });
+
       var _self = this;
       return Deferred.when(this.getObject(groupPath), function (res) {
         if (typeof res.data == 'string') {
@@ -152,7 +157,8 @@ define([
           }
           return Deferred.when(_self.updateObject(res.metadata, res.data), function (r) {
             Topic.publish('/Notification', {
-              message: idsFiltered.length + ' unique items added to group ' + groupPath,
+              message: idsFiltered.length + ' unique item' +
+                (!idsFiltered.length || idsFiltered.length > 1 ? 's' : '') + ' added to group ' + groupPath,
               type: 'message'
             });
             return r;
