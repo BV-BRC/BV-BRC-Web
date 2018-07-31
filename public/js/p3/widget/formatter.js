@@ -359,6 +359,10 @@ define(
         }
       },
       wsItemType: function (val) {
+        if (val.substring(0, 10) === 'job_result') {
+          return '<i class="fa icon-flag-checkered fa-1x" title="' + val.substring(11) + '" />';
+        }
+
         switch (val) {
           case 'parentfolder':
             return '<i class="fa icon-level-up fa-1x" title="Folder" />';
@@ -380,12 +384,6 @@ define(
             return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
           case 'job_result_DifferentialExpression':
             return '<i class="fa icon-lab fa-1x" title="DiffExp" />';
-          case 'job_result_GenomeAnnotation':
-            return '<i class="fa icon-flag-checkered fa-1x" title="Annotation" />';
-          case 'job_result_GenomeAssembly':
-            return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
-          case 'job_result_RNASeq':
-            return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
           default:
             return '<i class="fa icon-file-text-o fa-1x" title="' + (val || 'Unspecified Document Type') + '" />';
         }
