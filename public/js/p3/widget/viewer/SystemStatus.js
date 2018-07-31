@@ -19,23 +19,18 @@ define([
       }, {
         name: 'Data API',
         configKey: 'dataAPI',
-        link: 'https://github.com/PATRIC3/p3_api'
       }, {
         name: 'Workspace',
-        configKey: 'workspaceServiceURL',
-        link: 'https://github.com/PATRIC3/Workspace'
+        configKey: 'workspaceServiceURL'
       }, {
         name: 'App Service',
-        configKey: 'serviceAPI',
-        link: 'https://github.com/TheSEED/app_service'
+        configKey: 'serviceAPI'
       }, {
         name: 'Shock',
-        configKey: 'shockServiceURL',
-        link: 'https://github.com/MG-RAST/Shock'
+        configKey: 'shockServiceURL'
       }, {
         name: 'ProbModelSEED',
-        configKey: 'probModelSeedServiceURL',
-        link: 'https://github.com/ModelSEED/ProbModelSEED'
+        configKey: 'probModelSeedServiceURL'
       },
       // need ping endpoint
       // {
@@ -81,7 +76,7 @@ define([
         // adding rows of user, perm selector, and trash button
         var row = domConstruct.toDom(
           '<tr>' +
-            '<td>' + (link ? '<a href="' + link + '" >' + name + ' <i class="icon-external-link"></i></a> ' : name) +
+            '<td>' + name +
             '<td>' + endpoint +
             '<td style="text-align:center; white-space:nowrap;" data-name="' + name + '">loading...</i>'
         );
@@ -105,13 +100,6 @@ define([
       this.render();
 
       this.token = window.App.authorizationToken;
-      this.headers =  {
-        headers: {
-          'Authorization': 'OAuth ' + this.token,
-          'X-Requested-With': false       // for shock
-        }
-      };
-
       this.msAPI = RPC(this.getUrl('ProbModelSEED'), this.token);
 
       if (this.noPolling()) return;
@@ -163,16 +151,15 @@ define([
           self.setDomStatus('App Service', 'fail');
         });
 
-      if (this.token) {
-        var p5 = xhr(this.getUrl('Shock') + '/node', this.headers)
-          .then(function () {
-            self.setDomStatus('Shock', 'success');
-          }, function () {
-            self.setDomStatus('Shock', 'fail');
-          });
-      } else {
-        html.set(query('[data-name="Shock"]', this.table)[0], 'login required');
-      }
+      var p5 = xhr(this.getUrl('Shock') + '/node', {
+        headers: {
+          'X-Requested-With': false
+        }
+      }).then(function () {
+        self.setDomStatus('Shock', 'success');
+      }, function () {
+        self.setDomStatus('Shock', 'fail');
+      });
 
       if (this.token) {
         var path = '/' + window.App.user.id;
