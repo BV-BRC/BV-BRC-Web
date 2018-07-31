@@ -371,6 +371,18 @@ define([
 
       }, false);
 
+      // XXX WIP
+      // this.actionPanel.addAction('ViewAnnotatedGenome', 'fa icon-eye fa-2x', {
+      //   label: 'VIEW',
+      //   multiple: false,
+      //   validTypes: ['GenomeAnnotation', 'GenomeAnnotationGenbank'],
+      //   tooltip: 'View Annotated Genome'
+      // }, function (selection) {
+      //   console.log("View Annotated Genome selection: ", selection);
+      //   var gid = selection[0].reference_genome_id;
+      //   Topic.publish('/navigate', { href: '/view/Genome/' + gid });
+      // }, false);
+
       this.browserHeader.addAction('ViewModel', 'fa icon-eye fa-2x', {
         label: 'VIEW <i class="icon-external-link"></i>',
         multiple: false,
@@ -1304,7 +1316,9 @@ define([
                   Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
                   this.actionPanel.set('selection', []);
                   this.itemDetailPanel.set('selection', []);
-                  newPanel.clearSelection();
+                  if ('clearSelection' in newPanel) {
+                      newPanel.clearSelection();
+                  }
                 } else {
                   console.log('non-navigable type, todo: show info panel when dblclick');
                 }
