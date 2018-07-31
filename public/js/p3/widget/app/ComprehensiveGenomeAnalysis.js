@@ -20,7 +20,7 @@ define([
     templateString: Template,
     applicationName: 'ComprehensiveGenomeAnalysis',
     applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
-    tutorialLink: 'tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html',
+    tutorialLink: 'tutorial/submitting-the-comprehensive-genome-analysis-job/submitting-the-comprehensive-genome-job.html',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,
