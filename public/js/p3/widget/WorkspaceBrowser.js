@@ -1264,76 +1264,68 @@ define([
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          // console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
-          if (!this.activePanel || !(this.activePanel instanceof Panel)) {
-            if (this.activePanel) {
-              this.removeChild(this.activePanel);
-            }
-            // console.log("Creeate New Active Panel");
-            var newPanel = new Panel(params);
-            var hideTimer;
+          if (this.activePanel) {
+            this.removeChild(this.activePanel);
+          }
+          // console.log("Creeate New Active Panel");
+          var newPanel = new Panel(params);
+          var hideTimer;
 
-            if (this.actionPanel) {
-              this.actionPanel.set('currentContainerWidget', newPanel);
-              this.itemDetailPanel.set('containerWidget', newPanel);
-            }
+          if (this.actionPanel) {
+            this.actionPanel.set('currentContainerWidget', newPanel);
+            this.itemDetailPanel.set('containerWidget', newPanel);
+          }
 
-            if (newPanel.on) {
-              newPanel.on('select', lang.hitch(this, function (evt) {
+          if (newPanel.on) {
+            newPanel.on('select', lang.hitch(this, function (evt) {
+              var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
+                // console.log("Row: ", evt.grid.row(rownum).data);
+                return evt.grid.row(rownum).data;
+              }));
+
+              if (hideTimer) {
+                clearTimeout(hideTimer);
+              }
+              if (sel.length > 0) {
+                this.addChild(this.actionPanel);
+              }
+
+              this.actionPanel.set('selection', sel);
+              this.itemDetailPanel.set('selection', sel);
+            }));
+
+            newPanel.on('deselect', lang.hitch(this, function (evt) {
+
+              if (!evt.selected) {
+                this.actionPanel.set('selection', []);
+                this.itemDetailPanel.set('selection', []);
+              } else {
                 var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
-                  // console.log("Row: ", evt.grid.row(rownum).data);
                   return evt.grid.row(rownum).data;
                 }));
+              }
 
-                if (hideTimer) {
-                  clearTimeout(hideTimer);
+              this.actionPanel.set('selection', sel);
+              this.itemDetailPanel.set('selection', sel);
+            }));
+
+            newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
+              if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
+                Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                this.actionPanel.set('selection', []);
+                this.itemDetailPanel.set('selection', []);
+                if ('clearSelection' in newPanel) {
+                    newPanel.clearSelection();
                 }
-                if (sel.length > 0) {
-                  this.addChild(this.actionPanel);
-                }
+              } else {
+                console.log('non-navigable type, todo: show info panel when dblclick');
+              }
 
-                this.actionPanel.set('selection', sel);
-                this.itemDetailPanel.set('selection', sel);
-              }));
-
-              newPanel.on('deselect', lang.hitch(this, function (evt) {
-
-                if (!evt.selected) {
-                  this.actionPanel.set('selection', []);
-                  this.itemDetailPanel.set('selection', []);
-                } else {
-                  var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
-                    return evt.grid.row(rownum).data;
-                  }));
-                }
-
-                this.actionPanel.set('selection', sel);
-                this.itemDetailPanel.set('selection', sel);
-              }));
-
-              newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
-                if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                  Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
-                  this.actionPanel.set('selection', []);
-                  this.itemDetailPanel.set('selection', []);
-                  if ('clearSelection' in newPanel) {
-                      newPanel.clearSelection();
-                  }
-                } else {
-                  console.log('non-navigable type, todo: show info panel when dblclick');
-                }
-
-              }));
-            }
-
-            this.addChild(newPanel);
-            this.activePanel = newPanel;
-          } else {
-            this.activePanel.set('path', this.path);
-            if (this.activePaneal && 'clearSelection' in this.activePaneal) {
-              this.activePanel.clearSelection();
-            }
+            }));
           }
+
+          this.addChild(newPanel);
+          this.activePanel = newPanel;
 
           // var parts = this.path.split('/').filter(function (x) {
           //   return x != '';
