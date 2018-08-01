@@ -133,6 +133,7 @@ define([
       on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true });
     },
     onCopy: function (evt) {
+      this.copyButton.set('disabled', true);
 
       if (!this.idType) {
         this.idType = 'genome_id';
