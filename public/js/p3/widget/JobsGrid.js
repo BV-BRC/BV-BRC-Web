@@ -190,6 +190,17 @@ define(
           on.emit(_self.domNode, 'deselect', newEvt);
         });
 
+        this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
+          var row = _self.row(evt);
+          console.log('JobsGrid:dblclick: ', row)
+
+          on.emit(_self.domNode, 'ItemDblClick', {
+            selected: row.data,
+            bubbles: true,
+            cancelable: true
+          });
+        });
+
         this.refresh();
 
       }
