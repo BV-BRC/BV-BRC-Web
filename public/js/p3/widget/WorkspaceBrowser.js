@@ -1315,7 +1315,7 @@ define([
                 this.actionPanel.set('selection', []);
                 this.itemDetailPanel.set('selection', []);
                 if ('clearSelection' in newPanel) {
-                    newPanel.clearSelection();
+                  newPanel.clearSelection();
                 }
               } else {
                 console.log('non-navigable type, todo: show info panel when dblclick');

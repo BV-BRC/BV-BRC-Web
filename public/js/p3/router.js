@@ -72,7 +72,7 @@ define(['dojo/_base/declare', 'dojo/router/RouterBase'
         window.history.pushState(state || {}, 'route', href);
         this._handlePathChange(href, state || {});
       } else if (state) {
-        window.history.replaceState(state || {}, "route", href);
+        window.history.replaceState(state || {}, 'route', href);
       }
     },
 
