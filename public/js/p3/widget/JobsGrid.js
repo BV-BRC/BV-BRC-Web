@@ -192,7 +192,7 @@ define(
 
         this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
           var row = _self.row(evt);
-          console.log('JobsGrid:dblclick: ', row)
+          // console.log('JobsGrid:dblclick: ', row);
 
           on.emit(_self.domNode, 'ItemDblClick', {
             selected: row.data,
