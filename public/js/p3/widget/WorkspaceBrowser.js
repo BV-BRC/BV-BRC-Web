@@ -532,7 +532,7 @@ define([
         validTypes: ['RNASeq', 'TnSeq', 'Variation'],
         tooltip: 'View tracks in genome browser.'
       }, function (selection) {
-        // console.log("View Tracks: ", selection[0]);
+        // console.log("View Tracks: ", this);
         var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
         var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
