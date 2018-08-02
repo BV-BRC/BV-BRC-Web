@@ -276,6 +276,7 @@ define([
 
       var type = this.uploadType.get('value');
       if (type && this.knownTypes[type]) {
+        this.onUploadTypeChanged(type); /*
         var description = this.knownTypes[type].description;
         if (description) {
           domClass.remove(this.typeDescriptionContainer, 'dijitHidden');
@@ -285,6 +286,7 @@ define([
         }
       } else {
         domClass.add(this.typeDescriptionContainer, 'dijitHidden');
+      } */
       }
 
       if (!this.path) {
@@ -367,7 +369,8 @@ define([
       if (!validFiles || validFiles.length < 1) {
         valid = false;
       }
-
+      // This is a quick fix for "selected "Upload type is not kept", will revisit later DX
+      this.onUploadTypeChanged(this.uploadType.get('value'));
       if (valid) {
         this.saveButton.set('disabled', false);
       } else {
