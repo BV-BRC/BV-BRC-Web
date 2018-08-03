@@ -18,7 +18,7 @@ define([
         configKey: 'userServiceURL'
       }, {
         name: 'Data API',
-        configKey: 'dataAPI',
+        configKey: 'dataAPI'
       }, {
         name: 'Workspace',
         configKey: 'workspaceServiceURL'
@@ -70,7 +70,6 @@ define([
 
       this.services.forEach(function (s) {
         var name = s.name,
-          link = s.link,
           endpoint = s.endpoint;
 
         // adding rows of user, perm selector, and trash button
