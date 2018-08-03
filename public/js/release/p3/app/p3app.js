@@ -286,7 +286,6 @@ define("p3/app/p3app", [
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'PATRIC Workspace';
-        // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
 
@@ -300,6 +299,21 @@ define("p3/app/p3app", [
 
         _self.navigate(newState);
       });
+
+      Router.register('/status', function (params, path) {
+        var newState = populateState(params);
+
+        /* istanbul ignore next */
+        var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/viewer/SystemStatus';
+        newState.value = path;
+        newState.set = 'path';
+        newState.requireAuth = false;
+        newState.pageTitle = 'System Status';
+
+        _self.navigate(newState);
+      });
+
 
       Router.register('/app(/.*)', function (params, path) {
         // console.log("view URL Callback", arguments);
@@ -498,16 +512,15 @@ define("p3/app/p3app", [
       } else {
         suLink[0].style.display = 'none';
       }
-      if (Aauth) {
-        if (Aauth.roles && Aauth.roles instanceof Array) {
-          if (Aauth.roles.includes('admin')) {
-            sbLink[0].style.display = 'block';
-          } else {
-            sbLink[0].style.display = 'none';
-          }
+      // condition for suSwitchBack button
+      if (Aauth && Aauth.roles) {
+        if (Aauth.roles.includes('admin')) {
+          sbLink[0].style.display = 'block';
         } else {
           sbLink[0].style.display = 'none';
         }
+      } else {
+        sbLink[0].style.display = 'none';
       }
     },
     suSwitchBack: function () {

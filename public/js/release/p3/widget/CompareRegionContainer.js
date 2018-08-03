@@ -86,7 +86,8 @@ define("p3/widget/CompareRegionContainer", [
             console.log(err);
             new Dialog({
               title: 'Please report this error: ' + err.name,
-              content: err.message
+              content: err.message,
+              style: 'width: 300px'
             }).show();
           }
           this.loadingMask.hide();

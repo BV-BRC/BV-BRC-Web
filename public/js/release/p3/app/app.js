@@ -281,7 +281,7 @@ define("p3/app/app", [
       /* istanbul ignore next */
       on(window, 'message', function (msg) {
         // console.log('onMessage: ', msg);
-        if (msg && msg.data === 'RemoteReady') {
+        if (msg && (msg.data === 'RemoteReady' || !msg.data)) {
           return;
         }
         msg = JSON.parse(msg.data);

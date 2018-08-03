@@ -1,7 +1,7 @@
 define("p3/widget/viewer/Seq", [
   'dojo/_base/declare', './JobResult', '../../WorkspaceManager',
-  'dojo/_base/Deferred', 'dojo/_base/lang'
-], function (declare, JobResult, WS, Deferred, lang) {
+  'dojo/_base/Deferred', 'dojo/_base/lang', 'dojo/query', 'dojo/dom-attr'
+], function (declare, JobResult, WS, Deferred, lang, query, domAttr) {
   return declare([JobResult], {
     containerType: 'Seq',
     streamables: null,
@@ -15,6 +15,12 @@ define("p3/widget/viewer/Seq", [
       this.urls = [];
       this.jbrowseUrl;
       var _self = this;
+
+      this.button = query('.icon-genome-browser')[0];
+      // domClass.toggle(this.button, 'disabled');
+      // domAttr.set(this.button, 'disabled', true);
+      // console.log('[JobResult.Seq] this.button: (disabled) ', this.button);
+
       this.getDownloadUrlsForFiles().then(function (objs) {
         _self.getJBrowseURLQueryParams();
       });
@@ -195,6 +201,10 @@ define("p3/widget/viewer/Seq", [
         + '&tracks=PATRICGenes,RefSeqGenes';
 
       // console.log("[Seq] url params: ", this.jbrowseUrl);
+      // domClass.toggle(this.button, 'disabled');
+      // domAttr.set(this.button, 'disabled', false);
+      // console.log('[JobResult.Seq] this.button: (enabled) ', this.button);
+
       return this.jbrowseUrl;
     }
   });
