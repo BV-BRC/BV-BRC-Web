@@ -15110,8 +15110,7 @@ div.appsublabel {
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
-  
-  width: 80%;
+  width: 95%;
   padding: 5px 0px;
 }
 #patric-homepage .browse-search .browse h3 {
@@ -16563,7 +16562,7 @@ table.p3basic td, th {
     border-left: #d3d3d3 1px solid;
 }
 table.striped tr:nth-child(odd) td,
-table.striped tr:nth-child(odd) th,
+table.striped tr:nth-child(odd):not(:first-child) th,
 table tr.even td {
     background: #f5f5f5;
 }
@@ -17361,4 +17360,13 @@ body footer.main-footer ul.left {
     color: #454545 !important;
     background-color: #f0ad4e;
     border-color: #eea236;
+}
+.SystemStatus {
+    margin: 50px 150px 0 150px;
+}
+.SystemStatus i.success{
+    color: #22b900;
+}
+.SystemStatus i.fail {
+    color: #bd0000;
 }

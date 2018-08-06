@@ -630,12 +630,17 @@ define("p3/widget/WorkspaceObjectSelector", [
     labelFunc: function (item, store) {
       var label = '<div style="font-size:1em; border-bottom:1px solid grey;">/';
       var pathParts = item.path.split('/');
-      var workspace = pathParts[2];
+      var workspace = pathParts[2]; // home
+      var firstDir = pathParts[3]; // first level under home or file name
+      var title = pathParts.filter(function (p, idx) { return idx > 1 && idx !== (pathParts.length - 1); }).map(function (p) { return p.replace(/^\./, ''); }).join('/');
       var labelParts = [workspace];
-      if (pathParts.length - 2 > 3) {
+      if (firstDir !== pathParts[pathParts.length - 1]) {
+        labelParts.push(firstDir);
+      }
+      if (pathParts.length - 3 > 3) {
         labelParts.push('...');
       }
-      if (pathParts.length - 2 > 2) {
+      if (pathParts.length - 3 > 2) {
         var parentFolder = pathParts[pathParts.length - 2];
         parentFolder = parentFolder.replace(/^\./, '');
         labelParts.push(parentFolder);
@@ -644,7 +649,7 @@ define("p3/widget/WorkspaceObjectSelector", [
         var objName = pathParts[pathParts.length - 1];
         labelParts.push(objName);
       }
-      labelParts[labelParts.length - 1] = '</br><span style="font-size:1.05em; font-weight:bold;">' + labelParts[labelParts.length - 1] + '</span></div>';
+      labelParts[labelParts.length - 1] = '</br><span style="font-size:1.05em; font-weight:bold;" title="/' + title + '">' + labelParts[labelParts.length - 1] + '</span></div>';
       label += labelParts.join('/');
       return label;
     },
@@ -799,7 +804,6 @@ define("p3/widget/WorkspaceObjectSelector", [
         self.set('selection', '');
       });
 
-      console.log('selfpath', self.path);
       if (this.autoSelectCurrent) {
         var sel = self.sanitizeSelection(self.path);
 

@@ -345,7 +345,7 @@ define("p3/widget/Phylogeny", [
         true
       ], [
         'UserGuide',
-        'fa icon-question-circle-o fa-2x',
+        'fa icon-info-circle fa-2x',
         {
           label: 'GUIDE',
           persistent: true,

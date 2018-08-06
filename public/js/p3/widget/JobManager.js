@@ -211,6 +211,13 @@ define([
 
       this.setupActions();
 
+      this.grid.on('ItemDblClick', lang.hitch(this, function (evt) {
+        // console.log('JobManager.ItemDblClick', evt);
+        if (evt.selected) {
+          Topic.publish('/navigate', { href: '/workspace' + evt.selected.parameters.output_path + '/' + evt.selected.parameters.output_file });
+        }
+      }));
+
       this.grid.on('select', lang.hitch(this, function (evt) {
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
           var d = evt.grid.row(rownum).data;

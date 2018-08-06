@@ -135,9 +135,12 @@ define("p3/widget/JobManager", [
         function (selection) {
           var sel = selection[0];
 
+          var descriptRequired = sel.status !== 'failed';
+
           try {
             var content =
-              '\n[Please feel free to add any additional information regarding this issue here.]\n\n\n' +
+              (descriptRequired ? '' :
+                '\n[Please feel free to add any additional information regarding this issue here.]\n\n\n') +
               '********************** JOB INFO *************************\n\n' +
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
@@ -159,7 +162,9 @@ define("p3/widget/JobManager", [
             type: 'reportProblem',
             params: {
               issueText: content,
-              issueSubject: 'Reporting Issue with ' + sel.app
+              issueSubject: 'Reporting Issue with ' + sel.app,
+              jobDescriptRequired: descriptRequired,
+              jobStatus: sel.status
             }
           });
         },
@@ -205,6 +210,13 @@ define("p3/widget/JobManager", [
       });
 
       this.setupActions();
+
+      this.grid.on('ItemDblClick', lang.hitch(this, function (evt) {
+        // console.log('JobManager.ItemDblClick', evt);
+        if (evt.selected) {
+          Topic.publish('/navigate', { href: '/workspace' + evt.selected.parameters.output_path + '/' + evt.selected.parameters.output_file });
+        }
+      }));
 
       this.grid.on('select', lang.hitch(this, function (evt) {
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {

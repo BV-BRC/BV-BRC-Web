@@ -37,19 +37,24 @@ define("p3/widget/TaxIDSelector", [
 
       var orig = this.store.query;
       this.store.query = lang.hitch(this.store, function (query, options) {
-        console.log('query: ', query);
-        console.log('Store Headers: ', _self.store.headers);
-        var q = '?eq(' + _self.searchAttr + ',' + query[_self.searchAttr] + ')';
-        if (_self.queryFilter) {
-          q += _self.queryFilter;
+        // console.log('query: ', query);
+        // console.log('Store Headers: ', _self.store.headers);
+        if (query[_self.searchAttr] && query[_self.searchAttr].toString().trim() != '') {
+          var q = '?eq(' + _self.searchAttr + ',' + query[_self.searchAttr] + ')';
+          if (_self.queryFilter) {
+            q += _self.queryFilter;
+          }
+
+          if (_self.resultFields && _self.resultFields.length > 0) {
+            q += '&select(' + _self.resultFields.join(',') + ')';
+          }
+          q += '&sort(+taxon_id)';
+          // console.log('Q: ', q);
+          return orig.apply(_self.store, [q, options]);
         }
 
-        if (_self.resultFields && _self.resultFields.length > 0) {
-          q += '&select(' + _self.resultFields.join(',') + ')';
-        }
-        q += '&sort(+taxon_id)';
-        console.log('Q: ', q);
-        return orig.apply(_self.store, [q, options]);
+        return [];
+
       });
     },
 
