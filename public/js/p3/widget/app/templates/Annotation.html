@@ -88,6 +88,16 @@
             data-dojo-attach-event="onChange:onOutputPathChange"></div>
           </div>
         </div>
+        <div class="appRow">
+          <label class="paramlabel">Annotation Recipe</label><br>
+          <select data-dojo-type="dijit/form/Select" name="recipe"
+            data-dojo-attach-point="recipe"
+            data-dojo-props="intermediateChanges:true"
+            style="width:300px" required="true">
+            <option value="default">Bacteria</option>
+            <option value="phage2">Phage</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="appSubmissionArea">
