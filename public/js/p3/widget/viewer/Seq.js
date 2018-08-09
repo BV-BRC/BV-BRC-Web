@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', './JobResult', '../../WorkspaceManager',
   'dojo/_base/Deferred', 'dojo/_base/lang', 'dojo/query', 'dojo/dom-attr',
-  'dojo/dom-class', "dojo/NodeList-traverse"
+  'dojo/dom-class', 'dojo/NodeList-traverse'
 ], function (declare, JobResult, WS, Deferred, lang, query, domAttr, domClass) {
   return declare([JobResult], {
     containerType: 'Seq',
@@ -21,7 +21,7 @@ define([
       // <div> nodes that have the 'rel' attribute set to 'ViewTracks', we take
       // the first match ([0]), and then find it's parent container with the
       // closest() method.
-      this.buttonWrapper = query('div [rel$=\'ViewTracks\']')[0].closest(".ActionButtonWrapper");
+      this.buttonWrapper = query('div [rel$=\'ViewTracks\']')[0].closest('.ActionButtonWrapper');
       domClass.toggle(this.buttonWrapper, 'disabled');
       // console.log('[JobResult.Seq] this.buttonWrapper: (disabled) ', this.buttonWrapper);
 
