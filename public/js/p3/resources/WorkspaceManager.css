@@ -318,6 +318,14 @@ th.dgrid-cell.wsItemMembers {
 	border-color: #ddd;
 }
 
+.ActionButtonWrapper.disabled,
+.ActionButtonWrapper.disabled .ActionButtonText,
+.ActionButtonWrapper.disabled .ActionButton.fa,
+.ActionButtonWrapper.disabled  {
+	color: #ddd;
+	border-color: #ddd;
+}
+
 .ActionButtonContainer {
 	float: left;
 	font-size:.85em;

@@ -1,7 +1,8 @@
 define([
   'dojo/_base/declare', './JobResult', '../../WorkspaceManager',
-  'dojo/_base/Deferred', 'dojo/_base/lang', 'dojo/query', 'dojo/dom-attr'
-], function (declare, JobResult, WS, Deferred, lang, query, domAttr) {
+  'dojo/_base/Deferred', 'dojo/_base/lang', 'dojo/query', 'dojo/dom-attr',
+  'dojo/dom-class', 'dojo/NodeList-traverse'
+], function (declare, JobResult, WS, Deferred, lang, query, domAttr, domClass) {
   return declare([JobResult], {
     containerType: 'Seq',
     streamables: null,
@@ -16,10 +17,13 @@ define([
       this.jbrowseUrl;
       var _self = this;
 
-      this.button = query('.icon-genome-browser')[0];
-      // domClass.toggle(this.button, 'disabled');
-      // domAttr.set(this.button, 'disabled', true);
-      // console.log('[JobResult.Seq] this.button: (disabled) ', this.button);
+      // This line is hard to understand.  Basically, we query the dom for all
+      // <div> nodes that have the 'rel' attribute set to 'ViewTracks', we take
+      // the first match ([0]), and then find it's parent container with the
+      // closest() method.
+      this.buttonWrapper = query('div [rel$=\'ViewTracks\']')[0].closest('.ActionButtonWrapper');
+      domClass.toggle(this.buttonWrapper, 'disabled');
+      // console.log('[JobResult.Seq] this.buttonWrapper: (disabled) ', this.buttonWrapper);
 
       this.getDownloadUrlsForFiles().then(function (objs) {
         _self.getJBrowseURLQueryParams();
@@ -201,9 +205,8 @@ define([
         + '&tracks=PATRICGenes,RefSeqGenes';
 
       // console.log("[Seq] url params: ", this.jbrowseUrl);
-      // domClass.toggle(this.button, 'disabled');
-      // domAttr.set(this.button, 'disabled', false);
-      // console.log('[JobResult.Seq] this.button: (enabled) ', this.button);
+      domClass.toggle(this.buttonWrapper, 'disabled');
+      // console.log('[JobResult.Seq] this.buttonWrapper: (enabled) ', this.buttonWrapper);
 
       return this.jbrowseUrl;
     }
