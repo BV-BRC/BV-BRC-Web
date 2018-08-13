@@ -1572,7 +1572,31 @@ define([
         }, {
           name: 'Culture Collection',
           text: 'culture_collection',
-          editable: true
+          editable: true,
+          link: function (obj) {
+            var ids = obj.culture_collection.split(',');
+
+            // culture collection may be a csv list
+            var parts = ids.map(function (id) {
+              var name = id.trim();
+
+              // may be of form "ATCC xxxxx" or "ATCC:xxxxx"
+              var regex = /ATCC[\s:]([\w-]*)/g;
+              var matches = regex.exec(id);
+              if (!matches || !matches.length) return id;
+
+              // get actual id number
+              var id = matches[1];
+
+              return lang.replace(
+                '<a href="https://www.atcc.org/Products/All/{id}.aspx" target="_blank">{name}</a>', {
+                  id: id,
+                  name: name
+                });
+            });
+
+            return parts.join(',');
+          }
         }, {
           name: 'Type Strain',
           text: 'type_strain',
