@@ -1580,7 +1580,7 @@ define([
             var parts = ids.map(function (id) {
               var name = id.trim();
 
-              // may be of form "ATCC xxxxx" or "ATCC:xxxxx"
+              // match "ATCC xxxxx" or "ATCC:xxxxx"
               var regex = /ATCC[\s:]([\w-]*)/g;
               var matches = regex.exec(id);
               if (!matches || !matches.length) return id;
@@ -1595,7 +1595,7 @@ define([
                 });
             });
 
-            return parts.join(',');
+            return parts.join(', ');
           }
         }, {
           name: 'Type Strain',
