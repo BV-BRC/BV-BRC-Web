@@ -139,6 +139,23 @@
                 </select>
               </div>
             </div>
+            <div class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">SRA run accession</label>
+                </div>
+                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">SRR Accession</label><br>
+                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateSRR" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Condition</label><br>
+                <select data-dojo-type="dijit/form/FilteringSelect" name="condition_srr" data-dojo-attach-point="condition_srr" style="width:300px" required="false" data-dojo-props="labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
+                </select>
+              </div>
+            </div>
           </td>
           <td>
             <div class="appBox appShadow" style="min-height: 320px; height:auto; width:330px">

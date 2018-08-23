@@ -4,14 +4,16 @@ define([
   'dojo/text!./templates/Rnaseq.html', './AppBase', 'dojo/dom-construct',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby'
+  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby',
+  'dojox/xml/parser', 'dojo/request'
 ], function (
   declare, WidgetBase, on,
   domClass,
   Template, AppBase, domConstruct,
   Deferred, aspect, lang, domReady, NumberTextBox,
   query, dom, popup, Tooltip, Dialog, TooltipDialog,
-  children, WorkspaceManager, Memory, Standby
+  children, WorkspaceManager, Memory, Standby,
+  xmlParser, xhr
 ) {
   return declare([AppBase], {
     baseClass: 'App Assembly',
@@ -22,12 +24,13 @@ define([
     pageTitle: 'RNA-Seq Analysis',
     libraryData: null,
     defaultPath: '',
-    startingRows: 11,
+    startingRows: 18,
     initConditions: 5,
     initContrasts: 8,
     maxConditions: 10,
     maxContrasts: 100,
     conditionStore: null,
+    srrValidationUrl: 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     hostGenomes: {
       9606.33: '', 6239.6: '', 7955.5: '', 7227.4: '', 9031.4: '', 9544.2: '', 10090.24: '', 9669.1: '', 10116.5: '', 9823.5: ''
     },
@@ -53,6 +56,8 @@ define([
       this.paramToAttachPt = { output_path: null, output_file: null, recipe: null };
       this.singleToAttachPt = { read: null };
       this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
+      this.srrToAttachPt = { srr_accession: null };
+      this.srrConditionToAttachPt = { srr_accession: null, condition_srr: ['condition'] };
       this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
       this.contrastToAttachPt = { contrast_cd1: ['condition1'], contrast_cd2: ['condition2'] };
       this.targetGenomeID = '';
@@ -77,7 +82,7 @@ define([
       _self.output_path.set('value', _self.defaultPath);
 
       // create help dialog for infobutton's with infobuttoninfo div's
-      this.emptyTable(this.libsTable, this.startingRows, 3);
+      this.emptyTable(this.libsTable, this.startingRows, 4);
       this.emptyTable(this.condTable, this.initConditions, 3);
       this.emptyTable(this.contrastTable, this.initContrasts, 5);
 
@@ -95,6 +100,7 @@ define([
         this.onDesignToggle();
       }));
       this.condition_single.labelFunc = this.showConditionLabels;
+      this.condition_srr.labelFunc = this.showConditionLabels;
       this.condition_paired.labelFunc = this.showConditionLabels;
       this.contrast_cd1.labelFunc = this.showConditionLabels;
       this.contrast_cd2.labelFunc = this.showConditionLabels;
@@ -109,13 +115,14 @@ define([
     },
 
     onDesignToggle: function () {
-      var disable = !this.exp_design.checked;
-      this.condition.set('disabled', disable);
-      this.condition_single.set('disabled', disable);
-      this.condition_paired.set('disabled', disable);
-      this.contrast_cd1.set('disabled', disable);
-      this.contrast_cd2.set('disabled', disable);
-      if (disable) {
+      var design_status = !this.exp_design.checked;
+      this.condition.set('disabled', design_status);
+      this.condition_single.set('disabled', design_status);
+      this.condition_srr.set('disabled', design_status);
+      this.condition_paired.set('disabled', design_status);
+      this.contrast_cd1.set('disabled', design_status);
+      this.contrast_cd2.set('disabled', design_status);
+      if (design_status) {
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
         this.destroyLib({}, true, 'design');
@@ -137,6 +144,121 @@ define([
       }
     },
 
+    onAddSRR: function () {
+      console.log('Create New Row', domConstruct);
+      var toIngest = this.exp_design.checked ? this.srrConditionToAttachPt : this.srrToAttachPt;
+      var accession = this.srr_accession.get("value");
+        // console.log("updateSRR", accession, accession.substr(0, 3))
+        // var prefixList = ['SRR', 'ERR']
+        // if(prefixList.indexOf(accession.substr(0, 3)) == -1){
+        //   this.srr_accession.set("state", "Error")
+        //   return false;
+        // }
+
+        // TODO: validate and populate title
+        // SRR5121082
+        this.srr_accession.set('disabled', true);
+        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
+            .then(lang.hitch(this, function (xml_resp) {
+            var resp = xmlParser.parse(xml_resp).documentElement;
+            this.srr_accession.set('disabled', false);
+            try {
+                var title = resp.children[0].childNodes[3].innerHTML;
+
+                this.srr_accession.set('state', '');
+                var lrec = { type: 'srr_accession', title: title };
+
+                var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+                if (chkPassed) {
+                var infoLabels = {
+                    title: { label: 'Title', value: 1 }
+                };
+                var tr = this.libsTable.insertRow(0);
+                lrec.row = tr;
+                //this code needs to be refactored to use addLibraryRow like the Assembly app
+                var td = domConstruct.create('td', { 'class': 'textcol srrdata', innerHTML: '' }, tr);
+                td.libRecord = lrec;
+                td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('srr_accession') + '</div>';
+                var advInfo = [];
+                //advInfo.push('SRA run accession '+this.makeLibraryName('srr_accession'));
+                this.addLibraryInfo(lrec, infoLabels, tr);
+                var advPairInfo = [];
+                if (lrec.condition) {
+                advPairInfo.push('Condition:' + lrec.condition);
+                }
+                if (advPairInfo.length) {
+                lrec.design = true;
+                var condition_icon = this.getConditionIcon(lrec.condition);
+                var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
+                new Tooltip({
+                    connectId: [tdinfo],
+                    label: advPairInfo.join('</br>')
+                });
+                }
+                else {
+                lrec.design = false;
+                var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+                }
+                var td2 = domConstruct.create('td', {
+                'class': 'iconcol',
+                innerHTML: "<i class='fa icon-x fa-1x' />"
+                }, tr);
+                if (this.addedLibs.counter < this.startingRows) {
+                this.libsTable.deleteRow(-1);
+                }
+                var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+                this.destroyLib(lrec, lrec.id, 'id');
+                }));
+                lrec.handle = handle;
+                this.createLib(lrec);
+                this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                }
+            } catch (e) {
+                this.srr_accession.set('state', 'Error');
+                console.debug(e);
+            }
+            }));
+    },
+    addLibraryInfo: function(lrec, infoLabels, tr){
+        var advInfo = [];
+        // fill out the html of the info mouse over
+        Object.keys(infoLabels).forEach(lang.hitch(this, function (key) {
+            if (lrec[key] && lrec[key] != 'false') {
+            if (infoLabels[key].value) {
+                advInfo.push(infoLabels[key].label + ':' + lrec[key]);
+            }
+            else {
+                advInfo.push(infoLabels[key].label);
+            }
+            }
+        }));
+        if (advInfo.length) {
+            var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
+            var ihandle = new TooltipDialog({
+            content: advInfo.join('</br>'),
+            onMouseLeave: function () {
+                popup.close(ihandle);
+            }
+            });
+            on(tdinfo, 'mouseover', function () {
+            popup.open({
+                popup: ihandle,
+                around: tdinfo
+            });
+            });
+            on(tdinfo, 'mouseout', function () {
+            popup.close(ihandle);
+            });
+        }
+        else {
+            var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+        }
+    },
+
+    updateSRR: function () {
+    },
+
+
     emptyTable: function (target, rowLimit, colNum) {
       for (var i = 0; i < rowLimit; i++) {
         var tr = target.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
@@ -152,12 +274,15 @@ define([
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
+      var srrAttrs = ['srr_accession'];
       var condList = this.conditionStore.data;
       var contrastList = this.contrastStore.data;
       var singleList = this.libraryStore.query({ type: 'single' });
+      var srrList = this.libraryStore.query({ type: 'srr_accession' });
       var condLibs = [];
       var pairedLibs = [];
       var singleLibs = [];
+      var srrLibs = [];
       var contrastPairs = [];
       this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       // for (var k in values) {
@@ -165,7 +290,7 @@ define([
       //     assembly_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList);
+      var combinedList = pairedList.concat(singleList).concat(srrList);
       assembly_values.reference_genome_id = values.genome_name;
       if (this.exp_design.checked) {
         condList.forEach(function (condRecord) {
@@ -211,6 +336,19 @@ define([
       if (singleLibs.length) {
         assembly_values.single_end_libs = singleLibs;
       }
+      srrList.forEach(function (libRecord) {
+        var toAdd = {};
+        if ('condition' in libRecord && this.exp_design.checked) {
+          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+        }
+        srrAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        srrLibs.push(toAdd);
+      }, this);
+      if (srrLibs.length) {
+        assembly_values.srr_libs = srrLibs;
+      }
       return assembly_values;
 
     },
@@ -219,7 +357,7 @@ define([
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;
       var success = 1;
-      var prevalidate_ids = ['read1', 'read2', 'read', 'output_path', 'condition', 'condition_single', 'condition_paired'];
+      var prevalidate_ids = ['read1', 'read2', 'read', 'output_path', 'condition', 'condition_single', 'condition_paired', 'srr_accession', 'condition_srr' ];
       target.id = this.makeStoreID(target.type);
       var duplicate = target.id in this.libraryStore.index;
       // For each named obj in input_pts get the attributes from the dojo attach point of the same name in the template
@@ -290,27 +428,31 @@ define([
       return label;
     },
     makeLibraryName: function (mode) {
-      if (mode == 'paired') {
-        var fn = this.read1.searchBox.get('displayedValue');
-        var fn2 = this.read2.searchBox.get('displayedValue');
-        var maxName = 14;
-        if (fn.length > maxName) {
-          fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
-        }
-        if (fn2.length > maxName) {
-          fn2 = fn2.substr(0, (maxName / 2) - 2) + '...' + fn2.substr((fn2.length - (maxName / 2)) + 2);
-        }
-        return 'P(' + fn + ', ' + fn2 + ')';
+      switch (mode) {
+        case 'paired':
+          var fn = this.read1.searchBox.get('displayedValue');
+          var fn2 = this.read2.searchBox.get('displayedValue');
+          var maxName = 14;
+          if (fn.length > maxName) {
+            fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
+          }
+          if (fn2.length > maxName) {
+            fn2 = fn2.substr(0, (maxName / 2) - 2) + '...' + fn2.substr((fn2.length - (maxName / 2)) + 2);
+          }
+          return 'P(' + fn + ', ' + fn2 + ')';
+        case 'single':
+          var fn = this.read.searchBox.get('displayedValue');
+          maxName = 24;
+          if (fn.length > maxName) {
+            fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
+          }
+          return 'S(' + fn + ')';
+        case 'srr_accession':
+          var name = this.srr_accession.get('value');
+          return '' + name;
+        default:
+          return '';
       }
-
-
-      var fn = this.read.searchBox.get('displayedValue');
-      maxName = 24;
-      if (fn.length > maxName) {
-        fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
-      }
-      return 'S(' + fn + ')';
-
     },
     makeStoreID: function (mode) {
       if (mode == 'paired') {
@@ -414,6 +556,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           this.condition_single.reset();
+          this.condition_srr.reset();
           this.condition_paired.reset();
           handle.remove();
         }));
@@ -443,6 +586,7 @@ define([
       }
       this.condition_paired.set('store', this.conditionStore);
       this.condition_single.set('store', this.conditionStore);
+      this.condition_srr.set('store', this.conditionStore);
       this.contrast_cd1.set('store', this.activeConditionStore);
       this.contrast_cd2.set('store', this.activeConditionStore);
     },
@@ -587,6 +731,7 @@ define([
         if (lrec.condition) {
           advPairInfo.push('Condition:' + lrec.condition);
         }
+        this.addLibraryInfo(lrec,{"read":{"label":this.read.searchBox.get('displayedValue')}},tr) 
         if (advPairInfo.length) {
           var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
@@ -627,6 +772,7 @@ define([
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
         if (this.addedLibs.counter < this.startingRows) {
           var ntr = this.libsTable.insertRow(-1);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
@@ -718,6 +864,7 @@ define([
         if (lrec.condition) {
           advPairInfo.push('Condition:' + lrec.condition);
         }
+        this.addLibraryInfo(lrec,{"read1":{"label":this.read1.searchBox.get('displayedValue')}, "read2":{"label":this.read2.searchBox.get('displayedValue')}},tr) 
         if (advPairInfo.length) {
           lrec.design = true;
           var condition_icon = this.getConditionIcon(lrec.condition);
