@@ -62,3 +62,9 @@
 [submodule "public/js/autotrack"]
 	path = public/js/autotrack
 	url = https://github.com/googleanalytics/autotrack.git
+[submodule "mauve_viewer"]
+	path = mauve_viewer
+	url = https://github.com/nconrad/mauve_viewer.git
+[submodule "public/js/mauve_viewer"]
+	path = public/js/mauve_viewer
+	url = https://github.com/nconrad/mauve_viewer.git
