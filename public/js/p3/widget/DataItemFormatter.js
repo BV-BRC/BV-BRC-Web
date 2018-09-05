@@ -534,6 +534,28 @@ define([
       }, {
         name: 'gi',
         text: 'gi'
+      }, {
+        name: 'PATRIC Local Family',
+        text: 'plfam_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(plfam_id,' + obj.plfam_id + ')#view_tab=features">' +
+              obj.plfam_id +
+            '</a>',
+             { obj: obj }
+          );
+        }
+      }, {
+        name: 'PATRIC Global Family',
+        text: 'pgfam_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(pgfam_id,' + obj.pgfam_id + ')#view_tab=features">' +
+              obj.pgfam_id +
+            '</a>',
+              { obj: obj }
+          );
+        }
       }];
 
       section.Genome = [{
