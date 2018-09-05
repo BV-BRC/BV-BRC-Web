@@ -135,6 +135,7 @@ table.librarytable td > i {
     width: 100%;
     display: inline-block;
     margin-top: 5px;
+    padding-left: 10px;
 }
 
 .appRow {
