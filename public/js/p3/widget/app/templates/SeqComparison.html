@@ -79,10 +79,11 @@
                         <div name="reference-genome-selection" class="infobox iconbox infobutton dialoginfo">
                           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                         </div>
+                        <br>
+                        <div class="appsublabel">Select 1 reference genome from the following options.</div>
                       </div>
                     </div>
                     <div class="appRow">
-                      <label>Select one reference genome from the following options:</label><br>
                       <label>Select a genome</label><br>
                       <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="ref_genome_id" maxHeight="200" style="width:85%" required="false" data-dojo-attach-point="ref_genome_id"></div>
                       <br>
@@ -99,17 +100,18 @@
           <td>
             <div class="appBox appShadow">
               <div class="headerrow">
-                <div style="width:90%;display:inline-block;">
+                <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">Comparison Genomes</label>
                   <div name="comparison-genomes-selection" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
                 </div>
+                <br>
+                <div class="appsublabel">Add up to 9 genomes to compare (use plus buttons to add).</div>
               </div>
               <div class="appRow">
-                <label>ADD UP TO 9 GENOMES TO COMPARE (USE PLUS BUTTONS TO ADD)</label><br>
                 <label>Select genome</label><br>
-                <div style="width:85%;display:inline-block;" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight="200" required="false" data-dojo-attach-point="comp_genome_id" data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"></div>
+                <div style="width:85%;display:inline-block;" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight="200" required="false" data-dojo-attach-point="comp_genome_id"></div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
                 <br>
                 <label>And/or select fasta file</label><br>
