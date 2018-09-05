@@ -319,25 +319,13 @@ define([
         validTypes: ['GenomeComparison'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
+        // console.log("View Genome Comparison: ", selection[0]);
+        // console.log("currentContainerWidget: ", typeof self.actionPanel.currentContainerWidget);
         var cid = self.actionPanel.currentContainerWidget.getComparisonId();
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + cid });
         } else {
           Topic.publish('/navigate', { href: '/workspace' + cid + '#summary' });
-        }
-      }, false);
-
-      this.browserHeader.addAction('ViewMauve', 'fa icon-eye fa-2x', {
-        label: 'VIEW',
-        multiple: false,
-        validTypes: ['WholeGenomeAlignment'],
-        tooltip: 'Toggle Summary View'
-      }, function (selection) {
-        console.log('selection', selection)
-        var sel = selection[0],
-           path = sel.path + '.' + sel.name + '/alignment.json';
-
-          Topic.publish('/navigate', { href: '/view/Mauve/' + path });
         }
       }, false);
 
