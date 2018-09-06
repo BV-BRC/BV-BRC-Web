@@ -542,7 +542,7 @@ define([
             '<a href="/view/FeatureList/?eq(plfam_id,' + obj.plfam_id + ')#view_tab=features">' +
               obj.plfam_id +
             '</a>',
-             { obj: obj }
+            { obj: obj }
           );
         }
       }, {
@@ -553,7 +553,7 @@ define([
             '<a href="/view/FeatureList/?eq(pgfam_id,' + obj.pgfam_id + ')#view_tab=features">' +
               obj.pgfam_id +
             '</a>',
-              { obj: obj }
+            { obj: obj }
           );
         }
       }];
