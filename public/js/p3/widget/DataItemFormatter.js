@@ -534,6 +534,28 @@ define([
       }, {
         name: 'gi',
         text: 'gi'
+      }, {
+        name: 'PATRIC Local Family',
+        text: 'plfam_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(plfam_id,' + obj.plfam_id + ')#view_tab=features">' +
+              obj.plfam_id +
+            '</a>',
+            { obj: obj }
+          );
+        }
+      }, {
+        name: 'PATRIC Global Family',
+        text: 'pgfam_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(pgfam_id,' + obj.pgfam_id + ')#view_tab=features">' +
+              obj.pgfam_id +
+            '</a>',
+            { obj: obj }
+          );
+        }
       }];
 
       section.Genome = [{
@@ -1580,7 +1602,7 @@ define([
             var parts = ids.map(function (id) {
               var name = id.trim();
 
-              // may be of form "ATCC xxxxx" or "ATCC:xxxxx"
+              // match "ATCC xxxxx" or "ATCC:xxxxx"
               var regex = /ATCC[\s:]([\w-]*)/g;
               var matches = regex.exec(id);
               if (!matches || !matches.length) return id;
@@ -1595,7 +1617,7 @@ define([
                 });
             });
 
-            return parts.join(',');
+            return parts.join(', ');
           }
         }, {
           name: 'Type Strain',
