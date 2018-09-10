@@ -329,6 +329,21 @@ define([
         }
       }, false);
 
+<<<<<<< HEAD
+=======
+      this.browserHeader.addAction('ViewMauve', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['WholeGenomeAlignment'],
+        tooltip: 'View Alignment'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/alignment.json';
+
+        Topic.publish('/navigate', { href: '/view/Mauve/' + path });
+      }, false);
+
+>>>>>>> linting
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {
         label: 'DWNLD',
         multiple: false,
