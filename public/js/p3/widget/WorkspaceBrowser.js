@@ -319,8 +319,6 @@ define([
         validTypes: ['GenomeComparison'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        // console.log("View Genome Comparison: ", selection[0]);
-        // console.log("currentContainerWidget: ", typeof self.actionPanel.currentContainerWidget);
         var cid = self.actionPanel.currentContainerWidget.getComparisonId();
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + cid });
@@ -329,8 +327,6 @@ define([
         }
       }, false);
 
-<<<<<<< HEAD
-=======
       this.browserHeader.addAction('ViewMauve', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -343,7 +339,6 @@ define([
         Topic.publish('/navigate', { href: '/view/Mauve/' + path });
       }, false);
 
->>>>>>> linting
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {
         label: 'DWNLD',
         multiple: false,
