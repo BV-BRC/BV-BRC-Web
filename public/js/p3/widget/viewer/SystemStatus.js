@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './Base', 'dijit/layout/ContentPane', 'dojo/html', 'dojo/query',
-  'dojo/dom-class', 'dojo/dom-construct', 'dojo/_base/Deferred',
-  '../../util/getTime', '../../jsonrpc', 'dojo/request/xhr', 'dojo/promise/all'
+  'dojo/dom-class', 'dojo/dom-construct',
+  '../../util/getTime', 'dojo/request/xhr', 'dojo/promise/all', 'dojo/Topic'
 ], function (
   declare, ViewerBase, ContentPane, html, query,
-  domClass, domConstruct, Deferred,
-  getTime, RPC, xhr, all
+  domClass, domConstruct,
+  getTime, xhr, all, Topic
 ) {
 
   return declare([ViewerBase], {
@@ -15,23 +15,31 @@ define([
     services: [
       {
         name: 'Auth',
+        description: 'User registration and login',
         configKey: 'userServiceURL'
       }, {
         name: 'Data API',
+        description: 'All services; Search; PATRIC public and private data',
         configKey: 'dataAPI'
       }, {
         name: 'Workspace',
+        description: 'All services; public and private Workspace data (files)',
         configKey: 'workspaceServiceURL'
       }, {
-        name: 'App Service',
-        configKey: 'serviceAPI'
-      }, {
         name: 'Shock',
+        description: 'All services; storage and retrieval of Workspace data (files)',
         configKey: 'shockServiceURL'
       }, {
-        name: 'ProbModelSEED',
-        configKey: 'probModelSeedServiceURL'
+        name: 'App Service',
+        description: 'PATRIC job submissions (Services)',
+        configKey: 'serviceAPI'
       },
+      // not currently part of model reconstruction
+      // {
+      //   name: 'ProbModelSEED',
+      //   description: 'TBD',
+      //   configKey: 'probModelSeedServiceURL'
+      // },
       // need ping endpoint
       // {
       //   name: 'Compare Region Service',
@@ -39,44 +47,48 @@ define([
       // }
       {
         name: 'MinHash Service',
+        description: 'Similar genome finder',
         configKey: 'genomedistanceServiceURL'
       }, {
         name: 'Homology Service',
+        description: 'BLAST queries',
         configKey: 'homologyServiceURL'
       }
-      // should not be needed for PATRIC
-      // {
-      //   name: 'ModelSEED Support Service',
-      //   endpoint: 'http://modelseed.org/services/ms_fba'
-      // }
     ],
 
     render: function (items) {
-      var node = this.viewer.domNode;
+
+      var node = this.viewer.containerNode;
 
       dojo.place('<h3>PATRIC System Status</h3>', node);
-      dojo.place('<b>Last updated:</b> <span class="lastUpdated"></span><br>', node);
-      dojo.place('<b>Version:</b> ' + window.App.appVersion + '<br><br>', node);
+
+      dojo.place('<p>Below shows the current system status of PATRIC servers/services.  ' +
+        'If you are experiencing an issue related to a service with red status, you may wish to check back later.  ' +
+        'If you are experiencing an issue not listed here, please use "Help" > "Provide Feedback" from the toolbar above.</p>'
+        , node);
+
+      dojo.place('<br><b>Last updated:</b> <span class="lastUpdated"></span>', node);
+      dojo.place('<br><b>Version:</b> ' + window.App.appVersion + '<br><br>', node);
 
       var table = this.table = domConstruct.toDom(
         '<table class="p3basic striped" style="margin-bottom: 10px;">' +
           '<thead>' +
             '<tr>' +
               '<th>Service' +
-              '<th>Endpoint' +
+              '<th>Supports' +
               '<th style="width: 1px;">Status' +
           '<tbody>'
       );
 
       this.services.forEach(function (s) {
         var name = s.name,
-          endpoint = s.endpoint;
+          description = s.description;
 
         // adding rows of user, perm selector, and trash button
         var row = domConstruct.toDom(
           '<tr>' +
             '<td>' + name +
-            '<td>' + endpoint +
+            '<td>' + description +
             '<td style="text-align:center; white-space:nowrap;" data-name="' + name + '">loading...</i>'
         );
 
@@ -99,7 +111,6 @@ define([
       this.render();
 
       this.token = window.App.authorizationToken;
-      this.msAPI = RPC(this.getUrl('ProbModelSEED'), this.token);
 
       if (this.noPolling()) return;
       this.pollStatus();
@@ -160,19 +171,7 @@ define([
         self.setDomStatus('Shock', 'fail');
       });
 
-      if (this.token) {
-        var path = '/' + window.App.user.id;
-        var p6 = Deferred.when(this.msAPI('ProbModelSEED.list_models', [{ path: path }]),
-          function (res) {
-            self.setDomStatus('ProbModelSEED', 'success');
-          }, function () {
-            self.setDomStatus('ProbModelSEED', 'fail');
-          });
-      } else {
-        html.set(query('[data-name="ProbModelSEED"]', this.table)[0], 'login required');
-      }
-
-      var p7 = null;
+      var p6 = null;
       // need ping endpoint
       //  xhr(this.getUrl('Compare Region Service') + '/ping')
       //  .then(function () {
@@ -182,7 +181,7 @@ define([
       //  });
       //
 
-      var p8 = xhr(this.getUrl('MinHash Service') + '/ping')
+      var p7 = xhr(this.getUrl('MinHash Service') + '/ping')
         .then(function () {
           self.setDomStatus('MinHash Service', 'success');
         }, function () {
@@ -190,24 +189,14 @@ define([
         });
 
 
-      var p9 = xhr(this.getUrl('Homology Service') + '/ping')
+      var p8 = xhr(this.getUrl('Homology Service') + '/ping')
         .then(function () {
           self.setDomStatus('Homology Service', 'success');
         }, function () {
           self.setDomStatus('Homology Service', 'fail');
         });
 
-      // this shouldn't be needed for PATRIC
-      // var p10 = xhr(this.getUrl('ModelSEED Support Service'))
-      //  .then(function () {
-      //    self.setDomStatus('ModelSEED Support Service', 'success');
-      //  }, function () {
-      //    self.setDomStatus('ModelSEED Support Service', 'fail');
-      //  });
-      //
-
-
-      var proms = [p1, p2, p3, p4, p5, p6, p7, p8, p9];
+      var proms = [p1, p2, p3, p4, p5, p6, p7, p8];
       return all(proms).then(function (results) {
         console.log('polling complete.');
         if (self.noPolling()) {
@@ -237,8 +226,6 @@ define([
     },
 
     postCreate: function () {
-      this.inherited(arguments);
-
       this.viewer = new ContentPane({
         region: 'center',
         style: 'padding: 0',
@@ -246,6 +233,8 @@ define([
       });
 
       this.addChild(this.viewer);
+
+      this.inherited(arguments);
     },
 
     noPolling: function () {
