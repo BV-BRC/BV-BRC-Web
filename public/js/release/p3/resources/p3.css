@@ -13549,6 +13549,13 @@ th.dgrid-cell.wsItemMembers {
 	color: #ddd;
 	border-color: #ddd;
 }
+.ActionButtonWrapper.disabled,
+.ActionButtonWrapper.disabled .ActionButtonText,
+.ActionButtonWrapper.disabled .ActionButton.fa,
+.ActionButtonWrapper.disabled  {
+	color: #ddd;
+	border-color: #ddd;
+}
 .ActionButtonContainer {
 	float: left;
 	font-size:.85em;
@@ -15343,7 +15350,7 @@ div.appsublabel {
 }
 #patric-homepage .announcements #slides .slide .feed-img {
   width: 100%;
-  height: auto;
+  max-height: 170px!important;
 }
 #patric-homepage .announcements #slides .current-slide {
   opacity: 1;
@@ -15354,7 +15361,7 @@ div.appsublabel {
   display: -ms-flexbox;
   display: flex;
   position: relative;
-  margin-top: 320px;
+  margin-top: 330px;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;

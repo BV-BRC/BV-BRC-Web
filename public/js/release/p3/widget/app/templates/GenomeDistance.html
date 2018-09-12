@@ -29,7 +29,6 @@
                     <div data-dojo-attach-event="onChange:onSuggestNameChange"
                          data-dojo-type="p3/widget/GenomeNameSelector"
                          data-dojo-attach-point="genome_id"
-                         data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
                          style="width:600px;">
                     </div>
                     <div class="form_msg_warning" data-dojo-attach-point="genome_message"></div>
@@ -47,12 +46,12 @@
                 <div class="appRowSegment" data-dojo-attach-point="advanced">
                     <label class="largelabel">Advanced options</label>
                     <div class="iconbox" style="margin-left:0">
-                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-left fa-1"></i>
                     </div>
                 </div>
             </div>
 
-            <div data-dojo-attach-point="advancedOptions" style="display: none">
+            <div data-dojo-attach-point="advancedOptions">
                 <div class="appBox appShadow">
                     <div class="headerrow">
                         <label class="appBoxLabel">Parameters</label>
@@ -99,13 +98,13 @@
                         <div data-dojo-type="dijit/form/RadioButton"
                              data-dojo-attach-point="scope_ref"
                              name="scope"
-                             checked="checked"
                              value="ref"></div>
                         <label>Reference and representative genomes</label>
                         <br/>
                         <div data-dojo-type="dijit/form/RadioButton"
                              data-dojo-attach-point="scope_all"
                              name="scope"
+                             checked="checked"
                              value="all"></div>
                         <label>All public genomes</label>
 
@@ -140,4 +139,3 @@
      </div>
     <div class="genomedistance_result"></div>
 </form>
-
