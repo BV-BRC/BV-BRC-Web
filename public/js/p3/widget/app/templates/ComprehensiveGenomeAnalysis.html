@@ -2,7 +2,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>Comprehensive Genome Analysis
+      <h3>${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -12,11 +12,8 @@
         </div>
         -->
       </h3>
-      <p>The Comprehensive Genome Analysis Service provides a streamlined analysis "meta-service" that accepts raw reads and performs a comprehensive analysis
-        including assembly, annotation, identification of nearest neighbors, a basic comparative analysis that includes a subsystem summary,
-        phylogenetic tree, and the features that distinguish the genome from its nearest neighbors.
-        For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
-          target="_blank">Comprehensive Genome Analysis Service User Guide</a> and
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">${applicationLabel} Service User Guide</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>

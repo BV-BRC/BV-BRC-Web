@@ -19,6 +19,9 @@ define([
     pageTitle: 'Genome Assembly Service',
     templateString: Template,
     applicationName: 'GenomeAssembly',
+    requireAuth: true,
+    applicationLabel: 'Genome Assembly',
+    applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
     applicationHelp: 'user_guides/services/genome_assembly_service.html',
     tutorialLink: 'tutorial/genome_assembly/assembly.html',
     libraryData: null,
@@ -41,6 +44,9 @@ define([
     // checkOutputName function is in AppBase.js
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

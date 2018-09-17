@@ -15,6 +15,9 @@ define([
     baseClass: 'Modeling',
     templateString: Template,
     applicationName: 'ModelReconstruction',
+    requireAuth: true,
+    applicationLabel: 'Reconstruct Metabolic Model',
+    applicationDescription: 'The Reconstruct Metabolic Model Service generate draft genome-scale metabolic models.',
     applicationHelp: 'user_guides/services/model_reconstruction_service.html',
     tutorialLink: 'tutorial/metabolic_model_reconstruction/metabolic_model_reconstruction.html',
     pageTitle: 'Reconstruct Metabolic Model',
@@ -33,7 +36,9 @@ define([
       if (this._started) {
         return;
       }
-
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
       this.inherited(arguments);
       this.mediaSelector.set('selected', 'Complete');
 

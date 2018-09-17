@@ -19,6 +19,9 @@ define([
     pageTitle: 'Comprehensive Genome Analysis Service',
     templateString: Template,
     applicationName: 'ComprehensiveGenomeAnalysis',
+    requireAuth: true,
+    applicationLabel: 'Comprehensive Genome Analysis',
+    applicationDescription: 'The Comprehensive Genome Analysis Service provides a streamlined analysis "meta-service" that accepts raw reads and performs a comprehensive analysis including assembly, annotation, identification of nearest neighbors, a basic comparative analysis that includes a subsystem summary, phylogenetic tree, and the features that distinguish the genome from its nearest neighbors.',
     applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
     tutorialLink: 'tutorial/comprehensive-genome-analysis/comprehensive-genome-analysis.html',
     libraryData: null,
@@ -43,6 +46,9 @@ define([
 
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);
