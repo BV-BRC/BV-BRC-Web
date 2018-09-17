@@ -391,7 +391,7 @@ define([
       ptb_values.output_path = values.output_path;
       ptb_values.output_file = values.output_file;
       ptb_values.full_tree_method = values.full_tree_method;
-      ptb_values.refinement = values.refinement;
+      ptb_values.refinement = 'no';  // hard coded since it's removed from UI
 
       return ptb_values;
     }
