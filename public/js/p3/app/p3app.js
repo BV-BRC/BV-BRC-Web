@@ -24,7 +24,6 @@ define([
     panels: Panels,
     activeWorkspace: null,
     activeWorkspacePath: '/',
-    publicApps: ['BLAST', 'ProteinFamily', 'ComparativePathway', 'GenomeDistance'],
     uploadInProgress: false,
     activeMouse: true,
     alreadyLoggedIn: false,
@@ -336,11 +335,8 @@ define([
         newState.widgetClass = 'p3/widget/app/' + type;
         newState.value = viewerParams;
         newState.set = 'params';
-        newState.requireAuth = true;
-        /* istanbul ignore if */
-        if (_self.publicApps.indexOf(type) >= 0) {
-          newState.requireAuth = false;
-        }
+        // move requireAuth check to AppBase and its derieved class
+        newState.requireAuth = false;
 
         // console.log("Navigate to ", newState);
         _self.navigate(newState);

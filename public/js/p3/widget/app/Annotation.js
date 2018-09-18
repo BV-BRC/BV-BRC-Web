@@ -12,6 +12,9 @@ define([
     baseClass: 'Annotation',
     templateString: Template,
     applicationName: 'GenomeAnnotation',
+    requireAuth: true,
+    applicationLabel: 'Genome Annotation',
+    applicationDescription: 'The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features.',
     applicationHelp: 'user_guides/services/genome_annotation_service.html',
     tutorialLink: 'tutorial/genome_annotation/annotation.html',
     pageTitle: 'Genome Annotation Service',
@@ -29,6 +32,9 @@ define([
       var _self = this;
       if (this._started) { return; }
       this.inherited(arguments);
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_pathWidget.set('value', _self.defaultPath);
     },

@@ -19,6 +19,9 @@ define([
     pageTitle: 'Metagenome Binning Service',
     templateString: Template,
     applicationName: 'MetagenomeBinning',
+    requireAuth: true,
+    applicationLabel: 'Metagenome Binning',
+    applicationDescription: 'Metagenome binning from sequencing reads.',
     applicationHelp: 'user_guides/services/metagenome_binning_service.html',
     tutorialLink: 'tutorial/metagenomic_binning/metagenomic_binning.html',
     libraryData: null,
@@ -38,6 +41,9 @@ define([
     // checkOutputName function is in AppBase.js
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

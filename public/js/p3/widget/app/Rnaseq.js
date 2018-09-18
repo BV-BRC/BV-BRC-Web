@@ -17,6 +17,9 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'RNASeq',
+    requireAuth: true,
+    applicationLabel: 'RNA-Seq Analysis',
+    applicationDescription: 'The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.',
     applicationHelp: 'user_guides/services/rna_seq_analysis_service.html',
     tutorialLink: 'tutorial/rna_seq_submission/submitting_rna_seq_job.html',
     pageTitle: 'RNA-Seq Analysis',
@@ -69,6 +72,9 @@ define([
 
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

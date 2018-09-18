@@ -17,6 +17,9 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'TnSeq',
+    requireAuth: true,
+    applicationLabel: 'Tn-Seq Analysis',
+    applicationDescription: 'The Tn-Seq Analysis Service facilitates determination of essential and conditionally essential regions in bacterial genomes from data generated from transposon insertion sequencing (Tn-Seq) experiments.',
     applicationHelp: 'user_guides/services/tn_seq_analysis_service.html',
     tutorialLink: 'tutorial/tn-seq/tn-seq.html',
     pageTitle: 'Tn-Seq Analysis',
@@ -64,6 +67,9 @@ define([
 
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

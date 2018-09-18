@@ -16,6 +16,9 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'Variation',
+    requireAuth: true,
+    applicationLabel: 'Variation Analysis',
+    applicationDescription: 'The Variation Analysis Service can be used to identify and annotate sequence variations.',
     applicationHelp: 'user_guides/services/variation_analysis_service.html',
     tutorialLink: 'tutorial/variation_analysis_service/variation_analysis_service.html',
     pageTitle: 'Variation Service',
@@ -56,6 +59,9 @@ define([
 
     startup: function () {
       if (this._started) { return; }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
       this.inherited(arguments);
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
