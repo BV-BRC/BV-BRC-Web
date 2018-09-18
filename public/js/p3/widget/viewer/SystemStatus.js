@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', './Base', 'dijit/layout/ContentPane', 'dojo/html', 'dojo/query',
   'dojo/dom-class', 'dojo/dom-construct',
-  '../../util/getTime', 'dojo/request/xhr', 'dojo/promise/all', 'dojo/Topic'
+  '../../util/getTime', 'dojo/request/xhr', 'dojo/promise/all', 'dojo/topic'
 ], function (
   declare, ViewerBase, ContentPane, html, query,
   domClass, domConstruct,
