@@ -17,7 +17,7 @@ define([
     applicationName: 'ModelReconstruction',
     requireAuth: true,
     applicationLabel: 'Reconstruct Metabolic Model',
-    applicationDescription: 'The Reconstruct Metabolic Model Service generate draft genome-scale metabolic models.',
+    applicationDescription: 'The Model Reconstruction Service integrates and augments technologies for genome annotation, construction of gene-protein-reaction (GPR) associations, generation of biomass reactions, reaction network assembly, thermodynamic analysis of reaction reversibility, and model optimization, to generate draft genome-scale metabolic models. The service is capable of generating functioning draft metabolic models of an organism starting from an assembled genome sequence.',
     applicationHelp: 'user_guides/services/model_reconstruction_service.html',
     tutorialLink: 'tutorial/metabolic_model_reconstruction/metabolic_model_reconstruction.html',
     pageTitle: 'Reconstruct Metabolic Model',
