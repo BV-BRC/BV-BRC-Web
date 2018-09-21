@@ -3,7 +3,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>Phylogenetic Tree Building
+      <h3>${applicationLabel}
                 <div name="overview" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
@@ -11,7 +11,7 @@
                     <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
                 </div>
             </h3>
-      <p>The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for up to 50 user-selected genomes. For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Phylogenetic Tree Building Service User Guide</a>        and
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a>        and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
@@ -41,17 +41,17 @@
                       <div class="appsublabel">Add at least 3 (up to 50 ) genomes.</div>
                     </div>
                     <div class="appRow">
-                      <label>Select genome</label><br>
+                      <label class="paramlabel">Select genome</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/GenomeNameSelector" name="in_genome_id" maxHeight="200" required="false" data-dojo-attach-point="in_genome_id"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddInGroupGenome" class="fa icon-plus-circle fa-lg"></i></div>
                       <br>
-                      <label>And/or select genome group</label><br>
+                      <label class="paramlabel">And/or select genome group</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="in_genomes_genomegroup" required="false" data-dojo-attach-point="in_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddInGroupGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
                       <br>
                     </div>
                     <div class="appRow">
-                      <label> selected ingroup genome table</label>
+                      <label class="paramlabel"> selected ingroup genome table</label>
                     </div>
                     <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
                       <table class="librarytable" frame="box" data-dojo-attach-point="inGroupGenomeTable" style="margin:0 0 0 10px; width:100%;">
@@ -88,17 +88,9 @@
                     <div class="appRow">
                       <label class="paramlabel">Full Tree Method</label><br>
                       <select data-dojo-type="dijit/form/Select" name="full_tree_method" data-dojo-attach-point="full_tree_method" style="width:300px" required="false" data-dojo-props="intermediateChanges:true,trim:true">
-                                                <option value="ft">FastTree</option>
-                                                <option value="ml">Maximum Likelihood (RAxML)</option>
-
-                                            </select>
-                    </div>
-                    <div class="appRow">
-                      <label class="paramlabel">Automated Progressive Refinement</label><br>
-                      <select data-dojo-type="dijit/form/Select" name="refinement" data-dojo-attach-point="refinement" style="width:300px" required="false" data-dojo-props="intermediateChanges:true,trim:true">
-                                                <option value="no">No</option>
-                                                <option value="yes">Yes</option>
-                                            </select>
+                        <option value="ft">FastTree</option>
+                        <option value="ml">Maximum Likelihood (RAxML)</option>
+                      </select>
                     </div>
                   </div>
 
@@ -121,18 +113,18 @@
                 <div class="appsublabel">Add at least 1 (up to 5) genome to root the tree.</div>
               </div>
               <div class="appRow">
-                <label>Select genome</label><br>
+                <label class="paramlabel">Select genome</label><br>
                 <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/GenomeNameSelector" name="out_genome_id" maxHeight="200" required="false" data-dojo-attach-point="out_genome_id"></div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddOutGroupGenome" class="fa icon-plus-circle fa-lg"></i></div>
                 <br>
-                <label>And/or select genome group</label><br>
+                <label class="paramlabel">And/or select genome group</label><br>
                 <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="out_genomes_genomegroup" required="false" data-dojo-attach-point="out_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddOutGroupGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
                 <br>
               </div>
 
               <div class="appRow">
-                <label> selected outgroup genome table</label>
+                <label class="paramlabel"> selected outgroup genome table</label>
               </div>
 
               <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">

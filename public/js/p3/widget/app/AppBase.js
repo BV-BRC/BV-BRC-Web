@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
-  'dojo/text!./templates/Sleep.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
+  'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom'
 ], function (
@@ -13,10 +13,13 @@ define([
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
-    templateString: Template,
+    templateString: '',
     docsServiceURL: window.App.docsServiceURL,
     path: '',
     applicationName: 'Date',
+    requireAuth: false,
+    applicationLabel: '',
+    applicationDescription: '',
     showCancel: false,
     activeWorkspace: '',
     activeWorkspacePath: '',
@@ -24,6 +27,11 @@ define([
     activeUploads: [],
 
     postMixInProperties: function () {
+      // use AppLogin.html when requireAuth & user is not logged in
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        this.templateString = Template;
+        return;
+      }
       this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
       this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
       this.inherited(arguments);
@@ -118,6 +126,9 @@ define([
 
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

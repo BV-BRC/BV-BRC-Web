@@ -16,7 +16,11 @@ define([
   return declare([AppBase], {
     baseClass: 'IDMapper',
     applicationName: 'IDMapper',
+    requireAuth: true,
+    applicationLabel: 'ID Mapper',
+    applicationDescription: 'The ID Mapper tool maps PATRIC identifiers to those from other prominent external databases such as GenBank, RefSeq, EMBL, UniProt, KEGG, etc. Alternatively, it can map a list of external database identifiers to the corresponding PATRIC features.',
     applicationHelp: 'user_guides/services/id_mapper.html',
+    tutorialLink: 'tutorial/id_mapper/id_mapper.html',
     templateString: Template,
     path: '',
     mapFromIDs: null,
@@ -27,6 +31,9 @@ define([
 
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

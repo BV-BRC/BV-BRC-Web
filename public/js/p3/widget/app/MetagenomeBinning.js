@@ -19,6 +19,9 @@ define([
     pageTitle: 'Metagenome Binning Service',
     templateString: Template,
     applicationName: 'MetagenomeBinning',
+    requireAuth: true,
+    applicationLabel: 'Metagenome Binning',
+    applicationDescription: 'The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.',
     applicationHelp: 'user_guides/services/metagenome_binning_service.html',
     tutorialLink: 'tutorial/metagenomic_binning/metagenomic_binning.html',
     libraryData: null,
@@ -38,6 +41,9 @@ define([
     // checkOutputName function is in AppBase.js
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

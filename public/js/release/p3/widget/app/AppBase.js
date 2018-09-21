@@ -1,9 +1,9 @@
 require({cache:{
-'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n    <h2>Sleep</h2>\n    <p>Sleep Application For Testing Purposes</p>\n    <div style=\"margin-top:10px;text-align:left\">\n      <label>Sleep Time</label><br>\n      <input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n    </div>\n    <div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n      Submitting Sleep Job\n    </div>\n    <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n      Error Submitting Job\n    </div>\n    <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n      Sleep Job has been queued.\n    </div>\n    <div style=\"margin-top: 10px; text-align:center;\">\n      <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n      <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n      <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n    </div>\n  </div>\n</form>\n\n"}});
+'url:p3/widget/app/templates/AppLogin.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>${applicationLabel}\n      </h3>\n      <p>${applicationDescription} For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">${applicationLabel} Service User Guide</a> and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n      <br>\n        <div class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-lock fa-1x\" title=\"Please log in to use this service\"></i>\n        </div> Please log in to use this service.\n    </div>\n    <div class=\"LoginForm\" data-dojo-type=\"p3/widget/LoginForm\" style=\"width:300px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;\">\n    </div>\n  </div>\n</form>\n"}});
 define("p3/widget/app/AppBase", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
-  'dojo/text!./templates/Sleep.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
+  'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom'
 ], function (
@@ -15,10 +15,13 @@ define("p3/widget/app/AppBase", [
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
-    templateString: Template,
+    templateString: '',
     docsServiceURL: window.App.docsServiceURL,
     path: '',
     applicationName: 'Date',
+    requireAuth: false,
+    applicationLabel: '',
+    applicationDescription: '',
     showCancel: false,
     activeWorkspace: '',
     activeWorkspacePath: '',
@@ -26,6 +29,11 @@ define("p3/widget/app/AppBase", [
     activeUploads: [],
 
     postMixInProperties: function () {
+      // use AppLogin.html when requireAuth & user is not logged in
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        this.templateString = Template;
+        return;
+      }
       this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
       this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
       this.inherited(arguments);
@@ -120,6 +128,9 @@ define("p3/widget/app/AppBase", [
 
     startup: function () {
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);
