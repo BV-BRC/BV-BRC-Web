@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
-  'd3.v5/d3.min', './Base', 'mauve_viewer/dist/mauve-viewer', '../../WorkspaceManager',
+  'd3.v5/d3.min', './Base', '../../WorkspaceManager',
   'dojo/request', 'dojo/when'
 ], function (
   declare, domConstruct, ContentPane,
-  d3, ViewerBase, MauveViewer, WorkspaceManager,
+  d3, ViewerBase, WorkspaceManager,
   request, when
 ) {
 
