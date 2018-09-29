@@ -978,12 +978,14 @@ define([
 
         Deferred.when(All(prom, publicProm)).then(function () {
 
-          Topic.publish('/Notification', {
-            message: 'Permissions updated.',
-            type: 'message'
-          });
+          setTimeout(function () {
+            Topic.publish('/refreshWorkspace');
 
-          Topic.publish('/refreshWorkspace');
+            Topic.publish('/Notification', {
+              message: 'Permissions updated.',
+              type: 'message'
+            });
+          }, 100);
 
           // refresh list in detail panel
           self.activePanel.clearSelection();
