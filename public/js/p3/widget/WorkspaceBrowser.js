@@ -7,6 +7,7 @@ define([
   'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
   './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
+  'dojo/promise/all',
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +18,8 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, IDMappingTemplate, xhr, Select,
   ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
-  TextBox, WSObjectSelector, PermissionEditor
+  TextBox, WSObjectSelector, PermissionEditor,
+  All
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -949,7 +951,7 @@ define([
         existingPerms = selection.permissions;
 
       // update workspace list on confirm
-      var onConfirm = function (newPerms) {
+      var onConfirm = function (newPerms, publicPermission) {
         // set any deleted users' permissions to 'n'
         var newUsers = newPerms.map(function (p) { return p.user; });
         existingPerms.forEach(function (p) {
@@ -968,7 +970,13 @@ define([
         });
 
         var prom = WorkspaceManager.setPermissions(selection.path, newPerms);
-        Deferred.when(prom).then(function (res) {
+
+        // also update public permission
+        if (['n', 'r'].indexOf(publicPermission) !== -1) {
+          var publicProm = WorkspaceManager.setPublicPermission(selection.path, publicPermission);
+        }
+
+        Deferred.when(All(prom, publicProm)).then(function () {
 
           Topic.publish('/Notification', {
             message: 'Permissions updated.',
