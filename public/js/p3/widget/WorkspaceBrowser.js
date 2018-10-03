@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/query',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-attr',
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
-  './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang',
+  './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
   './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
@@ -13,7 +13,7 @@ define([
   declare, BorderContainer, on, query,
   domClass, ContentPane, domConstruct, domAttr,
   WorkspaceExplorerView, Topic, ItemDetailPanel,
-  ActionBar, Deferred, WorkspaceManager, lang,
+  ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, IDMappingTemplate, xhr, Select,
   ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
@@ -31,6 +31,8 @@ define([
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
     design: 'sidebar',
     splitter: false,
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/workspaces/workspace.html',
     startup: function () {
       var self = this;
 
@@ -81,6 +83,17 @@ define([
         else
         { domAttr.set(text, 'textContent', 'HIDE'); }
       });
+
+      this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        lang.hitch(this, function (selection, container) {
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+        }), true);
 
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',
