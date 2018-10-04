@@ -448,7 +448,7 @@ define([
       }, self.path.split('/').length > 3);
 
       this.browserHeader.addAction('ShowHidden', (window.App.showHiddenFiles ? 'fa icon-eye-slash' : 'fa icon-eye'), {
-        label: 'SHOW HIDDEN',
+        label: window.App.showHiddenFiles ? 'HIDE HIDDEN' : 'SHOW HIDDEN',
         multiple: true,
         validTypes: ['folder'],
         tooltip: 'Show hidden folders/files'
