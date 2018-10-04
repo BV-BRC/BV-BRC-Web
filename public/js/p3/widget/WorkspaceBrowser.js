@@ -467,6 +467,8 @@ define([
         { domAttr.set(text, 'textContent', 'HIDE HIDDEN'); }
         else
         { domAttr.set(text, 'textContent', 'SHOW HIDDEN'); }
+
+        Topic.publish('/refreshWorkspace');
       }, false);
 
       this.browserHeader.addAction('CreateWorkspace', 'fa icon-add-workspace fa-2x', {
