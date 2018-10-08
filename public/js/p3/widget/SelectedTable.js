@@ -47,9 +47,8 @@ define([
       dom.place(row, thead);
       dom.place(table, self.domNode, 'last');
 
-      // add empty notice
-      var tbody = query('tbody', self.table)[0];
-      self._emptyEle = dom.place(self._emptyHtML, tbody);
+      // "none selected"
+      self._addEmptyNotice();
     },
 
     startup: function () {
@@ -63,7 +62,7 @@ define([
 
       let self = this;
 
-      // remove none-selected
+      // remove "none selected"
       dom.destroy(self._emptyEle);
 
       // add to data model
@@ -112,13 +111,13 @@ define([
         dom.destroy(row);
 
         // add none selected if needed
-        var tbody = query('tbody', self.table)[0];
         if (!self._rows.length) {
-          self._emptyEle = dom.place(self._emptyHtML, tbody);
+          self._addEmptyNotice();
         }
 
         // add label if needed, and if not removing the last remaining row
         if (self.label && self.label.rowIndex == rowIndex && self._rows.length) {
+          var tbody = query('tbody', self.table)[0];
           var i = rowIndex - 1;  // data model is zero-indexed
           var tr = query('tr', tbody)[i];
           var td = query('[data-key="' + self.label.colKey + '"]', tr)[0];
@@ -127,20 +126,33 @@ define([
       });
     },
 
+    _addEmptyNotice: function () {
+      var tbody = query('tbody', this.table)[0];
+      this._emptyEle = dom.place(this._emptyHtML, tbody);
+    },
+
     _getNameAttr: function () {
       // returns the name of the input set
       return this.name;
     },
 
-    getSelection() {
+    getRows() {
       return this._rows;
+    },
+
+    clear() {
+      var tbody = query('tbody', this.table)[0];
+      dom.empty(tbody);
+      this._rows = [];
+
+      this._addEmptyNotice();
     },
 
     onRmRow(id) {
       // if remove item call back is provided, call it
-      if (this.onRemove) {
-        this.onRemove();
-      }
+      if (this.onRemove) this.onRemove();
     }
+
+
   });
 });
