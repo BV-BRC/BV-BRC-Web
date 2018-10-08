@@ -32,6 +32,8 @@ define([
     apiServiceUrl: window.App.dataAPI,
     feature: null,
     state: null,
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/organisms_gene/overview.html',
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -649,6 +651,11 @@ define([
       dlg.startup();
       dlg.show();
     },
+
+    onClickUserGuide: function () {
+      window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+    },
+
     startup: function () {
       if (this._started) {
         return;
