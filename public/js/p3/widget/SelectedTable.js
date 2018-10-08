@@ -1,11 +1,9 @@
 define([
-  'dojo', 'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/dom-construct',
-  'dijit/form/Button', 'dojo/on', 'dojo/query', 'dojo/dom-style',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/dom-construct', 'dojo/query',
 
   'dojo/NodeList-traverse'
 ], function (
-  dojo, declare, WidgetBase, dom,
-  Button, on, query, domStyle
+  declare, WidgetBase, dom, query
 ) {
   return declare([WidgetBase], {
     colNames: [],     // names of columns
@@ -108,7 +106,6 @@ define([
 
       query('button', tr).on('click', function () {
         var row = query(this).parents('tr')[0];
-        // var id = dojo.attr(row, 'data-id');
         var rowIndex = row.rowIndex;
 
         self._rmRow(rowIndex);
