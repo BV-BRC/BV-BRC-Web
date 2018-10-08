@@ -32,7 +32,6 @@
 @import url("./help.css");
 @import url("webpage.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
-@import url("../../mauve_viewer/src/mauve-viewer.css");
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
 
 .icon-sort-alpha-asc {
