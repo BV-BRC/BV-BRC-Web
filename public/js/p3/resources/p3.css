@@ -32,7 +32,6 @@
 @import url("./help.css");
 @import url("webpage.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
-@import url("../../mauve_viewer/src/mauve-viewer.css");
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
 
 .icon-sort-alpha-asc {
@@ -265,6 +264,23 @@ table.striped tr:nth-child(odd) td,
 table.striped tr:nth-child(odd):not(:first-child) th,
 table tr.even td {
     background: #f5f5f5;
+}
+
+/* a lighter striped table for grey panels (i.e., apps) */
+table.p3basic.striped-light {
+    background: #fff;
+}
+
+table.p3basic.striped-light thead th {
+    background: #fff;
+    color: #444;
+    font-weight: bold;
+}
+
+table.striped-light tr:nth-child(odd) td,
+table.striped-light tr:nth-child(odd):not(:first-child) th,
+table tr.even td {
+    background: #f8f8f8;
 }
 
 .claro .dijitDialog {

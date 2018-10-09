@@ -1,15 +1,16 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
   'dojo/text!./templates/Mauve.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
-  'dojo/_base/lang', 'dojo/query', 'dijit/Dialog',
-  '../../WorkspaceManager', 'dojo/when'
+  'dojo/_base/lang', 'dojo/query', 'dijit/Dialog', 'dojo/dom-style',
+  '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable'
 ], function (
   declare, on, domClass,
   Template, AppBase, domConstruct, registry,
-  lang, query, Dialog,
-  WorkspaceManager, when
+  lang, query, Dialog, domStyle,
+  WorkspaceManager, when, request, SelectedTable
 ) {
   return declare([AppBase], {
+    apiServiceUrl: window.App.dataAPI,
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'WholeGenomeAlignment',
@@ -17,18 +18,9 @@ define([
     tutorialLink: 'tutorial/mauve/mauve.html',
     pageTitle: 'Genome Alignment',
     defaultPath: '',
-    startingRows: 5,
+    startingRows: 1,
 
     constructor: function () {
-      this._selfSet = true;
-      this.inGroup = {};
-      this.inGroup.addedList = []; // list of genome id, duplicate is allowed
-      this.inGroup.addedNum = 0;
-      this.inGroup.genomeToAttachPt = ['in_genome_id'];
-      this.inGroup.genomeGroupToAttachPt = ['in_genomes_genomegroup'];
-      this.inGroup.maxGenomes = 100;
-
-      this.selectedTR = []; // list of selected TR for ingroup and outgroup, used in onReset()
     },
 
     startup: function () {
@@ -41,9 +33,18 @@ define([
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
 
-      this.emptyTable(this.inGroupGenomeTable, this.startingRows);
-
-      this.inGroupNumGenomes.startup();
+      // initialize selected genome table
+      var selectedTable = this.selectedTable = new SelectedTable({
+        name: 'selectedGenomes',
+        colNames: ['Name', 'ID'],
+        colKeys: ['name', 'id'],
+        label: {
+          rowIndex: 1,
+          colKey: 'name',
+          format: function (obj) { return obj.name + ' <b>[Reference Genome]</b>'; }
+        }
+      });
+      domConstruct.place(selectedTable.domNode, this.genomeTable);
 
       /* todo
       this.advrow.turnedOn = (this.advrow.style.display != 'none');
@@ -65,233 +66,98 @@ define([
       this._started = true;
     },
 
-    emptyTable: function (target, rowLimit) {
-      for (var i = 0; i < rowLimit; i++) {
-        var tr = target.insertRow(0);// domConstr.create("tr",{},this.genomeTableBody);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
+    validate: function () {
+      var self = this;
+
+      var isValid;
+
+      if (self.selectedTable.getRows().length &&
+        self.output_path.value &&
+        self.output_file.value) {
+        isValid = true;
       }
-    },
 
-    ingestAttachPoints: function (input_pts, target, req) {
-      req = typeof req !== 'undefined' ? req : true;
-      var success = 1;
-      input_pts.forEach(function (attachname) {
-        var cur_value = null;
-        var incomplete = 0;
-        var browser_select = 0;
-        if (attachname == 'output_path') {
-          cur_value = this[attachname].searchBox.value;
-          browser_select = 1;
-        }
-        else if (attachname == 'in_genomes_genomegroup') {
-          cur_value = this[attachname].searchBox.value;
-          var attachType = 'genomes_genomegroup';
-          var inDuplicate = this.checkDuplicate(cur_value, 'in', attachType);
-          success *= inDuplicate;
-        }
-        else if (attachname == 'in_genome_id') {
-          cur_value = this[attachname].value;
-          var attachType = 'genome_id';
-          var inDuplicate = this.checkDuplicate(cur_value, 'in', attachType);
-          success *= inDuplicate;
-        }
-        else {
-          cur_value = this[attachname].value;
-        }
-
-        console.log('cur_value=' + cur_value);
-
-        if (typeof (cur_value) == 'string') {
-          target[attachname] = cur_value.trim();
-        }
-        else {
-          target[attachname] = cur_value;
-        }
-        if (req && (!target[attachname] || incomplete)) {
-          if (browser_select) {
-            this[attachname].searchBox.validate(); // this should be whats done but it doesn't actually call the new validator
-            this[attachname].searchBox._set('state', 'Error');
-            this[attachname].focus = true;
-          }
-          success = 0;
-        }
-        else {
-          this[attachname]._set('state', '');
-        }
-        if (target[attachname] != '') {
-          target[attachname] = target[attachname] || undefined;
-        }
-        else if (target[attachname] == 'true') {
-          target[attachname] = true;
-        }
-        else if (target[attachname] == 'false') {
-          target[attachname] = false;
-        }
-      }, this);
-      return (success);
-    },
-
-    checkDuplicate: function (cur_value, groupTypePrefix, attachType) {
-      var success = 1;
-      var genomeIds = [];
-      var genomeList = query('.' + groupTypePrefix + 'GroupGenomeData');
-      genomeList.forEach(function (item) {
-        genomeIds.push(item.genomeRecord[groupTypePrefix + '_' + attachType]);
-      });
-      if (genomeIds.length > 0 && genomeIds.indexOf(cur_value) > -1) { // found duplicate
-        success = 0;
+      if (isValid) {
+        self.submitButton.set('disabled', false);
+      } else {
+        self.submitButton.set('disabled', true);
       }
-      return success;
+
+      return isValid;
     },
 
-    makeGenomeName: function (groupType) {
-      var name = this[this[groupType].genomeToAttachPt].get('displayedValue');
-      var maxLength = 50;
-      return this.genDisplayName(name, maxLength);
+    // called on event from dom
+    onAddGenome: function (evt) {
+      this.addGenome();
     },
 
-    makeGenomeGroupName: function (groupType, newGenomeIds) {
-      var name = this[this[groupType].genomeGroupToAttachPt].searchBox.get('displayedValue');
-      var maxLength = 50;
-      return this.genDisplayName(name, maxLength) + ' (' + newGenomeIds.length + ' genomes)';
-    },
+    // adds currently selected genome, or provided genome
+    addGenome: function (genomeInfo /* optional */) {
+      var self = this;
 
-    genDisplayName: function (name, maxLength) { // generate a display name up to maxLength
-      var display_name = name;
-      if (name.length > maxLength) {
-        display_name = name.substr(0, (maxLength / 2) - 2) + '...' + name.substr((name.length - (maxLength / 2)) + 2);
+      // if adding genome directly from object selector
+      if (!genomeInfo) {
+        var id = self.genomeSelector.value,
+          name = self.genomeSelector.get('displayedValue');
+
+        if (!id) return;
+
+        var genomeInfo = {
+          id: id,
+          name: name
+        };
       }
-      return display_name;
+
+      self.selectedTable.addRow(genomeInfo);
     },
 
-    increaseGenome: function (groupType, newGenomeIds) {
-      newGenomeIds.forEach(lang.hitch(this, function (id) {
-        this[groupType].addedList.push(id);
-      }));
-      this[groupType].addedNum = this[groupType].addedList.length;
-      this[groupType + 'NumGenomes'].set('value', Number(this[groupType].addedNum));
-    },
+    onAddGenomeGroup: function () {
+      var self = this;
 
-    decreaseGenome: function (groupType, newGenomeIds) {
-      newGenomeIds.forEach(lang.hitch(this, function (id) {
-        var idx = this[groupType].addedList.indexOf(id);
-        if (idx > -1) {
-          this[groupType].addedList.splice(idx, 1);
-        }
-      }));
-      this[groupType].addedNum = this[groupType].addedList.length;
-      this[groupType + 'NumGenomes'].set('value', Number(this[groupType].addedNum));
-    },
+      var path = self.genomeGroupSelector.value;
 
-    onAddInGroupGenome: function () {
-      var groupType = 'inGroup';
-      this.onAddGenome(groupType);
-    },
-
-
-    onAddGenome: function (groupType) {
-      // console.log("Create New Row", domConstruct);
-      var lrec = {};
-      lrec.groupType = groupType;
-      var chkPassed = this.ingestAttachPoints(this[groupType].genomeToAttachPt, lrec);
-
-      if (chkPassed && this[groupType].addedNum < this[groupType].maxGenomes) {
-        var newGenomeIds = [lrec[this[groupType].genomeToAttachPt]];
-        var tr = this[groupType + 'GenomeTable'].insertRow(0);
-        lrec.row = tr;
-        var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
-        td.genomeRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
-        domConstruct.create('td', { innerHTML: '' }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-        if (this[groupType].addedNum < this.startingRows) {
-          this[groupType + 'GenomeTable'].deleteRow(-1);
-        }
-        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
-          domConstruct.destroy(tr);
-          this.decreaseGenome(groupType, newGenomeIds);
-          if (this[groupType].addedNum < this.startingRows) {
-            var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          handle.remove();
-        }));
-        lrec.handle = handle;
-        this.selectedTR.push(lrec);
-        this.increaseGenome(groupType, newGenomeIds);
-      }
-      // console.log(lrec);
-    },
-
-    onAddInGroupGenomeGroup: function () {
-      var groupType = 'inGroup';
-      this.onAddGenomeGroup(groupType);
-    },
-
-    onAddGenomeGroup: function (groupType) {
-      // console.log("Create New Row", domConstruct);
-      var lrec = {};
-      lrec.groupType = groupType;
-      var chkPassed = this.ingestAttachPoints(this[groupType].genomeGroupToAttachPt, lrec);
-      // console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
-      // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
-      var path = lrec[this[groupType].genomeGroupToAttachPt];
+      domStyle.set( query('.loading-status')[0], 'display', 'block');
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
-        if (typeof res.data == 'string') {
-          res.data = JSON.parse(res.data);
-        }
-        if (res && res.data && res.data.id_list) {
-          if (res.data.id_list.genome_id) {
-            var newGenomeIds =  res.data.id_list.genome_id;
-          }
-        }
-        // display a notice if adding new genome group exceeds maximum allowed number
-        var count = this[groupType].addedNum + newGenomeIds.length;
-        if (count > this[groupType].maxGenomes) {
-          var msg = 'Sorry, you can only add up to ' + this[groupType].maxGenomes + ' genomes';
-          msg += ' in ' + groupType[0].toUpperCase() + groupType.substring(1).toLowerCase();
-          msg += ' and you are trying to select ' + count + '.';
-          new Dialog({ title: 'Notice', content: msg }).show();
-        }
-        // console.log("newGenomeIds = ", newGenomeIds);
-        if (chkPassed && this[groupType].addedNum < this[groupType].maxGenomes
-          && newGenomeIds.length > 0
-          && this[groupType].addedNum + newGenomeIds.length <= this[groupType].maxGenomes) {
-          var tr = this[groupType + 'GenomeTable'].insertRow(0);
-          lrec.row = tr;
-          var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
-          td.genomeRecord = lrec;
-          td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + '</div>';
-          domConstruct.create('td', { innerHTML: '' }, tr);
-          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-          if (this[groupType].addedNum < this.startingRows) {
-            this[groupType + 'GenomeTable'].deleteRow(-1);
-          }
-          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-            // console.log("Delete Row");
-            domConstruct.destroy(tr);
-            this.decreaseGenome(groupType, newGenomeIds);
-            if (this[groupType].addedNum < this.startingRows) {
-              var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            }
-            handle.remove();
-          }));
-          lrec.handle = handle;
-          this.selectedTR.push(lrec);
-          this.increaseGenome(groupType, newGenomeIds);
-        }
 
+        var data = typeof res.data == 'string' ? JSON.parse(res.data) : res.data;
+        var genomeIDs =  data.id_list.genome_id;
+
+        when(self.getGenomeInfo(genomeIDs), function (genomeInfos) {
+          genomeInfos.forEach(function (info) {
+
+            self.addGenome(info);
+          });
+
+          domStyle.set( query('.loading-status')[0], 'display', 'none');
+        });
       }));
 
-      // console.log(lrec);
+    },
+
+    // takes genome ids, returns prom with {id: xxxx.x, name: 'org_name}
+    getGenomeInfo: function (genomeIDs) {
+      var url = this.apiServiceUrl +
+        'genome/?in(genome_id,(' + genomeIDs.join(',') + '))&select(genome_id,genome_name)';
+
+      return when(request.get(url, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: window.App.authorizationToken
+        },
+        handleAs: 'json'
+      }), function (res) {
+        // order matters, organize into  {id: xxxx.x, name: 'org_name}
+        var info = genomeIDs.map(function (id) {
+          var name = res.filter(function (obj) { return obj.genome_id == id; })[0].genome_name;
+
+          return {
+            id: id,
+            name: name
+          };
+        });
+
+        return info;
+      });
     },
 
     onSubmit: function (evt) {
@@ -306,6 +172,7 @@ define([
         domClass.remove(this.domNode, 'Error');
         domClass.remove(this.domNode, 'Submitted');
 
+        // this could be moved to app base
         if (window.App.noJobSubmission) {
           var dlg = new Dialog({
             title: 'Job Submission Params: ',
@@ -315,9 +182,9 @@ define([
           dlg.show();
           return;
         }
+
         this.submitButton.set('disabled', true);
         window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
-          console.log('Job Submission Results: ', results);
           domClass.remove(_self.domNode, 'Working');
           domClass.add(_self.domNode, 'Submitted');
           _self.submitButton.set('disabled', false);
@@ -330,8 +197,6 @@ define([
           domClass.add(_self.domNode, 'Error');
           _self.errorMessage.innerHTML = err;
         });
-
-
       } else {
         domClass.add(this.domNode, 'Error');
         console.log('Form is incomplete');
@@ -342,38 +207,24 @@ define([
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
       domClass.remove(this.domNode, 'Submitted');
-      this.selectedTR.forEach(lang.hitch(this, function (lrec) {
-        domConstruct.destroy(lrec.row);
-        lrec.handle.remove();
-        var groupType = lrec.groupType;
-        var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-      }));
-      this.selectedTR = [];
-      this.inGroup.addedList = [];
-      this.inGroup.addedNum = 0;
+
+      this.selectedTable.clear();
     },
 
     getValues: function () {
-      var ptb_values = {};
+      var obj = {};
       var values = this.inherited(arguments);
-      // remove duplicate genomes
-      var inGroupGenomesFiltered = [];
-      this.inGroup.addedList.forEach(function (id) {
-        if (inGroupGenomesFiltered.indexOf(id)  == -1) {
-          inGroupGenomesFiltered.push(id);
-        }
-      });
 
-      ptb_values.genome_ids = inGroupGenomesFiltered;
-      ptb_values.recipe = values.recipe;
-      ptb_values.output_path = values.output_path;
-      ptb_values.output_file = values.output_file;
+      // get just the ids from table selection
+      var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
 
-      return ptb_values;
+      obj.genome_ids = genomeIDs;
+      obj.recipe = values.recipe;
+      obj.output_path = values.output_path;
+      obj.output_file = values.output_file;
+
+      return obj;
     }
-
   });
+
 });

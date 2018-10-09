@@ -1,4 +1,4 @@
-<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,keyup:validate">
 
   <div class="appTemplate">
     <div class="appTitle">
@@ -18,59 +18,62 @@
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
+    <br>
 
     <div style="width: 600px; margin:auto" class="formFieldsContainer">
-      <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox"
-          value="0"
-          required="false"
-          data-dojo-attach-point="inGroupNumGenomes"
-          data-dojo-props="constraints:{min:2,max:50}," />
-      </div>
-
       <div class="appBox appShadow">
         <div class="headerrow">
-          <div style="width:90%;display:inline-block;">
             <label class="appBoxLabel">Select Genomes</label>
             <div name="ingroup-genomes-selection" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
+
           </div>
-        </div>
 
         <div class="appRow">
-          <label>Add at least 2 (up to 50 ) genomes. Use plus buttons to add.</label><br>
+          <small>Add at least 2 (up to 20) genomes.  Note the first genome selected will be the reference (anchor) genome.</small><br>
           <label>Select genome</label><br>
-          <div style="width:85%;display:inline-block;"
+          <div style="width:490px;"
             data-dojo-type="p3/widget/GenomeNameSelector"
-            name="in_genome_id"
+            name="genomeSelector"
             maxHeight="200"
             required="false"
-            data-dojo-attach-point="in_genome_id"
+            data-dojo-attach-point="genomeSelector"
             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'">
           </div>
-          <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddInGroupGenome" class="fa icon-plus-circle fa-lg"></i></div>
+
+          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenome" class="app-btn">
+            <i class="icon-plus"></i> Add
+          </button>
+
           <br>
+
+          <!-- floating since the width on object selector is odd -->
+          <div class="left">
           <label>And/or select genome group</label><br>
-          <div style="width:85%;display:inline-block;"
+            <div style="width: 495px;"
             data-dojo-type="p3/widget/WorkspaceObjectSelector"
-            name="in_genomes_genomegroup"
+              name="genomeGroupSelector"
             required="false"
-            data-dojo-attach-point="in_genomes_genomegroup"
-            data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
-          <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddInGroupGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
-          <br>
+              data-dojo-attach-point="genomeGroupSelector"
+              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
+            </div>
+          </div>
+
+          <div class="left" style="margin-top: 13px;">
+            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn">
+              <i class="icon-plus"></i> Add
+            </button>
+          </div>
+          <div class="clear"></div>
         </div>
+
 
         <div class="appRow">
-          <label>Selected Genomes:</label>
+          <label>Selected Genomes:</label> <small class="loading-status pull-right" style="margin-right: 20px; display: none;">loading...</small>
         </div>
 
-        <div class="appRow" style="width:95%; margin-right:px; text-align: center;">
-          <table class="librarytable" frame="box" data-dojo-attach-point="inGroupGenomeTable" style="margin:0 0 0 10px; width:100%;">
-            <tbody data-dojo-attach-point="inGroupGenomeTableBody">
-            </tbody>
-          </table>
+        <div class="appRow" data-dojo-attach-point="genomeTable">
         </div>
       </div>
 
@@ -85,13 +88,25 @@
         </div>
 
         <div class="appRow">
-          <label class="paramlabel">Output Folder</label><br>
-          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+          <label>Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+            name="output_path"
+            data-dojo-attach-point="output_path"
+            required="true"
+            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange">
+          </div>
         </div>
 
         <div class="appRow">
-          <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+          <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+            data-dojo-attach-event="onChange:checkOutputName"
+            name="output_file"
+            data-dojo-attach-point="output_file"
+            style="width:85%"
+            required="true"
+            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+          </div>
         </div>
 
         <div class="appRow">
