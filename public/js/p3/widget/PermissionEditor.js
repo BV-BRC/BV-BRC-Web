@@ -227,11 +227,7 @@ define([
         content: form,
         style: { width: '500px' },
         onConfirm: function (evt) {
-          self.onConfirm(self._userPerms);
-        },
-
-        onCancel: function (evt) {
-          self.onCancel();
+          self.onConfirm(self._userPerms, self.isPublic ? 'r' : 'n');
         }
       });
       this.dialog.okButton.set('disabled', true);
@@ -375,8 +371,7 @@ define([
     */
     listWSPermissions: function () {
       var self = this,
-        form = self.form,
-        folderPath = this.selection.path;
+        form = self.form;
 
 
       var perms = this.permissions;
@@ -385,22 +380,20 @@ define([
         return p[0] == 'global_permission';
       })[0][1];
 
-      var isPublic = globalPerm != 'n';
+      self.isPublic = globalPerm != 'n';
 
       var checkBox = domConstruct.toDom('<div class="publicCheckBox">');
       var cb = new CheckBox({
         name: 'checkBox',
         value: 'isPublic',
-        checked: isPublic,
-        onChange: function (e) {
-          var prom = WorkspaceManager.setPublicPermission(folderPath, isPublic ? 'n' : 'r');
-          Deferred.when(prom, function (res) {
-          }, function (e) {
-            alert('oh no, "Public" permission could not be set.');
-          });
+        checked: self.isPublic,
+        onChange: function (isChecked) {
+          self.isPublic = isChecked;
+          self.dialog.okButton.set('disabled', false);
         }
       });
       cb.placeAt(checkBox);
+
       checkBox.appendChild(domConstruct.create('label', {
         'for': 'publicCB',
         'innerHTML': ' Publicly Readable'

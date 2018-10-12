@@ -24,6 +24,8 @@ define([
     genome: null,
     state: null,
     sumWidgets: ['apSummaryWidget', 'gfSummaryWidget', 'pfSummaryWidget', 'spgSummaryWidget'],
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/organisms_genome/overview.html',
 
 
     _setStateAttr: function (state) {
@@ -215,6 +217,10 @@ define([
       var advDn = new AdvancedDownload({ selection: [this.genome], containerType: 'genome_data' });
       domConstruct.place(advDn.domNode, dialog.containerNode);
       dialog.show();
+    },
+
+    onClickUserGuide: function () {
+      window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
     },
 
     startup: function () {
