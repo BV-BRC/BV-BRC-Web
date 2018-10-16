@@ -522,6 +522,7 @@ define([
         on(uploader.domNode, 'dialogAction', function (evt) {
           if (evt.files && evt.files[0] && evt.action == 'close') {
             var file = evt.files[0];
+
             _self.set('selection', file);
             _self.set('value', file.path, true);
             Deferred.when(_self.dialog.hide(), function () {
@@ -794,7 +795,9 @@ define([
 
       grid.on('select', function (evt) {
         var row = evt.rows[0];
+
         self.set('selection', row.data);
+        self.set('value', row.data.path);
       });
 
       grid.on('deselect', function (evt) {
