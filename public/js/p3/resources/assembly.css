@@ -171,7 +171,7 @@ table.librarytable td > i {
     background-color: #F0F1F3;
     margin: 0 0 10px 10px;
     width: auto;
-    padding: 5px 10px 10px 10px;
+    padding: 5px 0 10px 10px;
     text-align: left;
 }
 
@@ -328,15 +328,15 @@ div.appsublabel {
     right: 0;
 }
 
-/* special styling for app buttons on grey panels */
-.app-btn .dijitButtonNode {
+/* styling for app buttons on grey panels */
+.Assembly .app-btn > .dijitButtonNode {
     font-size: .9em;
     background-color: #fff;
     color: #222;
     border: 1px solid #aaa;
 }
 
-.app-btn .dijitButtonNode:hover {
+.Assembly .app-btn > .dijitButtonNode:hover {
     background-color: #f8f8f8;
 }
 
