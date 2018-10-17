@@ -329,18 +329,18 @@ div.appsublabel {
 }
 
 /* special styling for app buttons on grey panels */
-.Assembly .app-btn .dijitButtonNode {
+.app-btn .dijitButtonNode {
     font-size: .9em;
     background-color: #fff;
     color: #222;
     border: 1px solid #aaa;
 }
 
-.Assembly .app-btn .dijitButtonNode:hover {
+.app-btn .dijitButtonNode:hover {
     background-color: #f8f8f8;
 }
 
-.Assembly .object-selector .search-box {
+.object-selector .search-box {
 	width: 82%
 }
 
