@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/request', 'dojo/topic',
-  'dojo/dom-class', 'dojo/dom-construct', 'dojo/text!./templates/FeatureOverview.html',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/query', 'dojo/text!./templates/FeatureOverview.html',
   'dijit/_WidgetBase', 'dijit/_Templated', 'dijit/Dialog', 'dijit/form/Button',
   '../util/PathJoin', 'dgrid/Grid',
   './DataItemFormatter', './ExternalItemFormatter', './formatter',
@@ -8,7 +8,7 @@ define([
 
 ], function (
   declare, lang, on, xhr, Topic,
-  domClass, domConstruct, Template,
+  domClass, domConstruct, domQuery, Template,
   WidgetBase, Templated, Dialog, Button,
   PathJoin, Grid,
   DataItemFormatter, ExternalItemFormatter, formatter,
@@ -259,24 +259,15 @@ define([
     _setFunctionalPropertiesAttr: function (feature) {
 
       var goLink,
-        ecLink,
         plfamLink,
         pgfamLink,
         figfamLink,
-        ipLink,
-        pwLink,
-        ssLink;
+        ipLink;
+
       if (Object.prototype.hasOwnProperty.call(feature, 'go')) {
         goLink = feature.go.map(function (goStr) {
           var go = goStr.split('|');
           return '<a href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=' + go[0] + '" target=_blank>' + go[0] + '</a>&nbsp;' + go[1];
-        }).join('<br>');
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'ec')) {
-        ecLink = feature.ec.map(function (ecStr) {
-          var ec = ecStr.split('|');
-          return '<a href="http://enzyme.expasy.org/EC/' + ec[0] + '" target=_blank>' + ec[0] + '</a>&nbsp;' + ec[1];
         }).join('<br>');
       }
 
@@ -294,17 +285,6 @@ define([
 
       if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
         ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View in new Tab</a>';
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'pathway')) {
-        pwLink = feature.pathway.map(function (pwStr) {
-          var pw = pwStr.split('|');
-          return '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
-        }).join('<br>');
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'subsystem')) {
-        ssLink = feature.subsystem.join('<br>');
       }
 
       domConstruct.empty(this.functionalPropertiesNode);
@@ -333,16 +313,41 @@ define([
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'GO Terms', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: goLink || '-' }, htr);
+    },
+    _setFunctionalPropertiesPathwayAttr: function (data) {
+      var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
+      var tbody = tbodyQuery[0];
 
-      htr = domConstruct.create('tr', {}, tbody);
+      var pwLink;
+      var ecLink;
+      if (data) {
+        ecLink = data.map(function (row) {
+          return '<a href="http://enzyme.expasy.org/EC/' + row.ec_number + '" target=_blank>' + row.ec_number + '</a>&nbsp;' + row.ec_description;
+        }).join('<br>');
+
+        pwLink = data.map(function (row) {
+          return '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + row.genome_id + '&pathway_id=' + row.pathway_id + '&feature_id=' + row.feature_id + '" target="_blank">KEGG:' + row.pathway_id + '</a>&nbsp;' + row.pathway_name;
+        }).join('<br>');
+      }
+      var htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'EC Numbers', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: ecLink || '-' }, htr);
 
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Pathways', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: pwLink || '-' }, htr);
+    },
+    _setFunctionalPropertiesSubsystemAttr: function (data) {
+      var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
+      var tbody = tbodyQuery[0];
 
-      htr = domConstruct.create('tr', {}, tbody);
+      var ssLink;
+      if (data) {
+        ssLink = data.map(function (row) {
+          return row.subsystem_name + ' ' + row.role_name;
+        }).join('<br>');
+      }
+      var htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Subsystems', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: ssLink || '-' }, htr);
     },
@@ -602,6 +607,22 @@ define([
           this.set('featureStructure', data);
         }));
       }
+
+      // pathway
+      var pwUrl = PathJoin(this.apiServiceUrl, '/pathway/?eq(feature_id,' + this.feature.feature_id + ')&select(pathway_name,pathway_id,ec_number,ec_description,genome_id,feature_id)');
+      xhr.get(pwUrl, xhrOption).then(lang.hitch(this, function (data) {
+        if (data.length === 0) return;
+
+        this.set('FunctionalPropertiesPathway', data);
+      }));
+
+      // subsystem
+      var ssUrl = PathJoin(this.apiServiceUrl, '/subsystem/?eq(feature_id,' + this.feature.feature_id + ')&select(subsystem_name,role_name)');
+      xhr.get(ssUrl, xhrOption).then(lang.hitch(this, function (data) {
+        if (data.length === 0) return;
+
+        this.set('FunctionalPropertiesSubsystem', data);
+      }));
 
       // protein-protein interaction
       /*
