@@ -4,22 +4,24 @@ define("p3/widget/WorkspaceBrowser", [
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/query',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-attr',
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
-  './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang',
+  './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
   './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
+  'dojo/promise/all',
 
   'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on, query,
   domClass, ContentPane, domConstruct, domAttr,
   WorkspaceExplorerView, Topic, ItemDetailPanel,
-  ActionBar, Deferred, WorkspaceManager, lang,
+  ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, IDMappingTemplate, xhr, Select,
   ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
-  TextBox, WSObjectSelector, PermissionEditor
+  TextBox, WSObjectSelector, PermissionEditor,
+  All
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -33,6 +35,8 @@ define("p3/widget/WorkspaceBrowser", [
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
     design: 'sidebar',
     splitter: false,
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/workspaces/workspace.html',
     startup: function () {
       var self = this;
 
@@ -83,6 +87,17 @@ define("p3/widget/WorkspaceBrowser", [
         else
         { domAttr.set(text, 'textContent', 'HIDE'); }
       });
+
+      this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        lang.hitch(this, function (selection, container) {
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+        }), true);
 
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',
@@ -448,7 +463,7 @@ define("p3/widget/WorkspaceBrowser", [
       }, self.path.split('/').length > 3);
 
       this.browserHeader.addAction('ShowHidden', (window.App.showHiddenFiles ? 'fa icon-eye-slash' : 'fa icon-eye'), {
-        label: 'SHOW HIDDEN',
+        label: window.App.showHiddenFiles ? 'HIDE HIDDEN' : 'SHOW HIDDEN',
         multiple: true,
         validTypes: ['folder'],
         tooltip: 'Show hidden folders/files'
@@ -467,6 +482,8 @@ define("p3/widget/WorkspaceBrowser", [
         { domAttr.set(text, 'textContent', 'HIDE HIDDEN'); }
         else
         { domAttr.set(text, 'textContent', 'SHOW HIDDEN'); }
+
+        Topic.publish('/refreshWorkspace');
       }, false);
 
       this.browserHeader.addAction('CreateWorkspace', 'fa icon-add-workspace fa-2x', {
@@ -951,7 +968,7 @@ define("p3/widget/WorkspaceBrowser", [
         existingPerms = selection.permissions;
 
       // update workspace list on confirm
-      var onConfirm = function (newPerms) {
+      var onConfirm = function (newPerms, publicPermission) {
         // set any deleted users' permissions to 'n'
         var newUsers = newPerms.map(function (p) { return p.user; });
         existingPerms.forEach(function (p) {
@@ -970,14 +987,22 @@ define("p3/widget/WorkspaceBrowser", [
         });
 
         var prom = WorkspaceManager.setPermissions(selection.path, newPerms);
-        Deferred.when(prom).then(function (res) {
 
-          Topic.publish('/Notification', {
-            message: 'Permissions updated.',
-            type: 'message'
-          });
+        // also update public permission
+        if (['n', 'r'].indexOf(publicPermission) !== -1) {
+          var publicProm = WorkspaceManager.setPublicPermission(selection.path, publicPermission);
+        }
 
-          Topic.publish('/refreshWorkspace');
+        Deferred.when(All(prom, publicProm)).then(function () {
+
+          setTimeout(function () {
+            Topic.publish('/refreshWorkspace');
+
+            Topic.publish('/Notification', {
+              message: 'Permissions updated.',
+              type: 'message'
+            });
+          }, 100);
 
           // refresh list in detail panel
           self.activePanel.clearSelection();

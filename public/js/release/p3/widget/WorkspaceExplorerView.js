@@ -16,7 +16,6 @@ define("p3/widget/WorkspaceExplorerView", [
     containerType: 'folder',
     onlyWritable: false,      // only lists writable workspaces
     allowDragAndDrop: true,   // whether or not to allow drag and drop
-    showHiddenFiles: false,
     _setTypes: function (val) {
       if (val) {
         this.types = Array.isArray(val) ? val : [val];
@@ -28,11 +27,6 @@ define("p3/widget/WorkspaceExplorerView", [
     },
     queryOptions: {
       sort: [{ attribute: 'name', descending: false }]
-    },
-
-    _setShowHiddenFiles: function (val) {
-      this.showHiddenFiles = val;
-      // don't refresh
     },
 
     listWorkspaceContents: function (ws) {
@@ -56,10 +50,9 @@ define("p3/widget/WorkspaceExplorerView", [
       }
 
       var filterPublic =  ws == '/';
-      var prom1 = WorkspaceManager.getFolderContents(ws, this.showHiddenFiles, null, filterPublic);
+      var prom1 = WorkspaceManager.getFolderContents(ws, window.App.showHiddenFiles, null, filterPublic);
 
       // if listing user's top level, included 'shared with me' as well
-
       var userID = window.App.user.id;
       var isUserTopLevel = (ws == '/' + userID);
 
