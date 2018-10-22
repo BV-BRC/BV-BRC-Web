@@ -83,10 +83,7 @@ define([
       });
 
       dom.place(dom.toDom(entries.join('')), tr);
-      var rmBtn = dom.toDom(
-        '<button style="border: none; background: inherit;">' +
-          '<i class="fa icon-times"></i>' +
-        '</button>');
+      var rmBtn = dom.toDom('<i class="fa icon-times"></i>');
       dom.place('<td style="width: 1px">' + rmBtn.outerHTML + '</td>', tr);
 
       var tbody = query('tbody', self.table)[0];
