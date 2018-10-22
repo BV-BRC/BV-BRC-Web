@@ -9,7 +9,7 @@ define([
     colNames: [],     // names of columns
     colKeys: [],      // names of keys for each column
     label: null,      // labels items. example: {rowIndex: 1, colKey: 'name', format: function(rowObj) {}}
-    _rows: [],        // data model for rows in table
+    _rows: [],      // data model for rows in table
 
     _tableHTML:
       '<table class="p3basic striped-light" style="font-size: .8em; margin-bottom: 10px;">' +
@@ -27,6 +27,7 @@ define([
     _emptyEle: null,   // dom element for empty table
 
     constructor: function () {
+      this._rows = [];
     },
 
     postCreate: function () {
