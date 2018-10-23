@@ -499,14 +499,14 @@ define([
         this.assemblyStrategy.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
-        this.contigsFile.required = false;
+        this.contigsFile.set('required', false);
       }
       if (this.startWithContigs.checked) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
         this.numlibs.constraints.min = 0;
-        this.contigsFile.required = true;
+        this.contigsFile.set('required', true);
       }
     }
   });
