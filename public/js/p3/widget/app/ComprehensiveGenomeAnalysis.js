@@ -36,7 +36,6 @@ define([
 
     constructor: function () {
       this.addedLibs = { counter: 0 };
-      this.addedPairs = 0;
       this.pairToAttachPt = ['read1', 'read2'];
       this.singleToAttachPt = ['single_end_libs'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
@@ -321,6 +320,7 @@ define([
             console.debug(e);
           }
         }));
+      this.checkParameterRequiredFields();
     },
 
     updateSRR: function () {
@@ -493,20 +493,34 @@ define([
       this._autoNameSet = false;
     },
 
+    checkParameterRequiredFields: function () {
+      if (this.scientific_nameWidget.get('item') && this.myLabelWidget.get('value')
+         && this.output_path.get('value') && this.output_nameWidget.get('displayedValue') ) {
+        this.validate();
+      }
+    },
+
+    setContigsFile: function () {
+      this.checkParameterRequiredFields();
+    },
+
     onStartWithChange: function () {
-      if (this.startWithRead.checked) {
+      if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
+        this.contigsFile.reset();
         this.contigsFile.set('required', false);
+        this.checkParameterRequiredFields();
       }
-      if (this.startWithContigs.checked) {
+      if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
         this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
+        this.checkParameterRequiredFields();
       }
     }
   });
