@@ -29,7 +29,7 @@
           </div>
         </div>
         <div class="appRow">
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked="checked" data-dojo-attach-event="onChange:onStartWithChange" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked />
           <label for="radio1">Read File</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithContigs" name="startWith" value="contigs" data-dojo-attach-event="onChange:onStartWithChange" />
           <label for="radio2">Assembled Contigs</label>
@@ -112,12 +112,10 @@
             </div>
           </div>
         </div>
-        <div data-dojo-attach-point="contigsFile" class="appRow">
-          <div class="appRow">
+        <div class="appRow">
             <label class="paramlabel">Contigs</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" data-dojo-attach-point="contigsFile" data-dojo-attach-event="onChange:setContigsFile" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
             </div>
-          </div>
         </div>
       </div>
       <div id="parameterBox" style="width:400px; " class="appBox appShadow">
@@ -188,12 +186,6 @@
           <div class="appFieldLong" style="width:380px">
             <label>Output Name</label><br>
             <div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
-          </div>
-        </div>
-        <div class="appRow" style="display:none">
-          <div class="appFieldLong">
-            <label>Optional Annotation Source</label><br>
-            <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="reference_genome_id" maxHeight="200" style="width:100%" required="false" data-dojo-attach-point="ref_genome_id"></div>
           </div>
         </div>
       </div>

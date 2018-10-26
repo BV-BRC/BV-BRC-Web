@@ -682,15 +682,85 @@ define("p3/widget/GridContainer", [
           tooltipDialog: viewFASTATT,
           validContainerTypes: ['feature_data', 'spgene_data', 'transcriptomics_gene_data', 'pathway_data']
         },
-        function (selection) {
-          // console.log("view FASTA")
-          viewFASTATT.selection = selection;
-          // console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
-          popup.open({
-            popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-            around: this.selectionActionBar._actions.ViewFASTA.button,
-            orient: ['below']
-          });
+        function (selection, containerWidget) {
+          switch (containerWidget.containerType) {
+            case 'pathway_data':
+              var queryContext = containerWidget.grid.store.state.search;
+              if (containerWidget.grid.store.state.hashParams.filter != 'false') {
+                queryContext += '&' + containerWidget.grid.store.state.hashParams.filter;
+              }
+
+              var self = this;
+              switch (containerWidget.type) {
+                case 'pathway':
+                  var pathway_ids = selection.map(function (d) {
+                    return d.pathway_id;
+                  });
+
+                  when(request.post(this.apiServer + '/pathway/', {
+                    handleAs: 'json',
+                    headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                      'X-Requested-With': null,
+                      Authorization: (window.App.authorizationToken || '')
+                    },
+                    data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
+                  }), function (response) {
+                    viewFASTATT.selection = response;
+
+                    popup.open({
+                      popup: self.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+                      around: self.selectionActionBar._actions.ViewFASTA.button,
+                      orient: ['below']
+                    });
+                  });
+                  break;
+                case 'ec_number':
+                  var ec_numbers = selection.map(function (d) {
+                    return d.ec_number;
+                  });
+
+                  when(request.post(this.apiServer + '/pathway/', {
+                    handleAs: 'json',
+                    headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                      'X-Requested-With': null,
+                      Authorization: (window.App.authorizationToken || '')
+                    },
+                    data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
+                  }), function (response) {
+                    viewFASTATT.selection = response;
+
+                    popup.open({
+                      popup: self.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+                      around: self.selectionActionBar._actions.ViewFASTA.button,
+                      orient: ['below']
+                    });
+                  });
+                  break;
+                case 'gene':
+                  viewFASTATT.selection = selection;
+                  popup.open({
+                    popup: self.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+                    around: self.selectionActionBar._actions.ViewFASTA.button,
+                    orient: ['below']
+                  });
+                  break;
+                default:
+                  break;
+              }
+              break;
+            default:
+              viewFASTATT.selection = selection;
+              popup.open({
+                popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+                around: this.selectionActionBar._actions.ViewFASTA.button,
+                orient: ['below']
+              });
+              break;
+          }
         },
         false
       ], [

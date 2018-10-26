@@ -597,26 +597,18 @@ define("p3/widget/DataItemFormatter", [
         text: 'na_length'
       }, {
         name: 'NA Sequence',
-        text: 'na_sequence',
+        text: 'na_sequence_md5',
         link: function (obj) {
-          if (obj.na_sequence !== ' ') {
-            return obj.na_sequence.substr(0, 30) + '... <button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
-              + '<button onclick="clipboard.copy(\'' + obj.na_sequence + '\')">copy</button>';
-          }
-          return obj.na_sequence.substr(0, 30) + '... <button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+          return '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
         }
       }, {
         name: 'AA Length',
         text: 'aa_length'
       }, {
         name: 'AA Sequence',
-        text: 'aa_sequence',
+        text: 'aa_sequence_md5',
         link: function (obj) {
-          if (obj.aa_sequence !== ' ') {
-            return obj.aa_sequence.substr(0, 22) + '... <button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>'
-              + '<button onclick="clipboard.copy(\'' + obj.aa_sequence + '\')">copy</button>';
-          }
-          return obj.aa_sequence.substr(0, 22) + '... <button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+          return '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
         }
       }];
 
