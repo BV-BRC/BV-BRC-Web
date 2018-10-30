@@ -20,16 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-;(function(){ 'use strict';
+(function () { 'use strict';
 
   // registers the extension on a cytoscape lib ref
-  var register = function( cytoscape, cola ){
-    if( !cytoscape || !cola ){ return; } // can't register if cytoscape unspecified
+  var register = function ( cytoscape, cola ) {
+    if ( !cytoscape || !cola ) { return; } // can't register if cytoscape unspecified
 
     var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
-    var isString = function(o){ return typeof o === typeof ''; };
-    var isNumber = function(o){ return typeof o === typeof 0; };
-    var isObject = function(o){ return o != null && typeof o === typeof {}; };
+    var isString = function (o) { return typeof o === typeof ''; };
+    var isNumber = function (o) { return typeof o === typeof 0; };
+    var isObject = function (o) { return o != null && typeof o === typeof {}; };
 
     // default layout options
     var defaults = {
@@ -42,14 +42,14 @@ SOFTWARE.
       boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
 
       // layout event callbacks
-      ready: function(){}, // on layoutready
-      stop: function(){}, // on layoutstop
+      ready: function () {}, // on layoutready
+      stop: function () {}, // on layoutstop
 
       // positioning options
       randomize: false, // use random node positions at beginning of layout
       avoidOverlap: true, // if true, prevents overlap of node bounding boxes
       handleDisconnected: true, // if true, avoids disconnected components from overlapping
-      nodeSpacing: function( node ){ return 10; }, // extra spacing around nodes
+      nodeSpacing: function ( node ) { return 10; }, // extra spacing around nodes
       flow: undefined, // use DAG/tree flow layout if specified, e.g. { axis: 'y', minSeparation: 30 }
       alignment: undefined, // relative alignment constraints on nodes, e.g. function( node ){ return { x: 0, y: 1 } }
 
@@ -70,14 +70,14 @@ SOFTWARE.
 
     // constructor
     // options : object containing layout options
-    function ColaLayout( options ){
+    function ColaLayout( options ) {
       var opts = this.options = {};
-      for( var i in defaults ){ opts[i] = defaults[i]; }
-      for( var i in options ){ opts[i] = options[i]; }
+      for ( var i in defaults ) { opts[i] = defaults[i]; }
+      for ( var i in options ) { opts[i] = options[i]; }
     }
 
     // runs the layout
-    ColaLayout.prototype.run = function(){
+    ColaLayout.prototype.run = function () {
       var layout = this;
       var options = this.options;
 
@@ -89,47 +89,53 @@ SOFTWARE.
       var edges = eles.edges();
       var ready = false;
 
-      var bb = options.boundingBox || { x1: 0, y1: 0, w: cy.width(), h: cy.height() };
-      if( bb.x2 === undefined ){ bb.x2 = bb.x1 + bb.w; }
-      if( bb.w === undefined ){ bb.w = bb.x2 - bb.x1; }
-      if( bb.y2 === undefined ){ bb.y2 = bb.y1 + bb.h; }
-      if( bb.h === undefined ){ bb.h = bb.y2 - bb.y1; }
+      var bb = options.boundingBox || {
+        x1: 0, y1: 0, w: cy.width(), h: cy.height()
+      };
+      if ( bb.x2 === undefined ) { bb.x2 = bb.x1 + bb.w; }
+      if ( bb.w === undefined ) { bb.w = bb.x2 - bb.x1; }
+      if ( bb.y2 === undefined ) { bb.y2 = bb.y1 + bb.h; }
+      if ( bb.h === undefined ) { bb.h = bb.y2 - bb.y1; }
 
-      var typeoffn = typeof function(){};
-      var getOptVal = function( val, ele ){
-        if( typeof val === typeoffn ){
+      var typeoffn = typeof function () {};
+      var getOptVal = function ( val, ele ) {
+        if ( typeof val === typeoffn ) {
           var fn = val;
-          return fn.apply( ele, [ ele ] );
-        } else {
-          return val;
+          return fn.apply( ele, [ele] );
         }
+        return val;
+
       };
 
-      var updateNodePositions = function(){
-        for( var i = 0; i < nodes.length; i++ ){
+      var updateNodePositions = function () {
+        for ( var i = 0; i < nodes.length; i++ ) {
           var node = nodes[i];
           var scratch = node.scratch('cola');
 
           // update node dims
-          if( !scratch.updatedDims ){
+          if ( !scratch.updatedDims ) {
             var padding = getOptVal( options.nodeSpacing, node );
 
-            scratch.width = node.outerWidth() + 2*padding;
-            scratch.height = node.outerHeight() + 2*padding;
+            scratch.width = node.outerWidth() + 2 * padding;
+            scratch.height = node.outerHeight() + 2 * padding;
           }
         }
 
-        nodes.positions(function(i, node){
+        nodes.positions(function (node, i) {
+          // Perform 2.x and 1.x backwards compatibility check
+          if ( isNumber(node) ) {
+            node = i;
+          }
           var scratch = node.scratch().cola;
           var retPos;
 
-          if( !node.grabbed() && !node.isParent() ){
+          if ( !node.grabbed() && !node.isParent() ) {
             retPos = {
               x: bb.x1 + scratch.x,
               y: bb.y1 + scratch.y
             };
 
-            if( !isNumber(retPos.x) || !isNumber(retPos.y) ){
+            if ( !isNumber(retPos.x) || !isNumber(retPos.y) ) {
               retPos = undefined;
             }
           }
@@ -139,18 +145,18 @@ SOFTWARE.
 
         nodes.updateCompoundBounds(); // because the way this layout sets positions is buggy for some reason; ref #878
 
-        if( !ready ){
+        if ( !ready ) {
           onReady();
           ready = true;
         }
 
-        if( options.fit ){
+        if ( options.fit ) {
           cy.fit( options.padding );
         }
       };
 
-      var onDone = function(){
-        if( options.ungrabifyWhileSimulating ){
+      var onDone = function () {
+        if ( options.ungrabifyWhileSimulating ) {
           grabbableNodes.grabify();
         }
 
@@ -164,7 +170,7 @@ SOFTWARE.
         layout.trigger({ type: 'layoutstop', layout: layout });
       };
 
-      var onReady = function(){
+      var onReady = function () {
         // trigger layoutready when each node has had its position set at least once
         layout.one('layoutready', options.ready);
         layout.trigger({ type: 'layoutready', layout: layout });
@@ -173,7 +179,7 @@ SOFTWARE.
       var ticksPerFrame = options.refresh;
       var tickSkip = 1; // frames until a tick; used to slow down sim for debugging
 
-      if( options.refresh < 0 ){
+      if ( options.refresh < 0 ) {
         tickSkip = Math.abs( options.refresh );
         ticksPerFrame = 1;
       } else {
@@ -181,14 +187,14 @@ SOFTWARE.
       }
 
       var adaptor = layout.adaptor = cola.adaptor({
-        trigger: function( e ){ // on sim event
+        trigger: function ( e ) { // on sim event
           var TICK = cola.EventType ? cola.EventType.tick : null;
           var END = cola.EventType ? cola.EventType.end : null;
 
-          switch( e.type ){
+          switch ( e.type ) {
             case 'tick':
             case TICK:
-              if( options.animate ){
+              if ( options.animate ) {
                 updateNodePositions();
               }
               break;
@@ -196,16 +202,16 @@ SOFTWARE.
             case 'end':
             case END:
               updateNodePositions();
-              if( !options.infinite ){ onDone(); }
+              if ( !options.infinite ) { onDone(); }
               break;
           }
         },
 
-        kick: function(){ // kick off the simulation
-          //var skip = 0;
+        kick: function () { // kick off the simulation
+          // var skip = 0;
 
-          var inftick = function(){
-            if( layout.manuallyStopped ){
+          var inftick = function () {
+            if ( layout.manuallyStopped ) {
               onDone();
 
               return true;
@@ -213,14 +219,14 @@ SOFTWARE.
 
             var ret = adaptor.tick();
 
-            if( ret && options.infinite ){ // resume layout if done
+            if ( ret && options.infinite ) { // resume layout if done
               adaptor.resume(); // resume => new kick
             }
 
             return ret; // allow regular finish b/c of new kick
           };
 
-          var multitick = function(){ // multiple ticks in a row
+          var multitick = function () { // multiple ticks in a row
             var ret;
 
             // skip ticks to slow down layout for debugging
@@ -230,51 +236,54 @@ SOFTWARE.
             //   return false;
             // }
 
-            for( var i = 0; i < ticksPerFrame && !ret; i++ ){
+            for ( var i = 0; i < ticksPerFrame && !ret; i++ ) {
               ret = ret || inftick(); // pick up true ret vals => sim done
             }
 
             return ret;
           };
 
-          if( options.animate ){
-            var frame = function(){
-              if( multitick() ){ return; }
+          if ( options.animate ) {
+            var frame = function () {
+              if ( multitick() ) { return; }
 
               raf( frame );
             };
 
             raf( frame );
           } else {
-            while( !inftick() ){}
+            while ( !inftick() ) {}
           }
         },
 
-        on: function( type, listener ){}, // dummy; not needed
+        on: function ( type, listener ) {}, // dummy; not needed
 
-        drag: function(){} // not needed for our case
+        drag: function () {} // not needed for our case
       });
       layout.adaptor = adaptor;
 
       // if set no grabbing during layout
       var grabbableNodes = nodes.filter(':grabbable');
-      if( options.ungrabifyWhileSimulating ){
+      if ( options.ungrabifyWhileSimulating ) {
         grabbableNodes.ungrabify();
       }
 
       var destroyHandler;
-      cy.one('destroy', destroyHandler = function(e){
+      cy.one('destroy', destroyHandler = function (e) {
         layout.stop();
       });
 
       // handle node dragging
       var grabHandler;
-      nodes.on('grab free position', grabHandler = function(e){
+      nodes.on('grab free position', grabHandler = function (e) {
         var node = this;
         var scrCola = node.scratch().cola;
         var pos = node.position();
-        
-        switch( e.type ){
+        var nodeIsTarget = e.cyTarget === node || e.target === node;
+
+        if ( !nodeIsTarget ) { return; }
+
+        switch ( e.type ) {
           case 'grab':
             adaptor.dragstart( scrCola );
             adaptor.resume();
@@ -284,7 +293,7 @@ SOFTWARE.
             break;
           case 'position':
             // only update when different (i.e. manual .position() call or drag) so we don't loop needlessly
-            if( scrCola.x !== pos.x - bb.x1 || scrCola.y !== pos.y - bb.y1 ){
+            if ( scrCola.px !== pos.x - bb.x1 || scrCola.py !== pos.y - bb.y1 ) {
               scrCola.px = pos.x - bb.x1;
               scrCola.py = pos.y - bb.y1;
               adaptor.resume();
@@ -295,25 +304,25 @@ SOFTWARE.
       });
 
       var lockHandler;
-      nodes.on('lock unlock', lockHandler = function(e){
+      nodes.on('lock unlock', lockHandler = function (e) {
         var node = this;
         var scrCola = node.scratch().cola;
 
         scrCola.fixed = node.locked();
 
-        if( node.locked() ){
+        if ( node.locked() ) {
           adaptor.dragstart( scrCola );
         } else {
           adaptor.dragend( scrCola );
         }
       });
 
-      var nonparentNodes = nodes.stdFilter(function( node ){
+      var nonparentNodes = nodes.stdFilter(function ( node ) {
         return !node.isParent();
       });
 
       // add nodes to cola
-      adaptor.nodes( nonparentNodes.map(function( node, i ){
+      adaptor.nodes( nonparentNodes.map(function ( node, i ) {
         var padding = getOptVal( options.nodeSpacing, node );
         var pos = node.position();
         var nbb = node.boundingBox();
@@ -321,8 +330,8 @@ SOFTWARE.
         var struct = node.scratch().cola = {
           x: options.randomize || pos.x === undefined ? Math.round( Math.random() * bb.w ) : pos.x,
           y: options.randomize || pos.y === undefined ? Math.round( Math.random() * bb.h ) : pos.y,
-          width: nbb.w + 2*padding,
-          height: nbb.h + 2*padding,
+          width: nbb.w + 2 * padding,
+          height: nbb.h + 2 * padding,
           index: i,
           fixed: node.locked()
         };
@@ -330,26 +339,26 @@ SOFTWARE.
         return struct;
       }) );
 
-      if( options.alignment ){ // then set alignment constraints
+      if ( options.alignment ) { // then set alignment constraints
 
         var offsetsX = [];
         var offsetsY = [];
 
-        nonparentNodes.forEach(function( node ){
+        nonparentNodes.forEach(function ( node ) {
           var align = getOptVal( options.alignment, node );
           var scrCola = node.scratch().cola;
           var index = scrCola.index;
 
-          if( !align ){ return; }
+          if ( !align ) { return; }
 
-          if( align.x != null ){
+          if ( align.x != null ) {
             offsetsX.push({
               node: index,
               offset: align.x
             });
           }
 
-          if( align.y != null ){
+          if ( align.y != null ) {
             offsetsY.push({
               node: index,
               offset: align.y
@@ -360,7 +369,7 @@ SOFTWARE.
         // add alignment constraints on nodes
         var constraints = [];
 
-        if( offsetsX.length > 0 ){
+        if ( offsetsX.length > 0 ) {
           constraints.push({
             type: 'alignment',
             axis: 'x',
@@ -368,7 +377,7 @@ SOFTWARE.
           });
         }
 
-        if( offsetsY.length > 0 ){
+        if ( offsetsY.length > 0 ) {
           constraints.push({
             type: 'alignment',
             axis: 'y',
@@ -381,12 +390,12 @@ SOFTWARE.
       }
 
       // add compound nodes to cola
-      adaptor.groups( nodes.stdFilter(function( node ){
+      adaptor.groups( nodes.stdFilter(function ( node ) {
         return node.isParent();
-      }).map(function( node, i ){ // add basic group incl leaf nodes
+      }).map(function ( node, i ) { // add basic group incl leaf nodes
         var optPadding = getOptVal( options.nodeSpacing, node );
-        var getPadding = function(d){
-          return parseFloat( node.style('padding-'+d) );
+        var getPadding = function (d) {
+          return parseFloat( node.style('padding-' + d) );
         };
 
         var pleft = getPadding('left') + optPadding;
@@ -401,9 +410,9 @@ SOFTWARE.
 
           // leaves should only contain direct descendants (children),
           // not the leaves of nested compound nodes or any nodes that are compounds themselves
-          leaves: node.children().stdFilter(function( child ){
+          leaves: node.children().stdFilter(function ( child ) {
             return !child.isParent();
-          }).map(function( child ){
+          }).map(function ( child ) {
             return child[0].scratch().cola.index;
           }),
 
@@ -411,10 +420,10 @@ SOFTWARE.
         };
 
         return node;
-      }).map(function( node ){ // add subgroups
-        node.scratch().cola.groups = node.children().stdFilter(function( child ){
+      }).map(function ( node ) { // add subgroups
+        node.scratch().cola.groups = node.children().stdFilter(function ( child ) {
           return child.isParent();
-        }).map(function( child ){
+        }).map(function ( child ) {
           return child.scratch().cola.index;
         });
 
@@ -424,13 +433,13 @@ SOFTWARE.
       // get the edge length setting mechanism
       var length;
       var lengthFnName;
-      if( options.edgeLength != null ){
+      if ( options.edgeLength != null ) {
         length = options.edgeLength;
         lengthFnName = 'linkDistance';
-      } else if( options.edgeSymDiffLength != null ){
+      } else if ( options.edgeSymDiffLength != null ) {
         length = options.edgeSymDiffLength;
         lengthFnName = 'symmetricDiffLinkLengths';
-      } else if( options.edgeJaccardLength != null ){
+      } else if ( options.edgeJaccardLength != null ) {
         length = options.edgeJaccardLength;
         lengthFnName = 'jaccardLinkLengths';
       } else {
@@ -438,49 +447,49 @@ SOFTWARE.
         lengthFnName = 'linkDistance';
       }
 
-      var lengthGetter = function( link ){
+      var lengthGetter = function ( link ) {
         return link.calcLength;
       };
 
       // add the edges to cola
-      adaptor.links( edges.stdFilter(function( edge ){
+      adaptor.links( edges.stdFilter(function ( edge ) {
         return !edge.source().isParent() && !edge.target().isParent();
-      }).map(function( edge, i ){
+      }).map(function ( edge, i ) {
         var c = edge.scratch().cola = {
           source: edge.source()[0].scratch().cola.index,
           target: edge.target()[0].scratch().cola.index
         };
 
-        if( length != null ){
+        if ( length != null ) {
           c.calcLength = getOptVal( length, edge );
         }
 
         return c;
       }) );
 
-      adaptor.size([ bb.w, bb.h ]);
+      adaptor.size([bb.w, bb.h]);
 
-      if( length != null ){
-        adaptor[ lengthFnName ]( lengthGetter );
+      if ( length != null ) {
+        adaptor[lengthFnName]( lengthGetter );
       }
 
       // set the flow of cola
-      if( options.flow ){
+      if ( options.flow ) {
         var flow;
         var defAxis = 'y';
         var defMinSep = 50;
 
-        if( isString(options.flow) ){
+        if ( isString(options.flow) ) {
           flow = {
             axis: options.flow,
             minSeparation: defMinSep
           };
-        } else if( isNumber(options.flow) ){
+        } else if ( isNumber(options.flow) ) {
           flow = {
             axis: defAxis,
             minSeparation: options.flow
           };
-        } else if( isObject(options.flow) ){
+        } else if ( isObject(options.flow) ) {
           flow = options.flow;
 
           flow.axis = flow.axis || defAxis;
@@ -492,7 +501,7 @@ SOFTWARE.
           };
         }
 
-        adaptor.flowLayout( flow.axis , flow.minSeparation );
+        adaptor.flowLayout( flow.axis, flow.minSeparation );
       }
 
       layout.trigger({ type: 'layoutstart', layout: layout });
@@ -500,12 +509,10 @@ SOFTWARE.
       adaptor
         .avoidOverlaps( options.avoidOverlap )
         .handleDisconnected( options.handleDisconnected )
-        .start( options.unconstrIter, options.userConstIter, options.allConstIter)
-      ;
-
-      if( !options.infinite ){
-        setTimeout(function(){
-          if( !layout.manuallyStopped ){
+        .start( options.unconstrIter, options.userConstIter, options.allConstIter);
+      if ( !options.infinite ) {
+        setTimeout(function () {
+          if ( !layout.manuallyStopped ) {
             adaptor.stop();
           }
         }, options.maxSimulationTime);
@@ -515,8 +522,8 @@ SOFTWARE.
     };
 
     // called on continuous layouts to stop them before they finish
-    ColaLayout.prototype.stop = function(){
-      if( this.adaptor ){
+    ColaLayout.prototype.stop = function () {
+      if ( this.adaptor ) {
         this.manuallyStopped = true;
         this.adaptor.stop();
       }
@@ -529,18 +536,18 @@ SOFTWARE.
 
   };
 
-  if( typeof module !== 'undefined' && module.exports ){ // expose as a commonjs module
-    module.exports = register;
-  }
-
-  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
-    define('cytoscape-cola', function(){
+  if ( typeof module !== 'undefined' && module.exports ) { // expose as a commonjs module
+    module.exports = function ( cytoscape, cola ) {
+      register( cytoscape, cola || require('webcola') );
+    };
+  } else if ( typeof define !== 'undefined' && define.amd ) { // expose as an amd/requirejs module
+    define('cytoscape-cola', function () {
       return register;
     });
   }
 
-  if( typeof cytoscape !== 'undefined' && typeof cola !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
+  if ( typeof cytoscape !== 'undefined' && typeof cola !== 'undefined' ) { // expose to global cytoscape (i.e. window.cytoscape)
     register( cytoscape, cola );
   }
 
-})();
+}());

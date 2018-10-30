@@ -530,9 +530,9 @@ define("phyloview/TreeNavSVG", [
             }
             return r;
         })
-        .style("stroke-width", "10")
-        .style("stroke", "white")
-        .style("opacity", "0.1")
+        .style("stroke-width", "1")
+        .style("stroke", "black")
+        .style("fill-opacity", "0")
         .on("click", this.click)
         .on("mouseover", this.hover)
         .on("mouseout", this.mouseout)
@@ -548,6 +548,7 @@ define("phyloview/TreeNavSVG", [
             return r;
         })
         .style("stroke-linejoin", "round")
+        .style("fill-opacity", "0")
         .on("click", this.click)
         .on("mouseover", this.hover)
         .on("mouseout", this.mouseout)

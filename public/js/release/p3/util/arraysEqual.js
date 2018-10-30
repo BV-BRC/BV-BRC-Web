@@ -1,16 +1,16 @@
-define("p3/util/arraysEqual", [], function(){
+define("p3/util/arraysEqual", [], function () {
 
-	return function(/* array */ a, /* array */ b){
-		if(!a || !a.length || !b || !b.length){
-			return false;
-		}
+  return function (/* array */ a, /* array */ b) {
+    if (!a || !a.length || !b || !b.length) {
+      return false;
+    }
 
-		if(a.length !== b.length){
-			return false;
-		}
+    if (a.length !== b.length) {
+      return false;
+    }
 
-		return a.every(function(e){
-			return (b.indexOf(e) > -1)
-		})
-	}
+    return a.every(function (e) {
+      return (b.indexOf(e) > -1);
+    });
+  };
 });

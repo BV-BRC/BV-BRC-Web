@@ -18,7 +18,7 @@
 @import url("modeling.css");
 @import url("facetfilter.css");
 @import url("./GenomeList.css");
-@import url("./GenomeViewer.css");
+/* @import url("./GenomeViewer.css"); */
 /*@import url("./p2.css");*/
 @import url("./JobsGrid.css");
 @import url("./SummaryWidget.css");
@@ -26,12 +26,25 @@
 @import url("./SearchResults.css");
 @import url("./DataItemFormatter.css");
 @import url("./D3StackedBarChart.css");
-@import url("HomePage.css");
+@import url("home-new.css");
+@import url("./HomePage.css");
 @import url("./dlp.css");
 @import url("./help.css");
+@import url("webpage.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
-
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
+
+.icon-sort-alpha-asc {
+  margin-left: 0;
+  padding: 0;
+  font-size: 10pt;
+  cursor: pointer;
+  cursor: hand;
+}
+
+.icon-sort-alpha-asc:hover {
+  color: #e75200;
+}
 
 .bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure,
 footer, header, menu, nav, section, summary, blockquote, q, th, td, caption, table,
@@ -80,8 +93,8 @@ body.patric *:focus {
     outline: 0;
 }
 
-ul { 
-	list-style-position: inside; 
+ul {
+	list-style-position: inside;
 }
 
 li ul {
@@ -108,8 +121,13 @@ iframe  {
     overflow: hidden;
 }
 
-.claro .dijitTabPaneWrapper {
+.claro {
     overflow: auto;
+}
+
+.dijitTabPaneWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .layer {
@@ -123,7 +141,21 @@ iframe  {
 }
 
 .dijitToasterContainer {
-    margin: 5px;
+    margin: 10px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+}
+.dijitToasterContainer .dijitToasterContent {
+    background-color: #313131;
+    color: #8cea00;
+    padding: 1em;
+}
+
+.dijitToasterContainer .default {
+    color: #fff;
+}
+
+.dijitToasterError .dijitToasterContent {
+    color: #ff1059;
 }
 
 .ShowWithAuth {
@@ -149,7 +181,7 @@ iframe  {
 
 
 ol {
-  list-style-type: decimal; 
+  list-style-type: decimal;
   padding: 0 0 0 30px;
   margin: 0 0 17px 0;
 }
@@ -229,7 +261,7 @@ table.p3basic td, th {
 }
 
 table.striped tr:nth-child(odd) td,
-table.striped tr:nth-child(odd) th,
+table.striped tr:nth-child(odd):not(:first-child) th,
 table tr.even td {
     background: #f5f5f5;
 }
@@ -1022,7 +1054,7 @@ div.pubmed ul li {
   color: #09456f; }
 
 .highlight-f {
-  color: #87b934; }
+  color: #638826; }
 
 /* =Link Styles */
 .linkstyle-highlight a {
@@ -1095,16 +1127,19 @@ h6 {
   font-size: 1em;
   font-weight: bold; }
 
+h1.xxxl,
 h2.xxxl {
   font-size: 40px;
   line-height: 36px; }
 
+h1.xxl,
 h2.xxl {
   font-size: 30px; }
 
-h2.xl {
+h1.xl {
   font-size: 26px; }
 
+h2.xl,
 h3.xl {
   font-size: 20px; }
 
@@ -1128,19 +1163,17 @@ body footer.main-footer {
   background-image: linear-gradient(#09456f, #34698e);
   border-top: #227194;
   padding: 12px 0 30px 0;
-  min-height:165px;
+  min-height:200px;
 }
 
 footer.main-footer .container {
   overflow: hidden;
 }
 footer.main-footer .container .column {
-  display: inline;
   float: left;
   width: 229px;
   border-left: #547f9d 1px solid;
-  margin-right: -1px;
-  font-weight: 100;
+  min-height: 143px
 }
 * html body footer.main-footer .container .column {
   overflow-x: hidden;
@@ -1148,15 +1181,6 @@ footer.main-footer .container .column {
 body footer.main-footer .container .column .wrapper {
   overflow: hidden;
   padding: 0 15px;
-}
-  body footer.main-footer .container .column.last {
-  display: inline;
-  float: left;
-  margin-right: 0;
-  width: 229px;
-}
-* html body footer.main-footer .container .column.last {
-  overflow-x: hidden;
 }
 body footer.main-footer ul.left {
   width: 99px;
@@ -1218,4 +1242,64 @@ body footer.main-footer ul.left {
 }
 
 .center-text {
-    text-align: center; }
+    text-align: center;
+}
+
+.subsystemslegend {
+    font-size: 15px;
+}
+
+.subsystemsChartToolTip {
+    background: #eee;
+    box-shadow: 0 0 5px #999999;
+    color: #333;
+    display: none;
+    font-size: 12px;
+    left: 130px;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    top: 95px;
+    width: 80px;
+    z-index: 10;
+}
+
+#subsystemspiechart {
+    cursor: pointer;
+}
+
+/* accessibility utils */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.banner-yellow {
+    padding: 10px;
+    color: #454545 !important;
+    background-color: #f0ad4e;
+    border-color: #eea236;
+}
+
+
+/**
+ * system status page
+ */
+
+.SystemStatus {
+    margin: 50px 150px 0 150px;
+}
+
+.SystemStatus i.success{
+    color: #22b900;
+}
+
+.SystemStatus i.fail {
+    color: #bd0000;
+}

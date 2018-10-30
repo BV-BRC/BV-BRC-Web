@@ -1,0 +1,14 @@
+node_modules
+coverage
+dist
+src
+test
+gulpified
+gulpfile.js
+public/js/release
+public/js/release.profile.js
+public/js/bundle
+public/js/p3/resources/
+public/js/p3/widget/GenomeBrowser.js
+public/js/p3/widget/util/touch.js
+public/js/p3/p3.profile.js

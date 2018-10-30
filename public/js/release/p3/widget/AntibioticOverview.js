@@ -1,166 +1,176 @@
 require({cache:{
 'url:p3/widget/templates/AntibioticOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"antibioticSummaryNode\">\n                Loading Antibiotic Summary...\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\">\n                <span class=\"wrap\">2D Structure</span>\n            </h3>\n            <div class=\"SummaryWidget center-text\" data-dojo-attach-point=\"structureNode\">\n                Loading...\n            </div>\n        </div>\n\n<!--\n        <div class=\"section\">\n            <h3 class=\"section-title\">\n                <span class=\"wrap\">3D Structure</span>\n            </h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"viewerNode\">\n                Loading...\n            </div>\n        </div>\n-->\n    </div>\n    <div class=\"column-prime\">\n        <!-- TODO: add genus level summary of genomes later -->\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title close\">\n                <span class=\"wrap\">Description</span>\n            </h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"descNode\">\n                Loading...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title close\">\n                <span class=\"wrap\">Mechanism of Action</span>\n            </h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"moaNode\">\n                Loading...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title close\">\n                <span class=\"wrap\">Pharmacology</span>\n            </h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"pharmacologyNode\">\n                Loading...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title close\">\n                <span class=\"wrap\">Synonyms</span>\n            </h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"synonymsNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context\">\n                <span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>"}});
 define("p3/widget/AntibioticOverview", [
-	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/request", "dojo/dom-construct", "dojo/dom-class", "dojo/text!./templates/AntibioticOverview.html",
-	"dijit/_WidgetBase", "dijit/_Templated",
-	"../util/PathJoin", "./DataItemFormatter", "./ExternalItemFormatter"
-], function(declare, lang,
-			xhr, domConstruct, domClass, Template,
-			WidgetBase, Templated,
-			PathJoin, DataItemFormatter, ExternalItemFormatter){
+  'dojo/_base/declare', 'dojo/_base/lang',
+  'dojo/request', 'dojo/dom-construct', 'dojo/dom-class', 'dojo/text!./templates/AntibioticOverview.html',
+  'dijit/_WidgetBase', 'dijit/_Templated',
+  '../util/PathJoin', './DataItemFormatter', './ExternalItemFormatter'
+], function (
+  declare, lang,
+  xhr, domConstruct, domClass, Template,
+  WidgetBase, Templated,
+  PathJoin, DataItemFormatter, ExternalItemFormatter
+) {
 
-	var xhrOption = {
-		handleAs: "json",
-		headers: {
-			'Accept': 'application/json',
-			'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-			'X-Requested-With': null
-		}
-	};
+  var xhrOption = {
+    handleAs: 'json',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+      'X-Requested-With': null
+    }
+  };
 
-	return declare([WidgetBase, Templated], {
-		templateString: Template,
-		apiServiceUrl: window.App.dataAPI,
-		query: null,
-		_setStateAttr: function(state){
-			this._set("state", state);
-			// console.log("state:", state);
+  return declare([WidgetBase, Templated], {
+    templateString: Template,
+    apiServiceUrl: window.App.dataAPI,
+    query: null,
+    _setStateAttr: function (state) {
+      this._set('state', state);
+      // console.log("state:", state);
 
-			if(this.query == state.search){
-				return;
-			}else{
-				this.query = state.search;
-			}
+      if (this.query == state.search) {
+        return;
+      }
+      this.query = state.search;
 
-			var antibioticName = state.search.split(",")[1].split(")")[0];
-			this.set('publications', antibioticName + '+resistance+pathogen');
 
-			this.getAntibioticData(state.search);
-		},
+      var antibioticName = state.search.split(',')[1].split(')')[0];
+      this.set('publications', antibioticName + '+resistance+pathogen');
 
-		_setAntibioticSummaryAttr: function(data){
-			domConstruct.empty(this.antibioticSummaryNode);
+      this.getAntibioticData(state.search);
+    },
 
-			domConstruct.place(DataItemFormatter(data, "antibiotic_data", {}), this.antibioticSummaryNode, "first");
+    _setAntibioticSummaryAttr: function (data) {
+      domConstruct.empty(this.antibioticSummaryNode);
 
-			// display 2D structure
-			// https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=33613&t=l
-			var url = "https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=" + data['pubchem_cid'] + "&t=l";
+      domConstruct.place(DataItemFormatter(data, 'antibiotic_data', {}), this.antibioticSummaryNode, 'first');
 
-			domConstruct.empty(this.structureNode);
-			domConstruct.create("img", {"src": url}, this.structureNode, "first");
+      // display 2D structure
+      // https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=33613&t=l
+      var url = 'https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=' + data.pubchem_cid + '&t=l';
 
-			// var sdfUrl = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/" + data['pubchem_cid'] + "/record/SDF/?record_type=3d&response_type=display";
+      domConstruct.empty(this.structureNode);
+      domConstruct.create('img', { src: url }, this.structureNode, 'first');
 
-			// xhr.post(sdfUrl, {'X-Requested-With': null})
-			// 	.then(function(data){
-			// 		console.log(data);
-			// 		$3Dmol.viewers.addAsOneMolecule(data, "sdf");
-			// 		$3Dmol.viewers.zoomTo();
-			// 		$3Dmol.viewers.render();
-			// 	});
+      // var sdfUrl = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/" + data['pubchem_cid'] + "/record/SDF/?record_type=3d&response_type=display";
 
-			// smiles
-			// domConstruct.create("h5", {innerHTML: "Canonical smiles"}, this.structureNode);
-			// domConstruct.create("span", {innerHTML: data['canonical_smiles']}, this.structureNode);
-			// domConstruct.create("h5", {innerHTML: "Isomeric smiles"}, this.structureNode);
-			// domConstruct.create("span", {innerHTML: data['isomeric_smiles']}, this.structureNode);
-		},
+      // xhr.post(sdfUrl, {'X-Requested-With': null})
+      //  .then(function(data){
+      //   console.log(data);
+      //   $3Dmol.viewers.addAsOneMolecule(data, "sdf");
+      //   $3Dmol.viewers.zoomTo();
+      //   $3Dmol.viewers.render();
+      //  });
 
-		_setDescriptionAttr: function(data){
+      // smiles
+      // domConstruct.create("h5", {innerHTML: "Canonical smiles"}, this.structureNode);
+      // domConstruct.create("span", {innerHTML: data['canonical_smiles']}, this.structureNode);
+      // domConstruct.create("h5", {innerHTML: "Isomeric smiles"}, this.structureNode);
+      // domConstruct.create("span", {innerHTML: data['isomeric_smiles']}, this.structureNode);
+    },
 
-			// section visible
-			domClass.remove(this.descNode.parentNode, "hidden");
+    _setDescriptionAttr: function (data) {
 
-			domConstruct.empty(this.descNode);
+      // section visible
+      domClass.remove(this.descNode.parentNode, 'hidden');
 
-			data.forEach(function(row){
-				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.descNode);
-			}, this);
-		},
+      domConstruct.empty(this.descNode);
 
-		_setMechanismAttr: function(data){
+      data.forEach(function (row) {
+        domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.descNode);
+      }, this);
+    },
 
-			// section visible
-			domClass.remove(this.moaNode.parentNode, "hidden");
+    _setMechanismAttr: function (data) {
 
-			domConstruct.empty(this.moaNode);
+      // section visible
+      domClass.remove(this.moaNode.parentNode, 'hidden');
 
-			data.forEach(function(row){
-				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.moaNode);
-			}, this);
-		},
+      domConstruct.empty(this.moaNode);
 
-		_setPharmacologyAttr: function(data){
+      data.forEach(function (row) {
+        domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.moaNode);
+      }, this);
+    },
 
-			// section visible
-			domClass.remove(this.pharmacologyNode.parentNode, "hidden");
+    _setPharmacologyAttr: function (data) {
 
-			domConstruct.empty(this.pharmacologyNode);
+      // section visible
+      domClass.remove(this.pharmacologyNode.parentNode, 'hidden');
 
-			data['pharmacology'].forEach(function(row){
-				domConstruct.create("div", {"class": "far2x", innerHTML: row}, this.pharmacologyNode);
-			}, this);
+      domConstruct.empty(this.pharmacologyNode);
 
-			if(data.hasOwnProperty('pharmacological_classes')){
-				domConstruct.create("h5", {"class": "close2x", innerHTML: "Pharmacological Classes"}, this.pharmacologyNode);
-				data['pharmacological_classes'].forEach(function(row){
-					domConstruct.create("div", {"class": "close", innerHTML: row}, this.pharmacologyNode);
-				}, this);
-			}
-		},
+      data.pharmacology.forEach(function (row) {
+        domConstruct.create('div', { 'class': 'far2x', innerHTML: row }, this.pharmacologyNode);
+      }, this);
 
-		_setSynonymsAttr: function(data){
+      if (Object.prototype.hasOwnProperty.call(data, 'pharmacological_classes')) {
+        domConstruct.create('h5', { 'class': 'close2x', innerHTML: 'Pharmacological Classes' }, this.pharmacologyNode);
+        data.pharmacological_classes.forEach(function (row) {
+          domConstruct.create('div', { 'class': 'close', innerHTML: row }, this.pharmacologyNode);
+        }, this);
+      }
+    },
 
-			// section visible
-			domClass.remove(this.synonymsNode.parentNode, "hidden");
+    _setSynonymsAttr: function (data) {
 
-			domConstruct.empty(this.synonymsNode);
+      // section visible
+      domClass.remove(this.synonymsNode.parentNode, 'hidden');
 
-			data.forEach(function(row){
-				domConstruct.create("div", {"class": "keyword medium", innerHTML: row}, this.synonymsNode);
-			}, this);
-		},
+      domConstruct.empty(this.synonymsNode);
 
-		_setPublicationsAttr: function(keyword){
-			domConstruct.empty(this.pubmedSummaryNode);
+      data.forEach(function (row) {
+        domConstruct.create('div', { 'class': 'keyword medium', innerHTML: row }, this.synonymsNode);
+      }, this);
+    },
 
-			domConstruct.place(ExternalItemFormatter(keyword, "pubmed_data", {}), this.pubmedSummaryNode, "first");
-		},
+    _setPublicationsAttr: function (keyword) {
+      domConstruct.empty(this.pubmedSummaryNode);
 
-		getAntibioticData: function(query){
-			xhr.get(PathJoin(this.apiServiceUrl, "antibiotics", "?" + query), xhrOption)
-				.then(lang.hitch(this, function(data){
+      domConstruct.place(ExternalItemFormatter(keyword, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
+    },
 
-					var d = data[0];
-					var summary = lang.mixin({}, {
-						pubchem_cid: d['pubchem_cid'],
-						cas_id: d['cas_id'],
-						antibiotic_name: d['antibiotic_name'],
-						molecular_formula: d['molecular_formula'],
-						molecular_weight: d['molecular_weight'],
-						inchi_key: d['inchi_key'],
-						// canonical_smiles: d['canonical_smiles'],
-						// isomeric_smiles: d['isomeric_smiles'],
-						atc_classification: d['atc_classification']
-					});
+    getAntibioticData: function (query) {
+      xhr.get(PathJoin(this.apiServiceUrl, 'antibiotics', '?' + query), xhrOption)
+        .then(lang.hitch(this, function (data) {
 
-					this.set('antibioticSummary', summary);
+          if (data.length === 0) {
+            domConstruct.empty(this.antibioticSummaryNode);
+            domConstruct.create('h2', { innerHTML: 'No summary data available.' }, this.antibioticSummaryNode, 'first');
 
-					if(d.hasOwnProperty('description')){
-						this.set('description', d['description']);
-					}
-					if(d.hasOwnProperty('mechanism_of_action')){
-						this.set('mechanism', d['mechanism_of_action']);
-					}
-					if(d.hasOwnProperty('pharmacology')){
-						this.set('pharmacology', d);
-					}
-					if(d.hasOwnProperty('synonyms')){
-						this.set('synonyms', d['synonyms']);
-					}
-				}))
-		}
-	})
+            domConstruct.empty(this.structureNode);
+            return;
+          }
+
+          var d = data[0];
+          var summary = lang.mixin({}, {
+            pubchem_cid: d.pubchem_cid,
+            cas_id: d.cas_id,
+            antibiotic_name: d.antibiotic_name,
+            molecular_formula: d.molecular_formula,
+            molecular_weight: d.molecular_weight,
+            inchi_key: d.inchi_key,
+            // canonical_smiles: d['canonical_smiles'],
+            // isomeric_smiles: d['isomeric_smiles'],
+            atc_classification: d.atc_classification
+          });
+
+          this.set('antibioticSummary', summary);
+
+          if (Object.prototype.hasOwnProperty.call(d, 'description')) {
+            this.set('description', d.description);
+          }
+          if (Object.prototype.hasOwnProperty.call(d, 'mechanism_of_action')) {
+            this.set('mechanism', d.mechanism_of_action);
+          }
+          if (Object.prototype.hasOwnProperty.call(d, 'pharmacology')) {
+            this.set('pharmacology', d);
+          }
+          if (Object.prototype.hasOwnProperty.call(d, 'synonyms')) {
+            this.set('synonyms', d.synonyms);
+          }
+        }));
+    }
+  });
 });

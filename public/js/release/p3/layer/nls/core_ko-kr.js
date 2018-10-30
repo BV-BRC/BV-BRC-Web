@@ -7,9 +7,9 @@ define('p3/layer/nls/core_ko-kr',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"입력된 값이 올바르지 않습니다.","missingMessage":"이 값은 필수입니다.","rangeMessage":"이 값은 범위를 벗어납니다.","_localized":{}}
-,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000조","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":",","percentFormat":"#,##0%","decimalFormat-long":"000조","decimalFormat":"#,##0.###","decimal":".","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"입력된 값이 올바르지 않습니다.","missingMessage":"이 값은 필수입니다.","rangeMessage":"이 값은 범위를 벗어납니다.","_localized":{}}
 ,
 'dijit/form/nls/ComboBox':{"previousMessage":"이전 선택사항","nextMessage":"기타 선택사항","_localized":{}}
 ,

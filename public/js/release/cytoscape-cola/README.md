@@ -12,7 +12,7 @@ It supports noncompound and compound graphs well.
 
 ## Dependencies
 
- * Cytoscape.js ^2.4.0
+ * Cytoscape.js ^2.4.0 || ^3.0.0
  * Cola.js ^3.1.2
 
 
@@ -29,9 +29,8 @@ CommonJS:
 ```js
 var cytoscape = require('cytoscape');
 var cycola = require('cytoscape-cola');
-var cola = require('cola');
 
-cycola( cytoscape, cola ); // register extension
+cycola( cytoscape ); // register extension
 ```
 
 AMD:
@@ -89,7 +88,7 @@ var defaults = {
 
 ## Notes
 
-- If you want to maintain interactivity, you probably should not mix `infinite: true` with `fit: true`.  Fitting naturally changes the zoom level, making dragging misaligned and feel weird to users --- though it still works technically.  Better to just `fit: false` when `inifinite: true`, and `cy.center()` or `cy.fit()` on `layoutready`.
+- If you want to maintain interactivity, you probably should not mix `infinite: true` with `fit: true`.  Fitting naturally changes the zoom level, making dragging misaligned and feel weird to users --- though it still works technically.  Better to just `fit: false` when `infinite: true`, and `cy.center()` or `cy.fit()` on `layoutready`.
 - The `alignment` option isn't as flexible as the raw Cola option.  Here, only integers can be used to specify relative positioning, so it's a bit limited.  If you'd like to see a more sophisticated implementation, please send a pull request.
 
 ## Publishing instructions

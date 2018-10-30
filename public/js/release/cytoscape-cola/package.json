@@ -1,24 +1,39 @@
 {
-  "name": "cytoscape-cola",
-  "version": "1.4.3",
-  "description": "The Cola.js physics simulation layout for Cytoscape.js",
-  "main": "cytoscape-cola.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cytoscape/cytoscape.js-cola.git"
-  },
-  "keywords": [
-    "cytoscape",
-    "cyext"
+  "_args": [
+    [
+      "cytoscape-cola@1.6.0",
+      "/Users/hsyoo/dev/deploy/p3_web"
+    ]
   ],
-  "license": "MIT",
+  "_from": "cytoscape-cola@1.6.0",
+  "_id": "cytoscape-cola@1.6.0",
+  "_inBundle": false,
+  "_integrity": "sha1-jpm+icqtjS8Ewa3LORarwf91ZLI=",
+  "_location": "/cytoscape-cola",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "cytoscape-cola@1.6.0",
+    "name": "cytoscape-cola",
+    "escapedName": "cytoscape-cola",
+    "rawSpec": "1.6.0",
+    "saveSpec": null,
+    "fetchSpec": "1.6.0"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.6.0.tgz",
+  "_spec": "1.6.0",
+  "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-cola/issues"
   },
-  "homepage": "https://github.com/cytoscape/cytoscape.js-cola",
+  "dependencies": {
+    "webcola": "^3.1.2"
+  },
+  "description": "The Cola.js physics simulation layout for Cytoscape.js",
   "devDependencies": {
     "gulp": "^3.8.8",
     "gulp-jshint": "^1.8.5",
@@ -28,34 +43,23 @@
     "jshint-stylish": "^1.0.0",
     "run-sequence": "^1.0.0"
   },
-  "peerDependencies": {
-    "cytoscape": "^2.4.0",
-    "webcola": "^3.1.2"
-  },
-  "gitHead": "188d49bccece7aaba265ec0666fc7459c97af8c5",
-  "_id": "cytoscape-cola@1.4.3",
-  "_shasum": "20c15ac37bb0b0deadc5f025caea346519221019",
-  "_from": "cytoscape-cola@>=1.4.3 <2.0.0",
-  "_npmVersion": "3.10.3",
-  "_nodeVersion": "6.7.0",
-  "_npmUser": {
-    "name": "maxkfranz",
-    "email": "maxkfranz@gmail.com"
-  },
-  "dist": {
-    "shasum": "20c15ac37bb0b0deadc5f025caea346519221019",
-    "tarball": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.4.3.tgz"
-  },
-  "maintainers": [
-    {
-      "name": "maxkfranz",
-      "email": "maxkfranz@gmail.com"
-    }
+  "homepage": "https://github.com/cytoscape/cytoscape.js-cola",
+  "keywords": [
+    "cytoscape",
+    "cyext"
   ],
-  "_npmOperationalInternal": {
-    "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/cytoscape-cola-1.4.3.tgz_1480616228887_0.694283553166315"
+  "license": "MIT",
+  "main": "cytoscape-cola.js",
+  "name": "cytoscape-cola",
+  "peerDependencies": {
+    "cytoscape": "^2.4.0 || ^3.0.0"
   },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.4.3.tgz"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cytoscape/cytoscape.js-cola.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.6.0"
 }

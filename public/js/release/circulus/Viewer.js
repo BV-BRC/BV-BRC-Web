@@ -55,7 +55,6 @@ define("circulus/Viewer", [
 
 			// console.log("Calculated TW: ", out);
 			return out;
-			return this.maxOuterRadius * trackFrac;
 		},
 
 		addTrack: function(track,position,isReferenceTrack){
@@ -67,19 +66,23 @@ define("circulus/Viewer", [
 				opts.referenceTrack = this.referenceTrack;
 			}
 
+			// console.log("Viewer: this= ", this);
+			// console.log("Viewer: group= ", this.group);
+			// console.log("Viewer: track= ", track);
+
 			var innerGroup = this.group.createGroup();
-			innerGroup.groupIdx = idx++;
+			this.idx++;
+			innerGroup.groupIdx = this.idx;
 			opts.surface = innerGroup;
-
-			console.log("Opts.surface.groupIdx: ", opts.surface.groupIdx);
-
+			// this.group.add(innerGroup);
+			// console.log("Opts.surface: ", opts.surface);
 
 			if (!opts.internalRadius){
 				if (pos && pos=="perimeter"){
 					opts.internalRadius = this.maxOuterRadius - this.getTrackWidth(opts.trackWidth||track.trackWidth) - this.trackMargin;
 					opts.position = "perimeter";
 					this._maxOuterRadius = opts.internalRadius;
-					console.log("Internal Radius: ", opts.internalRadius, " max", this.maxOuterRadius, this.getTrackWidth(opts.trackWidth||track.trackWidth), this.trackMargin)
+					// console.log("Internal Radius: ", opts.internalRadius, " max", this.maxOuterRadius, this.getTrackWidth(opts.trackWidth||track.trackWidth), this.trackMargin)
 				}else if (pos=="inner"){
 					opts.internalRadius = this.centerRadius;
 					opts.position = "inner"
@@ -101,22 +104,110 @@ define("circulus/Viewer", [
 				}
 			}
 
-			console.log("Create Track: ", opts, " SurfaceGroupIdx: ", opts.surface.groupIdx)
-			var newTrack = new track.type(this, opts, track.data||[])
+			// console.log("Create Track: ", opts, " SurfaceGroupIdx: ", opts.surface.groupIdx)
+			var newTrack = new track.type(this, opts, track.data||[]);
+			newTrack._params = {track: track, position: pos, isReferenceTrack: isReferenceTrack};
 
 			if (isReferenceTrack){
 				this.referenceTrack = newTrack;
 			}
 
-			this._tracks.push(newTrack);	
-
+			this._tracks.push(newTrack);
+				
 			// newTrack.render();
 
 			Topic.publish("/addTrack", {track: newTrack, position: position, isReferenceTrack: isReferenceTrack});
-
+			
 			return newTrack;
 		},
 
+		reAddTrack: function(track,position,isReferenceTrack,data){
+			var opts = track.options || {};
+			var pos = position;
+
+
+			if (this.referenceTrack){
+				opts.referenceTrack = this.referenceTrack;
+			}
+
+			var innerGroup = this.group.createGroup();
+			this.idx++;
+			innerGroup.groupIdx = this.idx;
+			opts.surface = innerGroup;
+			// console.log("Opts.surface: ", opts.surface);
+			// console.log("reAddTrack: ", track);
+			// console.log("reAddTrack: this.idx", this.idx);
+
+			if (pos && pos=="perimeter"){
+				opts.internalRadius = this.maxOuterRadius - this.getTrackWidth(opts.trackWidth||track.trackWidth) - this.trackMargin;
+				opts.position = "perimeter";
+				this._maxOuterRadius = opts.internalRadius;
+				// console.log("Internal Radius: ", opts.internalRadius, " max", this.maxOuterRadius, this.getTrackWidth(opts.trackWidth||track.trackWidth), this.trackMargin)
+			}else if (pos=="inner"){
+				opts.internalRadius = this.centerRadius;
+				opts.position = "inner"
+				this._tracks.forEach(function(t){
+					if (t.position=="inner"){
+						opts.internalRadius += this.getTrackWidth(t.trackWidth) + this.trackMargin;
+					}
+				},this);
+			}else{
+				opts.position = "outer";
+
+				opts.internalRadius = (this._maxOuterRadius || this.maxOuterRadius) - this.getTrackWidth(opts.trackWidth||track.trackWidth) - this.trackMargin ;
+
+				this._tracks.forEach(function(t){
+					if (t.position=="outer"){
+						opts.internalRadius -= this.getTrackWidth(t.trackWidth) + this.trackMargin;
+					}
+				},this);
+			}
+
+			// console.log("Create Track: ", opts, " SurfaceGroupIdx: ", opts.surface.groupIdx)
+			var newTrack = new track.type(this, opts, data);
+
+			if (track.options.backgroundColor) {
+				newTrack.set("backgroundColor", track.options.backgroundColor);	
+			}		
+			if (track.options.foregroundColor) {
+				newTrack.set("foregroundColor", track.options.foregroundColor);			
+			}
+			if (isReferenceTrack){
+				this.referenceTrack = newTrack;
+			}
+
+			newTrack._params = {track: track, position: position, isReferenceTrack: isReferenceTrack};
+
+			this._tracks.push(newTrack);
+				
+			Topic.publish("/addTrack", {track: newTrack, position: position, isReferenceTrack: isReferenceTrack});
+			
+			return newTrack;
+		},
+		removeTrack: function(trackIndex){
+			var save_tracks = [];
+			// console.log("Viewer: this._tracks= ", this._tracks);			
+			for (var i=0; i<this._tracks.length; i++) {
+				this._tracks[i]._params.track.options.backgroundColor = this._tracks[i].backgroundColor;
+				this._tracks[i]._params.track.options.foregroundColor = this._tracks[i].foregroundColor;
+				this._tracks[i]._params.track.options.visible = this._tracks[i].visible;
+				save_tracks.push(this._tracks[i]);
+			}
+			// console.log("removeTrack backup Viewer: ", this);			
+			this.group.clear();
+			this.surface.clear();
+			this.group = this.surface.createGroup();
+			this._tracks=[];
+			delete this.referenceTrack;
+			this.idx=1;
+			for (var i=0; i<save_tracks.length; i++) {
+				if (i!=trackIndex) {
+					this.reAddTrack(save_tracks[i]._params.track, save_tracks[i]._params.position, save_tracks[i]._params.isReferenceTrack, save_tracks[i].data);
+				}
+			}
+			// console.log("removeTrack updated Viewer: ", this);			
+		},
+		
 		startup: function(){
 			if (this._started) { return; }
 			this._started=true;	
@@ -132,10 +223,12 @@ define("circulus/Viewer", [
 		},
 
 		resize: function(changeSize, resultSize){
-			//console.log("VIEWER RESIZE", changeSize)
+			// console.log("VIEWER RESIZE changeSize:", changeSize, " resultSize:", resultSize, "oldCenterPont: ", this.centerPoint, "oldCenterPont: ", this.get('centerPoint'));
 			if (!this._started){ return }
             var node = this.domNode;
+            var oldCenter = this.get('centerPoint');
 
+			// console.log("in resize, node: ", node, "oldCenter", oldCenter);
             // set margin box size, unless it wasn't specified, in which case use current size
             if(changeSize){
 
@@ -153,6 +246,7 @@ define("circulus/Viewer", [
                     mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
             }
 
+			// console.log("in resize, mb: ", mb, "domGeometry.getMarginBox(node)", domGeometry.getMarginBox(node));
 
             // Compute and save the size of my border box and content box
             // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
@@ -164,7 +258,7 @@ define("circulus/Viewer", [
                     h: mb.h - (me.h + be.h)
             });
             var pe = domGeometry.getPadExtents(node, cs);
-
+			// console.log("in resize, before reset this._contentBox: ", this._contentBox);
             var curSurface = this._contentBox;
 
             this._contentBox = {
@@ -174,8 +268,13 @@ define("circulus/Viewer", [
                     h: bb.h - pe.h
             };
             this.maxOuterRadius = Math.min(this._contentBox.w-15,this._contentBox.h-15)/2;
-            this.set('centerPoint', {x: this._contentBox.w/2, y: this._contentBox.h/2})
+            //this.group.applyTransform(gfx.matrix.translate({ x: this._contentBox.w/2 - oldCenter.x, y: this._contentBox.h/2 - oldCenter.y }));
+            this.set('centerPoint', {x: this._contentBox.w/2, y: this._contentBox.h/2});
 
+			// console.log("in resize, pe: ", pe);
+			// console.log("in resize, this._contentBox: ", this._contentBox);
+			// console.log("centerPoint x=", this._contentBox.w/2, " y=", this._contentBox.h/2);
+			
             if (this.group && curSurface && curSurface.h){
             	var ns,cs;
 
@@ -189,6 +288,8 @@ define("circulus/Viewer", [
             	// }
 
 	   			var scale = ns/cs;
+	   			//var xscale = this._contentBox.w/curSurface.w;
+
 	   			if (scale != 1){
 		   			this.group.applyTransform(gfx.matrix.scale({ x: scale, y: scale }));
 		   		}

@@ -3,9 +3,20 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>BLAST</h3>
-            <p>The BLAST Search allows you to search against public or private genomes in PATRIC or other reference
-                databases using a DNA or protein sequence and find matching genomes, genes, RNAs, or proteins.</p>
+            <h3>BLAST
+                <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                </div>
+            </h3>
+            <p>The PATRIC BLAST service integrates the BLAST (Basic Local Aligment Search Tool) algorithms to perform searches
+                against against public or private genomes in PATRIC or other reference databases using a DNA or protein sequence
+                and find matching genomes, genes, RNAs, or proteins.
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">BLAST Service User Guide</a> and
+                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            </p>
         </div>
 
         <div class="service_form">
@@ -139,7 +150,7 @@
         <div class="appSubmissionArea">
             <div style="margin-top: 10px; text-align:center;">
                 <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-point="mapButton"
+                     data-dojo-attach-point="submitButton"
                      data-dojo-attach-event="onClick:submit"
                      data-dojo-props="disabled:true">
                     Search

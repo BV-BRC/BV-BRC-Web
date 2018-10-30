@@ -1,189 +1,73 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../../WorkspaceManager", "dojo/_base/lang",
-	"dojo/dom-attr"
-], function(declare, BorderContainer, on,
-			domClass, ContentPane, domConstruct,
-			Grid, formatter, WorkspaceManager, lang,
-			domAttr){
-	return declare([BorderContainer], {
-		"baseClass": "ExperimentViewer",
-		"disabled": false,
-		"query": null,
-		data: null,
-		containerType: "GenomeAnnotation",
-		_resultType: null,
-		_jobOut: {
-			"start_time": {"label": "Start time", "format": formatter.epochDate},
-			"elapsed_time": {"label": "Run time", "format": formatter.runTime},
-			"end_time": {"label": "End time", "format": formatter.epochDate},
-			"parameters": {"label": "Parameters", "format": JSON.stringify}
-		},
-		_jobOrder: ["start_time", "end_time", "elapsed_time", "parameters"],
-		_appLabel: "",
-		_resultMetaTypes: {},
-		_autoLabels: {},
-		getGenomeId: function(){
-			var id;
-			this._resultObjects.some(function(o){
-				if(o.type == "genome"){
-					console.log("GENOME OBJECT: ", o);
-					id = o.autoMeta.genome_id;
-					console.log("Id: ", id);
-					return true;
-				}
-				return false;
-			});
-			if(id){
-				return id;
-			}
-			throw Error("Missing ID");
-		},
-		_setDataAttr: function(data){
-			this.data = data;
-			console.log("job result viewer data: ", data);
-			var paths = this.data.autoMeta.output_files.map(function(o){
-				return o[0];
-			});
+  'dojo/_base/declare', './JobResult'
+], function (declare, JobResult) {
+  return declare([JobResult], {
+    containerType: 'GenomeAnnotation',
+    getGenomeId: function () {
+      var id;
+      this._resultObjects.some(function (o) {
+        if (o.type == 'genome') {
+          // console.log("[GenomeAnnotation] Genome Object: ", o);
+          id = o.autoMeta.genome_id;
+          // console.log("[GenomeAnnotation] Id: ", id);
+          return true;
+        }
+        return false;
+      });
+      if (id) {
+        return id;
+      }
+      throw Error('Missing ID');
+    },
+    setupResultType: function () {
+      // console.log("[GenomeAnnotation] setupResultType()");
+      if (this.data.autoMeta.app.id) {
+        this._resultType = this.data.autoMeta.app.id;
+      }
+      this._appLabel = this._resultType;
+      this._resultMetaTypes = { genome: { label: 'Genome' } };
+      this._autoLabels = {
+        num_features: { label: 'Feature count' },
+        scientific_name: { label: 'Organism' },
+        domain: { label: 'Domain' },
+        genome_id: { label: 'Annotation ID' }
+      };
+    },
+    getExtraMetaDataForHeader: function (job_output) {
+      Object.keys(this._resultMetaTypes).forEach(function (metaType) {
+        // console.log("[GenomeAnnotation] _resultMetaTypes:",metaType);
 
-			WorkspaceManager.getObjects(paths, true).then(lang.hitch(this, function(objs){
-				this._resultObjects = objs;
-				console.log("got objects: ", objs);
-				this.setupResultType();
-				this.refresh();
-			}));
+        // add additional types to bubble up to the header
+        if (metaType == 'genome') {
 
-		},
-		setupResultType: function(){
-			if(this.data.autoMeta.app.id){
-				this._resultType = this.data.autoMeta.app.id;
-			}
-			if(this._resultType == "GenomeAnnotation"){
-				this._resultMetaTypes = {"genome": {"label": "Genome"}};
-				this._appLabel = "Genome Annotation";
-				this._autoLabels = {
-					"scientific_name": {"label": "Organism"},
-					"domain": {"label": "Domain"},
-					"num_features": {"label": "Feature count"},
-					"genome_id": {"label": "Annotation ID"}
-				};
-			}
-			if(this._resultType == "GenomeAssembly"){
-				this._appLabel = "Genome Assembly";
-			}
-		},
-		refresh: function(){
-			if(this.data){
-				var jobHeader = '<div><h3 class="section-title-plain close2x">';
-				if(this.data.autoMeta && this.data.autoMeta.app){
-					jobHeader = jobHeader + this._appLabel + " ";
-				}
-				jobHeader = jobHeader + "Job Result" + '</span></h3>';
-				//this.viewer.set('content',jobHeader);
+          var bubbleUpMeta;
+          this._resultObjects.some(function (o) {
+            if (o.type == metaType) {
+              bubbleUpMeta = o.autoMeta;
+              return true;
+            }
+            return false;
+          });
 
-				var output = [];
-				output.push(jobHeader + '<table class="p3basic striped far2x" id="data-table"><tbody>');
-				var job_output = [];
+          if (bubbleUpMeta) {
+            var subRecord = [];
+            Object.keys(this._autoLabels).forEach(function (prop) {
+              // console.log("[GenomeAnnotation] _autoLabels:",prop);
+              if (!bubbleUpMeta[prop] || prop == 'inspection_started') {
+                return;
+              }
+              var label = Object.prototype.hasOwnProperty.call(this._autoLabels, prop) ? this._autoLabels[prop].label : prop;
+              subRecord.push(label + ' (' + bubbleUpMeta[prop] + ')');
+            }, this);
 
-				if(this.data.autoMeta){
-					this._jobOrder.forEach(function(prop){
-						/*if (prop=="output_files") { return; }
-						if (prop=="app") { return; }
-						if (prop=="job_output") { return; }
-						if (prop=="hostname") { return; }*/
-						if(!this.data.autoMeta[prop]){
-							return;
-						}
-						if(this._jobOut.hasOwnProperty(prop)){
-							//this._jobOut[prop]["value"]=this.data.autoMeta[prop];
-							var tableLabel = this._jobOut[prop].hasOwnProperty("label") ? this._jobOut[prop]["label"] : prop;
-							var tableValue = this._jobOut[prop].hasOwnProperty("format") ? this._jobOut[prop]["format"](this.data.autoMeta[prop]) : this.data.autoMeta[prop];
-							job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._jobOut[prop]["label"] + '</b></th><td class="last">' + tableValue + "</td></tr>");
-						}
-					}, this);
-				}
+            // console.log("[GenomeAnnotation] subRecord:",subRecord.join(","));
+            job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._resultMetaTypes[metaType].label + '</b></th><td class="last">' + subRecord.join(', ') + '</td></tr>');
+          }
+        }
 
-				var result_output = [];
-				if(this._resultObjects){
-					result_output.push('<div><h3 class="section-title-plain close2x">Downloads</h3>');
-					result_output.push('<table class="p3basic striped far2x"><tbody>');
-					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>File size</th>')
-					var header_row = result_output.length - 1;
-					result_output.push('</tr>');
-					this._resultObjects.forEach(function(obj){
-						if (obj.name === "load_files") return;
+      }, this);
 
-						result_output.push('<tr class="alt">');
-						result_output.push('<th scope="row"><i class="fa icon-download fa" rel="' + obj.path + "/" + obj.name + '" /></th>');
-						result_output.push('<td class="last">' + obj.name + "</td>");
-						result_output.push('<td class="last">' + obj.type + "</td>");
-						result_output.push('<td class="last">' + formatter.humanFileSize(obj.size, 1) + "</td>");
-						var subRecord = [];
-						if(!this._resultMetaTypes.hasOwnProperty(obj.type)){
-							Object.keys(obj.autoMeta).forEach(function(prop){
-								if(!obj.autoMeta[prop] || prop == "inspection_started"){
-									return;
-								}
-								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
-								subRecord.push(label + " (" + obj.autoMeta[prop] + ")");
-								result_output.push(label + ": " + obj.autoMeta[prop]);
-								result_output.push("</td>");
-							}, this);
-							//_resultMetaTypes contain information for the Job Result table
-							if(subRecord.length){
-								result_output[header_row] = result_output[header_row] + '<th>Metadata</th>';
-								result_output.push('<td class="last">' + subRecord.join(", ") + '</td>');
-							}
-							result_output.push("</tr>");
-						}
-						else{
-							var subRecord = [];
-							Object.keys(obj.autoMeta).forEach(function(prop){
-								if(!obj.autoMeta[prop] || prop == "inspection_started"){
-									return;
-								}
-								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
-								subRecord.push(label + " (" + obj.autoMeta[prop] + ")");
-							}, this);
-							job_output.unshift('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._resultMetaTypes[obj.type]["label"] + '</b></th><td class="last">' + subRecord.join(", ") + "</td></tr>");
-						}
-					}, this);
-					result_output.push("</tbody></table></div>");
-				}
-
-				output.push.apply(output, job_output);
-				output.push("</tbody></table></div>");
-				output.push.apply(output, result_output);
-
-				if(this.data.userMeta){
-					Object.keys(this.data.userMeta).forEach(function(prop){
-						output.push("<div>" + prop + ": " + this.data.userMeta[prop] + "</div>");
-					}, this);
-				}
-
-				output.push("</div>");
-				this.viewer.set("content", output.join(""));
-			}
-		},
-		startup: function(){
-			if(this._started){
-				return;
-			}
-			this.inherited(arguments);
-			this.viewer = new ContentPane({content: "Loading Job Results...", region: "center"});
-			//this.viewer= new ContentPane({content: "", region: "center"});
-			//this.addChild(this.viewHeader);
-			this.addChild(this.viewer);
-
-			this.on("i:click", function(evt){
-				var rel = domAttr.get(evt.target, 'rel');
-				if(rel){
-					WorkspaceManager.downloadFile(rel);
-				}else{
-					console.warn("link not found: ", rel);
-				}
-			});
-		}
-	});
+      return job_output;
+    }
+  });
 });

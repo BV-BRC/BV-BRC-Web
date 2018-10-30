@@ -1,383 +1,249 @@
-<% var flows = [
-    {name: "PATRIC Workshop", secondary: "ARGONNE, IL", rel: "carousel_workshop", background: "#34698e"}
-    , {name: "ICSB 2017", secondary: "BLACKSBURG, VA", rel: "carousel_icsb", background: "#34698e"}
-    , {name: "100,000 Genomes", secondary: "In PATRIC", rel: "carousel_100k", background: "#34698e"}
-    , {name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_ar", background: "#34698e"}
-    // , {name: "SUPPORTING", secondary: "THE TB COMMUNITY", rel: "carousel_tb", background: "#34698e"}
-] %>
+<div id="patric-homepage">
 
-<div class="home">
+    <!-- <div class="home-banner">
+        <p class="banner-yellow"> The PATRIC Team is working on a new homepage design, shown below, and we would like hear from you.
+            Please <a class="DialogButton" rel="reportProblem:">provide your feedback</a>. You can access the previous homepage <a href="/home-prev/">here</a>.
+        </p>
+    </div> -->
 
-    <div style="background-color:#f3f3f3;padding-top:10px;">
-        <div class="layer">
-            <% include masthead %>
-            <% include Banner %>
-        </div>
-        <div class="layer" style="text-align: center;margin-bottom:0px;height:351px;">
-            <div data-dojo-type="dijit/layout/StackContainer" class="carousel"
-                 style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;"
-                 id="p3carousel">
-
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_workshop"
-                     class="CarouselContent showOnLoad dijitVisible">
-                    <div class="wrapper">
-                        <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/2012_Duke_UNC1_SMALL.png">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop</h2>
-                        <h3 class="xl highlight-f upper far">@ Argonne National Laboratory</h3>
-                        <br/>
-                        <p>The PATRIC/RAST teams will be offering a tutorial on 2017-August 14-16, at Argonne National Laboratory
-                        in the suburbs of Chicago, IL. The workshop will run for three days, with the third day optional and devoted solely to participants working
-                         on their own problems with help from the PATRIC/RAST team members. Included will be genome assembly, annotation, comparative analysis,
-                         and variation, as well as metabolic model construction, RNA-Seq analysis, Tn-seq analysis, and phylogenetic tree construction.  Registration
-                         information is available <a href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/" target="_blank">HERE</a>,
-                         and the planned agenda is available <a href="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-ANL-Workshop-August-2017.pdf">HERE</a>.
-                         The workshop will be limited to 35 people on a first-come, first-served basis.</p>
-                        <br>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5188/patricrast-workshop-at-argonne-national-laboratory-august-14-16-2017/"
-                              target="_blank">More Information</a></p>
-                        <br><br>
-                    </div>
+    <div id="patric-homepage-container">
+        <div class="grid-container">
+            <div class="browse-search">
+                <h2>BACTERIAL BIOINFORMATICS RESOURCE CENTER</h2>
+                <p>
+                    PATRIC, the Pathosystems Resource Integration Center, provides integrated data and analysis tools to support biomedical research on bacterial infectious diseases.
+                </p>
+                <div class="browse">
+                    <h3>BROWSE</h3>
+                    <a href="/view/Taxonomy/2" class="navigationLink btn btn-blue">BACTERIA</a>
+                    <a href="/view/Taxonomy/2157" class="navigationLink btn btn-blue">ARCHAEA</a>
+                    <a href="/view/Taxonomy/10239" class="navigationLink btn btn-blue">PHAGES</a>
+                    <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="navigationLink btn btn-blue">EUKARYOTIC HOSTS</a>
                 </div>
-
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_icsb"
-                     class="CarouselContent showOnLoad dijitHidden">
-                    <div class="wrapper">
-                        <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/05/ICSB-2017-logo.png" style="height:179px">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Workshop <br/>@ ICSB 2017</h2>
-                        <h3 class="xl highlight-f upper far">PATRIC Workshop</h3>
-                        <p>PATRIC will be hosting a 1-day workshop entitled "The PATRIC Bioinformatics Resource Center for 'Omics Data Analysis,"
-                        at the 18th International Conference on Systems Biology (ICSB 2017) on August 6, 2017 on the Virginia Tech University campus in Blacksburg, VA.
-                        The workshop will cover PATRIC's analysis pipelines, which include genome assembly and annotation, RNA-Seq analysis, variation analysis,
-                        and tools for comparative genomic analysis.  PATRIC provides researchers with the ability to analyze their private data directly
-                        with any of the available public data. The registration page for ICSB is <a href="http://www.cpe.vt.edu/icsb2017/registration.html" target="_blank">HERE</a>,
-                        and registration is open until August 3, 2017.</p>
-                        <br>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5175/patric-workshop-at-iscb-2017-at-virginia-tech-august-6-2017/"
-                              target="_blank">More Information</a></p>
-                        <br><br>
-                    </div>
-                </div>
-
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_100k"
-                     class="CarouselContent showOnLoad dijitHidden">
-                    <div class="wrapper">
-                        <img class="right"
-                             src="http://enews.patricbrc.org/wp-content/uploads/2017/06/PATRIC-100000-Genomes.png">
-                        <h2 class="xxxl sans-alternate upper highlight-e">PATRIC Crosses 100,000 Genomes Mark</h2>
-                        <br/>
-                        <p>In the May 2017 release, PATRIC has added over 7,700 new genomes,
-                         bringing the total number of public genomes in PATRIC to approximately 105,000. This is a notable milestone
-                         for the project considering that the database contained only 400 bacterial genomes at the end of 2009 when
-                         PATRIC launched the all bacteria Bioinformatics Resource Center. The full list of available bacterial genomes
-                         can be accessed from the <a href="/view/Taxonomy/2#view_tab=genomes">Genomes Tab for all bacteria</a> in the PATRIC website.</p>
-                        <br>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="http://enews.patricbrc.org/5184/patric-may-2017-release-brings-total-genomes-to-over-100000-and-includes-21-host-response-data-sets/"
-                              target="_blank">More Information</a></p>
-                        <br><br>
-                    </div>
-                </div>
-
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_ar"
-                     class="CarouselContent showOnLoad dijitHidden">
-                    <div class="wrapper">
-                        <img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2014/05/AR_carousel.jpg">
-                        <h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2>
-                        <h3 class="xl highlight-f upper far">for Infectious Disease Research</h3>
-                        <p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics
-                            through gene mutation or acquisition of antibiotic resistance genes. &nbsp;PATRIC collects
-                            known antibiotic resistance genes from reputed external databases and publications and maps
-                            them to homologous genes using BLASTP, so you can easily find and analyze them with PATRIC
-                            tools. &nbsp;We also incorporate antibiotic susceptibility testing results as additional
-                            genome metadata.</p>
-                        <br/>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="/view/DataType/AntibioticResistance">Explore Data</a></p>
-                    </div>
-                </div>
-
-                <div data-dojo-type="dijit/layout/ContentPane" id="carousel_tb"
-                     class="CarouselContent showOnLoad dijitHidden">
-                    <div class="wrapper"><img class="right"
-                                              src="http://enews.patricbrc.org/wp-content/uploads/2013/05/Mycobacterium_tuberculosis_14313982_1.jpg">
-                        <h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2>
-                        <h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3>
-                        <p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This
-                            resource provides fast searching and powerful comparative analysis tools for all <i>Mycobacterium
-                                tuberculosis</i> genomes, including the H37Rv reference genome, its variants and other
-                            members in the tuberculosis complex. Also included are important reference genomes, <i>M.
-                                smegmatis</i> and <i>M. marinum</i>.</p>
-                        <br/>
-                        <p><a class="button upper sans-alternate largest highlight avoid-arrow"
-                              href="/view/Taxonomy/1763#view_tab=overview">Visit TB@PATRIC</a></p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-
-    <div style="margin:0px;padding:0px;background: #5a8621;margin-bottom:4px; box-shadow:0px 0px 96px -23px rgba(0,0,0,0.75);z-index:1000;position: relative;">
-        <div style="margin:auto;width:925px;padding:0px;">
-            <table style="width:100%" cellspacing="0" cellpadding="0">
-                <tbody>
-                <tr>
-                    <% flows.forEach(function(svc, index) { %>
-                    <td style="width:25%" class="HomeServiceLink<% if (index < 1) { %> selected <% } %>"
-                        rel="<%- svc.rel %>">
-                        <H3 class="highlight-b"><%- svc.name %></H3>
-                        <H4><%- svc.secondary %></H4>
-                    </td>
-                    <% }) %>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="homeBottomSection">
-        <div class="layer" style="text-align: center;">
-            <table style="width: 100%">
-                <tr>
-                    <td style="vertical-align:top;width:70%;">
-
-                        <article class="dlp-hp">
-                            <h2 class="wp-headline section-title section-title-b"><span class="wrap"><span class="wrap">Browse Data</span></span>
-                            </h2>
-                            <ul class="no-decoration no-underline-links">
-                                <li class="first">
-                                    <figure><a href="/view/DataType/Genomes"><img
-                                                    src="/patric/images/dlp-hp-genomes.png" alt="Genomes"></a>
-                                        <figcaption>GENOMES</figcaption>
-                                    </figure>
-                                </li>
-                                <li>
-                                    <figure><a href="/view/DataType/GenomicFeatures"><img
-                                                    src="/patric/images/dlp-hp-features.png" alt="Genomic Features"></a>
-                                        <figcaption>GENOMIC FEATURES</figcaption>
-                                    </figure>
-                                </li>
-                                <li>
-                                    <figure><a href="/view/DataType/SpecialtyGenes"><img
-                                                    src="/patric/images/dlp-hp-specialtygenes.png"
-                                                    alt="Specialty Genes"></a>
-                                        <figcaption>SPECIALTY GENES</figcaption>
-                                    </figure>
-                                </li>
-                                <li>
-                                    <figure><a href="/view/DataType/ProteinFamilies"><img
-                                                    src="/patric/images/dlp-hp-proteins.png" alt="Protein Families"></a>
-                                        <figcaption>PROTEIN FAMILIES</figcaption>
-                                    </figure>
-                                </li>
-                                <li>
-                                    <figure><a href="/view/DataType/Pathways"><img
-                                                    src="/patric/images/dlp-hp-pathways.png" alt="Pathways"></a>
-                                        <figcaption>PATHWAYS</figcaption>
-                                    </figure>
-                                </li>
-                                <li class="last">
-                                    <figure><a href="/view/DataType/Transcriptomics"><img
-                                                    src="/patric/images/dlp-hp-transcriptomics.png"
-                                                    alt="Transcriptomic Experiments"></a>
-                                        <figcaption>TRANSCRIPTOMICS</figcaption>
-                                    </figure>
-                                </li>
-                            </ul>
-                        </article>
-
-                        <article class="tools" style="overflow:hidden;">
-
-                            <h2 class="wp-headline section-title section-title-b tools_headline"><span class="wrap">What Can I Do @ PATRIC?</span>
-                            </h2>
-                            <div>
-                                <div class="column"
-                                     style="width: 311px;display:inline-block;vertical-align:top;float:left;margin-right:10px;">
-                                    <ul class="no-decoration no-underline-links">
-                                        <li class="clear">
-                                            <figure class="figure-right">
-                                                <a href="/app/Assembly">
-                                                    <img src="http://enews.patricbrc.org/wp-content/uploads/2015/03/Assembly-thumb-100x75.png"
-                                                         alt="Genome Assembly">
-                                                </a>
-                                            </figure>
-                                            <h4 class="bold"><a href="/app/Assembly">Genome Assembly</a></h4>
-                                            <p>The Genome Assembly Service App can be used to perform an automatic
-                                                genome assembly using the latest computational tools. Single or multiple
-                                                assemblers can be invoked to compare
-                                                results.&nbsp;<strong>Note:&nbsp;</strong><em>You must have a PATRIC
-                                                    user account and be logged in to use this service.</em>
-                                            </p>
-                                        </li>
-                                        <li class="clear">
-                                            <figure class="figure-right">
-                                                <a href="/app/ProteinFamily">
-                                                    <img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/protein_family_sorter_for_homepage_tool.png"
-                                                         alt="Protein Family Sorter">
-                                                </a>
-                                            </figure>
-                                            <h4 class="bold">
-                                                <a href="/app/ProteinFamily">Protein Family Sorter
-                                                </a>
-                                            </h4>
-                                            <p>Compares protein families across closely related or diverse groups of
-                                                genomes, visualizes them using interactive heatmaps, and generates
-                                                multiple sequence alignments and phylogenetic trees for individual
-                                                families. The heatmap view is an interactive visualization tool that
-                                                provides an overview of the distribution of proteins across a selected
-                                                set of genomes.
-                                            </p>
-                                        </li>
-                                        <li class="clear">
-                                            <figure class="figure-right">
-                                                <a href="/view/Taxonomy/2#view_tab=genomes">
-                                                    <img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/collage-100x75-05.png"
-                                                         alt="Genome Metadata">
-                                                </a>
-                                            </figure>
-                                            <h4 class="bold">
-                                                <a href="/view/Taxonomy/2#view_tab=genomes">Genome Metadata
-                                                </a>
-                                            </h4>
-                                            <p>Supports searching for and locating genomes of interest based on various
-                                                combinations of 61 different metadata fields. For instance, all genomes
-                                                that have been isolated from humans, genomes related by phylogeny, or
-                                                genomes related by lifestyle.
-                                            </p>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="column last">
-                                    <ul class="no-decoration no-underline-links">
-                                        <li class="clear">
-                                            <figure class="figure-right"><a href="/app/Annotation"><img
-                                                            src="http://enews.patricbrc.org/wp-content/uploads/2012/05/Genome-Annotation-thumb-100x70.png"
-                                                            alt="Genome Annotation"></a></figure>
-                                            <h4 class="bold"><a href="/app/Annotation">Genome Annotation</a></h4>
-                                            <p>The Genome Annotation Service is a fully-automated pipeline for
-                                                annotating bacterial and archaeal genomes using RAST (Rapid Annotation
-                                                using Subsystem Technology) to provide high quality genome annotations.&nbsp;<strong>Note:&nbsp;</strong><em>You
-                                                    must have a PATRIC user account and be logged in to use this
-                                                    service.</em></p></li>
-                                        <li class="clear">
-                                            <figure class="figure-right"><a href="/app/ComparativePathway"><img
-                                                            src="http://enews.patricbrc.org/wp-content/uploads/2012/03/comparative_pathways_for_homepage_tool.png"
-                                                            alt="Comparative Pathway Tool"></a></figure>
-                                            <h4 class="bold"><a href="/app/ComparativePathway">Comparative Pathway
-                                                    Tool</a></h4>
-                                            <p>Supports comparison of consistently annotated metabolic pathways across
-                                                closely related or diverse groups of genomes and visualizes them using
-                                                interactive KEGG maps and heatmaps. The heatmap view is an interactive
-                                                visualization&nbsp;tool that provides an overview of the distribution of
-                                                genomes across the set of EC numbers within a selected pathway.</p></li>
-                                        <li class="clear">
-                                            <figure class="figure-right"><a
-                                                        href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics"><img
-                                                            src="http://enews.patricbrc.org/wp-content/uploads/2013/06/gene_page_homepage_tool.jpg"
-                                                            alt="Gene Page Transcriptomics"></a></figure>
-                                            <h4 class="bold"><a
-                                                        href="/view/Feature/PATRIC.83332.12.NC_000962.CDS.2949593.2950486.fwd#view_tab=transcriptomics">Gene
-                                                    Page Transcriptomics</a></h4>
-                                            <p>Summarizes all comparisons in which a gene is differentially expressed
-                                                and associated metadata such as Strain, Gene Modification, and
-                                                Experimental Condition.&nbsp;Expression value based filters and metadata
-                                                graphical summaries enable quick discovery of top experimental
-                                                conditions and gene manipulations related to the differential expression
-                                                of the gene. <b>Note:</b> <i>Links to example Gene Page for </i><i>VBIMycTub87468_2933</i><i>.&nbsp;</i>
-                                            </p></li>
-                                    </ul>
-                                </div>
-                                <!-- <div class="right">
-                                    <a class="double-arrow-link" href="Tools">Show all available
-                                        tools</a>
-                                </div>
-                                -->
-                            </div>
-                        </article>
-
-
-                        <h2 class="section-title section-title-b"><span class="wrap">Recent News</span></h2>
-                        <% news.forEach(function(svc, index) { %>
-                        <div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span
-                                    style="padding:4px;color:#555;font-weight:normal;"><%- new Date(Date.parse(svc.pubDate)).toLocaleDateString() %></span>
+                <div class="search">
+                    <h3>SEARCH</h3>
+                    <div class="global-search">
+                        <div style="padding: 6px 0px 2px 2px; flex-grow: 1">
+                            <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" />
                         </div>
-                        <div style="border:0px; border-top:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
-                            <div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><a
-                                        href="<%- svc.link %>" target="_blank"><%- svc.title %></a></div>
-                            <div style="text-align:left;padding-left:20px;"><%- svc.summary %></div>
-                        </div>
-                        <% }) %>
-                        <div style="text-align:right;"><a href="http://enews.patricbrc.org" target="_blank">Read
-                                More</a></div>
-                    </td>
-                    <td style="width:10px;"></td>
-                    <td style="vertical-align:top;">
-                        <h2 class="section-title section-title-b"><span class="wrap">Top 10 Genera</span></h2>
-                        <div data-dojo-type="p3/widget/TaxonomyTopNSummary" data-dojo-props="count:10"
-                             style="width:100%;margin:0px;"></div>
-                        <div style="text-align:right;"><a class="navigationLink" href="/view/Taxonomy/2">Explore All
-                                Genera</a></div>
-                    </td>
-
-                </tr>
-            </table>
-        </div>
-    </div>
-    <footer class="ondark linkstyle-highlight-c smallest no-underline-links main-footer sans-alternate">
-        <div class="layer">
-            <div class="container">
-                <div class="column" style="border: 0px; min-height: 143px;">
-                    <div class="wrapper">
-                        <h4 class="close2x normal-weight">PATRIC</h4>
-                        <p class="close">University of Chicago</p>
-                        <p class="close">5801 South Ellis Avenue</p>
-                        <p>Chicago, IL 60637-5418</p>
-                    </div>
-                </div>
-                <div class="column" style="min-height: 143px;">
-                    <div class="wrapper">
-                        <h4 class="normal-weight close2x">How to Cite PATRIC</h4>
-                        <p>If you use PATRIC web resources to assist in research publications or proposals please cite
-                            as:</p>
-                        <a class="button" href="/content/CitePATRIC">How to cite PATRIC</a>
-                    </div>
-                </div>
-                <div class="column" style="min-height: 143px;">
-                    <div class="wrapper">
-                        <h4 class="normal-weight close2x">Funding Statement</h4>
-                        <p>This project has been funded in whole or in part with Federal funds from the National
-                            Institute of Allergy and Infectious Diseases, National Institutes of Health, Department of
-                            Health and Human Services, under Contract No. HHSN272201400027C, awarded to RL Stevens</p>
-                    </div>
-                </div>
-                <div class="column last bold" style="min-height: 143px;">
-                    <div class="wrapper">
-                        <h4 class="normal-weight close">Follow Us</h4>
-                        <ul class="left no-decoration">
-
-                            <li><a class="footer-icons sprite-icon-twitter" href="//twitter.com/PATRICBRC">Twitter</a>
-                            </li>
-                            <li class="last"><a class="footer-icons sprite-icon-facebook"
-                                                href="//www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823">Facebook</a>
-                            </li>
-                        </ul>
-                        <ul class="left no-decoration">
-                            <li><a class="footer-icons sprite-icon-rss" href="http://enews.patricbrc.org/feed/">RSS</a>
-                            </li>
-                            <li><a class="footer-icons sprite-icon-youtube" href="//www.youtube.com/user/PATRICBRC">YouTube</a>
-                            </li>
-                            <li class="last"><a class="footer-icons sprite-icon-share"
-                                                href="//www.addthis.com/bookmark.php?v=250&amp;username=xa-4c40660c515875dc">Share
-                                    This</a></li>
-                        </ul>
                     </div>
                 </div>
             </div>
+
+
+            <div class="analyze-data">
+                <h2>ANALYZE DATA IN PATRIC</h2>
+                <p>
+                    At PATRIC, you can upload your private data in a workspace, analyze it using high-throughput services, and compare it with
+                    other public databases using visual analytics tools. Please
+                    <a class="registrationLink">Register</a> or
+                    <a class="loginLink">Login</a> to get started.
+                </p>
+                <div class="analyze-data-links">
+                    <div class="upload-links">
+                        <h3>UPLOAD</h3>
+                        <ul>
+                            <li>
+                                <a class="navigationLinkOut" href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Upload Data</a>
+                            </li>
+                            <li>
+                                <a class="navigationLinkOut" href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Manage Workspace</a>
+                            </li>
+                            <li>
+                                <a class="navigationLinkOut" href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Share or Publish</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="analyze-links">
+                        <h3>ANALYZE</h3>
+                        <ul>
+                            <li>
+                                <a class="navigationLink" href="/app/Assembly">Genome Assembly</a>
+                            </li>
+                            <li>
+                                <a class="navigationLink" href="/app/Annotation">Genome Annotation</a>
+                            </li>
+                            <li>
+                                <a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a>
+                            </li>
+                            <li>
+                                <a class="navigationLink" href="/app/MetagenomeBinning">Metagenome Binning</a>
+                            </li>
+                            <li>
+                                <a class="navigationLinkOut" href="https://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="compare-links">
+                        <h3>COMPARE</h3>
+                        <ul>
+                            <li>
+                                <a class="navigationLink" href="/app/BLAST">BLAST</a>
+                            </li>
+                            <li>
+                                <a class="navigationLink" href="/app/ProteinFamily">Protein Families</a>
+                            </li>
+                            <li>
+                                <a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a>
+                            </li>
+                            <li>
+                                <a class="navigationLink" href="/app/ComparativePathway">Metabolic Pathways</a>
+                            </li>
+                            <li>
+                                <a class="navigationLinkOut" href="https://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="analyze-data-buttons">
+                    <a href="https://docs.patricbrc.org/tutorial/" class="navigationLinkOut btn btn-blue">TUTORIALS</a>
+                    <a href="https://docs.patricbrc.org/user_guides/index.html" class="navigationLinkOut btn btn-blue">USER GUIDES</a>
+                    <a href="https://docs.patricbrc.org/webinar/" class="navigationLinkOut btn btn-blue">WEBINARS</a>
+                    <a href="https://docs.patricbrc.org/cli_tutorial/" class="navigationLinkOut btn btn-blue">COMMAND-LINE INTERFACE</a>
+                </div>
+            </div>
+
+            <div class="omics-data">
+                <h2>OMICS DATA</h2>
+                <p>PATRIC provides data and analysis tools for multiple omics data types</p>
+                <div class="omics-links">
+                    <ul>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic Resistance</a>
+                        </li>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/Genomes">Genomes</a>
+                        </li>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic Features</a>
+                        </li>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/Pathways">Pathways</a>
+                        </li>
+                    </ul>
+                    <ul>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/ProteinFamilies">Protein Families</a>
+                        </li>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/SpecialtyGenes">Specialty Genes</a>
+                        </li>
+                        <li>
+                            <a class="navigationLink" href="/view/DataType/Transcriptomics">Transcriptomes</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="my-data">
+                <h2>MY DATA</h2>
+                <div class="ShowWithAuth">
+                    <div class="sub-block">
+                        <div><a class="navigationLink" id="YourWorkspaceLink2">My Workspaces</a></div>
+                        <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
+                    </div>
+                    <div class="sub-block">
+                        <div><a class="navigationLink" id="MyDataGenomeGroup">00 Genome Groups</a></div>
+                        <div><a class="navigationLink" id="MyDataFeatureGroup">00 Feature Groups</a></div>
+                        <div><a class="navigationLink" id="MyDataExperimentGroup">00 Experiment Groups</a></div>
+                        <br>
+                        <div><a class="navigationLink" href="/job/" id="MyDataJobs">00 Completed Jobs</a></div>
+                        <div><a class="navigationLink" href="/view/GenomeList/?eq(public,false)" id="MyDataGenomes">00 Private Genomes</a></div>
+                    </div>
+                </div>
+                <div class="HideWithAuth showOnLoad">
+                    <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
+                    <hr>
+                    <div class="home-login-button">
+                        <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="announcements">
+                <h2>NEWS &amp; ANNOUNCEMENTS</h2>
+                <ul id="slides"></ul>
+                <div id="dot-navigation"></div>
+            </div>
+
+            <div class="twitter-feed">
+                <a class="twitter-timeline" data-lang="en" data-height="385" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            </div>
         </div>
-    </footer>
+    </div>
 </div>
+
+<footer class="ondark linkstyle-highlight-c smallest main-footer sans-alternate footer">
+    <div class="layer">
+        <div class="container">
+            <div class="column" style="border: 0px;">
+                <div class="wrapper">
+                    <h3 class="close2x">BRC Program</h3>
+                    <ul>
+                        <li><a class="navigationLinkOut" href="https://www.niaid.nih.gov/research/bioinformatics-resource-centers">NIAID</a></li>
+                        <li><a href="https://www.patricbrc.org">PATRIC</a></li>
+                        <li><a class="navigationLinkOut" href="https://www.viprbrc.org/brc/home.spg?decorator=vipr">ViPR</a></li>
+                        <li><a class="navigationLinkOut" href="https://www.fludb.org/brc/home.spg?decorator=influenza">IRD</a></li>
+                        <li><a class="navigationLinkOut" href="https://eupathdb.org/eupathdb/">EuPathDB</a></li>
+                        <li><a class="navigationLinkOut" href="https://www.vectorbase.org/">VectorBase</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="column">
+                <div class="wrapper">
+                    <h3 class="close2x">How to Cite PATRIC</h3>
+                    <p class="far">If you use PATRIC web resources to assist in research publications or proposals please cite as:
+                    </p>
+                    <a href="/webpage/website/cite_patric.html">How to cite PATRIC</a>
+                </div>
+            </div>
+            <div class="column">
+                <div class="wrapper">
+                    <h3 class="close2x">Funding Statement</h3>
+                    <p>This project has been funded in whole or in part with Federal funds from the National Institute of Allergy
+                        and Infectious Diseases, National Institutes of Health, Department of Health and Human Services,
+                        under Contract No. HHSN272201400027C, awarded to RL Stevens</p>
+                </div>
+            </div>
+            <div class="column">
+                <div class="wrapper no-underline-links">
+                    <h3 class="close2x">Follow Us</h3>
+                    <ul class="left no-decoration">
+                        <li>
+                            <a href="//twitter.com/PATRICBRC">Twitter</a>
+                        </li>
+                        <li>
+                            <a href="//www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823">Facebook</a>
+                        </li>
+                    </ul>
+                    <ul class="left no-decoration">
+                        <li>
+                            <a href="//docs.patricbrc.org/news.rss">RSS</a>
+                        </li>
+                        <li>
+                            <a href="//www.youtube.com/user/PATRICBRC">YouTube</a>
+                        </li>
+                        <li>
+                            <a href="//www.addthis.com/bookmark.php?v=250&amp;username=xa-4c40660c515875dc">Share This</a>
+                        </li>
+                    </ul>
+                    <h3 class="close2x"><a href="<%=request.applicationOptions.docsServiceURL %>/website/privacy_policy.html">Privacy Policy</a></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Hide Global Search in p3header when on new homepage -->
+<style>
+    body.patric {
+        min-width: 830px;
+    }
+
+    #p3header-search {
+        display: none;
+    }
+</style>

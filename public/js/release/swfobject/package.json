@@ -1,40 +1,45 @@
 {
-  "name": "swfobject-amd",
-  "description": "SWFObject is a free, open-source tool for embedding swf content in websites. This version is a seperate fork for developers that know their stuff.",
-  "main": "swfobject.js",
-  "version": "2.3.1",
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/HenningM/swfobject-amd.git"
+  "_args": [
+    [
+      "swfobject-amd@2.3.1",
+      "/Users/hsyoo/dev/deploy/p3_web"
+    ]
+  ],
+  "_from": "swfobject-amd@2.3.1",
+  "_id": "swfobject-amd@2.3.1",
+  "_inBundle": false,
+  "_integrity": "sha1-8QyISZFWqnYGis2d6FE4jNSnCLg=",
+  "_location": "/swfobject-amd",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "swfobject-amd@2.3.1",
+    "name": "swfobject-amd",
+    "escapedName": "swfobject-amd",
+    "rawSpec": "2.3.1",
+    "saveSpec": null,
+    "fetchSpec": "2.3.1"
   },
-  "devDependencies": {
-    "uglify-js": "*"
-  },
-  "gitHead": "c265c8037cc714931de0c85c0a8a3383adab6f67",
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz",
+  "_spec": "2.3.1",
+  "_where": "/Users/hsyoo/dev/deploy/p3_web",
   "bugs": {
     "url": "https://github.com/HenningM/swfobject-amd/issues"
   },
-  "homepage": "https://github.com/HenningM/swfobject-amd",
-  "_id": "swfobject-amd@2.3.1",
-  "scripts": {},
-  "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
-  "_from": "swfobject-amd@>=2.3.1 <2.4.0",
-  "_npmVersion": "2.1.18",
-  "_nodeVersion": "0.10.21",
-  "_npmUser": {
-    "name": "henningm",
-    "email": "henning@morud.org"
+  "description": "SWFObject is a free, open-source tool for embedding swf content in websites. This version is a seperate fork for developers that know their stuff.",
+  "devDependencies": {
+    "uglify-js": "*"
   },
-  "maintainers": [
-    {
-      "name": "henningm",
-      "email": "henning@morud.org"
-    }
-  ],
-  "dist": {
-    "shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
-    "tarball": "http://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
+  "homepage": "https://github.com/HenningM/swfobject-amd#readme",
+  "main": "swfobject.js",
+  "name": "swfobject-amd",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/HenningM/swfobject-amd.git"
   },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz"
+  "version": "2.3.1"
 }
