@@ -135,13 +135,13 @@ define([
         return newState;
       }
 
-      Router.register("\/$", function(params, oldPath, newPath, state){
-        console.log("HOME route", params.newPath);
-        var homeNode = dom.byId('patric-homepage');
-        if (homeNode) {
-                return;
-        }
-        window.location.reload();
+      Router.register("\/$", function(params, oldPath, newPath, state) {
+          console.log("HOME route", params.newPath);
+          var homeNode = dom.byId('patric-homepage');
+          if (homeNode) {
+               return;
+          }
+          window.location.reload();
       });
 
       Router.register('/remote', function (params, oldPath, newPath, state) {
