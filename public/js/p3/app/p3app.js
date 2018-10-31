@@ -138,7 +138,7 @@ define([
       Router.register('/$', function (params, oldPath, newPath, state) {
         var homeNode = dom.byId('patric-homepage');
         if (homeNode) {
-            return;
+          return;
         }
         window.location.reload();
       });
