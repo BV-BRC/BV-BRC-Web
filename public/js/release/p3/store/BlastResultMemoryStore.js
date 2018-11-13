@@ -130,19 +130,19 @@ define("p3/store/BlastResultMemoryStore", [
           // resultIdField = "patric_id";
 
           var patric_ids = [];
-          var gis = [];
+          var refseq_locus_tags = [];
           resultIds.forEach(function (id) {
             if (id.indexOf('gi|') > -1) {
-              gis.push(id.split('|')[1]);
+              refseq_locus_tags.push(id.split('|')[2]);
             } else {
               patric_ids.push(id);
             }
           });
 
           query.q = (patric_ids.length > 0) ? 'patric_id:(' + patric_ids.join(' OR ') + ')' : {};
-          (gis.length > 0 && patric_ids.length > 0) ? query.q += ' OR ' : {};
-          (gis.length > 0) ? query.q += '(gi:(' + gis.join(' OR ') + ') AND annotation:RefSeq)' : {};
-          query.fl = 'feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,gi,taxon_id,accession,start,end,strand,location,na_length,na_sequence_md5,aa_length,aa_sequence_md5';
+          (refseq_locus_tags.length > 0 && patric_ids.length > 0) ? query.q += ' OR ' : {};
+          (refseq_locus_tags.length > 0) ? query.q += '(refseq_locus_tag:(' + refseq_locus_tags.join(' OR ') + ') AND annotation:RefSeq)' : {};
+          query.fl = 'feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,taxon_id,accession,start,end,strand,location,na_length,na_sequence_md5,aa_length,aa_sequence_md5';
         } else if (this.type == 'specialty_genes') {
 
           var data = this.formatJSONResult(res);
@@ -172,7 +172,7 @@ define("p3/store/BlastResultMemoryStore", [
               keyMap[f.accession] = f;
             } else {
               if (f.annotation == 'RefSeq') {
-                keyMap[f.gi] = f;
+                keyMap[f.refseq_locus_tag] = f;
               } else {
                 keyMap[f.patric_id] = f;
               }
@@ -277,9 +277,9 @@ define("p3/store/BlastResultMemoryStore", [
             entry.feature_id = features[target_id].feature_id;
             entry = lang.mixin(entry, features[target_id]);
           } else if (target_id.indexOf('gi|') > -1) {
-            var gi = target_id.split('|')[1];
-            entry.feature_id = features[gi].feature_id;
-            entry = lang.mixin(entry, features[gi]);
+            var refseq_locus_tag = target_id.split('|')[2];
+            entry.feature_id = features[refseq_locus_tag].feature_id;
+            entry = lang.mixin(entry, features[refseq_locus_tag]);
           } else {
             console.warn('missing patric_id in header', target_id);
           }
