@@ -50,7 +50,7 @@ define([
             mapping[org.genome_id + '.' + ext] = org.genome_name;
           });
 
-          new MauveViewer.default({
+          new MauveViewer({
             data: data,
             ele: container,
             d3: d3,
