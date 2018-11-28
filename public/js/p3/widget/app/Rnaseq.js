@@ -468,6 +468,14 @@ define([
         var fn = this.contrast_cd1.get('value') + this.contrast_cd2.get('value');
         return fn;
       }
+      else if (mode == 'condition'){
+        var fn = this.condition.displayedValue;
+        return fn;
+      }
+      else if (mode == 'srr_accession'){
+        var fn = this.srr_accession.displayedValue;
+        return fn;
+      }
     },
 
     onReset: function (evt) {
@@ -518,7 +526,7 @@ define([
 
     onAddCondition: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { count: 0 }; // initialized to the number of libraries assigned
+      var lrec = { count: 0 , type:"condition"}; // initialized to the number of libraries assigned
       var toIngest = this.conditionToAttachPt;
       var disable = !this.exp_design.checked;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
