@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
-  'dojo/request', 'dojo/when'
+  'dojo/request', 'dojo/when', '../../DataAPI', 'dojo/promise/all'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
-  request, when
+  request, when, DataAPI, all
 ) {
 
   return declare([ViewerBase], {
@@ -24,42 +24,184 @@ define([
       domConstruct.place(container, this.viewer.domNode);
 
       WorkspaceManager.getObject(path).then(function (res) {
-        var data = JSON.parse(res.data);
+        var lcbs = JSON.parse(res.data);
 
+        // get ids from alignment file (to be removed)
         var ext;
         var ids = [];
-        data.forEach(function (lcbs) {
-          lcbs.forEach(function (r) {
+        lcbs.forEach(function (lcbSet) {
+          lcbSet.forEach(function (r) {
             ext = r.name.split('.').pop();
-            var name = r.name.replace(`.${ext}`, '');
+            var name = r.name.replace('.' + ext, '');
             if (!ids.includes(name)) ids.push(name);
           });
         });
 
-        var url = self.apiServiceUrl +
-          'genome/?in(genome_id,(' + ids.join(',') + '))&select(genome_id,genome_name)';
-        when(request.get(url, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: window.App.authorizationToken
-          },
-          handleAs: 'json'
-        }), function (res) {
-          let mapping = {};
-          res.forEach(function (org) {
-            mapping[org.genome_id + '.' + ext] = org.genome_name;
+        // fetch all mauve data and load viewer
+        self.getMauveData(ids, ext)
+          .then(function (data) {
+            new MauveViewer({
+              ele: container,
+              d3: d3,
+              lcbs: lcbs,
+              labels: data.labels,
+              features: data.features,
+              contigs: data.contigs
+            });
           });
-
-          new MauveViewer({
-            data: data,
-            ele: container,
-            d3: d3,
-            labels: mapping
-          });
-        });
       });
 
       window.document.title = 'PATRIC Mauve Viewer';
+    },
+
+    featureSelect: [
+      'patric_id', 'sequence_id', 'start', 'end',
+      'strand', 'annotation', 'feature_type',
+      'product', 'accession', 'refseq_locus_tag', 'gene'
+    ],
+
+    contigSelect: [
+      'topology', 'gi', 'accession', 'length',
+      'sequence_id', 'gc_content', 'chromosome',
+      'sequence_type', 'chromosome', 'description'
+    ],
+
+    /**
+     * retrieves specific PATRIC annotation feature metadata, ignoring source features
+     * @param {*} genomeIDs list of genome ids
+     */
+    getFeatures: function (genomeIDs) {
+      var self = this;
+      genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
+
+      var proms = genomeIDs.map(function (id) {
+        var path = '/genome_feature/?eq(genome_id,' + id + ')' +
+          '&select(' + self.featureSelect.join(',') + ')&eq(annotation,PATRIC)&ne(feature_type,source)&limit(25000)';
+        return DataAPI.get(path);
+      });
+
+      return all(proms);
+    },
+
+    /**
+     * gets secific contig metadata, sorted by largest to smallest
+     *  (secondary sort of sequence_id)
+     * @param {*} genomeIDs list of genome ids
+     */
+    getContigs: function (genomeIDs) {
+      var self = this;
+      genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
+
+      var proms = genomeIDs.map(id => {
+        var path = '/genome_sequence/?eq(genome_id,' + id + ')' +
+            '&select(' + self.contigSelect.join(',') + ')&sort(-length,+sequence_id)&limit(25000)';
+        return DataAPI.get(path);
+      });
+
+      return all(proms);
+    },
+
+    /**
+     * takes genomes ids, provides mapping to lac
+     * @param {*} genomeIDs list of genome ids
+     * @param {*} ext mauve extension (to be removed)
+     */
+    getGenomeLabels: function (genomeIDs, ext) {
+      var path = '/genome/?in(genome_id,(' + genomeIDs.join(',') + '))' +
+          '&select(genome_id,genome_name)';
+
+      return DataAPI.get(path).then(function (data) {
+        var mapping = {};
+        data.forEach(function (org) {
+          mapping[org.genome_id  + '.' + ext] = org.genome_name;
+        });
+
+        return mapping;
+      });
+    },
+
+    /**
+     * adds "position" in genome "xStart"/"xEnd" to given features
+     * @param {*} contigs list of contig meta objects (needed for position)
+     * @param {*} features list of feature meta objects
+     */
+    setFeaturePositions: function (contigs, features) {
+      var newFeatures = [];
+      var ntPos = 0;
+      contigs.forEach(c => {
+        // get all features in this contig
+        var contigFeatures = features.filter(f => f.sequence_id == c.sequence_id);
+
+        // set xStart/xEnd using contig's start/end
+        contigFeatures = contigFeatures.map(f => {
+          f.xStart = ntPos + f.start;
+          f.xEnd = ntPos + f.end;
+          return f;
+        });
+
+        newFeatures = newFeatures.concat(contigFeatures);
+        ntPos += c.length;
+      });
+
+      return newFeatures;
+    },
+
+    setContigPositions: function (contigs) {
+      var ntPos = 1;
+      contigs.forEach(c => {
+        c.xStart = ntPos;
+        c.xEnd = ntPos + c.length - 1;
+        ntPos += c.length;
+      });
+
+      return contigs;
+    },
+
+    /**
+     * gets all data required for the viewer
+     * @param {*} genomeIDs list of genome ids
+     * @param {*} ext the mauve output file extension (to be removed)
+     */
+    getMauveData: function (genomeIDs, ext) {
+      let self = this;
+
+      var nameProm = self.getGenomeLabels(genomeIDs, ext);
+
+      var featProm = self.getFeatures(genomeIDs)
+        .then(data => {
+          var mapping = {};
+          genomeIDs.forEach((id, i) => { mapping[id] = data[i]; });
+
+          return mapping;
+        });
+
+      var contigProm = self.getContigs(genomeIDs)
+        .then(data => {
+          var mapping = {};
+          genomeIDs.forEach((id, i) => { mapping[id] = data[i]; });
+          return mapping;
+        });
+
+      return all([nameProm, featProm, contigProm])
+        .then(([labels, featuresObj, contigsObj]) => {
+          // update contig metadata with locations of contigs
+          var contigs = {};
+          genomeIDs.forEach((genomeID, i) => {
+            contigs[genomeID] = self.setContigPositions(contigsObj[genomeID]);
+          });
+
+          // update feature metadata with locations of features
+          var features = {};
+          Object.keys(contigs).forEach(gid => {
+            features[gid] = self.setFeaturePositions(contigs[gid], featuresObj[gid]);
+          });
+
+          return {
+            labels: labels,
+            contigs: contigs,
+            features: features
+          };
+        });
     },
 
     postCreate: function () {
