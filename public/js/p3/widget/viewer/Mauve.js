@@ -19,6 +19,14 @@ define([
       var parts = state.pathname.split('/');
       var path = '/' + parts.slice(2).join('/');
 
+      // reset/override global and jbrowse styling
+      domConstruct.create('style', {
+        innerHTML: '' +
+          '.mauve-viewer .feature { height: 10px; }' +
+          '.mauve-viewer div.tooltip { background-color: #000; }' +
+          '.mauve-viewer { font-size: initial; }'
+      }, this.viewer.domNode);
+
       domConstruct.place('<br>', this.viewer.domNode);
       var container = domConstruct.toDom('<div style="margin: 0 auto; width:1024px;"></div>');
       domConstruct.place(container, this.viewer.domNode);
