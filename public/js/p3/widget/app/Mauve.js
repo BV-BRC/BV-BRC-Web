@@ -46,7 +46,6 @@ define([
       });
       domConstruct.place(selectedTable.domNode, this.genomeTable);
 
-      /* todo
       this.advrow.turnedOn = (this.advrow.style.display != 'none');
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.advrow.turnedOn = (this.advrow.style.display != 'none');
@@ -61,7 +60,6 @@ define([
           this.advicon.className = 'fa icon-caret-down fa-1';
         }
       }));
-      */
 
       this._started = true;
     },
@@ -212,14 +210,18 @@ define([
     },
 
     getValues: function () {
-      var obj = {};
       var values = this.inherited(arguments);
+      var obj = Object.assign({}, values);
 
-      // get just the ids from table selection
+      // ignore unneeded values
+      delete obj.genomeGroupSelector;
+      delete obj.genomeSelector;
+
+      // get the ids from table selection
       var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
 
       obj.genome_ids = genomeIDs;
-      obj.recipe = values.recipe;
+      obj.recipe = values.recipe || 'progressiveMauve';
       obj.output_path = values.output_path;
       obj.output_file = values.output_file;
 

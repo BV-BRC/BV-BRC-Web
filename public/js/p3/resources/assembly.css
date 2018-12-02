@@ -181,6 +181,7 @@ table.librarytable td > i {
     margin: 0 0 0 15px;
 }
 
+.smallInput,
 .insertspinner {
     width: 80px;
 }
