@@ -24,7 +24,6 @@ define([
     panels: Panels,
     activeWorkspace: null,
     activeWorkspacePath: '/',
-    publicApps: ['BLAST', 'ProteinFamily', 'ComparativePathway', 'GenomeDistance'],
     uploadInProgress: false,
     activeMouse: true,
     alreadyLoggedIn: false,
@@ -136,20 +135,13 @@ define([
         return newState;
       }
 
-      /*
-      Router.register("\/$", function(params, oldPath, newPath, state){
-        console.log("HOME route", params.newPath);
-        var newState = {href: params.newPath}
-        for (var prop in params.state){
-          newState[prop]=params.state[prop]
+      Router.register('/$', function (params, oldPath, newPath, state) {
+        var homeNode = dom.byId('patric-homepage');
+        if (homeNode) {
+          return;
         }
-
-        newState.widgetClass="dijit/layout/ContentPane";
-        newState.requireAuth=false;
-        console.log("Navigate to ", newState);
-        _self.navigate(newState);
+        window.location.reload();
       });
-      */
 
       Router.register('/remote', function (params, oldPath, newPath, state) {
         console.log('REMOTE WINDOW, WAIT FOR /navigate message');
@@ -336,11 +328,8 @@ define([
         newState.widgetClass = 'p3/widget/app/' + type;
         newState.value = viewerParams;
         newState.set = 'params';
-        newState.requireAuth = true;
-        /* istanbul ignore if */
-        if (_self.publicApps.indexOf(type) >= 0) {
-          newState.requireAuth = false;
-        }
+        // move requireAuth check to AppBase and its derieved class
+        newState.requireAuth = false;
 
         // console.log("Navigate to ", newState);
         _self.navigate(newState);

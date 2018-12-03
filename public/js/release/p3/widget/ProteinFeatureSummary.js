@@ -13,7 +13,7 @@ define("p3/widget/ProteinFeatureSummary", [
 
   var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with GO assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments', 'Proteins with FIGfam assignments'];
   var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'GO assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned', 'FIGfam assigned'];
-  var filters = ['eq(product,hypothetical+protein),eq(feature_type,CDS)', 'ne(product,hypothetical+protein),eq(feature_type,CDS)', 'eq(ec,*)', 'eq(go,*)', 'eq(pathway,*)', 'eq(subsystem,*)', 'eq(plfam_id,PLF*)', 'eq(pgfam_id,PGF*)', 'eq(figfam_id,*)'];
+  var filters = ['eq(product,hypothetical+protein),eq(feature_type,CDS)', 'ne(product,hypothetical+protein),eq(feature_type,CDS)', 'eq(property,EC*)', 'eq(go,*)', 'eq(property,Pathway)', 'eq(property,Subsystem)', 'eq(plfam_id,PLF*)', 'eq(pgfam_id,PGF*)', 'eq(figfam_id,*)'];
 
   return declare([SummaryWidget], {
     dataModel: 'genome_feature',
@@ -59,7 +59,7 @@ define("p3/widget/ProteinFeatureSummary", [
       var defECAssigned = when(xhr.post(url, {
         handleAs: 'json',
         headers: this.headers,
-        data: this.query + '&eq(ec,*)' + this.baseQuery
+        data: this.query + '&eq(property,EC*)' + this.baseQuery
       }), function (response) {
         return response.facet_counts.facet_fields.annotation;
       });
@@ -75,7 +75,7 @@ define("p3/widget/ProteinFeatureSummary", [
       var defPathwayAssigned = when(xhr.post(url, {
         handleAs: 'json',
         headers: this.headers,
-        data: this.query + '&eq(pathway,*)' + this.baseQuery
+        data: this.query + '&eq(property,Pathway)' + this.baseQuery
       }), function (response) {
         return response.facet_counts.facet_fields.annotation;
       });
@@ -83,7 +83,7 @@ define("p3/widget/ProteinFeatureSummary", [
       var defSubsystemAssigned = when(xhr.post(url, {
         handleAs: 'json',
         headers: this.headers,
-        data: this.query + '&eq(subsystem,*)' + this.baseQuery
+        data: this.query + '&eq(property,Subsystem)' + this.baseQuery
       }), function (response) {
         return response.facet_counts.facet_fields.annotation;
       });

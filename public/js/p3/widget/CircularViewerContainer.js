@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/topic',
-  './ActionBar', './ContainerActionBar', 'dijit/layout/TabContainer',
+  './ActionBar', 'dijit/layout/TabContainer',
   './TrackController', 'circulus/Viewer', 'circulus/LineTrack', 'circulus/HistogramTrack', 'circulus/HeatmapTrack',
   'circulus/SectionTrack', 'circulus/SectionTrackWithLabel', 'dojo/_base/lang', 'dojo/request', './DataItemFormatter', '../util/PathJoin', '../util/searchToQuery'
 ], function (
   declare, BorderContainer, on, Topic,
-  ActionBar, ContainerActionBar, TabContainer,
+  ActionBar, TabContainer,
   TrackController, CirculusViewer, LineTrack, HistogramTrack, HeatmapTrack,
   SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin, searchToQuery
 ) {
@@ -21,6 +21,34 @@ define([
     genome_id: '',
     tooltip: 'The "Circular Viewer" tab provides circular overview of the entire genome and its genomic features',
     apiServiceUrl: window.App.dataAPI,
+    docsServiceURL: window.App.docsServiceURL,
+    tutorialLink: 'user_guides/organisms_genome/circular_genome_viewer.html',
+
+    addActionBar: function () {
+      this.selectionActionBar = new ActionBar({
+        region: 'right',
+        layoutPriority: 4,
+        style: 'width:56px;text-align:center;',
+        splitter: false,
+        currentContainerWidget: this
+      });
+      this.addChild(this.selectionActionBar);
+      this.selectionActionBar.addAction(
+        'UserGuide',
+        'fa icon-info-circle fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        lang.hitch(this, function (selection, container) {
+          // console.log('USER GUIDE action', container);
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+        }),
+        true
+      );
+    },
 
     _setQueryAttr: function (query) {
     },
@@ -644,8 +672,8 @@ define([
 
       this.addChild(this.controlPanel);
       this.addChild(this.viewer);
+      this.addActionBar();
       // console.log("CircularViewerContainer viewer", this.viewer);
     }
   });
 });
-

@@ -3,16 +3,18 @@ dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 <div class="appTemplate">
   <div class="appTitle">
     <span class="breadcrumb">Services</span>
-    <h3>ID Mapper
+    <h3>${applicationLabel}
       <div name="overview" class="infobox iconbox infobutton dialoginfo">
         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+      </div>
+      <div class="infobox iconbox tutorialButton tutorialInfo">
+        <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
       </div>
     </h3>
   </div>
   <div class="showHideSection">
-    <p>The ID Mapper tool maps PATRIC identifiers to those from other prominent external databases such as GenBank,
-      RefSeq, EMBL, UniProt, KEGG, etc. Alternatively, it can map a list of external database identifiers to the corresponding PATRIC features.
-      For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">ID Mapper Service User Guide</a>.
+    <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
+      <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
     </p>
     <table style="width:100%;margin-top:15px">
       <tr>

@@ -2,7 +2,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>Genome Annotation
+      <h3>${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -10,7 +10,7 @@
           <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
         </div>
       </h3>
-      <p>The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features. For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">Genome Annotation Service User Guide</a> and
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
@@ -36,6 +36,7 @@
             <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="Bacteria">Bacteria</option>
               <option value="Archaea">Archaea</option>
+              <option value="Viruses">Viruses</option>
             </select>
           </div>
         </div>
@@ -94,8 +95,8 @@
             data-dojo-attach-point="recipe"
             data-dojo-props="intermediateChanges:true"
             style="width:300px" required="true">
-            <option value="default">Bacteria</option>
-            <option value="phage2">Phage</option>
+            <option value="default">Default</option>
+            <option value="phage">Phage</option>
           </select>
         </div>
       </div>

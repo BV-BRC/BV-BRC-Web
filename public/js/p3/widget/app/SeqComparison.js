@@ -17,6 +17,9 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'GenomeComparison',
+    requireAuth: true,
+    applicationLabel: 'Proteome Comparison',
+    applicationDescription: 'The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP. This service allows users to select genomes and compare them to reference genome.',
     applicationHelp: 'user_guides/services/proteome_comparison_service.html',
     tutorialLink: 'tutorial/proteome_comparison/proteome_comparison.html',
     pageTitle: 'Proteome Comparison',
@@ -38,6 +41,9 @@ define([
     startup: function () {
       var _self = this;
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);

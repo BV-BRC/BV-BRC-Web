@@ -2,7 +2,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>Comprehensive Genome Analysis
+      <h3>${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -12,11 +12,8 @@
         </div>
         -->
       </h3>
-      <p>The Comprehensive Genome Analysis Service provides a streamlined analysis "meta-service" that accepts raw reads and performs a comprehensive analysis
-        including assembly, annotation, identification of nearest neighbors, a basic comparative analysis that includes a subsystem summary,
-        phylogenetic tree, and the features that distinguish the genome from its nearest neighbors.
-        For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
-          target="_blank">Comprehensive Genome Analysis Service User Guide</a> and
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">${applicationLabel} Service User Guide</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
@@ -32,7 +29,7 @@
           </div>
         </div>
         <div class="appRow">
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked="checked" data-dojo-attach-event="onChange:onStartWithChange" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked />
           <label for="radio1">Read File</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithContigs" name="startWith" value="contigs" data-dojo-attach-event="onChange:onStartWithChange" />
           <label for="radio2">Assembled Contigs</label>
@@ -115,12 +112,10 @@
             </div>
           </div>
         </div>
-        <div data-dojo-attach-point="contigsFile" class="appRow">
-          <div class="appRow">
+        <div class="appRow">
             <label class="paramlabel">Contigs</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" data-dojo-attach-point="contigsFile" data-dojo-attach-event="onChange:setContigsFile" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
             </div>
-          </div>
         </div>
       </div>
       <div id="parameterBox" style="width:400px; " class="appBox appShadow">
@@ -150,6 +145,7 @@
             <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="Bacteria">Bacteria</option>
               <option value="Archaea">Archaea</option>
+              <option value="Viruses">Viruses</option>
             </select>
           </div>
         </div>
@@ -190,12 +186,6 @@
           <div class="appFieldLong" style="width:380px">
             <label>Output Name</label><br>
             <div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
-          </div>
-        </div>
-        <div class="appRow" style="display:none">
-          <div class="appFieldLong">
-            <label>Optional Annotation Source</label><br>
-            <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="reference_genome_id" maxHeight="200" style="width:100%" required="false" data-dojo-attach-point="ref_genome_id"></div>
           </div>
         </div>
       </div>

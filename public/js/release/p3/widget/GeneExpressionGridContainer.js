@@ -41,6 +41,7 @@ define("p3/widget/GeneExpressionGridContainer", [
     facetFields: [],
     tgState: tgState,
     enableFilterPanel: false,
+    tutorialLink: 'user_guides/organisms_gene/transcriptomics.html',
     constructor: function () {
       var self = this;
       Topic.subscribe('GeneExpression', lang.hitch(self, function () {

@@ -13,6 +13,9 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'PhylogeneticTree',
+    requireAuth: true,
+    applicationLabel: 'Phylogenetic Tree Building',
+    applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for up to 50 user-selected genomes.',
     applicationHelp: 'user_guides/services/phylogenetic_tree_building_service.html',
     tutorialLink: 'tutorial/phylogenetic_tree_building/tree_building.html',
     pageTitle: 'Phylogenetic Tree Building',
@@ -39,6 +42,9 @@ define([
     startup: function () {
       var _self = this;
       if (this._started) {
+        return;
+      }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
       this.inherited(arguments);
@@ -385,7 +391,7 @@ define([
       ptb_values.output_path = values.output_path;
       ptb_values.output_file = values.output_file;
       ptb_values.full_tree_method = values.full_tree_method;
-      ptb_values.refinement = values.refinement;
+      ptb_values.refinement = 'no';  // hard coded since it's removed from UI
 
       return ptb_values;
     }
