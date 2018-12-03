@@ -1,11 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
-  '../../DataAPI', 'dojo/promise/all', '../../util/loading'
+  '../../DataAPI', 'dojo/promise/all', '../../util/loading', '../DataItemFormatter',
+  'dijit/Dialog', 'dojox/widget/Standby'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
-  DataAPI, all, Loading
+  DataAPI, all, Loading, DataItemFormatter,
+  Dialog, Standby
 ) {
 
   return declare([ViewerBase], {
@@ -55,12 +57,38 @@ define([
               lcbs: lcbs,
               labels: data.labels,
               features: data.features,
-              contigs: data.contigs
+              contigs: data.contigs,
+              onFeatureClick: function (fid) {
+                self.onFeatureClick(fid);
+              }
             });
           });
       });
 
       window.document.title = 'PATRIC Mauve Viewer';
+    },
+
+    onFeatureClick: function (fid) {
+      var loadingMask = new Standby({
+        target: this.id,
+        image: '/public/js/p3/resources/images/spin.svg',
+        color: '#efefef'
+      });
+      this.addChild(loadingMask);
+      loadingMask.startup();
+      loadingMask.show();
+
+      var path = '/genome_feature/?eq(patric_id,' + encodeURIComponent(fid) + ')';
+      DataAPI.get(path)
+        .then(function (data) {
+          loadingMask.hide();
+          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
+          if (!window.featureDialog) {
+            window.featureDialog = new Dialog({ title: 'Feature Summary' });
+          }
+          window.featureDialog.set('content', content);
+          window.featureDialog.show();
+        });
     },
 
     featureSelect: [
