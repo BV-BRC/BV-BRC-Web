@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
-  'dojo/request', 'dojo/when', '../../DataAPI', 'dojo/promise/all'
+  '../../DataAPI', 'dojo/promise/all', '../../util/loading'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
-  request, when, DataAPI, all
+  DataAPI, all, Loading
 ) {
 
   return declare([ViewerBase], {
@@ -31,6 +31,7 @@ define([
       var container = domConstruct.toDom('<div style="margin: 0 auto; width:1024px;"></div>');
       domConstruct.place(container, this.viewer.domNode);
 
+      Loading(container);
       WorkspaceManager.getObject(path).then(function (res) {
         var lcbs = JSON.parse(res.data);
 
