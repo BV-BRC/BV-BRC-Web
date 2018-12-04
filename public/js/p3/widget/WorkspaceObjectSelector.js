@@ -28,7 +28,7 @@ define([
     required: false,
     isSortAlpha: false,
     showUnspecified: false,
-    showHidden: false,
+    showHidden: window.App.showHiddenFiles,
     missingMessage: 'A valid workspace item is required.',
     promptMessage: 'Please choose or upload a workspace item',
     placeHolder: '',
@@ -70,6 +70,7 @@ define([
     },
     _setShowHiddenAttr: function (val) {
       this.showHidden = val;
+      window.App.showHiddenFiles = val;
 
       if (this.grid) {
         this.grid.set('showHiddenFiles', val);
@@ -416,7 +417,8 @@ define([
 
       var cbContainer = domConstr.create('div', { style: { 'float': 'left' } });
       domConstr.place(cbContainer, buttonsPane.containerNode, 'last');
-      this.showHiddenWidget = new CheckBox({ value: this.showHidden, checked: this.showHidden });
+      var showHidden = window.App.showHiddenFiles;
+      this.showHiddenWidget = new CheckBox({ value: showHidden, checked: showHidden });
       this.showHiddenWidget.on('change', function (val) {
         _self.set('showHidden', val);
         if (val) {
@@ -684,6 +686,7 @@ define([
     createGrid: function () {
       var self = this;
 
+
       var grid =  new Grid({
         region: 'center',
         path: this.path,
@@ -691,7 +694,7 @@ define([
         deselectOnRefresh: true,
         onlyWritable: self.onlyWritable,
         allowDragAndDrop: false,
-        showHiddenFiles: this.showHidden,
+        showHiddenFiles: window.App.showHiddenFiles,
         types: this.type ? (['folder'].concat(this.type)) : false,
         columns: {
           type: {
