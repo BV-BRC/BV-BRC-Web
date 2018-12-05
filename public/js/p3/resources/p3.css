@@ -254,7 +254,8 @@ table.p3basic thead th {
     font-weight: bold;
 }
 
-table.p3basic td, th {
+table.p3basic td,
+table.p3basic th {
     border-top: #d3d3d3 1px solid;
     border-left: #d3d3d3 1px solid;
 }

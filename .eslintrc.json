@@ -14,7 +14,8 @@
     "clipboard": true,
     "cookie": true,
     "cytoscape": true,
-    "msa": true
+    "msa": true,
+    "MauveViewer": true
   },
   "rules": {
     "_comment_reactivate_later": ["block-scoped-var", "no-restricted-globals", "no-redeclare",

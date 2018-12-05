@@ -79,7 +79,7 @@
 
       <div class="appBox appShadow">
         <div class="">
-          <div style="width:85%;display:inline-block;">
+          <div style="width:85%; display:inline-block;">
             <label class="appBoxLabel">Parameters</label>
             <div name="parameters" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
@@ -109,19 +109,20 @@
           </div>
         </div>
 
-        <div class="appRow">
-          <label class="paramlabel">Method</label><br>
-          <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="false" data-dojo-props="intermediateChanges:true,trim:true">
-            <option value="progressiveMauve">progressiveMauve (recommended)</option>
-            <option value="mauveAligner">mauveAligner (legacy)</option>
-          </select>
-        </div>
-
+        <!--
+          <div class="appRow">
+            <label class="paramlabel">Method</label><br>
+            <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="false" data-dojo-props="intermediateChanges:true,trim:true">
+              <option value="progressiveMauve">progressiveMauve (recommended)</option>
+              <option value="mauveAligner">mauveAligner (legacy)</option>
+            </select>
+          </div>
+        -->
 
         <!-- advanced options -->
-        <!--
+        <br>
         <div class="appRow">
-          <div class="appRowSegment" data-dojo-attach-point="advanced">
+          <div class="appRowSegment"  data-dojo-attach-point="advanced">
             <label class="largelabel">Advanced</label>
             <div class="iconbox" style="margin-left:0px">
               <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
@@ -129,36 +130,38 @@
           </div>
         </div>
 
-        <div class="appRow" data-dojo-attach-point="advrow" style="display: none">
+        <div class="appRow" data-dojo-attach-point="advrow" style="display: none;">
           <div class="appRowSegment">
               <label class="paramlabel">Seed Weight</label><br>
-              <div class="insertspinner"
-                name="seed_weight"
-                data-dojo-type="dijit/form/NumberSpinner"
-                data-dojo-attach-point="seed_weight"
+              <div name="seedWeight"
+                class="smallInput"
+                data-dojo-type="dijit/form/NumberTextBox"
+                data-dojo-attach-point="seedWeight"
                 data-dojo-props=""
                 required="false">
               </div>
             </div>
           <div class="appRowSegment">
             <label class="paramlabel">hmm-p-go-homologous</label><br>
-            <div class="insertspinner" name="libdat_avginsert" data-dojo-type="dijit/form/NumberSpinner"
-              data-dojo-attach-point="insert_size_mean"
-              data-dojo-props="placeholder: 0.0001, smallDelta:10, constraints:{min:10,max:2000,places:0}"
+            <div name="hmmPGoHomologous"
+              class="smallInput"
+              data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-attach-point="hmmPGoHomologous"
+              data-dojo-props="placeholder: 0.0001"
               required="false">
             </div>
           </div>
           <div class="appRowSegment">
             <label class="paramlabel">hmm-p-go-unrelated</label><br>
-            <div class="insertspinner" name="libdat_stdinsert"
-              data-dojo-type="dijit/form/NumberSpinner"
-              data-dojo-attach-point="insert_size_stdev"
-              data-dojo-props="placeholder: 0.000001,  constraints:{min:0,max:1,places:0}"
+            <div name="hmmPGoUnrelated"
+              class="smallInput"
+              data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-attach-point="hmmPGoUnrelated"
+              data-dojo-props="placeholder: 0.000001"
               required="false">
             </div>
           </div>
         </div>
-        -->
 
       </div>
 

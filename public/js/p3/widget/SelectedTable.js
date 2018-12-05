@@ -9,7 +9,7 @@ define([
     colNames: [],     // names of columns
     colKeys: [],      // names of keys for each column
     label: null,      // labels items. example: {rowIndex: 1, colKey: 'name', format: function(rowObj) {}}
-    _rows: [],      // data model for rows in table
+    _rows: [],        // data model for rows in table
 
     _tableHTML:
       '<table class="p3basic striped-light" style="font-size: .8em; margin-bottom: 10px;">' +
@@ -83,7 +83,7 @@ define([
       });
 
       dom.place(dom.toDom(entries.join('')), tr);
-      var rmBtn = dom.toDom('<i class="fa icon-times"></i>');
+      var rmBtn = dom.toDom('<i class="fa icon-times rm-btn"></i>');
       dom.place('<td style="width: 1px">' + rmBtn.outerHTML + '</td>', tr);
 
       var tbody = query('tbody', self.table)[0];
@@ -101,7 +101,7 @@ define([
     _addDeleteEvent: function (tr) {
       var self = this;
 
-      query('button', tr).on('click', function () {
+      query('.rm-btn', tr).on('click', function () {
         var row = query(this).parents('tr')[0];
         var rowIndex = row.rowIndex;
 

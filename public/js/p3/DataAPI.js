@@ -25,6 +25,13 @@ define([
         'Authorization': ''
       }
     },
+    getOpts: {
+      headers: {
+        Accept: 'application/json',
+        Authorization: ''
+      },
+      handleAs: 'json'
+    },
 
     setGenomePermissions: function (ids, perms) {
       var self = this;
@@ -68,10 +75,9 @@ define([
       return xhr.post(url, params);
     },
 
-    get: function (data) {
-      // implement if needed
+    get: function (path) {
+      return xhr.get(this.apiUrl + path, this.getOpts);
     },
-
 
     solrPermsToObjs: function (selection) {
       var permSets = [];
@@ -123,6 +129,7 @@ define([
       }
 
       this.postOpts.headers.Authorization = token;
+      this.getOpts.headers.Authorization = token;
       this.apiUrl = apiUrl;
     }
   }))();
