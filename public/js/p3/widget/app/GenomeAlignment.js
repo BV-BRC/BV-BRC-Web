@@ -17,7 +17,10 @@ define([
     applicationHelp: 'user_guides/services/genome_alignment_service.html',
     tutorialLink: 'tutorial/genome_alignment/genome_alignment.html',
     pageTitle: 'Genome Alignment',
-    defaultPath: '',
+    requireAuth: true,
+    applicationLabel: 'Genome Alignment (Mauve)',
+    applicationDescription: 'The Whole Genome Alignment Service aligns genomes using ' +
+      '<a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0011147">progressiveMauve</a>.',
     startingRows: 1,
 
     constructor: function () {
@@ -28,6 +31,10 @@ define([
       if (this._started) {
         return;
       }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
+
       this.inherited(arguments);
 
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
