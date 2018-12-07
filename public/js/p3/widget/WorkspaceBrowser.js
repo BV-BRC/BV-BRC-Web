@@ -330,7 +330,7 @@ define([
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['ViewGenomeAlignment'],
+        validTypes: ['GenomeAlignment'],
         tooltip: 'View Alignment'
       }, function (selection) {
         var sel = selection[0],
