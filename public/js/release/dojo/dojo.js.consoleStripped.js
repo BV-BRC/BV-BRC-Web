@@ -2038,6 +2038,10 @@
 					 name:"d3"
 				},
 				{
+					 location:"../d3.v5",
+					 name:"d3.v5"
+				},
+				{
 					 location:"../swfobject",
 					 main:"swfobject.js",
 					 name:"swfobject"

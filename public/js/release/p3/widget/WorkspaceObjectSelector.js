@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n  <i class=\"icon-sort-alpha-asc\" title=\"Sort Alphabetically\" data-dojo-attach-event=\"click:sortAlpha\"></i>\n  <input type=\"hidden\" />\n  <input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"\n    value=\"${value}\" style=\"width:82%\" />&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa icon-folder-open fa-1x\" />\n</div>\n"}});
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\" class=\"object-selector\">\n  <i class=\"icon-sort-alpha-asc\" title=\"Sort Alphabetically\" data-dojo-attach-event=\"click:sortAlpha\"></i>\n  <input type=\"hidden\" />\n  <input type=\"text\" class=\"search-box\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"\n    value=\"${value}\" />&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa icon-folder-open fa-1x\" />\n</div>\n"}});
 define("p3/widget/WorkspaceObjectSelector", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/_base/lang', 'dojo/query',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
@@ -30,7 +30,7 @@ define("p3/widget/WorkspaceObjectSelector", [
     required: false,
     isSortAlpha: false,
     showUnspecified: false,
-    showHidden: false,
+    showHidden: window.App.showHiddenFiles,
     missingMessage: 'A valid workspace item is required.',
     promptMessage: 'Please choose or upload a workspace item',
     placeHolder: '',
@@ -72,6 +72,7 @@ define("p3/widget/WorkspaceObjectSelector", [
     },
     _setShowHiddenAttr: function (val) {
       this.showHidden = val;
+      window.App.showHiddenFiles = val;
 
       if (this.grid) {
         this.grid.set('showHiddenFiles', val);
@@ -418,7 +419,8 @@ define("p3/widget/WorkspaceObjectSelector", [
 
       var cbContainer = domConstr.create('div', { style: { 'float': 'left' } });
       domConstr.place(cbContainer, buttonsPane.containerNode, 'last');
-      this.showHiddenWidget = new CheckBox({ value: this.showHidden, checked: this.showHidden });
+      var showHidden = window.App.showHiddenFiles;
+      this.showHiddenWidget = new CheckBox({ value: showHidden, checked: showHidden });
       this.showHiddenWidget.on('change', function (val) {
         _self.set('showHidden', val);
         if (val) {
@@ -686,6 +688,7 @@ define("p3/widget/WorkspaceObjectSelector", [
     createGrid: function () {
       var self = this;
 
+
       var grid =  new Grid({
         region: 'center',
         path: this.path,
@@ -693,7 +696,7 @@ define("p3/widget/WorkspaceObjectSelector", [
         deselectOnRefresh: true,
         onlyWritable: self.onlyWritable,
         allowDragAndDrop: false,
-        showHiddenFiles: this.showHidden,
+        showHiddenFiles: window.App.showHiddenFiles,
         types: this.type ? (['folder'].concat(this.type)) : false,
         columns: {
           type: {

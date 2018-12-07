@@ -42,7 +42,8 @@
 .appTitle p {
     margin-left: 15px;
 }
-.paramlabel {
+.paramlabel,
+.Assembly label {
     font-size: .65em;
     text-transform: uppercase;
 }
@@ -107,7 +108,6 @@ table.librarytable td > i {
     width: 100%;
     display: inline-block;
     margin-top: 5px;
-    padding-left: 10px;
 }
 .appRow {
     width: 100%;
@@ -144,6 +144,7 @@ table.librarytable td > i {
     text-align: center;
     margin: 0 0 0 15px;
 }
+.smallInput,
 .insertspinner {
     width: 80px;
 }
@@ -271,4 +272,16 @@ div.appsublabel {
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
     right: 0;
+}
+.Assembly .app-btn > .dijitButtonNode {
+    font-size: .9em;
+    background-color: #fff;
+    color: #222;
+    border: 1px solid #aaa;
+}
+.Assembly .app-btn > .dijitButtonNode:hover {
+    background-color: #f8f8f8;
+}
+.object-selector .search-box {
+	width: 82%
 }

@@ -195,7 +195,6 @@ define("p3/WorkspaceManager", [
             });
             return r;
           });
-
         }
 
         Topic.publish('/Notification', {
@@ -236,7 +235,7 @@ define("p3/WorkspaceManager", [
     createFolder: function (paths) {
       var _self = this;
       if (!paths) {
-        throw new Error('Invalid Path(s) to delete');
+        throw new Error('Invalid Path(s) to create');
       }
       if (!(paths instanceof Array)) {
         paths = [paths];
@@ -429,7 +428,7 @@ define("p3/WorkspaceManager", [
 
     getObject: function (path, metadataOnly) {
       if (!path) {
-        throw new Error('Invalid Path(s) to delete');
+        throw new Error('Invalid Path(s) to retrieve');
       }
       path = decodeURIComponent(path);
 

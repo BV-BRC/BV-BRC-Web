@@ -2051,6 +2051,10 @@
 					 name:"d3"
 				},
 				{
+					 location:"../d3.v5",
+					 name:"d3.v5"
+				},
+				{
 					 location:"../swfobject",
 					 main:"swfobject.js",
 					 name:"swfobject"
@@ -16651,7 +16655,6 @@ define([
             });
             return r;
           });
-
         }
 
         Topic.publish('/Notification', {
@@ -16692,7 +16695,7 @@ define([
     createFolder: function (paths) {
       var _self = this;
       if (!paths) {
-        throw new Error('Invalid Path(s) to delete');
+        throw new Error('Invalid Path(s) to create');
       }
       if (!(paths instanceof Array)) {
         paths = [paths];
@@ -16885,7 +16888,7 @@ define([
 
     getObject: function (path, metadataOnly) {
       if (!path) {
-        throw new Error('Invalid Path(s) to delete');
+        throw new Error('Invalid Path(s) to retrieve');
       }
       path = decodeURIComponent(path);
 
