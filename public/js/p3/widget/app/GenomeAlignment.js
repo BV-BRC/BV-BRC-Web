@@ -19,8 +19,7 @@ define([
     pageTitle: 'Genome Alignment',
     requireAuth: true,
     applicationLabel: 'Genome Alignment (Mauve)',
-    applicationDescription: 'The Whole Genome Alignment Service aligns genomes using ' +
-      '<a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0011147">progressiveMauve</a>.',
+    applicationDescription: 'The Whole Genome Alignment Service aligns genomes using progressiveMauve.',
     startingRows: 1,
 
     constructor: function () {
