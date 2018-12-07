@@ -2,12 +2,12 @@ define("p3/widget/viewer/GenomeAlignment", [
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
   '../../DataAPI', 'dojo/promise/all', '../../util/loading', '../DataItemFormatter',
-  'dijit/Dialog', 'dojox/widget/Standby'
+  'dijit/Dialog', 'dojox/widget/Standby', 'dojo/query'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
   DataAPI, all, Loading, DataItemFormatter,
-  Dialog, Standby
+  Dialog, Standby, query
 ) {
 
   return declare([ViewerBase], {
@@ -62,6 +62,8 @@ define("p3/widget/viewer/GenomeAlignment", [
                 self.onFeatureClick(fid);
               }
             });
+            query('h4', container)[0].innerHTML = '<h4 class="title">Genome Alignment <sup>(beta)</sup></h4>';
+
           });
       });
 
