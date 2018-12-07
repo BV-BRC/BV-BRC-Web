@@ -1,0 +1,193 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,keyup:validate">
+
+  <div class="appTemplate">
+    <div class="appTitle">
+
+        <div style="background: #fff3cd; padding:10px; border: 2px solid #ffeeba; color: #856404; margin-bottom: 10px;">
+          This service is currently <i>beta</i>.
+        </div>
+      <span class="breadcrumb">Services</span>
+      <h3>
+        Genome Alignment (Mauve)
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <!--
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+            <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+        </div>
+        -->
+      </h3>
+      <p>
+
+
+        The Whole Genome Alignment Service aligns genomes using <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0011147" target="_blank">progressiveMauve</a>. For further explanation, please see the
+        <a href="${docsServiceURL}${applicationHelp}" target="_blank">Genome Alignment User Guide</a>.
+      </p>
+    </div>
+    <br>
+
+    <div style="width: 600px; margin:auto" class="formFieldsContainer">
+      <div class="appBox appShadow">
+        <div class="headerrow">
+            <label class="appBoxLabel">Select Genomes</label>
+            <div name="select-genomes" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+
+          </div>
+
+        <div class="appRow">
+          <small>Add at least 2 (up to 20) genomes.  Note the first genome selected will be the reference (anchor) genome.</small><br>
+          <label>Select genome</label><br>
+          <div style="width:490px;"
+            data-dojo-type="p3/widget/GenomeNameSelector"
+            name="genomeSelector"
+            maxHeight="200"
+            required="false"
+            data-dojo-attach-point="genomeSelector"
+            data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'">
+          </div>
+
+          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenome" class="app-btn">
+            <i class="icon-plus"></i> Add
+          </button>
+
+          <br>
+
+          <!-- floating since the width on object selector is odd -->
+          <div class="left">
+          <label>And/or select genome group</label><br>
+            <div style="width: 495px;"
+            data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="genomeGroupSelector"
+            required="false"
+              data-dojo-attach-point="genomeGroupSelector"
+              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
+            </div>
+          </div>
+
+          <div class="left" style="margin-top: 13px;">
+            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn">
+              <i class="icon-plus"></i> Add
+            </button>
+          </div>
+          <div class="clear"></div>
+        </div>
+
+
+        <div class="appRow">
+          <label>Selected Genomes:</label> <small class="loading-status pull-right" style="margin-right: 20px; display: none;">loading...</small>
+        </div>
+
+        <div data-dojo-attach-point="genomeTable" style="margin-right: 20px;">
+        </div>
+      </div>
+
+      <div class="appBox appShadow">
+        <div class="">
+          <div style="width:85%; display:inline-block;">
+            <label class="appBoxLabel">Parameters</label>
+            <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="appRow">
+          <label>Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+            name="output_path"
+            data-dojo-attach-point="output_path"
+            required="true"
+            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange">
+          </div>
+        </div>
+
+        <div class="appRow">
+          <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+            data-dojo-attach-event="onChange:checkOutputName"
+            name="output_file"
+            data-dojo-attach-point="output_file"
+            style="width:85%"
+            required="true"
+            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+          </div>
+        </div>
+
+        <!--
+          <div class="appRow">
+            <label class="paramlabel">Method</label><br>
+            <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="false" data-dojo-props="intermediateChanges:true,trim:true">
+              <option value="progressiveMauve">progressiveMauve (recommended)</option>
+              <option value="mauveAligner">mauveAligner (legacy)</option>
+            </select>
+          </div>
+        -->
+
+        <!-- advanced options -->
+        <div class="appRow" style="margin-top: 20px;">
+          <div data-dojo-attach-point="advanced">
+            <label class="largelabel">Advanced (Optional) </label>
+            <div class="iconbox" style="margin-left:0px">
+              <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="appRow" data-dojo-attach-point="advrow" style="display: none;">
+          <div class="appRowSegment">
+              <label class="paramlabel">Seed Weight</label><br>
+              <div name="seedWeight"
+                class="smallInput"
+                data-dojo-type="dijit/form/NumberTextBox"
+                data-dojo-attach-point="seedWeight"
+                data-dojo-props="placeholder: '[3 to 21]'"
+                required="false">
+              </div>
+            </div>
+          <div class="appRowSegment">
+            <label class="paramlabel">hmm-p-go-homologous</label><br>
+            <div name="hmmPGoHomologous"
+              class="smallInput"
+              data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-attach-point="hmmPGoHomologous"
+              data-dojo-props="placeholder: 0.0001"
+              required="false">
+            </div>
+          </div>
+          <div class="appRowSegment">
+            <label class="paramlabel">hmm-p-go-unrelated</label><br>
+            <div name="hmmPGoUnrelated"
+              class="smallInput"
+              data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-attach-point="hmmPGoUnrelated"
+              data-dojo-props="placeholder: 0.000001"
+              required="false">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- end form -->
+  </div>
+
+
+  <div class="appSubmissionArea">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+      Submitting Mauve Job
+    </div>
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+      Error Submitting Job. Please check the submission form.
+    </div>
+    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+      The Mauve job has been submitted. This could take a few mins to hours to complete, depending on the number of genomes. Check your workspace to see the progress of your job.
+    </div>
+    <div style="margin-top: 10px; text-align:center;">
+      <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+      <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+    </div>
+  </div>
+</form>
