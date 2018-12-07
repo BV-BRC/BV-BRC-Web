@@ -221,8 +221,7 @@ define([
       var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
 
       obj.genome_ids = genomeIDs;
-      obj.recipe =
-      'progressiveMauve';
+      obj.recipe = 'progressiveMauve';
       obj.output_path = values.output_path;
       obj.output_file = values.output_file;
 
