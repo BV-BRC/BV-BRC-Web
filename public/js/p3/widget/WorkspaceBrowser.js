@@ -327,16 +327,16 @@ define([
         }
       }, false);
 
-      this.browserHeader.addAction('ViewMauve', 'fa icon-eye fa-2x', {
+      this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['WholeGenomeAlignment'],
+        validTypes: ['ViewGenomeAlignment'],
         tooltip: 'View Alignment'
       }, function (selection) {
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/alignment.json';
 
-        Topic.publish('/navigate', { href: '/view/Mauve/' + path });
+        Topic.publish('/navigate', { href: '/view/GenomeAlignment/' + path });
       }, false);
 
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {

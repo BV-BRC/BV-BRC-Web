@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
-  'dojo/text!./templates/Mauve.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
+  'dojo/text!./templates/GenomeAlignment.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/query', 'dijit/Dialog', 'dojo/dom-style',
   '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable'
 ], function (
@@ -13,9 +13,9 @@ define([
     apiServiceUrl: window.App.dataAPI,
     baseClass: 'App Assembly',
     templateString: Template,
-    applicationName: 'WholeGenomeAlignment',
-    applicationHelp: 'user_guides/services/mauve.html',
-    tutorialLink: 'tutorial/mauve/mauve.html',
+    applicationName: 'GenomeAlignment',
+    applicationHelp: 'user_guides/services/genome_alignment_service.html',
+    tutorialLink: 'tutorial/genome_alignment/genome_alignment.html',
     pageTitle: 'Genome Alignment',
     defaultPath: '',
     startingRows: 1,
@@ -221,7 +221,8 @@ define([
       var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
 
       obj.genome_ids = genomeIDs;
-      obj.recipe = values.recipe || 'progressiveMauve';
+      obj.recipe =
+      'progressiveMauve';
       obj.output_path = values.output_path;
       obj.output_file = values.output_file;
 
