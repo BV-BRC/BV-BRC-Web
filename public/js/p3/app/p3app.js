@@ -529,7 +529,7 @@ define([
     checkExpToken: function (date) {
       var d = new Date();
       var checkd = d.valueOf() / 1000;
-      console.log('Current Date: ', checkd);
+
       if (checkd > date) {
         console.log('expired');
         return false;
