@@ -52,7 +52,6 @@ define(['dojo/dom-construct'], function (domConstruct) {
   };
 
   this.text = function (msg) {
-    console.log('mesage!', msg)
     self.loadingMsg.innerHTML = msg;
   };
 
