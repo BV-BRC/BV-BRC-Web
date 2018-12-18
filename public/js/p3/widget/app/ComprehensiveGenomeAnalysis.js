@@ -290,23 +290,17 @@ define([
 
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
-      // console.log("updateSRR", accession, accession.substr(0, 3))
-      // var prefixList = ['SRR', 'ERR']
-      // if(prefixList.indexOf(accession.substr(0, 3)) == -1){
-      //   this.srr_accession.set("state", "Error")
-      //   return false;
-      // }
 
-      // TODO: validate and populate title
       // SRR5121082
       this.srr_accession.set('disabled', true);
+      this.srr_accession_validation_message.innerHTML = '<br>Validating ' + accession + ' ...';
       xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
         .then(lang.hitch(this, function (xml_resp) {
           var resp = xmlParser.parse(xml_resp).documentElement;
           this.srr_accession.set('disabled', false);
           try {
             var title = resp.children[0].childNodes[3].innerHTML;
-            this.srr_accession.set('state', '');
+            this.srr_accession_validation_message.innerHTML = '';
             var lrec = { _type: 'srr_accession', title: title };
             var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
             if (chkPassed) {
@@ -316,14 +310,10 @@ define([
               this.addLibraryRow(lrec, infoLabels, 'srrdata');
             }
           } catch (e) {
-            this.srr_accession.set('state', 'Error');
-            console.debug(e);
+            this.srr_accession_validation_message.innerHTML = '<br>Your input ' + accession + ' is not valid';
+            this.srr_accession.set('value', '');
           }
         }));
-      this.checkParameterRequiredFields();
-    },
-
-    updateSRR: function () {
     },
 
     destroyLibRow: function (query_id, id_type) {
@@ -431,6 +421,7 @@ define([
       this.libraryStore.put(lrec);
       lrec._handle = handle;
       this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+      this.checkParameterRequiredFields();
     },
 
     // below is from annotation
@@ -479,6 +470,7 @@ define([
       if (current_output_name.length > 0) {
         this.output_nameWidget.set('value', current_output_name.join(' '));
       }
+      this.checkParameterRequiredFields();
     },
 
     onSuggestNameChange: function (val) {
@@ -493,10 +485,18 @@ define([
       this._autoNameSet = false;
     },
 
+    onOutputPathChange: function (val) {
+      this.inherited(arguments);
+      this.checkParameterRequiredFields();
+    },
+
     checkParameterRequiredFields: function () {
       if (this.scientific_nameWidget.get('item') && this.myLabelWidget.get('value')
          && this.output_path.get('value') && this.output_nameWidget.get('displayedValue') ) {
         this.validate();
+      }
+      else {
+        if (this.submitButton) { this.submitButton.set('disabled', true); }
       }
     },
 
