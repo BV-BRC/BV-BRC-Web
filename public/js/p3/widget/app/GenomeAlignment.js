@@ -70,6 +70,15 @@ define([
       this._started = true;
     },
 
+
+    // listen for "manually set seed weight" toggle
+    onSeedWeightSwitch: function () {
+      var checked = !this.seedWeightSwitch.checked;
+      this.seedWeightSwitch.checked = checked;
+      domStyle.set( this.seedContainer, 'display', checked ? 'block' : 'none');
+      this.seedWeight.set('disabled', !this.seedWeightSwitch.checked);
+    },
+
     validate: function () {
       var self = this;
 
@@ -128,14 +137,11 @@ define([
 
         when(self.getGenomeInfo(genomeIDs), function (genomeInfos) {
           genomeInfos.forEach(function (info) {
-
             self.addGenome(info);
           });
-
           domStyle.set( query('.loading-status')[0], 'display', 'none');
         });
       }));
-
     },
 
     // takes genome ids, returns prom with {id: xxxx.x, name: 'org_name}
