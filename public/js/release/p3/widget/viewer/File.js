@@ -88,7 +88,7 @@ define("p3/widget/viewer/File", [
       this.refresh();
     },
 
-    formatFileMetaData: function () {
+    formatFileMetaData: function (showMetaDataRows) {
       var fileMeta = this.file.metadata;
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
@@ -97,8 +97,10 @@ define("p3/widget/viewer/File", [
           content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
         }
 
-        var formatLabels = formatter.autoLabel('fileView', fileMeta);
-        content += formatter.keyValueTable(formatLabels);
+        if (showMetaDataRows) {
+          var formatLabels = formatter.autoLabel('fileView', fileMeta);
+          content += formatter.keyValueTable(formatLabels);
+        }
         content += '</tbody></table></div>';
       }
 
@@ -116,7 +118,7 @@ define("p3/widget/viewer/File", [
 
       if (this.file && this.file.metadata) {
         if (this.viewable) {
-          this.viewSubHeader.set('content', this.formatFileMetaData());
+          this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
           if (this.file.data || (!this.preload && this.url)) {
             // console.log('[File] type:', this.file.metadata.type);
@@ -164,7 +166,7 @@ define("p3/widget/viewer/File", [
             this.viewer.set('content', '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');
           }
         } else {
-          this.viewSubHeader.set('content', this.formatFileMetaData());
+          this.viewSubHeader.set('content', this.formatFileMetaData(true));
         }
       }
     }

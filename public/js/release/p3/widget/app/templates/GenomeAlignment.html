@@ -28,12 +28,11 @@
     <div style="width: 600px; margin:auto" class="formFieldsContainer">
       <div class="appBox appShadow">
         <div class="headerrow">
-            <label class="appBoxLabel">Select Genomes</label>
-            <div name="select-genomes" class="infobox iconbox infobutton dialoginfo">
-              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-            </div>
-
+          <label class="appBoxLabel">Select Genomes</label>
+          <div name="select-genomes" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
           </div>
+        </div>
 
         <div class="appRow">
           <small>Add at least 2 (up to 20) genomes.  Note the first genome selected will be the reference (anchor) genome.</small><br>
@@ -135,36 +134,164 @@
         </div>
 
         <div class="appRow" data-dojo-attach-point="advrow" style="display: none;">
-          <div class="appRowSegment">
-              <label class="paramlabel">Seed Weight</label><br>
-              <div name="seedWeight"
-                class="smallInput"
-                data-dojo-type="dijit/form/NumberTextBox"
-                data-dojo-attach-point="seedWeight"
-                data-dojo-props="placeholder: '[3 to 21]'"
-                required="false">
-              </div>
-            </div>
-          <div class="appRowSegment">
-            <label class="paramlabel">hmm-p-go-homologous</label><br>
-            <div name="hmmPGoHomologous"
-              class="smallInput"
-              data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-attach-point="hmmPGoHomologous"
-              data-dojo-props="placeholder: 0.0001"
-              required="false">
+          <div class="appRowSegment pull-left" style="text-align: left; margin-right: 20px;">
+            <label>Manually Set Seed Weight</label>
+            <div data-dojo-attach-point="seedWeightSwitch"
+              data-dojo-attach-event="onClick:onSeedWeightSwitch"
+              class="onoffswitch">
+              <input type="checkbox"
+                value="off"
+                name="onoffswitch"
+                class="onoffswitch-checkbox"
+                data-dojo-attach-point="seedWeightSwitch" />
+
+              <label class="onoffswitch-label">
+                <span class="onoffswitch-inner"></span>
+                <span class="onoffswitch-switch"></span>
+              </label>
             </div>
           </div>
-          <div class="appRowSegment">
-            <label class="paramlabel">hmm-p-go-unrelated</label><br>
-            <div name="hmmPGoUnrelated"
-              class="smallInput"
-              data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-attach-point="hmmPGoUnrelated"
-              data-dojo-props="placeholder: 0.000001"
-              required="false">
+
+          <div class="appRowSegment pull-left" data-dojo-attach-point="seedContainer" style="display: none;">
+            <label>Seed Weight</label><br>
+            <div name="seedWeight"
+              class="medInput"
+              data-dojo-type="dijit/form/HorizontalSlider"
+              data-dojo-attach-point="seedWeight"
+              data-dojo-props="value:15,
+                minimum:3,
+                maximum:21,
+                discreteValues:19,
+                intermediateChanges:true,
+                showButtons:false"
+              required="false"
+              >
+                <div data-dojo-type="dijit/form/HorizontalRule"
+                  container="bottomDecoration"
+                  count=19
+                  style="height:5px;">
+                </div>
+                <ol data-dojo-type="dijit/form/HorizontalRuleLabels"
+                  container="bottomDecoration"
+                  style="height:1em;font-size:75%;color:gray;">
+                  <li>3</li>
+                  <li>5</li>
+                  <li>7</li>
+                  <li>9</li>
+                  <li>11</li>
+                  <li>13</li>
+                  <li>15</li>
+                  <li>17</li>
+                  <li>19</li>
+                  <li>21</li>
+                </ol>
             </div>
           </div>
+          <div class="clear"></div>
+
+          <br>
+          <style>.param-table td:first-child { width: 32%; padding-right: 7px; text-align: right;}</style>
+          <table class="param-table">
+            <thead>
+              <th>
+                <td></td>
+                <td></td>
+              </th>
+            </thead>
+            <tbody>
+              <tr>
+                <td><label>Max Gapped Aligner Length:</label></td>
+                <td>
+                  <div name="maxGappedAlignerLength"
+                  class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="maxGappedAlignerLength"
+                    data-dojo-props="placeholder: 'Max number of base pairs'"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Max Breakpoint distance Scale:</label></td>
+                <td>
+                  <div name="maxBreakpointDistanceScale"
+                  class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="maxBreakpointDistanceScale"
+                    data-dojo-props="placeholder: 0.9,constraints:{min:0,max:1}"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Conservation Distance:</label></td>
+                <td>
+                  <div name="conservationDistanceScale"
+                    class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="conservationDistanceScale"
+                    data-dojo-props="placeholder: 1.0,constraints:{min:0,max:1}"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Weight:</label></td>
+                <td>
+                  <div name="weight"
+                    class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="weight"
+                    data-dojo-props="placeholder: 'Min pairwise LCB score'"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Minimum Scaled Penalty:</label></td>
+                <td>
+                  <div name="minScaledPenalty"
+                    class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="minScaledPenalty"
+                    data-dojo-props="placeholder: 'Min breakpoint penalty after scaling'"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>hmm-p-go-homologous:</label></td>
+                <td>
+                  <div name="hmmPGoHomologous"
+                    class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="hmmPGoHomologous"
+                    data-dojo-props="placeholder: 0.0001"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                  <td><label>hmm-p-go-homologous:</label></td>
+                  <td>
+                    <div name="hmmPGoUnrelated"
+                      class="medInput"
+                      data-dojo-type="dijit/form/NumberTextBox"
+                      data-dojo-attach-point="hmmPGoUnrelated"
+                      data-dojo-props="placeholder: 0.000001"
+                      required="false">
+                    </div>
+                  </td>
+                </tr>
+            </tbody>
+          </table>
+
         </div>
 
       </div>
