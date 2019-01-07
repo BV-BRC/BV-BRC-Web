@@ -129,6 +129,13 @@ app.use('/help', help);
 app.use('/uploads', uploads);
 app.use('/users', users);
 
+// MTB Taxon Overview Route
+app.use('/pathogens/mtb', [
+  function (req, res, next) {
+    res.redirect('https://www.patricbrc.org/view/Taxonomy/1773#view_tab=overview');
+  }
+]);
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   var err = new Error('Not Found');
