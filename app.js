@@ -132,7 +132,7 @@ app.use('/users', users);
 // MTB Taxon Overview Route
 app.use('/pathogens/mtb', [
   function (req, res, next) {
-    res.redirect('https://www.patricbrc.org/view/Taxonomy/1773#view_tab=overview');
+    res.redirect('/view/Taxonomy/1773#view_tab=overview');
   }
 ]);
 
