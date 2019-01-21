@@ -100,7 +100,7 @@ define([
         // return;
       }
 
-      this.buildTaxonIdByState(state).then(function (taxon_id) {
+      this.buildTaxonIdByState(state).then( lang.hitch(this, function (taxon_id) {
         state.taxon_id = taxon_id;
         this.set('taxon_id', state.taxon_id);
 
@@ -184,10 +184,10 @@ define([
         }
 
         this.setActivePanelState();
-      }, function (msg) {
+      }), lang.hitch(this, function (msg) {
         this.queryNode.innerHTML = '<b>' + msg + '</b>';
         this.totalCountNode.innerHTML = '';
-      });
+      }));
     },
 
     setActivePanelState: function () {
