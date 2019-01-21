@@ -63,11 +63,11 @@ define([
     onSetQuery: function (attr, oldVal, newVal) {
       // prevent default action
     },
-    buildTaxonIdByState(state) {
-      const def = new Deferred();
-      const parts = state.pathname.split('/');
+    buildTaxonIdByState: function (state) {
+      var def = new Deferred();
+      var parts = state.pathname.split('/');
 
-      const taxon_id_or_name = parts[parts.length - 1];
+      var taxon_id_or_name = parts[parts.length - 1];
       // console.log('taxon_id_or_name', typeof taxon_id_or_name, parseInt(taxon_id_or_name), taxon_id_or_name == parseInt(taxon_id_or_name));
       if (taxon_id_or_name == parseInt(taxon_id_or_name)) {
         def.resolve(parseInt(taxon_id_or_name));
@@ -80,11 +80,11 @@ define([
             'X-Requested-With': null,
             Authorization: (window.App.authorizationToken || '')
           },
-          data: `eq(taxon_name,${taxon_id_or_name})&in(taxon_rank,(genus,species))&select(taxon_id,taxon_name,taxon_rank)&limit(1)`,
+          data: 'eq(taxon_name,' + taxon_id_or_name + ')&in(taxon_rank,(genus,species))&select(taxon_id,taxon_name,taxon_rank)&limit(1)',
           handleAs: 'json'
-        }).then((data) => {
+        }).then(function (data) {
           if (data.length == 0) {
-            def.reject(`Failed to load corresponding taxonomy: ${taxon_id_or_name}`);
+            def.reject('Failed to load corresponding taxonomy: ' + taxon_id_or_name);
           } else {
             def.resolve(data[0].taxon_id);
           }
@@ -100,7 +100,7 @@ define([
         // return;
       }
 
-      this.buildTaxonIdByState(state).then((taxon_id) => {
+      this.buildTaxonIdByState(state).then(function (taxon_id) {
         state.taxon_id = taxon_id;
         this.set('taxon_id', state.taxon_id);
 
@@ -184,8 +184,8 @@ define([
         }
 
         this.setActivePanelState();
-      }, (msg) => {
-        this.queryNode.innerHTML = `<b>${msg}</b>`;
+      }, function (msg) {
+        this.queryNode.innerHTML = '<b>' + msg + '</b>';
         this.totalCountNode.innerHTML = '';
       });
     },
