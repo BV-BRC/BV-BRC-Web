@@ -1346,7 +1346,8 @@ define([
 
             newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
               if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                var itemPath = this.encodePath(evt.item_path)
+                Topic.publish('/navigate', { href: '/workspace' + itemPath });
                 this.actionPanel.set('selection', []);
                 this.itemDetailPanel.set('selection', []);
                 if ('clearSelection' in newPanel) {
@@ -1387,8 +1388,13 @@ define([
         });
         d.show();
       }));
+    },
 
-
+    encodePath(path) {
+      var encodedParts = path.split('/').map(function (part) {
+        return encodeURIComponent(part);
+      });
+      return encodedParts.join('/');
     },
 
     getQuery: function (obj) {
