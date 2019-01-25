@@ -1,25 +1,23 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/query',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-attr',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-attr',
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
-  './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
+  'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all',
+  'dojo/promise/all', '../util/encodePath',
 
   'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on, query,
-  domClass, ContentPane, domConstruct, domAttr,
+  domClass, domConstruct, domAttr,
   WorkspaceExplorerView, Topic, ItemDetailPanel,
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-  popup, IDMappingTemplate, xhr, Select,
-  ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
+  popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All
+  All, encodePath
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -1346,7 +1344,7 @@ define([
 
             newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
               if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                var itemPath = this.encodePath(evt.item_path)
+                var itemPath = encodePath(evt.item_path);
                 Topic.publish('/navigate', { href: '/workspace' + itemPath });
                 this.actionPanel.set('selection', []);
                 this.itemDetailPanel.set('selection', []);
@@ -1388,13 +1386,6 @@ define([
         });
         d.show();
       }));
-    },
-
-    encodePath(path) {
-      var encodedParts = path.split('/').map(function (part) {
-        return encodeURIComponent(part);
-      });
-      return encodedParts.join('/');
     },
 
     getQuery: function (obj) {
