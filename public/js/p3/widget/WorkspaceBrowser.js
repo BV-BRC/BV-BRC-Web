@@ -105,7 +105,7 @@ define([
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'GenomeGroup',
-              perspectiveUrl: '/view/GenomeGroup/' + selection[0].path
+              perspectiveUrl: '/view/GenomeGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -113,7 +113,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -146,7 +146,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -166,7 +166,7 @@ define([
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'FeatureGroup',
-              perspectiveUrl: '/view/FeatureGroup/' + selection[0].path
+              perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -174,7 +174,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -208,7 +208,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -323,7 +323,7 @@ define([
         tooltip: 'View in Browser'
       }, function (selection) {
         // console.log("[WorkspaceBrowser] View Item Action", selection);
-        Topic.publish('/navigate', { href: '/workspace' + selection[0].path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(selection[0].path) });
       }, false);
 
       this.browserHeader.addAction('ViewSeqComparison', 'fa icon-eye fa-2x', {
@@ -334,9 +334,9 @@ define([
       }, function (selection) {
         var cid = self.actionPanel.currentContainerWidget.getComparisonId();
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
-          Topic.publish('/navigate', { href: '/workspace' + cid });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(cid) });
         } else {
-          Topic.publish('/navigate', { href: '/workspace' + cid + '#summary' });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(cid) + '#summary' });
         }
       }, false);
 
@@ -349,7 +349,7 @@ define([
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/alignment.json';
 
-        Topic.publish('/navigate', { href: '/view/GenomeAlignment/' + path });
+        Topic.publish('/navigate', { href: '/view/GenomeAlignment' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {
@@ -510,7 +510,7 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + expPath });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
       }, false);
 
@@ -521,7 +521,7 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + path[0] });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -530,7 +530,6 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        // console.log("View Experiment Summary: ", selection[0]);
         var eid = self.actionPanel.currentContainerWidget.getExperimentId();
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + eid });
@@ -545,7 +544,6 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'View Experiment'
       }, function (selection) {
-        // console.log("View Experiment: ", selection[0]);
         var eid = self.actionPanel.currentContainerWidget.getExperimentId();
         Topic.publish('/navigate', { href: '/view/TranscriptomicsExperiment/?&wsExpId=' + eid });
 
@@ -571,7 +569,7 @@ define([
         tooltip: 'View Gene List'
       }, function (selection) {
         var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + selection.map(function (s) {
-          return s.path;
+          return encodePath(s.path);
         });
         Topic.publish('/navigate', { href: url });
       }, false);
@@ -584,7 +582,7 @@ define([
         tooltip: 'View Experiment Gene List'
       }, function (selection) {
         var expPath = this.currentContainerWidget.get('path');
-        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + expPath + '&wsComparisonId=' + selection.map(function (s) {
+        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + encodePath(expPath) + '&wsComparisonId=' + selection.map(function (s) {
           return s.pid;
         });
         Topic.publish('/navigate', { href: url });
@@ -603,7 +601,7 @@ define([
         var wsExps = [];
         selection.forEach(function (s) {
           if (s.path) {
-            wsExps.push(s.path);
+            wsExps.push(encodePath(s.path));
           } else if (s.eid) {
             eids.push(s.eid);
           }
