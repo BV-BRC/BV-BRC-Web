@@ -304,7 +304,8 @@ define("p3/store/BlastResultMemoryStore", [
             var desc = title.split(' ')[1].split(' [')[0];
             var database = id.split('|')[0];
             var source_id = id.split('|')[1];
-            var org = title.match(/\[(.*)\]/)[1];
+            var orgs = title.match(/\[(.*)\]/);
+            var org = (orgs) ? orgs[1] : '';
             entry = lang.mixin(entry, {
               database: database, source_id: source_id, organism: org, function: desc
             });

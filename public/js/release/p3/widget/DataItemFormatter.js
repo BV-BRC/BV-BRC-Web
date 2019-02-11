@@ -1619,7 +1619,7 @@ define("p3/widget/DataItemFormatter", [
           name: 'Antimicrobial Resistance',
           text: 'antimicrobial_resistance',
           link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=amr">{obj.antimicrobial_resistance_evidence}</a>', { obj: obj });
+            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=amr">AMR Phenotypes</a>', { obj: obj });
           },
           editable: true,
           isList: false // not displayed as list although returned as list

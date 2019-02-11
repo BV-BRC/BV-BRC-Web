@@ -16,7 +16,6 @@ define("p3/widget/viewer/GenomeAlignment", [
       if (!state) {
         return;
       }
-      var self = this;
 
       var parts = state.pathname.split('/');
       var path = '/' + parts.slice(2).join('/');
@@ -33,15 +32,15 @@ define("p3/widget/viewer/GenomeAlignment", [
       var container = domConstruct.toDom('<div style="margin: 0 auto; width:1024px;"></div>');
       domConstruct.place(container, this.viewer.domNode);
 
-      Loading(container);
-      WorkspaceManager.getObject(path).then(function (res) {
+      var loading = Loading(container, 'fetching alignment data...');
+      WorkspaceManager.getObject(path).then(res => {
         var lcbs = JSON.parse(res.data);
 
         // get ids from alignment file (to be removed)
         var ext;
         var ids = [];
-        lcbs.forEach(function (lcbSet) {
-          lcbSet.forEach(function (r) {
+        lcbs.forEach(lcbSet => {
+          lcbSet.forEach(r => {
             ext = r.name.split('.').pop();
             var name = r.name.replace('.' + ext, '');
             if (!ids.includes(name)) ids.push(name);
@@ -49,8 +48,9 @@ define("p3/widget/viewer/GenomeAlignment", [
         });
 
         // fetch all mauve data and load viewer
-        self.getMauveData(ids, ext)
-          .then(function (data) {
+        loading.text('fetching genome data...');
+        this.getMauveData(ids, ext)
+          .then(data => {
             new MauveViewer({
               ele: container,
               d3: d3,
@@ -58,13 +58,16 @@ define("p3/widget/viewer/GenomeAlignment", [
               labels: data.labels,
               features: data.features,
               contigs: data.contigs,
-              onFeatureClick: function (fid) {
-                self.onFeatureClick(fid);
+              onFeatureClick: (fid) => {
+                this.onFeatureClick(fid);
               }
             });
             query('h4', container)[0].innerHTML = '<h4 class="title">Genome Alignment <sup>(beta)</sup></h4>';
-
+          }, error => {
+            loading.error('Could not fetch genome data.', error);
           });
+      }, error => {
+        loading.error('Could not fetch alignment data.', error);
       });
 
       window.document.title = 'PATRIC Mauve Viewer';
@@ -81,16 +84,15 @@ define("p3/widget/viewer/GenomeAlignment", [
       loadingMask.show();
 
       var path = '/genome_feature/?eq(patric_id,' + encodeURIComponent(fid) + ')';
-      DataAPI.get(path)
-        .then(function (data) {
-          loadingMask.hide();
-          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
-          if (!window.featureDialog) {
-            window.featureDialog = new Dialog({ title: 'Feature Summary' });
-          }
-          window.featureDialog.set('content', content);
-          window.featureDialog.show();
-        });
+      DataAPI.get(path).then(data => {
+        loadingMask.hide();
+        var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
+        if (!window.featureDialog) {
+          window.featureDialog = new Dialog({ title: 'Feature Summary' });
+        }
+        window.featureDialog.set('content', content);
+        window.featureDialog.show();
+      });
     },
 
     featureSelect: [
@@ -113,7 +115,7 @@ define("p3/widget/viewer/GenomeAlignment", [
       var self = this;
       genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
 
-      var proms = genomeIDs.map(function (id) {
+      var proms = genomeIDs.map(id => {
         var path = '/genome_feature/?eq(genome_id,' + id + ')' +
           '&select(' + self.featureSelect.join(',') + ')&eq(annotation,PATRIC)&ne(feature_type,source)&limit(25000)';
         return DataAPI.get(path);
@@ -149,9 +151,9 @@ define("p3/widget/viewer/GenomeAlignment", [
       var path = '/genome/?in(genome_id,(' + genomeIDs.join(',') + '))' +
           '&select(genome_id,genome_name)';
 
-      return DataAPI.get(path).then(function (data) {
+      return DataAPI.get(path).then(data => {
         var mapping = {};
-        data.forEach(function (org) {
+        data.forEach(org => {
           mapping[org.genome_id  + '.' + ext] = org.genome_name;
         });
 
@@ -210,7 +212,6 @@ define("p3/widget/viewer/GenomeAlignment", [
         .then(data => {
           var mapping = {};
           genomeIDs.forEach((id, i) => { mapping[id] = data[i]; });
-
           return mapping;
         });
 
@@ -225,7 +226,7 @@ define("p3/widget/viewer/GenomeAlignment", [
         .then(([labels, featuresObj, contigsObj]) => {
           // update contig metadata with locations of contigs
           var contigs = {};
-          genomeIDs.forEach((genomeID, i) => {
+          genomeIDs.forEach(genomeID => {
             contigs[genomeID] = self.setContigPositions(contigsObj[genomeID]);
           });
 

@@ -13940,6 +13940,9 @@ table.librarytable td > i {
 .insertspinner {
     width: 80px;
 }
+.medInput {
+    width: 300px;
+}
 .readbutton {
     font: 1.5em "Georgia", "Apple Symbols", serif;
     line-height: .8;
