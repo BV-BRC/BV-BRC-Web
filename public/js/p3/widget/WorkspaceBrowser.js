@@ -332,11 +332,11 @@ define([
         validTypes: ['GenomeComparison'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        var cid = self.actionPanel.currentContainerWidget.getComparisonId();
+        var cid = encodePath(self.actionPanel.currentContainerWidget.getComparisonId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
-          Topic.publish('/navigate', { href: '/workspace' + encodePath(cid) });
+          Topic.publish('/navigate', { href: '/workspace' + cid });
         } else {
-          Topic.publish('/navigate', { href: '/workspace' + encodePath(cid) + '#summary' });
+          Topic.publish('/navigate', { href: '/workspace' + cid + '#summary' });
         }
       }, false);
 
@@ -530,7 +530,7 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + eid });
         } else {
@@ -544,7 +544,7 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'View Experiment'
       }, function (selection) {
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         Topic.publish('/navigate', { href: '/view/TranscriptomicsExperiment/?&wsExpId=' + eid });
 
       }, false);
