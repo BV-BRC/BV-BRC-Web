@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/request', 'dojo/topic',
   'dojo/dom-class', 'dojo/dom-construct', 'dojo/query', 'dojo/text!./templates/FeatureOverview.html',
   'dijit/_WidgetBase', 'dijit/_Templated', 'dijit/Dialog', 'dijit/form/Button',
-  '../util/PathJoin', 'dgrid/Grid',
+  '../util/PathJoin', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer',
   './DataItemFormatter', './ExternalItemFormatter', './formatter',
   './D3SingleGeneViewer', './SelectionToGroup'
 
@@ -10,7 +10,7 @@ define([
   declare, lang, on, xhr, Topic,
   domClass, domConstruct, domQuery, Template,
   WidgetBase, Templated, Dialog, Button,
-  PathJoin, Grid,
+  PathJoin, Grid, ColumnResizer,
   DataItemFormatter, ExternalItemFormatter, formatter,
   D3SingleGeneViewer, SelectionToGroup
 ) {
@@ -194,7 +194,7 @@ define([
           ]
         };
 
-        this.specialPropertiesGrid = new Grid(opts, this.specialPropertiesNode);
+        this.specialPropertiesGrid = new (declare([Grid, ColumnResizer]))(opts, this.specialPropertiesNode);
         this.specialPropertiesGrid.startup();
       }
 

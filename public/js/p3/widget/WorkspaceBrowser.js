@@ -314,7 +314,7 @@ define([
       var downloadTTSelectFile = new TooltipDialog({
         content: dtsfc,
         onMouseLeave: function () {
-          popup.close(downloadTTSelect);
+          popup.close(downloadTTSelectFile);
         }
       });
 
