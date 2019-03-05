@@ -1,0 +1,134 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>${applicationLabel}
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+          <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+        </div>
+      </h3>
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
+        <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+      </p>
+    </div>
+    <div style="width:450px; margin:auto" class="formFieldsContainer">
+      <div id="inputTypeBox" style="width:400px;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Start With</label>
+          <div name="start-with" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div>
+        </div>
+        <div class="appRow">
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="singleEndReads" name="input_type" value="single_end_reads" checked />
+          <label for="radio1">Single End Reads</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="pairedEndReads" name="input_type" value="paired_end_reads" data-dojo-attach-event="onChange:onInputTypeChange" />
+          <label for="radio2">Paired End Reads</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="SRAIDs" name="input_type" value="sra_ids" data-dojo-attach-event="onChange:onInputTypeChange" />
+          <label for="radio3">SRA ID</label>
+        </div>
+      </div>
+      <div id="inputFileBox" style="width:400px;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Input File</label>
+        </div>
+        <div data-dojo-attach-point = "singleReadInputFileBox">
+          <div class="appRow">
+            <label class="paramlabel">Single read library</label>
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="read" name="read" style="width:100%" required="true" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
+          </div>
+        </div>
+        <div data-dojo-attach-point = "pairedReadInputFileBox" style="display:none">
+          <div class="appRow">
+            <div style="width:85%;display:inline-block;">
+              <label class="paramlabel">Paired read library</label>
+            </div>
+          </div>
+          <div class="appRow">
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="read1" name="read1" style="width:100%" data-dojo-attach-event="onChange:validatePairedReads" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"></div>
+          </div>
+          <div class="appRow">
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="read2" name="read2" style="width:100%" data-dojo-attach-event="onChange:validatePairedReads" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
+          </div>
+        </div>
+        <div data-dojo-attach-point = "SRAInputFileBox" style="display:none">
+          <div class="appRow">
+            <div style="width:85%;display:inline-block;">
+              <label class="paramlabel">SRA run accession</label>
+            </div>
+          </div>
+          <div class="appRow">
+            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_ids" style="width: 200px" data-dojo-attach-event="onBlur:validateSRR" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
+            <i data-dojo-attach-point="srr_accession_validation_message"></i>
+          </div>
+        </div>
+      </div>
+      <div id="parameterBox" style="width:400px; " class="appBox appShadow">
+        <div class="headerrow">
+          <div style="width:85%;display:inline-block;">
+            <label class="appBoxLabel">Parameters</label>
+            <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+          </div>
+        </div>
+        <div class="appRow">
+          <label class="paramlabel">Gene Set Type</label><br>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="geneSetTypePredefinedList" name="geneSetType" value="predefined_list" checked />
+          <label for="radio1">Predefined List</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="geneSetTypeFastaFile" name="geneSetType" value="fasta_file" data-dojo-attach-event="onChange:onGeneSetTypeChange" />
+          <label for="radio2">Fasta File</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="geneSetTypeFeatureGroup" name="geneSetType" value="feature_group" data-dojo-attach-event="onChange:onGeneSetTypeChange" />
+          <label for="radio3">Feature Group</label>
+        </div>
+        <div data-dojo-attach-point = "geneSetTypeBox">
+        <div class="appRow">
+            <label class="paramlabel">Predefined Gene Set Name</label><br>
+            <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="geneSetName" name="geneSetName" style="width:150px" required="true" data-dojo-props="intermediateChanges:true,trim:true">
+              <option value="MLST">MLST</option>
+              <option value="CARD">CARD</option>
+            </select>
+          </div>
+        </div>
+        <div data-dojo-attach-point = "geneSetFastaWidgetBox" style="display:none">
+          <div class="appRow">
+            <label class="paramlabel">Gene Set Fasta</label><br>
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="geneSetFastaWidget" name="gene_set_fasta" required="false"  data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or Upload protein fasta file to your workspace', placeHolder:''"></div>
+          </div>
+        </div>
+        <div data-dojo-attach-point = "geneSetFeaturegroupWidgetBox" style="display:none">
+          <div class="appRow">
+          <label class="paramlabel">Gene Set Feature Group</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="geneSetFeaturegroupWidget" name="gene_set_feature_group" required="false"  data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace', placeHolder:''"></div>
+          </div>
+        </div>
+        <div class="appRow">
+          <label class="paramlabel">Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="outputPathWidget" name="output_path"  data-dojo-attach-event="onChange:onOutputPathChange" style="width:100%" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>
+        </div>
+        <div class="appRow">
+            <label class="paramlabel">Output Name</label><br>
+            <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-point="outputFileWidget" name="output_file"   style="width:380px" required="true" data-dojo-props="promptMessage:'The output name for your Mapping Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+        </div>
+      </div>
+    </div>
+    <div class="appSubmissionArea">
+      <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+        Submitting Metagenomic Read Mapping Job
+      </div>
+      <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+        Error Submitting Job
+      </div>
+      <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+        Metagenomic Read Mapping Job has been queued.
+      </div>
+      <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+      </div>
+    </div>
+  </div>
+</form>
