@@ -4,7 +4,7 @@ define([
   return declare([JobResult], {
     containerType: 'DifferentialExpression',
     getExperimentId: function () {
-      return this.data.path + encodeURIComponent(this.data.name);
+      return this.data.path + this.data.name;
     },
     getExperimentName: function () {
       return this.data.name;
