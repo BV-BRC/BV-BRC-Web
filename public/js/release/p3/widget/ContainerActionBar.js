@@ -65,7 +65,7 @@ define("p3/widget/ContainerActionBar", [
         }
 
         out.push("<a class='navigationLink' href='");
-        bp.push(part);
+        bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
         out.push('/' + bp.join('/'));
         out.push("'>" + ((idx == 0) ? part.replace('@patricbrc.org', '') : part) + '</a> / ');
       });

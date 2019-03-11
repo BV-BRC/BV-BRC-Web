@@ -21,10 +21,10 @@ define("p3/widget/TranscriptomicsGeneGrid", [
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      genome_name: { label: 'Genome', field: 'genome_name' },
       patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+      genome_name: { label: 'Genome', field: 'genome_name', hidden: true },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
-      alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag' },
+      alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
       gene: { label: 'Gene Symbol', field: 'gene' },
       product: { label: 'Product', field: 'product' },
       start: { label: 'Start', field: 'start', hidden: true },

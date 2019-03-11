@@ -1,27 +1,23 @@
-require({cache:{
-'url:p3/widget/templates/IDMapping.html':"<div>\n  <table class=\"idMappingTable\" style=\"width:315px;\">\n  <tbody>\n    <tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n    <tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n    <tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq (Protein ID)</td></tr>\n    <tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n    <tr><td></td><td rel=\"gi\">GI</td></tr>\n  </tbody>\n  </table>\n  <table class=\"idMappingTable\" style=\"width:315px;\">\n  <tbody>\n    <tr><th class=\"idMappingHeader\" colspan=\"3\">Other Identifiers</th></tr>\n    <tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td><td rel=\"DIP\">DIP</td></tr>\n    <tr><td rel=\"DisProt\">DisProt</td><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n    <tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td><td rel=\"EchoBase\">EchoBASE</td></tr>\n    <tr><td rel=\"EcoGene\">EcoGene</td><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n    <tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td><td rel=\"GenoList\">GenoList</td></tr>\n    <tr><td rel=\"GenomeReviews\">GenomeReviews</td><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n    <tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td><td rel=\"Leproma\">Leproma</td></tr>\n    <tr><td rel=\"MEROPS\">MEROPS</td><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n    <tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td><td rel=\"PDB\">PDB</td></tr>\n    <tr><td rel=\"PeroxiBase\">PeroxiBase</td><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n    <tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td><td rel=\"Reactome\">Reactome</td></tr>\n    <tr><td rel=\"RefSeq_NT\">RefSeq_NT</td><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n    <tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td></tr>\n    <tr><td rel=\"UniRef100\">UniRef100</td><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n    <tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td><td rel=\"World-2DPAGE\">World-2DPAGE</td></tr>\n    <tr><td rel=\"eggNOG\">eggNOG</td><td rel=\"KO\">KO</td><td rel=\"STRING\">STRING</td></tr>\n  </tbody>\n  </table>\n</div>\n"}});
 define("p3/widget/WorkspaceBrowser", [
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/query',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-attr',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-attr',
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
-  './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
+  'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all',
+  'dojo/promise/all', '../util/encodePath',
 
   'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on, query,
-  domClass, ContentPane, domConstruct, domAttr,
+  domClass, domConstruct, domAttr,
   WorkspaceExplorerView, Topic, ItemDetailPanel,
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-  popup, IDMappingTemplate, xhr, Select,
-  ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
+  popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All
+  All, encodePath
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -109,7 +105,7 @@ define("p3/widget/WorkspaceBrowser", [
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'GenomeGroup',
-              perspectiveUrl: '/view/GenomeGroup/' + selection[0].path
+              perspectiveUrl: '/view/GenomeGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -117,7 +113,7 @@ define("p3/widget/WorkspaceBrowser", [
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -150,7 +146,7 @@ define("p3/widget/WorkspaceBrowser", [
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -170,7 +166,7 @@ define("p3/widget/WorkspaceBrowser", [
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'FeatureGroup',
-              perspectiveUrl: '/view/FeatureGroup/' + selection[0].path
+              perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -178,7 +174,7 @@ define("p3/widget/WorkspaceBrowser", [
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -212,7 +208,7 @@ define("p3/widget/WorkspaceBrowser", [
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -316,7 +312,7 @@ define("p3/widget/WorkspaceBrowser", [
       var downloadTTSelectFile = new TooltipDialog({
         content: dtsfc,
         onMouseLeave: function () {
-          popup.close(downloadTTSelect);
+          popup.close(downloadTTSelectFile);
         }
       });
 
@@ -327,7 +323,7 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View in Browser'
       }, function (selection) {
         // console.log("[WorkspaceBrowser] View Item Action", selection);
-        Topic.publish('/navigate', { href: '/workspace' + selection[0].path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(selection[0].path) });
       }, false);
 
       this.browserHeader.addAction('ViewSeqComparison', 'fa icon-eye fa-2x', {
@@ -336,7 +332,7 @@ define("p3/widget/WorkspaceBrowser", [
         validTypes: ['GenomeComparison'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        var cid = self.actionPanel.currentContainerWidget.getComparisonId();
+        var cid = encodePath(self.actionPanel.currentContainerWidget.getComparisonId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + cid });
         } else {
@@ -353,7 +349,7 @@ define("p3/widget/WorkspaceBrowser", [
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/alignment.json';
 
-        Topic.publish('/navigate', { href: '/view/GenomeAlignment/' + path });
+        Topic.publish('/navigate', { href: '/view/GenomeAlignment' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {
@@ -514,7 +510,7 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + expPath });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
       }, false);
 
@@ -525,7 +521,7 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + path[0] });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -534,8 +530,7 @@ define("p3/widget/WorkspaceBrowser", [
         validTypes: ['DifferentialExpression'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        // console.log("View Experiment Summary: ", selection[0]);
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + eid });
         } else {
@@ -549,8 +544,7 @@ define("p3/widget/WorkspaceBrowser", [
         validTypes: ['DifferentialExpression'],
         tooltip: 'View Experiment'
       }, function (selection) {
-        // console.log("View Experiment: ", selection[0]);
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         Topic.publish('/navigate', { href: '/view/TranscriptomicsExperiment/?&wsExpId=' + eid });
 
       }, false);
@@ -575,7 +569,7 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View Gene List'
       }, function (selection) {
         var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + selection.map(function (s) {
-          return s.path;
+          return encodePath(s.path);
         });
         Topic.publish('/navigate', { href: url });
       }, false);
@@ -588,7 +582,7 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View Experiment Gene List'
       }, function (selection) {
         var expPath = this.currentContainerWidget.get('path');
-        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + expPath + '&wsComparisonId=' + selection.map(function (s) {
+        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + encodePath(expPath) + '&wsComparisonId=' + selection.map(function (s) {
           return s.pid;
         });
         Topic.publish('/navigate', { href: url });
@@ -607,7 +601,7 @@ define("p3/widget/WorkspaceBrowser", [
         var wsExps = [];
         selection.forEach(function (s) {
           if (s.path) {
-            wsExps.push(s.path);
+            wsExps.push(encodePath(s.path));
           } else if (s.eid) {
             eids.push(s.eid);
           }
@@ -1348,7 +1342,8 @@ define("p3/widget/WorkspaceBrowser", [
 
             newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
               if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                var itemPath = encodePath(evt.item_path);
+                Topic.publish('/navigate', { href: '/workspace' + itemPath });
                 this.actionPanel.set('selection', []);
                 this.itemDetailPanel.set('selection', []);
                 if ('clearSelection' in newPanel) {
@@ -1389,8 +1384,6 @@ define("p3/widget/WorkspaceBrowser", [
         });
         d.show();
       }));
-
-
     },
 
     getQuery: function (obj) {
