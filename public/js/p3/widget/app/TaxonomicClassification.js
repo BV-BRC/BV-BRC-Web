@@ -22,7 +22,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Taxonomic Classification',
     applicationDescription: 'The Taxonomic Classification Service computes taxonomic classification for read data.',
-    applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
+    applicationHelp: 'user_guides/services/taxonomic_classification_service.html',
     tutorialLink: 'tutorial/comprehensive-genome-analysis/comprehensive-genome-analysis.html',
     libraryData: null,
     defaultPath: '',
