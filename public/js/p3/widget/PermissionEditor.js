@@ -127,15 +127,14 @@ define([
       /**
        * Build the form and events
        */
-      // var ownerId = Formatter.baseUsername(this.user);
-
       var form = self.form = domConstruct.toDom('<div class="userPermForm">');
       domConstruct.place(
-        '<h4 style="margin-bottom: 5px;" class="pull-left">' +
+        '<h4 style="margin-bottom: 5px;">' +
           'Share with Specific Users' +
         '</h4>'
         , form
       );
+
       self.progressEle = domConstruct.place(
         '<span>' +
           self.loadingHTML +
@@ -188,7 +187,6 @@ define([
           }
 
           // add a new row of user, perm selector, and trash button
-
           var permSelector = self.permSelector(user, perm);
           var row = domConstruct.toDom('<tr><td data-user="' + user + '">' + Formatter.baseUsername(user) + '</td></tr>');
 
@@ -373,7 +371,7 @@ define([
     },
 
     /*
-      * list workspace (initial) permissions in dom
+     * list workspace (initial) permissions in dom
     */
     listWSPermissions: function () {
       var self = this,
@@ -407,9 +405,18 @@ define([
 
       domConstruct.place(checkBox, form, 'first');
       domConstruct.place(
-        '<h4 style="margin-bottom: 5px;">' +
+        '<h4 style="margin-bottom: 10px;">' +
           'Share with Everybody' +
         '</h4>',
+        form, 'first'
+      );
+
+      domConstruct.place(
+        '<p class="WarningAlert">' +
+        '<b>Note:</b> Sharing your workspace does not provide access to your private genomes. ' +
+        'If you like to share your private genomes, please go to ' +
+        '<a href="/view/GenomeList/?eq(public,false)">My Genomes</a>, ' +
+        'select the genomes you like to share, and then share them with select users.</p><br>',
         form, 'first'
       );
 
@@ -428,7 +435,7 @@ define([
         var row = domConstruct.toDom('<tr><td data-user="' + user + '">' + Formatter.baseUsername(user) + '</td></tr>');
 
         var td = domConstruct.toDom('<td>');
-        domConstruct.place(permSelector.domNode, td);
+        domConstruct.place(permSelector.domNode || permSelector, td);
         domConstruct.place(td, row);
         domConstruct.place(
           domConstruct.toDom('<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')
