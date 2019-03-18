@@ -336,6 +336,12 @@ define([
         }
       ];
 
+      // checking that perm is a string for old ws bug mangled data bug
+      // https://github.com/PATRIC3/patric3_website/issues/2215
+      if (typeof defaultPerm !== 'string') {
+        return domConstruct.toDom('<span class="Failed">Invalid permission</span');
+      }
+
       if (defaultPerm.toLowerCase() == 'varies') {
         opts.unshift({
           label: 'Varies*',

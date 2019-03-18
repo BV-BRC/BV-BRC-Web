@@ -496,7 +496,7 @@ define(
           w: 'Can edit',
           a: 'Admin'
         };
-        return mapping[perm];
+        return mapping[perm] || 'Invalid permission';
       },
 
       // takes an array of form [{label: "", value: ""} ... ]
