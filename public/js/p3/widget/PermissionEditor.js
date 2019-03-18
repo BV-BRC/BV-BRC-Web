@@ -414,9 +414,9 @@ define([
       domConstruct.place(
         '<p class="WarningAlert">' +
         '<b>Note:</b> Sharing your workspace does not provide access to your private genomes. ' +
-        'If you like to share your private genomes, please go to ' +
+        'If you would like to share your private genomes, please go to ' +
         '<a href="/view/GenomeList/?eq(public,false)">My Genomes</a>, ' +
-        'select the genomes you like to share, and then share them with select users.</p><br>',
+        'select the genomes, and then click "Share" to edit permissions.</p><br>',
         form, 'first'
       );
 
