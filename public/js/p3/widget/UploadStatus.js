@@ -37,8 +37,8 @@ define([
       UploadManager.getUploadSummary().then(lang.hitch(this, 'onUploadMessage'));
       this.tooltip = new Tooltip({
         connectId: [this.uploadStatusCount],
-        label: ' <i class="icon-play22 JobsRunning"></i> In progress | ' +
-          '<i class="icon-checkmark2 JobsCompleted"></i> Completed | ' +
+        label: ' <i class="icon-play22 Running"></i> In progress | ' +
+          '<i class="icon-checkmark2 Completed"></i> Completed | ' +
           '% Complete',
         position: ['above']
       });

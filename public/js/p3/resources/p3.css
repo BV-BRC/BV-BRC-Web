@@ -999,6 +999,14 @@ div.pubmed ul li {
     border-radius:4px;
 }
 
+.WarningAlert {
+    background: #fff3cd;
+    padding: 10px;
+    border: 2px solid #ffeeba;
+    color: #856404;
+    margin-bottom: 10px;
+}
+
 .patric .fa.icon-caret-down.noHoverIcon:hover{
 	color: #333;
 	cursor: default;
