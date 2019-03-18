@@ -267,21 +267,19 @@ th.dgrid-cell.wsItemMembers {
 	margin: 0 5px 0 0;
 }
 
-.JobsQueued {
+.Queued {
 	color: #777;
 }
 
-.JobsRunning,
-.UploadsRunning{
+.Running {
 	color: #ffa900;
 }
 
-.JobsCompleted,
-.UploadsCompleted{
+.Completed {
 	color: #3c763d;
 }
 
-.JobsFailed {
+.Failed {
 	color: #a94442;
 }
 
@@ -528,14 +526,14 @@ th.dgrid-cell.wsItemMembers {
 }
 
 .userPermForm{
-	margin: 0 0 20px 0;
+	margin: 0 0 25px 0;
 }
 
 .userPermForm .publicCheckBox{
 	padding: 10px;
 	background: #f5f5f5;
 	border: 1px dashed #aaa;
-	margin-bottom: 20px;
+	margin-bottom: 25px;
 }
 
 

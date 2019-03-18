@@ -334,13 +334,13 @@ define(
       },
       status_alias: function (val) {
         if (val == 'queued' || val == 'init' || val == 'pending')
-        { return '<b style="color: #666;" title="Queued">queued</b>'; }
+        { return '<b class="Queued" title="Queued">queued</b>'; }
         else if (val == 'in-progress')
-        { return '<b style="color: #ffa900;" title="Running">running</b>'; }
+        { return '<b class="Running title="Running">running</b>'; }
         else if (val == 'deleted' || val == 'failed')
-        { return '<b style="color: #a94442" title="Failed">' + val + '</b>'; }
+        { return '<b class="Failed" title="Failed">' + val + '</b>'; }
         else if (val == 'completed')
-        { return '<b style="color: #3c763d;" title="Completed">completed</b>'; }
+        { return '<b class="Completed" title="Completed">completed</b>'; }
         return val;
 
       },
