@@ -33,15 +33,11 @@
 define([
   'dojo', 'dojo/_base/declare', 'dijit/_WidgetBase', './Confirmation', // dojo/on
   '../widget/UserSelector', './formatter', 'dojo/dom-construct',
-  'dijit/form/Select', 'dijit/form/Button', '../WorkspaceManager',
-  'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/query', 'dojo/topic',
-  '../DataAPI'
+  'dijit/form/Select', 'dijit/form/Button', 'dijit/form/CheckBox', 'dojo/query'
 ], function (
   dojo, declare, WidgetBase, Confirmation,
   UserSelector, Formatter, domConstruct,
-  Select, Button, WorkspaceManager,
-  Deferred, CheckBox, query, Topic,
-  DataAPI
+  Select, Button, CheckBox, query
 ) {
   return declare([WidgetBase], {
     /* required widget input */
@@ -223,13 +219,12 @@ define([
         okLabel: 'Save',
         cancelLabel: 'Cancel',
         content: form,
-        style: { width: '500px' },
+        style: { width: '510px' },
         onConfirm: function (evt) {
           self.onConfirm(self._userPerms, self.isPublic ? 'r' : 'n');
         }
       });
       this.dialog.okButton.set('disabled', true);
-
 
       if (this.useSolrAPI) {
         this.listSolrPermissions();
@@ -239,6 +234,11 @@ define([
 
       this.dialog.startup();
       this.dialog.show();
+
+      // destroy dialog on links
+      query('.navigationLink', form).on('click', function (e) {
+        self.dialog.destroy();
+      });
     },
 
 
@@ -415,7 +415,7 @@ define([
         '<p class="WarningAlert">' +
         '<b>Note:</b> Sharing your workspace does not provide access to your private genomes. ' +
         'If you would like to share your private genomes, please go to ' +
-        '<a href="/view/GenomeList/?eq(public,false)">My Genomes</a>, ' +
+        '<a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>, ' +
         'select the genomes, and then click "Share" to edit permissions.</p><br>',
         form, 'first'
       );
