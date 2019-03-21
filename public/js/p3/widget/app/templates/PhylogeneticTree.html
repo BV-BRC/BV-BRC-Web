@@ -171,32 +171,32 @@
               <select data-dojo-attach-point="number_of_genes"
                 data-dojo-type="dijit/form/Select" name="number_of_genes" required="false">
                 <option value="10">10</option>
-                <option value="20" selected="selected">20</option>
+                <option value="20">20</option>
                 <option value="50">50</option>
-                <option value="100">100</option>
+                <option value="100" selected="selected">100</option>
                 <option value="500">500</option>
                 <option value="1000">1000</option>
               </select>
             </div>
           </div>
           <div class="appRow">
-            <label class="paramlabel">Max Genomes Missing (0~10, optional):</label>
+            <label class="paramlabel">Max Allowed Deletions (0~10):</label>
             <div name="max_genomes_missing"
               class="medInput"
               data-dojo-type="dijit/form/NumberTextBox"
               data-dojo-attach-point="max_genomes_missing"
               data-dojo-props="constraints:{min:0,max:10}"
-              required="false">
+              value="0">
             </div>
           </div>
           <div class="appRow">
-            <label class="paramlabel">Max Allowed Duplications (0~10, optional):</label>
+            <label class="paramlabel">Max Allowed Duplications (0~10):</label>
             <div name="max_allowed_dups"
               class="medInput"
               data-dojo-type="dijit/form/NumberTextBox"
               data-dojo-attach-point="max_allowed_dups"
               data-dojo-props="constraints:{min:0,max:10}"
-              required="false">
+              value="0">
             </div>
           </div>
         </div>
