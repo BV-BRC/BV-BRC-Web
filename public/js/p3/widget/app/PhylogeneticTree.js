@@ -1,18 +1,20 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
-  'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dijit/Dialog',
+  'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
+  'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   '../../WorkspaceManager', 'dojo/when'
 ], function (
   declare, on, domClass,
   Template, AppBase, domConstruct, registry,
-  lang, domReady, query, dom, Dialog,
+  lang, domReady, query, dom, domStyle,
+  popup, TooltipDialog, Dialog,
   WorkspaceManager, when
 ) {
   return declare([AppBase], {
     baseClass: 'App Assembly',
     templateString: Template,
-    applicationName: 'PhylogeneticTree',
+    applicationName: 'CodonTree',
     requireAuth: true,
     applicationLabel: 'Phylogenetic Tree Building',
     applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for up to 50 user-selected genomes.',
@@ -36,6 +38,12 @@ define([
       this.outGroup.genomeToAttachPt = ['out_genome_id'];
       this.outGroup.genomeGroupToAttachPt = ['out_genomes_genomegroup'];
       this.outGroup.maxGenomes = 5;
+      this.codonGroup = {};
+      this.codonGroup.addedList = [];
+      this.codonGroup.addedNum = 0;
+      this.codonGroup.genomeToAttachPt = ['codon_genome_id'];
+      this.codonGroup.genomeGroupToAttachPt = ['codon_genomes_genomegroup'];
+      this.codonGroup.maxGenomes = 200;
       this.selectedTR = []; // list of selected TR for ingroup and outgroup, used in onReset()
     },
 
@@ -54,8 +62,10 @@ define([
 
       this.emptyTable(this.inGroupGenomeTable, this.startingRows);
       this.emptyTable(this.outGroupGenomeTable, this.startingRows);
+      this.emptyTable(this.codonGroupGenomeTable, this.startingRows);
       this.inGroupNumGenomes.startup();
       this.outGroupNumGenomes.startup();
+      this.codonGroupNumGenomes.startup();
       this._started = true;
     },
 
@@ -93,11 +103,23 @@ define([
           var outDuplicate = this.checkDuplicate(cur_value, 'out', attachType);
           success = success * inDuplicate * outDuplicate;
         }
+        else if (attachname == 'codon_genomes_genomegroup') {
+          cur_value = this[attachname].searchBox.value;
+          var attachType = 'genomes_genomegroup';
+          var duplicate = this.checkDuplicate(cur_value, 'codon', attachType);
+          success *= duplicate;
+        }
+        else if (attachname == 'codon_genome_id') {
+          cur_value = this[attachname].value;
+          var attachType = 'genome_id';
+          var duplicate = this.checkDuplicate(cur_value, 'codon', attachType);
+          success *= duplicate;
+        }
         else {
           cur_value = this[attachname].value;
         }
 
-        console.log('cur_value=' + cur_value);
+        // console.log('cur_value=' + cur_value);
 
         if (typeof (cur_value) == 'string') {
           target[attachname] = cur_value.trim();
@@ -191,6 +213,11 @@ define([
       this.onAddGenome(groupType);
     },
 
+    onAddCodonGroupGenome: function () {
+      var groupType = 'codonGroup';
+      this.onAddGenome(groupType);
+    },
+
     onAddGenome: function (groupType) {
       // console.log("Create New Row", domConstruct);
       var lrec = {};
@@ -207,6 +234,24 @@ define([
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
         domConstruct.create('td', { innerHTML: '' }, tr);
+        // added info icon to show all genome ids in the genome group
+        var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
+        var ihandle = new TooltipDialog({
+          content: 'genome id: ' + newGenomeIds[0],
+          onMouseLeave: function () {
+            popup.close(ihandle);
+          }
+        });
+        on(tdinfo, 'mouseover', function () {
+          popup.open({
+            popup: ihandle,
+            around: tdinfo
+          });
+        });
+        on(tdinfo, 'mouseout', function () {
+          popup.close(ihandle);
+        });
+
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
         if (this[groupType].addedNum < this.startingRows) {
           this[groupType + 'GenomeTable'].deleteRow(-1);
@@ -240,6 +285,11 @@ define([
       this.onAddGenomeGroup(groupType);
     },
 
+    onAddCodonGroupGenomeGroup: function () {
+      var groupType = 'codonGroup';
+      this.onAddGenomeGroup(groupType);
+    },
+
     onAddGenomeGroup: function (groupType) {
       // console.log("Create New Row", domConstruct);
       var lrec = {};
@@ -248,6 +298,8 @@ define([
       // console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
       var path = lrec[this[groupType].genomeGroupToAttachPt];
+      var loadingQueryString = '.loading-status-' + groupType;
+      domStyle.set( query(loadingQueryString)[0], 'display', 'block');
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data == 'string') {
           res.data = JSON.parse(res.data);
@@ -257,17 +309,17 @@ define([
             var newGenomeIds =  res.data.id_list.genome_id;
           }
         }
+        domStyle.set( query(loadingQueryString)[0], 'display', 'none');
         // display a notice if adding new genome group exceeds maximum allowed number
         var count = this[groupType].addedNum + newGenomeIds.length;
         if (count > this[groupType].maxGenomes) {
           var msg = 'Sorry, you can only add up to ' + this[groupType].maxGenomes + ' genomes';
-          msg += ' in ' + groupType[0].toUpperCase() + groupType.substring(1).toLowerCase();
+          // msg += ' in ' + groupType[0].toUpperCase() + groupType.substring(1).toLowerCase();
           msg += ' and you are trying to select ' + count + '.';
           new Dialog({ title: 'Notice', content: msg }).show();
         }
         // console.log("newGenomeIds = ", newGenomeIds);
-        if (chkPassed && this[groupType].addedNum < this[groupType].maxGenomes
-          && newGenomeIds.length > 0
+        if (chkPassed && newGenomeIds.length > 0
           && this[groupType].addedNum + newGenomeIds.length <= this[groupType].maxGenomes) {
           var tr = this[groupType + 'GenomeTable'].insertRow(0);
           lrec.row = tr;
@@ -275,6 +327,37 @@ define([
           td.genomeRecord = lrec;
           td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + '</div>';
           domConstruct.create('td', { innerHTML: '' }, tr);
+          // added info icon to show all genome ids in the genome group
+          if (newGenomeIds.length) {
+            var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
+            var ihandle = new TooltipDialog({
+              content: 'click to see all genome id.',
+              onMouseLeave: function () {
+                popup.close(ihandle);
+              }
+            });
+            var ihandle2 = new Dialog({
+              title: 'Genome ID',
+              content: newGenomeIds.join('</br>'),
+              style: 'width: 125px; overflow-y: auto;'
+            });
+            on(tdinfo, 'mouseover', function () {
+              popup.open({
+                popup: ihandle,
+                around: tdinfo
+              });
+            });
+            on(tdinfo, 'mouseout', function () {
+              popup.close(ihandle);
+            });
+
+            on(tdinfo, 'click', function () {
+              ihandle2.show();
+            });
+          }
+          else {
+            var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+          }
           var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
           if (this[groupType].addedNum < this.startingRows) {
             this[groupType + 'GenomeTable'].deleteRow(-1);
@@ -301,54 +384,6 @@ define([
       // console.log(lrec);
     },
 
-    onSubmit: function (evt) {
-      var _self = this;
-
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (this.validate()) {
-        var values = this.getValues();
-        // console.log("values: ", values);
-        if (values.in_genome_ids.length >= 3 && values.out_genome_ids.length >= 1) {
-          domClass.add(this.domNode, 'Working');
-          domClass.remove(this.domNode, 'Error');
-          domClass.remove(this.domNode, 'Submitted');
-
-          if (window.App.noJobSubmission) {
-            var dlg = new Dialog({
-              title: 'Job Submission Params: ',
-              content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
-            });
-            dlg.startup();
-            dlg.show();
-            return;
-          }
-          this.submitButton.set('disabled', true);
-          window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
-            console.log('Job Submission Results: ', results);
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Submitted');
-            _self.submitButton.set('disabled', false);
-            registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
-              obj.reset();
-            });
-          }, function (err) {
-            console.log('Error:', err);
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Error');
-            _self.errorMessage.innerHTML = err;
-          });
-        } else {
-          domClass.add(this.domNode, 'Error');
-          console.log('Form is incomplete');
-        }
-
-      } else {
-        domClass.add(this.domNode, 'Error');
-        console.log('Form is incomplete');
-      }
-    },
-
     onReset: function (evt) {
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
@@ -370,30 +405,81 @@ define([
     },
 
     getValues: function () {
-      var ptb_values = {};
+      var return_values = {};
       var values = this.inherited(arguments);
-      // remove duplicate genomes
-      var inGroupGenomesFiltered = [];
-      this.inGroup.addedList.forEach(function (id) {
-        if (inGroupGenomesFiltered.indexOf(id)  == -1) {
-          inGroupGenomesFiltered.push(id);
-        }
-      });
-      var outGroupGenomesFiltered = [];
-      this.outGroup.addedList.forEach(function (id) {
-        if (outGroupGenomesFiltered.indexOf(id)  == -1) {
-          outGroupGenomesFiltered.push(id);
-        }
-      });
 
-      ptb_values.in_genome_ids = inGroupGenomesFiltered;
-      ptb_values.out_genome_ids = outGroupGenomesFiltered;
-      ptb_values.output_path = values.output_path;
-      ptb_values.output_file = values.output_file;
-      ptb_values.full_tree_method = values.full_tree_method;
-      ptb_values.refinement = 'no';  // hard coded since it's removed from UI
+      if (this.startWithPEPR.checked == true) {
+        // remove duplicate genomes
+        var inGroupGenomesFiltered = [];
+        this.inGroup.addedList.forEach(function (id) {
+          if (inGroupGenomesFiltered.indexOf(id)  == -1) {
+            inGroupGenomesFiltered.push(id);
+          }
+        });
+        var outGroupGenomesFiltered = [];
+        this.outGroup.addedList.forEach(function (id) {
+          if (outGroupGenomesFiltered.indexOf(id)  == -1) {
+            outGroupGenomesFiltered.push(id);
+          }
+        });
+        return_values.in_genome_ids = inGroupGenomesFiltered;
+        return_values.out_genome_ids = outGroupGenomesFiltered;
+        return_values.full_tree_method = values.full_tree_method;
+        return_values.refinement = 'no';  // hard coded since it's removed from UI
+      }
+      else {
+        // remove duplicate genomes
+        var codonGenomesFiltered = [];
+        this.codonGroup.addedList.forEach(function (id) {
+          if (codonGenomesFiltered.indexOf(id)  == -1) {
+            codonGenomesFiltered.push(id);
+          }
+        });
+        return_values.genome_ids = codonGenomesFiltered;
+        return_values.number_of_genes = values.number_of_genes;
+        return_values.max_genomes_missing = values.max_genomes_missing;
+        return_values.max_allowed_dups = values.max_allowed_dups;
 
-      return ptb_values;
+      }
+
+      return_values.output_path = values.output_path;
+      return_values.output_file = values.output_file;
+
+      return return_values;
+    },
+
+    checkParameterRequiredFields: function () {
+      if (this.output_path.get('value') && this.output_nameWidget.get('displayedValue') ) {
+        this.validate();
+      }
+      else {
+        if (this.submitButton) { this.submitButton.set('disabled', true); }
+      }
+    },
+
+    onStartWithChange: function () {
+      if (this.startWithCodonTree.checked == true) {
+        this.applicationName = 'CodonTree';
+        this.PEPRTable.style.display = 'none';
+        this.PEPROtherInputs.style.display = 'none';
+        this.codonOtherInputs.style.display = 'block';
+        this.codonTreeTable.style.display = 'block';
+        this.inGroupNumGenomes.constraints.min = 0;
+        this.outGroupNumGenomes.constraints.min = 0;
+        this.codonGroupNumGenomes.constraints.min = 4;
+        this.checkParameterRequiredFields();
+      }
+      if (this.startWithPEPR.checked == true) {
+        this.applicationName = 'PhylogeneticTree';
+        this.PEPRTable.style.display = 'block';
+        this.PEPROtherInputs.style.display = 'block';
+        this.codonOtherInputs.style.display = 'none';
+        this.codonTreeTable.style.display = 'none';
+        this.inGroupNumGenomes.constraints.min = 3;
+        this.outGroupNumGenomes.constraints.min = 1;
+        this.codonGroupNumGenomes.constraints.min = 0;
+        this.checkParameterRequiredFields();
+      }
     }
 
   });
