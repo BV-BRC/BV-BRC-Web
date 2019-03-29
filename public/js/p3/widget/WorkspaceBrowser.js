@@ -280,7 +280,7 @@ define([
         var currentQuery = self.getQuery(selection[0]);
 
         var urlStr = window.App.dataServiceURL + '/' + dataType + '/' + currentQuery + '&http_authorization=' +
-          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download=true';
+          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&limit(25000)&http_download=true';
 
         // cursorMark requires a sort on an unique key
         urlStr += type === 'genome_group' ? '&sort(+genome_id)' : '&sort(+feature_id)';
