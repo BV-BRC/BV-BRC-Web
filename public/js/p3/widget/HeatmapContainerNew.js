@@ -10,20 +10,12 @@ define([
     chart: null,
 
     initializeHeatmap: function () {
-      console.log('in initialize heatmap', this.currenData);
-
       /**
        * new heatmap experiment
        */
 
       var target = document.getElementById('heatmapTarget');
-      target.innerHTML = 'TEST OF LOADING THE HEATMAP WIDGET BLAH BLAH BLAH';
-
-      console.log('target: ', target, this.currenData);
-
-      /*
-      */
-
+      target.innerHTML = 'loading...';
       // window.hmapReady = lang.hitch(this, 'heatmapReady');
       // window.hmapRequestsData = lang.hitch(this, 'hmapUpdate');
       // window.hmapCellClicked = lang.hitch(this, 'hmapCellClicked');
@@ -31,8 +23,6 @@ define([
 
 
       this.hmapDom = document.getElementById('heatmapTarget');
-
-      console.log('this.flashDom in heatmap container new', this.hmapDom);
     },
 
     exportCurrentData: function (isTransposed) {
@@ -84,14 +74,12 @@ define([
 
     // flash interface functions
     hmapReady: function () {
-      console.log('map is ready');
       // update this.currentData
       // this.flashDom.refreshData();
     },
 
     hmapUpdate: function () {
       if (!this.currentData) return;
-      console.log('hmapUpdate:', this.currentData.rows);
       let { rows, cols, matrix } = this.formatData(this.currentData);
       console.log('{rows, cols, matrix} ', { rows, cols, matrix } );
 
