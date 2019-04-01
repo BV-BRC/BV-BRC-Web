@@ -3,69 +3,22 @@ define([
   'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request',
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', './HeatmapContainer', './SelectionToGroup', '../util/PathJoin', 'FileSaver'
+  './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver'
 
 ], function (
   declare, lang,
   on, Topic, domConstruct, dom, Query, when, request,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, saveAs
+  ContainerActionBar, HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs
 ) {
 
-  var legend = [
-    '<div>',
-    '<h5>HeatMap Cells</h5>',
-    '<p>Cell color represents the number of proteins <br/> from a specific genome in a given protein family.</p>',
-    '<br>',
-    '<span class="heatmap-legend-entry black"></span>',
-    '<span class="heatmap-legend-label">0</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry yellow"></span>',
-    '<span class="heatmap-legend-label">1</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry orange"></span>',
-    '<span class="heatmap-legend-label">2</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry red"></span>',
-    '<span class="heatmap-legend-label">3+</span>',
-    '<div class="clear"></div>',
-    '</div>'
-  ].join('\n');
-
-  return declare([BorderContainer, HeatmapContainer], {
+  return declare([BorderContainer, HeatmapContainerNew], {
     gutters: false,
     state: null,
     visible: false,
     pfState: null,
     containerActions: [
-      [
-        'Legend',
-        'fa icon-bars fa-2x',
-        { label: 'Legend', multiple: false, validTypes: ['*'] },
-        function () {
-          if (this.containerActionBar._actions.Legend.options.tooltipDialog == null) {
-            this.tooltip_legend = new TooltipDialog({
-              content: legend
-            });
-            this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
-          }
-
-          if (this.isPopupOpen) {
-            this.isPopupOpen = false;
-            popup.close();
-          } else {
-            popup.open({
-              parent: this,
-              popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
-              around: this.containerActionBar._actions.Legend.button,
-              orient: ['below']
-            });
-            this.isPopupOpen = true;
-          }
-        },
-        true
-      ],
       [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
@@ -103,7 +56,6 @@ define([
               param.e = (f.cluster_by === 3 || f.cluster_by === 2) ? f.algorithm : 0;
               param.m = f.type;
 
-              // console.log('advanced cluster param: ', param);
               self.cluster(param);
               self.dialog.hide();
             }
@@ -159,40 +111,49 @@ define([
       ]
     ],
     constructor: function (options) {
+      console.log('in new protein family container');
       this.dialog = new Dialog({});
 
       this.topicId = options.topicId;
       // subscribe
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("ProteinFamiliesHeatmapContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 
         switch (key) {
           case 'updatePfState':
             this.pfState = value;
+            this.hmapUpdate();
             break;
           case 'refreshHeatmap':
+            this.hmapUpdate();
             Topic.publish(this.topicId, 'requestHeatmapData', this.pfState);
             break;
           case 'updateHeatmapData':
             this.currentData = value;
-            if (this.flashDom && typeof (this.flashDom.refreshData) == 'function') {
-              this.flashDom.refreshData();
+            this.hmapUpdate();
+            /*
+            if (typeof this.hmapDom.refreshData == 'function') {
+              this.hmapDom.refreshData();
               Topic.publish(this.topicId, 'hideLoadingMask');
-            }
+            } */
             break;
           default:
             break;
         }
       }));
     },
+
+    update: function () {
+      Topic.publish(this.topicId, 'refreshHeatmap');
+    },
     _setVisibleAttr: function (visible) {
       this.visible = visible;
 
       if (this.visible && !this._firstView) {
+
         this.onFirstView();
-        this.initializeFlash('ProteinFamilyHeatMap');
+        this.initializeHeatmap();
       }
     },
     onFirstView: function () {
@@ -212,20 +173,16 @@ define([
 
       this.addChild(new ContentPane({
         region: 'center',
-        content: "<div id='flashTarget'></div>",
+        content: "<div id='heatmapTarget'></div>",
         style: 'padding:0'
       }));
+
 
       this.inherited(arguments);
       this._firstView = true;
     },
-    flashReady: function () {
-      if (typeof (this.flashDom.refreshData) == 'function') {
-        Topic.publish(this.topicId, 'refreshHeatmap');
-      }
-    },
-    flashCellClicked: function (flashObjectID, colID, rowID) {
-      // console.log("flashCellClicked is called ", colID, rowID);
+
+    hmapCellClicked: function (flashObjectID, colID, rowID) {
       var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
@@ -253,8 +210,7 @@ define([
       }));
 
     },
-    flashCellsSelected: function (flashObjectID, colIDs, rowIDs) {
-      // console.log("flashCellsSelected is called", colIDs, rowIDs);
+    hmapCellsSelected: function (flashObjectID, colIDs, rowIDs) {
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
@@ -627,7 +583,6 @@ define([
     },
     _getOriginalAxis: function (isTransposed, columnIds, rowIds) {
       var originalAxis = {};
-      // console.log("_getOriginalAxis: ", isTransposed, columnIds, rowIds);
 
       if (isTransposed) {
         originalAxis.columnIds = rowIds;
@@ -648,10 +603,8 @@ define([
 
       Topic.publish(this.topicId, 'refreshHeatmap');
     },
-    cluster: function (param) {
 
-      // console.log("cluster is called", param);
-      // this.set('loading', true);
+    cluster: function (param) {
       var p = param || { g: 2, e: 2, m: 'a' };
 
       var isTransposed = this.pfState.heatmapAxis === 'Transposed';
@@ -670,9 +623,6 @@ define([
       Topic.publish(this.topicId, 'showLoadingMask');
 
       return when(window.App.api.data('cluster', [data, p]), lang.hitch(this, function (res) {
-        // console.log("Cluster Results: ", res);
-        // this.set('loading', false);
-
         // DO NOT TRANSPOSE. clustering process is based on the corrected axises
         this.pfState.clusterRowOrder = res.rows;
         this.pfState.clusterColumnOrder = res.columns;

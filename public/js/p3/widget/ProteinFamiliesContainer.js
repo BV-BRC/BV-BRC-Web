@@ -3,15 +3,15 @@ define([
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
   'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
   'dojox/widget/Standby',
-  './ActionBar', './ContainerActionBar',
-  './ProteinFamiliesGridContainer', './ProteinFamiliesFilterGrid', './ProteinFamiliesHeatmapContainer'
+  './ProteinFamiliesGridContainer', './ProteinFamiliesFilterGrid',
+  './ProteinFamiliesHeatmapContainer', './ProteinFamiliesHeatmapContainerNew'
 ], function (
   declare, lang, on, Topic, domConstruct,
   BorderContainer, TabContainer, StackController, ContentPane,
   RadioButton, TextArea, TextBox, Button, Select,
   Standby,
-  ActionBar, ContainerActionBar,
-  MainGridContainer, FilterGrid, HeatmapContainer
+  MainGridContainer, FilterGrid,
+  HeatmapContainer, HeatmapContainerNew
 ) {
 
   return declare([BorderContainer], {
@@ -63,8 +63,6 @@ define([
       this.loadingMask.startup();
     },
     onSetState: function (attr, oldVal, state) {
-      // console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-
       if (state.genome_ids && state.genome_ids.length > this.maxGenomeCount) {
         console.log('Too Many Genomes for Protein Families Display', state.genome_ids.length);
         return;
@@ -116,6 +114,9 @@ define([
       if (this.heatmapContainer) {
         this.heatmapContainer.set('visible', true);
       }
+      if (this.heatmapContainerNew) {
+        this.heatmapContainerNew.set('visible', true);
+      }
     },
 
     onFirstView: function () {
@@ -141,19 +142,38 @@ define([
         apiServer: this.apiServer
       });
 
+
       this.heatmapContainer = new HeatmapContainer({
         title: 'Heatmap',
         topicId: this.topicId,
         content: 'Heatmap'
       });
 
+      this.heatmapContainerNew = new HeatmapContainerNew({
+        title: 'Heatmap <sup style="vertical-align: super;">(new)</sup>',
+        type: 'webGLHeatmap',
+        topicId: this.topicId,
+        content: 'Heatmap (new)'
+      });
+
       this.watch('state', lang.hitch(this, 'onSetState'));
 
       this.tabContainer.addChild(this.mainGridContainer);
       this.tabContainer.addChild(this.heatmapContainer);
+      this.tabContainer.addChild(this.heatmapContainerNew);
+
+      var self = this;
+      this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
+        if (newTab.type === 'webGLHeatmap') {
+          console.log('heatmapContainerNew.update');
+          self.heatmapContainerNew.update();
+        }
+      });
+
       this.addChild(tabController);
       this.addChild(this.tabContainer);
       this.addChild(filterPanel);
+
 
       this.inherited(arguments);
       this._firstView = true;
