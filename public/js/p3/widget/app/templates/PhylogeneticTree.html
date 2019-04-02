@@ -24,16 +24,16 @@
       </div>
       <div id="startWithBox" style="width:400px;" class="appBox appShadow">
         <div class="headerrow">
-          <label class="appBoxLabel">Start With:</label>
+          <label class="appBoxLabel">Method:</label>
           <div name="start-with" class="infobox iconbox infobutton dialoginfo">
             <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
           </div>
         </div>
         <div class="appRow">
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithCodonTree" name="startWith" value="condonTree" checked />
-          <label for="radio1">Codon Tree Method</label>
+          <label for="radio1">Codon Tree</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithPEPR" name="startWith" value="PEPR" data-dojo-attach-event="onChange:onStartWithChange" />
-          <label for="radio2">PEPR Method</label>
+          <label for="radio2">All Shared Proteins</label>
         </div>
       </div>
       <table data-dojo-attach-point="PEPRTable" style="width:100%; display:none">
