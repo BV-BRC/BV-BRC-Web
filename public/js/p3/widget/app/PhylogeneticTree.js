@@ -233,7 +233,6 @@ define([
         var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
         td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
-        domConstruct.create('td', { innerHTML: '' }, tr);
         // added info icon to show all genome ids in the genome group
         var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
         var ihandle = new TooltipDialog({
@@ -326,7 +325,6 @@ define([
           var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
           td.genomeRecord = lrec;
           td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName(groupType, newGenomeIds) + '</div>';
-          domConstruct.create('td', { innerHTML: '' }, tr);
           // added info icon to show all genome ids in the genome group
           if (newGenomeIds.length) {
             var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
