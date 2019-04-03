@@ -1417,7 +1417,7 @@ define([
     },
 
     genome_amr_data: function (item, options) {
-      var sectionList = ['Summary', 'Measurement', 'Laboratory typing'];
+      var sectionList = ['Summary', 'Measurement', 'Laboratory Method', 'Computational Method'];
       var section = {};
 
       section.Summary = [{
@@ -1436,11 +1436,12 @@ define([
         name: 'Resistant Phenotype',
         text: 'resistant_phenotype'
       }, {
-        name: 'Testing Standard',
-        text: 'testing_standard'
+        name: 'Evidence',
+        text: 'evidence'
       }, {
-        name: 'Testing Standard Year',
-        text: 'testing_standard_year'
+        name: 'PubMed',
+        text: 'pmid',
+        link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
       }];
 
       section.Measurement = [{
@@ -1454,7 +1455,7 @@ define([
         text: 'measurement_unit'
       }];
 
-      section['Laboratory typing'] = [{
+      section['Laboratory Method'] = [{
         name: 'Method',
         text: 'laboratory_typing_method'
       }, {
@@ -1466,6 +1467,23 @@ define([
       }, {
         name: 'Version',
         text: 'laboratory_typing_method_version'
+      }, {
+        name: 'Testing Standard',
+        text: 'testing_standard'
+      }, {
+        name: 'Testing Standard Year',
+        text: 'testing_standard_year'
+      }];
+
+      section['Computational Method'] = [{
+        name: 'Method',
+        text: 'computational_method'
+      }, {
+        name: 'Version',
+        text: 'computational_method_version'
+      }, {
+        name: 'Performance',
+        text: 'computational_method_performance'
       }];
 
       var div = domConstruct.create('div');
