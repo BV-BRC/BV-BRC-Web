@@ -21,7 +21,7 @@ define([
     applicationName: 'MetagenomicReadMapping',
     requireAuth: true,
     applicationLabel: 'Metagenomic Read Mapping',
-    applicationDescription: 'The Metagenomic Read Mapping Service provides ... blah blah blah blah blah blah blah blah',
+    applicationDescription: 'The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB.',
     applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
     tutorialLink: 'tutorial/comprehensive-genome-analysis/comprehensive-genome-analysis.html',
     defaultPath: '',
