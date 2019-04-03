@@ -406,7 +406,7 @@ define([
 
         if (chkPassed && this.addedGenomes < this.maxGenomes
           && newGenomeIds.length > 0
-          && count < this.maxGenomes)
+          && count <= this.maxGenomes)
         {
           var tr = this.genomeTable.insertRow(0);
           var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
