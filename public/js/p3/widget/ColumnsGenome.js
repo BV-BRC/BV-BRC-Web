@@ -352,6 +352,36 @@ define(['./formatter'], function (formatter) {
       field: 'date_modified',
       hidden: true,
       formatter: formatter.dateOnly
+    },
+    genome_quality: {
+      label: 'Genome Quality',
+      field: 'genome_quality',
+      hidden: true
+    },
+    genome_quality_flags: {
+      label: 'Genome Quality Flags',
+      field: 'genome_quality_flags',
+      hidden: true
+    },
+    coarse_consistency: {
+      label: 'Coarse Consistency',
+      field: 'coarse_consistency',
+      hidden: true
+    },
+    fine_consistency: {
+      label: 'Fine Consistency',
+      field: 'fine_consistency',
+      hidden: true
+    },
+    checkm_completeness: {
+      label: 'CheckM Completeness',
+      field: 'checkm_completeness',
+      hidden: true
+    },
+    checkm_contamination: {
+      label: 'CheckM Contamination',
+      field: 'checkm_contamination',
+      hidden: true
     }
   };
 });
