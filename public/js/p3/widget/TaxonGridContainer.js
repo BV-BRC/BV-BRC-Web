@@ -32,6 +32,7 @@ define([
     getFilterPanel: function (opts) {
 
     },
+    facetFields: ['division', 'taxon_rank'],
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',
