@@ -297,6 +297,9 @@ define([
       // console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
       var path = lrec[this[groupType].genomeGroupToAttachPt];
+      if (path == '') {
+        return;
+      }
       var loadingQueryString = '.loading-status-' + groupType;
       domStyle.set( query(loadingQueryString)[0], 'display', 'block');
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
