@@ -364,7 +364,8 @@ define(['./formatter'], function (formatter) {
     genome_quality_flags: {
       label: 'Genome Quality Flags',
       field: 'genome_quality_flags',
-      hidden: true
+      hidden: true,
+      sortable: false
     },
     coarse_consistency: {
       label: 'Coarse Consistency',
