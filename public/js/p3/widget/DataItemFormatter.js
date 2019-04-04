@@ -1523,7 +1523,13 @@ define([
       var div = domConstruct.create('div');
       displayHeader(div, item.genome_name, 'fa icon-genome fa-2x', '/view/Genome/' + item.genome_id, options);
 
-      var summary = 'Length: ' + item.genome_length + 'bp, Chromosomes: ' + (item.chromosomes || 0) + ', Plasmids: ' + (item.plasmids || 0) + ', Contigs: ' + (item.contigs || 0);
+      var chromosomes = item.chromosomes || 0;
+      var plasmids = item.plasmids || 0;
+      var contigs = item.contigs || 0;
+      var summary = 'Length: ' + item.genome_length + 'bp, ' +
+        (chromosomes ? 'Chromosomes: ' + chromosomes + ', ' : '') +
+        (plasmids ? 'Plasmids: ' + plasmids + ', ' : '') +
+        (contigs ? 'Contigs: ' + contigs : '');
 
       domConstruct.create('div', {
         innerHTML: summary,
