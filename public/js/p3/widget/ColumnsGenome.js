@@ -110,7 +110,8 @@ define(['./formatter'], function (formatter) {
     other_typing: {
       label: 'Other Typing',
       field: 'other_typing',
-      hidden: true
+      hidden: true,
+      sortable: false
     },
     strain: {
       label: 'Strain',
@@ -210,7 +211,8 @@ define(['./formatter'], function (formatter) {
     isolation_comments: {
       label: 'Isolation Comments',
       field: 'isolation_comments',
-      hidden: true
+      hidden: true,
+      sortable: false
     },
     geographic_location: {
       label: 'Geographic Location',
@@ -240,7 +242,8 @@ define(['./formatter'], function (formatter) {
     other_environmental: {
       label: 'Other Environmental',
       field: 'other_environmental',
-      hidden: true
+      hidden: true,
+      sortable: false
     },
     host_gender: {
       label: 'Host Gender',
