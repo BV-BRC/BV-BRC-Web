@@ -1,25 +1,23 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/query',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-attr',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-attr',
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
-  './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
+  'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all',
+  'dojo/promise/all', '../util/encodePath',
 
   'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on, query,
-  domClass, ContentPane, domConstruct, domAttr,
+  domClass, domConstruct, domAttr,
   WorkspaceExplorerView, Topic, ItemDetailPanel,
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-  popup, IDMappingTemplate, xhr, Select,
-  ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
+  popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All
+  All, encodePath
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -107,7 +105,7 @@ define([
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'GenomeGroup',
-              perspectiveUrl: '/view/GenomeGroup/' + selection[0].path
+              perspectiveUrl: '/view/GenomeGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -115,7 +113,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -148,7 +146,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -168,7 +166,7 @@ define([
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'FeatureGroup',
-              perspectiveUrl: '/view/FeatureGroup/' + selection[0].path
+              perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -176,7 +174,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -210,7 +208,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -282,7 +280,7 @@ define([
         var currentQuery = self.getQuery(selection[0]);
 
         var urlStr = window.App.dataServiceURL + '/' + dataType + '/' + currentQuery + '&http_authorization=' +
-          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download=true';
+          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&limit(25000)&http_download=true';
 
         // cursorMark requires a sort on an unique key
         urlStr += type === 'genome_group' ? '&sort(+genome_id)' : '&sort(+feature_id)';
@@ -314,7 +312,7 @@ define([
       var downloadTTSelectFile = new TooltipDialog({
         content: dtsfc,
         onMouseLeave: function () {
-          popup.close(downloadTTSelect);
+          popup.close(downloadTTSelectFile);
         }
       });
 
@@ -325,7 +323,7 @@ define([
         tooltip: 'View in Browser'
       }, function (selection) {
         // console.log("[WorkspaceBrowser] View Item Action", selection);
-        Topic.publish('/navigate', { href: '/workspace' + selection[0].path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(selection[0].path) });
       }, false);
 
       this.browserHeader.addAction('ViewSeqComparison', 'fa icon-eye fa-2x', {
@@ -334,7 +332,7 @@ define([
         validTypes: ['GenomeComparison'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        var cid = self.actionPanel.currentContainerWidget.getComparisonId();
+        var cid = encodePath(self.actionPanel.currentContainerWidget.getComparisonId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + cid });
         } else {
@@ -362,7 +360,7 @@ define([
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/alignment.json';
 
-        Topic.publish('/navigate', { href: '/view/GenomeAlignment/' + path });
+        Topic.publish('/navigate', { href: '/view/GenomeAlignment' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {
@@ -523,7 +521,7 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + expPath });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
       }, false);
 
@@ -534,7 +532,7 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + path[0] });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -543,8 +541,7 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        // console.log("View Experiment Summary: ", selection[0]);
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + eid });
         } else {
@@ -558,8 +555,7 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'View Experiment'
       }, function (selection) {
-        // console.log("View Experiment: ", selection[0]);
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         Topic.publish('/navigate', { href: '/view/TranscriptomicsExperiment/?&wsExpId=' + eid });
 
       }, false);
@@ -584,7 +580,7 @@ define([
         tooltip: 'View Gene List'
       }, function (selection) {
         var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + selection.map(function (s) {
-          return s.path;
+          return encodePath(s.path);
         });
         Topic.publish('/navigate', { href: url });
       }, false);
@@ -597,7 +593,7 @@ define([
         tooltip: 'View Experiment Gene List'
       }, function (selection) {
         var expPath = this.currentContainerWidget.get('path');
-        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + expPath + '&wsComparisonId=' + selection.map(function (s) {
+        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + encodePath(expPath) + '&wsComparisonId=' + selection.map(function (s) {
           return s.pid;
         });
         Topic.publish('/navigate', { href: url });
@@ -616,7 +612,7 @@ define([
         var wsExps = [];
         selection.forEach(function (s) {
           if (s.path) {
-            wsExps.push(s.path);
+            wsExps.push(encodePath(s.path));
           } else if (s.eid) {
             eids.push(s.eid);
           }
@@ -1357,7 +1353,8 @@ define([
 
             newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
               if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                var itemPath = encodePath(evt.item_path);
+                Topic.publish('/navigate', { href: '/workspace' + itemPath });
                 this.actionPanel.set('selection', []);
                 this.itemDetailPanel.set('selection', []);
                 if ('clearSelection' in newPanel) {
@@ -1398,8 +1395,6 @@ define([
         });
         d.show();
       }));
-
-
     },
 
     getQuery: function (obj) {

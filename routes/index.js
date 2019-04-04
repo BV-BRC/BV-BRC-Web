@@ -1,11 +1,13 @@
 var express = require('express');
 var router = express.Router();
-var getNews = require('../news');
-/* GET home page. */
+var getQuery = function (query) {
+  console.log(query);
+};
+/* GET index */
 router.get('/', function (req, res) {
   req.applicationModule = 'p3/app/p3app';
   res.render('index', {
-    title: 'PATRIC', request: req, response: res, news: getNews('&limit(3)&sort(-pubDate)')
+    title: 'PATRIC', request: req, response: res, news: getQuery('P3 GET Requests: ')
   });
 });
 

@@ -1,0 +1,269 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,keyup:validate">
+
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>
+       ${applicationLabel}
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <!--
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+            <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+        </div>
+        -->
+      </h3>
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
+        <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+      </p>
+    </div>
+    <br>
+
+    <div style="width: 600px; margin:auto" class="formFieldsContainer">
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Select Genomes</label>
+          <div name="select-genomes" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div>
+        </div>
+
+        <div class="appRow">
+          <small>Add at least 4 (up to 200) genomes.</small><br>
+          <label>Select genome</label><br>
+          <div style="width:490px;"
+            data-dojo-type="p3/widget/GenomeNameSelector"
+            name="genomeSelector"
+            maxHeight="200"
+            required="false"
+            data-dojo-attach-point="genomeSelector"
+            data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'">
+          </div>
+
+          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenome" class="app-btn">
+            <i class="icon-plus"></i> Add
+          </button>
+
+          <br>
+
+          <!-- floating since the width on object selector is odd -->
+          <div class="left">
+          <label>And/or select genome group</label><br>
+            <div style="width: 495px;"
+            data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="genomeGroupSelector"
+            required="false"
+              data-dojo-attach-point="genomeGroupSelector"
+              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
+            </div>
+          </div>
+
+          <div class="left" style="margin-top: 13px;">
+            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn">
+              <i class="icon-plus"></i> Add
+            </button>
+          </div>
+          <div class="clear"></div>
+        </div>
+
+
+        <div class="appRow">
+          <label>Selected Genomes:</label> <small class="loading-status pull-right" style="margin-right: 20px; display: none;">loading...</small>
+        </div>
+
+        <div data-dojo-attach-point="genomeTable" style="margin-right: 20px;">
+        </div>
+      </div>
+
+      <div class="appBox appShadow">
+        <div class="">
+          <div style="width:85%; display:inline-block;">
+            <label class="appBoxLabel">Parameters</label>
+            <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="appRow">
+          <label>Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+            name="output_path"
+            data-dojo-attach-point="output_path"
+            required="true"
+            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange">
+          </div>
+        </div>
+
+        <div class="appRow">
+          <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+            data-dojo-attach-event="onChange:checkOutputName"
+            name="output_file"
+            data-dojo-attach-point="output_file"
+            style="width:85%"
+            required="true"
+            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+          </div>
+        </div>
+
+        <!-- advanced options -->
+        <div class="appRow" style="margin-top: 20px;">
+          <div data-dojo-attach-point="advanced">
+            <label class="largelabel">Advanced (Optional) </label>
+            <div class="iconbox" style="margin-left:0px">
+              <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="appRow" data-dojo-attach-point="advrow" style="display: none;">
+
+          <style>.param-table td:first-child { width: 32%; padding-right: 7px; text-align: right;}</style>
+          <table class="param-table">
+            <thead>
+              <th>
+                <td></td>
+                <td></td>
+              </th>
+            </thead>
+            <tbody>
+              <tr>
+                <td><label>Number of Genes:</label></td>
+                <td>
+                  <div name="number_of_genes" class="medInput">
+                    <select data-dojo-attach-point="number_of_genes"
+                      data-dojo-type="dijit/form/Select" name="number_of_genes" required="false">
+                      <option value="10">10</option>
+                      <option value="20" selected="selected">20</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                      <option value="500">500</option>
+                      <option value="1000">1000</option>
+                    </select>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Bootstraps:</label></td>
+                <td>
+                  <div name="bootstraps" class="medInput">
+                    <select data-dojo-attach-point="bootstraps"
+                      data-dojo-type="dijit/form/Select" name="bootstraps" required="false">
+                      <option value="100">Yes</option>
+                      <option value="0">No</option>
+                    </select>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Max Genomes Missing (0~10):</label></td>
+                <td>
+                  <div name="max_genomes_missing"
+                    class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="max_genomes_missing"
+                    data-dojo-props="constraints:{min:0,max:10}"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><label>Max Allowed Duplications (0~10):</label></td>
+                <td>
+                  <div name="max_allowed_dups"
+                    class="medInput"
+                    data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="max_allowed_dups"
+                    data-dojo-props="constraints:{min:0,max:10}"
+                    required="false">
+                  </div>
+                </td>
+              </tr>
+
+
+            </tbody>
+          </table>
+
+        </div>
+
+        <!-- optional genome ids options -->
+        <div class="appRow" style="margin-top: 20px;">
+          <div data-dojo-attach-point="optionalGenomes">
+            <label class="largelabel">Additional Genomes (Optional)</label>
+            <div class="iconbox" style="margin-left:0px">
+              <i data-dojo-attach-point="optionalGenomesIcon" class="fa icon-caret-down fa-1"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="appRow" data-dojo-attach-point="optionalGenomesRow" style="display: none;">
+          <small>Not penalized for missing/duplicated genes.</small><br>
+          <label>Select genome</label><br>
+          <div style="width:490px;"
+            data-dojo-type="p3/widget/GenomeNameSelector"
+            name="genomeSelector"
+            maxHeight="200"
+            required="false"
+            data-dojo-attach-point="optionalGenomeSelector"
+            data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'">
+          </div>
+
+          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddOptionalGenome" class="app-btn">
+            <i class="icon-plus"></i> Add
+          </button>
+
+          <br>
+
+          <!-- floating since the width on object selector is odd -->
+          <div class="left">
+          <label>And/or select genome group</label><br>
+            <div style="width: 495px;"
+            data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="optionalGenomeGroupSelector"
+            required="false"
+              data-dojo-attach-point="optionalGenomeGroupSelector"
+              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
+            </div>
+          </div>
+
+          <div class="left" style="margin-top: 13px;">
+            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddOptionalGenomeGroup" class="app-btn">
+              <i class="icon-plus"></i> Add
+            </button>
+          </div>
+          <div class="clear"></div>
+
+          <div>
+            <label>Optional Selected Genomes:</label> <small class="loading-status pull-right" style="margin-right: 20px; display: none;">loading...</small>
+          </div>
+
+          <div data-dojo-attach-point="optionalGenomeTable" style="margin-right: 20px;">
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end form -->
+  </div>
+
+
+  <div class="appSubmissionArea">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+      Submitting Codon Tree Job
+    </div>
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+      Error Submitting Job. Please check the submission form.
+    </div>
+    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+      The Codon Tree job has been submitted. This could take a few mins to hours to complete, depending on the number of genomes. Check your workspace to see the progress of your job.
+    </div>
+    <div style="margin-top: 10px; text-align:center;">
+      <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+      <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+    </div>
+  </div>
+</form>

@@ -229,6 +229,9 @@ define([
       delete obj.genomeGroupSelector;
       delete obj.genomeSelector;
 
+      // if seedWeight isn't specified, let mauve figure it out
+      if (!this.seedWeightSwitch.checked) obj.seedWeight = null;
+
       // get the ids from table selection
       var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
 

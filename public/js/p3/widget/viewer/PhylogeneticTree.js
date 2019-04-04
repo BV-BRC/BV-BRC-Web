@@ -118,6 +118,9 @@ define([
         objName = '.' + objName;
         objPathParts.push(objName);
         var objPath = decodeURIComponent(objPathParts.join('/'));
+        if (objPath.substring(0, 7) == '/public') {
+          objPath = objPath.substring(7);  // remove '/public' if needed
+        }
         WorkspaceManager.getFolderContents(objPath, true, true)
           .then(function (objs) {
             // console.log("[JobResult] objects: ", objs);
@@ -126,11 +129,11 @@ define([
                 dataFiles.push(obj.path);
               }
             });
-            if (dataFiles.length == 1) {
+            if (dataFiles.length >= 1) {
               WorkspaceManager.getObjects(dataFiles, false)
                 .then(function (curFiles) {
                   var treeDat = {};
-                  if (curFiles.length == 1) {
+                  if (curFiles.length >= 1) {
                     treeDat = JSON.parse(curFiles[0].data);
                     treeDat.info.taxon_name = _self.displayName;
                   }
