@@ -465,6 +465,8 @@ define([
         this.PEPROtherInputs.style.display = 'none';
         this.codonOtherInputs.style.display = 'block';
         this.codonTreeTable.style.display = 'block';
+        this.parameters_codon_tree.style.display = 'block';
+        this.parameters_all_shared_proteins.style.display = 'none';
         this.inGroupNumGenomes.constraints.min = 0;
         this.outGroupNumGenomes.constraints.min = 0;
         this.codonGroupNumGenomes.constraints.min = 4;
@@ -476,6 +478,8 @@ define([
         this.PEPROtherInputs.style.display = 'block';
         this.codonOtherInputs.style.display = 'none';
         this.codonTreeTable.style.display = 'none';
+        this.parameters_codon_tree.style.display = 'none';
+        this.parameters_all_shared_proteins.style.display = 'block';
         this.inGroupNumGenomes.constraints.min = 3;
         this.outGroupNumGenomes.constraints.min = 1;
         this.codonGroupNumGenomes.constraints.min = 0;
