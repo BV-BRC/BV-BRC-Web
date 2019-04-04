@@ -1541,7 +1541,13 @@ define([
       var div = domConstruct.create('div');
       displayHeader(div, item.genome_name, 'fa icon-genome fa-2x', '/view/Genome/' + item.genome_id, options);
 
-      var summary = 'Length: ' + item.genome_length + 'bp, Chromosomes: ' + (item.chromosomes || 0) + ', Plasmids: ' + (item.plasmids || 0) + ', Contigs: ' + (item.contigs || 0);
+      var chromosomes = item.chromosomes || 0;
+      var plasmids = item.plasmids || 0;
+      var contigs = item.contigs || 0;
+      var summary = 'Length: ' + item.genome_length + 'bp, ' +
+        (chromosomes ? 'Chromosomes: ' + chromosomes + ', ' : '') +
+        (plasmids ? 'Plasmids: ' + plasmids + ', ' : '') +
+        (contigs ? 'Contigs: ' + contigs : '');
 
       domConstruct.create('div', {
         innerHTML: summary,
@@ -1554,7 +1560,7 @@ define([
       return div;
     },
     genome_meta_table_names: function () {
-      return ['Organism Info', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+      return ['Organism Info', 'Genome Quality', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
     },
 
     genome_meta_spec: function () {
@@ -1644,6 +1650,32 @@ define([
         }, {
           name: 'Reference Genome',
           text: 'reference_genome'
+        }],
+
+        'Genome Quality': [{
+          name: 'Genome Quality',
+          text: 'genome_quality',
+          editable: false
+        }, {
+          name: 'Genome Quality Flags',
+          text: 'genome_quality_flags',
+          editable: false
+        }, {
+          name: 'Coarse Consistency',
+          text: 'coarse_consistency',
+          editable: false
+        }, {
+          name: 'Fine Consistency',
+          text: 'fine_consistency',
+          editable: false
+        }, {
+          name: 'CheckM Completeness',
+          text: 'checkm_completeness',
+          editable: false
+        }, {
+          name: 'CheckM Contamination',
+          text: 'checkm_contamination',
+          editable: false
         }],
 
         Sharing: [{
