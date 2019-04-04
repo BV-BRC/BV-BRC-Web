@@ -22,7 +22,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Metagenomic Read Mapping',
     applicationDescription: 'The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB.',
-    applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
+    applicationHelp: 'user_guides/services/metagenomic_read_mapping_service.html',
     tutorialLink: 'tutorial/comprehensive-genome-analysis/comprehensive-genome-analysis.html',
     defaultPath: '',
     startingRows: 6,
