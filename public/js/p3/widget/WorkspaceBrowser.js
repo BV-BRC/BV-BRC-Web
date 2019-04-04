@@ -342,6 +342,17 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewTaxonomicClassification', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['TaxonomicClassification'],
+        tooltip: 'View Taxonomic Classification'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/TaxonomicReport.html';
+        Topic.publish('/navigate', { href: '/workspace' + path });
+      }, false);
+
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
