@@ -514,6 +514,18 @@ define([
         });
       }, self.path.split('/').length < 3);
 
+      this.browserHeader.addAction('ViewCodonTree', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['CodonTree'],
+        tooltip: 'View Codon Tree'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/codontree_treeWithGenomeIds.nwk';
+
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path) });
+      }, false);
+
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
