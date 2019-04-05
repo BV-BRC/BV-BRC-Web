@@ -25,7 +25,7 @@
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">Input File</label>
-                  <div name="read-input-file" class="infobox iconbox infobutton dialoginfo">
+                  <div name="input-file" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
                 </div>
@@ -95,7 +95,7 @@
             </div>
           </div>
         </div>
-        <div class="appRow">
+        <div class="appRow" style="display:none">
           <label class="paramlabel">Gene Set Type</label><br>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="geneSetTypePredefinedList" name="gene_set_type" value="predefined_list" checked />
           <label for="radio1">Predefined List</label>
@@ -124,20 +124,6 @@
           <label class="paramlabel">Gene Set Feature Group</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="gene_set_feature_group" name="gene_set_feature_group" required="false"  data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace', placeHolder:''"></div>
           </div>
-        </div>
-        <div class="appRow">
-          <label class="paramlabel">Save Classified Reads</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_reads" value="false" checked />
-          <label for="radio1">No</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_reads" value="true" />
-          <label for="radio2">Yes</label>
-        </div>
-        <div class="appRow">
-          <label class="paramlabel">Save Unclassified Reads</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_reads" value="false" checked />
-          <label for="radio1">No</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_reads" value="true" />
-          <label for="radio2">Yes</label>
         </div>
         <div class="appRow">
           <label class="paramlabel">Output Folder</label><br>
