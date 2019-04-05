@@ -49,7 +49,7 @@ define([
 
       this.browserHeader = new ContainerActionBar({
         region: 'top',
-        className: 'BrowserHeader',
+        className: 'BrowserHeader WSBrowserHeader',
         path: this.path,
         layoutPriority: 3
       });
