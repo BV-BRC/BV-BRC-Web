@@ -53,12 +53,12 @@ define([
       this.pairToAttachPt1 = { read1: null, read2: null };
       this.pairConditionToAttachPt = { read1: null, read2: null, condition_paired: ['condition'] };
       this.advPairToAttachPt = { interleaved: null, insert_size_mean: null, insert_size_stdev: null };
-      this.paramToAttachPt = { output_path: null, output_file: null};
+      this.paramToAttachPt = { output_path: null, output_file: null };
       this.singleToAttachPt = { read: null };
       this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
       this.srrToAttachPt = { srr_accession: null };
       this.srrConditionToAttachPt = { srr_accession: null, condition_srr: ['condition'] };
-      this.conditionToAttachPt = { action_select: ['condition','label'] };
+      this.conditionToAttachPt = { action_select: ['condition', 'label'] };
       this.targetGenomeID = '';
       this.shapes = ['icon-square', 'icon-circle'];
       this.colors = ['blue', 'green', 'red', 'purple', 'orange'];
@@ -263,11 +263,10 @@ define([
       //     assembly_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList).concat(srrList);
       assembly_values.reference_genome_id = values.genome_name;
-    condList.forEach(function (condRecord) {
+      condList.forEach(function (condRecord) {
         condLibs.push(condRecord.condition);
-    });
+      });
 
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
@@ -332,9 +331,9 @@ define([
         }
         else if (attachname == 'action_select') {
           cur_value = this[attachname].displayedValue;// ? "/_uuid/"+this[attachname].searchBox.value : "";
-          if (cur_value == "Align"){
-              this.numAlign +=1;
-              this.toggleGenome();
+          if (cur_value == 'Align') {
+            this.numAlign += 1;
+            this.toggleGenome();
           }
           // cur_value="/_uuid/"+this[attachname].searchBox.value;
           // cur_value=this[attachname].searchBox.get('value');
@@ -426,7 +425,7 @@ define([
         return fn;
       }
       else if (mode == 'action_select') {
-        this.num_action +=1;
+        this.num_action += 1;
         var fn = this.action_select.displayedValue + String(this.num_action);
         return fn;
       }
@@ -468,15 +467,15 @@ define([
         counterWidget.set('value', Number(counter.counter));
       }
     },
-    toggleGenome: function(){
-        if (this.numAlign > 0){
-            this.genome_nameWidget.set('disabled', false);
-            this.genome_nameWidget.set('required', true);
-        }
-        else { 
-            this.genome_nameWidget.set('disabled', true);
-            this.genome_nameWidget.set('required', false);
-        }
+    toggleGenome: function () {
+      if (this.numAlign > 0) {
+        this.genome_nameWidget.set('disabled', false);
+        this.genome_nameWidget.set('required', true);
+      }
+      else {
+        this.genome_nameWidget.set('disabled', true);
+        this.genome_nameWidget.set('required', false);
+      }
     },
     getConditionIcon: function (query_id) {
       var result = '';
@@ -522,9 +521,9 @@ define([
           console.log('Delete Row');
           domConstruct.destroy(tr);
           this.destroyLib(lrec, lrec.condition, 'condition');
-          if(lrec.condition == "Align"){
-              this.numAlign -= 1;
-              this.toggleGenome();
+          if (lrec.condition == 'Align') {
+            this.numAlign -= 1;
+            this.toggleGenome();
           }
           // this.destroyContrastRow(query_id = lrec["condition"]);
           this.updateActiveStore(lrec, true);
@@ -587,7 +586,6 @@ define([
     },
 
 
-
     createLib: function (lrec) {
       this.libraryStore.put(lrec);
       if (lrec.condition) {
@@ -609,7 +607,6 @@ define([
         });
       }
     },
-
 
 
     onAddSingle: function () {
