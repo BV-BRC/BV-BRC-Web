@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
-  'dojo/text!./templates/MetagenomeBinning.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
+  'dojo/text!./templates/MetagenomicBinning.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dojox/xml/parser', 'dijit/Dialog',
   'dijit/popup', 'dijit/TooltipDialog',
   './AppBase', '../../WorkspaceManager'
@@ -16,13 +16,13 @@ define([
 
   return declare([AppBase], {
     baseClass: 'App Assembly',
-    pageTitle: 'Metagenome Binning Service',
+    pageTitle: 'Metagenomic Binning Service',
     templateString: Template,
-    applicationName: 'MetagenomeBinning',
+    applicationName: 'MetagenomicBinning',
     requireAuth: true,
-    applicationLabel: 'Metagenome Binning',
+    applicationLabel: 'Metagenomic Binning',
     applicationDescription: 'The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.',
-    applicationHelp: 'user_guides/services/metagenome_binning_service.html',
+    applicationHelp: 'user_guides/services/metagenomic_binning_service.html',
     tutorialLink: 'tutorial/metagenomic_binning/metagenomic_binning.html',
     libraryData: null,
     defaultPath: '',
