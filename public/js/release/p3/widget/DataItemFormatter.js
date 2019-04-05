@@ -1417,7 +1417,7 @@ define("p3/widget/DataItemFormatter", [
     },
 
     genome_amr_data: function (item, options) {
-      var sectionList = ['Summary', 'Measurement', 'Laboratory typing'];
+      var sectionList = ['Summary', 'Measurement', 'Laboratory Method', 'Computational Method'];
       var section = {};
 
       section.Summary = [{
@@ -1436,11 +1436,12 @@ define("p3/widget/DataItemFormatter", [
         name: 'Resistant Phenotype',
         text: 'resistant_phenotype'
       }, {
-        name: 'Testing Standard',
-        text: 'testing_standard'
+        name: 'Evidence',
+        text: 'evidence'
       }, {
-        name: 'Testing Standard Year',
-        text: 'testing_standard_year'
+        name: 'PubMed',
+        text: 'pmid',
+        link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
       }];
 
       section.Measurement = [{
@@ -1454,7 +1455,7 @@ define("p3/widget/DataItemFormatter", [
         text: 'measurement_unit'
       }];
 
-      section['Laboratory typing'] = [{
+      section['Laboratory Method'] = [{
         name: 'Method',
         text: 'laboratory_typing_method'
       }, {
@@ -1466,6 +1467,23 @@ define("p3/widget/DataItemFormatter", [
       }, {
         name: 'Version',
         text: 'laboratory_typing_method_version'
+      }, {
+        name: 'Testing Standard',
+        text: 'testing_standard'
+      }, {
+        name: 'Testing Standard Year',
+        text: 'testing_standard_year'
+      }];
+
+      section['Computational Method'] = [{
+        name: 'Method',
+        text: 'computational_method'
+      }, {
+        name: 'Version',
+        text: 'computational_method_version'
+      }, {
+        name: 'Performance',
+        text: 'computational_method_performance'
       }];
 
       var div = domConstruct.create('div');
@@ -1523,7 +1541,13 @@ define("p3/widget/DataItemFormatter", [
       var div = domConstruct.create('div');
       displayHeader(div, item.genome_name, 'fa icon-genome fa-2x', '/view/Genome/' + item.genome_id, options);
 
-      var summary = 'Length: ' + item.genome_length + 'bp, Chromosomes: ' + (item.chromosomes || 0) + ', Plasmids: ' + (item.plasmids || 0) + ', Contigs: ' + (item.contigs || 0);
+      var chromosomes = item.chromosomes || 0;
+      var plasmids = item.plasmids || 0;
+      var contigs = item.contigs || 0;
+      var summary = 'Length: ' + item.genome_length + 'bp, ' +
+        (chromosomes ? 'Chromosomes: ' + chromosomes + ', ' : '') +
+        (plasmids ? 'Plasmids: ' + plasmids + ', ' : '') +
+        (contigs ? 'Contigs: ' + contigs : '');
 
       domConstruct.create('div', {
         innerHTML: summary,
@@ -1536,7 +1560,7 @@ define("p3/widget/DataItemFormatter", [
       return div;
     },
     genome_meta_table_names: function () {
-      return ['Organism Info', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+      return ['Organism Info', 'Genome Quality', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
     },
 
     genome_meta_spec: function () {
@@ -1626,6 +1650,32 @@ define("p3/widget/DataItemFormatter", [
         }, {
           name: 'Reference Genome',
           text: 'reference_genome'
+        }],
+
+        'Genome Quality': [{
+          name: 'Genome Quality',
+          text: 'genome_quality',
+          editable: false
+        }, {
+          name: 'Genome Quality Flags',
+          text: 'genome_quality_flags',
+          editable: false
+        }, {
+          name: 'Coarse Consistency',
+          text: 'coarse_consistency',
+          editable: false
+        }, {
+          name: 'Fine Consistency',
+          text: 'fine_consistency',
+          editable: false
+        }, {
+          name: 'CheckM Completeness',
+          text: 'checkm_completeness',
+          editable: false
+        }, {
+          name: 'CheckM Contamination',
+          text: 'checkm_contamination',
+          editable: false
         }],
 
         Sharing: [{

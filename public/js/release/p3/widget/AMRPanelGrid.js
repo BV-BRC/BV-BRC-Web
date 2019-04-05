@@ -29,12 +29,16 @@ define("p3/widget/AMRPanelGrid", [
       m_value: { label: 'Measurement Value', field: 'measurement_value' },
       m_unit: { label: 'Measurement Units', field: 'measurement_unit' },
       l_method: { label: 'Lab typing Method', field: 'laboratory_typing_method' },
-      l_pltform: { label: 'Lab typing Platform', field: 'laboratory_typing_platform' },
-      l_vendor: { label: 'Lab typing Vendor', field: 'vendor' },
-      l_version: { label: 'Lab typing Version', field: 'laboratory_typing_method_version' },
-      test_standard: { label: 'Testing standard', field: 'testing_standard' },
+      l_version: { label: 'Lab typing Version', field: 'laboratory_typing_method_version', hidden: true },
+      l_pltform: { label: 'Lab typing Platform', field: 'laboratory_typing_platform', hidden: true },
+      l_vendor: { label: 'Lab typing Vendor', field: 'vendor', hidden: true },
+      test_standard: { label: 'Testing standard', field: 'testing_standard', hidden: true },
       test_year: { label: 'Testing standard year', field: 'testing_standard_year', hidden: true },
-      source: { label: 'Source', field: 'source', hidden: true }
+      c_method: { label: 'Computational Method', field: 'computational_method' },
+      c_version: { label: 'Computational Method Version', field: 'computational_method', hidden: true },
+      c_performance: { label: 'Computational Method Performance', field: 'computational_method_performance', hidden: true },
+      evidence: { label: 'Evidence', field: 'evidence' },
+      pmid: { label: 'Pubmed', field: 'pmid' }
     },
     selectAllFields: ['genome_id'],
     startup: function () {

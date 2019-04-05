@@ -49,7 +49,7 @@ define("p3/widget/WorkspaceBrowser", [
 
       this.browserHeader = new ContainerActionBar({
         region: 'top',
-        className: 'BrowserHeader',
+        className: 'BrowserHeader WSBrowserHeader',
         path: this.path,
         layoutPriority: 3
       });
@@ -280,7 +280,7 @@ define("p3/widget/WorkspaceBrowser", [
         var currentQuery = self.getQuery(selection[0]);
 
         var urlStr = window.App.dataServiceURL + '/' + dataType + '/' + currentQuery + '&http_authorization=' +
-          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download=true';
+          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&limit(25000)&http_download=true';
 
         // cursorMark requires a sort on an unique key
         urlStr += type === 'genome_group' ? '&sort(+genome_id)' : '&sort(+feature_id)';
@@ -338,6 +338,17 @@ define("p3/widget/WorkspaceBrowser", [
         } else {
           Topic.publish('/navigate', { href: '/workspace' + cid + '#summary' });
         }
+      }, false);
+
+      this.browserHeader.addAction('ViewTaxonomicClassification', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['TaxonomicClassification'],
+        tooltip: 'View Taxonomic Classification'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/TaxonomicReport.html';
+        Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
@@ -502,6 +513,18 @@ define("p3/widget/WorkspaceBrowser", [
           type: 'CreateWorkspace'
         });
       }, self.path.split('/').length < 3);
+
+      this.browserHeader.addAction('ViewCodonTree', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['CodonTree'],
+        tooltip: 'View Codon Tree'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/codontree_treeWithGenomeIds.nwk';
+
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path) });
+      }, false);
 
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',

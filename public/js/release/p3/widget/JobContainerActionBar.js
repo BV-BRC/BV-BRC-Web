@@ -142,7 +142,7 @@ define("p3/widget/JobContainerActionBar", [
 
       var inProgressBtn = domConstruct.create('span', {
         'class': 'JobFilter',
-        innerHTML: '<i class="icon-play22 JobsRunning"></i> ' +
+        innerHTML: '<i class="icon-play22 Running"></i> ' +
           '<span>-</span> running',
         style: {
           fontSize: '1.2em',
@@ -158,7 +158,7 @@ define("p3/widget/JobContainerActionBar", [
 
       var completedBtn = domConstruct.create('span', {
         'class': 'JobFilter',
-        innerHTML: '<i class="icon-checkmark2 JobsCompleted"></i> ' +
+        innerHTML: '<i class="icon-checkmark2 Completed"></i> ' +
           '<span>-</span> completed',
         style: {
           fontSize: '1.2em',
@@ -175,7 +175,7 @@ define("p3/widget/JobContainerActionBar", [
 
       var failedBtn = domConstruct.create('span', {
         'class': 'JobFilter',
-        innerHTML: '<i class="icon-warning2 JobsFailed"></i> ' +
+        innerHTML: '<i class="icon-warning2 Failed"></i> ' +
           '<span>-</span> failed',
         style: {
           fontSize: '1.2em',

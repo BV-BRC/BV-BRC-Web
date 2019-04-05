@@ -14,7 +14,7 @@ define("p3/widget/AMRPanelSummary", [
     dataModel: 'genome_amr',
     query: '',
     view: 'table',
-    baseQuery: '&limit(1)&facet((pivot,(resistant_phenotype,laboratory_typing_method,antibiotic)),(mincount,1))&json(nl,map)',
+    baseQuery: '&limit(1)&facet((pivot,(resistant_phenotype,evidence,antibiotic)),(mincount,1))&json(nl,map)',
     columns: [
       {
         label: 'Phenotypes',
@@ -38,8 +38,8 @@ define("p3/widget/AMRPanelSummary", [
     ],
     processData: function (data) {
 
-      if (!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,laboratory_typing_method,antibiotic']
-        || data.facet_counts.facet_pivot['resistant_phenotype,laboratory_typing_method,antibiotic'].length == 0) {
+      if (!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,evidence,antibiotic']
+        || data.facet_counts.facet_pivot['resistant_phenotype,evidence,antibiotic'].length == 0) {
         // hide this section
         domClass.add(this.domNode.parentNode, 'hidden');
         return;
@@ -48,7 +48,7 @@ define("p3/widget/AMRPanelSummary", [
       // make section visible
       domClass.remove(this.domNode.parentNode, 'hidden');
 
-      data = data.facet_counts.facet_pivot['resistant_phenotype,laboratory_typing_method,antibiotic'];
+      data = data.facet_counts.facet_pivot['resistant_phenotype,evidence,antibiotic'];
       var byPhenotypes = [];
 
       data.forEach(function (phenotype) {
@@ -56,7 +56,7 @@ define("p3/widget/AMRPanelSummary", [
           var antibiotics = method.pivot.map(function (pv) {
             return pv.value;
           });
-          var isComputed = (method.value == 'Computational Prediction');
+          var isComputed = (method.value == 'Computational Method');
           byPhenotypes.push({
             resistant_phenotype: phenotype.value,
             antibiotics: antibiotics,
