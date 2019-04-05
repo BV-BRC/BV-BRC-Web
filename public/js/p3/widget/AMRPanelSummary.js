@@ -56,7 +56,7 @@ define([
           var antibiotics = method.pivot.map(function (pv) {
             return pv.value;
           });
-          var isComputed = (method.value == 'Computational Prediction');
+          var isComputed = (method.value == 'Computational Method');
           byPhenotypes.push({
             resistant_phenotype: phenotype.value,
             antibiotics: antibiotics,
