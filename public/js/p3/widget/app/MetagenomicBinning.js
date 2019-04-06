@@ -18,7 +18,7 @@ define([
     baseClass: 'App Assembly',
     pageTitle: 'Metagenomic Binning Service',
     templateString: Template,
-    applicationName: 'MetagenomicBinning',
+    applicationName: 'MetagenomeBinning',
     requireAuth: true,
     applicationLabel: 'Metagenomic Binning',
     applicationDescription: 'The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.',
