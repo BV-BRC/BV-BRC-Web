@@ -85,14 +85,10 @@ define([
           tooltip: 'Anchor by genome'
         },
         function () {
-
-          // dialog for anchoring
-          // if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
           this.tooltip_anchoring = new TooltipDialog({
             content: this._buildPanelAnchoring()
           });
           this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
-          // }
 
           if (this.isPopupOpen) {
             this.isPopupOpen = false;
@@ -132,11 +128,7 @@ define([
           case 'updateHeatmapData':
             this.currentData = value;
             this.hmapUpdate();
-            /*
-            if (typeof this.hmapDom.refreshData == 'function') {
-              this.hmapDom.refreshData();
-              Topic.publish(this.topicId, 'hideLoadingMask');
-            } */
+            Topic.publish(this.topicId, 'hideLoadingMask');
             break;
           default:
             break;
@@ -147,36 +139,40 @@ define([
     update: function () {
       Topic.publish(this.topicId, 'refreshHeatmap');
     },
+
+    /* todo: this logic can probably be removed as it's
+      only only ever set to true, apparently */
     _setVisibleAttr: function (visible) {
       this.visible = visible;
 
       if (this.visible && !this._firstView) {
-
-        this.onFirstView();
+        this.initContainer();
         this.initializeHeatmap();
+        this.onFirstView();
       }
     },
+
+    initContainer: function () {
+      this.addChild(new ContentPane({
+        region: 'center',
+        content: "<div id='heatmapTarget'></div>",
+        style: 'padding:0; overflow: hidden;'
+      }));
+    },
+
     onFirstView: function () {
       if (this._firstView) {
         return;
       }
 
-      // action buttons for heatmap viewer
+      // add containerActions in heatmap container base class
+      this.containerActions = this.containerActions;
+
+      // action buttons container for containerActions
       this.containerActionBar = new ContainerActionBar({
         baseClass: 'BrowserHeader',
         region: 'top'
       });
-      this.containerActions.forEach(function (a) {
-        this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
-      }, this);
-      this.addChild(this.containerActionBar);
-
-      this.addChild(new ContentPane({
-        region: 'center',
-        content: "<div id='heatmapTarget'></div>",
-        style: 'padding:0'
-      }));
-
 
       this.inherited(arguments);
       this._firstView = true;

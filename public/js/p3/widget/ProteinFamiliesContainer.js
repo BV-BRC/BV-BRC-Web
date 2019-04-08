@@ -150,7 +150,7 @@ define([
       });
 
       this.heatmapContainerNew = new HeatmapContainerNew({
-        title: 'Heatmap <sup style="vertical-align: super;">(new)</sup>',
+        title: 'Heatmap <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">new</sup>',
         type: 'webGLHeatmap',
         topicId: this.topicId,
         content: 'Heatmap (new)'

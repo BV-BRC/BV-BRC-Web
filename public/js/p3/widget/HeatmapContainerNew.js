@@ -1,7 +1,9 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', '../../heatmap/dist/heatmap'
+  'dojo/_base/declare', 'dojo/_base/lang', '../../heatmap/dist/heatmap', 'dojo/query',
+  'dojo/dom-construct'
 ], function (
-  declare, lang, Heatmap
+  declare, lang, Heatmap, query,
+  domConstruct
 ) {
 
   return declare([], {
@@ -13,22 +15,14 @@ define([
       /**
        * new heatmap experiment
        */
-
       var target = document.getElementById('heatmapTarget');
       target.innerHTML = 'loading...';
-      // window.hmapReady = lang.hitch(this, 'heatmapReady');
-      // window.hmapRequestsData = lang.hitch(this, 'hmapUpdate');
-      // window.hmapCellClicked = lang.hitch(this, 'hmapCellClicked');
-      // window.hmapCellsSelected = lang.hitch(this, 'hmapCellsSelected');
-
-
-      this.hmapDom = document.getElementById('heatmapTarget');
+      this.hmapDom = target;
     },
 
     exportCurrentData: function (isTransposed) {
       // compose heatmap raw data in tab delimited format
       // this de-transpose (if it is transposed) so that cluster algorithm can be applied to a specific data type
-
       var cols,
         rows,
         id_field_name,
@@ -72,12 +66,6 @@ define([
       return tablePass.join('\n');
     },
 
-    // flash interface functions
-    hmapReady: function () {
-      // update this.currentData
-      // this.flashDom.refreshData();
-    },
-
     hmapUpdate: function () {
       if (!this.currentData) return;
       let { rows, cols, matrix } = this.formatData(this.currentData);
@@ -95,11 +83,21 @@ define([
             colors: [0x000000, 16440142, 16167991, 16737843]
           },
           defaults: {
-            cellW: 3,
-            cellH: 20
+            cellW: 1,
+            cellH: 30
           }
         });
+
+        this.containerActions.forEach(function (a) {
+          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+        }, this);
+
+        // put action icons in heatmap header
+        var header = query('.heatmap .header', this.hmapDom)[0];
+        domConstruct.place(this.containerActionBar.domNode, header, 'last');
       } else {
+
+
         this.chart.update({ rows, cols, matrix });
       }
 
@@ -113,6 +111,7 @@ define([
       // implement
     },
     formatData: function (data) {
+      console.log('data', data);
       var rows = data.rows.map(r => {
         return {
           // categories: ['1', '1', '1'], // todo(nc): remove
