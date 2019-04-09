@@ -153,11 +153,18 @@ define([
     },
 
     initContainer: function () {
-      this.addChild(new ContentPane({
+      var panel = new ContentPane({
         region: 'center',
         content: "<div id='heatmapTarget'></div>",
         style: 'padding:0; overflow: hidden;'
-      }));
+      });
+      dojo.connect(panel, 'resize', this, 'onResize');
+      this.addChild(panel);
+    },
+
+    onResize: function () {
+      if (!this.chart) return;
+      this.chart.resize();
     },
 
     onFirstView: function () {
@@ -170,7 +177,7 @@ define([
 
       // action buttons container for containerActions
       this.containerActionBar = new ContainerActionBar({
-        baseClass: 'BrowserHeader',
+        baseClass: '',
         region: 'top'
       });
 

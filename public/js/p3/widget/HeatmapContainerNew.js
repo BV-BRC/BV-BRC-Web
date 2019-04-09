@@ -77,15 +77,15 @@ define([
           cols: cols,
           rows: rows,
           matrix: matrix,
-          showLogo: false,
+          noLogo: true,
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
-          },
-          defaults: {
+          }
+          /* defaults: {
             cellW: 1,
             cellH: 30
-          }
+          } */
         });
 
         this.containerActions.forEach(function (a) {
@@ -111,7 +111,6 @@ define([
       // implement
     },
     formatData: function (data) {
-      console.log('data', data);
       var rows = data.rows.map(r => {
         return {
           // categories: ['1', '1', '1'], // todo(nc): remove
