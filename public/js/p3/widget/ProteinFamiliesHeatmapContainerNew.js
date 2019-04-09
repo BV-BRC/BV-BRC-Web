@@ -177,7 +177,7 @@ define([
 
       // action buttons container for containerActions
       this.containerActionBar = new ContainerActionBar({
-        baseClass: '',
+        baseClass: 'BrowserHeader',
         region: 'top'
       });
 

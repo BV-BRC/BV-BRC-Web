@@ -81,7 +81,8 @@ define([
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
-          }
+          },
+          light: true
           /* defaults: {
             cellW: 1,
             cellH: 30
