@@ -8,9 +8,16 @@
 	border-top: 1px solid #e2e2e2;
 }
 
+/* browser header used all over the site */
 .BrowserHeader {
 	padding: 0;
-	vertical-align:bottom;
+	vertical-align: bottom;
+}
+
+/* specific to the workspace browser */
+.WSBrowserHeader {
+	display: flex;
+	justify-content: space-between;
 }
 
 a.HelpLink {
@@ -334,14 +341,13 @@ th.dgrid-cell.wsItemMembers {
 }
 
 .wsActionContainer {
-	float: right;
+	white-space: nowrap;  /* don't wrap icons */
 }
 
 .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
 	margin: 2px 5px;
 }
-
 
 .GeneExpFilterPanel .ActionButtonWrapper:hover,
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton,

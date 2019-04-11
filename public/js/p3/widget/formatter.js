@@ -409,8 +409,8 @@ define(
             return 'RNA-Seq Analysis';
           case 'TnSeq':
             return 'Tn-Seq Analysis';
-          case 'MetagenomeBinning':
-            return 'Metagenome Binning';
+          case 'MetagenomicBinning':
+            return 'Metagenomic Binning';
           case 'ModelReconstruction':
             return 'Model Reconstruction';
           default:

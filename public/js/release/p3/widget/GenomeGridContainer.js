@@ -25,7 +25,7 @@ define("p3/widget/GenomeGridContainer", [
     containerType: 'genome_data',
     tutorialLink: 'user_guides/organisms_taxon/genome_table.html',
     // facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_year"],
-    facetFields: ['public', 'genome_status', 'reference_genome', 'antimicrobial_resistance', 'isolation_country', 'host_name', 'collection_year'],
+    facetFields: ['public', 'genome_status', 'reference_genome', 'antimicrobial_resistance', 'isolation_country', 'host_name', 'collection_year', 'genome_quality'],
     getFilterPanel: function (opts) {
 
     },

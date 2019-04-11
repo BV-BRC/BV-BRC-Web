@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n  <div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n  <div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n    <span>Uploads</span>\n    <span data-dojo-attach-point=\"uploadStatusCount\" class=\"UploadStatusCounts dijitHidden\">\n\n      <i class=\"icon-play22 UploadsRunning\"></i>\n      <span data-dojo-attach-point=\"activeUploadCountNode\">0</span>\n\n      <span class=\"divider\"></span>\n\n      <i class=\"icon-checkmark2 UploadsCompleted\"></i>\n      <span data-dojo-attach-point=\"completedUploadCountNode\">0</span>\n\n\n      <span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n    </span>\n  </div>\n</div>\n"}});
+'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n  <div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n  <div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n    <span>Uploads</span>\n    <span data-dojo-attach-point=\"uploadStatusCount\" class=\"UploadStatusCounts dijitHidden\">\n\n      <i class=\"icon-play22 Running\"></i>\n      <span data-dojo-attach-point=\"activeUploadCountNode\">0</span>\n\n      <span class=\"divider\"></span>\n\n      <i class=\"icon-checkmark2 Completed\"></i>\n      <span data-dojo-attach-point=\"completedUploadCountNode\">0</span>\n\n\n      <span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n    </span>\n  </div>\n</div>\n"}});
 define("p3/widget/UploadStatus", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dojo/topic', 'dojo/_base/lang',
@@ -39,8 +39,8 @@ define("p3/widget/UploadStatus", [
       UploadManager.getUploadSummary().then(lang.hitch(this, 'onUploadMessage'));
       this.tooltip = new Tooltip({
         connectId: [this.uploadStatusCount],
-        label: ' <i class="icon-play22 JobsRunning"></i> In progress | ' +
-          '<i class="icon-checkmark2 JobsCompleted"></i> Completed | ' +
+        label: ' <i class="icon-play22 Running"></i> In progress | ' +
+          '<i class="icon-checkmark2 Completed"></i> Completed | ' +
           '% Complete',
         position: ['above']
       });

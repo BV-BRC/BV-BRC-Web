@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n  <span>Jobs</span>\n  <span class=\"JobStatusCounts\">\n\n    <i class=\"icon-tasks JobsQueued\"></i>\n    <span data-dojo-attach-point=\"jobsQueuedNode\"></span>\n\n    <span class=\"divider\"></span>\n\n    <i class=\"icon-play22 JobsRunning\"></i>\n    <span data-dojo-attach-point=\"jobsRunningNode\"></span>\n\n    <span class=\"divider\"></span>\n\n    <i class=\"icon-checkmark2 JobsCompleted\"></i>\n    <span data-dojo-attach-point=\"jobsCompleteNode\"></span>\n\n  </span>\n</div>\n"}});
+'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n  <span>Jobs</span>\n  <span class=\"JobStatusCounts\">\n\n    <i class=\"icon-tasks Queued\"></i>\n    <span data-dojo-attach-point=\"jobsQueuedNode\"></span>\n\n    <span class=\"divider\"></span>\n\n    <i class=\"icon-play22 Running\"></i>\n    <span data-dojo-attach-point=\"jobsRunningNode\"></span>\n\n    <span class=\"divider\"></span>\n\n    <i class=\"icon-checkmark2 Completed\"></i>\n    <span data-dojo-attach-point=\"jobsCompleteNode\"></span>\n\n  </span>\n</div>\n"}});
 define("p3/widget/JobStatus", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dojo/topic', 'dojo/_base/lang',
@@ -30,9 +30,9 @@ define("p3/widget/JobStatus", [
 
       this.tooltip = new Tooltip({
         connectId: [this.domNode],
-        label: '<i class="icon-tasks" style="color: #666"></i> Queued | ' +
-          '<i class="icon-play22 JobsRunning"></i> Running | ' +
-          '<i class="icon-checkmark2 JobsCompleted"></i> Completed',
+        label: '<i class="icon-tasks Queued"></i> Queued | ' +
+          '<i class="icon-play22 Running"></i> Running | ' +
+          '<i class="icon-checkmark2 Completed"></i> Completed',
         position: ['above']
       });
     },

@@ -49,7 +49,7 @@ define([
 
       this.browserHeader = new ContainerActionBar({
         region: 'top',
-        className: 'BrowserHeader',
+        className: 'BrowserHeader WSBrowserHeader',
         path: this.path,
         layoutPriority: 3
       });
@@ -340,6 +340,17 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewTaxonomicClassification', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['TaxonomicClassification'],
+        tooltip: 'View Taxonomic Classification'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/TaxonomicReport.html';
+        Topic.publish('/navigate', { href: '/workspace' + path });
+      }, false);
+
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -502,6 +513,18 @@ define([
           type: 'CreateWorkspace'
         });
       }, self.path.split('/').length < 3);
+
+      this.browserHeader.addAction('ViewCodonTree', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['CodonTree'],
+        tooltip: 'View Codon Tree'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/codontree_treeWithGenomeIds.nwk';
+
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path) });
+      }, false);
 
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
