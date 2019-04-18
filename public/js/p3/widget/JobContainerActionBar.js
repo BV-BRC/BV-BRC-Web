@@ -107,7 +107,6 @@ define([
       /**
        * status filters / counts
        */
-
       var allBtn = domConstruct.create('span', {
         'class': 'JobFilter',
         innerHTML: '<i class="icon-undo"></i> All statuses',
@@ -171,7 +170,6 @@ define([
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'inline');
       });
-
 
       var failedBtn = domConstruct.create('span', {
         'class': 'JobFilter',

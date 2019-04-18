@@ -107,7 +107,7 @@ define(
 
         var _self = this;
         var timer = setTimeout(function () {
-          _self.errorDialog.set('content', 'Unable to retreive additional details about this task at this task. The operation timed out.');
+          _self.errorDialog.set('content', 'Unable to retrieve additional details about this task at this task. The operation timed out.');
         }, 30000);
 
         JobManager.queryTaskDetail(data.id, true, true).then(function (detail) {
@@ -115,10 +115,10 @@ define(
           if (detail.stderr) {
             _self.errorDialog.set('content', "<div style='overflow:auto;'><div data-dojo-type='dijit/TitlePane' title='STDOUT' open='false'><pre>" + (detail.stdout || 'None.') + "</pre></div><br><div data-dojo-type='dijit/TitlePane' title='STDERR'><pre>" + (detail.stderr || 'None.') + '</pre></div>');
           } else {
-            _self.errorDialog.set('content', 'Unable to retreive additional details about this task at this task.<br><pre>' + JSON.stringify(detail, null, 4) + '</pre>');
+            _self.errorDialog.set('content', 'Unable to retrieve additional details about this task at this task.<br><pre>' + JSON.stringify(detail, null, 4) + '</pre>');
           }
         }, function (err) {
-          _self.errorDialog.set('content', 'Unable to retreive additional details about this task at this task.<br>' + err + '<br><pre></pre>');
+          _self.errorDialog.set('content', 'Unable to retrieve additional details about this task at this task.<br>' + err + '<br><pre></pre>');
         });
 
         this.errorDialog.show();
