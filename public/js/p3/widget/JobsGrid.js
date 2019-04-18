@@ -1,18 +1,15 @@
 define(
   [
-    'dojo/_base/declare', './PageGrid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry',
-    'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', 'dgrid/extensions/ColumnHider',
-    'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang',
-    'dojo/topic', 'dgrid/editor', 'dijit/Menu', 'dijit/MenuItem', '../WorkspaceManager', 'dijit/Dialog',
-    '../JobManager', 'dojo/on'
-
+    'dojo/_base/declare', './PageGrid', 'dgrid/extensions/DijitRegistry',
+    'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer',
+    'dgrid/extensions/ColumnHider', 'dojo/_base/Deferred', 'dojo/aspect',
+    'dojo/topic', 'dijit/Dialog', '../JobManager', 'dojo/on'
   ],
   function (
-    declare, Grid, Store, DijitRegistry,
+    declare, Grid, DijitRegistry,
     Keyboard, Selection, formatter, ColumnResizer,
-    ColumnHider, DnD, DnDSource,
-    Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, Dialog,
-    JobManager, on
+    ColumnHider, Deferred, aspect,
+    Topic, Dialog, JobManager, on
   ) {
 
     var store = JobManager.getStore();
@@ -28,27 +25,18 @@ define(
       // pagingMethod: "throttleDelayed",
       farOffRemoval: 2000,
       keepScrollPosition: true,
-      rowHeight: 24,
       loadingMessage: 'Loading...',
-      dndDataType: 'genome',
-      dndParams: {
-        accept: 'none',
-        selfAccept: false,
-        copyOnly: true
-      },
       columns: {
         status: {
           label: 'Status',
           field: 'status',
           formatter: formatter.status_alias
         },
-
         submit_time: {
           label: 'Submit',
           field: 'submit_time',
           formatter: formatter.date
         },
-
         id: {
           label: 'ID',
           field: 'id',
@@ -84,27 +72,9 @@ define(
         }
       },
       constructor: function () {
-
         this.queryOptions = {
           sort: [{ attribute: 'submit_time', descending: true }]
         };
-
-        this.dndParams.creator = lang.hitch(this, function (item, hint) {
-        // console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
-          var avatar = dojo.create('div', {
-            innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
-          });
-          avatar.data = item;
-          if (hint == 'avatar') {
-          // create your avatar if you want
-          }
-
-          return {
-            node: avatar,
-            data: item,
-            type: this.dndDataType
-          };
-        });
       },
 
       queryOptions: {
@@ -129,7 +99,6 @@ define(
       },
 
       showErrorDialog: function (data) {
-      // console.log("Show Error Dialog: ", data);
         if (!this.errorDialog) {
           this.errorDialog = new Dialog({ title: 'Task Output', content: 'Loading Task Detail...' });
         } else {
@@ -140,8 +109,8 @@ define(
         var timer = setTimeout(function () {
           _self.errorDialog.set('content', 'Unable to retreive additional details about this task at this task. The operation timed out.');
         }, 30000);
+
         JobManager.queryTaskDetail(data.id, true, true).then(function (detail) {
-        // console.log("JOB DETAIL: ", detail);
           clearTimeout(timer);
           if (detail.stderr) {
             _self.errorDialog.set('content', "<div style='overflow:auto;'><div data-dojo-type='dijit/TitlePane' title='STDOUT' open='false'><pre>" + (detail.stdout || 'None.') + "</pre></div><br><div data-dojo-type='dijit/TitlePane' title='STDERR'><pre>" + (detail.stderr || 'None.') + '</pre></div>');
@@ -179,6 +148,7 @@ define(
           };
           on.emit(_self.domNode, 'select', newEvt);
         });
+
         this.on('dgrid-deselect', function (evt) {
           var newEvt = {
             rows: evt.rows,
@@ -192,8 +162,6 @@ define(
 
         this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
           var row = _self.row(evt);
-          // console.log('JobsGrid:dblclick: ', row);
-
           on.emit(_self.domNode, 'ItemDblClick', {
             selected: row.data,
             bubbles: true,

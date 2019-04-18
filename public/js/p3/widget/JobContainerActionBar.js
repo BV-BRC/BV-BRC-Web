@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
-  'dijit/form/Button', 'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
+  'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
   'dojo/dom-class', './formatter', '../util/getTime'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
-  Button, Select, Topic, query, JobManager,
+  Select, Topic, query, JobManager,
   domClass, formatter, getTime
 ) {
   return declare([ActionBar], {
