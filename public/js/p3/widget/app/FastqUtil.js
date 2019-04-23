@@ -18,7 +18,7 @@ define([
   return declare([AppBase], {
     baseClass: 'App Assembly',
     templateString: Template,
-    applicationName: 'FastqUtil',
+    applicationName: 'FastqUtils',
     requireAuth: true,
     applicationLabel: 'Fastq Utilities',
     applicationDescription: 'The Fastq Utilites Service provides capability for aligning, measuring base call quality, and trimmiing fastq read files.',
