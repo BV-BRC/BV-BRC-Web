@@ -380,7 +380,7 @@ define([
       return (success);
     },
     showConditionLabels: function (item, store) {
-      var label = item.condition + ' ' + item.icon;
+      var label = item.condition;
       return label;
     },
     makeLibraryName: function (mode) {
