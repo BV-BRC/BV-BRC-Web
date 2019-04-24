@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class',
-  'dojo/text!./templates/Rnaseq.html', './AppBase', 'dojo/dom-construct',
+  'dojo/text!./templates/FastqUtil.html', './AppBase', 'dojo/dom-construct',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby',
@@ -18,20 +18,18 @@ define([
   return declare([AppBase], {
     baseClass: 'App Assembly',
     templateString: Template,
-    applicationName: 'RNASeq',
+    applicationName: 'FastqUtil',
     requireAuth: true,
-    applicationLabel: 'RNA-Seq Analysis',
-    applicationDescription: 'The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.',
-    applicationHelp: 'user_guides/services/rna_seq_analysis_service.html',
-    tutorialLink: 'tutorial/rna_seq_submission/submitting_rna_seq_job.html',
-    pageTitle: 'RNA-Seq Analysis',
+    applicationLabel: 'Fastq Utilities',
+    applicationDescription: 'The Fastq Utilites Service provides capability for aligning, measuring base call quality, and trimmiing fastq read files.',
+    applicationHelp: 'user_guides/services/fastq_utilites_service.html',
+    tutorialLink: 'tutorial/rna_seq_submission/submitting_fastq_utilites.html',
+    pageTitle: 'Fastq Utilities',
     libraryData: null,
     defaultPath: '',
-    startingRows: 18,
+    startingRows: 12,
     initConditions: 5,
-    initContrasts: 8,
-    maxConditions: 10,
-    maxContrasts: 100,
+    maxConditions: 5,
     conditionStore: null,
     srrValidationUrl: 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     hostGenomes: {
@@ -49,30 +47,29 @@ define([
 
       this.addedLibs = { counter: 0 };
       this.addedCond = { counter: 0 };
-      this.addedContrast = { counter: 0 };
       // these objects map dojo attach points to desired alias for ingestAttachPoint function
       // key is attach point array of values is alias
       // if there is no alias the key in the resulting object will be the same name as attach point
       this.pairToAttachPt1 = { read1: null, read2: null };
       this.pairConditionToAttachPt = { read1: null, read2: null, condition_paired: ['condition'] };
       this.advPairToAttachPt = { interleaved: null, insert_size_mean: null, insert_size_stdev: null };
-      this.paramToAttachPt = { output_path: null, output_file: null, recipe: null };
+      this.paramToAttachPt = { output_path: null, output_file: null };
       this.singleToAttachPt = { read: null };
       this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
       this.srrToAttachPt = { srr_accession: null };
       this.srrConditionToAttachPt = { srr_accession: null, condition_srr: ['condition'] };
-      this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
-      this.contrastToAttachPt = { contrast_cd1: ['condition1'], contrast_cd2: ['condition2'] };
+      this.conditionToAttachPt = { action_select: ['condition', 'label'] };
       this.targetGenomeID = '';
       this.shapes = ['icon-square', 'icon-circle'];
       this.colors = ['blue', 'green', 'red', 'purple', 'orange'];
       this.color_counter = 0;
       this.shape_counter = 0;
       this.conditionStore = new Memory({ data: [] });
-      this.contrastStore = new Memory({ data: [] });
       this.activeConditionStore = new Memory({ data: [] }); // used to store conditions with more than 0 libraries assigned
       this.libraryStore = new Memory({ data: [], idProperty: 'id' });
       this.libraryID = 0;
+      this.numAlign = 0;
+      this.num_action = 0;
     },
 
     startup: function () {
@@ -90,7 +87,6 @@ define([
       // create help dialog for infobutton's with infobuttoninfo div's
       this.emptyTable(this.libsTable, this.startingRows, 4);
       this.emptyTable(this.condTable, this.initConditions, 3);
-      this.emptyTable(this.contrastTable, this.initContrasts, 5);
 
       // adjust validation for each of the attach points associated with read files
       Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function (attachname) {
@@ -100,17 +96,21 @@ define([
             (this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
         });
       }));
-      on(this.group_switch, 'click', lang.hitch(this, function (evt) {
-        this.exp_design.checked = !this.exp_design.checked;
-        this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
-        this.onDesignToggle();
-      }));
-      this.condition_single.labelFunc = this.showConditionLabels;
-      this.condition_srr.labelFunc = this.showConditionLabels;
-      this.condition_paired.labelFunc = this.showConditionLabels;
-      this.contrast_cd1.labelFunc = this.showConditionLabels;
-      this.contrast_cd2.labelFunc = this.showConditionLabels;
-
+      // for initial rollout use two conditions. this will change when contrasts are specified and the condition table comes back
+      var trim = {
+        id: 'trim', condition: 'trim', label: 'Trim', icon: this.getConditionIcon()
+      };
+      var fastqc = {
+        id: 'fastqc', condition: 'fastqc', label: 'FastQC', icon: this.getConditionIcon()
+      };
+      var align = {
+        id: 'align', condition: 'align', label: 'Align', icon: this.getConditionIcon()
+      };
+      // temporary until contrasts table added
+      this.updateConditionStore(trim, false);
+      this.updateConditionStore(fastqc, false);
+      this.updateConditionStore(align, false);
+      this.action_select.labelFunc = this.showConditionLabels;
       // this.block_condition.show();
 
       // this.read1.set('value',"/" +  window.App.user.id +"/home/");
@@ -120,47 +120,10 @@ define([
       this._started = true;
     },
 
-    onDesignToggle: function () {
-      var design_status = this.exp_design.checked;
-      this.condition.set('disabled', !design_status);
-      this.condition_single.set('disabled', !design_status);
-      this.condition_srr.set('disabled', !design_status);
-      this.condition_paired.set('disabled', !design_status);
-      this.contrast_cd1.set('disabled', !this.contrastEnabled());
-      this.contrast_cd2.set('disabled', !this.contrastEnabled());
-      if (!design_status) { //design status not enabled
-        // this.block_condition.show();
-        this.numCondWidget.set('value', Number(1));
-        this.destroyLib({}, true, 'design');
-        domClass.add(this.condTable, 'disabled');
-        this.numContrastWidget.set('required', false);
-        this.numContrastWidget.set('disabled', true);
-        this.destroyContrastRow(true, 'contrast');
-        domClass.add(this.contrastTable, 'disabled');
-      }
-      else {
-        // this.block_condition.hide();
-        this.numCondWidget.set('value', Number(this.addedCond.counter));
-        this.destroyLib({}, false, 'design');
-        domClass.remove(this.condTable, 'disabled');
-        this.numContrastWidget.set('value', Number(this.addedContrast.counter));
-        this.destroyContrastRow(false, 'contrast');
-        if (this.contrastEnabled()) {
-          this.numContrastWidget.set('required', true);
-          this.numContrastWidget.set('disabled', false);
-          domClass.remove(this.contrastTable, 'disabled');
-        }
-        else{
-          this.numContrastWidget.set('required', false);
-          this.numContrastWidget.set('disabled', true);
-          domClass.add(this.contrastTable, 'disabled');
-        }
-      }
-    },
 
     onAddSRR: function () {
       console.log('Create New Row', domConstruct);
-      var toIngest = this.exp_design.checked ? this.srrConditionToAttachPt : this.srrToAttachPt;
+      var toIngest = this.srrToAttachPt;
       var accession = this.srr_accession.get('value');
       // console.log("updateSRR", accession, accession.substr(0, 3))
       // var prefixList = ['SRR', 'ERR']
@@ -287,43 +250,26 @@ define([
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
       var srrAttrs = ['srr_accession'];
-      var condList = this.conditionStore.data;
-      var contrastList = this.contrastStore.data;
+      var condList = this.activeConditionStore.data;
       var singleList = this.libraryStore.query({ type: 'single' });
       var srrList = this.libraryStore.query({ type: 'srr_accession' });
       var condLibs = [];
       var pairedLibs = [];
       var singleLibs = [];
       var srrLibs = [];
-      var contrastPairs = [];
       this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       // for (var k in values) {
       //   if(!k.startsWith("libdat_")){
       //     assembly_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList).concat(srrList);
       assembly_values.reference_genome_id = values.genome_name;
-      if (this.exp_design.checked) {
-        condList.forEach(function (condRecord) {
-          for (var i = 0; i < combinedList.length; i++) {
-            if (combinedList[i].condition == condRecord.condition) {
-              condLibs.push(condRecord.condition);
-              break;
-            }
-          }
-        });
-        contrastList.forEach(function (contrastRecord) {
-          contrastPairs.push([condLibs.indexOf(contrastRecord.condition1) + 1, condLibs.indexOf(contrastRecord.condition2) + 1]);
-        });
-        assembly_values.contrasts = contrastPairs;
-      }
+      condList.forEach(function (condRecord) {
+        condLibs.push(condRecord.condition);
+      });
 
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
         pairedAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
         });
@@ -333,13 +279,10 @@ define([
         assembly_values.paired_end_libs = pairedLibs;
       }
       if (condLibs.length) {
-        assembly_values.experimental_conditions = condLibs;
+        assembly_values.recipe = condLibs;
       }
       singleList.forEach(function (libRecord) {
         var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
         singleAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
         });
@@ -350,9 +293,6 @@ define([
       }
       srrList.forEach(function (libRecord) {
         var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
         srrAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
         });
@@ -369,7 +309,7 @@ define([
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;
       var success = 1;
-      var prevalidate_ids = ['read1', 'read2', 'read', 'output_path', 'condition', 'condition_single', 'condition_paired', 'srr_accession', 'condition_srr'];
+      var prevalidate_ids = ['read1', 'read2', 'read', 'output_path', 'action_select', 'action_store', 'srr_accession'];
       target.id = this.makeStoreID(target.type);
       var duplicate = target.id in this.libraryStore.index;
       // For each named obj in input_pts get the attributes from the dojo attach point of the same name in the template
@@ -389,8 +329,12 @@ define([
           // cur_value=this[attachname].searchBox.get('value');
           // incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
         }
-        else if (attachname == 'condition') {
+        else if (attachname == 'action_select') {
           cur_value = this[attachname].displayedValue;// ? "/_uuid/"+this[attachname].searchBox.value : "";
+          if (cur_value == 'Align') {
+            this.numAlign += 1;
+            this.toggleGenome();
+          }
           // cur_value="/_uuid/"+this[attachname].searchBox.value;
           // cur_value=this[attachname].searchBox.get('value');
         }
@@ -476,12 +420,13 @@ define([
         var fn = this.read.searchBox.get('value');
         return fn;
       }
-      else if (mode == 'contrast') {
-        var fn = this.contrast_cd1.get('value') + this.contrast_cd2.get('value');
+      else if (mode == 'action_store') {
+        var fn = this.action_select.displayedValue;
         return fn;
       }
-      else if (mode == 'condition') {
-        var fn = this.condition.displayedValue;
+      else if (mode == 'action_select') {
+        this.num_action += 1;
+        var fn = this.action_select.displayedValue + String(this.num_action);
         return fn;
       }
       else if (mode == 'srr_accession') {
@@ -522,6 +467,16 @@ define([
         counterWidget.set('value', Number(counter.counter));
       }
     },
+    toggleGenome: function () {
+      if (this.numAlign > 0) {
+        this.genome_nameWidget.set('disabled', false);
+        this.genome_nameWidget.set('required', true);
+      }
+      else {
+        this.genome_nameWidget.set('disabled', true);
+        this.genome_nameWidget.set('required', false);
+      }
+    },
     getConditionIcon: function (query_id) {
       var result = '';
       if (!query_id) {
@@ -538,52 +493,75 @@ define([
 
     onAddCondition: function () {
       console.log('Create New Row', domConstruct);
-      var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
+      var lrec = { count: 0, type: 'action_select' }; // initialized to the number of libraries assigned
       var toIngest = this.conditionToAttachPt;
-      var disable = !this.exp_design.checked;
+      var disable = false;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
-      var conditionSize = this.conditionStore.data.length;
+      var conditionSize = this.activeConditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
-        this.updateConditionStore(lrec, false);
+        this.updateActiveStore(lrec, false);
       }
       // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
-      if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length) {
+      if (chkPassed && !disable && this.addedCond.counter < this.maxConditions && conditionSize < this.activeConditionStore.data.length) {
         lrec.icon = this.getConditionIcon();
-        var tr = this.condTable.insertRow(0);
+        if (this.addedCond.counter < this.initConditions) {
+          this.condTable.deleteRow(0);
+        }
+        var tr = this.condTable.insertRow();
         var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
         td.libRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName(this.condition.get('displayedValue')) + '</div>';
+        td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName(this.action_select.get('displayedValue')) + '</div>';
         domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
         var td2 = domConstruct.create('td', {
           'class': 'iconcol',
           innerHTML: "<i class='fa icon-x fa-1x' />"
         }, tr);
-        if (this.addedCond.counter < this.initConditions) {
-          this.condTable.deleteRow(-1);
-        }
 
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
           domConstruct.destroy(tr);
           this.destroyLib(lrec, lrec.condition, 'condition');
+          if (lrec.condition == 'Align') {
+            this.numAlign -= 1;
+            this.toggleGenome();
+          }
           // this.destroyContrastRow(query_id = lrec["condition"]);
-          this.updateConditionStore(lrec, true);
+          this.updateActiveStore(lrec, true);
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
           if (this.addedCond.counter < this.maxConditions) {
-            var ntr = this.condTable.insertRow(-1);
+            var ntr = this.condTable.insertRow(0);
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
-          this.condition_single.reset();
-          this.condition_srr.reset();
-          this.condition_paired.reset();
+          this.action_select.reset();
           handle.remove();
         }));
         this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
       }
     },
 
+    updateActiveStore: function (record, remove) {
+      // if there is no real condition specified return
+      if (!record.condition.trim()) {
+        return;
+      }
+      if (remove) {
+        var toRemove = this.activeConditionStore.query({ id: record.id });
+        // remove condition from data store
+        toRemove.forEach(function (obj) {
+          if (obj.libraries) {
+            obj.libraries.forEach(function (lib_row) {
+              lib_row.remove();
+            });
+          }
+          this.activeConditionStore.remove(obj.id);
+        }, this);
+      }
+      else {
+        this.activeConditionStore.put(record);
+      }
+    },
     updateConditionStore: function (record, remove) {
       // if there is no real condition specified return
       if (!record.condition.trim()) {
@@ -604,84 +582,7 @@ define([
       else {
         this.conditionStore.put(record);
       }
-      this.condition_paired.set('store', this.conditionStore);
-      this.condition_single.set('store', this.conditionStore);
-      this.condition_srr.set('store', this.conditionStore);
-      this.contrast_cd1.set('store', this.activeConditionStore);
-      this.contrast_cd2.set('store', this.activeConditionStore);
-    },
-
-    updateContrastStore: function (record, remove) {
-      // if there is no real condition specified return
-      if (!record.condition1.trim() || !record.condition2.trim()) {
-        return;
-      }
-      if (remove) {
-        var toRemove = this.contrastStore.query({ id: record.id });
-        // remove condition from data store
-        toRemove.forEach(function (obj) {
-          if (obj.contrasts) {
-            obj.contrasts.forEach(function (contrast_row) {
-              contrast_row.remove();
-            });
-          }
-          this.contrastStore.remove(obj.id);
-        }, this);
-      }
-      else {
-        this.contrastStore.put(record);
-      }
-    },
-
-    onAddContrast: function () {
-      console.log('Create New Row', domConstruct);
-      var lrec = { type: 'contrast' };
-      var disable = !this.exp_design.checked;
-      var chkPassed = this.ingestAttachPoints(this.contrastToAttachPt, lrec);
-      var contrastSize = this.contrastStore.data.length;
-      if (this.addedContrast.counter < this.maxContrasts) {
-        this.updateContrastStore(lrec, false);
-      }
-      // make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
-      if (chkPassed && !disable && this.addedContrast.counter < this.maxContrasts && contrastSize < this.contrastStore.data.length) {
-        var condition1 = this.contrast_cd1.get('displayedValue');
-        var condition2 = this.contrast_cd2.get('displayedValue');
-        lrec.icon1 = this.getConditionIcon(condition1);
-        lrec.icon2 = this.getConditionIcon(condition2);
-        var tr = this.contrastTable.insertRow(0);
-        lrec.row = tr;
-
-        var td_cd1 = domConstruct.create('td', { 'class': 'conditiondata', innerHTML: '' }, tr);
-        td_cd1.innerHTML = "<div class='contrastrow'>" + this.makeConditionName(condition1) + '</div>';
-        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon1 }, tr);
-
-        var td_cd2 = domConstruct.create('td', { 'class': 'conditiondata', innerHTML: '' }, tr);
-        td_cd2.innerHTML = "<div class='contrastrow'>" + this.makeConditionName(condition2) + '</div>';
-        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon2 }, tr);
-
-        var tdx = domConstruct.create('td', { 'class': 'iconcol', innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-        if (this.addedContrast.counter < this.initContrasts) {
-          this.contrastTable.deleteRow(-1);
-        }
-
-        var handle = on(tdx, 'click', lang.hitch(this, function (evt) {
-          console.log('Delete Row');
-          domConstruct.destroy(tr);
-          this.updateContrastStore(lrec, true);
-          this.decreaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
-          if (this.addedContrast.counter < this.maxContrasts) {
-            var ntr = this.condTable.insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          handle.remove();
-          this.destroyContrastRow(lrec.contrast, 'contrast');
-        }));
-        this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
-      }
+      this.action_select.set('store', this.conditionStore);
     },
 
 
@@ -694,7 +595,6 @@ define([
           obj.count += 1;
         });
       }
-      this.updateContrasts();
     },
 
     destroyLib: function (lrec, query_id, id_type) {
@@ -706,40 +606,13 @@ define([
           obj.count -= 1;
         });
       }
-      this.updateContrasts();
-    },
-
-    contrastEnabled: function () {
-      // the penguin doesn't support specifying contrasts
-      return (this.exp_design.checked && this.recipe.value != 'Rockhopper');
-    },
-
-    updateContrasts: function () {
-      if (this.contrastEnabled()) {
-
-        // var disableConditions = this.conditionStore.query({"count":0});
-        var disableConditions = this.conditionStore.query(function (obj) { return obj.count == 0; });
-        var enableConditions = this.conditionStore.query(function (obj) { return obj.count > 0; });
-
-        disableConditions.forEach(lang.hitch(this, function (obj) {
-          // disable in contrast_cd widget
-          this.activeConditionStore.remove(obj.id); // used to store conditions with more than 0 libraries assigned
-          this.destroyContrastRow(obj.id);
-        }));
-        enableConditions.forEach(lang.hitch(this, function (obj) {
-          // enable in contrast_cd widget
-          this.activeConditionStore.put(obj);
-        }));
-        this.contrast_cd1.reset();
-        this.contrast_cd2.reset();
-      }
     },
 
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
       var lrec = { type: 'single' };
-      var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
+      var toIngest = this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
         var tr = this.libsTable.insertRow(0);
@@ -802,66 +675,9 @@ define([
       }, this);
     },
 
-    // When a condition is removed, remove the contrasts assigned to them
-    destroyContrastRow: function (query_id) {
-      console.log('Delete Rows');
-      var attrs = ['condition1', 'condition2'];
-      attrs.forEach(function (attr) {
-        var query_obj = {};
-        query_obj[attr] = query_id;
-        var toRemove = this.contrastStore.query(query_obj);
-        toRemove.forEach(function (obj) {
-          domConstruct.destroy(obj.row);
-          this.decreaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
-          if (this.addedContrast.counter < this.initContrasts) {
-            var ntr = this.contrastTable.insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          this.contrastStore.remove(obj.id);
-        }, this);
-      }, this);
-    },
-
-    onStrategyChange: function () {
-        this.onDesignToggle();
-    },
-
-
     onSuggestNameChange: function () {
-      var curRecipe = this.recipe.value;
       if (this.genome_nameWidget.value in this.hostGenomes) {
-        var newOptions = [
-          {
-            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: true
-          },
-          {
-            label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
-          },
-          {
-            label: 'Rockhopper', value: 'Rockhopper', selected: false, disabled: true
-          }];
-        this.recipe.set('options', newOptions).reset();
-        this.recipe.set('value', 'Host');
-      }
-      else {
-        var newOptions = [
-          {
-            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
-          },
-          {
-            label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
-          },
-          {
-            label: 'Rockhopper', value: 'Rockhopper', selected: true, disabled: false
-          }];
-        this.recipe.set('options', newOptions).reset();
-        if (curRecipe == 'RNA-Rocket') {
-          this.recipe.set('value', 'RNA-Rocket');
-        }
+        console.log('Host Genome');
       }
     },
 
@@ -875,7 +691,7 @@ define([
       var lrec = { type: 'paired' };
       // If you want to disable advanced parameters while not shown this would be the place.
       // but for right now, if you set them and then hide them, they are still active
-      var pairToIngest = this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
+      var pairToIngest = this.pairToAttachPt1;
       // pairToIngest=pairToIngest.concat(this.advPairToAttachPt);
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
