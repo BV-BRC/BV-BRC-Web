@@ -30,7 +30,7 @@
                           data-dojo-type="dijit/form/Textarea"
                           data-dojo-props="rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true"
                           data-dojo-attach-event="onChange:onChangeSequence"></textarea>
-                <div class="form_msg_warning" data-dojo-attach-point="sequence_message"></div>
+                <div class="warning" data-dojo-attach-point="sequence_message"></div>
 
                 <div class="headerrow" style="margin-bottom: 7px">
                     <label class="appBoxLabel">Program</label>
@@ -41,7 +41,7 @@
                         data-dojo-props="disabled:true"
                         data-dojo-attach-point="program">
                 </select>
-                <div class="form_msg_warning" data-dojo-attach-point="program_message"></div>
+                <div class="warning" data-dojo-attach-point="program_message"></div>
 
                 <div class="headerrow" style="margin: 16px 0 7px 0">
                     <label class="appBoxLabel">Database</label>
@@ -52,7 +52,7 @@
                         data-dojo-props="disabled:true"
                         data-dojo-attach-point="database">
                 </select>
-                <div class="form_msg_warning" data-dojo-attach-point="database_message"></div>
+                <div class="warning" data-dojo-attach-point="database_message"></div>
             </div>
 
             <div class="appRow" style="text-align:center">
@@ -86,13 +86,13 @@
                         </table>
                     </div>
                     <div class="clear"></div>
-                    <div class="form_msg_warning" data-dojo-attach-point="genome_id_message"></div>
+                    <div class="warning" data-dojo-attach-point="genome_id_message"></div>
                 </div>
 
                 <div class="appBox appShadow hidden" data-dojo-attach-point="genome_group_wrapper">
                     <label class="paramlabel">Select genome group: </label><br/>
                     <div name="genome_group" style="width: 650px"></div>
-                    <div class="form_msg_warning" data-dojo-attach-point="genome_group_message"></div>
+                    <div class="warning" data-dojo-attach-point="genome_group_message"></div>
                 </div>
 
                 <div class="appBox appShadow hidden" data-dojo-attach-point="taxon_wrapper">
@@ -101,7 +101,7 @@
                             data-dojo-type="p3/widget/TaxonNameSelector"
                             data-dojo-attach-point="taxonomy">
                     </select>
-                    <div class="form_msg_warning" data-dojo-attach-point="taxonomy_message"></div>
+                    <div class="warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
 
                 <div class="appBox appShadow hidden" data-dojo-attach-point="search_for_wrapper">
@@ -110,7 +110,7 @@
                             data-dojo-type="dijit/form/Select"
                             data-dojo-attach-point="search_for">
                     </select>
-                    <div class="form_msg_warning" data-dojo-attach-point="search_for_message"></div>
+                    <div class="warning" data-dojo-attach-point="search_for_message"></div>
                 </div>
 
                 <div class="appBox appShadow">

@@ -2,7 +2,7 @@
 {
     "editor.scrollBeyondLastLine": false,
 	"files.trimTrailingWhitespace": true,
-    "files.exclude": {
-        "public/js/release/*": true
+    "search.exclude": {
+        "public/js/release/": true
     }
 }

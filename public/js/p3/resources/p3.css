@@ -1229,7 +1229,7 @@ body footer.main-footer ul.left {
     border-radius:4px;
 }
 
-.form_msg_warning {
+.warning {
     font-weight: bold;
     color: #E53935;
 }
