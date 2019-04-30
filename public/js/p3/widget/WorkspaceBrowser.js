@@ -84,16 +84,30 @@ define([
         { domAttr.set(text, 'textContent', 'HIDE'); }
       });
 
-      this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x',
-        {
-          label: 'GUIDE',
-          persistent: true,
-          validTypes: ['*'],
-          tooltip: 'Open User Guide in a new Tab'
-        },
-        lang.hitch(this, function (selection, container) {
-          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
-        }), true);
+      this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x', {
+        label: 'GUIDE',
+        persistent: true,
+        validTypes: ['*'],
+        tooltip: 'Open User Guide in a new Tab'
+      }, function (selection, container) {
+        console.log('container', container);
+
+        var docsURL = self.docsServiceURL;
+        var path;
+
+        switch (container._resultType) {
+          case 'GenomeAnnotation':
+            path = 'user_guides/services/genome_annotation_service.html#results';
+            break;
+          case 'ComprehensiveGenomeAnalysis':
+            path = 'user_guides/services/comprehensive_genome_analysis_service.html#output-results';
+            break;
+          default:
+            path = self.tutorialLink;
+        }
+
+        window.open(PathJoin(docsURL, path), '_blank');
+      }, true);
 
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',
