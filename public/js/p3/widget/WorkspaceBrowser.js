@@ -1129,14 +1129,19 @@ define([
       });
 
       if (unchangeableTypes.length > 0) {
-        new Dialog({
+        new Confirmation({
           title: 'Cannot change type',
+          okLabel: 'OK',
+          cancelLabel: null,
           content:
             '<b>The selected items must be one of the following types:</b> <br>' +
-              validTypes.join('<br>') + '.<br><br>' +
+            validTypes.join('<br>') + '.<br><br>' +
             '<b>However, your selection contained the type(s):</b> <br>' +
-              unchangeableTypes.join('<br>'),
-          style: 'width: 400px;'
+            unchangeableTypes.join('<br>'),
+          style: 'width: 400px;',
+          onConfirm: function (evt) {
+            this.hideAndDestroy();
+          }
         }).show();
         return;
       }
