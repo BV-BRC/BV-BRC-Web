@@ -235,6 +235,10 @@ TD.HomeServiceLink {
 	line-height: 14px;
 }
 
+/* override dgrid styling */
+div.dgrid-scroller td {
+    user-select: text;
+}
 
 table.p3basic {
     border-collapse: separate;
@@ -362,10 +366,8 @@ table tr.even td {
 }
 
 .ActionBar {
-    background: #76a72d; /*#34698e;#333;*/
+    background: #76a72d;
     border-left: 1px solid #777;
-    /*	box-shadow: 0 0 2px;
-        -webkit-box-shadow: 0 0 2px;*/
     overflow: hidden;
     padding-top: 6px;
     margin-right: -4px;
