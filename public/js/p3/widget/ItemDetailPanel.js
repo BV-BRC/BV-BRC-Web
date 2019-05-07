@@ -30,7 +30,6 @@ define([
       organism_name: 'name'
     },
     _setContainerWidgetAttr: function (val) {
-      // console.log("Set Container Widget: ", val);
       this._set('containerWidget', val);
     },
     startup: function () {
@@ -52,20 +51,16 @@ define([
       }));
 
       this.watch('selection', lang.hitch(this, function (prop, oldVal, selection) {
-
         if (!selection || selection.length < 1) {
-          // console.log("no selection set");
           domClass.add(this.domNode, 'noSelection');
           domClass.remove(this.domNode, 'multipleSelection');
           domClass.remove(this.domNode, 'singleSelection');
         } else if (selection && selection.length == 1) {
-          // console.log("single selection set");
           domClass.remove(this.domNode, 'noSelection');
           domClass.remove(this.domNode, 'multipleSelection');
           domClass.add(this.domNode, 'singleSelection');
           this.set('item', selection[0]);
         } else if (selection && selection.length > 1) {
-          // console.log("multiple Selection set");
           domClass.remove(this.domNode, 'noSelection');
           domClass.add(this.domNode, 'multipleSelection');
           domClass.remove(this.domNode, 'singleSelection');
@@ -75,7 +70,6 @@ define([
 
       this.watch('item', lang.hitch(this, function (prop, oldVal, item) {
         domClass.remove(_self.typeIcon, currentIcon);
-        // console.log("Container Widget: ", this.containerWidget);
         if (item.type) {
           domClass.add(this.domNode, 'workspaceItem');
           domClass.remove(this.domNode, 'dataItem');
@@ -109,10 +103,6 @@ define([
               domClass.add(_self.typeIcon, 'fa icon-globe fa-2x');
               currentIcon = 'fa icon-globe fa-2x';
               break;
-              // case "contigs":
-              //  domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
-              //  currentIcon="fa icon-folder fa-3x";
-              //  break;
             case 'contigs':
               domClass.add(_self.typeIcon, 'fa icon-contigs fa-2x');
               currentIcon = 'fa icon-contigs fa-2x';
@@ -268,7 +258,6 @@ define([
           domConstruct.empty(this.itemBody);
           domConstruct.place(node, this.itemBody, 'first');
         } else if (item && item._formatterType) {
-
           domClass.remove(this.domNode, 'workspaceItem');
           domClass.add(this.domNode, 'dataItem');
 
