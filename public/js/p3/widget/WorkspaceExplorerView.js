@@ -152,7 +152,7 @@ define([
       if (countEle.length) return;
 
       domConstr.create('small', {
-        class: 'PerspectiveTotalCount ws-count',
+        'class': 'PerspectiveTotalCount ws-count',
         innerHTML: count ?
           ' (' + count + ' item' + (count > 1 ? 's' : '')  + ')'
           : ''
