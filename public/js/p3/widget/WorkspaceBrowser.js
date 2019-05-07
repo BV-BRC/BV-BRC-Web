@@ -1129,14 +1129,19 @@ define([
       });
 
       if (unchangeableTypes.length > 0) {
-        new Dialog({
+        new Confirmation({
           title: 'Cannot change type',
+          okLabel: 'OK',
+          cancelLabel: null,
           content:
             '<b>The selected items must be one of the following types:</b> <br>' +
-              validTypes.join('<br>') + '.<br><br>' +
+            validTypes.join('<br>') + '.<br><br>' +
             '<b>However, your selection contained the type(s):</b> <br>' +
-              unchangeableTypes.join('<br>'),
-          style: 'width: 400px;'
+            unchangeableTypes.join('<br>'),
+          style: 'width: 400px;',
+          onConfirm: function (evt) {
+            this.hideAndDestroy();
+          }
         }).show();
         return;
       }
@@ -1212,7 +1217,6 @@ define([
     },
 
     _setPathAttr: function (val) {
-      // console.log("WorkspaceBrowser setPath()", val)
 
       // extract extra URL parameters
       var components = val.split('#');
@@ -1229,10 +1233,8 @@ define([
       }).map(function (c) {
         return decodeURIComponent(c);
       });
-      // console.log("[WorkspaceBrowser] parts:",parts)
-      // var workspace = parts[0] + '/' + parts[1];
-      var obj;
 
+      var obj;
       if (parts[0] == 'public') {
         if (parts.length == 1) {
           obj = {
@@ -1274,7 +1276,6 @@ define([
             break;
           case 'job_result':
             var d = 'p3/widget/viewer/JobResult';
-            // console.log("job_result object: ", obj);
             if (obj && obj.autoMeta && obj.autoMeta.app) {
               var id = obj.autoMeta.app.id || obj.autoMeta.app;
               switch (id) {
@@ -1314,87 +1315,81 @@ define([
           default:
             panelCtor = window.App.getConstructor('p3/widget/viewer/File');
             params.file = { metadata: obj };
-            // console.log("FileViewer Ctor params: ", params);
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          if (this.activePanel) {
-            this.removeChild(this.activePanel);
-          }
-          // console.log("Creeate New Active Panel");
-          var newPanel = new Panel(params);
-          var hideTimer;
+          if (!this.activePanel || !(this.activePanel instanceof Panel)) {
+            if (this.activePanel) {
+              this.removeChild(this.activePanel);
+            }
 
-          if (this.actionPanel) {
-            this.actionPanel.set('currentContainerWidget', newPanel);
-            this.itemDetailPanel.set('containerWidget', newPanel);
-          }
+            var newPanel = new Panel(params);
+            var hideTimer;
 
-          if (newPanel.on) {
-            newPanel.on('select', lang.hitch(this, function (evt) {
-              var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
-                // console.log("Row: ", evt.grid.row(rownum).data);
-                return evt.grid.row(rownum).data;
-              }));
+            if (this.actionPanel) {
+              this.actionPanel.set('currentContainerWidget', newPanel);
+              this.itemDetailPanel.set('containerWidget', newPanel);
+            }
 
-              if (hideTimer) {
-                clearTimeout(hideTimer);
-              }
-              if (sel.length > 0) {
-                this.addChild(this.actionPanel);
-              }
-
-              this.actionPanel.set('selection', sel);
-              this.itemDetailPanel.set('selection', sel);
-            }));
-
-            newPanel.on('deselect', lang.hitch(this, function (evt) {
-
-              if (!evt.selected) {
-                this.actionPanel.set('selection', []);
-                this.itemDetailPanel.set('selection', []);
-              } else {
+            if (newPanel.on) {
+              newPanel.on('select', lang.hitch(this, function (evt) {
                 var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
                   return evt.grid.row(rownum).data;
                 }));
-              }
 
-              this.actionPanel.set('selection', sel);
-              this.itemDetailPanel.set('selection', sel);
-            }));
-
-            newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
-              if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                var itemPath = encodePath(evt.item_path);
-                Topic.publish('/navigate', { href: '/workspace' + itemPath });
-                this.actionPanel.set('selection', []);
-                this.itemDetailPanel.set('selection', []);
-                if ('clearSelection' in newPanel) {
-                  newPanel.clearSelection();
+                if (hideTimer) {
+                  clearTimeout(hideTimer);
                 }
-              } else {
-                console.log('non-navigable type, todo: show info panel when dblclick');
-              }
+                if (sel.length > 0) {
+                  this.addChild(this.actionPanel);
+                }
 
-            }));
+                this.actionPanel.set('selection', sel);
+                this.itemDetailPanel.set('selection', sel);
+              }));
+
+              newPanel.on('deselect', lang.hitch(this, function (evt) {
+                if (!evt.selected) {
+                  this.actionPanel.set('selection', []);
+                  this.itemDetailPanel.set('selection', []);
+                } else {
+                  var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
+                    return evt.grid.row(rownum).data;
+                  }));
+                }
+
+                this.actionPanel.set('selection', sel);
+                this.itemDetailPanel.set('selection', sel);
+              }));
+
+              newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
+                if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
+                  Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                  this.actionPanel.set('selection', []);
+                  this.itemDetailPanel.set('selection', []);
+                  if ('clearSelection' in newPanel) {
+                    newPanel.clearSelection();
+                  }
+                } else {
+                  console.log('non-navigable type, todo: show info panel when dblclick');
+                }
+
+              }));
+            }
+
+            this.addChild(newPanel);
+            this.activePanel = newPanel;
+          } else {
+            this.activePanel.set('path', this.path);
+            if (this.activePaneal && 'clearSelection' in this.activePaneal) {
+              this.activePanel.clearSelection();
+            }
           }
 
-          this.addChild(newPanel);
-          this.activePanel = newPanel;
+          if (this.browserHeader) {
+            this.browserHeader.set('path', this.path);
+          }
 
-          // var parts = this.path.split('/').filter(function (x) {
-          //   return x != '';
-          // }).map(function (c) {
-          //   return decodeURIComponent(c);
-          // });
-          // var workspace = parts[0] + '/' + parts[1];
-
-          // don't set current path in workspace manager for now
-          // WorkspaceManager.set("currentPath", val);
-
-
-          if (this.browserHeader)
-          { this.browserHeader.set('path', this.path); }
         }));
 
       }), lang.hitch(this, function (err) {
