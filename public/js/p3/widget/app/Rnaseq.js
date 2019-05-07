@@ -128,7 +128,7 @@ define([
       this.condition_paired.set('disabled', !design_status);
       this.contrast_cd1.set('disabled', !this.contrastEnabled());
       this.contrast_cd2.set('disabled', !this.contrastEnabled());
-      if (!design_status) { //design status not enabled
+      if (!design_status) { // design status not enabled
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
         this.destroyLib({}, true, 'design');
@@ -150,7 +150,7 @@ define([
           this.numContrastWidget.set('disabled', false);
           domClass.remove(this.contrastTable, 'disabled');
         }
-        else{
+        else {
           this.numContrastWidget.set('required', false);
           this.numContrastWidget.set('disabled', true);
           domClass.add(this.contrastTable, 'disabled');
@@ -827,7 +827,7 @@ define([
     },
 
     onStrategyChange: function () {
-        this.onDesignToggle();
+      this.onDesignToggle();
     },
 
 
