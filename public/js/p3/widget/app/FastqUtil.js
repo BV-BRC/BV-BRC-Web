@@ -18,7 +18,7 @@ define([
   return declare([AppBase], {
     baseClass: 'App Assembly',
     templateString: Template,
-    applicationName: 'FastqUtil',
+    applicationName: 'FastqUtils',
     requireAuth: true,
     applicationLabel: 'Fastq Utilities',
     applicationDescription: 'The Fastq Utilites Service provides capability for aligning, measuring base call quality, and trimmiing fastq read files.',
@@ -380,7 +380,7 @@ define([
       return (success);
     },
     showConditionLabels: function (item, store) {
-      var label = item.condition + ' ' + item.icon;
+      var label = item.condition;
       return label;
     },
     makeLibraryName: function (mode) {
