@@ -38,7 +38,7 @@ define([
         var header = domConstruct.create('b', {
           style: {
             fontSize: '1.2em',
-            float: 'left',
+            'float': 'left',
             lineHeight: '.8em'
           },
           innerHTML: this.header + '<br>'
@@ -46,7 +46,7 @@ define([
 
         var lastUpdated = domConstruct.create('span', {
           style: {
-            fontSize: '.6em',
+            fontSize: '.5em',
             color: '#666'
           },
           innerHTML: self.loadingHTML
@@ -192,18 +192,13 @@ define([
       // listen for job status counts
       var loadingJobList = false;
       Topic.subscribe('/JobStatus', function (status) {
-        if (status == 'failed') return;
-
-        domClass.remove(header, 'Failed');
-
         query('span', queuedBtn)[0].innerHTML = status.queued;
         query('span', inProgressBtn)[0].innerHTML = status.inProgress;
         query('span', completedBtn)[0].innerHTML = status.completed;
         query('span', failedBtn)[0].innerHTML = status.failed;
 
-        if (!loadingJobList) {
-          lastUpdated.innerHTML = 'Last updated: ' + getTime();
-        }
+        if (!loadingJobList)
+        { lastUpdated.innerHTML = 'Last updated: ' + getTime(); }
       });
 
       /**
@@ -225,9 +220,6 @@ define([
 
           lastUpdated.innerHTML = 'Last updated: ' + getTime();
           loadingJobList = false;
-        } else if (info.status == 'failed') {
-          domClass.add(header, 'Failed');
-          lastUpdated.innerHTML = '<span class="Failed">Update failed.  Retrying...</span>';
         }
       });
 
