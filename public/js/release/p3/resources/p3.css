@@ -16567,18 +16567,6 @@ TD.HomeServiceLink {
 	font-size: 12px;
 	line-height: 14px;
 }
-div.dgrid-scroller td {
-    user-select: text;
-    -moz-user-select: text;
-    -webkit-user-select: text;
-    -ms-user-select: text;
-}
-div.dgrid-scroller td.field-Selection-Checkboxes {
-    user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-}
 table.p3basic {
     border-collapse: separate;
     empty-cells: hide;
