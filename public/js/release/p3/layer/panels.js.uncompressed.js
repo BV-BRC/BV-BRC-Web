@@ -126,7 +126,7 @@ define([
     startup: function () {
       this.saveButton.set('disabled', true);
       this.cws = document.getElementsByClassName('cws')[0];
-      // console.log(this.cws);
+
       this.cws.addEventListener('keyup', this.checkChars);
       this.cws.addEventListener('input', this.checkChars);
       this.cws.button = this.saveButton;
@@ -134,10 +134,8 @@ define([
     },
     checkChars: function (evt) {
       document.getElementsByClassName('cws')[0].button.set('disabled', true);
-      // console.log('checking for no slashes');
-      // console.log(evt.target.value);
+
       if (evt.target.value.indexOf('/') === -1 && evt.target.value.indexOf('\\') === -1 && evt.target.value !== '') {
-        // console.log(document.getElementsByClassName('cws')[0].button);
         document.getElementsByClassName('cws')[0].button.set('disabled', false);
         document.getElementsByClassName('cws')[0].errorMessage.innerHTML = '&nbsp;';
         return true;
@@ -172,7 +170,7 @@ define([
 
         WorkspaceManager.createWorkspace(values.name).then(function (results) {
           domClass.remove(_self.domNode, 'Working');
-          // var path = '/' + ['workspace', results.path].join('/');
+
           Topic.publish('/refreshWorkspace', {});
 
           on.emit(_self.domNode, 'dialogAction', {
@@ -181,7 +179,7 @@ define([
           });
 
           Topic.publish('/Notification', {
-            message: 'Wroksapce Created',
+            message: 'Workspace Created',
             positionDirection: 'bl-up'
           });
 

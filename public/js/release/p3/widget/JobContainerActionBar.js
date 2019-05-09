@@ -1,10 +1,10 @@
 define("p3/widget/JobContainerActionBar", [
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
-  'dijit/form/Button', 'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
+  'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
   'dojo/dom-class', './formatter', '../util/getTime'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
-  Button, Select, Topic, query, JobManager,
+  Select, Topic, query, JobManager,
   domClass, formatter, getTime
 ) {
   return declare([ActionBar], {
@@ -38,7 +38,7 @@ define("p3/widget/JobContainerActionBar", [
         var header = domConstruct.create('b', {
           style: {
             fontSize: '1.2em',
-            'float': 'left',
+            float: 'left',
             lineHeight: '.8em'
           },
           innerHTML: this.header + '<br>'
@@ -46,7 +46,7 @@ define("p3/widget/JobContainerActionBar", [
 
         var lastUpdated = domConstruct.create('span', {
           style: {
-            fontSize: '.5em',
+            fontSize: '.6em',
             color: '#666'
           },
           innerHTML: self.loadingHTML
@@ -107,7 +107,6 @@ define("p3/widget/JobContainerActionBar", [
       /**
        * status filters / counts
        */
-
       var allBtn = domConstruct.create('span', {
         'class': 'JobFilter',
         innerHTML: '<i class="icon-undo"></i> All statuses',
@@ -172,7 +171,6 @@ define("p3/widget/JobContainerActionBar", [
         domStyle.set(allBtn, 'display', 'inline');
       });
 
-
       var failedBtn = domConstruct.create('span', {
         'class': 'JobFilter',
         innerHTML: '<i class="icon-warning2 Failed"></i> ' +
@@ -192,13 +190,18 @@ define("p3/widget/JobContainerActionBar", [
       // listen for job status counts
       var loadingJobList = false;
       Topic.subscribe('/JobStatus', function (status) {
+        if (status == 'failed') return;
+
+        domClass.remove(header, 'Failed');
+
         query('span', queuedBtn)[0].innerHTML = status.queued;
         query('span', inProgressBtn)[0].innerHTML = status.inProgress;
         query('span', completedBtn)[0].innerHTML = status.completed;
         query('span', failedBtn)[0].innerHTML = status.failed;
 
-        if (!loadingJobList)
-        { lastUpdated.innerHTML = 'Last updated: ' + getTime(); }
+        if (!loadingJobList) {
+          lastUpdated.innerHTML = 'Last updated: ' + getTime();
+        }
       });
 
       /**
@@ -220,6 +223,9 @@ define("p3/widget/JobContainerActionBar", [
 
           lastUpdated.innerHTML = 'Last updated: ' + getTime();
           loadingJobList = false;
+        } else if (info.status == 'failed') {
+          domClass.add(header, 'Failed');
+          lastUpdated.innerHTML = '<span class="Failed">Update failed.  Retrying...</span>';
         }
       });
 

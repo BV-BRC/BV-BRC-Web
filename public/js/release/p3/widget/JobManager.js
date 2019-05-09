@@ -224,7 +224,7 @@ define("p3/widget/JobManager", [
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
           var d = evt.grid.row(rownum).data;
 
-          d._formatterType = d.status + '_job';
+          d._formatterType = 'job_status_meta';
           return d;
         }));
 

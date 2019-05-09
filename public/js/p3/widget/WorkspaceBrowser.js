@@ -308,7 +308,8 @@ define([
 
       var dtsfc = '<div>Download Job Results:</div>' +
           '<div class="wsActionTooltip" rel="circos.svg">SVG Image</div>' +
-          '<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
+          '<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table (txt)</div>' +
+          '<div class="wsActionTooltip" rel="genome_comparison.xls">Genome Comparison Table (xls)</div>';
       var downloadTTSelectFile = new TooltipDialog({
         content: dtsfc,
         onMouseLeave: function () {
