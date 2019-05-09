@@ -16553,14 +16553,14 @@ TD.HomeServiceLink {
 }
 .HomeServiceLink H3,
 .HomeServiceLink H4 {
-  margin: 0;
+    margin: 0;
     padding: 0 0 0 15px;
     border: 0;
-  font-size: 14px;
-  font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
-  font-weight: 100;
-  text-align: left;
-  line-height: 16px;
+    font-size: 14px;
+    font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
+    font-weight: 100;
+    text-align: left;
+    line-height: 16px;
 }
 .HomeServiceLink H4 {
 	color: #fff;
@@ -16673,9 +16673,8 @@ table tr.even td {
     backface-visibility: hidden;
 }
 .ActionBar {
-    background: #76a72d; 
+    background: #76a72d;
     border-left: 1px solid #777;
-    
     overflow: hidden;
     padding-top: 6px;
     margin-right: -4px;
@@ -17075,16 +17074,8 @@ div.pubmed ul li {
     border-bottom: #aec9d2 1px solid;
 }
 .PerspectiveHeader {
-	
 	margin:0;
 	padding: 0;
-	
-	
-}
-.patric .PerspectiveQuery,
-.patric .PerspectiveTotalCount {
-    
-    
 }
 .patric .PerspectiveQuery .current {
     font-size: 1.1em;
@@ -17092,13 +17083,7 @@ div.pubmed ul li {
     color: #76a72d;
 }
 .patric .PerspectiveTotalCount {
-	color: #76a72d;
-	
-}
-.patric .PerspectiveType {
-    
-    
-    
+	color: #666666;
 }
 .patric .PerspectiveHeader .PerspectiveIcon.fa {
     font-size:2.4em;
@@ -17121,7 +17106,6 @@ div.pubmed ul li {
 }
 .FacetFilter ::-webkit-scrollbar{
 	background: #333;
-	
 }
 .FacetFilter ::-webkit-scrollbar-thumb,
 .dgrid ::-webkit-scrollbar-thumb {
@@ -17351,7 +17335,7 @@ body footer.main-footer ul.left {
     border:0 solid #aaa;
     border-radius:4px;
 }
-.form_msg_warning {
+.warning {
     font-weight: bold;
     color: #E53935;
 }

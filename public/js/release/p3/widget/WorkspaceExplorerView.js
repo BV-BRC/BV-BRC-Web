@@ -1,12 +1,12 @@
 define("p3/widget/WorkspaceExplorerView", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/query',
   'dojo/dom-class', 'dojo/dom-construct', './WorkspaceGrid',
-  'dojo/_base/Deferred', 'dojo/dom-geometry', '../JobManager', './Confirmation', './Uploader', 'dijit/form/Select',
+  'dojo/_base/Deferred', './Confirmation', './Uploader', 'dijit/form/Select',
   'dojo/topic', '../WorkspaceManager', 'dojo/promise/all'
 ], function (
   declare, WidgetBase, on, query,
   domClass, domConstr, WorkspaceGrid,
-  Deferred, domGeometry, JobManager, Confirmation, Uploader, Select,
+  Deferred, Confirmation, Uploader, Select,
   Topic, WorkspaceManager, all
 ) {
   return declare([WorkspaceGrid], {
@@ -78,7 +78,6 @@ define("p3/widget/WorkspaceExplorerView", [
             _self.rmEmptyFolderDiv();
           }
 
-
           // join permissions to each obj
           objs.forEach(function (obj) {
             obj.permissions = permHash[obj.path];
@@ -134,8 +133,9 @@ define("p3/widget/WorkspaceExplorerView", [
               return (a[s.attribute] < b[s.attribute]) ? 1 : -1;
             }
             return (a[s.attribute] > b[s.attribute]) ? 1 : -1;
-
           });
+
+          _self.renderCount(objs.length);
 
           return objs;
         });
@@ -144,6 +144,19 @@ define("p3/widget/WorkspaceExplorerView", [
         console.log('Error Loading Workspace:', err);
         _self.showError(err);
       });
+    },
+
+    renderCount: function (count) {
+      var breadCrumb = query('.wsBreadCrumb')[0];
+      var countEle = query('.ws-count', breadCrumb);
+      if (countEle.length) return;
+
+      domConstr.create('small', {
+        'class': 'PerspectiveTotalCount ws-count',
+        innerHTML: count ?
+          ' (' + count + ' item' + (count > 1 ? 's' : '')  + ')'
+          : ''
+      }, breadCrumb);
     },
 
     showError: function (err) {

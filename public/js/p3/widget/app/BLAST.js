@@ -54,23 +54,23 @@ define([
   ];
 
   var DatabaseDefs = [
-    { value: 'ref.fna', label: 'Reference or Representative Genomes (fna)' },
-    { value: 'ref.ffn', label: 'Reference or Representative Genome features (ffn)' },
-    { value: 'ref.faa', label: 'Reference or Representative Genome proteins (faa)' },
-    { value: 'ref.frn', label: 'Reference or Representative Genome RNAs features (frn)' },
+    { value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)' },
+    { value: 'ref.ffn', label: 'Reference and representative genomes - features (ffn)' },
+    { value: 'ref.faa', label: 'Reference and representative genomes - proteins (faa)' },
+    { value: 'ref.frn', label: 'Reference and representative genomes - RNAs (frn)' },
     { value: '16sRNA.frn', label: 'PATRIC 16s RNA Genes (frn)' },
-    { value: 'transcriptomics.ffn', label: 'Transcriptomics Genomes features (ffn)' },
-    { value: 'transcriptomics.faa', label: 'Transcriptomics Genomes proteins (faa)' },
-    { value: 'plasmid.fna', label: 'plasmid contigs (fna)' },
-    { value: 'plasmid.ffn', label: 'plasmid contigs features (ffn)' },
-    { value: 'plasmid.faa', label: 'plasmid contigs proteins (faa)' },
-    { value: 'phage.fna', label: 'phage contigs (fna)' },
-    { value: 'phage.ffn', label: 'phage contigs features (ffn)' },
-    { value: 'phage.faa', label: 'phage contigs proteins (faa)' },
-    { value: 'spgenes.faa', label: 'Specialty gene reference proteins (faa)' },
-    { value: 'selGenome', label: 'Search within selected genomes' },
+    { value: 'transcriptomics.ffn', label: 'Features with transcriptomic data (ffn)' },
+    { value: 'transcriptomics.faa', label: 'Proteins with transcriptomic data(faa)' },
+    { value: 'plasmid.fna', label: 'Plasmids - contigs (fna)' },
+    { value: 'plasmid.ffn', label: 'Plasmids - features (ffn)' },
+    { value: 'plasmid.faa', label: 'Plasmids - proteins (faa)' },
+    { value: 'phage.fna', label: 'Phages - contigs (fna)' },
+    { value: 'phage.ffn', label: 'Phages - features (ffn)' },
+    { value: 'phage.faa', label: 'Phages - proteins (faa)' },
+    { value: 'spgenes.faa', label: 'Proteins with specialty gene reference (faa)' },
+    { value: 'selGenome', label: 'Search within selected genome' },
     { value: 'selGroup', label: 'Search within selected genome group' },
-    { value: 'selTaxon', label: 'Search within selected taxon' }
+    { value: 'selTaxon', label: 'Search within a taxon' }
   ];
 
   var SearchForDefs = [

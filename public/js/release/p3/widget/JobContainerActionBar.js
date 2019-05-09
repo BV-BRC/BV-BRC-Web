@@ -1,10 +1,10 @@
 define("p3/widget/JobContainerActionBar", [
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
-  'dijit/form/Button', 'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
+  'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
   'dojo/dom-class', './formatter', '../util/getTime'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
-  Button, Select, Topic, query, JobManager,
+  Select, Topic, query, JobManager,
   domClass, formatter, getTime
 ) {
   return declare([ActionBar], {
@@ -107,7 +107,6 @@ define("p3/widget/JobContainerActionBar", [
       /**
        * status filters / counts
        */
-
       var allBtn = domConstruct.create('span', {
         'class': 'JobFilter',
         innerHTML: '<i class="icon-undo"></i> All statuses',
@@ -171,7 +170,6 @@ define("p3/widget/JobContainerActionBar", [
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'inline');
       });
-
 
       var failedBtn = domConstruct.create('span', {
         'class': 'JobFilter',
