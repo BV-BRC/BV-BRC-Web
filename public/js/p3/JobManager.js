@@ -1,10 +1,9 @@
-define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
-  'dojo/promise/all', 'dojo/store/Memory',
-  'dojo/query'
+define([
+  'dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
+  'dojo/promise/all', 'dojo/store/Memory'
 ], function (
   Deferred, Topic, xhr,
-  All, MemoryStore,
-  query
+  All, MemoryStore
 ) {
 
   var self = this;
@@ -103,11 +102,6 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
         });
         return;
       }
-
-      setTimeout(PollJobs, TIME_OUT);
-    }, function () {
-      Topic.publish('/Jobs', { status: 'failed' });
-      Topic.publish('/JobStatus', 'failed'); // send 'failed' instead of usual meta object
 
       setTimeout(PollJobs, TIME_OUT);
     });
