@@ -1,9 +1,9 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', '../../heatmap/dist/heatmap', 'dojo/query',
-  'dojo/dom-construct'
+  'dojo/dom-construct', 'dojo/dom-style'
 ], function (
   declare, lang, Heatmap, query,
-  domConstruct
+  domConstruct, domStyle
 ) {
 
   return declare([], {
@@ -13,7 +13,7 @@ define([
 
     initializeHeatmap: function () {
       /**
-       * new heatmap experiment
+       * setup new heatmap
        */
       var target = document.getElementById('heatmapTarget');
       target.innerHTML = 'loading...';
@@ -78,6 +78,8 @@ define([
           rows: rows,
           matrix: matrix,
           noLogo: true,
+          rowsLabel: 'Genomes',
+          colsLabel: 'Protein Families',
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
@@ -96,6 +98,10 @@ define([
         // put action icons in heatmap header
         var header = query('.heatmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
+        query('.ActionButtonWrapper').style('width', '48px');
+
+        // hack to remove unused path div (interfering with flexbox)
+        query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
       } else {
 
 
