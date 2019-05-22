@@ -1,8 +1,8 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', '../../heatmap/dist/heatmap', 'dojo/query',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/query',
   'dojo/dom-construct', 'dojo/dom-style'
 ], function (
-  declare, lang, Heatmap, query,
+  declare, lang, query,
   domConstruct, domStyle
 ) {
 
@@ -66,51 +66,6 @@ define([
       return tablePass.join('\n');
     },
 
-    hmapUpdate: function () {
-      if (!this.currentData) return;
-      let { rows, cols, matrix } = this.formatData(this.currentData);
-      console.log('{rows, cols, matrix} ', { rows, cols, matrix } );
-
-      if (!this.chart) {
-        this.chart = new Heatmap({
-          ele: this.hmapDom,
-          cols: cols,
-          rows: rows,
-          matrix: matrix,
-          noLogo: true,
-          rowsLabel: 'Genomes',
-          colsLabel: 'Protein Families',
-          color: {
-            bins: ['=0', '=1', '=2', '>=3'],
-            colors: [0x000000, 16440142, 16167991, 16737843]
-          },
-          light: true
-          /* defaults: {
-            cellW: 1,
-            cellH: 30
-          } */
-        });
-
-        this.containerActions.forEach(function (a) {
-          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
-        }, this);
-
-        // put action icons in heatmap header
-        var header = query('.heatmap .header', this.hmapDom)[0];
-        domConstruct.place(this.containerActionBar.domNode, header, 'last');
-        query('.ActionButtonWrapper').style('width', '48px');
-
-        // hack to remove unused path div (interfering with flexbox)
-        query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
-      } else {
-
-
-        this.chart.update({ rows, cols, matrix });
-      }
-
-      this.initialized = true;
-      return this.currentData;
-    },
     hmapCellClicked: function (flashObjectID, colID, rowID) {
       // implement
     },
