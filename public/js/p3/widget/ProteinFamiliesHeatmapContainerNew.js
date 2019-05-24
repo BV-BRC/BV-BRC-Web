@@ -3,14 +3,16 @@ define([
   'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request',
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver'
+  './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
+  '../../heatmap/dist/heatmap'
 
 ], function (
   declare, lang,
   on, Topic, domConstruct, dom, Query, when, request,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs
+  ContainerActionBar, HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs,
+  Heatmap
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -107,7 +109,6 @@ define([
       ]
     ],
     constructor: function (options) {
-      console.log('in new protein family container');
       this.dialog = new Dialog({});
 
       this.topicId = options.topicId;
@@ -185,7 +186,7 @@ define([
       this._firstView = true;
     },
 
-    hmapCellClicked: function (flashObjectID, colID, rowID) {
+    hmapCellClicked: function (colID, rowID) {
       var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
@@ -213,7 +214,7 @@ define([
       }));
 
     },
-    hmapCellsSelected: function (flashObjectID, colIDs, rowIDs) {
+    hmapCellsSelected: function (colIDs, rowIDs) {
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
@@ -648,16 +649,19 @@ define([
     },
 
     hmapUpdate: function () {
+      var self = this;
+
       if (!this.currentData) return;
-      let { rows, cols, matrix } = this.formatData(this.currentData);
-      console.log('{rows, cols, matrix} ', { rows, cols, matrix } );
+      var data = this.formatData(this.currentData);
+      console.log('heatmap data:', data);
 
       if (!this.chart) {
         this.chart = new Heatmap({
           ele: this.hmapDom,
-          cols: cols,
-          rows: rows,
-          matrix: matrix,
+          cols: data.cols,
+          rows: data.rows,
+          matrix: data.matrix,
+          theme: 'light',
           noLogo: true,
           rowsLabel: 'Genomes',
           colsLabel: 'Protein Families',
@@ -665,7 +669,14 @@ define([
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
           },
-          theme: 'light'
+          onSelection: function (objs) {
+            var colIDs = objs.map(function (c) { return c.colID; });
+            var rowIDs = objs.map(function (r) { return r.rowID; });
+            self.hmapCellsSelected(colIDs, rowIDs);
+          },
+          onClick: function (obj) {
+            self.hmapCellClicked(obj.colID, obj.rowID);
+          }
         });
 
         this.containerActions.forEach(function (a) {
@@ -680,11 +691,16 @@ define([
         // hack to remove unused path div (interfering with flexbox)
         Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
       } else {
-        this.chart.update({ rows, cols, matrix });
+        this.chart.update({
+          rows: data.rows,
+          cols: data.cols,
+          matrix: data.matrix
+        });
       }
 
       this.initialized = true;
       return this.currentData;
     }
+
   });
 });

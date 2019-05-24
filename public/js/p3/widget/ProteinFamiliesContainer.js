@@ -142,13 +142,6 @@ define([
         apiServer: this.apiServer
       });
 
-
-      this.heatmapContainer = new HeatmapContainer({
-        title: 'Heatmap',
-        topicId: this.topicId,
-        content: 'Heatmap'
-      });
-
       this.heatmapContainerNew = new HeatmapContainerNew({
         title: 'Heatmap <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">new</sup>',
         type: 'webGLHeatmap',
@@ -156,11 +149,18 @@ define([
         content: 'Heatmap (new)'
       });
 
+      this.heatmapContainer = new HeatmapContainer({
+        title: '<span class="light">Heatmap <small>(legacy)</small></span>',
+        topicId: this.topicId,
+        content: 'Heatmap'
+      });
+
+
       this.watch('state', lang.hitch(this, 'onSetState'));
 
       this.tabContainer.addChild(this.mainGridContainer);
-      this.tabContainer.addChild(this.heatmapContainer);
       this.tabContainer.addChild(this.heatmapContainerNew);
+      this.tabContainer.addChild(this.heatmapContainer);
 
       var self = this;
       this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {

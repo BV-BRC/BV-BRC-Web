@@ -254,7 +254,6 @@ define([
 
     },
     flashCellsSelected: function (flashObjectID, colIDs, rowIDs) {
-      // console.log("flashCellsSelected is called", colIDs, rowIDs);
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);

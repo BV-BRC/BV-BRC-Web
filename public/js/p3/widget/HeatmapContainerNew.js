@@ -73,34 +73,35 @@ define([
       // implement
     },
     formatData: function (data) {
-      var rows = data.rows.map(r => {
+      var rows = data.rows.map(function (r) {
         return {
-          // categories: ['1', '1', '1'], // todo(nc): remove
-          name: r.rowLabel
+          name: r.rowLabel,
+          id: r.rowID
         };
       });
-      var cols = data.columns.map(c => {
+      var cols = data.columns.map(function (c) {
         return {
           name: c.colLabel,
+          id: c.colID,
           distribution: c.distribution,
           meta: c.meta
         };
       });
 
       // get lists of vals for each column
-      let vals = cols.map(c => {
-        let hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
-          vals = hexStrs.map(hex => parseInt(hex, 16));
+      var vals = cols.map(function (c) {
+        var hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
+          vals = hexStrs.map(function (hex) { return  parseInt(hex, 16); });
 
         delete c.distribution; // we no longer need the distribution
         return vals;
       });
 
       // make pass of all column val data (i times, where i = number of rows)
-      let matrix = [];
-      for (let i = 0; i < vals[0].length; i++) {
-        let row = [];
-        for (let j = 0; j < vals.length; j++) {
+      var matrix = [];
+      for (var i = 0; i < vals[0].length; i++) {
+        var row = [];
+        for (var j = 0; j < vals.length; j++) {
           row.push(vals[j][i]);
         }
         matrix.push(row);
