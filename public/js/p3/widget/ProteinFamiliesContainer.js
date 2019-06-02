@@ -150,7 +150,7 @@ define([
       });
 
       this.heatmapContainer = new HeatmapContainer({
-        title: '<span class="light">Heatmap <small>(legacy)</small></span>',
+        title: '<span class="light">Heatmap</span>',
         topicId: this.topicId,
         content: 'Heatmap'
       });
@@ -214,7 +214,8 @@ define([
         title: 'filter',
         content: 'Filter By',
         style: 'width:283px; overflow: auto',
-        splitter: true
+        splitter: true,
+        'class': 'pfFilterGridContainer'
       });
 
       var familyTypePanel = new ContentPane({

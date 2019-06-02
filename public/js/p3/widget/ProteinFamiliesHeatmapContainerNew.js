@@ -4,7 +4,7 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  '../../heatmap/dist/heatmap'
+  '../../heatmap/dist/heatmap', 'dojo/dom-class'
 
 ], function (
   declare, lang,
@@ -12,7 +12,7 @@ define([
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
   ContainerActionBar, HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs,
-  Heatmap
+  Heatmap, domClass
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -154,11 +154,12 @@ define([
     },
 
     initContainer: function () {
-      var panel = new ContentPane({
+      var panel = this.panel = new ContentPane({
         region: 'center',
         content: "<div id='heatmapTarget'></div>",
         style: 'padding:0; overflow: hidden;'
       });
+
       dojo.connect(panel, 'resize', this, 'onResize');
       this.addChild(panel);
     },
@@ -676,6 +677,15 @@ define([
           },
           onClick: function (obj) {
             self.hmapCellClicked(obj.colID, obj.rowID);
+          },
+          onFullscreenClick: function () {
+            // must also hide filter container
+            domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
+            domClass.toggle(Query('.pfFilterGridContainer')[0], 'dijitHidden');
+            setTimeout(function () {
+              // resize both chart and panel
+              self.onResize();
+            }, 500);
           }
         });
 
