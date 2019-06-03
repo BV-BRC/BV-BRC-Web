@@ -88,7 +88,8 @@ var profile = {
         'dijit/ToolbarSeparator',
         'p3/widget/ProteinFeatureSummary',
         'jDataView'
-      ]
+      ],
+      exclude: ["rql/js-array"]
     },
     'p3/layer/panels': {
       include: [
@@ -97,7 +98,8 @@ var profile = {
         'p3/widget/Uploader'
       ],
       exclude: [
-        'p3/layer/core'
+        'p3/layer/core',
+	'rql/js-array'
       ]
     },
     'p3/layer/p3user': {
@@ -114,7 +116,8 @@ var profile = {
         'dijit/selection',
         'dijit/form/ComboButton',
         'dijit/form/ToggleButton'
-      ]
+      ],
+      exclude: ['rql/js-array']
     },
     'p3/layer/globalWSObject': {
       customBase: true,
@@ -122,6 +125,7 @@ var profile = {
       include: [
         'p3/GlobalWorkspace'
       ],
+      exclude: ['rql/js-array'],
       deps: [
         'p3/GlobalWorkspace'
       ]
