@@ -223,7 +223,6 @@ define([
         var titleBar = query('.dijitTitlePaneTextNode',  stddlg.domNode)[0];
         domConstruct.place(copyBtn.domNode, titleBar);
 
-        console.log('JOB DETAIL: ', detail);
         if (detail.stdout) {
           stddlg.set('content', "<pre style='overflow: scroll;'>" + detail.stdout + '</pre>');
         } else {
@@ -245,7 +244,6 @@ define([
         var titleBar = query('.dijitTitlePaneTextNode',  dlg.domNode)[0];
         domConstruct.place(copyBtn.domNode, titleBar);
 
-        console.log('JOB DETAIL: ', detail);
         if (detail.stderr) {
           dlg.set('content', "<pre style='overflow: scroll;'>" + detail.stderr + '</pre>');
         } else {
@@ -396,61 +394,11 @@ define([
     //     }
     //   }
     // },
-    completed_job: function (item, options) {
+    job_status_meta: function (item, options) {
       options = options || {};
 
       var columns = [{
         name: 'Service',
-        text: 'app'
-      }, {
-        name: 'App',
-        text: 'app'
-      }, {
-        name: 'Job ID',
-        text: 'id'
-      }, {
-        name: 'Status',
-        text: 'status'
-      }, {
-        name: 'Submitted',
-        text: 'submit_time'
-      }, {
-        name: 'Start',
-        text: 'start_time'
-      }, {
-        name: 'Completed',
-        text: 'completed_time'
-      }, {
-        name: 'Parameters',
-        text: 'parameters',
-        data_hide: true
-      }, {
-        name: '_formatterType',
-        text: '_formatterType',
-        data_hide: true
-      }, {
-        name: 'Parameters',
-        text: 'parameters',
-        data_hide: true
-      }];
-
-      var div = domConstruct.create('div');
-      displayHeader(div, item.id, 'fa icon-flag-checkered fa-2x', '/workspace/', options);
-      displayDetail(item, columns, div, options);
-
-      displayStdoutPanels(div, item);
-
-      return div;
-    },
-
-    failed_job: function (item, options) {
-      options = options || {};
-
-      var columns = [{
-        name: 'Service',
-        text: 'app'
-      }, {
-        name: 'App',
         text: 'app'
       }, {
         name: 'Job ID',
@@ -1350,7 +1298,6 @@ define([
         link: function (obj) {
           if (obj.pmid.length > 0) {
             var pmid = obj.pmid[0];
-            // console.log(pmid, typeof pmid);
             return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid.split(';').join(',') + '" target="_blank">' + pmid + '</a>';
           }
           return '';
@@ -1417,7 +1364,7 @@ define([
     },
 
     genome_amr_data: function (item, options) {
-      var sectionList = ['Summary', 'Measurement', 'Laboratory typing'];
+      var sectionList = ['Summary', 'Measurement', 'Laboratory Method', 'Computational Method'];
       var section = {};
 
       section.Summary = [{
@@ -1436,11 +1383,12 @@ define([
         name: 'Resistant Phenotype',
         text: 'resistant_phenotype'
       }, {
-        name: 'Testing Standard',
-        text: 'testing_standard'
+        name: 'Evidence',
+        text: 'evidence'
       }, {
-        name: 'Testing Standard Year',
-        text: 'testing_standard_year'
+        name: 'PubMed',
+        text: 'pmid',
+        link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
       }];
 
       section.Measurement = [{
@@ -1454,7 +1402,7 @@ define([
         text: 'measurement_unit'
       }];
 
-      section['Laboratory typing'] = [{
+      section['Laboratory Method'] = [{
         name: 'Method',
         text: 'laboratory_typing_method'
       }, {
@@ -1466,6 +1414,23 @@ define([
       }, {
         name: 'Version',
         text: 'laboratory_typing_method_version'
+      }, {
+        name: 'Testing Standard',
+        text: 'testing_standard'
+      }, {
+        name: 'Testing Standard Year',
+        text: 'testing_standard_year'
+      }];
+
+      section['Computational Method'] = [{
+        name: 'Method',
+        text: 'computational_method'
+      }, {
+        name: 'Version',
+        text: 'computational_method_version'
+      }, {
+        name: 'Performance',
+        text: 'computational_method_performance'
       }];
 
       var div = domConstruct.create('div');
@@ -1523,7 +1488,13 @@ define([
       var div = domConstruct.create('div');
       displayHeader(div, item.genome_name, 'fa icon-genome fa-2x', '/view/Genome/' + item.genome_id, options);
 
-      var summary = 'Length: ' + item.genome_length + 'bp, Chromosomes: ' + (item.chromosomes || 0) + ', Plasmids: ' + (item.plasmids || 0) + ', Contigs: ' + (item.contigs || 0);
+      var chromosomes = item.chromosomes || 0;
+      var plasmids = item.plasmids || 0;
+      var contigs = item.contigs || 0;
+      var summary = 'Length: ' + item.genome_length + 'bp, ' +
+        (chromosomes ? 'Chromosomes: ' + chromosomes + ', ' : '') +
+        (plasmids ? 'Plasmids: ' + plasmids + ', ' : '') +
+        (contigs ? 'Contigs: ' + contigs : '');
 
       domConstruct.create('div', {
         innerHTML: summary,
@@ -1536,7 +1507,7 @@ define([
       return div;
     },
     genome_meta_table_names: function () {
-      return ['Organism Info', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+      return ['Organism Info', 'Genome Quality', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
     },
 
     genome_meta_spec: function () {
@@ -1626,6 +1597,32 @@ define([
         }, {
           name: 'Reference Genome',
           text: 'reference_genome'
+        }],
+
+        'Genome Quality': [{
+          name: 'Genome Quality',
+          text: 'genome_quality',
+          editable: false
+        }, {
+          name: 'Genome Quality Flags',
+          text: 'genome_quality_flags',
+          editable: false
+        }, {
+          name: 'Coarse Consistency',
+          text: 'coarse_consistency',
+          editable: false
+        }, {
+          name: 'Fine Consistency',
+          text: 'fine_consistency',
+          editable: false
+        }, {
+          name: 'CheckM Completeness',
+          text: 'checkm_completeness',
+          editable: false
+        }, {
+          name: 'CheckM Contamination',
+          text: 'checkm_contamination',
+          editable: false
         }],
 
         Sharing: [{
@@ -1909,7 +1906,6 @@ define([
         break;
       default:
         new_type = (formatters[type]) ? type : 'default';
-        // console.log("display in " + new_type + " format");
     }
 
     return formatters[new_type](item, options);

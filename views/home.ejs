@@ -68,7 +68,7 @@
                                 <a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a>
                             </li>
                             <li>
-                                <a class="navigationLink" href="/app/MetagenomeBinning">Metagenome Binning</a>
+                                <a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a>
                             </li>
                             <li>
                                 <a class="navigationLinkOut" href="https://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
@@ -111,27 +111,27 @@
                 <div class="omics-links">
                     <ul>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic Resistance</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance</a>
                         </li>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/Genomes">Genomes</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a>
                         </li>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic Features</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a>
                         </li>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/Pathways">Pathways</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a>
                         </li>
                     </ul>
                     <ul>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/ProteinFamilies">Protein Families</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a>
                         </li>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/SpecialtyGenes">Specialty Genes</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a>
                         </li>
                         <li>
-                            <a class="navigationLink" href="/view/DataType/Transcriptomics">Transcriptomes</a>
+                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a>
                         </li>
                     </ul>
                 </div>
@@ -197,7 +197,7 @@
                     <h3 class="close2x">How to Cite PATRIC</h3>
                     <p class="far">If you use PATRIC web resources to assist in research publications or proposals please cite as:
                     </p>
-                    <a href="/webpage/website/cite_patric.html">How to cite PATRIC</a>
+                    <a class="navigationLinkOut" href="<%=request.applicationOptions.docsServiceURL %>cite_patric.html">How to cite PATRIC</a>
                 </div>
             </div>
             <div class="column">
@@ -213,24 +213,24 @@
                     <h3 class="close2x">Follow Us</h3>
                     <ul class="left no-decoration">
                         <li>
-                            <a href="//twitter.com/PATRICBRC">Twitter</a>
+                            <a class="navigationLinkOut" href="//twitter.com/PATRICBRC">Twitter</a>
                         </li>
                         <li>
-                            <a href="//www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823">Facebook</a>
+                            <a class="navigationLinkOut" href="//www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823">Facebook</a>
                         </li>
                     </ul>
                     <ul class="left no-decoration">
                         <li>
-                            <a href="//docs.patricbrc.org/news.rss">RSS</a>
+                            <a class="navigationLinkOut" href="<%=request.applicationOptions.docsServiceURL %>news.rss">RSS</a>
                         </li>
                         <li>
-                            <a href="//www.youtube.com/user/PATRICBRC">YouTube</a>
+                            <a class="navigationLinkOut" href="//www.youtube.com/user/PATRICBRC">YouTube</a>
                         </li>
                         <li>
-                            <a href="//www.addthis.com/bookmark.php?v=250&amp;username=xa-4c40660c515875dc">Share This</a>
+                            <a class="navigationLinkOut" href="//www.addthis.com/bookmark.php?v=250&amp;username=xa-4c40660c515875dc">Share This</a>
                         </li>
                     </ul>
-                    <h3 class="close2x"><a href="<%=request.applicationOptions.docsServiceURL %>/website/privacy_policy.html">Privacy Policy</a></h3>
+                    <h3 class="close2x"><a class="navigationLinkOut" href="<%=request.applicationOptions.docsServiceURL %>privacy_policy.html">Privacy Policy</a></h3>
                 </div>
             </div>
         </div>

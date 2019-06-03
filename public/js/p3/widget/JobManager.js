@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang',  'dojo/query',
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
   'dojo/_base/Deferred', '../JobManager', './Confirmation',
-  'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel'
+  'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation,
-  Topic, BorderContainer, ActionBar, ItemDetailPanel
+  Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath
 ) {
   return declare([BorderContainer], {
     disabled: false,
@@ -88,8 +88,9 @@ define([
           validContainerTypes: ['*']
         },
         function (selection) {
-          var sel = selection[0];
-          Topic.publish('/navigate', { href: '/workspace' + sel.parameters.output_path + '/' + sel.parameters.output_file });
+          var params = selection[0].parameters;
+          var path = encodePath(params.output_path + '/' + params.output_file);
+          Topic.publish('/navigate', { href: '/workspace' + path });
         },
         false
       ], [
@@ -212,9 +213,10 @@ define([
       this.setupActions();
 
       this.grid.on('ItemDblClick', lang.hitch(this, function (evt) {
-        // console.log('JobManager.ItemDblClick', evt);
         if (evt.selected) {
-          Topic.publish('/navigate', { href: '/workspace' + evt.selected.parameters.output_path + '/' + evt.selected.parameters.output_file });
+          var params = evt.selected.parameters,
+            path = encodePath(params.output_path + '/' + params.output_file);
+          Topic.publish('/navigate', { href: '/workspace' + path });
         }
       }));
 
@@ -222,7 +224,7 @@ define([
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
           var d = evt.grid.row(rownum).data;
 
-          d._formatterType = d.status + '_job';
+          d._formatterType = 'job_status_meta';
           return d;
         }));
 

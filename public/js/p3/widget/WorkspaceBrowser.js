@@ -1,25 +1,23 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/query',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-attr',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-attr',
   './WorkspaceExplorerView', 'dojo/topic', './ItemDetailPanel',
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dijit/popup', 'dojo/text!./templates/IDMapping.html', 'dojo/request', 'dijit/form/Select',
-  './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
+  'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all',
+  'dojo/promise/all', '../util/encodePath',
 
   'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on, query,
-  domClass, ContentPane, domConstruct, domAttr,
+  domClass, domConstruct, domAttr,
   WorkspaceExplorerView, Topic, ItemDetailPanel,
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-  popup, IDMappingTemplate, xhr, Select,
-  ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
+  popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All
+  All, encodePath
 ) {
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
@@ -51,7 +49,7 @@ define([
 
       this.browserHeader = new ContainerActionBar({
         region: 'top',
-        className: 'BrowserHeader',
+        className: 'BrowserHeader WSBrowserHeader',
         path: this.path,
         layoutPriority: 3
       });
@@ -107,7 +105,7 @@ define([
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'GenomeGroup',
-              perspectiveUrl: '/view/GenomeGroup/' + selection[0].path
+              perspectiveUrl: '/view/GenomeGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -115,7 +113,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -148,7 +146,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/GenomeGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/GenomeGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(genome_id,GenomeGroup(' + encodeURIComponent(sel.path) + '))';
@@ -168,7 +166,7 @@ define([
           popup.open({
             popup: new PerspectiveToolTipDialog({
               perspective: 'FeatureGroup',
-              perspectiveUrl: '/view/FeatureGroup/' + selection[0].path
+              perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[0].path)
             }),
             around: button,
             orient: ['below']
@@ -176,7 +174,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -210,7 +208,7 @@ define([
         }
       }, function (selection) {
         if (selection.length == 1) {
-          Topic.publish('/navigate', { href: '/view/FeatureGroup' + selection[0].path });
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
             return 'in(feature_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
@@ -282,7 +280,7 @@ define([
         var currentQuery = self.getQuery(selection[0]);
 
         var urlStr = window.App.dataServiceURL + '/' + dataType + '/' + currentQuery + '&http_authorization=' +
-          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download=true';
+          encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&limit(25000)&http_download=true';
 
         // cursorMark requires a sort on an unique key
         urlStr += type === 'genome_group' ? '&sort(+genome_id)' : '&sort(+feature_id)';
@@ -310,11 +308,12 @@ define([
 
       var dtsfc = '<div>Download Job Results:</div>' +
           '<div class="wsActionTooltip" rel="circos.svg">SVG Image</div>' +
-          '<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>';
+          '<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table (txt)</div>' +
+          '<div class="wsActionTooltip" rel="genome_comparison.xls">Genome Comparison Table (xls)</div>';
       var downloadTTSelectFile = new TooltipDialog({
         content: dtsfc,
         onMouseLeave: function () {
-          popup.close(downloadTTSelect);
+          popup.close(downloadTTSelectFile);
         }
       });
 
@@ -325,7 +324,7 @@ define([
         tooltip: 'View in Browser'
       }, function (selection) {
         // console.log("[WorkspaceBrowser] View Item Action", selection);
-        Topic.publish('/navigate', { href: '/workspace' + selection[0].path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(selection[0].path) });
       }, false);
 
       this.browserHeader.addAction('ViewSeqComparison', 'fa icon-eye fa-2x', {
@@ -334,12 +333,23 @@ define([
         validTypes: ['GenomeComparison'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        var cid = self.actionPanel.currentContainerWidget.getComparisonId();
+        var cid = encodePath(self.actionPanel.currentContainerWidget.getComparisonId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + cid });
         } else {
           Topic.publish('/navigate', { href: '/workspace' + cid + '#summary' });
         }
+      }, false);
+
+      this.browserHeader.addAction('ViewTaxonomicClassification', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['TaxonomicClassification'],
+        tooltip: 'View Taxonomic Classification'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/TaxonomicReport.html';
+        Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
@@ -351,7 +361,7 @@ define([
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/alignment.json';
 
-        Topic.publish('/navigate', { href: '/view/GenomeAlignment/' + path });
+        Topic.publish('/navigate', { href: '/view/GenomeAlignment' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('SelectDownloadSeqComparison', 'fa icon-download fa-2x', {
@@ -505,6 +515,18 @@ define([
         });
       }, self.path.split('/').length < 3);
 
+      this.browserHeader.addAction('ViewCodonTree', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['CodonTree'],
+        tooltip: 'View Codon Tree'
+      }, function (selection) {
+        var sel = selection[0],
+          path = sel.path + '.' + sel.name + '/codontree_treeWithGenomeIds.nwk';
+
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path) });
+      }, false);
+
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -512,7 +534,7 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + expPath });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
       }, false);
 
@@ -523,7 +545,7 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + path[0] });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -532,8 +554,7 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'Toggle Summary View'
       }, function (selection) {
-        // console.log("View Experiment Summary: ", selection[0]);
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         if (self.actionPanel.currentContainerWidget.isSummaryView()) {
           Topic.publish('/navigate', { href: '/workspace' + eid });
         } else {
@@ -547,8 +568,7 @@ define([
         validTypes: ['DifferentialExpression'],
         tooltip: 'View Experiment'
       }, function (selection) {
-        // console.log("View Experiment: ", selection[0]);
-        var eid = self.actionPanel.currentContainerWidget.getExperimentId();
+        var eid = encodePath(self.actionPanel.currentContainerWidget.getExperimentId());
         Topic.publish('/navigate', { href: '/view/TranscriptomicsExperiment/?&wsExpId=' + eid });
 
       }, false);
@@ -573,7 +593,7 @@ define([
         tooltip: 'View Gene List'
       }, function (selection) {
         var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + selection.map(function (s) {
-          return s.path;
+          return encodePath(s.path);
         });
         Topic.publish('/navigate', { href: url });
       }, false);
@@ -586,7 +606,7 @@ define([
         tooltip: 'View Experiment Gene List'
       }, function (selection) {
         var expPath = this.currentContainerWidget.get('path');
-        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + expPath + '&wsComparisonId=' + selection.map(function (s) {
+        var url = '/view/TranscriptomicsExperiment/?&wsExpId=' + encodePath(expPath) + '&wsComparisonId=' + selection.map(function (s) {
           return s.pid;
         });
         Topic.publish('/navigate', { href: url });
@@ -605,7 +625,7 @@ define([
         var wsExps = [];
         selection.forEach(function (s) {
           if (s.path) {
-            wsExps.push(s.path);
+            wsExps.push(encodePath(s.path));
           } else if (s.eid) {
             eids.push(s.eid);
           }
@@ -1110,14 +1130,19 @@ define([
       });
 
       if (unchangeableTypes.length > 0) {
-        new Dialog({
+        new Confirmation({
           title: 'Cannot change type',
+          okLabel: 'OK',
+          cancelLabel: null,
           content:
             '<b>The selected items must be one of the following types:</b> <br>' +
-              validTypes.join('<br>') + '.<br><br>' +
+            validTypes.join('<br>') + '.<br><br>' +
             '<b>However, your selection contained the type(s):</b> <br>' +
-              unchangeableTypes.join('<br>'),
-          style: 'width: 400px;'
+            unchangeableTypes.join('<br>'),
+          style: 'width: 400px;',
+          onConfirm: function (evt) {
+            this.hideAndDestroy();
+          }
         }).show();
         return;
       }
@@ -1193,7 +1218,6 @@ define([
     },
 
     _setPathAttr: function (val) {
-      // console.log("WorkspaceBrowser setPath()", val)
 
       // extract extra URL parameters
       var components = val.split('#');
@@ -1210,10 +1234,8 @@ define([
       }).map(function (c) {
         return decodeURIComponent(c);
       });
-      // console.log("[WorkspaceBrowser] parts:",parts)
-      // var workspace = parts[0] + '/' + parts[1];
-      var obj;
 
+      var obj;
       if (parts[0] == 'public') {
         if (parts.length == 1) {
           obj = {
@@ -1255,7 +1277,6 @@ define([
             break;
           case 'job_result':
             var d = 'p3/widget/viewer/JobResult';
-            // console.log("job_result object: ", obj);
             if (obj && obj.autoMeta && obj.autoMeta.app) {
               var id = obj.autoMeta.app.id || obj.autoMeta.app;
               switch (id) {
@@ -1295,86 +1316,81 @@ define([
           default:
             panelCtor = window.App.getConstructor('p3/widget/viewer/File');
             params.file = { metadata: obj };
-            // console.log("FileViewer Ctor params: ", params);
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          if (this.activePanel) {
-            this.removeChild(this.activePanel);
-          }
-          // console.log("Creeate New Active Panel");
-          var newPanel = new Panel(params);
-          var hideTimer;
+          if (!this.activePanel || !(this.activePanel instanceof Panel)) {
+            if (this.activePanel) {
+              this.removeChild(this.activePanel);
+            }
 
-          if (this.actionPanel) {
-            this.actionPanel.set('currentContainerWidget', newPanel);
-            this.itemDetailPanel.set('containerWidget', newPanel);
-          }
+            var newPanel = new Panel(params);
+            var hideTimer;
 
-          if (newPanel.on) {
-            newPanel.on('select', lang.hitch(this, function (evt) {
-              var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
-                // console.log("Row: ", evt.grid.row(rownum).data);
-                return evt.grid.row(rownum).data;
-              }));
+            if (this.actionPanel) {
+              this.actionPanel.set('currentContainerWidget', newPanel);
+              this.itemDetailPanel.set('containerWidget', newPanel);
+            }
 
-              if (hideTimer) {
-                clearTimeout(hideTimer);
-              }
-              if (sel.length > 0) {
-                this.addChild(this.actionPanel);
-              }
-
-              this.actionPanel.set('selection', sel);
-              this.itemDetailPanel.set('selection', sel);
-            }));
-
-            newPanel.on('deselect', lang.hitch(this, function (evt) {
-
-              if (!evt.selected) {
-                this.actionPanel.set('selection', []);
-                this.itemDetailPanel.set('selection', []);
-              } else {
+            if (newPanel.on) {
+              newPanel.on('select', lang.hitch(this, function (evt) {
                 var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
                   return evt.grid.row(rownum).data;
                 }));
-              }
 
-              this.actionPanel.set('selection', sel);
-              this.itemDetailPanel.set('selection', sel);
-            }));
-
-            newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
-              if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
-                this.actionPanel.set('selection', []);
-                this.itemDetailPanel.set('selection', []);
-                if ('clearSelection' in newPanel) {
-                  newPanel.clearSelection();
+                if (hideTimer) {
+                  clearTimeout(hideTimer);
                 }
-              } else {
-                console.log('non-navigable type, todo: show info panel when dblclick');
-              }
+                if (sel.length > 0) {
+                  this.addChild(this.actionPanel);
+                }
 
-            }));
+                this.actionPanel.set('selection', sel);
+                this.itemDetailPanel.set('selection', sel);
+              }));
+
+              newPanel.on('deselect', lang.hitch(this, function (evt) {
+                if (!evt.selected) {
+                  this.actionPanel.set('selection', []);
+                  this.itemDetailPanel.set('selection', []);
+                } else {
+                  var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
+                    return evt.grid.row(rownum).data;
+                  }));
+                }
+
+                this.actionPanel.set('selection', sel);
+                this.itemDetailPanel.set('selection', sel);
+              }));
+
+              newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
+                if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
+                  Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                  this.actionPanel.set('selection', []);
+                  this.itemDetailPanel.set('selection', []);
+                  if ('clearSelection' in newPanel) {
+                    newPanel.clearSelection();
+                  }
+                } else {
+                  console.log('non-navigable type, todo: show info panel when dblclick');
+                }
+
+              }));
+            }
+
+            this.addChild(newPanel);
+            this.activePanel = newPanel;
+          } else {
+            this.activePanel.set('path', this.path);
+            if (this.activePaneal && 'clearSelection' in this.activePaneal) {
+              this.activePanel.clearSelection();
+            }
           }
 
-          this.addChild(newPanel);
-          this.activePanel = newPanel;
+          if (this.browserHeader) {
+            this.browserHeader.set('path', this.path);
+          }
 
-          // var parts = this.path.split('/').filter(function (x) {
-          //   return x != '';
-          // }).map(function (c) {
-          //   return decodeURIComponent(c);
-          // });
-          // var workspace = parts[0] + '/' + parts[1];
-
-          // don't set current path in workspace manager for now
-          // WorkspaceManager.set("currentPath", val);
-
-
-          if (this.browserHeader)
-          { this.browserHeader.set('path', this.path); }
         }));
 
       }), lang.hitch(this, function (err) {
@@ -1387,8 +1403,6 @@ define([
         });
         d.show();
       }));
-
-
     },
 
     getQuery: function (obj) {

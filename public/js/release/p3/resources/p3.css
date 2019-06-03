@@ -13287,7 +13287,11 @@ background-color: #FF00FF;
 }
 .BrowserHeader {
 	padding: 0;
-	vertical-align:bottom;
+	vertical-align: bottom;
+}
+.WSBrowserHeader {
+	display: flex;
+	justify-content: space-between;
 }
 a.HelpLink {
   color: #09456f;
@@ -13506,18 +13510,16 @@ th.dgrid-cell.wsItemMembers {
 	height: 30px;
 	margin: 0 5px 0 0;
 }
-.JobsQueued {
+.Queued {
 	color: #777;
 }
-.JobsRunning,
-.UploadsRunning{
+.Running {
 	color: #ffa900;
 }
-.JobsCompleted,
-.UploadsCompleted{
+.Completed {
 	color: #3c763d;
 }
-.JobsFailed {
+.Failed {
 	color: #a94442;
 }
 .JobFilters .JobFilter {
@@ -13566,6 +13568,7 @@ th.dgrid-cell.wsItemMembers {
 }
 .wsActionContainer {
 	float: right;
+	white-space: nowrap;  
 }
 .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
@@ -13727,13 +13730,13 @@ th.dgrid-cell.wsItemMembers {
 	margin-right: 3px;
 }
 .userPermForm{
-	margin: 0 0 20px 0;
+	margin: 0 0 25px 0;
 }
 .userPermForm .publicCheckBox{
 	padding: 10px;
 	background: #f5f5f5;
 	border: 1px dashed #aaa;
-	margin-bottom: 20px;
+	margin-bottom: 25px;
 }
 .dnd-active:before {
     content: " ";
@@ -14735,7 +14738,7 @@ div.appsublabel {
 .DataItemProperty {
     vertical-align: top;
     padding: 0 4px 0 10px;
-    width: 30%;
+    width: 40%;
     font-weight: bold;
 }
 .DataItemValue {
@@ -16550,14 +16553,14 @@ TD.HomeServiceLink {
 }
 .HomeServiceLink H3,
 .HomeServiceLink H4 {
-  margin: 0;
+    margin: 0;
     padding: 0 0 0 15px;
     border: 0;
-  font-size: 14px;
-  font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
-  font-weight: 100;
-  text-align: left;
-  line-height: 16px;
+    font-size: 14px;
+    font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
+    font-weight: 100;
+    text-align: left;
+    line-height: 16px;
 }
 .HomeServiceLink H4 {
 	color: #fff;
@@ -16670,9 +16673,8 @@ table tr.even td {
     backface-visibility: hidden;
 }
 .ActionBar {
-    background: #76a72d; 
+    background: #76a72d;
     border-left: 1px solid #777;
-    
     overflow: hidden;
     padding-top: 6px;
     margin-right: -4px;
@@ -17072,16 +17074,8 @@ div.pubmed ul li {
     border-bottom: #aec9d2 1px solid;
 }
 .PerspectiveHeader {
-	
 	margin:0;
 	padding: 0;
-	
-	
-}
-.patric .PerspectiveQuery,
-.patric .PerspectiveTotalCount {
-    
-    
 }
 .patric .PerspectiveQuery .current {
     font-size: 1.1em;
@@ -17089,13 +17083,7 @@ div.pubmed ul li {
     color: #76a72d;
 }
 .patric .PerspectiveTotalCount {
-	color: #76a72d;
-	
-}
-.patric .PerspectiveType {
-    
-    
-    
+	color: #666666;
 }
 .patric .PerspectiveHeader .PerspectiveIcon.fa {
     font-size:2.4em;
@@ -17118,7 +17106,6 @@ div.pubmed ul li {
 }
 .FacetFilter ::-webkit-scrollbar{
 	background: #333;
-	
 }
 .FacetFilter ::-webkit-scrollbar-thumb,
 .dgrid ::-webkit-scrollbar-thumb {
@@ -17152,6 +17139,13 @@ div.pubmed ul li {
     padding:4px;
     border:0 solid #aaa;
     border-radius:4px;
+}
+.WarningAlert {
+    background: #fff3cd;
+    padding: 10px;
+    border: 2px solid #ffeeba;
+    color: #856404;
+    margin-bottom: 10px;
 }
 .patric .fa.icon-caret-down.noHoverIcon:hover{
 	color: #333;
@@ -17341,7 +17335,7 @@ body footer.main-footer ul.left {
     border:0 solid #aaa;
     border-radius:4px;
 }
-.form_msg_warning {
+.warning {
     font-weight: bold;
     color: #E53935;
 }

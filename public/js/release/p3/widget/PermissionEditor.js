@@ -33,15 +33,11 @@
 define("p3/widget/PermissionEditor", [
   'dojo', 'dojo/_base/declare', 'dijit/_WidgetBase', './Confirmation', // dojo/on
   '../widget/UserSelector', './formatter', 'dojo/dom-construct',
-  'dijit/form/Select', 'dijit/form/Button', '../WorkspaceManager',
-  'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/query', 'dojo/topic',
-  '../DataAPI'
+  'dijit/form/Select', 'dijit/form/Button', 'dijit/form/CheckBox', 'dojo/query'
 ], function (
   dojo, declare, WidgetBase, Confirmation,
   UserSelector, Formatter, domConstruct,
-  Select, Button, WorkspaceManager,
-  Deferred, CheckBox, query, Topic,
-  DataAPI
+  Select, Button, CheckBox, query
 ) {
   return declare([WidgetBase], {
     /* required widget input */
@@ -127,15 +123,14 @@ define("p3/widget/PermissionEditor", [
       /**
        * Build the form and events
        */
-      // var ownerId = Formatter.baseUsername(this.user);
-
       var form = self.form = domConstruct.toDom('<div class="userPermForm">');
       domConstruct.place(
-        '<h4 style="margin-bottom: 5px;" class="pull-left">' +
+        '<h4 style="margin-bottom: 5px;">' +
           'Share with Specific Users' +
         '</h4>'
         , form
       );
+
       self.progressEle = domConstruct.place(
         '<span>' +
           self.loadingHTML +
@@ -188,7 +183,6 @@ define("p3/widget/PermissionEditor", [
           }
 
           // add a new row of user, perm selector, and trash button
-
           var permSelector = self.permSelector(user, perm);
           var row = domConstruct.toDom('<tr><td data-user="' + user + '">' + Formatter.baseUsername(user) + '</td></tr>');
 
@@ -225,13 +219,12 @@ define("p3/widget/PermissionEditor", [
         okLabel: 'Save',
         cancelLabel: 'Cancel',
         content: form,
-        style: { width: '500px' },
+        style: { width: '510px' },
         onConfirm: function (evt) {
           self.onConfirm(self._userPerms, self.isPublic ? 'r' : 'n');
         }
       });
       this.dialog.okButton.set('disabled', true);
-
 
       if (this.useSolrAPI) {
         this.listSolrPermissions();
@@ -241,6 +234,11 @@ define("p3/widget/PermissionEditor", [
 
       this.dialog.startup();
       this.dialog.show();
+
+      // destroy dialog on links
+      query('.navigationLink', form).on('click', function (e) {
+        self.dialog.destroy();
+      });
     },
 
 
@@ -336,6 +334,12 @@ define("p3/widget/PermissionEditor", [
         }
       ];
 
+      // checking that perm is a string for old ws bug mangled data bug
+      // https://github.com/PATRIC3/patric3_website/issues/2215
+      if (typeof defaultPerm !== 'string') {
+        return domConstruct.toDom('<span class="Failed">Invalid permission</span');
+      }
+
       if (defaultPerm.toLowerCase() == 'varies') {
         opts.unshift({
           label: 'Varies*',
@@ -367,7 +371,7 @@ define("p3/widget/PermissionEditor", [
     },
 
     /*
-      * list workspace (initial) permissions in dom
+     * list workspace (initial) permissions in dom
     */
     listWSPermissions: function () {
       var self = this,
@@ -401,9 +405,18 @@ define("p3/widget/PermissionEditor", [
 
       domConstruct.place(checkBox, form, 'first');
       domConstruct.place(
-        '<h4 style="margin-bottom: 5px;">' +
+        '<h4 style="margin-bottom: 10px;">' +
           'Share with Everybody' +
         '</h4>',
+        form, 'first'
+      );
+
+      domConstruct.place(
+        '<p class="WarningAlert">' +
+        '<b>Note:</b> Sharing your workspace does not provide access to your private genomes. ' +
+        'If you would like to share your private genomes, please go to ' +
+        '<a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>, ' +
+        'select the genomes, and then click "Share" to edit permissions.</p><br>',
         form, 'first'
       );
 
@@ -422,7 +435,7 @@ define("p3/widget/PermissionEditor", [
         var row = domConstruct.toDom('<tr><td data-user="' + user + '">' + Formatter.baseUsername(user) + '</td></tr>');
 
         var td = domConstruct.toDom('<td>');
-        domConstruct.place(permSelector.domNode, td);
+        domConstruct.place(permSelector.domNode || permSelector, td);
         domConstruct.place(td, row);
         domConstruct.place(
           domConstruct.toDom('<td style="width: 1px"><i class="fa icon-trash-o fa-2x"></i></td>')

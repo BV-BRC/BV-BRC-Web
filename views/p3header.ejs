@@ -86,18 +86,13 @@
                         <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
                             <div class="menuHeader">Data Types</div>
                             <div class="menuItems">
-                                <div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic
-                                        Resistance</a></div>
-                                <div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
-                                <div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic
-                                        Features</a></div>
-                                <div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
-                                <div><a class="navigationLink" href="/view/DataType/ProteinFamilies">Protein
-                                        Families</a></div>
-                                <div><a class="navigationLink" href="/view/DataType/SpecialtyGenes">Specialty
-                                        Genes</a></div>
-                                <div><a class="navigationLink"
-                                        href="/view/DataType/Transcriptomics">Transcriptomics</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance (AMR)</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a></div>
                             </div>
                             <div class="menuHeader">Download Data</div>
                             <div class="menuItems">
@@ -109,20 +104,13 @@
                         <div style="vertical-align:top;width:200px;display: inline-block">
                             <div class="menuHeader">Specialty Data Collections</div>
                             <div class="menuItems">
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/patric_collaborations.html">PATRIC Collaborations</a></div>
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/patric_dbps.html">PATRIC DBPs</a></div>
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/niaid_clinical_proteomics.html">NIAID Clinical Proteomics</a></div>
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/niaid_genome_sequencing.html">NIAID Genome Sequencing</a></div>
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/niaid_structural_genomics.html">NIAID Structural Genomics</a></div>
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/niaid_systems_biology.html">NIAID Systems Biology</a></div>
-                                <div><a class="navigationLink"
-                                        href="/webpage/website/data_collections/niaid_functional_genomics.html">NIAID Functional Genomics</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_collaborations.html">PATRIC Collaborations</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_dbps.html">PATRIC DBPS</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_clinical_proteomics.html">NIAID Clinical Proteomics</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_genome_sequencing.html">NIAID Genome Sequencing</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_structural_genomics.html">NIAID Structural Genomics</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_systems_biology.html">NIAID Systems Biology</a></div>
+                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_functional_genomics.html">NIAID Functional Genomics</a></div>
                             </div>
 
                         </div>
@@ -180,18 +168,23 @@
                                 <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/PhylogeneticTree">Phylogenetic Tree</a></div>
-                                <div><a class="navigationLink" href="/app/MetagenomeBinning">Metagenome Binning</a></div>
                                 <div><a class="navigationLink" href="/app/GenomeAlignment">Genome Alignment</a></div>
                             </div>
                             <p></p>
-                            <div class="menuHeader">Transcriptomics</div>
+                            <div class="menuHeader">Metagenomics</div>
                             <div class="menuItems">
-                                <div><a class="navigationLink" href="/app/Expression">Expression Import</a>
-                                </div>
-                                <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+                                <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
+                                <div><a class="navigationLink" href="/app/TaxonomicClassification">Taxonomic Classification</a></div>
+                                <div><a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a></div>
                             </div>
                         </div>
                         <div style="vertical-align:top;width:180px;display:inline-block">
+                          <div class="menuHeader">Transcriptomics</div>
+                          <div class="menuItems">
+                              <div><a class="navigationLink" href="/app/Expression">Expression Import</a>
+                              </div>
+                              <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+                          </div>
                             <div class="menuHeader">Protein Tools</div>
                             <div class="menuItems">
                                 <div><a class="navigationLink" href="/app/ProteinFamily">Protein Family
@@ -219,14 +212,17 @@
                 <span>HELP</span>
 
                 <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
-                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/tutorial/">Tutorials</a></div>
-                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/user_guides/">User Guides</a></div>
-                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/webinar/">Webinars</a></div>
-                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>/videos/">Instructional Videos</a></div>
+                    <div><a class="DialogButton" rel="quickstart:">Quickstart Video</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/">User Guides</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>tutorial/">Tutorials</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>common_tasks/">Common Tasks</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>cli_tutorial/">CLI Tutorial</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>webinar/">Webinars</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>videos/">Instructional Videos</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>workshops.html">Workshops</a></div>
                     <hr>
                     <div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
-                    <div><a class="TopMenuLink navigationLink" href="/webpage/website/contact_us.html">Contact Us</a></div>
+                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>contact.html">Contact Us</a></div>
                 </div>
             </div>
 
@@ -247,19 +243,19 @@
                 <span></span>
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>news" target="_blank" rel="noopener">News</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/publications.html" target="_blank" rel="noopener">Publications</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/workshops.html" target="_blank" rel="noopener">Workshops</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/presentations.html" target="_blank" rel="noopener">Presentations</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/usage_metrics.html" target="_blank" rel="noopener">Usage Metrics</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>publications.html" target="_blank" rel="noopener">Publications</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>workshops.html" target="_blank" rel="noopener">Workshops</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>presentations.html" target="_blank" rel="noopener">Presentations</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>usage_metrics.html" target="_blank" rel="noopener">Usage Metrics</a></div>
                     <hr>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/about.html" target="_blank" rel="noopener">About PATRIC</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/cite_patric.html" target="_blank" rel="noopener">Cite PATRIC</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/swg.html" target="_blank" rel="noopener">Scientific Working Group</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/personnel.html" target="_blank" rel="noopener">Personnel</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/collaborators.html" target="_blank" rel="noopener">Collaborators</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/related_sites.html" target="_blank" rel="noopener">Related Sites</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>website/privacy_policy.html" target="_blank" rel="noopener">Privacy Policy</a></div>
-                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>system_architecture" target="_blank" rel="noopener">System Architecture</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>about.html" target="_blank" rel="noopener">About PATRIC</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>cite_patric.html" target="_blank" rel="noopener">Cite PATRIC</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>scientific_working_group.html" target="_blank" rel="noopener">Scientific Working Group</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>personnel.html" target="_blank" rel="noopener">Personnel</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>collaborations.html" target="_blank" rel="noopener">Collaborations</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>related_sites.html" target="_blank" rel="noopener">Related Sites</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>privacy_policy.html" target="_blank" rel="noopener">Privacy Policy</a></div>
+                    <div><a class="TopMenuLink navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>systems_architecture.html" target="_blank" rel="noopener">Systems Architecture</a></div>
                     <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/patric3" target="_blank" rel="noopener">PATRIC GitHub</a></div>
                     <hr>
                     <div><a class="TopMenuLink navigationLink" href="/status">System Status</a></div>
@@ -268,7 +264,7 @@
         </div>
         <div class="showOnLoad ShowWithAuth dijitHidden">
             <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
-                 data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'">
+                 data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x login-btn'">
                 <span></span>
                 <div data-dojo-type="p3/widget/TooltipDialog">
                     <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>

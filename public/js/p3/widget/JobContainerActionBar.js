@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
-  'dijit/form/Button', 'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
+  'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
   'dojo/dom-class', './formatter', '../util/getTime'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
-  Button, Select, Topic, query, JobManager,
+  Select, Topic, query, JobManager,
   domClass, formatter, getTime
 ) {
   return declare([ActionBar], {
@@ -107,7 +107,6 @@ define([
       /**
        * status filters / counts
        */
-
       var allBtn = domConstruct.create('span', {
         'class': 'JobFilter',
         innerHTML: '<i class="icon-undo"></i> All statuses',
@@ -142,7 +141,7 @@ define([
 
       var inProgressBtn = domConstruct.create('span', {
         'class': 'JobFilter',
-        innerHTML: '<i class="icon-play22 JobsRunning"></i> ' +
+        innerHTML: '<i class="icon-play22 Running"></i> ' +
           '<span>-</span> running',
         style: {
           fontSize: '1.2em',
@@ -158,7 +157,7 @@ define([
 
       var completedBtn = domConstruct.create('span', {
         'class': 'JobFilter',
-        innerHTML: '<i class="icon-checkmark2 JobsCompleted"></i> ' +
+        innerHTML: '<i class="icon-checkmark2 Completed"></i> ' +
           '<span>-</span> completed',
         style: {
           fontSize: '1.2em',
@@ -172,10 +171,9 @@ define([
         domStyle.set(allBtn, 'display', 'inline');
       });
 
-
       var failedBtn = domConstruct.create('span', {
         'class': 'JobFilter',
-        innerHTML: '<i class="icon-warning2 JobsFailed"></i> ' +
+        innerHTML: '<i class="icon-warning2 Failed"></i> ' +
           '<span>-</span> failed',
         style: {
           fontSize: '1.2em',

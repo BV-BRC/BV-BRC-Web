@@ -505,6 +505,9 @@ define([
       if (Aauth && Aauth.roles) {
         if (Aauth.roles.includes('admin')) {
           sbLink[0].style.display = 'block';
+          var loginBtn = document.querySelector('.login-btn');
+          loginBtn.classList.remove('icon-user');
+          loginBtn.classList.add('icon-superpowers', 'warning');
         } else {
           sbLink[0].style.display = 'none';
         }

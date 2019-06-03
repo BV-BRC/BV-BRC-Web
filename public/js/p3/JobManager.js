@@ -1,8 +1,9 @@
-define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
-  'dojo/promise/all', 'dojo/store/Memory', 'dojo/store/Observable', 'dojo/when'
+define([
+  'dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
+  'dojo/promise/all', 'dojo/store/Memory'
 ], function (
   Deferred, Topic, xhr,
-  All, MemoryStore, Observable, when
+  All, MemoryStore
 ) {
 
   var self = this;

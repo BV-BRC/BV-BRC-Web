@@ -22,7 +22,7 @@
         <input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true" data-dojo-attach-point="numCondWidget" data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
       <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true" data-dojo-attach-point="numContrastWidget" data-dojo-props="constraints:{min:1,max:1000}," />
+        <input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true" data-dojo-attach-point="numContrastWidget" data-dojo-props="constraints:{min:1,max:1000},disabled:false" />
       </div>
       <table class="assemblyblocks" style="width:100%">
         <tr>
@@ -36,7 +36,7 @@
               </div>
               <div class="appRow">
                 <label class="paramlabel">Strategy</label><br>
-                <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:onStrategyChange" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
                   <option value="RNA-Rocket">Tuxedo</option>
                   <option value="Host">Host HISAT2</option>
                   <option value="Rockhopper">Rockhopper</option>

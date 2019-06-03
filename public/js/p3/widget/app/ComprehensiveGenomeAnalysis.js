@@ -293,7 +293,7 @@ define([
 
       // SRR5121082
       this.srr_accession.set('disabled', true);
-      this.srr_accession_validation_message.innerHTML = '<br>Validating ' + accession + ' ...';
+      this.srr_accession_validation_message.innerHTML = 'Validating ' + accession + ' ...';
       xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
         .then(lang.hitch(this, function (xml_resp) {
           var resp = xmlParser.parse(xml_resp).documentElement;
@@ -310,7 +310,7 @@ define([
               this.addLibraryRow(lrec, infoLabels, 'srrdata');
             }
           } catch (e) {
-            this.srr_accession_validation_message.innerHTML = '<br>Your input ' + accession + ' is not valid';
+            this.srr_accession_validation_message.innerHTML = 'Your input ' + accession + ' is not valid';
             this.srr_accession.set('value', '');
           }
         }));

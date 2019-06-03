@@ -432,7 +432,6 @@ define([
       }
       path = decodeURIComponent(path);
 
-      // console.log('getObjects: ', path, "metadata_only:", metadataOnly);
       return Deferred.when(this.api('Workspace.get', [{
         objects: [path],
         metadata_only: metadataOnly
@@ -816,6 +815,8 @@ define([
     },
 
     getFolderContents: function (path, showHidden, recursive, filterPublic) {
+      path = decodeURIComponent(path);
+
       var _self = this;
       return Deferred.when(
         this.api('Workspace.ls', [{
