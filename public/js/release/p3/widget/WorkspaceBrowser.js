@@ -19,6 +19,21 @@ define("p3/widget/WorkspaceBrowser", [
   TextBox, WSObjectSelector, PermissionEditor,
   All, encodePath
 ) {
+
+  var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
+  var viewMSATT = new TooltipDialog({
+    content: mmc,
+    onMouseLeave: function () {
+      popup.close(viewMSATT);
+    }
+  });
+
+  on(viewMSATT.domNode, 'click', function (evt) {
+    var rel = evt.target.attributes.rel.value;
+    var sel = viewMSATT.selection;
+    Topic.publish('/navigate', { href: '/view/MSA/' + rel + sel, target: 'blank' });
+  });
+
   return declare([BorderContainer], {
     baseClass: 'WorkspaceBrowser',
     disabled: false,
@@ -218,6 +233,22 @@ define("p3/widget/WorkspaceBrowser", [
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q });
         }
       });
+
+      this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
+        label: 'MSA',
+        validTypes: ['feature_group'],
+        multiple: false,
+        tooltipDialog: viewMSATT,
+        tooltip: 'Multiple Sequence Alignment'
+      }, function (selection) {
+        var q = self.getQuery(selection[0]);
+        viewMSATT.selection = q;
+        popup.open({
+          popup: this._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
+          around: this._actions.MultipleSeqAlignmentFeatures.button,
+          orient: ['below']
+        });
+      }, false);
 
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
