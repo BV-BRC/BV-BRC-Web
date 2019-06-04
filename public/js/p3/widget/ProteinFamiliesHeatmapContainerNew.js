@@ -4,7 +4,7 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  '../../heatmap/dist/heatmap', 'dojo/dom-class'
+  'heatmap/dist/heatmap', 'dojo/dom-class'
 
 ], function (
   declare, lang,

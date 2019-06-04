@@ -107,7 +107,7 @@ define([
         matrix.push(row);
       }
 
-      return { cols, rows, matrix };
+      return { cols: cols, rows: rows, matrix: matrix };
     }
   });
 });

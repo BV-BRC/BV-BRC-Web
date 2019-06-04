@@ -142,8 +142,9 @@ define([
         apiServer: this.apiServer
       });
 
+      // <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">
       this.heatmapContainerNew = new HeatmapContainerNew({
-        title: 'Heatmap <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">new</sup>',
+        title: 'Heatmap (new)',
         type: 'webGLHeatmap',
         topicId: this.topicId,
         content: 'Heatmap (new)'
