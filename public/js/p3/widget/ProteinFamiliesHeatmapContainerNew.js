@@ -3,16 +3,16 @@ define([
   'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request',
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  'heatmap/dist/heatmap', 'dojo/dom-class'
+  './ContainerActionBar', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
+  './HeatmapContainerNew', 'heatmap/dist/heatmap', 'dojo/dom-class'
 
 ], function (
   declare, lang,
   on, Topic, domConstruct, dom, Query, when, request,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs,
-  Heatmap, domClass
+  ContainerActionBar, SelectionToGroup, PathJoin, saveAs,
+  HeatmapContainerNew, Heatmap, domClass
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -707,9 +707,44 @@ define([
           matrix: data.matrix
         });
       }
+    },
 
-      this.initialized = true;
-      return this.currentData;
+    formatData: function (data) {
+      var rows = data.rows.map(function (r) {
+        return {
+          name: r.rowLabel,
+          id: r.rowID
+        };
+      });
+      var cols = data.columns.map(function (c) {
+        return {
+          name: c.colLabel,
+          id: c.colID,
+          distribution: c.distribution,
+          meta: c.meta
+        };
+      });
+
+      // get lists of vals for each column
+      var vals = cols.map(function (c) {
+        var hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
+          vals = hexStrs.map(function (hex) { return  parseInt(hex, 16); });
+
+        delete c.distribution; // we no longer need the distribution
+        return vals;
+      });
+
+      // make pass of all column val data (i times, where i = number of rows)
+      var matrix = [];
+      for (var i = 0; i < vals[0].length; i++) {
+        var row = [];
+        for (var j = 0; j < vals.length; j++) {
+          row.push(vals[j][i]);
+        }
+        matrix.push(row);
+      }
+
+      return { cols: cols, rows: rows, matrix: matrix };
     }
 
   });
