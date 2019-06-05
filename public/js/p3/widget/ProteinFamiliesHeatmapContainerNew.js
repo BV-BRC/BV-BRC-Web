@@ -681,7 +681,7 @@ define([
           onFullscreenClick: function () {
             // must also hide filter container
             domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
-            domClass.toggle(Query('.pfFilterGridContainer')[0], 'dijitHidden');
+            domClass.toggle(Query('.filterPanel')[0], 'dijitHidden');
             setTimeout(function () {
               // resize both chart and panel
               self.onResize();

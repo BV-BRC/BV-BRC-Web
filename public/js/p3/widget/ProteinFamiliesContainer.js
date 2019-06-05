@@ -216,7 +216,7 @@ define([
         content: 'Filter By',
         style: 'width:283px; overflow: auto',
         splitter: true,
-        'class': 'pfFilterGridContainer'
+        'class': 'filterPanel'
       });
 
       var familyTypePanel = new ContentPane({
