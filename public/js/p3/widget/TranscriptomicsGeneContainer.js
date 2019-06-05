@@ -1,17 +1,15 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
-  'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  'dojox/widget/Standby', './ActionBar', './ContainerActionBar',
+  'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojox/widget/Standby',
   './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid', './TranscriptomicsGeneHeatmapContainer',
-  './TranscriptomicsGeneHeatmapContainerNew', 'heatmap/dist/heatmap', 'dojo/dom-class'
+  './TranscriptomicsGeneHeatmapContainerNew'
 ], function (
-  declare, lang, on, Topic, domConstruct,
+  declare, lang, Topic, domConstruct,
   BorderContainer, TabContainer, StackController, ContentPane,
-  RadioButton, TextArea, TextBox, Button, Select,
-  Standby, ActionBar, ContainerActionBar,
+  TextArea, Button, Select, Standby,
   MainGridContainer, FilterGrid, HeatmapContainer,
-  HeatmapContainerNew, Heatmap, domClass
+  HeatmapContainerNew
 ) {
 
   return declare([BorderContainer], {
