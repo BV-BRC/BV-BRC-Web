@@ -2,16 +2,16 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
   'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  'dojox/widget/Standby',
-  './ActionBar', './ContainerActionBar',
-  './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid', './TranscriptomicsGeneHeatmapContainer'
+  'dojox/widget/Standby', './ActionBar', './ContainerActionBar',
+  './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid', './TranscriptomicsGeneHeatmapContainer',
+  './TranscriptomicsGeneHeatmapContainerNew', 'heatmap/dist/heatmap', 'dojo/dom-class'
 ], function (
   declare, lang, on, Topic, domConstruct,
   BorderContainer, TabContainer, StackController, ContentPane,
   RadioButton, TextArea, TextBox, Button, Select,
-  Standby,
-  ActionBar, ContainerActionBar,
-  MainGridContainer, FilterGrid, HeatmapContainer
+  Standby, ActionBar, ContainerActionBar,
+  MainGridContainer, FilterGrid, HeatmapContainer,
+  HeatmapContainerNew, Heatmap, domClass
 ) {
 
   return declare([BorderContainer], {
@@ -81,6 +81,9 @@ define([
       if (this.heatmapContainer) {
         this.heatmapContainer.set('visible', true);
       }
+      if (this.heatmapContainerNew) {
+        this.heatmapContainerNew.set('visible', true);
+      }
     },
 
     onFirstView: function () {
@@ -106,6 +109,13 @@ define([
         apiServer: this.apiServer
       });
 
+      this.heatmapContainerNew = new HeatmapContainerNew({
+        title: 'Heatmap (new)',
+        type: 'webGLHeatmap',
+        topicId: this.topicId,
+        content: 'Heatmap (new)'
+      });
+
       this.heatmapContainer = new HeatmapContainer({
         title: 'Heatmap',
         topicId: this.topicId,
@@ -115,7 +125,16 @@ define([
       this.watch('state', lang.hitch(this, 'onSetState'));
 
       this.tabContainer.addChild(this.mainGridContainer);
+      this.tabContainer.addChild(this.heatmapContainerNew);
       this.tabContainer.addChild(this.heatmapContainer);
+
+      var self = this;
+      this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
+        if (newTab.type === 'webGLHeatmap') {
+          self.heatmapContainerNew.update();
+        }
+      });
+
       this.addChild(tabController);
       this.addChild(this.tabContainer);
       this.addChild(filterPanel);
@@ -136,7 +155,8 @@ define([
         title: 'filter',
         content: 'Filter By',
         style: 'width:283px; overflow:auto',
-        splitter: true
+        splitter: true,
+        'class': 'filterPanel'
       });
 
       var filterGridDescriptor = new ContentPane({
