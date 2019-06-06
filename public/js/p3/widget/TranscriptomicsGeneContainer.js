@@ -19,12 +19,10 @@ define([
     loadingMask: null,
     apiServer: window.App.dataServiceURL,
     constructor: function (options) {
-      // console.log(options);
 
       this.topicId = 'TranscriptomicsGene_' + options.id.split('_TranscriptomicsGene')[0];
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("TranscriptomicsGeneContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 
@@ -59,7 +57,6 @@ define([
       this.loadingMask.show(); // this widget is opened by new window/tab
     },
     onSetState: function (attr, oldVal, state) {
-      // console.log("TranscriptomicsGeneContainer set STATE. state: ", state);
       if (this.mainGridContainer) {
         this.mainGridContainer.set('state', state);
       }
@@ -244,7 +241,6 @@ define([
           !isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
 
           this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
-          // console.log("filter tgState", this.tgState);
 
           Topic.publish(this.topicId, 'applyConditionFilter', this.tgState);
         })
@@ -257,7 +253,6 @@ define([
     },
     updateGenomeFilter: function (data) {
       this.filter_genome.addOption(data);
-      // console.log(this.filter_genome, data);
     }
   });
 });

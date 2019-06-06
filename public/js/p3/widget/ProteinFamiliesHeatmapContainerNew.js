@@ -662,13 +662,15 @@ define([
           cols: data.cols,
           rows: data.rows,
           matrix: data.matrix,
-          theme: 'light',
-          noLogo: true,
           rowsLabel: 'Genomes',
           colsLabel: 'Protein Families',
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
+          },
+          options: {
+            theme: 'light',
+            hideLogo: true
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
