@@ -141,8 +141,8 @@ define([
       Topic.publish(this.topicId, 'refreshHeatmap');
     },
 
-    /* todo: this logic can probably be removed as it's
-      only only ever set to true, apparently */
+    /* todo(nc): this logic can probably be removed as it's
+      only ever set to true, apparently */
     _setVisibleAttr: function (visible) {
       this.visible = visible;
 
