@@ -7,7 +7,11 @@ define(
         return '';
       }
       if (typeof obj == 'string') {
-        obj = new Date(Date.parse(obj));
+	var x = Date.parse(obj);
+	if (!x){
+		return ' ';
+	}
+        obj = new Date(x);
       } else if (typeof obj == 'number') {
         obj = new Date(obj);
       }
