@@ -1,18 +1,16 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request',
-  'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
-  'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', './HeatmapContainer', './SelectionToGroup', '../util/PathJoin', 'FileSaver', '../store/SubsystemMapMemoryStore',
-  'dojo/aspect'
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dojo/query', 'dojo/when', 'dojo/request', 'dijit/layout/ContentPane',
+  'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
+  'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
+  './HeatmapContainer', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore'
 
 ], function (
   declare, lang,
-  on, Topic, domConstruct, dom, Query, when, request,
+  on, Topic, domConstruct, Query, when, request,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
-  TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, saveAs, Store,
-  aspect
+  Select, Button, ContainerActionBar,
+  HeatmapContainer, SelectionToGroup, saveAs, Store
 ) {
 
   var legend = [
@@ -167,31 +165,29 @@ define([
     constructor: function () {
       this.dialog = new Dialog({});
 
-      var self = this;
       // subscribe
-      Topic.subscribe('SubSystemMap', lang.hitch(self, function () {
-        // console.log("SubsystemMapHeatmapContainer:", arguments);
+      Topic.subscribe('SubSystemMap', lang.hitch(this, function () {
         var key = arguments[0],
           value = arguments[1];
 
         switch (key) {
           case 'updatePmState':
-            self.pmState = value;
+            this.pmState = value;
             break;
           case 'refreshHeatmap':
-            Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
+            Topic.publish('SubSystemMap', 'requestHeatmapData', this.pmState);
             break;
           case 'heatmapOrdering':
-            if (Object.prototype.hasOwnProperty.call(self, 'originalPmState') ) {
-              Topic.publish('SubSystemMap', 'requestHeatmapData', self.originalPmState);
+            if (Object.prototype.hasOwnProperty.call(this, 'originalPmState') ) {
+              Topic.publish('SubSystemMap', 'requestHeatmapData', this.originalPmState);
             } else {
-              Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
+              Topic.publish('SubSystemMap', 'requestHeatmapData', this.pmState);
             }
             break;
           case 'updateHeatmapData':
-            self.currentData = value;
-            if (typeof (self.flashDom.refreshData) == 'function') {
-              self.flashDom.refreshData();
+            this.currentData = value;
+            if (typeof (this.flashDom.refreshData) == 'function') {
+              this.flashDom.refreshData();
               // Topic.publish("SubsystemMap", "hideLoadingMask");
             }
             break;

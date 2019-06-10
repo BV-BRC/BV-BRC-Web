@@ -70,9 +70,7 @@ define([
 
       var self = this;
       this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
-        console.log('called update');
         if (newTab.type === 'webGLHeatmap') {
-          console.log('calling heatmap update');
           self.heatmapContainerNew.update();
         }
       });
