@@ -7,10 +7,10 @@ define(
         return '';
       }
       if (typeof obj == 'string') {
-	var x = Date.parse(obj);
-	if (!x){
-		return ' ';
-	}
+        var x = Date.parse(obj);
+        if (!x) {
+          return ' ';
+        }
         obj = new Date(x);
       } else if (typeof obj == 'number') {
         obj = new Date(obj);
