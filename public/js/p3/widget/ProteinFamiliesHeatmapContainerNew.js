@@ -670,7 +670,8 @@ define([
           },
           options: {
             theme: 'light',
-            hideLogo: true
+            hideLogo: true,
+            hideOptions: true
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });

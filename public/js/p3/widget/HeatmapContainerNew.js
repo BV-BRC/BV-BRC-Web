@@ -66,10 +66,10 @@ define([
       return tablePass.join('\n');
     },
 
-    hmapCellClicked: function (flashObjectID, colID, rowID) {
+    hmapCellClicked: function (colID, rowID) {
       // implement
     },
-    hmapCellsSelected: function (flashObjectID, colIDs, rowIDs) {
+    hmapCellsSelected: function (colIDs, rowIDs) {
       // implement
     }
   });

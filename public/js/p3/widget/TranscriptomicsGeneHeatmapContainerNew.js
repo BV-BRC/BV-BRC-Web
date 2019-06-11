@@ -631,8 +631,9 @@ define([
           rowsLabel: 'Comparison',
           colsLabel: 'Genes',
           options: {
+            theme: 'light',
             hideLogo: true,
-            theme: 'light'
+            hideOptions: true
           },
           legend: '⬆ red - black - green ⬇',
           color: {

@@ -67,6 +67,8 @@ define([
       this.tabContainer.addChild(this.mainMapContainer);
       this.tabContainer.addChild(this.heatmapContainerNew);
       this.tabContainer.addChild(this.heatmapContainer);
+      this.addChild(tabController);
+      this.addChild(this.tabContainer);
 
       var self = this;
       this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
@@ -75,8 +77,6 @@ define([
         }
       });
 
-      this.addChild(tabController);
-      this.addChild(this.tabContainer);
 
       this.inherited(arguments);
       this._firstView = true;
