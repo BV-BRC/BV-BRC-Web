@@ -18,7 +18,7 @@ define([
     baseClass: 'App Assembly',
     pageTitle: 'Genome Assembly Service (new)',
     templateString: Template,
-    applicationName: 'GenomeAssembly_P3',
+    applicationName: 'GenomeAssembly2',
     requireAuth: true,
     applicationLabel: 'Genome Assembly (new)',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
