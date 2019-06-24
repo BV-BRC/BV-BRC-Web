@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dijit/layout/StackContainer',
   'dijit/layout/TabController', './PathwayMapKeggContainer',
-  './PathwayMapHeatmapContainer', './PathwayMapHeatmapContainerNew'
+  './PathwayMapHeatmapContainerNew'
 ], function (
   declare, BorderContainer, TabContainer,
   StackController, MainMapContainer,
-  HeatmapContainer, HeatmapContainerNew
+  HeatmapContainerNew
 ) {
 
   return declare([BorderContainer], {
@@ -20,9 +20,6 @@ define([
       }
       if (this.mainMapContainer) {
         this.mainMapContainer.set('visible', true);
-      }
-      if (this.heatmapContainer) {
-        this.heatmapContainer.set('visible', true);
       }
       if (this.heatmapContainerNew) {
         this.heatmapContainerNew.set('visible', true);
@@ -49,7 +46,6 @@ define([
         apiServer: this.apiServer
       });
 
-
       this.heatmapContainerNew = new HeatmapContainerNew({
         title: 'Heatmap (new)',
         type: 'webGLHeatmap',
@@ -57,16 +53,8 @@ define([
         content: 'Heatmap (new)'
       });
 
-      this.heatmapContainer = new HeatmapContainer({
-        title: 'Heatmap',
-        content: 'Heatmap'
-      });
-
-      // this.watch("state", lang.hitch(this, "onSetState"));
-
       this.tabContainer.addChild(this.mainMapContainer);
       this.tabContainer.addChild(this.heatmapContainerNew);
-      this.tabContainer.addChild(this.heatmapContainer);
       this.addChild(tabController);
       this.addChild(this.tabContainer);
 
@@ -76,7 +64,6 @@ define([
           self.heatmapContainerNew.update();
         }
       });
-
 
       this.inherited(arguments);
       this._firstView = true;

@@ -41,13 +41,14 @@ define([
         'class': 'TextTabButtons'
       });
 
-
+      /*
       this.heatmapContainerNew = new HeatmapContainerNew({
         title: 'Subsystem Heatmap (new)',
         type: 'webGLHeatmap',
         topicId: this.topicId,
         content: 'Heatmap (new)'
       });
+      */
 
       this.heatmapContainer = new HeatmapContainer({
         title: '<span class="light">Subsystem Heatmap</span>',
@@ -56,8 +57,8 @@ define([
         apiServer: this.apiServer
       });
 
-      this.tabContainer.addChild(this.heatmapContainerNew);
       this.tabContainer.addChild(this.heatmapContainer);
+      // this.tabContainer.addChild(this.heatmapContainerNew);
       this.addChild(tabController);
       this.addChild(this.tabContainer);
 
