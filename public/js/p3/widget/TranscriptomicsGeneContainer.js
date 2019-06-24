@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
   'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojox/widget/Standby',
-  './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid', './TranscriptomicsGeneHeatmapContainer',
+  './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid',
   './TranscriptomicsGeneHeatmapContainerNew'
 ], function (
   declare, lang, Topic, domConstruct,
   BorderContainer, TabContainer, StackController, ContentPane,
   TextArea, Button, Select, Standby,
-  MainGridContainer, FilterGrid, HeatmapContainer,
+  MainGridContainer, FilterGrid,
   HeatmapContainerNew
 ) {
 
@@ -73,9 +73,6 @@ define([
       if (this.mainGridContainer) {
         this.mainGridContainer.set('visible', true);
       }
-      if (this.heatmapContainer) {
-        this.heatmapContainer.set('visible', true);
-      }
       if (this.heatmapContainerNew) {
         this.heatmapContainerNew.set('visible', true);
       }
@@ -111,17 +108,10 @@ define([
         content: 'Heatmap (new)'
       });
 
-      this.heatmapContainer = new HeatmapContainer({
-        title: 'Heatmap',
-        topicId: this.topicId,
-        content: 'Heatmap'
-      });
-
       this.watch('state', lang.hitch(this, 'onSetState'));
 
       this.tabContainer.addChild(this.mainGridContainer);
       this.tabContainer.addChild(this.heatmapContainerNew);
-      this.tabContainer.addChild(this.heatmapContainer);
 
       var self = this;
       this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {

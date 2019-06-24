@@ -1,9 +1,7 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/query',
-  'dojo/dom-construct', 'dojo/dom-style'
+  'dojo/_base/declare'
 ], function (
-  declare, lang, query,
-  domConstruct, domStyle
+  declare
 ) {
 
   return declare([], {

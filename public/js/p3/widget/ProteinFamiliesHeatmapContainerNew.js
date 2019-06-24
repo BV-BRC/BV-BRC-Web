@@ -120,7 +120,6 @@ define([
         switch (key) {
           case 'updatePfState':
             this.pfState = value;
-            this.hmapUpdate();
             break;
           case 'refreshHeatmap':
             this.hmapUpdate();
@@ -173,9 +172,6 @@ define([
       if (this._firstView) {
         return;
       }
-
-      // add containerActions in heatmap container base class
-      this.containerActions = this.containerActions;
 
       // action buttons container for containerActions
       this.containerActionBar = new ContainerActionBar({
@@ -670,8 +666,7 @@ define([
           },
           options: {
             theme: 'light',
-            hideLogo: true,
-            hideOptions: true
+            showVersion: true
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
@@ -683,11 +678,13 @@ define([
           },
           onFullscreenClick: function () {
             // must also hide filter container
-            domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
             domClass.toggle(Query('.filterPanel')[0], 'dijitHidden');
+            Query('.dijitSplitter').forEach(function (el) {
+              domClass.toggle(el, 'dijitHidden');
+            });
+
             setTimeout(function () {
-              // resize both chart and panel
-              self.onResize();
+              self.chart.resize();
             }, 500);
           }
         });
