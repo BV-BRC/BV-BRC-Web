@@ -179,7 +179,7 @@ define([
         Topic.publish(this.topicId, 'refreshHeatmap');
       }
     },
-    hmapCellClicked: function (flashObjectID, colID, rowID) {
+    hmapCellClicked: function (colID, rowID) {
       var isTransposed = (this.tgState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
@@ -193,7 +193,7 @@ define([
       this.dialog.show();
 
     },
-    hmapCellsSelected: function (flashObjectID, colIDs, rowIDs) {
+    hmapCellsSelected: function (colIDs, rowIDs) {
       if (rowIDs.length == 0) return;
       var isTransposed = (this.tgState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
@@ -632,8 +632,7 @@ define([
           colsLabel: 'Genes',
           options: {
             theme: 'light',
-            hideLogo: true,
-            hideOptions: true
+            showVersion: true
           },
           legend: '⬆ red - black - green ⬇',
           color: {
@@ -657,7 +656,10 @@ define([
           onFullscreenClick: function () {
             // must also hide filter container
             domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
-            domClass.toggle(Query('.filterPanel')[0], 'dijitHidden');
+            Query('.dijitSplitter').forEach(function (el) {
+              domClass.toggle(el, 'dijitHidden');
+            });
+
             setTimeout(function () {
               self.onResize();
             }, 500);

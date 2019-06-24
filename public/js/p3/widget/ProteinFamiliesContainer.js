@@ -152,7 +152,6 @@ define([
       var self = this;
       this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
         if (newTab.type === 'webGLHeatmap') {
-          console.log('heatmapContainerNew.update');
           self.heatmapContainerNew.update();
         }
       });
