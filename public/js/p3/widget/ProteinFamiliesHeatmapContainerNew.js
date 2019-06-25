@@ -120,6 +120,7 @@ define([
         switch (key) {
           case 'updatePfState':
             this.pfState = value;
+            this.hmapUpdate();
             break;
           case 'refreshHeatmap':
             this.hmapUpdate();
