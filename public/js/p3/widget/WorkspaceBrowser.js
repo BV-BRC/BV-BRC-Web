@@ -108,7 +108,7 @@ define([
 
         let type = container && '_resultType' in container ? container._resultType : null;
         var path;
-        if (!container) {
+        if (!type) {
           path = self.tutorialLink;
         } else if (type == 'GenomeAssembly') {
           path = 'user_guides/services/genome_assembly_service.html#output-results';
