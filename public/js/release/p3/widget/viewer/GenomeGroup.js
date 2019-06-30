@@ -24,7 +24,6 @@ define("p3/widget/viewer/GenomeGroup", [
     },
 
     _setGroupPathAttr: function (GroupPath) {
-      // console.log("onSetGroupPath: ", GroupPath);
       this._set('groupPath', GroupPath);
       this.queryNode.innerHTML = this.buildHeaderContent();
     },
@@ -35,29 +34,20 @@ define("p3/widget/viewer/GenomeGroup", [
         throw Error('No State Set');
       }
 
-      var parts = '/' + state.pathname.split('/').slice(2).map(decodeURIComponent).join('/');
+      var path = '/' + state.pathname.split('/').slice(2).map(decodeURIComponent).join('/');
+      this.set('groupPath', path);
 
-      // console.log("Parts: ", parts, " pathname: ", state.pathname, " state: ", state);
-
-      this.set('groupPath', parts);
-      // console.log("GROUP PATH: ", parts)
-
-      state.search = 'in(genome_id,GenomeGroup(' + encodeURIComponent(parts) + '))';
-      state.ws_path = parts;
-      // console.log("state.search: ", state.search);
+      state.search = 'in(genome_id,GenomeGroup(' + encodeURIComponent(path) + '))';
+      state.ws_path = path;
       this.inherited(arguments);
     },
 
     setActivePanelState: function () {
 
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
-
       var activeTab = this[active];
 
-      console.log('ACTIVE TAB : ', active, activeTab);
-
       if (!activeTab) {
-        console.log('ACTIVE TAB NOT FOUND: ', active);
         return;
       }
       switch (active) {
@@ -82,7 +72,7 @@ define("p3/widget/viewer/GenomeGroup", [
           // special case for host genomes
           if (active == 'features' && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
             var q = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))&select(taxon_lineage_ids)&limit(' + this.state.genome_ids.length + ')';
-            // console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
+
             xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
               headers: {
                 accept: 'application/json',
@@ -119,7 +109,6 @@ define("p3/widget/viewer/GenomeGroup", [
 
       if (activeTab) {
         var pageTitle = 'Genome Group ' + activeTab.title;
-        // console.log("Genome Group setActivePanelState: ", pageTitle);
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
         }
@@ -210,7 +199,7 @@ define("p3/widget/viewer/GenomeGroup", [
     },
 
     buildHeaderContent: function () {
-      return (this.groupPath).split('Genome Groups/')[1];
+      return this.groupPath.split('/').pop();
     },
 
     createOverviewPanel: function () {

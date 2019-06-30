@@ -223,7 +223,6 @@ define("p3/widget/DataItemFormatter", [
         var titleBar = query('.dijitTitlePaneTextNode',  stddlg.domNode)[0];
         domConstruct.place(copyBtn.domNode, titleBar);
 
-        console.log('JOB DETAIL: ', detail);
         if (detail.stdout) {
           stddlg.set('content', "<pre style='overflow: scroll;'>" + detail.stdout + '</pre>');
         } else {
@@ -245,7 +244,6 @@ define("p3/widget/DataItemFormatter", [
         var titleBar = query('.dijitTitlePaneTextNode',  dlg.domNode)[0];
         domConstruct.place(copyBtn.domNode, titleBar);
 
-        console.log('JOB DETAIL: ', detail);
         if (detail.stderr) {
           dlg.set('content', "<pre style='overflow: scroll;'>" + detail.stderr + '</pre>');
         } else {
@@ -396,61 +394,11 @@ define("p3/widget/DataItemFormatter", [
     //     }
     //   }
     // },
-    completed_job: function (item, options) {
+    job_status_meta: function (item, options) {
       options = options || {};
 
       var columns = [{
         name: 'Service',
-        text: 'app'
-      }, {
-        name: 'App',
-        text: 'app'
-      }, {
-        name: 'Job ID',
-        text: 'id'
-      }, {
-        name: 'Status',
-        text: 'status'
-      }, {
-        name: 'Submitted',
-        text: 'submit_time'
-      }, {
-        name: 'Start',
-        text: 'start_time'
-      }, {
-        name: 'Completed',
-        text: 'completed_time'
-      }, {
-        name: 'Parameters',
-        text: 'parameters',
-        data_hide: true
-      }, {
-        name: '_formatterType',
-        text: '_formatterType',
-        data_hide: true
-      }, {
-        name: 'Parameters',
-        text: 'parameters',
-        data_hide: true
-      }];
-
-      var div = domConstruct.create('div');
-      displayHeader(div, item.id, 'fa icon-flag-checkered fa-2x', '/workspace/', options);
-      displayDetail(item, columns, div, options);
-
-      displayStdoutPanels(div, item);
-
-      return div;
-    },
-
-    failed_job: function (item, options) {
-      options = options || {};
-
-      var columns = [{
-        name: 'Service',
-        text: 'app'
-      }, {
-        name: 'App',
         text: 'app'
       }, {
         name: 'Job ID',
@@ -1350,7 +1298,6 @@ define("p3/widget/DataItemFormatter", [
         link: function (obj) {
           if (obj.pmid.length > 0) {
             var pmid = obj.pmid[0];
-            // console.log(pmid, typeof pmid);
             return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid.split(';').join(',') + '" target="_blank">' + pmid + '</a>';
           }
           return '';
@@ -1959,7 +1906,6 @@ define("p3/widget/DataItemFormatter", [
         break;
       default:
         new_type = (formatters[type]) ? type : 'default';
-        // console.log("display in " + new_type + " format");
     }
 
     return formatters[new_type](item, options);

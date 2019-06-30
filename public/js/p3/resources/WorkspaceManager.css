@@ -341,6 +341,7 @@ th.dgrid-cell.wsItemMembers {
 }
 
 .wsActionContainer {
+	float: right;
 	white-space: nowrap;  /* don't wrap icons */
 }
 

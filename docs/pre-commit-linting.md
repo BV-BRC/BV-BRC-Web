@@ -41,7 +41,7 @@ $ ./node_modules/.bin/eslint public/js/p3/widget/ProteinFamiliesContainer.js --f
 ```shell
 #!/bin/bash
 
-for file in $(git diff --cached --name-only | grep -E '\.(js|jsx)$')
+for file in $(git diff --cached --name-only | grep -E '\.(js|jsx|html)$')
 do
   git show ":$file" | node_modules/.bin/eslint --stdin --stdin-filename "$file" # we only want to lint the staged changes, not any un-staged changes
   if [ $? -ne 0 ]; then

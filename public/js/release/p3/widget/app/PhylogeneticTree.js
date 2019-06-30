@@ -21,7 +21,7 @@ define("p3/widget/app/PhylogeneticTree", [
     applicationLabel: 'Phylogenetic Tree Building',
     applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
     applicationHelp: 'user_guides/services/phylogenetic_tree_building_service.html',
-    tutorialLink: 'tutorial/phylogenetic_tree_building/tree_building.html',
+    tutorialLink: 'tutorial/codon_tree_building/codon_tree_building.html',
     pageTitle: 'Phylogenetic Tree Building',
     defaultPath: '',
     startingRows: 9,

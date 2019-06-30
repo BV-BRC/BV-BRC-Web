@@ -288,6 +288,7 @@ th.dgrid-cell.wsItemMembers {
 	bottom: 2px;
 }
 .wsActionContainer {
+	float: right;
 	white-space: nowrap;  
 }
 .ActionButtonWrapper .ActionButton.fa {

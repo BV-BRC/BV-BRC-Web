@@ -121,19 +121,20 @@ define([
     },
 
     onDesignToggle: function () {
-      var design_status = !this.exp_design.checked;
-      this.condition.set('disabled', design_status);
-      this.condition_single.set('disabled', design_status);
-      this.condition_srr.set('disabled', design_status);
-      this.condition_paired.set('disabled', design_status);
-      this.contrast_cd1.set('disabled', design_status);
-      this.contrast_cd2.set('disabled', design_status);
-      if (design_status) {
+      var design_status = this.exp_design.checked;
+      this.condition.set('disabled', !design_status);
+      this.condition_single.set('disabled', !design_status);
+      this.condition_srr.set('disabled', !design_status);
+      this.condition_paired.set('disabled', !design_status);
+      this.contrast_cd1.set('disabled', !this.contrastEnabled());
+      this.contrast_cd2.set('disabled', !this.contrastEnabled());
+      if (!design_status) { // design status not enabled
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));
         this.destroyLib({}, true, 'design');
         domClass.add(this.condTable, 'disabled');
-        this.numContrastWidget.set('value', Number(1));
+        this.numContrastWidget.set('required', false);
+        this.numContrastWidget.set('disabled', true);
         this.destroyContrastRow(true, 'contrast');
         domClass.add(this.contrastTable, 'disabled');
       }
@@ -144,8 +145,15 @@ define([
         domClass.remove(this.condTable, 'disabled');
         this.numContrastWidget.set('value', Number(this.addedContrast.counter));
         this.destroyContrastRow(false, 'contrast');
-        if (this.contrastEnabled) {
+        if (this.contrastEnabled()) {
+          this.numContrastWidget.set('required', true);
+          this.numContrastWidget.set('disabled', false);
           domClass.remove(this.contrastTable, 'disabled');
+        }
+        else {
+          this.numContrastWidget.set('required', false);
+          this.numContrastWidget.set('disabled', true);
+          domClass.add(this.contrastTable, 'disabled');
         }
       }
     },
@@ -817,6 +825,11 @@ define([
         }, this);
       }, this);
     },
+
+    onStrategyChange: function () {
+      this.onDesignToggle();
+    },
+
 
     onSuggestNameChange: function () {
       var curRecipe = this.recipe.value;
