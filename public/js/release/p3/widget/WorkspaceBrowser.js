@@ -99,16 +99,53 @@ define("p3/widget/WorkspaceBrowser", [
         { domAttr.set(text, 'textContent', 'HIDE'); }
       });
 
-      this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x',
-        {
-          label: 'GUIDE',
-          persistent: true,
-          validTypes: ['*'],
-          tooltip: 'Open User Guide in a new Tab'
-        },
-        lang.hitch(this, function (selection, container) {
-          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
-        }), true);
+      this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x', {
+        label: 'GUIDE <i class="icon-external-link"></i>',
+        persistent: true,
+        validTypes: ['*'],
+        tooltip: 'Open User Guide in a new Tab'
+      }, function (selection, container) {
+        var type = container && '_resultType' in container ? container._resultType : null;
+        var path;
+        if (!type) {
+          path = self.tutorialLink;
+        } else if (type == 'GenomeAssembly') {
+          path = 'user_guides/services/genome_assembly_service.html#output-results';
+        } else if (type == 'GenomeAnnotation') {
+          path = 'user_guides/services/genome_annotation_service.html#output-results';
+        } else if (type == 'ComprehensiveGenomeAnalysis') {
+          path = 'user_guides/services/comprehensive_genome_analysis_service.html#output-results';
+        } else if (type == 'GenomeAlignment') {
+          path = 'user_guides/services/genome_alignment_service.html#output-results';
+        } else if (type == 'MetagenomeBinning') {
+          path = 'user_guides/services/metagenomic_binning_service.html#output-results';
+        } else if (type == 'MetagenomicReadMapping') {
+          path = 'user_guides/services/metagenomic_read_mapping_service.html#output-results';
+        } else if (type == 'TaxonomicClassification') {
+          path = 'user_guides/services/taxonomic_classification_service.html#output-results';
+        } else if (type == 'PhylogeneticTree') {
+          path = 'user_guides/services/phylogenetic_tree_building_service.html#output-results';
+        } else if (type == 'RNASeq') {
+          path = 'user_guides/services/rna_seq_analysis_service.html#output-results';
+        } else if (type == 'TnSeq') {
+          path = 'user_guides/services/tn_seq_analysis_service.html#output-results';
+        } else if (type == 'Variation') {
+          path = 'user_guides/services/variation_analysis_service.html#output-results';
+        } else if ('data' in container && container.data.type == 'model') {
+          // modeling service uses typed folders
+          path = 'user_guides/services/model_reconstruction_service.html#output-results';
+        } else if ('_appLabel' in container && container._appLabel == 'Genome Comparison') {
+          // _resultType is not set; todo: fix in job result container
+          path = 'user_guides/services/proteome_comparison_service.html#output-results';
+        } else if ('_appLabel' in container && container._appLabel == 'Differential Expression') {
+          // _resultType is not set
+          path = 'user_guides/services/expression_data_import_service.html#output-results';
+        } else {
+          path = self.tutorialLink;
+        }
+
+        window.open(PathJoin(self.docsServiceURL, path), '_blank');
+      }, true);
 
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',
