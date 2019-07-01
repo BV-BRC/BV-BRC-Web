@@ -105,8 +105,7 @@ define([
         validTypes: ['*'],
         tooltip: 'Open User Guide in a new Tab'
       }, function (selection, container) {
-
-        let type = container && '_resultType' in container ? container._resultType : null;
+        var type = container && '_resultType' in container ? container._resultType : null;
         var path;
         if (!type) {
           path = self.tutorialLink;
