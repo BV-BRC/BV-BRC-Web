@@ -840,9 +840,6 @@ define([
           },
           {
             label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
-          },
-          {
-            label: 'Rockhopper', value: 'Rockhopper', selected: false, disabled: true
           }];
         this.recipe.set('options', newOptions).reset();
         this.recipe.set('value', 'Host');
@@ -854,9 +851,6 @@ define([
           },
           {
             label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
-          },
-          {
-            label: 'Rockhopper', value: 'Rockhopper', selected: true, disabled: false
           }];
         this.recipe.set('options', newOptions).reset();
         if (curRecipe == 'RNA-Rocket') {
