@@ -854,8 +854,10 @@ define("p3/widget/WorkspaceBrowser", [
       this.actionPanel.addAction('Rename', 'fa icon-pencil-square-o fa-2x', {
         label: 'RENAME',
         validTypes: ['*'],
-        tooltip: 'Rename the selected item'
+        disabled: true,
+        tooltip: 'Rename has been <b>temporarily disabled</b><br>while we address a technical issue.'
       }, function (sel) {
+        /*
         var path = sel[0].path,
           isJob = sel[0].type === 'job_result';
 
@@ -880,6 +882,7 @@ define("p3/widget/WorkspaceBrowser", [
             style: 'width: 250px;'
           }).show();
         }
+        */
       }, false);
 
       this.actionPanel.addAction('Copy', 'fa icon-files-o fa-2x', {
