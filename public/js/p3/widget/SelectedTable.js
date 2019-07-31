@@ -61,13 +61,13 @@ define([
      */
     addRow: function (rowObj) {
 
-      let self = this;
+      var self = this;
 
       // remove "none selected"
       dom.destroy(self._emptyEle);
 
       // add to data model
-      let rowID = self.table.rows.length;
+      var rowID = self.table.rows.length;
       self._rows.push(Object.assign({ _rowID: rowID }, rowObj));
 
       //  add to dom
