@@ -45,7 +45,7 @@ define([
           lcbSet.forEach(function (r) {
             ext = r.name.split('.').pop();
             var name = r.name.replace('.' + ext, '');
-            if (!ids.includes(name)) ids.push(name);
+            if (ids.indexOf(name) == -1) ids.push(name);
           });
         });
 

@@ -134,11 +134,11 @@ define([
       return this.name;
     },
 
-    getRows() {
+    getRows: function () {
       return this._rows;
     },
 
-    clear() {
+    clear: function () {
       var tbody = query('tbody', this.table)[0];
       dom.empty(tbody);
       this._rows = [];
@@ -146,7 +146,7 @@ define([
       this._addEmptyNotice();
     },
 
-    onRmRow(id) {
+    onRmRow: function (id) {
       // if remove item call back is provided, call it
       if (this.onRemove) this.onRemove();
     }
