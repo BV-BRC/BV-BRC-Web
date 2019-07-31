@@ -315,6 +315,7 @@ th.dgrid-cell.wsItemMembers {
 	border-radius: 4px;
 	border: 1px solid #76a72d;
 }
+
 .ActionButtonWrapper.depressed:hover,
 .ActionButtonWrapper.depressed .ActionButtonText,
 .ActionButtonWrapper.depressed .ActionButton.fa,
@@ -327,8 +328,12 @@ th.dgrid-cell.wsItemMembers {
 .ActionButtonWrapper.disabled .ActionButtonText,
 .ActionButtonWrapper.disabled .ActionButton.fa,
 .ActionButtonWrapper.disabled  {
-	color: #ddd;
-	border-color: #ddd;
+	color: #ccc;
+	border: 1px solid #76a72d;
+}
+
+.ActionBar .ActionButtonWrapper.disabled:hover {
+	border: 1px solid #76a72d;
 }
 
 .ActionButtonContainer {
