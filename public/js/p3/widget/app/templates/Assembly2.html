@@ -54,30 +54,22 @@
               <div class="appRow" data-dojo-attach-point="advrow" style="display: none">
                 <div class="appRowSegment" style="margin:0 0 0 0">
                   <label class="paramlabel">File 1 Interleaved</label><br>
-                  <select data-dojo-type="dijit/form/Select" name="libdat_interleaved" data-dojo-attach-point="interleaved" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                  <select data-dojo-type="dijit/form/Select" name="libdat_interleaved" data-dojo-attach-point="interleaved" required="false">
                     <option value="false">False</option>
                     <option value="true">True</option>
                   </select>
                 </div>
-                <div class="appRowSegment">
-                  <label class="paramlabel">Mean Insert Size</label><br>
-                  <div class="insertspinner" name="libdat_avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_mean" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}"></div>
-                </div>
-                <div class="appRowSegment">
-                  <label class="paramlabel">Std. Insert Size</label><br>
-                  <div class="insertspinner" name="libdat_stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_stdev" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}"></div>
-                </div>
                 <div class="appRow" data-dojo-attach-point="advrow2">
                   <div class="appRowSegment" style="margin:0 0 0 0">
                     <label class="paramlabel">Mate paired</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="read_orientation_outward" data-dojo-attach-point="read_orientation_outward" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:''">
+                    <select data-dojo-type="dijit/form/Select" name="read_orientation_outward" data-dojo-attach-point="read_orientation_outward" required="false">
                       <option value="false">False</option>
                       <option value="true">True</option>
                     </select>
                   </div>
                   <div class="appRowSegment" style="margin:10px 0 0 0">
                     <label class="paramlabel">Platform</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="paired_platform" data-dojo-attach-point="paired_platform" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:''">
+                    <select data-dojo-type="dijit/form/Select" name="paired_platform" data-dojo-attach-point="paired_platform" required="false">
                       <option value="infer">Infer Platform</option>
                       <option value="illumina">Illumina</option>
                       <option value="iontorrent">Ion Torrent</option>
@@ -108,7 +100,7 @@
               <div class="appRow" data-dojo-attach-point="advrow3" style="display: none">
                 <div class="appRowSegment" style="margin:0 0 0 0">
                   <label class="paramlabel">Platform</label><br>
-                  <select data-dojo-type="dijit/form/Select" name="single_platform" data-dojo-attach-point="single_platform" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:''">
+                  <select data-dojo-type="dijit/form/Select" name="single_platform" data-dojo-attach-point="single_platform" required="false">
                     <option value="infer">Infer Platform</option>
                     <option value="illumina">Illumina</option>
                     <option value="iontorrent">Ion Torrent</option>
@@ -144,6 +136,9 @@
                   <option value="unicycler">unicycler</option>
                   <option value="spades">spades</option>
                   <option value="canu">canu</option>
+                  <option value="meta-spades">meta-spades</option>
+                  <option value="plasmid-spades">plasmid-spades</option>
+                  <option value="single-cell">single-cell</option>
                 </select>
               </div>
               <div class="appRow">
@@ -175,17 +170,29 @@
                 </div>
               </div>
               <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
-                <div class="appField">
-                  <label class="paramlabel">Assembly pipeline arguments</label>
-                  <div name="advanced" class="infobox iconbox infobutton dialoginfo">
-                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                  <div class="appRow" style="margin:0 0 0 0">
+                    <label class="paramlabel">Trim reads before assembly</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
+                      <option value="false">False</option>
+                      <option value="true">True</option>
+                    </select>
                   </div>
-                  <div data-dojo-type="dijit/form/ValidationTextBox" name="pipeline" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Advanced assembly pipeline arguments that overrides recipe.',missingMessage:'',trim:true,placeHolder:'Arguments override recipe'"></div>
-                </div>
+                  <div class="appRowSegment" style="margin:0 0 0 0">
+                    <label class="paramlabel">Racon Iterations</label><br>
+                    <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                  <div class="appRowSegment" style="margin:10px 0 0 0">
+                    <label class="paramlabel">Pilon Iterations</label><br>
+                    <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
                 <div class="appRow" style="margin:0 0 0 0">
                   <div class="appRowSegment" style="margin:0 0 0 0">
                     <label class="paramlabel">Min. contig length</label><br>
-                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}"></div>
+                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                  <div class="appRowSegment" style="margin:10px 0 0 0">
+                    <label class="paramlabel">Min. contig coverage</label><br>
+                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
                   </div>
                 </div>
               </div>
