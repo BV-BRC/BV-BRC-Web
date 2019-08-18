@@ -1,38 +1,35 @@
 {
-  "_args": [
-    [
-      "cytoscape-cola@1.6.0",
-      "/Users/hsyoo/dev/deploy/p3_web"
-    ]
-  ],
-  "_from": "cytoscape-cola@1.6.0",
+  "_from": "cytoscape-cola@^1.6.0",
   "_id": "cytoscape-cola@1.6.0",
   "_inBundle": false,
   "_integrity": "sha1-jpm+icqtjS8Ewa3LORarwf91ZLI=",
   "_location": "/cytoscape-cola",
   "_phantomChildren": {},
   "_requested": {
-    "type": "version",
+    "type": "range",
     "registry": true,
-    "raw": "cytoscape-cola@1.6.0",
+    "raw": "cytoscape-cola@^1.6.0",
     "name": "cytoscape-cola",
     "escapedName": "cytoscape-cola",
-    "rawSpec": "1.6.0",
+    "rawSpec": "^1.6.0",
     "saveSpec": null,
-    "fetchSpec": "1.6.0"
+    "fetchSpec": "^1.6.0"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.6.0.tgz",
-  "_spec": "1.6.0",
-  "_where": "/Users/hsyoo/dev/deploy/p3_web",
+  "_shasum": "8e99be89caad8d2f04c1adcb3916abc1ff7564b2",
+  "_spec": "cytoscape-cola@^1.6.0",
+  "_where": "/Users/nc/patric/p3_test_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-cola/issues"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "webcola": "^3.1.2"
   },
+  "deprecated": false,
   "description": "The Cola.js physics simulation layout for Cytoscape.js",
   "devDependencies": {
     "gulp": "^3.8.8",

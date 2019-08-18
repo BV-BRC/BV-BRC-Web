@@ -17,6 +17,8 @@ define([
         return;
       }
 
+      var self = this;
+
       var parts = state.pathname.split('/');
       var path = '/' + parts.slice(2).join('/');
 
@@ -33,24 +35,24 @@ define([
       domConstruct.place(container, this.viewer.domNode);
 
       var loading = Loading(container, 'fetching alignment data...');
-      WorkspaceManager.getObject(path).then(res => {
+      WorkspaceManager.getObject(path).then(function (res) {
         var lcbs = JSON.parse(res.data);
 
         // get ids from alignment file (to be removed)
         var ext;
         var ids = [];
-        lcbs.forEach(lcbSet => {
-          lcbSet.forEach(r => {
+        lcbs.forEach(function (lcbSet) {
+          lcbSet.forEach(function (r) {
             ext = r.name.split('.').pop();
             var name = r.name.replace('.' + ext, '');
-            if (!ids.includes(name)) ids.push(name);
+            if (ids.indexOf(name) == -1) ids.push(name);
           });
         });
 
         // fetch all mauve data and load viewer
         loading.text('fetching genome data...');
-        this.getMauveData(ids, ext)
-          .then(data => {
+        self.getMauveData(ids, ext)
+          .then(function (data) {
             new MauveViewer({
               ele: container,
               d3: d3,
@@ -58,15 +60,15 @@ define([
               labels: data.labels,
               features: data.features,
               contigs: data.contigs,
-              onFeatureClick: (fid) => {
-                this.onFeatureClick(fid);
+              onFeatureClick: function (fid) {
+                self.onFeatureClick(fid);
               }
             });
             query('h4', container)[0].innerHTML = '<h4 class="title">Genome Alignment <sup>(beta)</sup></h4>';
-          }, error => {
+          }, function (error) {
             loading.error('Could not fetch genome data.', error);
           });
-      }, error => {
+      }, function (error) {
         loading.error('Could not fetch alignment data.', error);
       });
 
@@ -84,7 +86,7 @@ define([
       loadingMask.show();
 
       var path = '/genome_feature/?eq(patric_id,' + encodeURIComponent(fid) + ')';
-      DataAPI.get(path).then(data => {
+      DataAPI.get(path).then(function (data) {
         loadingMask.hide();
         var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
         if (!window.featureDialog) {
@@ -115,7 +117,7 @@ define([
       var self = this;
       genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
 
-      var proms = genomeIDs.map(id => {
+      var proms = genomeIDs.map(function (id) {
         var path = '/genome_feature/?eq(genome_id,' + id + ')' +
           '&select(' + self.featureSelect.join(',') + ')&eq(annotation,PATRIC)&ne(feature_type,source)&limit(25000)';
         return DataAPI.get(path);
@@ -133,7 +135,7 @@ define([
       var self = this;
       genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
 
-      var proms = genomeIDs.map(id => {
+      var proms = genomeIDs.map(function (id) {
         var path = '/genome_sequence/?eq(genome_id,' + id + ')' +
             '&select(' + self.contigSelect.join(',') + ')&sort(-length,+sequence_id)&limit(25000)';
         return DataAPI.get(path);
@@ -151,9 +153,9 @@ define([
       var path = '/genome/?in(genome_id,(' + genomeIDs.join(',') + '))' +
           '&select(genome_id,genome_name)';
 
-      return DataAPI.get(path).then(data => {
+      return DataAPI.get(path).then(function (data) {
         var mapping = {};
-        data.forEach(org => {
+        data.forEach(function (org) {
           mapping[org.genome_id  + '.' + ext] = org.genome_name;
         });
 
@@ -169,12 +171,12 @@ define([
     setFeaturePositions: function (contigs, features) {
       var newFeatures = [];
       var ntPos = 0;
-      contigs.forEach(c => {
+      contigs.forEach(function (c) {
         // get all features in this contig
-        var contigFeatures = features.filter(f => f.sequence_id == c.sequence_id);
+        var contigFeatures = features.filter(function (f) { return f.sequence_id == c.sequence_id; });
 
         // set xStart/xEnd using contig's start/end
-        contigFeatures = contigFeatures.map(f => {
+        contigFeatures = contigFeatures.map(function (f) {
           f.xStart = ntPos + f.start;
           f.xEnd = ntPos + f.end;
           return f;
@@ -189,7 +191,7 @@ define([
 
     setContigPositions: function (contigs) {
       var ntPos = 1;
-      contigs.forEach(c => {
+      contigs.forEach(function (c) {
         c.xStart = ntPos;
         c.xEnd = ntPos + c.length - 1;
         ntPos += c.length;
@@ -204,35 +206,35 @@ define([
      * @param {*} ext the mauve output file extension (to be removed)
      */
     getMauveData: function (genomeIDs, ext) {
-      let self = this;
+      var self = this;
 
       var nameProm = self.getGenomeLabels(genomeIDs, ext);
 
       var featProm = self.getFeatures(genomeIDs)
-        .then(data => {
+        .then(function (data) {
           var mapping = {};
-          genomeIDs.forEach((id, i) => { mapping[id] = data[i]; });
+          genomeIDs.forEach(function (id, i) { mapping[id] = data[i]; });
           return mapping;
         });
 
       var contigProm = self.getContigs(genomeIDs)
-        .then(data => {
+        .then(function (data) {
           var mapping = {};
-          genomeIDs.forEach((id, i) => { mapping[id] = data[i]; });
+          genomeIDs.forEach(function (id, i) { mapping[id] = data[i]; });
           return mapping;
         });
 
       return all([nameProm, featProm, contigProm])
-        .then(([labels, featuresObj, contigsObj]) => {
+        .then(function ([labels, featuresObj, contigsObj]) {
           // update contig metadata with locations of contigs
           var contigs = {};
-          genomeIDs.forEach(genomeID => {
+          genomeIDs.forEach(function (genomeID) {
             contigs[genomeID] = self.setContigPositions(contigsObj[genomeID]);
           });
 
           // update feature metadata with locations of features
           var features = {};
-          Object.keys(contigs).forEach(gid => {
+          Object.keys(contigs).forEach(function (gid) {
             features[gid] = self.setFeaturePositions(contigs[gid], featuresObj[gid]);
           });
 
