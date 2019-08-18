@@ -4,7 +4,7 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  './HeatmapContainerNew', 'heatmap/dist/heatmap', 'dojo/dom-class'
+  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class'
 
 ], function (
   declare, lang,
@@ -12,7 +12,7 @@ define([
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
   ContainerActionBar, SelectionToGroup, PathJoin, saveAs,
-  HeatmapContainerNew, Heatmap, domClass
+  HeatmapContainerNew, Hotmap, domClass
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -157,7 +157,7 @@ define([
       var panel = this.panel = new ContentPane({
         region: 'center',
         content: "<div id='heatmapTarget'></div>",
-        style: 'padding:0; overflow: hidden;'
+        style: 'padding:0;'
       });
 
       dojo.connect(panel, 'resize', this, 'onResize');
@@ -654,20 +654,24 @@ define([
       console.log('heatmap data:', data);
 
       if (!this.chart) {
-        this.chart = new Heatmap({
+        this.chart = new Hotmap({
           ele: this.hmapDom,
           cols: data.cols,
           rows: data.rows,
           matrix: data.matrix,
           rowsLabel: 'Genomes',
           colsLabel: 'Protein Families',
+          hideColMeta: true,
+          hideRowMeta: true,
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
           },
           options: {
             theme: 'light',
-            showVersion: true
+            maxFontSize: 13,
+            hideOptions: true,
+            useBoundingClient: true
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
@@ -695,7 +699,7 @@ define([
         }, this);
 
         // put action icons in heatmap header
-        var header = Query('.heatmap .header', this.hmapDom)[0];
+        var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
         Query('.ActionButtonWrapper').style('width', '48px');
 
@@ -721,8 +725,8 @@ define([
         return {
           name: c.colLabel,
           id: c.colID,
-          distribution: c.distribution,
-          meta: c.meta
+          distribution: c.distribution
+          // meta: c.meta
         };
       });
 

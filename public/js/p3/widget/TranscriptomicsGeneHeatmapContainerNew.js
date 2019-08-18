@@ -4,14 +4,14 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', 'FileSaver',
-  'heatmap/dist/heatmap', 'dojo/dom-class'
+  'heatmap/dist/hotmap', 'dojo/dom-class'
 ], function (
   declare, lang,
   on, Topic, domConstruct, Query, when,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
   ContainerActionBar, HeatmapContainerNew, SelectionToGroup, saveAs,
-  Heatmap, domClass
+  Hotmap, domClass
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -623,18 +623,22 @@ define([
       var data = this.formatData(this.currentData);
 
       if (!this.chart) {
-        this.chart = new Heatmap({
+        this.chart = new Hotmap({
           ele: this.hmapDom,
           cols: data.cols,
           rows: data.rows,
           matrix: data.matrix,
           rowsLabel: 'Comparison',
           colsLabel: 'Genes',
+          hideRowMeta: true,
+          hideColMeta: true,
           options: {
             theme: 'light',
-            showVersion: true
+            maxFontSize: 13,
+            hideOptions: true,
+            useBoundingClient: true,
+            legend: '⬆ red - black - green ⬇',
           },
-          legend: '⬆ red - black - green ⬇',
           color: {
             bins: [
               '<-4', '<-3', '<-2', '<-1', '<0', '=0',
@@ -654,7 +658,9 @@ define([
             self.hmapCellClicked(obj.colID, obj.rowID);
           },
           onFullscreenClick: function () {
+            console.log('there was click')
             // must also hide filter container
+            domClass.toggle(Query('.filterPanel')[0], 'dijitHidden');
             domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
             Query('.dijitSplitter').forEach(function (el) {
               domClass.toggle(el, 'dijitHidden');
@@ -671,7 +677,7 @@ define([
         }, this);
 
         // put action icons in heatmap header
-        var header = Query('.heatmap .header', this.hmapDom)[0];
+        var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
         Query('.ActionButtonWrapper').style('width', '48px');
 

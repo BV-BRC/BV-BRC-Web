@@ -4,7 +4,7 @@ define([
   'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore',
-  'heatmap/dist/heatmap', 'dojo/dom-class'
+  'heatmap/dist/hotmap', 'dojo/dom-class'
 
 ], function (
   declare, lang,
@@ -12,7 +12,7 @@ define([
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   Select, Button, ContainerActionBar,
   HeatmapContainerNew, SelectionToGroup, saveAs, Store,
-  Heatmap, domClass
+  Hotmap, domClass
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -690,7 +690,7 @@ define([
       console.log('heatmap data:', data);
 
       if (!this.chart) {
-        this.chart = new Heatmap({
+        this.chart = new Hotmap({
           ele: this.hmapDom,
           cols: data.cols,
           rows: data.rows,
@@ -730,7 +730,7 @@ define([
         }, this);
 
         // put action icons in heatmap header
-        var header = Query('.heatmap .header', this.hmapDom)[0];
+        var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
         Query('.ActionButtonWrapper').style('width', '48px');
 

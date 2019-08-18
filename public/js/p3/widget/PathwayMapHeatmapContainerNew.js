@@ -7,7 +7,7 @@ define([
   'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
   'dijit/Dialog', 'dijit/popup', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  'heatmap/dist/heatmap',  'dojo/query'
+  'heatmap/dist/hotmap',  'dojo/query'
 
 ], function (
   declare, lang, on, Topic, domConstruct,
@@ -410,20 +410,24 @@ define([
       var data = this.formatData(this.currentData);
 
       if (!this.chart) {
-        this.chart = new Heatmap({
+        this.chart = new Hotmap({
           ele: this.hmapDom,
           cols: data.cols,
           rows: data.rows,
           matrix: data.matrix,
           rowsLabel: 'Protein Families',
           colsLabel: 'Genomes',
+          hideRowMeta: true,
+          hideColMeta: true,
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
             colors: [0x000000, 16440142, 16167991, 16737843]
           },
           options: {
             theme: 'light',
-            showVersion: true
+            maxFontSize: 13,
+            hideOptions: true,
+            useBoundingClient: true
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
@@ -445,7 +449,7 @@ define([
         }, this);
 
         // put action icons in heatmap header
-        var header = Query('.heatmap .header', this.hmapDom)[0];
+        var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
         Query('.ActionButtonWrapper').style('width', '48px');
 
