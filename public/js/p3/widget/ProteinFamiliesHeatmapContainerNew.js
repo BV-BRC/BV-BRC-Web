@@ -465,7 +465,7 @@ define([
 
       domConstruct.create('a', {
         innerHTML: '<i class="fa icon-download"></i> Save snapshot',
-        onclick:  function () {
+        onclick: function () {
           var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
           domConstruct.place(status, container, 'last');
           setTimeout(function () {
@@ -481,7 +481,7 @@ define([
         innerHTML: '<i class="fa icon-download"></i> Save entire chart',
         onclick: function () {
           var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
-          domConstruct.place(status, container, 'last')
+          domConstruct.place(status, container, 'last');
           setTimeout(function () {
             self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
             domConstruct.destroy(status);
