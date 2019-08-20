@@ -103,6 +103,37 @@ define([
           }
         },
         true
+      ],
+      [
+        'SaveSVG',
+        'fa icon-download fa-2x',
+        {
+          label: 'Save SVG',
+          multiple: false,
+          validType: ['*'],
+          tooltip: 'Download SVG snapshot'
+        },
+        function () {
+          this.tooltip_anchoring = new TooltipDialog({
+            style: 'width: 200px;',
+            content: this._buildPanelSaveSVG()
+          });
+          this.containerActionBar._actions.SaveSVG.options.tooltipDialog = this.tooltip_anchoring;
+
+          if (this.isPopupOpen) {
+            this.isPopupOpen = false;
+            popup.close();
+          } else {
+            popup.open({
+              parent: this,
+              popup: this.containerActionBar._actions.SaveSVG.options.tooltipDialog,
+              around: this.containerActionBar._actions.SaveSVG.button,
+              orient: ['below']
+            });
+            this.isPopupOpen = true;
+          }
+        },
+        true
       ]
     ],
     constructor: function (options) {
@@ -518,6 +549,39 @@ define([
       }
       return originalAxis;
     },
+    _buildPanelSaveSVG: function () {
+      var self = this;
+
+      var container = domConstruct.create('div');
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save snapshot',
+        onclick:  function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg' });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save entire chart',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
+          domConstruct.place(status, container, 'last')
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      return container;
+    },
     // override exportCurrentData in order to cluster on read value instead of heatmap value
     exportCurrentData: function (isTransposed) {
       // compose heatmap raw data in tab delimited format
@@ -658,7 +722,6 @@ define([
             self.hmapCellClicked(obj.colID, obj.rowID);
           },
           onFullscreenClick: function () {
-            console.log('there was click')
             // must also hide filter container
             domClass.toggle(Query('.filterPanel')[0], 'dijitHidden');
             domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
