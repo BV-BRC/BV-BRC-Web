@@ -679,7 +679,10 @@ define([
         // put action icons in heatmap header
         var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
-        Query('.ActionButtonWrapper').style('width', '48px');
+        Query('.WSContainerActionBar', header).style('margin-left', 'auto');
+        Query('.ActionButtonWrapper', header).style('width', '48px');
+
+
 
         // hack to remove unused path div (interfering with flexbox)
         Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();

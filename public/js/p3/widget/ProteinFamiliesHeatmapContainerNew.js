@@ -671,7 +671,8 @@ define([
             theme: 'light',
             maxFontSize: 13,
             hideOptions: true,
-            useBoundingClient: true
+            useBoundingClient: true,
+            rowLabelEllipsisPos: 1
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
@@ -701,7 +702,9 @@ define([
         // put action icons in heatmap header
         var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
-        Query('.ActionButtonWrapper').style('width', '48px');
+        console.log('ele', Query('.WSContainerActionBar', header))
+        Query('.WSContainerActionBar', header).style('margin-left', 'auto');
+        Query('.ActionButtonWrapper', header).style('width', '48px');
 
         // hack to remove unused path div (interfering with flexbox)
         Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
