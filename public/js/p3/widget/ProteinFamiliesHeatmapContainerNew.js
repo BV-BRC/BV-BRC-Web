@@ -4,7 +4,7 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class'
+  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class', 'dojo/html'
 
 ], function (
   declare, lang,
@@ -12,7 +12,7 @@ define([
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
   ContainerActionBar, SelectionToGroup, PathJoin, saveAs,
-  HeatmapContainerNew, Hotmap, domClass
+  HeatmapContainerNew, Hotmap, domClass, html
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -100,6 +100,37 @@ define([
               parent: this,
               popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
               around: this.containerActionBar._actions.Anchor.button,
+              orient: ['below']
+            });
+            this.isPopupOpen = true;
+          }
+        },
+        true
+      ],
+      [
+        'SaveSVG',
+        'fa icon-download fa-2x',
+        {
+          label: 'Save SVG',
+          multiple: false,
+          validType: ['*'],
+          tooltip: 'Download SVG snapshot'
+        },
+        function () {
+          this.tooltip_anchoring = new TooltipDialog({
+            style: 'width: 200px;',
+            content: this._buildPanelSaveSVG()
+          });
+          this.containerActionBar._actions.SaveSVG.options.tooltipDialog = this.tooltip_anchoring;
+
+          if (this.isPopupOpen) {
+            this.isPopupOpen = false;
+            popup.close();
+          } else {
+            popup.open({
+              parent: this,
+              popup: this.containerActionBar._actions.SaveSVG.options.tooltipDialog,
+              around: this.containerActionBar._actions.SaveSVG.button,
               orient: ['below']
             });
             this.isPopupOpen = true;
@@ -427,6 +458,40 @@ define([
 
       return anchor;
     },
+    _buildPanelSaveSVG: function () {
+      var self = this;
+
+      var container = domConstruct.create('div');
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save snapshot',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg' });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save entire chart',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      return container;
+    },
+
     _buildPanelButtons: function (colIDs, rowIDs, familyIds, genomeIds, features) {
       var _self = this;
       var actionBar = domConstruct.create('div', {
@@ -671,7 +736,8 @@ define([
             theme: 'light',
             maxFontSize: 13,
             hideOptions: true,
-            useBoundingClient: true
+            useBoundingClient: true,
+            rowLabelEllipsisPos: 1
           },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
@@ -701,7 +767,8 @@ define([
         // put action icons in heatmap header
         var header = Query('.hotmap .header', this.hmapDom)[0];
         domConstruct.place(this.containerActionBar.domNode, header, 'last');
-        Query('.ActionButtonWrapper').style('width', '48px');
+        Query('.WSContainerActionBar', header).style('margin-left', 'auto');
+        Query('.ActionButtonWrapper', header).style('width', '48px');
 
         // hack to remove unused path div (interfering with flexbox)
         Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
