@@ -527,13 +527,22 @@ define([
           }
 
           filter = filter +  'and(eq(annotation,PATRIC)' + type_query + strand_query + ')';
+
+          var custom_title = value.name;
+          if (!custom_title) {
+            custom_title = value.keyword;
+          }
           // console.log("filter = ", filter);
           // console.log("CircularViewerContainer addCustomTrack", value);
-          this.addFeatureTrack('Custom track ' + value.index, 'Custom track - type: ' + value.type + ', strand: ' + value.strand + ', keyword: ' + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index - 1) % custom_colors.length], null);
+          this.addFeatureTrack(custom_title, 'Custom track ' + value.index + ' - type: ' + value.type + ', strand: ' + value.strand + ', keyword: ' + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index - 1) % custom_colors.length], null);
         }
         else if (key === 'addUserTrack') {
           // console.log("CircularViewerContainer addUserTrack", value);
           var fill_color = 'red';
+          var user_title = value.name;
+          if (!user_title) {
+            user_title = 'User track ' + value.index;
+          }
 
           if (value.type === 'tiles') {
             fill_color = user_colors[(value.index - 1) % user_colors.length];
@@ -541,8 +550,8 @@ define([
             this.viewer.addTrack({
               type: SectionTrack,
               options: {
-                title: 'User Track ' + value.index,
-                title_tooltip: 'User Track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName,
+                title: user_title,
+                title_tooltip: 'User track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName,
                 trackWidth: 0.08,
                 loading: true,
                 fill: fill_color,
@@ -571,8 +580,8 @@ define([
             this.viewer.addTrack({
               type: LineTrack,
               options: {
-                title: 'User Track ' + value.index,
-                title_tooltip: 'User Track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName + ', plot range: ' + Math.round(value.minScore * 100) / 100 + ' - ' + Math.round(value.maxScore * 100) / 100,
+                title: user_title,
+                title_tooltip: 'User track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName + ', plot range: ' + Math.round(value.minScore * 100) / 100 + ' - ' + Math.round(value.maxScore * 100) / 100,
                 loading: true,
                 visible: true,
                 max: value.maxScore,
@@ -589,8 +598,8 @@ define([
             this.viewer.addTrack({
               type: HistogramTrack,
               options: {
-                title: 'User Track ' + value.index,
-                title_tooltip: 'User Track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName + ', plot range: ' + Math.round(value.minScore * 100) / 100 + ' - ' + Math.round(value.maxScore * 100) / 100,
+                title: user_title,
+                title_tooltip: 'User track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName + ', plot range: ' + Math.round(value.minScore * 100) / 100 + ' - ' + Math.round(value.maxScore * 100) / 100,
                 loading: true,
                 visible: true,
                 max: value.maxScore,
@@ -616,8 +625,8 @@ define([
             this.viewer.addTrack({
               type: HeatmapTrack,
               options: {
-                title: 'User Track ' + value.index,
-                title_tooltip: 'User Track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName + ', plot range: ' + Math.round(value.minScore * 100) / 100 + ' - ' + Math.round(value.maxScore * 100) / 100,
+                title: user_title,
+                title_tooltip: 'User track ' + value.index + ' - plot type: ' +  value.type + ', file name: ' +  value.fileName + ', plot range: ' + Math.round(value.minScore * 100) / 100 + ' - ' + Math.round(value.maxScore * 100) / 100,
                 loadingText: 'LOADING USER TRACK' + +value.index,
                 loading: true,
                 visible: true,
