@@ -713,6 +713,18 @@ define([
               0x330000, 0x660000, 0x990000, 0xcc0000, 0xFF0000
             ]
           },
+          onHover: function (info) {
+            var isTransposed = (self.tgState.heatmapAxis === 'Transposed');
+            var title = isTransposed ? info.xLabel  : info.yLabel,
+              gene = isTransposed ? info.yLabel : info.xLabel,
+              logRatio = info.value;
+
+            return '<div>' +
+              '<div><b>Title: </b> ' + title + '</div>' +
+              '<div><b>Gene: </b> ' + gene + '</div>' +
+              '<div><b>Log ratio: </b>' + logRatio + '</div><br>' +
+            '</div>';
+          },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
             var rowIDs = objs.map(function (r) { return r.rowID; });
