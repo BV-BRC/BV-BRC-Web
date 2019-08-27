@@ -188,7 +188,7 @@ define([
       var panel = this.panel = new ContentPane({
         region: 'center',
         content: "<div id='heatmapTarget'></div>",
-        style: 'padding:0;'
+        style: 'padding:0; overflow: hidden;'
       });
 
       dojo.connect(panel, 'resize', this, 'onResize');
@@ -739,6 +739,20 @@ define([
             useBoundingClient: true,
             rowLabelEllipsisPos: 1
           },
+          onHover: function (info) {
+            var isTransposed = (self.pfState.heatmapAxis === 'Transposed');
+            var genome = isTransposed ? info.xLabel  : info.yLabel,
+              pgFam = isTransposed ? info.yLabel : info.xLabel,
+              id = isTransposed ? info.rowMeta.id : info.colMeta.id,
+              members = info.value;
+
+            return '<div>' +
+              '<div><b>Genome: </b> ' + genome + '</div>' +
+              '<div><b>PGFam: </b> ' + pgFam + '</div>' +
+              '<div><b>PGFam ID: </b> ' + id + '</div><br>' +
+              '<div><b>Members: </b>' + members + '</div>' +
+            '</div>';
+          },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
             var rowIDs = objs.map(function (r) { return r.rowID; });
@@ -792,8 +806,10 @@ define([
         return {
           name: c.colLabel,
           id: c.colID,
-          distribution: c.distribution
-          // meta: c.meta
+          distribution: c.distribution,
+          meta: {
+            id: c.colID
+          }
         };
       });
 
