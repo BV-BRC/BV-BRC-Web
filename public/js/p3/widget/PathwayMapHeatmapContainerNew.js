@@ -7,14 +7,14 @@ define([
   'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
   'dijit/Dialog', 'dijit/popup', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  'heatmap/dist/hotmap',  'dojo/query'
+  'heatmap/dist/hotmap',  'dojo/query', './Confirmation'
 
 ], function (
   declare, lang, on, Topic, domConstruct,
   request, ContentPane, BorderContainer, TooltipDialog,
   Dialog, popup, Button, ContainerActionBar,
   HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs,
-  Heatmap, Query
+  Hotmap, Query, Confirmation
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -474,6 +474,7 @@ define([
 
       if (!this.currentData) return;
       var data = this.formatData(this.currentData);
+      if (!data) return;
 
       if (!this.chart) {
         this.chart = new Hotmap({
@@ -534,6 +535,28 @@ define([
     },
 
     formatData: function (data) {
+      if (data.columns.length == 0)  {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.colLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
+      if (data.rows.length == 0) {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.rowLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
       var rows = data.rows.map(function (r) {
         return {
           name: r.rowLabel,
