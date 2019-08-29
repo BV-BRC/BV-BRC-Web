@@ -4,7 +4,7 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class', 'dojo/html'
+  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class', './Confirmation'
 
 ], function (
   declare, lang,
@@ -12,7 +12,7 @@ define([
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
   ContainerActionBar, SelectionToGroup, PathJoin, saveAs,
-  HeatmapContainerNew, Hotmap, domClass, html
+  HeatmapContainerNew, Hotmap, domClass, Confirmation
 ) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
@@ -715,8 +715,9 @@ define([
       var self = this;
 
       if (!this.currentData) return;
+
       var data = this.formatData(this.currentData);
-      console.log('heatmap data:', data);
+      if (!data) return;
 
       if (!this.chart) {
         this.chart = new Hotmap({
@@ -796,6 +797,30 @@ define([
     },
 
     formatData: function (data) {
+      if (!data) return;
+
+      if (data.columns.length == 0)  {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.colLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
+      if (data.rows.length == 0) {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.rowLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
       var rows = data.rows.map(function (r) {
         return {
           name: r.rowLabel,
