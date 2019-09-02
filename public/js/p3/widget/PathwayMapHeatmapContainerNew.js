@@ -496,6 +496,18 @@ define([
             hideOptions: true,
             useBoundingClient: true
           },
+          onHover: function (info) {
+            var isTransposed = (self.pmState.heatmapAxis === 'Transposed');
+            var genome = isTransposed ? info.xLabel  : info.yLabel,
+              enzyme = isTransposed ? info.yLabel : info.xLabel,
+              members = info.value;
+
+            return '<div>' +
+              '<div><b>Genome: </b> ' + genome + '</div>' +
+              '<div><b>Enzyme: </b> ' + enzyme + '</div>' +
+              '<div><b>Occurance: </b>' + members + '</div>' +
+            '</div>';
+          },
           onSelection: function (objs) {
             var colIDs = objs.map(function (c) { return c.colID; });
             var rowIDs = objs.map(function (r) { return r.rowID; });
