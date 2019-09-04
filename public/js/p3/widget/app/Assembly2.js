@@ -15,7 +15,7 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App Assembly2',
     pageTitle: 'Genome Assembly Service (new)',
     templateString: Template,
     applicationName: 'GenomeAssembly2',
@@ -142,6 +142,8 @@ define([
             rrec[attr] = lrec[attr];
           }
         }));
+        rrec['read_orientation_outward'] = (rrec['read_orientation_outward'] === 'true');
+        rrec['interleaved'] = (rrec['interleaved'] === 'true');
         return rrec;
       });
       if (pairedLibs.length) {
@@ -175,7 +177,7 @@ define([
         assembly_values.pilon_iter = values.pilon_iter;
       }
       if (Object.prototype.hasOwnProperty.call(values, 'trim') && values.trim) {
-        assembly_values.trim = values.trim;
+        assembly_values.trim = (values.trim === 'true');
       }
       if (Object.prototype.hasOwnProperty.call(values, 'min_contig_len') && values.min_contig_len) {
         assembly_values.min_contig_len = values.min_contig_len;
