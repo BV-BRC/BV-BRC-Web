@@ -4,7 +4,7 @@ define([
   'dojo/text!./templates/WorkspaceObjectSelector.html',
   './FlippableDialog', 'dijit/_HasDropDown', 'dijit/layout/ContentPane', 'dijit/form/TextBox',
   './WorkspaceExplorerView', 'dojo/dom-construct', '../WorkspaceManager', 'dojo/store/Memory',
-  './Uploader', 'dijit/layout/BorderContainer', 'dojo/dom-attr',
+  './Uploader', 'dijit/layout/BorderContainer', 'dojo/dom-attr', 'dijit/TooltipDialog', 'dijit/popup',
   'dijit/form/Button', 'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/topic', 'dijit/Tooltip',
   'dijit/registry', 'dgrid/editor', './formatter', 'dijit/form/FilteringSelect', 'dijit/form/Select'
 ], function (
@@ -12,7 +12,7 @@ define([
   domClass, Templated, WidgetsInTemplate,
   Template, Dialog, HasDropDown, ContentPane, TextBox,
   Grid, domConstr, WorkspaceManager, Memory,
-  Uploader, BorderContainer, domAttr,
+  Uploader, BorderContainer, domAttr, TooltipDialog, popup,
   Button, Deferred, CheckBox, Topic, Tooltip,
   registry, editor, formatter, FilteringSelect, Select
 ) {
@@ -597,6 +597,24 @@ define([
       this.onChange(value);
       this.validate(true);
     },
+
+    onMouseEnter: function (value) {
+      if (this.searchBox.value) {
+        var ihandle = new TooltipDialog({
+          content: this.searchBox.value
+        });
+        popup.open({
+          popup: ihandle,
+          around: this.searchBox.domNode,
+          orient: ['above']
+        });
+        on(this.searchBox.domNode, 'mouseleave', function () {
+          popup.close(ihandle);
+        });
+      }
+
+    },
+
     onChange: function (value) {
     },
 
