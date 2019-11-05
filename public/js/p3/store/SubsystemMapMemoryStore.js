@@ -249,7 +249,7 @@ define([
     },
 
     getHeatmapData: function (pmState) {
-
+      console.log('getHeatmapData: fetching heatmap data', pmState)
       var def = new Deferred();
 
       // used to toggle display reference genomes

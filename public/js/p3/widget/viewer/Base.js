@@ -78,6 +78,7 @@ define([
         return;
       }
       this.inherited(arguments);
+      console.log('setting state', this.state)
       this.onSetState('state', '', this.state);
     }
   });
