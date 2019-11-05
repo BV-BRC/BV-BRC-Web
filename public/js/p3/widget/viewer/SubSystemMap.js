@@ -22,15 +22,16 @@ define([
     displayDefaultGenomes: false,
 
     onSetState: function (attr, oldVal, state) {
-
       if (!state) {
         return;
       }
-      this.getStateParams(state);
-      var that = this;
+
+      this.updateLocalState(state);
+
       var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
 
-      request.post(PathJoin(window.App.dataServiceURL, 'genome'), {
+      var self = this;
+      request.post(PathJoin(self.apiServiceUrl, 'genome'), {
         handleAs: 'json',
         headers: {
           Accept: 'application/json',
@@ -39,7 +40,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         data: query
-      }).then(lang.hitch(this, function (response) {
+      }).then(function (response) {
         var reference_genome_ids = response.map(function (genome) {
           return genome.genome_id;
         });
@@ -56,9 +57,9 @@ define([
           return genome.genome_id;
         });
 
-        for ( var i = that.state.genome_ids.length - 1; i >= 0; i-- ) {
-          reference_genome_ids.unshift(that.state.genome_ids[i]);
-          alphabetical_reference_genome_ids.unshift(that.state.genome_ids[i]);
+        for ( var i = self.state.genome_ids.length - 1; i >= 0; i-- ) {
+          reference_genome_ids.unshift(self.state.genome_ids[i]);
+          alphabetical_reference_genome_ids.unshift(self.state.genome_ids[i]);
         }
 
         state.genome_ids_with_reference = reference_genome_ids;
@@ -66,13 +67,12 @@ define([
 
         state.alphabetical_genome_ids_with_reference = alphabetical_reference_genome_ids;
 
-        when(that.getGenomeIdsBySubsystemId(that.state.genome_ids, that.state.subsystem_id), function (genomeIds) {
-          that.viewer.set('visible', true);
-          // $('#subsystemheatmap').attr('style','height: 100px');
+        when(self.getGenomeIdsBySubsystemId(self.state.genome_ids, self.state.subsystem_id), function (genomeIds) {
+          self.viewer.set('visible', true);
         });
 
         window.document.title = 'Subsystem Map';
-      }));
+      });
     },
 
     getSubsystemDescription: function (subsystemId) {
@@ -95,17 +95,8 @@ define([
       return def.promise;
     },
 
-    truncateBefore: function (str, pattern) {
-      return str.slice(str.indexOf(pattern) + pattern.length);
-    },
-
-    truncateAfter: function (str, pattern) {
-      return str.slice(0, str.indexOf(pattern));
-    },
-
-    /* TODO: reorganize this function. This function not only returns display_reference_genomes but also reorganize object internally. */
-    getStateParams: function (state) {
-
+    // Todo(nc): this parsing should really be part of a routing system (in next version of UI)
+    updateLocalState: function (state) {
       var decodedSelectionData = JSON.stringify(state.search);
       var params = JSON.parse(decodedSelectionData);
       var decodedParams = decodeURIComponent(params);
@@ -165,14 +156,12 @@ define([
       state.genome_name = genome_name;
       state.display_reference_genomes = display_reference_genomes;
       state.display_alphabetically = false;
-
-      return display_reference_genomes;
     },
 
     getGenomeIdsBySubsystemId: function (genome_ids, subsystem_id) {
 
       var query = 'q=genome_id:(' + genome_ids.join(' OR ') + ') AND subsystem_id:"' + encodeURIComponent(subsystem_id) + '"&rows=1&facet=true&facet.field=genome_id&facet.mincount=1&json.nl=map';
-      var that = this;
+      var self = this;
 
       return when(request.post(window.App.dataAPI + 'subsystem/', {
         handleAs: 'json',
@@ -204,30 +193,28 @@ define([
           headerString += this.subclass + ' » ';
         }
 
+
         var geneInfo = '';
 
-        // Genome, gene, role
-        if ( that.state.genome_count > 1 && that.state.role_count != null ) {
-          geneInfo += ' (' + that.state.genome_count + ' genomes, ' + that.state.gene_count + ' genes, ' + that.state.role_count + ' roles)';
+        // Genome, gene, role.  Todo(nc): this is overly complicated.
+        if ( self.state.genome_count > 1 && self.state.role_count != null ) {
+          geneInfo += ' (' + self.state.genome_count + ' genomes, ' + self.state.gene_count + ' genes, ' + self.state.role_count + ' roles)';
         }
-        else if ( that.state.genome_count > 1 && that.state.role_count === null ) {
-          geneInfo += ' (' + that.state.gene_count + ' genes, ' + that.state.role_count + ' roles)';
+        else if ( self.state.genome_count > 1 && self.state.role_count === null ) {
+          geneInfo += ' (' + self.state.gene_count + ' genes, ' + self.state.role_count + ' roles)';
         }
-        else if (that.state.role_count != null) {
-          geneInfo += ' (' + that.state.gene_count + ' genes, ' + that.state.role_count + ' roles)';
+        else if (self.state.role_count != null) {
+          geneInfo += ' (' + self.state.gene_count + ' genes, ' + self.state.role_count + ' roles)';
         }
-        else if (that.state.genome_name != null) {
-          geneInfo += ' (' + that.state.genome_name + ')';
+        else if (self.state.genome_name != null) {
+          geneInfo += ' (' + self.state.genome_name + ')';
         }
-
-        // $('#subsystemheatmap').append("<div id=\"toggleheaderwrapper\"><input id=\"toggleheader\" class=\"hideshowbutton\" value=\"hide\"/></div>");
 
         $('#subsystemheatmap').append('<div id="subsystemheatmapheader"></div>');
-        // $('#subsystemheatmapheader').attr('style','height: 170px');
         $('#subsystemheatmapheader').html( headerString + '<span style="color:#76a72d;font-size: 1.1em;font-weight: bold">' + this.subsystemName + geneInfo + '</span>');
 
-        when(that.getSubsystemDescription(that.state.subsystem_id), function (data) {
-
+        // Todo(nc): this doesn't seem to work?  Let's remove it?
+        when(self.getSubsystemDescription(self.state.subsystem_id), function (data) {
           if (data && data.pmid && data.description) {
 
             var pmids = [];
@@ -240,13 +227,10 @@ define([
             var pmidString = pmids.join(', ');
 
             $('#subsystemheatmapheader').append( '<br><br>');
-            // $('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
             $('#subsystemheatmapheader').append( '<br><p><span style="font-size: 1.1em;font-weight: bold">Associated Publication IDs: ' + pmidString + '</span></p>');
 
-
           } else if ( data && data.description ) {
-            // $('#subsystemheatmapheader').append( "<br><br>");
-            // $('#subsystemheatmapheader').append( "<p>" + "<span style=\"font-size: 1.1em;font-weight: bold\">" + "Description: " + "</span>" + data.description + "</p>" );
+            // huh?
           } else if ( data && data.pmid ) {
             var pmids = [];
             data.pmid.forEach(function (pmid) {
@@ -258,8 +242,8 @@ define([
             $('#subsystemheatmapheader').append( '<br><br>');
             $('#subsystemheatmapheader').append( '<br><p><span style="font-size: 1.1em;font-weight: bold">Associated Publication IDs: ' + pmidString + '</span></p>');
           }
-
         });
+
 
         var genomeIdList = [];
         var genomeIds = response.facet_counts.facet_fields.genome_id;
@@ -279,27 +263,25 @@ define([
         this.state = {};
       }
 
-      var that = this;
-
+      // Todo(nc): Note this event is for removing description, not resizing.  Should remove.
+      var self = this;
       Topic.subscribe('SubSystemMapResize', lang.hitch(self, function () {
         var key = arguments[0];
         // var value = arguments[1];
         switch (key) {
           case 'toggleDescription':
-            if (that.showHeader) {
-              that.addChild(that.viewerHeader);
-              that.showHeader = false;
+            if (self.showHeader) {
+              self.addChild(self.viewerHeader);
+              self.showHeader = false;
             } else {
-              dijit.byId(that.id).removeChild(dijit.byId('subsystemheatmapheadercontainer'));
-              that.showHeader = true;
+              dijit.byId(self.id).removeChild(dijit.byId('subsystemheatmapheadercontainer'));
+              self.showHeader = true;
             }
             break;
           default:
             break;
         }
       }));
-
-      this.inherited(arguments);
 
       this.viewerHeader = new ContentPane({
         content: '',
@@ -325,6 +307,7 @@ define([
 
       this.addChild(this.viewerHeader);
       this.addChild(this.viewer);
+      this.inherited(arguments);
     }
   });
 });
