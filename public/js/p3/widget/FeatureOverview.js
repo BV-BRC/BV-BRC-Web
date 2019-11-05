@@ -316,7 +316,7 @@ define([
       domConstruct.create('td', { innerHTML: ipLink || '-' }, htr);
 
       htr = domConstruct.create('tr', {}, tbody);
-      domConstruct.create('th', { innerHTML: 'Identical Nucleotide Sequences', scope: 'row' }, htr);
+      domConstruct.create('th', { innerHTML: 'Identical Genes', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: insLink || '-' }, htr);
 
       htr = domConstruct.create('tr', {}, tbody);
