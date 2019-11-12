@@ -67,8 +67,9 @@ define([
 
         state.alphabetical_genome_ids_with_reference = alphabetical_reference_genome_ids;
 
+        self.viewer.set('visible', true);
         when(self.getGenomeIdsBySubsystemId(self.state.genome_ids, self.state.subsystem_id), function (genomeIds) {
-          self.viewer.set('visible', true);
+          // self.viewer.set('visible', true);
         });
 
         window.document.title = 'Subsystem Map';
@@ -255,6 +256,9 @@ define([
         }
 
         return genomeIdList;
+      }, function (error) {
+        console.error('Subsystem request error:', error);
+        // alert('Sorry, there was an issue fetching subsystem data (genome ids) from the Data API.');
       });
     },
 

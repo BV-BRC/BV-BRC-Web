@@ -111,11 +111,11 @@ define([
 
         switch (key) {
           case 'updatePmState':
-            console.log('1) called updatepm state')
+            console.log('1) called updatepm state');
             self.pmState = value;
             break;
           case 'refreshHeatmap':
-            console.log('2) called refresh heatmap')
+            console.log('2) called refresh heatmap');
             Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
             break;
           case 'heatmapOrdering':
@@ -126,7 +126,7 @@ define([
             }
             break;
           case 'updateHeatmapData':
-            console.log('3) called updateheatmapdata')
+            console.log('3) called updateheatmapdata');
             self.currentData = value;
 
             self.hmapUpdate();
@@ -175,7 +175,7 @@ define([
 
         setTimeout(function () {
           Topic.publish('SubSystemMap', 'refreshHeatmap');
-        }, 1000)
+        }, 1000);
       }
     },
     onFirstView: function () {
@@ -199,7 +199,7 @@ define([
       this.inherited(arguments);
       this._firstView = true;
 
-      console.log('SubsystemMapHeatmapContainer > this.state', this.state)
+      console.log('SubsystemMapHeatmapContainer > this.state', this.state);
       this._setState(this.state);
     },
 
@@ -721,6 +721,16 @@ define([
     },
 
     formatData: function (data) {
+      if (!data.rows.length) {
+        alert('Error: no rows were provided to the heatmap viewer');
+        return;
+      }
+
+      if (!data.columns.length) {
+        alert('Error: no columns were provided to the heatmap viewer');
+        return;
+      }
+
       var rows = data.rows.map(function (r) {
         return {
           name: r.rowLabel,
