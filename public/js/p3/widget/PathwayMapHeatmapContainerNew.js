@@ -505,7 +505,7 @@ define([
             return '<div>' +
               '<div><b>Genome: </b> ' + genome + '</div>' +
               '<div><b>Enzyme: </b> ' + enzyme + '</div>' +
-              '<div><b>Occurance: </b>' + members + '</div>' +
+              '<div><b>Occurrence: </b>' + members + '</div>' +
             '</div>';
           },
           onSelection: function (objs) {
