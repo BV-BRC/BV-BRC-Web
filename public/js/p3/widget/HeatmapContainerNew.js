@@ -13,9 +13,11 @@ define([
       /**
        * setup new heatmap
        */
+
       var target = document.getElementById('heatmapTarget');
       target.innerHTML = 'loading...';
       this.hmapDom = target;
+      return this.hmapDom;
     },
 
     exportCurrentData: function (isTransposed) {

@@ -3,37 +3,18 @@ define([
   'dojo/query', 'dojo/when', 'dojo/request', 'dijit/layout/ContentPane',
   'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
-  './HeatmapContainer', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore'
-
+  './HeatmapContainerNew', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore',
+  'heatmap/dist/hotmap'
 ], function (
   declare, lang,
   on, Topic, domConstruct, Query, when, request,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   Select, Button, ContainerActionBar,
-  HeatmapContainer, SelectionToGroup, saveAs, Store
+  HeatmapContainerNew, SelectionToGroup, saveAs, Store,
+  Hotmap
 ) {
 
-  var legend = [
-    '<div>',
-    '<h5>HeatMap Cells</h5>',
-    '<p>Cell color represents the number of proteins <br/> from a specific genome in a given protein family.</p>',
-    '<br>',
-    '<span class="heatmap-legend-entry black"></span>',
-    '<span class="heatmap-legend-label">0</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry yellow"></span>',
-    '<span class="heatmap-legend-label">1</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry orange"></span>',
-    '<span class="heatmap-legend-label">2</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry red"></span>',
-    '<span class="heatmap-legend-label">3+</span>',
-    '<div class="clear"></div>',
-    '</div>'
-  ].join('\n');
-
-  return declare([BorderContainer, HeatmapContainer], {
+  return declare([BorderContainer, HeatmapContainerNew], {
     gutters: false,
     state: null,
     visible: false,
@@ -46,34 +27,6 @@ define([
     apiToken: window.App.authorizationToken,
     apiServer: window.App.dataServiceURL,
     containerActions: [
-
-      [
-        'Legend',
-        'fa icon-bars fa-2x',
-        { label: 'Legend', multiple: false, validTypes: ['*'] },
-        function () {
-          if (this.containerActionBar._actions.Legend.options.tooltipDialog == null) {
-            this.tooltip_legend = new TooltipDialog({
-              content: legend
-            });
-            this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
-          }
-
-          if (this.isPopupOpen) {
-            this.isPopupOpen = false;
-            popup.close();
-          } else {
-            popup.open({
-              parent: this,
-              popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
-              around: this.containerActionBar._actions.Legend.button,
-              orient: ['below']
-            });
-            this.isPopupOpen = true;
-          }
-        },
-        true
-      ],
       [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
@@ -145,56 +98,44 @@ define([
         { label: 'Cluster', multiple: false, validTypes: ['*'] },
         'cluster',
         true
-      ],
-      [
-        'Toggle Description',
-        'fa icon-enlarge fa-2x',
-        { label: 'Toggle Description', multiple: false, validTypes: ['*'] },
-        function () {
-          if (this.state.display_reference_genomes) {
-            this.state.display_reference_genomes = false;
-          } else {
-            this.state.display_reference_genomes = true;
-          }
-
-          Topic.publish('SubSystemMapResize', 'toggleDescription');
-        },
-        true
       ]
     ],
     constructor: function () {
       this.dialog = new Dialog({});
 
       // subscribe
-      Topic.subscribe('SubSystemMap', lang.hitch(this, function () {
+      var self = this;
+      Topic.subscribe('SubSystemMap', function () {
         var key = arguments[0],
           value = arguments[1];
 
         switch (key) {
           case 'updatePmState':
-            this.pmState = value;
+            console.log('1) called updatepm state');
+            self.pmState = value;
             break;
           case 'refreshHeatmap':
-            Topic.publish('SubSystemMap', 'requestHeatmapData', this.pmState);
+            console.log('2) called refresh heatmap');
+            Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
             break;
           case 'heatmapOrdering':
-            if (Object.prototype.hasOwnProperty.call(this, 'originalPmState') ) {
-              Topic.publish('SubSystemMap', 'requestHeatmapData', this.originalPmState);
+            if (Object.prototype.hasOwnProperty.call(self, 'originalPmState') ) {
+              Topic.publish('SubSystemMap', 'requestHeatmapData', self.originalPmState);
             } else {
-              Topic.publish('SubSystemMap', 'requestHeatmapData', this.pmState);
+              Topic.publish('SubSystemMap', 'requestHeatmapData', self.pmState);
             }
             break;
           case 'updateHeatmapData':
-            this.currentData = value;
-            if (typeof (this.flashDom.refreshData) == 'function') {
-              this.flashDom.refreshData();
-              // Topic.publish("SubsystemMap", "hideLoadingMask");
-            }
+            console.log('3) called updateheatmapdata');
+            self.currentData = value;
+
+            self.hmapUpdate();
+
             break;
           default:
             break;
         }
-      }));
+      });
     },
 
     _buildPanelSorting: function () {
@@ -230,7 +171,11 @@ define([
 
       if (this.visible && !this._firstView) {
         this.onFirstView();
-        this.initializeFlash('SubsystemMapHeatMap');
+        this.hmapDom = this.initializeHeatmap();
+
+        setTimeout(function () {
+          Topic.publish('SubSystemMap', 'refreshHeatmap');
+        }, 1000);
       }
     },
     onFirstView: function () {
@@ -244,27 +189,21 @@ define([
         region: 'top',
         style: 'padding:0'
       });
-      this.containerActions.forEach(function (a) {
-        this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
-      }, this);
-      this.addChild(this.containerActionBar);
 
       this.addChild(new ContentPane({
         region: 'center',
-        content: "<div id='flashTarget'></div>",
+        content: "<div id='heatmapTarget'></div>",
         style: 'padding:0'
       }));
 
       this.inherited(arguments);
       this._firstView = true;
+
+      console.log('SubsystemMapHeatmapContainer > this.state', this.state);
       this._setState(this.state);
     },
-    flashReady: function () {
-      if (typeof (this.flashDom.refreshData) == 'function') {
-        Topic.publish('SubSystemMap', 'refreshHeatmap');
-      }
-    },
-    flashCellClicked: function (flashObjectID, colID, rowID) {
+
+    hmapCellClicked: function (colID, rowID) {
       var isTransposed = (this.pmState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
@@ -301,7 +240,7 @@ define([
       });
     },
 
-    flashCellsSelected: function (flashObjectID, colIDs, rowIDs) {
+    hmapCellsSelected: function (colIDs, rowIDs) {
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pmState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
@@ -719,6 +658,115 @@ define([
           content: err.text || err
         }).show();
       });
+    },
+
+    hmapUpdate: function () {
+      var self = this;
+      console.log('heatmap data:', this.currentData);
+
+      if (!this.currentData) return;
+      var data = this.formatData(this.currentData);
+
+      if (!this.chart) {
+        this.chart = new Hotmap({
+          ele: Query('#heatmapTarget')[0],
+          cols: data.cols,
+          rows: data.rows,
+          matrix: data.matrix,
+          rowsLabel: 'Genomes',
+          colsLabel: 'Protein Families',
+          color: {
+            bins: ['=0', '=1', '=2', '>=3'],
+            colors: [0x000000, 16440142, 16167991, 16737843]
+          },
+          options: {
+            theme: 'light',
+            maxFontSize: 13,
+            hideOptions: true,
+            useBoundingClient: true,
+            rowLabelEllipsisPos: 1
+          },
+          onSelection: function (objs) {
+            var colIDs = objs.map(function (c) { return c.colID; });
+            var rowIDs = objs.map(function (r) { return r.rowID; });
+            self.hmapCellsSelected(colIDs, rowIDs);
+          },
+          onClick: function (obj) {
+            self.hmapCellClicked(obj.colID, obj.rowID);
+          },
+          onFullscreenClick: function () {
+            // nothing should be needed here for the subsystems view
+          }
+        });
+
+        this.containerActions.forEach(function (a) {
+          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+        }, this);
+
+        // put action icons in heatmap header
+        var header = Query('.hotmap .header', this.hmapDom)[0];
+        domConstruct.place(this.containerActionBar.domNode, header, 'last');
+        Query('.WSContainerActionBar', header).style('margin-left', 'auto');
+        Query('.ActionButtonWrapper').style('width', '48px');
+
+        // hack to remove unused path div (interfering with flexbox)
+        Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
+      } else {
+        this.chart.update({
+          rows: data.rows,
+          cols: data.cols,
+          matrix: data.matrix
+        });
+      }
+    },
+
+    formatData: function (data) {
+      if (!data.rows.length) {
+        alert('Error: no rows were provided to the heatmap viewer');
+        return;
+      }
+
+      if (!data.columns.length) {
+        alert('Error: no columns were provided to the heatmap viewer');
+        return;
+      }
+
+      var rows = data.rows.map(function (r) {
+        return {
+          name: r.rowLabel,
+          id: r.rowID
+        };
+      });
+      var cols = data.columns.map(function (c) {
+        return {
+          name: c.colLabel,
+          id: c.colID,
+          distribution: c.distribution,
+          meta: c.meta
+        };
+      });
+
+      // get lists of vals for each column
+      var vals = cols.map(function (c) {
+        var hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
+          vals = hexStrs.map(function (hex) { return  parseInt(hex, 16); });
+
+        delete c.distribution; // we no longer need the distribution
+        return vals;
+      });
+
+      // make pass of all column val data (i times, where i = number of rows)
+      var matrix = [];
+      for (var i = 0; i < vals[0].length; i++) {
+        var row = [];
+        for (var j = 0; j < vals.length; j++) {
+          row.push(vals[j][i]);
+        }
+        matrix.push(row);
+      }
+
+      return { cols: cols, rows: rows, matrix: matrix };
     }
+
   });
 });
