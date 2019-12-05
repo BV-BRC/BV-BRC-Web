@@ -720,6 +720,8 @@ define([
       if (!data) return;
 
       if (!this.chart) {
+        var legendLabels = ['0', '1', '2', '3+'];
+
         this.chart = new Hotmap({
           ele: this.hmapDom,
           cols: data.cols,
@@ -731,7 +733,13 @@ define([
           hideRowMeta: true,
           color: {
             bins: ['=0', '=1', '=2', '>=3'],
-            colors: [0x000000, 16440142, 16167991, 16737843]
+            labels: legendLabels,
+            colors: [0x000000, 16440142, 16167991, 16737843],
+            altColors: [{
+              bins: ['=0', '=1', '=2', '>=3'],
+              labels: legendLabels,
+              colors: [0xffffff, 0xfbe6e2, 0xffadad, 0xff0000]
+            }]
           },
           options: {
             theme: 'light',
