@@ -129,8 +129,13 @@ define([
       values.scientific_name = this.output_nameWidget.get('displayedValue');
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
-        delete values.recipe;          // assembly strategy is not needed
         values.input_type = 'contigs'; // set input_type to be 'contigs'
+        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        assembly_inputs.forEach(function (key) {
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            delete values[key];
+          }
+        });
       }
 
       return values;
@@ -504,10 +509,22 @@ define([
       this.checkParameterRequiredFields();
     },
 
+    onRecipeChange: function () {
+      if (this.recipe.value == 'canu') {
+        this.genome_size_block.style.display = 'block';
+        this.checkParameterRequiredFields();
+      }
+      else {
+        this.genome_size_block.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+    },
+
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
+        this.assembly_additional_parameters_block.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
         this.contigsFile.reset();
@@ -517,6 +534,8 @@ define([
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
+        this.genome_size_block.style.display = 'none';
+        this.assembly_additional_parameters_block.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
         this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
