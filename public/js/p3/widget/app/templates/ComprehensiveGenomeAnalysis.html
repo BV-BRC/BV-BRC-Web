@@ -128,20 +128,60 @@
           </div>
         </div>
         <div data-dojo-attach-point="assemblyStrategy" class="appRow">
-          <label class="paramlabel">Assembly Strategy</label><br>
-          <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-            <option value="auto">auto</option>
-            <option value="fast">fast</option>
-            <option value="full_spades">full spades</option>
-            <option value="kiki">kiki</option>
-            <option value="miseq">miseq</option>
-            <option value="plasmid">plasmid</option>
-            <option value="smart">smart</option>
+          <label >Assembly Parameters</label><br>
+          <label class="paramlabel">Strategy</label><br>
+          <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
+            <option value="auto">Auto</option>
+            <option value="unicycler">Unicycler</option>
+            <option value="spades">SPAdes</option>
+            <option value="canu">Canu</option>
+            <option value="meta-spades">metaSPAdes</option>
+            <option value="plasmid-spades">plasmidSPAdes</option>
+            <option value="single-cell">MDA (single-cell)</option>
           </select>
+        </div>
+        <div class="appRow" data-dojo-attach-point="genome_size_block" style="display:none">
+          <label class="paramlabel">Estimated Genome Size</label><br>
+          <div name="genome_size"
+            class="medInput"
+            data-dojo-type="dijit/form/NumberTextBox"
+            data-dojo-attach-point="genome_size"
+            value="5000000">
+          </div>
+        </div>
+        <div data-dojo-attach-point="assembly_additional_parameters_block">
+          <div class="appRow" style="margin:0 0 0 0">
+              <label class="paramlabel">Trim reads before assembly</label><br>
+              <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
+                <option value="false">False</option>
+                <option value="true">True</option>
+              </select>
+          </div>
+          <div class="appRow" style="margin:0 0 0 0">
+            <div class="appRowSegment" style="margin:0 0 0 0">
+              <label class="paramlabel">Racon Iterations</label><br>
+              <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+            </div>
+            <div class="appRowSegment" style="margin:10px 0 0 0">
+              <label class="paramlabel">Pilon Iterations</label><br>
+              <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+            </div>
+          </div>
+          <div class="appRow" style="margin:0 0 0 0">
+            <div class="appRowSegment" style="margin:0 0 0 0">
+              <label class="paramlabel">Min. contig length</label><br>
+              <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+            </div>
+            <div class="appRowSegment" style="margin:10px 0 0 0">
+              <label class="paramlabel">Min. contig coverage</label><br>
+              <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+            </div>
+          </div>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <label>Domain</label><br>
+            <label >Annotation Parameters</label><br>
+            <label class="paramlabel">Domain</label><br>
             <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="Bacteria">Bacteria</option>
               <option value="Archaea">Archaea</option>
@@ -159,19 +199,19 @@
             <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
           </div>
           <div class="appRowSegment" style="text-align:left; width:20%">
-            <label>Taxonomy ID</label><br>
+            <label class="paramlabel">Taxonomy ID</label><br>
             <div data-dojo-attach-event="onChange:onTaxIDChange" data-dojo-type="p3/widget/TaxIDSelector" value="" name="tax_id" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="tax_idWidget"></div>
           </div>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <label>My Label</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+            <label class="paramlabel">My Label</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
             <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateOutputName" name="my_label" data-dojo-attach-point="myLabelWidget" style="width: 300px" required="true" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'"></div>
           </div>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <label>Genetic Code</label><br>
+            <label class="paramlabel">Genetic Code</label><br>
             <select data-dojo-attach-point="genetic_code" data-dojo-type="dijit/form/Select" name="code" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="11">11 (Archaea & most Bacteria)</option>
               <option value="4">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>
@@ -185,7 +225,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong" style="width:380px">
-            <label>Output Name</label><br>
+            <label class="paramlabel">Output Name</label><br>
             <div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
           </div>
         </div>
