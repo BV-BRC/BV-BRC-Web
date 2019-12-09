@@ -516,9 +516,7 @@ define([
               '<div><b>Occurrence: </b>' + members + '</div>' +
             '</div>';
           },
-          onSelection: function (objs) {
-            var colIDs = objs.map(function (c) { return c.colID; });
-            var rowIDs = objs.map(function (r) { return r.rowID; });
+          onSelection: function (objs, rowIDs, colIDs) {
             self.hmapCellsSelected(colIDs, rowIDs);
           },
           onClick: function (obj) {
