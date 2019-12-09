@@ -175,7 +175,7 @@ define([
 
         setTimeout(function () {
           Topic.publish('SubSystemMap', 'refreshHeatmap');
-        }, 1000);
+        }, 3000);
       }
     },
     onFirstView: function () {
@@ -694,9 +694,7 @@ define([
             useBoundingClient: true,
             rowLabelEllipsisPos: 1
           },
-          onSelection: function (objs) {
-            var colIDs = objs.map(function (c) { return c.colID; });
-            var rowIDs = objs.map(function (r) { return r.rowID; });
+          onSelection: function (objs, rowIDs, colIDs) {
             self.hmapCellsSelected(colIDs, rowIDs);
           },
           onClick: function (obj) {
