@@ -128,7 +128,7 @@
           </div>
         </div>
         <div data-dojo-attach-point="assemblyStrategy" class="appRow">
-          <label >Assembly Parameters</label><br>
+          <label class="paramlabel">Assembly Parameters</label><br>
           <label class="paramlabel">Strategy</label><br>
           <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
             <option value="auto">Auto</option>
@@ -180,7 +180,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <label >Annotation Parameters</label><br>
+            <label class="paramlabel">Annotation Parameters</label><br>
             <label class="paramlabel">Domain</label><br>
             <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="Bacteria">Bacteria</option>
