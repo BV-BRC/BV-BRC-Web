@@ -843,7 +843,9 @@ define([
         matrix.push(row);
       }
 
-      return { cols: cols, rows: rows, matrix: matrix, blackIndexes: blackIndexes };
+      return {
+        cols: cols, rows: rows, matrix: matrix, blackIndexes: blackIndexes
+      };
     }
 
   });
