@@ -295,30 +295,34 @@ define([
 
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
-
-      // SRR5121082
-      this.srr_accession.set('disabled', true);
-      this.srr_accession_validation_message.innerHTML = 'Validating ' + accession + ' ...';
-      xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-        .then(lang.hitch(this, function (xml_resp) {
-          var resp = xmlParser.parse(xml_resp).documentElement;
-          this.srr_accession.set('disabled', false);
-          try {
-            var title = resp.children[0].childNodes[3].innerHTML;
-            this.srr_accession_validation_message.innerHTML = '';
-            var lrec = { _type: 'srr_accession', title: title };
-            var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
-            if (chkPassed) {
-              var infoLabels = {
-                title: { label: 'Title', value: 1 }
-              };
-              this.addLibraryRow(lrec, infoLabels, 'srrdata');
+      if ( !accession.match(/^[a-z0-9]+$/i)) {
+        this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
+      }
+      else {
+        // SRR5121082
+        this.srr_accession.set('disabled', true);
+        this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
+        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
+          .then(lang.hitch(this, function (xml_resp) {
+            var resp = xmlParser.parse(xml_resp).documentElement;
+            this.srr_accession.set('disabled', false);
+            try {
+              var title = resp.children[0].childNodes[3].innerHTML;
+              this.srr_accession_validation_message.innerHTML = '';
+              var lrec = { _type: 'srr_accession', title: title };
+              var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
+              if (chkPassed) {
+                var infoLabels = {
+                  title: { label: 'Title', value: 1 }
+                };
+                this.addLibraryRow(lrec, infoLabels, 'srrdata');
+              }
+            } catch (e) {
+              this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
+              this.srr_accession.set('value', '');
             }
-          } catch (e) {
-            this.srr_accession_validation_message.innerHTML = 'Your input ' + accession + ' is not valid';
-            this.srr_accession.set('value', '');
-          }
-        }));
+          }));
+      }
     },
 
     destroyLibRow: function (query_id, id_type) {
