@@ -765,6 +765,15 @@ define([
           cols: data.cols,
           matrix: data.matrix
         });
+
+        var blackIndexes = data.blackIndexes;
+        if (blackIndexes.length) {
+          // update after render
+          setTimeout(function () {
+            self.chart.colorByIndex({ color: 0x00000, indexes: blackIndexes });
+          });
+        }
+
       }
     },
 
@@ -799,17 +808,28 @@ define([
           id: r.rowID
         };
       });
+
       var cols = data.columns.map(function (c) {
         return {
           name: c.colLabel,
           id: c.colID,
-          meta: c.meta
+          meta: c.meta,
+          distribution: c.distribution
         };
       });
 
+      var blackIndexes = [];
+
       // get lists of vals for each column
-      var vals = cols.map(function (c) {
+      var vals = cols.map(function (c, j) {
         vals = c.meta.labels.split('|');
+
+        // also get any blacked-out cells by
+        var hexStrs = c.distribution.match(/.{2}/g);
+        hexStrs.forEach((hex, i) => {
+          if (hex == '0B') blackIndexes.push([i, j]);
+        });
+
         return vals;
       });
 
@@ -823,7 +843,9 @@ define([
         matrix.push(row);
       }
 
-      return { cols: cols, rows: rows, matrix: matrix };
+      return {
+        cols: cols, rows: rows, matrix: matrix, blackIndexes: blackIndexes
+      };
     }
 
   });
