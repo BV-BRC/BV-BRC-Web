@@ -264,7 +264,8 @@ define("p3/widget/FeatureOverview", [
         plfamLink,
         pgfamLink,
         figfamLink,
-        ipLink;
+        ipLink,
+        insLink;
 
       if (Object.prototype.hasOwnProperty.call(feature, 'go')) {
         goLink = feature.go.map(function (goStr) {
@@ -286,7 +287,11 @@ define("p3/widget/FeatureOverview", [
       }
 
       if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
-        ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View in new Tab</a>';
+        ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View (new tab)</a>';
+      }
+
+      if (Object.prototype.hasOwnProperty.call(feature, 'na_sequence_md5')) {
+        insLink = '<a href="/view/FeatureList/?eq(na_sequence_md5,' + feature.na_sequence_md5 + ')#view_tab=features" target="_blank">View (new tab)</a>';
       }
 
       domConstruct.empty(this.functionalPropertiesNode);
@@ -311,6 +316,10 @@ define("p3/widget/FeatureOverview", [
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Identical Proteins', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: ipLink || '-' }, htr);
+
+      htr = domConstruct.create('tr', {}, tbody);
+      domConstruct.create('th', { innerHTML: 'Identical Genes', scope: 'row' }, htr);
+      domConstruct.create('td', { innerHTML: insLink || '-' }, htr);
 
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'GO Terms', scope: 'row' }, htr);
