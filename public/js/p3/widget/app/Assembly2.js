@@ -15,15 +15,15 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App Assembly2',
     pageTitle: 'Genome Assembly Service (new)',
     templateString: Template,
     applicationName: 'GenomeAssembly2',
     requireAuth: true,
     applicationLabel: 'Genome Assembly (new)',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
-    applicationHelp: 'user_guides/services/genome_assembly_service.html',
-    tutorialLink: 'tutorial/genome_assembly/assembly.html',
+    applicationHelp: 'user_guides/services/genome_assembly_service2.html',
+    tutorialLink: 'tutorial/genome_assembly/assembly2.html',
     libraryData: null,
     defaultPath: '',
     startingRows: 13,
@@ -142,6 +142,8 @@ define([
             rrec[attr] = lrec[attr];
           }
         }));
+        rrec['read_orientation_outward'] = (rrec['read_orientation_outward'] === 'true');
+        rrec['interleaved'] = (rrec['interleaved'] === 'true');
         return rrec;
       });
       if (pairedLibs.length) {
@@ -175,7 +177,7 @@ define([
         assembly_values.pilon_iter = values.pilon_iter;
       }
       if (Object.prototype.hasOwnProperty.call(values, 'trim') && values.trim) {
-        assembly_values.trim = values.trim;
+        assembly_values.trim = (values.trim === 'true');
       }
       if (Object.prototype.hasOwnProperty.call(values, 'min_contig_len') && values.min_contig_len) {
         assembly_values.min_contig_len = values.min_contig_len;
@@ -338,30 +340,34 @@ define([
 
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
-
-      // SRR5121082
-      this.srr_accession.set('disabled', true);
-      this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
-      xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-        .then(lang.hitch(this, function (xml_resp) {
-          var resp = xmlParser.parse(xml_resp).documentElement;
-          this.srr_accession.set('disabled', false);
-          try {
-            var title = resp.children[0].childNodes[3].innerHTML;
-            this.srr_accession_validation_message.innerHTML = '';
-            var lrec = { _type: 'srr_accession', title: title };
-            var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
-            if (chkPassed) {
-              var infoLabels = {
-                title: { label: 'Title', value: 1 }
-              };
-              this.addLibraryRow(lrec, infoLabels, 'srrdata');
+      if ( !accession.match(/^[a-z0-9]+$/i)) {
+        this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
+      }
+      else {
+        // SRR5121082
+        this.srr_accession.set('disabled', true);
+        this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
+        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
+          .then(lang.hitch(this, function (xml_resp) {
+            var resp = xmlParser.parse(xml_resp).documentElement;
+            this.srr_accession.set('disabled', false);
+            try {
+              var title = resp.children[0].childNodes[3].innerHTML;
+              this.srr_accession_validation_message.innerHTML = '';
+              var lrec = { _type: 'srr_accession', title: title };
+              var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
+              if (chkPassed) {
+                var infoLabels = {
+                  title: { label: 'Title', value: 1 }
+                };
+                this.addLibraryRow(lrec, infoLabels, 'srrdata');
+              }
+            } catch (e) {
+              this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
+              this.srr_accession.set('value', '');
             }
-          } catch (e) {
-            this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
-            this.srr_accession.set('value', '');
-          }
-        }));
+          }));
+      }
     },
 
     destroyLibRow: function (query_id, id_type) {

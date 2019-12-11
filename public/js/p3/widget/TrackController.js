@@ -92,6 +92,8 @@ define([
       var type = this.track_type_select.get('value');
       var strand = this.track_strand_select.get('value');
       var keyword = this.keyword_box.get('value');
+      var custom_trackname = this.custom_trackname_box.get('value');
+
       this.customTrackButton.set('disabled', true);
 
       this.customTrackIndex++;
@@ -99,7 +101,8 @@ define([
         index: this.customTrackIndex,
         type: type,
         strand: strand,
-        keyword: keyword
+        keyword: keyword,
+        name: custom_trackname
       };
       Topic.publish('/Notification', { message: 'Adding a custom track', type: 'message' });
       Topic.publish('CircularView', 'addCustomTrack', customTrackSelection);
@@ -236,6 +239,7 @@ define([
 
     onAddUserFileTrack: function () {
       var type = this.plot_type_select.get('value');
+      var user_trackname = this.user_trackname_box.get('value');
       // var files = this.data_file.event.target.files;
       this.userFileButton.set('disabled', true);
       if (this.userData && this.userData.length > 0) {
@@ -244,6 +248,7 @@ define([
         var userTrackSelection = {
           index: this.userTrackIndex,
           type: type,
+          name: user_trackname,
           fileName: this.fileName,
           maxScore: this.maxScore,
           minScore: this.minScore,

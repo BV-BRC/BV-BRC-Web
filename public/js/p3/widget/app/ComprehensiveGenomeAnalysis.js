@@ -129,8 +129,13 @@ define([
       values.scientific_name = this.output_nameWidget.get('displayedValue');
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
-        delete values.recipe;          // assembly strategy is not needed
         values.input_type = 'contigs'; // set input_type to be 'contigs'
+        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        assembly_inputs.forEach(function (key) {
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            delete values[key];
+          }
+        });
       }
 
       return values;
@@ -290,30 +295,34 @@ define([
 
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
-
-      // SRR5121082
-      this.srr_accession.set('disabled', true);
-      this.srr_accession_validation_message.innerHTML = 'Validating ' + accession + ' ...';
-      xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-        .then(lang.hitch(this, function (xml_resp) {
-          var resp = xmlParser.parse(xml_resp).documentElement;
-          this.srr_accession.set('disabled', false);
-          try {
-            var title = resp.children[0].childNodes[3].innerHTML;
-            this.srr_accession_validation_message.innerHTML = '';
-            var lrec = { _type: 'srr_accession', title: title };
-            var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
-            if (chkPassed) {
-              var infoLabels = {
-                title: { label: 'Title', value: 1 }
-              };
-              this.addLibraryRow(lrec, infoLabels, 'srrdata');
+      if ( !accession.match(/^[a-z0-9]+$/i)) {
+        this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
+      }
+      else {
+        // SRR5121082
+        this.srr_accession.set('disabled', true);
+        this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
+        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
+          .then(lang.hitch(this, function (xml_resp) {
+            var resp = xmlParser.parse(xml_resp).documentElement;
+            this.srr_accession.set('disabled', false);
+            try {
+              var title = resp.children[0].childNodes[3].innerHTML;
+              this.srr_accession_validation_message.innerHTML = '';
+              var lrec = { _type: 'srr_accession', title: title };
+              var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
+              if (chkPassed) {
+                var infoLabels = {
+                  title: { label: 'Title', value: 1 }
+                };
+                this.addLibraryRow(lrec, infoLabels, 'srrdata');
+              }
+            } catch (e) {
+              this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
+              this.srr_accession.set('value', '');
             }
-          } catch (e) {
-            this.srr_accession_validation_message.innerHTML = 'Your input ' + accession + ' is not valid';
-            this.srr_accession.set('value', '');
-          }
-        }));
+          }));
+      }
     },
 
     destroyLibRow: function (query_id, id_type) {
@@ -504,10 +513,22 @@ define([
       this.checkParameterRequiredFields();
     },
 
+    onRecipeChange: function () {
+      if (this.recipe.value == 'canu') {
+        this.genome_size_block.style.display = 'block';
+        this.checkParameterRequiredFields();
+      }
+      else {
+        this.genome_size_block.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+    },
+
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
+        this.assembly_additional_parameters_block.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
         this.contigsFile.reset();
@@ -517,6 +538,8 @@ define([
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
+        this.genome_size_block.style.display = 'none';
+        this.assembly_additional_parameters_block.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
         this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
