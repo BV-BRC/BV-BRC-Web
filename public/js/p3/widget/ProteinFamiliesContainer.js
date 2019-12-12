@@ -109,9 +109,9 @@ define([
       if (this.mainGridContainer) {
         this.mainGridContainer.set('visible', true);
       }
-      if (this.heatmapContainerNew) {
-        this.heatmapContainerNew.set('visible', true);
-      }
+      // if (this.heatmapContainerNew) {
+      //   this.heatmapContainerNew.set('visible', true);
+      // }
     },
 
     onFirstView: function () {
@@ -152,7 +152,14 @@ define([
       var self = this;
       this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
         if (newTab.type === 'webGLHeatmap') {
-          self.heatmapContainerNew.update();
+          self.heatmapContainerNew.set('visible', true);
+
+          if (!self._chartStaged) {
+            setTimeout(function () {
+              self.heatmapContainerNew.update();
+              self._chartStaged = true;
+            });
+          }
         }
       });
 

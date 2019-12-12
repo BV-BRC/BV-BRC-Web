@@ -688,8 +688,8 @@ define([
 
     hmapUpdate: function () {
       var self = this;
+      if (!this.currentData || !this._firstView) return;
 
-      if (!this.currentData) return;
       var data = this.formatData(this.currentData);
       if (!data) return;
 
