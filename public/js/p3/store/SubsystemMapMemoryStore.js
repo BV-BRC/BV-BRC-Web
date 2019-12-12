@@ -41,7 +41,11 @@ define([
         switch (key) {
           case 'requestHeatmapData':
             Deferred.when(self.getHeatmapData(value), function (response) {
+              console.log('** Publishing that heatmap data is done.');
               Topic.publish('SubSystemMap', 'updateHeatmapData', response);
+            },  function (error) {
+              console.error('Subsystem request error:', error);
+              alert('Sorry, there was an issue fetching subsystem data (heatmap data) from the Data API.');
             });
             break;
           default:
@@ -249,7 +253,7 @@ define([
     },
 
     getHeatmapData: function (pmState) {
-
+      console.log('getHeatmapData: fetching heatmap data', pmState);
       var def = new Deferred();
 
       // used to toggle display reference genomes

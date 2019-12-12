@@ -1,69 +1,28 @@
+/**
+ * container for new (non-flash) heatmap
+ */
+
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
   'dijit/Dialog', 'dijit/popup', 'dijit/form/Button', './ContainerActionBar',
-  './HeatmapContainer', './SelectionToGroup', '../util/PathJoin', 'FileSaver'
+  './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
+  'heatmap/dist/hotmap',  'dojo/query', './Confirmation'
 
 ], function (
   declare, lang, on, Topic, domConstruct,
   request, ContentPane, BorderContainer, TooltipDialog,
   Dialog, popup, Button, ContainerActionBar,
-  HeatmapContainer, SelectionToGroup, PathJoin, saveAs
+  HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs,
+  Hotmap, Query, Confirmation
 ) {
 
-  var legend = [
-    '<div>',
-    '<h5>HeatMap Cells</h5>',
-    '<p>Cell color represents the number of proteins <br/> from a specific genome in a given pathway.</p>',
-    '<br>',
-    '<span class="heatmap-legend-entry black"></span>',
-    '<span class="heatmap-legend-label">0</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry yellow"></span>',
-    '<span class="heatmap-legend-label">1</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry orange"></span>',
-    '<span class="heatmap-legend-label">2</span>',
-    '<div class="clear"></div>',
-    '<span class="heatmap-legend-entry red"></span>',
-    '<span class="heatmap-legend-label">3+</span>',
-    '<div class="clear"></div>',
-    '</div>'
-  ].join('\n');
-
-  return declare([BorderContainer, HeatmapContainer], {
+  return declare([BorderContainer, HeatmapContainerNew], {
     gutters: false,
     state: null,
     visible: false,
     pmState: null,
     containerActions: [
-      [
-        'Legend',
-        'fa icon-bars fa-2x',
-        { label: 'Legend', multiple: false, validTypes: ['*'] },
-        function () {
-          if (this.containerActionBar._actions.Legend.options.tooltipDialog == null) {
-            this.tooltip_legend = new TooltipDialog({
-              content: legend
-            });
-            this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
-          }
-
-          if (this.isPopupOpen) {
-            this.isPopupOpen = false;
-            popup.close();
-          } else {
-            popup.open({
-              parent: this,
-              popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
-              around: this.containerActionBar._actions.Legend.button,
-              orient: ['below']
-            });
-            this.isPopupOpen = true;
-          }
-        },
-        true
-      ],
       [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
@@ -77,6 +36,38 @@ define([
           }
 
           Topic.publish('PathwayMap', 'refreshHeatmap');
+          this.chart.flipScaling();
+        },
+        true
+      ],
+      [
+        'SaveSVG',
+        'fa icon-download fa-2x',
+        {
+          label: 'Save SVG',
+          multiple: false,
+          validType: ['*'],
+          tooltip: 'Download SVG snapshot'
+        },
+        function () {
+          this.tooltip_anchoring = new TooltipDialog({
+            style: 'width: 200px;',
+            content: this._buildPanelSaveSVG()
+          });
+          this.containerActionBar._actions.SaveSVG.options.tooltipDialog = this.tooltip_anchoring;
+
+          if (this.isPopupOpen) {
+            this.isPopupOpen = false;
+            popup.close();
+          } else {
+            popup.open({
+              parent: this,
+              popup: this.containerActionBar._actions.SaveSVG.options.tooltipDialog,
+              around: this.containerActionBar._actions.SaveSVG.button,
+              orient: ['below']
+            });
+            this.isPopupOpen = true;
+          }
         },
         true
       ]
@@ -91,16 +82,16 @@ define([
         switch (key) {
           case 'updatePmState':
             this.pmState = value;
+            this.hmapUpdate();
             break;
           case 'refreshHeatmap':
+            this.hmapUpdate();
             Topic.publish('PathwayMap', 'requestHeatmapData', this.pmState);
             break;
           case 'updateHeatmapData':
             this.currentData = value;
-            if (typeof (this.flashDom.refreshData) == 'function') {
-              this.flashDom.refreshData();
-              // Topic.publish("PathwayMap", "hideLoadingMask");
-            }
+            this.hmapUpdate();
+            Topic.publish(this.topicId, 'hideLoadingMask');
             break;
           default:
             break;
@@ -111,10 +102,29 @@ define([
       this.visible = visible;
 
       if (this.visible && !this._firstView) {
+        this.initContainer();
+        this.initializeHeatmap();
         this.onFirstView();
-        this.initializeFlash('PathwayMapHeatMap');
       }
     },
+
+
+    initContainer: function () {
+      var panel = this.panel = new ContentPane({
+        region: 'center',
+        content: "<div id='heatmapTarget'></div>",
+        style: 'padding:0; overflow: hidden;'
+      });
+
+      dojo.connect(panel, 'resize', this, 'onResize');
+      this.addChild(panel);
+    },
+
+    onResize: function () {
+      if (!this.chart) return;
+      this.chart.resize();
+    },
+
     onFirstView: function () {
       if (this._firstView) {
         return;
@@ -125,16 +135,6 @@ define([
         baseClass: 'BrowserHeader',
         region: 'top'
       });
-      this.containerActions.forEach(function (a) {
-        this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
-      }, this);
-      this.addChild(this.containerActionBar);
-
-      this.addChild(new ContentPane({
-        region: 'center',
-        content: "<div id='flashTarget'></div>",
-        style: 'padding:0'
-      }));
 
       this.inherited(arguments);
       this._firstView = true;
@@ -144,7 +144,7 @@ define([
         Topic.publish('PathwayMap', 'refreshHeatmap');
       }
     },
-    flashCellClicked: function (flashObjectID, colID, rowID) {
+    hmapCellClicked: function (colID, rowID) {
       var isTransposed = (this.pmState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
@@ -181,7 +181,7 @@ define([
       }));
 
     },
-    flashCellsSelected: function (flashObjectID, colIDs, rowIDs) {
+    hmapCellsSelected: function (colIDs, rowIDs) {
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pmState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
@@ -418,6 +418,41 @@ define([
 
       return actionBar;
     },
+
+    _buildPanelSaveSVG: function () {
+      var self = this;
+
+      var container = domConstruct.create('div');
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save snapshot',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg' });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save entire chart',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      return container;
+    },
+
     _getOriginalAxis: function (isTransposed, columnIds, rowIds) {
       var originalAxis = {};
 
@@ -429,6 +464,155 @@ define([
         originalAxis.rowIds = rowIds;
       }
       return originalAxis;
+    },
+
+    update: function () {
+      Topic.publish('PathwayMap', 'refreshHeatmap');
+    },
+
+    hmapUpdate: function () {
+      var self = this;
+
+      if (!this.currentData) return;
+      var data = this.formatData(this.currentData);
+      if (!data) return;
+
+      if (!this.chart) {
+        var legendLabels = ['0', '1', '2', '3+'];
+
+        this.chart = new Hotmap({
+          ele: this.hmapDom,
+          cols: data.cols,
+          rows: data.rows,
+          matrix: data.matrix,
+          rowsLabel: 'Protein Families',
+          colsLabel: 'Genomes',
+          hideRowMeta: true,
+          hideColMeta: true,
+          color: {
+            bins: ['=0', '=1', '=2', '>=3'],
+            labels: legendLabels,
+            colors: [0x000000, 16440142, 16167991, 16737843],
+            altColors: [{
+              bins: ['=0', '=1', '=2', '>=3'],
+              labels: legendLabels,
+              colors: [0xffffff, 0xfbe6e2, 0xffadad, 0xff0000]
+            }]
+          },
+          options: {
+            theme: 'light',
+            maxFontSize: 13,
+            hideOptions: true,
+            useBoundingClient: true
+          },
+          onHover: function (info) {
+            var isTransposed = (self.pmState.heatmapAxis === 'Transposed');
+            var genome = isTransposed ? info.xLabel  : info.yLabel,
+              enzyme = isTransposed ? info.yLabel : info.xLabel,
+              members = info.value;
+
+            return '<div>' +
+              '<div><b>Genome: </b> ' + genome + '</div>' +
+              '<div><b>Enzyme: </b> ' + enzyme + '</div>' +
+              '<div><b>Occurrence: </b>' + members + '</div>' +
+            '</div>';
+          },
+          onSelection: function (objs, rowIDs, colIDs) {
+            self.hmapCellsSelected(colIDs, rowIDs);
+          },
+          onClick: function (obj) {
+            self.hmapCellClicked(obj.colID, obj.rowID);
+          },
+          onFullscreenClick: function () {
+            setTimeout(function () {
+              self.onResize();
+            }, 500);
+          }
+        });
+
+        this.containerActions.forEach(function (a) {
+          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+        }, this);
+
+        // put action icons in heatmap header
+        var header = Query('.hotmap .header', this.hmapDom)[0];
+        domConstruct.place(this.containerActionBar.domNode, header, 'last');
+        Query('.WSContainerActionBar', header).style('margin-left', 'auto');
+        Query('.ActionButtonWrapper', header).style('width', '48px');
+
+
+        // hack to remove unused path div (interfering with flexbox)
+        Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
+      } else {
+        this.chart.update({
+          rows: data.rows,
+          cols: data.cols,
+          matrix: data.matrix
+        });
+      }
+
+    },
+
+    formatData: function (data) {
+      if (data.columns.length == 0)  {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.colLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
+      if (data.rows.length == 0) {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.rowLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
+      var rows = data.rows.map(function (r) {
+        return {
+          name: r.rowLabel,
+          id: r.rowID,
+          meta: r.meta,
+          distribution: r.distribution
+        };
+      });
+      var cols = data.columns.map(function (c) {
+        return {
+          name: c.colLabel,
+          id: c.colID,
+          distribution: c.distribution,
+          meta: c.meta
+        };
+      });
+
+      // get lists of vals for each column
+      var vals = cols.map(function (c) {
+        var hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
+          vals = hexStrs.map(function (hex) { return  parseInt(hex, 16); });
+
+        delete c.distribution; // we no longer need the distribution
+        return vals;
+      });
+
+      // make pass of all column val data (i times, where i = number of rows)
+      var matrix = [];
+      for (var i = 0; i < vals[0].length; i++) {
+        var row = [];
+        for (var j = 0; j < vals.length; j++) {
+          row.push(vals[j][i]);
+        }
+        matrix.push(row);
+      }
+
+      return { cols: cols, rows: rows, matrix: matrix };
     }
   });
 });
