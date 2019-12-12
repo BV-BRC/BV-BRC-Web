@@ -802,7 +802,7 @@ define([
           }
 
           return color;
-        })
+        });
       }
     },
 

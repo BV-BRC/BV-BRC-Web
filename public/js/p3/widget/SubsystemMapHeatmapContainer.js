@@ -40,6 +40,7 @@ define([
           }
 
           Topic.publish('SubSystemMap', 'refreshHeatmap');
+          this.chart.flipScaling();
         },
         true
       ],
