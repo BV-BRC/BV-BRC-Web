@@ -668,7 +668,8 @@ define([
         this.pfState.heatmapAxis = '';
       }
 
-      this.chart.flipAxis();
+      Topic.publish(this.topicId, 'refreshHeatmap');
+      this.chart.flipScaling();
     },
 
     cluster: function (param) {
@@ -749,10 +750,9 @@ define([
             rowLabelEllipsisPos: 1
           },
           onHover: function (info) {
-            var isTransposed = (self.pfState.heatmapAxis === 'Transposed');
-            var genome = isTransposed ? info.xLabel  : info.yLabel,
-              pgFam = isTransposed ? info.yLabel : info.xLabel,
-              id = isTransposed ? info.rowMeta.id : info.colMeta.id,
+            var genome = info.yLabel,
+              pgFam = info.xLabel,
+              id = info.colMeta.id,
               members = info.value;
 
             return '<div>' +

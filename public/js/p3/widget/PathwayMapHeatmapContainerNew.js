@@ -35,7 +35,8 @@ define([
             this.pmState.heatmapAxis = '';
           }
 
-          this.chart.flipAxis();
+          Topic.publish('PathwayMap', 'refreshHeatmap');
+          this.chart.flipScaling();
         },
         true
       ],

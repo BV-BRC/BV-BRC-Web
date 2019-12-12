@@ -19,7 +19,12 @@ define([
     state: null,
     visible: false,
     tgState: null,
+    colors: [
+      0x00FF00, 0x00cc00, 0x009900, 0x006600, 0x003300, 0x000000,
+      0x330000, 0x660000, 0x990000, 0xcc0000, 0xFF0000
+    ],
     containerActions: [
+      /* disable flip axis for now
       [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
@@ -27,6 +32,7 @@ define([
         'flipAxis',
         true
       ],
+      */
       [
         'Cluster',
         'fa icon-cluster fa-2x',
@@ -709,10 +715,7 @@ define([
               '<-4', '<-3', '<-2', '<-1', '<0', '=0',
               '<=1', '<=2', '<=3', '<=4', '>4'
             ],
-            colors: [
-              0x00FF00, 0x00cc00, 0x009900, 0x006600, 0x003300, 0x000000,
-              0x330000, 0x660000, 0x990000, 0xcc0000, 0xFF0000
-            ]
+            colors: this.colors
           },
           onHover: function (info) {
             var isTransposed = (self.tgState.heatmapAxis === 'Transposed');
@@ -766,14 +769,40 @@ define([
           matrix: data.matrix
         });
 
-        var blackIndexes = data.blackIndexes;
-        if (blackIndexes.length) {
-          // update after render
-          setTimeout(function () {
-            self.chart.colorByIndex({ color: 0x00000, indexes: blackIndexes });
-          });
-        }
+        self.chart.colorFilter(function (cell) {
+          var rowID = cell.rowID,
+            colID = cell.colID;
 
+          var hex = data.colorHash[rowID][colID];
+          var c = self.colors;
+
+          var color;
+          if (hex == '01') {
+            color = c[4];
+          } else if (hex == '02') {
+            color = c[3];
+          } else if (hex == '03') {
+            color = c[2];
+          } else if (hex == '04') {
+            color = c[1];
+          } else if (hex == '05') {
+            color = c[0];
+          } else if (hex == '06') {
+            color = c[6];
+          } else if (hex == '07') {
+            color = c[7];
+          } else if (hex == '08') {
+            color = c[8];
+          } else if (hex == '09') {
+            color = c[9];
+          } else if (hex == '0A') {
+            color = c[10];
+          } else {
+            color = c[5];
+          }
+
+          return color;
+        });
       }
     },
 
@@ -802,6 +831,7 @@ define([
         return null;
       }
 
+      // get neccessary row data for heatmap
       var rows = data.rows.map(function (r) {
         return {
           name: r.rowLabel,
@@ -809,6 +839,8 @@ define([
         };
       });
 
+      // get neccessary column data for heatmap
+      // note: distribution is always in columns, while meta moves between coloums and rows
       var cols = data.columns.map(function (c) {
         return {
           name: c.colLabel,
@@ -818,17 +850,23 @@ define([
         };
       });
 
-      var blackIndexes = [];
+      // we'll need a hash of colors
+      // this is mostly for state management and dealing with dynamic bins for now.
+      // we'll organize by id so that we can drag/drop cols/rows and re-render colors
+      var colorHash = {};
 
       // get lists of vals for each column
       var vals = cols.map(function (c, j) {
-        vals = c.meta.labels.split('|');
+        var vals = c.meta.labels.split('|');
 
-        // also get any blacked-out cells by
         var hexStrs = c.distribution.match(/.{2}/g);
-        hexStrs.forEach((hex, i) => {
-          if (hex == '0B') blackIndexes.push([i, j]);
-        });
+        for (var i = 0; i < hexStrs.length; i++) {
+          if (!(rows[i].id in colorHash)) {
+            colorHash[rows[i].id] = {};
+          }
+
+          colorHash[rows[i].id][c.id] = hexStrs[i];
+        }
 
         return vals;
       });
@@ -844,7 +882,7 @@ define([
       }
 
       return {
-        cols: cols, rows: rows, matrix: matrix, blackIndexes: blackIndexes
+        cols: cols, rows: rows, matrix: matrix, colorHash: colorHash
       };
     }
 
