@@ -177,7 +177,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
             break;
           case 'updateHeatmapData':
             this.currentData = value;
-            if (typeof (this.flashDom.refreshData) == 'function') {
+            if (this.flashDom && typeof (this.flashDom.refreshData) == 'function') {
               this.flashDom.refreshData();
               Topic.publish(this.topicId, 'hideLoadingMask');
             }
@@ -254,7 +254,6 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
     },
     flashCellsSelected: function (flashObjectID, colIDs, rowIDs) {
-      // console.log("flashCellsSelected is called", colIDs, rowIDs);
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
