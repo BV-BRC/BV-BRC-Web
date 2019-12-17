@@ -65,3 +65,6 @@
 [submodule "public/js/mauve_viewer"]
 	path = public/js/mauve_viewer
 	url = https://github.com/nconrad/mauve_viewer
+[submodule "public/js/heatmap"]
+	path = public/js/heatmap
+	url = https://github.com/nconrad/heatmap

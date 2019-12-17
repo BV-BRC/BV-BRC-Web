@@ -466,7 +466,7 @@ define("p3/widget/WorkspaceBrowser", [
       this.browserHeader.addAction('ViewAnnotatedGenome', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['GenomeAnnotation', 'GenomeAnnotationGenbank'],
+        validTypes: ['GenomeAnnotation', 'GenomeAnnotationGenbank', 'ComprehensiveGenomeAnalysis'],
         tooltip: 'View Annotated Genome'
       }, function (selection) {
         var gid = self.actionPanel.currentContainerWidget.getGenomeId();
@@ -604,6 +604,16 @@ define("p3/widget/WorkspaceBrowser", [
         var expPath = this.get('path');
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
+      }, false);
+
+      this.browserHeader.addAction('ViewCGAFullGenomeReport', 'fa icon-bars fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['ComprehensiveGenomeAnalysis'],
+        tooltip: 'View Full Genome Report'
+      }, function (selection) {
+        var path = self.actionPanel.currentContainerWidget.getReportPath();
+        Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
@@ -854,8 +864,10 @@ define("p3/widget/WorkspaceBrowser", [
       this.actionPanel.addAction('Rename', 'fa icon-pencil-square-o fa-2x', {
         label: 'RENAME',
         validTypes: ['*'],
-        tooltip: 'Rename the selected item'
+        disabled: true,
+        tooltip: 'Rename has been <b>temporarily disabled</b><br>while we address a technical issue.'
       }, function (sel) {
+        /*
         var path = sel[0].path,
           isJob = sel[0].type === 'job_result';
 
@@ -880,6 +892,7 @@ define("p3/widget/WorkspaceBrowser", [
             style: 'width: 250px;'
           }).show();
         }
+        */
       }, false);
 
       this.actionPanel.addAction('Copy', 'fa icon-files-o fa-2x', {
@@ -1370,6 +1383,9 @@ define("p3/widget/WorkspaceBrowser", [
                 case 'RNASeq':
                 case 'TnSeq':
                   d = 'p3/widget/viewer/Seq';
+                  break;
+                case 'ComprehensiveGenomeAnalysis':
+                  d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
               }
             }

@@ -2082,6 +2082,11 @@
 					 location:"../cytoscape-dagre",
 					 main:"cytoscape-dagre.js",
 					 name:"cytoscape-dagre"
+				},
+				{
+					 location:"../heatmap",
+					 main:"dist/hotmap.js",
+					 name:"heatmap"
 				}
 		]
 });require({cache:{

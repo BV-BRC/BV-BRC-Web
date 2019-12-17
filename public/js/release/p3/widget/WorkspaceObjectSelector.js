@@ -1,12 +1,12 @@
 require({cache:{
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\" class=\"object-selector\">\n  <i class=\"icon-sort-alpha-asc\" title=\"Sort Alphabetically\" data-dojo-attach-event=\"click:sortAlpha\"></i>\n  <input type=\"hidden\" />\n  <input type=\"text\" class=\"search-box\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"\n    value=\"${value}\" />&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa icon-folder-open fa-1x\" />\n</div>\n"}});
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\" class=\"object-selector\">\n  <i class=\"icon-sort-alpha-asc\" title=\"Sort Alphabetically\" data-dojo-attach-event=\"click:sortAlpha\"></i>\n  <input type=\"hidden\" />\n  <input type=\"text\" class=\"search-box\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange, mouseenter:onMouseEnter\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"\n    value=\"${value}\" />&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa icon-folder-open fa-1x\" />\n</div>\n"}});
 define("p3/widget/WorkspaceObjectSelector", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/_base/lang', 'dojo/query',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/WorkspaceObjectSelector.html',
   './FlippableDialog', 'dijit/_HasDropDown', 'dijit/layout/ContentPane', 'dijit/form/TextBox',
   './WorkspaceExplorerView', 'dojo/dom-construct', '../WorkspaceManager', 'dojo/store/Memory',
-  './Uploader', 'dijit/layout/BorderContainer', 'dojo/dom-attr',
+  './Uploader', 'dijit/layout/BorderContainer', 'dojo/dom-attr', 'dijit/TooltipDialog', 'dijit/popup',
   'dijit/form/Button', 'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/topic', 'dijit/Tooltip',
   'dijit/registry', 'dgrid/editor', './formatter', 'dijit/form/FilteringSelect', 'dijit/form/Select'
 ], function (
@@ -14,7 +14,7 @@ define("p3/widget/WorkspaceObjectSelector", [
   domClass, Templated, WidgetsInTemplate,
   Template, Dialog, HasDropDown, ContentPane, TextBox,
   Grid, domConstr, WorkspaceManager, Memory,
-  Uploader, BorderContainer, domAttr,
+  Uploader, BorderContainer, domAttr, TooltipDialog, popup,
   Button, Deferred, CheckBox, Topic, Tooltip,
   registry, editor, formatter, FilteringSelect, Select
 ) {
@@ -599,6 +599,24 @@ define("p3/widget/WorkspaceObjectSelector", [
       this.onChange(value);
       this.validate(true);
     },
+
+    onMouseEnter: function (value) {
+      if (this.searchBox.value) {
+        var ihandle = new TooltipDialog({
+          content: this.searchBox.value
+        });
+        popup.open({
+          popup: ihandle,
+          around: this.searchBox.domNode,
+          orient: ['above']
+        });
+        on(this.searchBox.domNode, 'mouseleave', function () {
+          popup.close(ihandle);
+        });
+      }
+
+    },
+
     onChange: function (value) {
     },
 

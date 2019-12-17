@@ -1,16 +1,14 @@
 define("p3/widget/PathwayMapHeatmapContainer", [
-  'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request',
-  'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
-  'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', './HeatmapContainer', './SelectionToGroup', '../util/PathJoin', 'FileSaver'
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
+  'dijit/Dialog', 'dijit/popup', 'dijit/form/Button', './ContainerActionBar',
+  './HeatmapContainer', './SelectionToGroup', '../util/PathJoin', 'FileSaver'
 
 ], function (
-  declare, lang,
-  on, Topic, domConstruct, dom, Query, when, request,
-  ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
-  TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin, saveAs
+  declare, lang, on, Topic, domConstruct,
+  request, ContentPane, BorderContainer, TooltipDialog,
+  Dialog, popup, Button, ContainerActionBar,
+  HeatmapContainer, SelectionToGroup, PathJoin, saveAs
 ) {
 
   var legend = [
@@ -86,24 +84,21 @@ define("p3/widget/PathwayMapHeatmapContainer", [
     constructor: function () {
       this.dialog = new Dialog({});
 
-      var self = this;
-      // subscribe
-      Topic.subscribe('PathwayMap', lang.hitch(self, function () {
-        // console.log("PathwayMapHeatmapContainer:", arguments);
+      Topic.subscribe('PathwayMap', lang.hitch(this, function () {
         var key = arguments[0],
           value = arguments[1];
 
         switch (key) {
           case 'updatePmState':
-            self.pmState = value;
+            this.pmState = value;
             break;
           case 'refreshHeatmap':
-            Topic.publish('PathwayMap', 'requestHeatmapData', self.pmState);
+            Topic.publish('PathwayMap', 'requestHeatmapData', this.pmState);
             break;
           case 'updateHeatmapData':
-            self.currentData = value;
-            if (typeof (self.flashDom.refreshData) == 'function') {
-              self.flashDom.refreshData();
+            this.currentData = value;
+            if (typeof (this.flashDom.refreshData) == 'function') {
+              this.flashDom.refreshData();
               // Topic.publish("PathwayMap", "hideLoadingMask");
             }
             break;
@@ -150,7 +145,6 @@ define("p3/widget/PathwayMapHeatmapContainer", [
       }
     },
     flashCellClicked: function (flashObjectID, colID, rowID) {
-      // console.log("flashCellClicked is called ", colID, rowID);
       var isTransposed = (this.pmState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
@@ -188,7 +182,6 @@ define("p3/widget/PathwayMapHeatmapContainer", [
 
     },
     flashCellsSelected: function (flashObjectID, colIDs, rowIDs) {
-      // console.log("flashCellsSelected is called", colIDs, rowIDs);
       if (rowIDs.length == 0) return;
       var isTransposed = (this.pmState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
@@ -427,7 +420,6 @@ define("p3/widget/PathwayMapHeatmapContainer", [
     },
     _getOriginalAxis: function (isTransposed, columnIds, rowIds) {
       var originalAxis = {};
-      // console.log("_getOriginalAxis: ", isTransposed, columnIds, rowIds);
 
       if (isTransposed) {
         originalAxis.columnIds = rowIds;

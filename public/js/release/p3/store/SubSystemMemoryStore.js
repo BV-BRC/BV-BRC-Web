@@ -24,7 +24,6 @@ define("p3/store/SubSystemMemoryStore", [
     genome_ids: null,
     type: 'subsystem',
     onSetState: function (attr, oldVal, state) {
-
       var ov,
         nv;
       if (oldVal) {

@@ -230,7 +230,10 @@ define("p3/widget/ActionBar", [
     addAction: function (name, classes, opts, fn, enabled, target) {
       target = target || this.containerNode;
       var wrapper = domConstruct.create('div', {
-        'class': (enabled ? '' : 'dijitHidden ') + 'ActionButtonWrapper',
+        'class':
+          (enabled ? '' : 'dijitHidden ') +
+          (opts && opts.disabled ? 'disabled ' : '') +
+          'ActionButtonWrapper',
         rel: name
       });
       domConstruct.create('div', { className: 'ActionButton ' + classes }, wrapper);

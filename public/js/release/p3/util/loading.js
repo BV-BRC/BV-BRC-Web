@@ -20,7 +20,7 @@
  *  loading.text('Sorry this is taking so long...')
  */
 define("p3/util/loading", ['dojo/dom-construct'], function (domConstruct) {
-  let self = this;
+  var self = this;
 
   // provided dom element
   this.ele;

@@ -1,14 +1,9 @@
 define("p3/widget/SubsystemMapContainer", [
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
-  'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
-  'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  './ActionBar', './ContainerActionBar',
+  'dojo/_base/declare',
+  'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
   './SubsystemMapHeatmapContainer'
 ], function (
-  declare, lang, on, Topic, domConstruct,
-  BorderContainer, TabContainer, StackController, ContentPane,
-  RadioButton, TextArea, TextBox, Button, Select,
-  ActionBar, ContainerActionBar,
+  declare, BorderContainer, TabContainer, StackController,
   HeatmapContainer
 ) {
 
@@ -44,7 +39,7 @@ define("p3/widget/SubsystemMapContainer", [
       });
 
       this.heatmapContainer = new HeatmapContainer({
-        title: 'Subsystem Heatmap',
+        title: '<span class="light">Subsystem Heatmap</span>',
         content: 'Subsystem Heatmap',
         state: this.state,
         apiServer: this.apiServer

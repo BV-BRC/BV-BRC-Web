@@ -1,17 +1,15 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
-  'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  'dojox/widget/Standby',
-  './ActionBar', './ContainerActionBar',
-  './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid', './TranscriptomicsGeneHeatmapContainer'
+  'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojox/widget/Standby',
+  './TranscriptomicsGeneGridContainer', './TranscriptomicsGeneFilterGrid',
+  './TranscriptomicsGeneHeatmapContainerNew'
 ], function (
-  declare, lang, on, Topic, domConstruct,
+  declare, lang, Topic, domConstruct,
   BorderContainer, TabContainer, StackController, ContentPane,
-  RadioButton, TextArea, TextBox, Button, Select,
-  Standby,
-  ActionBar, ContainerActionBar,
-  MainGridContainer, FilterGrid, HeatmapContainer
+  TextArea, Button, Select, Standby,
+  MainGridContainer, FilterGrid,
+  HeatmapContainerNew
 ) {
 
   return declare([BorderContainer], {
@@ -21,12 +19,10 @@ define([
     loadingMask: null,
     apiServer: window.App.dataServiceURL,
     constructor: function (options) {
-      // console.log(options);
 
       this.topicId = 'TranscriptomicsGene_' + options.id.split('_TranscriptomicsGene')[0];
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("TranscriptomicsGeneContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 
@@ -61,7 +57,6 @@ define([
       this.loadingMask.show(); // this widget is opened by new window/tab
     },
     onSetState: function (attr, oldVal, state) {
-      // console.log("TranscriptomicsGeneContainer set STATE. state: ", state);
       if (this.mainGridContainer) {
         this.mainGridContainer.set('state', state);
       }
@@ -78,9 +73,9 @@ define([
       if (this.mainGridContainer) {
         this.mainGridContainer.set('visible', true);
       }
-      if (this.heatmapContainer) {
-        this.heatmapContainer.set('visible', true);
-      }
+      // if (this.heatmapContainerNew) {
+      //   this.heatmapContainerNew.set('visible', true);
+      // }
     },
 
     onFirstView: function () {
@@ -106,16 +101,32 @@ define([
         apiServer: this.apiServer
       });
 
-      this.heatmapContainer = new HeatmapContainer({
-        title: 'Heatmap',
+      this.heatmapContainerNew = new HeatmapContainerNew({
+        title: 'Heatmap (new)',
+        type: 'webGLHeatmap',
         topicId: this.topicId,
-        content: 'Heatmap'
+        content: 'Heatmap (new)'
       });
 
       this.watch('state', lang.hitch(this, 'onSetState'));
 
       this.tabContainer.addChild(this.mainGridContainer);
-      this.tabContainer.addChild(this.heatmapContainer);
+      this.tabContainer.addChild(this.heatmapContainerNew);
+
+      var self = this;
+      this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
+        if (newTab.type === 'webGLHeatmap') {
+          self.heatmapContainerNew.set('visible', true);
+
+          if (!self._chartStaged) {
+            setTimeout(function () {
+              self.heatmapContainerNew.update();
+              self._chartStaged = true;
+            });
+          }
+        }
+      });
+
       this.addChild(tabController);
       this.addChild(this.tabContainer);
       this.addChild(filterPanel);
@@ -136,7 +147,8 @@ define([
         title: 'filter',
         content: 'Filter By',
         style: 'width:283px; overflow:auto',
-        splitter: true
+        splitter: true,
+        'class': 'filterPanel'
       });
 
       var filterGridDescriptor = new ContentPane({
@@ -226,7 +238,6 @@ define([
           !isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
 
           this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
-          // console.log("filter tgState", this.tgState);
 
           Topic.publish(this.topicId, 'applyConditionFilter', this.tgState);
         })
@@ -239,7 +250,6 @@ define([
     },
     updateGenomeFilter: function (data) {
       this.filter_genome.addOption(data);
-      // console.log(this.filter_genome, data);
     }
   });
 });
