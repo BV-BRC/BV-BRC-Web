@@ -32,15 +32,9 @@ define(
           field: 'status',
           formatter: formatter.status_alias
         },
-        submit_time: {
-          label: 'Submit',
-          field: 'submit_time',
-          formatter: formatter.date
-        },
         id: {
           label: 'ID',
           field: 'id',
-          hidden: true
         },
         service: {
           label: 'Service',
@@ -58,7 +52,12 @@ define(
           field: 'parameters',
           formatter: function (val) {
             return val.output_file || '';
-          }
+          },
+        },
+        submit_time: {
+          label: 'Submit',
+          field: 'submit_time',
+          formatter: formatter.date
         },
         start_time: {
           label: 'Start',
