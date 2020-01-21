@@ -34,7 +34,7 @@ define(
         },
         id: {
           label: 'ID',
-          field: 'id',
+          field: 'id'
         },
         service: {
           label: 'Service',
@@ -52,7 +52,7 @@ define(
           field: 'parameters',
           formatter: function (val) {
             return val.output_file || '';
-          },
+          }
         },
         submit_time: {
           label: 'Submit',
