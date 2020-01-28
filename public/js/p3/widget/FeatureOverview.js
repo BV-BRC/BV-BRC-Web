@@ -356,12 +356,18 @@ define([
       var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
       var tbody = tbodyQuery[0];
 
-      var ssLink;
+      var ssLink = '';
       if (data) {
-        ssLink = data.map(function (row) {
-          return row.subsystem_name + ' ' + row.role_name;
-        }).join('<br>');
+        var ssNames = [];
+        for (var i = 0; i < data.length; i++) {
+          if (ssNames.includes(data[i].subsystem_name + data[i].role_name) !== true) {
+            ssNames[i] = data[i].subsystem_name + data[i].role_name;
+            ssLink = ssLink += data[i].subsystem_name + ' ' + data[i].role_name + '<br>';
+          }
+        }
+
       }
+      console.log(data);
       var htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Subsystems', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: ssLink || '-' }, htr);
