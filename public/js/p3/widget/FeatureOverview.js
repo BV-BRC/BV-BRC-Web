@@ -337,11 +337,11 @@ define([
         var pwNums = [];
         for (var i = 0; i < data.length; i++) {
           if (ecNums.includes(data[i].ec_number) !== true) {
-            ecNums[i] = data[i].ec_number;
+            ecNums.push(data[i].ec_number);
             ecLink += '<a href="http://enzyme.expasy.org/EC/' + data[i].ec_number + '" target=_blank>' + data[i].ec_number + '</a>&nbsp;' + data[i].ec_description + '<br>';
           }
           if (pwNums.includes(data[i].pathway_id) !== true) {
-            pwNums[i] = data[i].pathway_id;
+            pwNums.push(data[i].pathway_id);
             pwLink += '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + data[i].genome_id + '&pathway_id=' + data[i].pathway_id + '&feature_id=' + data[i].feature_id + '" target="_blank">KEGG:' + data[i].pathway_id + '</a>&nbsp;' + data[i].pathway_name + '<br>';
           }
         }
@@ -364,7 +364,7 @@ define([
         var ssNames = [];
         for (var i = 0; i < data.length; i++) {
           if (ssNames.includes(data[i].subsystem_name + data[i].role_name) !== true) {
-            ssNames[i] = data[i].subsystem_name + data[i].role_name;
+            ssNames.push(data[i].subsystem_name + data[i].role_name);
             ssLink = ssLink += data[i].subsystem_name + ' ' + data[i].role_name + '<br>';
           }
         }
