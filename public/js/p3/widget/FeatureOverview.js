@@ -256,6 +256,9 @@ define([
       this.idMappingGrid.refresh();
       this.idMappingGrid.renderArray(summary);
     },
+    _setTestAttr: function (test) {
+
+    },
     _setFunctionalPropertiesAttr: function (feature) {
 
       var goLink,
@@ -335,11 +338,11 @@ define([
         for (var i = 0; i < data.length; i++) {
           if (ecNums.includes(data[i].ec_number) !== true) {
             ecNums[i] = data[i].ec_number;
-            ecLink = ecLink += '<a href="http://enzyme.expasy.org/EC/' + data[i].ec_number + '" target=_blank>' + data[i].ec_number + '</a>&nbsp;' + data[i].ec_description + '<br>';
+            ecLink += '<a href="http://enzyme.expasy.org/EC/' + data[i].ec_number + '" target=_blank>' + data[i].ec_number + '</a>&nbsp;' + data[i].ec_description + '<br>';
           }
           if (pwNums.includes(data[i].pathway_id) !== true) {
             pwNums[i] = data[i].pathway_id;
-            pwLink = pwLink += '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + data[i].genome_id + '&pathway_id=' + data[i].pathway_id + '&feature_id=' + data[i].feature_id + '" target="_blank">KEGG:' + data[i].pathway_id + '</a>&nbsp;' + data[i].pathway_name + '<br>';
+            pwLink += '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + data[i].genome_id + '&pathway_id=' + data[i].pathway_id + '&feature_id=' + data[i].feature_id + '" target="_blank">KEGG:' + data[i].pathway_id + '</a>&nbsp;' + data[i].pathway_name + '<br>';
           }
         }
       }
