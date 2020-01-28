@@ -256,9 +256,6 @@ define([
       this.idMappingGrid.refresh();
       this.idMappingGrid.renderArray(summary);
     },
-    _setTestAttr: function (test) {
-
-    },
     _setFunctionalPropertiesAttr: function (feature) {
 
       var goLink,
