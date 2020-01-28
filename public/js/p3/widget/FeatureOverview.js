@@ -367,7 +367,6 @@ define([
         }
 
       }
-      console.log(data);
       var htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Subsystems', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: ssLink || '-' }, htr);
