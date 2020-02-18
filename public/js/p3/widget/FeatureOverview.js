@@ -551,10 +551,9 @@ define([
     getSummaryData: function () {
 
       // uniprot mapping
-      if (this.feature.gi) {
-        var url = PathJoin(this.apiServiceUrl, 'id_ref/?and(eq(id_type,GI)&eq(id_value,' + this.feature.gi + '))&select(uniprotkb_accession)&limit(0)');
+      if (this.feature.gene_id) {
+        var url = PathJoin(this.apiServiceUrl, 'id_ref/?and(eq(id_type,GeneID)&eq(id_value,' + this.feature.gene_id + '))&select(uniprotkb_accession)&limit(0)');
         xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
-
           if (data.length === 0) return;
 
           var uniprotKbAccessions = this.uniprotkb_accessions = data.map(function (d) {
