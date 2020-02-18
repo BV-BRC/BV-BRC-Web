@@ -551,10 +551,13 @@ define([
     getSummaryData: function () {
 
       // uniprot mapping
-      if (this.feature.gi) {
-        var url = PathJoin(this.apiServiceUrl, 'id_ref/?and(eq(id_type,GI)&eq(id_value,' + this.feature.gi + '))&select(uniprotkb_accession)&limit(0)');
+      if (this.feature.gene_id) {
+        var url = PathJoin(this.apiServiceUrl, 'id_ref/?and(eq(id_type,GeneID)&eq(id_value,' + this.feature.gene_id + '))&select(uniprotkb_accession)&limit(0)');
+        // Test for Gene ID 885041
+        // https://patricbrc.org/api/id_ref/?and(eq(id_type,GeneID)&eq(id_value,885041))&select(uniprotkb_accession)&limit(0)
+        // https://p3.theseed.org/services/data_api/id_ref/?and(eq(id_type,GeneID)&eq(id_value,885041))&select(uniprotkb_accession)&limit(0)
         xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
-
+          // console.log(feature.gene_id);
           if (data.length === 0) return;
 
           var uniprotKbAccessions = this.uniprotkb_accessions = data.map(function (d) {
@@ -562,6 +565,8 @@ define([
           });
 
           var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&limit(25000)');
+          // Test for UniProtKB P9WNW3
+          // https://patricbrc.org/api/id_ref/?in(uniprotkb_accession,(P9WNW3))&select(uniprotkb_accession,id_type,id_value)&limit(25000)
           xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
             if (data.length === 0) return;
 
