@@ -138,7 +138,7 @@ define(
         link = 'http://www.genome.jp/dbget-bin/www_bget?ko:';
       }
       else if (target.match(/TubercuList/i)) { // Rv2429
-        link = 'http://tuberculist.epfl.ch/quicksearch.php?gene+name=';
+        link = 'https://mycobrowser.epfl.ch/genes/';
       }
       else if (target.match(/PeroxiBase/i)) { // 4558
         link = 'http://peroxibase.toulouse.inra.fr/browse/process/view_perox.php?id=';
