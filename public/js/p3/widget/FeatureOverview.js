@@ -561,9 +561,9 @@ define([
             return d.uniprotkb_accession;
           });
 
-          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&sort(+id_type)&limit(25000)');
+          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&sort(+id_type,+id_value)&limit(25000)');
           // TEST
-          // https://patricbrc.org/api/id_ref/?in(uniprotkb_accession,(P9WNW3))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&sort(+id_type)&limit(25000)
+          // https://patricbrc.org/api/id_ref/?in(uniprotkb_accession,(P9WNW3))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&sort(+id_type,+id_value)&limit(25000)
           xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
             if (data.length === 0) return;
 
