@@ -125,8 +125,8 @@ define(
       else if (target.match(/MEROPS/i)) { // M50.005
         link = 'http://merops.sanger.ac.uk/cgi-bin/pepsum?id=';
       }
-      else if (target.match(/PATRIC$/i)) { // 17788255
-        link = 'Feature?cType=feature&cId=';
+      else if (target.match(/^PATRIC$/i)) { // 17788255
+        link = 'https://www.patricbrc.org/view/Feature/';
       }
       else if (target.match(/OrthoDB/i)) { // EOG689HR1
         link = 'http://cegg.unige.ch/orthodb7/results?searchtext=';
