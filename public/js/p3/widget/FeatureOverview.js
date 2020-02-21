@@ -562,7 +562,7 @@ define([
             return d.uniprotkb_accession;
           });
 
-          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&ne(id_type,CRC64)&ne(id_type,Gene_Name)&ne(id_type,Gene_OrderedLocusName)&sort(+id_type,+id_value)&limit(25000)');
+          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&ne(id_type,CRC64)&ne(id_type,Gene_Name)&ne(id_type,Gene_OrderedLocusName)&ne(id_type,UniPathway)&sort(+id_type,+id_value)&limit(25000)');
           xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
             if (data.length === 0) return;
 
