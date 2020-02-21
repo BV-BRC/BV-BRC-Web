@@ -98,7 +98,7 @@ define(
         link = 'http://hogenom.univ-lyon1.fr/query_sequence?seq='; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/OMA/i)) {
-        link = 'http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1='; // A9MFG0 -- uniprot accession
+        link = 'https://omabrowser.org/oma/group/'; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/ProtClustDB/i)) {
         link = '//www.ncbi.nlm.nih.gov/sites/entrez?Db=proteinclusters&Cmd=DetailsSearch&Term='; // A9MFG0 -- uniprot accession
