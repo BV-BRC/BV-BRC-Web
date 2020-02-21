@@ -82,7 +82,7 @@ define(
       else if (target.match(/UniParc/i)) {
         link = 'http://www.uniprot.org/uniparc/'; // UPI0001603B3F
       }
-      else if (target.match(/EMBL/i) || target.match(/EMBL-CDS/i)) {
+      else if (target.match(/^EMBL$/i) || target.match(/^EMBL-CDS$/i)) {
         link = '//www.ebi.ac.uk/ena/data/view/'; // CP000880, ABX21565
       }
       else if (target.match(/GeneID/i)) {
@@ -92,16 +92,16 @@ define(
         link = 'http://www.genomereviews.ebi.ac.uk/GR/contigview?chr='; // CP000880_GR
       }
       else if (target.match(/eggNOG/i)) {
-        link = 'http://eggnog.embl.de/cgi_bin/display_multi_clusters.pl?linksource=uniprot&level=0&1='; // Q2YII1 -- uniprot accession
+        link = 'http://eggnogdb.embl.de/#/app/results?seqid='; // Q2YII1 -- uniprot accession
       }
       else if (target.match(/HOGENOM/i)) {
-        link = 'http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?db=HOGENOM&query='; // A9MFG0 -- uniprot accession
+        link = 'http://hogenom.univ-lyon1.fr/query_sequence?seq='; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/OMA/i)) {
-        link = 'http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1='; // A9MFG0 -- uniprot accession
+        link = 'https://omabrowser.org/oma/group/'; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/ProtClustDB/i)) {
-        link = '//www.ncbi.nlm.nih.gov/sites/entrez?Db=proteinclusters&Cmd=DetailsSearch&Term='; // A9MFG0 -- uniprot accession
+        link = 'https://www.ncbi.nlm.nih.gov/proteinclusters/?term='; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/BioCyc/i)) {
         link = 'http://biocyc.org/getid?id='; // BMEL359391:BAB2_0179-MONOMER
@@ -117,7 +117,7 @@ define(
         link = 'http://www.beiresources.org/Catalog/ItemDetails/tabid/522/Default.aspx?Template=Clones&BEINum=';
       }
       else if (target.match(/PDB/i)) {
-        link = 'Jmol?structureID=';
+        link = 'http://www.rcsb.org/3d-view/';
       }
       else if (target.match(/STRING/i)) { // 204722.BR0001
         link = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=';
@@ -125,8 +125,8 @@ define(
       else if (target.match(/MEROPS/i)) { // M50.005
         link = 'http://merops.sanger.ac.uk/cgi-bin/pepsum?id=';
       }
-      else if (target.match(/PATRIC$/i)) { // 17788255
-        link = 'Feature?cType=feature&cId=';
+      else if (target.match(/^PATRIC$/i)) { // 17788255
+        link = 'https://www.patricbrc.org/view/Feature/';
       }
       else if (target.match(/OrthoDB/i)) { // EOG689HR1
         link = 'http://cegg.unige.ch/orthodb7/results?searchtext=';
@@ -138,7 +138,7 @@ define(
         link = 'http://www.genome.jp/dbget-bin/www_bget?ko:';
       }
       else if (target.match(/TubercuList/i)) { // Rv2429
-        link = 'http://tuberculist.epfl.ch/quicksearch.php?gene+name=';
+        link = 'https://mycobrowser.epfl.ch/genes/';
       }
       else if (target.match(/PeroxiBase/i)) { // 4558
         link = 'http://peroxibase.toulouse.inra.fr/browse/process/view_perox.php?id=';
@@ -202,6 +202,12 @@ define(
       }
       else if (target.match(/assembly_accession/i)) {
         link = 'http://www.ncbi.nlm.nih.gov/assembly/';
+      }
+      else if (target.match(/DNASU/i)) {
+        link = 'https://dnasu.org/DNASU/AdvancedSearchOptions.do?geneName=';
+      }
+      else if (target.match(/PseudoCAP/i)) {
+        link = 'http://www.pseudomonas.com/feature/show?locus_tag=';
       }
       // edit patric-searches-and-tools/WebContent/js/specialty_gene_list_grids.js as well
       return link;

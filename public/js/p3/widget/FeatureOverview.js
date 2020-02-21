@@ -240,8 +240,10 @@ define([
               field: 'id_value',
               renderCell: function (obj, val, node) {
                 var baseUrl = formatter.getExternalLinks(obj.id_type);
-                if (obj.id_type.match(/"HOGENOM|OMA|ProtClustDB|eggNOG"/)) {
-                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" taget=_blank>' + val + '</a>';
+                if (obj.id_type.match(/eggNOG/)) {
+                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '&target_nogs=' + val + '" target=_blank>' + val + '</a>';
+                } else if (obj.id_type.match(/HOGENOM|OMA|ProtClustDB/)) {
+                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" target=_blank>' + val + '</a>';
                 } else {
                   node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';
                 }
@@ -560,7 +562,7 @@ define([
             return d.uniprotkb_accession;
           });
 
-          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&limit(25000)');
+          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&ne(id_type,CRC64)&ne(id_type,Gene_Name)&ne(id_type,Gene_OrderedLocusName)&ne(id_type,UniPathway)&sort(+id_type,+id_value)&limit(25000)');
           xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
             if (data.length === 0) return;
 
