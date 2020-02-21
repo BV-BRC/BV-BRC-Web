@@ -117,7 +117,7 @@ define(
         link = 'http://www.beiresources.org/Catalog/ItemDetails/tabid/522/Default.aspx?Template=Clones&BEINum=';
       }
       else if (target.match(/PDB/i)) {
-        link = 'Jmol?structureID=';
+        link = 'http://www.rcsb.org/3d-view/';
       }
       else if (target.match(/STRING/i)) { // 204722.BR0001
         link = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=';
