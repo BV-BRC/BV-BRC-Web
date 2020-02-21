@@ -203,6 +203,9 @@ define(
       else if (target.match(/assembly_accession/i)) {
         link = 'http://www.ncbi.nlm.nih.gov/assembly/';
       }
+      else if (target.match(/DNASU/i)) {
+        link = 'https://dnasu.org/DNASU/AdvancedSearchOptions.do?geneName=';
+      }
       // edit patric-searches-and-tools/WebContent/js/specialty_gene_list_grids.js as well
       return link;
     };
