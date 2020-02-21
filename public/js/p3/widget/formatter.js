@@ -206,6 +206,9 @@ define(
       else if (target.match(/DNASU/i)) {
         link = 'https://dnasu.org/DNASU/AdvancedSearchOptions.do?geneName=';
       }
+      else if (target.match(/PseudoCAP/i)) {
+        link = 'http://www.pseudomonas.com/feature/show?locus_tag=';
+      }
       // edit patric-searches-and-tools/WebContent/js/specialty_gene_list_grids.js as well
       return link;
     };
