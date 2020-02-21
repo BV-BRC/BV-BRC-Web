@@ -92,7 +92,7 @@ define(
         link = 'http://www.genomereviews.ebi.ac.uk/GR/contigview?chr='; // CP000880_GR
       }
       else if (target.match(/eggNOG/i)) {
-        link = 'http://eggnog.embl.de/cgi_bin/display_multi_clusters.pl?linksource=uniprot&level=0&1='; // Q2YII1 -- uniprot accession
+        link = 'http://eggnogdb.embl.de/#/app/results?seqid='; // Q2YII1 -- uniprot accession
       }
       else if (target.match(/HOGENOM/i)) {
         link = 'http://hogenom.univ-lyon1.fr/query_sequence?seq='; // A9MFG0 -- uniprot accession
