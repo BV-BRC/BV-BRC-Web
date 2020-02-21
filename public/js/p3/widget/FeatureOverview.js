@@ -242,9 +242,7 @@ define([
                 var baseUrl = formatter.getExternalLinks(obj.id_type);
                 if (obj.id_type.match(/eggNOG/)) {
                   node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '&target_nogs=' + val + '" target=_blank>' + val + '</a>';
-                } else if (obj.id_type.match(/HOGENOM|OMA/)) {
-                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" target=_blank>' + val + '</a>';
-                } else if (obj.id_type.match(/"ProtClustDB"/)) {
+                } else if (obj.id_type.match(/HOGENOM|OMA|ProtClustDB/)) {
                   node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" target=_blank>' + val + '</a>';
                 } else {
                   node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';

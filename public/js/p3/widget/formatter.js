@@ -101,7 +101,7 @@ define(
         link = 'https://omabrowser.org/oma/group/'; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/ProtClustDB/i)) {
-        link = '//www.ncbi.nlm.nih.gov/sites/entrez?Db=proteinclusters&Cmd=DetailsSearch&Term='; // A9MFG0 -- uniprot accession
+        link = 'https://www.ncbi.nlm.nih.gov/proteinclusters/?term='; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/BioCyc/i)) {
         link = 'http://biocyc.org/getid?id='; // BMEL359391:BAB2_0179-MONOMER
