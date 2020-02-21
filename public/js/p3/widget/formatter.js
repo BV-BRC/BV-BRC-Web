@@ -82,7 +82,7 @@ define(
       else if (target.match(/UniParc/i)) {
         link = 'http://www.uniprot.org/uniparc/'; // UPI0001603B3F
       }
-      else if (target.match(/EMBL/i) || target.match(/EMBL-CDS/i)) {
+      else if (target.match(/^EMBL$/i) || target.match(/^EMBL-CDS$/i)) {
         link = '//www.ebi.ac.uk/ena/data/view/'; // CP000880, ABX21565
       }
       else if (target.match(/GeneID/i)) {
