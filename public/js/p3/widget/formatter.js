@@ -95,7 +95,7 @@ define(
         link = 'http://eggnog.embl.de/cgi_bin/display_multi_clusters.pl?linksource=uniprot&level=0&1='; // Q2YII1 -- uniprot accession
       }
       else if (target.match(/HOGENOM/i)) {
-        link = 'http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?db=HOGENOM&query='; // A9MFG0 -- uniprot accession
+        link = 'http://hogenom.univ-lyon1.fr/query_sequence?seq='; // A9MFG0 -- uniprot accession
       }
       else if (target.match(/OMA/i)) {
         link = 'http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1='; // A9MFG0 -- uniprot accession
