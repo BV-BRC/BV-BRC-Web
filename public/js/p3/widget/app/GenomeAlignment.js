@@ -21,12 +21,13 @@ define([
     applicationLabel: 'Genome Alignment (Mauve)',
     applicationDescription: 'The Whole Genome Alignment Service aligns genomes using progressiveMauve.',
     startingRows: 1,
+    maxGenomes: 20,
 
     constructor: function () {
     },
 
     startup: function () {
-      var _self = this;
+      var self = this;
       if (this._started) {
         return;
       }
@@ -36,8 +37,8 @@ define([
 
       this.inherited(arguments);
 
-      _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-      _self.output_path.set('value', _self.defaultPath);
+      self.defaultPath = WorkspaceManager.getDefaultFolder() || self.activeWorkspacePath;
+      self.output_path.set('value', self.defaultPath);
 
       // initialize selected genome table
       var selectedTable = this.selectedTable = new SelectedTable({
@@ -48,6 +49,9 @@ define([
           rowIndex: 1,
           colKey: 'name',
           format: function (obj) { return obj.name + ' <b>[Reference Genome]</b>'; }
+        },
+        onRemove: function () {
+          self.checkGenomeCount();
         }
       });
       domConstruct.place(selectedTable.domNode, this.genomeTable);
@@ -85,8 +89,8 @@ define([
       var isValid;
 
       if (self.selectedTable.getRows().length &&
-        self.output_path.value &&
-        self.output_file.value) {
+        self.output_path.value != '' &&
+        self.output_file.value != '') {
         isValid = true;
       }
 
@@ -122,6 +126,17 @@ define([
       }
 
       self.selectedTable.addRow(genomeInfo);
+      self.checkGenomeCount();
+    },
+
+    checkGenomeCount: function () {
+      if (this.selectedTable.getRows().length >= this.maxGenomes) {
+        this.addGenomeBtn.set('disabled', true);
+        this.addGenomeGroupBtn.set('disabled', true);
+      } else {
+        this.addGenomeBtn.set('disabled', false);
+        this.addGenomeGroupBtn.set('disabled', false);
+      }
     },
 
     onAddGenomeGroup: function () {
@@ -135,16 +150,34 @@ define([
         var data = typeof res.data == 'string' ? JSON.parse(res.data) : res.data;
         var genomeIDs =  data.id_list.genome_id;
 
+        var currentCount = self.selectedTable.getRows().length;
+        var count = genomeIDs.length;
+        if (currentCount + count >= self.maxGenomes) {
+          var dlg = new Dialog({
+            title: 'Too many genomes in this group',
+            content: '<p>' +
+              'The Genome Alignment Service is limited to ' + this.maxGenomes + ' genomes.<br>' +
+              'This genome group contains ' + count + ' genome(s).' +
+            '</p>'
+          });
+          dlg.startup();
+          dlg.show();
+          domStyle.set( query('.loading-status')[0], 'display', 'none');
+          return;
+        }
+
         when(self.getGenomeInfo(genomeIDs), function (genomeInfos) {
+
           genomeInfos.forEach(function (info) {
             self.addGenome(info);
           });
+
           domStyle.set( query('.loading-status')[0], 'display', 'none');
         });
       }));
     },
 
-    // takes genome ids, returns prom with {id: xxxx.x, name: 'org_name}
+    // takes genome ids, returns prom with {id: xxxx.x, name: 'org_name'}
     getGenomeInfo: function (genomeIDs) {
       var url = this.apiServiceUrl +
         'genome/?in(genome_id,(' + genomeIDs.join(',') + '))&select(genome_id,genome_name)';
