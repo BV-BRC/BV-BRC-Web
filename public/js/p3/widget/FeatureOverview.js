@@ -51,27 +51,16 @@ define([
       this.set('featureSummary', feature);
       this.set('publications', feature);
       this.set('functionalProperties', feature);
-      this.set('CDDSearch', feature);
       this.set('staticLinks', feature);
+      this.set('CDDSearch', feature);
 
       if (!feature.patric_id) {
         domClass.remove(this.isRefSeqOnly, 'hidden');
       }
     },
+
     _setStaticLinksAttr: function (feature) {
-
       domConstruct.empty(this.externalLinkNode);
-
-      // CDD Search
-      // if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
-      //   var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
-      //   var cdd = domConstruct.create('a', {
-      //     href: linkCDD,
-      //     innerHTML: 'NCBI CDD Search',
-      //     target: '_blank'
-      //   }, this.externalLinkNode);
-      //   domConstruct.place('<br>', cdd, 'after');
-      // }
 
       // STRING & STITCH
       if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
@@ -84,11 +73,25 @@ define([
         domConstruct.place('<br>', string, 'after');
 
         var linkSTITCH = 'http://stitch.embl.de/cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
-        domConstruct.create('a', {
+        var stitch = domConstruct.create('a', {
           href: linkSTITCH,
           innerHTML: 'STITCH: Chemical-Protein Interaction',
           target: '_blank'
         }, this.externalLinkNode);
+        domConstruct.place('<br>', stitch, 'after');
+      }
+    },
+
+    _setCDDSearchAttr: function (feature) {
+      // CDD Search
+      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
+        var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
+        var cdd = domConstruct.create('a', {
+          href: linkCDD,
+          innerHTML: 'NCBI CDD Search',
+          target: '_blank'
+        }, this.externalLinkNode);
+        domConstruct.place('<br>', cdd, 'after');
       }
     },
 
