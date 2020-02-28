@@ -57,39 +57,11 @@ define([
         domClass.remove(this.isRefSeqOnly, 'hidden');
       }
     },
-    _setStaticLinksAttr: function (feature) {
 
+    _setStaticLinksAttr: function (feature) {
       domConstruct.empty(this.externalLinkNode);
 
-      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence')) {
-        var linkCDDSearch = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E';
-        var dispSequenceID = [];
-        if (feature.annotation === 'PATRIC') {
-          if (feature.alt_locus_tag) {
-            dispSequenceID.push(feature.alt_locus_tag);
-          }
-          if (feature.refseq_locus_tag) {
-            dispSequenceID.push(' ');
-            dispSequenceID.push(feature.refseq_locus_tag);
-          }
-          if (feature.product) {
-            dispSequenceID.push(' ');
-            dispSequenceID.push(feature.product);
-          }
-        } else if (feature.annotation === 'RefSeq') {
-          dispSequenceID.push(feature.alt_locus_tag);
-          dispSequenceID.push(' ');
-          dispSequenceID.push(feature.product);
-        }
-
-        var cdd = domConstruct.create('a', {
-          href: linkCDDSearch + dispSequenceID.join('').replace(' ', '%20') + '%0A' + feature.aa_sequence + '&amp;FULL',
-          innerHTML: 'NCBI CDD Search',
-          target: '_blank'
-        }, this.externalLinkNode);
-        domConstruct.place('<br>', cdd, 'after');
-      }
-
+      // STRING & STITCH Links
       if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
         var linkSTRING = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
         var string = domConstruct.create('a', {
@@ -100,12 +72,24 @@ define([
         domConstruct.place('<br>', string, 'after');
 
         var linkSTITCH = 'http://stitch.embl.de/cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
-        domConstruct.create('a', {
+        var stitch = domConstruct.create('a', {
           href: linkSTITCH,
           innerHTML: 'STITCH: Chemical-Protein Interaction',
           target: '_blank'
         }, this.externalLinkNode);
+        domConstruct.place('<br>', stitch, 'after');
       }
+    },
+
+    _setCDDSearchAttr: function (data) {
+      // CDD Search Link
+      var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=' + data[0]['sequence'];
+      var cdd = domConstruct.create('a', {
+        href: linkCDD,
+        innerHTML: 'NCBI CDD Search',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', cdd, 'after');
     },
 
     _setSpecialPropertiesAttr: function (data) {
@@ -644,6 +628,16 @@ define([
 
         this.set('FunctionalPropertiesSubsystem', data);
       }));
+
+      // CDD Search
+      if (Object.prototype.hasOwnProperty.call(this.feature, 'aa_sequence_md5')) {
+        var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
+        xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
+          if (data.length === 0) return;
+
+          this.set('CDDSearch', data);
+        }));
+      }
 
       // protein-protein interaction
       /*
