@@ -642,12 +642,12 @@ define([
       }));
 
       // CDD Search
-      var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
-      xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
-        if (data.length === 0) return;
+      // var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
+      // xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
+      //   if (data.length === 0) return;
 
-        this.set('StaticLinks', data);
-      }));
+      //   this.set('StaticLinks', data);
+      // }));
 
       // protein-protein interaction
       /*
