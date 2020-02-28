@@ -341,7 +341,11 @@ div.appsublabel {
     border: 1px solid #aaa;
 }
 
-.Assembly .app-btn > .dijitButtonNode:hover {
+.Assembly .app-btn.dijitButtonDisabled  > .dijitButtonNode {
+    background: #d2d2d2;
+}
+
+.Assembly .app-btn:not(.dijitButtonDisabled) > .dijitButtonNode:hover {
     background-color: #f8f8f8;
 }
 
