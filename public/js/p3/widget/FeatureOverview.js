@@ -51,6 +51,7 @@ define([
       this.set('featureSummary', feature);
       this.set('publications', feature);
       this.set('functionalProperties', feature);
+      this.set('CDDSearch', feature);
       this.set('staticLinks', feature);
 
       if (!feature.patric_id) {
@@ -629,12 +630,12 @@ define([
       }));
 
       // CDD Search
-      // var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
-      // xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
-      //   if (data.length === 0) return;
+      var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
+      xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
+        if (data.length === 0) return;
 
-      //   this.set('staticLinks', data);
-      // }));
+        this.set('CDDSearch', data);
+      }));
 
       // protein-protein interaction
       /*
