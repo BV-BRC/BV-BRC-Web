@@ -52,7 +52,6 @@ define([
       this.set('publications', feature);
       this.set('functionalProperties', feature);
       this.set('staticLinks', feature);
-      this.set('CDDSearch', feature);
 
       if (!feature.patric_id) {
         domClass.remove(this.isRefSeqOnly, 'hidden');
@@ -62,7 +61,7 @@ define([
     _setStaticLinksAttr: function (feature) {
       domConstruct.empty(this.externalLinkNode);
 
-      // STRING & STITCH
+      // STRING & STITCH Links
       if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
         var linkSTRING = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
         var string = domConstruct.create('a', {
@@ -82,17 +81,15 @@ define([
       }
     },
 
-    _setCDDSearchAttr: function (feature) {
-      // CDD Search
-      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
-        var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
-        var cdd = domConstruct.create('a', {
-          href: linkCDD,
-          innerHTML: 'NCBI CDD Search',
-          target: '_blank'
-        }, this.externalLinkNode);
-        domConstruct.place('<br>', cdd, 'after');
-      }
+    _setCDDSearchAttr: function (data) {
+      // CDD Search Link
+      var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=' + data[0]['sequence'];
+      var cdd = domConstruct.create('a', {
+        href: linkCDD,
+        innerHTML: 'NCBI CDD Search',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', cdd, 'after');
     },
 
     _setSpecialPropertiesAttr: function (data) {
