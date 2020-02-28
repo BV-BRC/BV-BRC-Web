@@ -57,33 +57,20 @@ define([
         domClass.remove(this.isRefSeqOnly, 'hidden');
       }
     },
-    _setFeatureAttr: function (feature) {
-      this.feature = feature;
-
-      this.getSummaryData();
-      this.set('featureSummary', feature);
-      this.set('publications', feature);
-      this.set('functionalProperties', feature);
-      this.set('staticLinks', feature);
-
-      if (!feature.patric_id) {
-        domClass.remove(this.isRefSeqOnly, 'hidden');
-      }
-    },
     _setStaticLinksAttr: function (feature) {
 
       domConstruct.empty(this.externalLinkNode);
 
       // CDD Search
-      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
-        var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
-        var cdd = domConstruct.create('a', {
-          href: linkCDD,
-          innerHTML: 'NCBI CDD Search',
-          target: '_blank'
-        }, this.externalLinkNode);
-        domConstruct.place('<br>', cdd, 'after');
-      }
+      // if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
+      //   var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
+      //   var cdd = domConstruct.create('a', {
+      //     href: linkCDD,
+      //     innerHTML: 'NCBI CDD Search',
+      //     target: '_blank'
+      //   }, this.externalLinkNode);
+      //   domConstruct.place('<br>', cdd, 'after');
+      // }
 
       // STRING & STITCH
       if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
@@ -646,7 +633,7 @@ define([
       // xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
       //   if (data.length === 0) return;
 
-      //   this.set('StaticLinks', data);
+      //   this.set('staticLinks', data);
       // }));
 
       // protein-protein interaction
