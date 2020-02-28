@@ -80,34 +80,13 @@ define([
       // CDD Search
       if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
         var cddBaseLink = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
-        var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
-        var request = new XMLHttpRequest();
 
-        // This Doesn't Work
-        // Query for AA Sequence
-        // Build link: CDD Base Link + AA Sequence
-        // Since I can't access the query response outside of the request, the DOM needs to be constructed here?
-        request.onload = function () {
-          console.log(cddBaseLink + request.responseText); // This is the correct combined link
-          var linkCDD = cddBaseLink + request.responseText;
-          var cdd = domConstruct.create('a', {
-            href: linkCDD,
-            innerHTML: 'NCBI CDD Search',
-            target: '_blank'
-          }, this.externalLinkNode); // Possibly not attaching to correct node?
-          domConstruct.place('<br>', cdd, 'after');
-        };
-        request.open('GET', seqQuery);
-        request.send();
-
-        // This Works.
-        // Link is built just using the CDD Base Link for demonstration purposes.
-        var cddOld = domConstruct.create('a', {
+        var cdd = domConstruct.create('a', {
           href: cddBaseLink,
           innerHTML: 'NCBI CDD Search',
           target: '_blank'
         }, this.externalLinkNode);
-        domConstruct.place('<br>', cddOld, 'after');
+        domConstruct.place('<br>', cdd, 'after');
       }
 
       // STRING & STITCH
@@ -664,6 +643,14 @@ define([
         if (data.length === 0) return;
 
         this.set('FunctionalPropertiesSubsystem', data);
+      }));
+
+      // CDD Search
+      var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
+      xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
+        if (data.length === 0) return;
+
+        this.set('StaticLinks', data);
       }));
 
       // protein-protein interaction
