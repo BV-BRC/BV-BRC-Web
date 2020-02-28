@@ -57,39 +57,60 @@ define([
         domClass.remove(this.isRefSeqOnly, 'hidden');
       }
     },
+    _setFeatureAttr: function (feature) {
+      this.feature = feature;
+
+      this.getSummaryData();
+      this.set('featureSummary', feature);
+      this.set('publications', feature);
+      this.set('functionalProperties', feature);
+      this.set('staticLinks', feature);
+
+      if (!feature.patric_id) {
+        domClass.remove(this.isRefSeqOnly, 'hidden');
+      }
+    },
     _setStaticLinksAttr: function (feature) {
 
       domConstruct.empty(this.externalLinkNode);
+      // For Testing
+      // http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=
+      // https://p3.theseed.org/services/data_api/feature_sequence/?eq(md5,a8a15dbd759e1d736363676a4befee71)&eq(sequence_type,AA)&select(sequence)
 
-      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence')) {
-        var linkCDDSearch = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E';
-        var dispSequenceID = [];
-        if (feature.annotation === 'PATRIC') {
-          if (feature.alt_locus_tag) {
-            dispSequenceID.push(feature.alt_locus_tag);
-          }
-          if (feature.refseq_locus_tag) {
-            dispSequenceID.push(' ');
-            dispSequenceID.push(feature.refseq_locus_tag);
-          }
-          if (feature.product) {
-            dispSequenceID.push(' ');
-            dispSequenceID.push(feature.product);
-          }
-        } else if (feature.annotation === 'RefSeq') {
-          dispSequenceID.push(feature.alt_locus_tag);
-          dispSequenceID.push(' ');
-          dispSequenceID.push(feature.product);
-        }
+      // CDD Search
+      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
+        var cddBaseLink = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
+        var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
+        var request = new XMLHttpRequest();
 
-        var cdd = domConstruct.create('a', {
-          href: linkCDDSearch + dispSequenceID.join('').replace(' ', '%20') + '%0A' + feature.aa_sequence + '&amp;FULL',
+        // This Doesn't Work
+        // Query for AA Sequence
+        // Build link: CDD Base Link + AA Sequence
+        // Since I can't access the query response outside of the request, the DOM needs to be constructed here?
+        request.onload = function () {
+          console.log(cddBaseLink + request.responseText); // This is the correct combined link
+          var linkCDD = cddBaseLink + request.responseText;
+          var cdd = domConstruct.create('a', {
+            href: linkCDD,
+            innerHTML: 'NCBI CDD Search',
+            target: '_blank'
+          }, this.externalLinkNode); // Possibly not attaching to correct node?
+          domConstruct.place('<br>', cdd, 'after');
+        };
+        request.open('GET', seqQuery);
+        request.send();
+
+        // This Works.
+        // Link is built just using the CDD Base Link for demonstration purposes.
+        var cddOld = domConstruct.create('a', {
+          href: cddBaseLink,
           innerHTML: 'NCBI CDD Search',
           target: '_blank'
         }, this.externalLinkNode);
-        domConstruct.place('<br>', cdd, 'after');
+        domConstruct.place('<br>', cddOld, 'after');
       }
 
+      // STRING & STITCH
       if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
         var linkSTRING = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
         var string = domConstruct.create('a', {
