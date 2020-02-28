@@ -73,16 +73,12 @@ define([
     _setStaticLinksAttr: function (feature) {
 
       domConstruct.empty(this.externalLinkNode);
-      // For Testing
-      // http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=
-      // https://p3.theseed.org/services/data_api/feature_sequence/?eq(md5,a8a15dbd759e1d736363676a4befee71)&eq(sequence_type,AA)&select(sequence)
 
       // CDD Search
       if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
-        var cddBaseLink = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
-
+        var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=';
         var cdd = domConstruct.create('a', {
-          href: cddBaseLink,
+          href: linkCDD,
           innerHTML: 'NCBI CDD Search',
           target: '_blank'
         }, this.externalLinkNode);
