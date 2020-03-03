@@ -8,31 +8,51 @@
 
     <div id="patric-homepage-container">
         <div class="grid-container">
-            <div class="browse-search">
-                <h2>BACTERIAL BIOINFORMATICS RESOURCE CENTER</h2>
-                <p>
+            <div class="bv-brc-info">
+                <h2>BACTERIAL AND VIRAL BIOINFORMATICS RESOURCE CENTER</h2>
+                <!-- <p>
                     PATRIC, the Pathosystems Resource Integration Center, provides integrated data and analysis tools to support biomedical research on bacterial infectious diseases.
-                </p>
-                <div class="browse">
+                </p> -->
+                <!-- <div class="browse">
                     <h3>BROWSE</h3>
                     <a href="/view/Taxonomy/2" class="navigationLink btn btn-blue">BACTERIA</a>
                     <a href="/view/Taxonomy/2157" class="navigationLink btn btn-blue">ARCHAEA</a>
                     <a href="/view/Taxonomy/10239" class="navigationLink btn btn-blue">PHAGES</a>
                     <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="navigationLink btn btn-blue">EUKARYOTIC HOSTS</a>
-                </div>
-                <div class="search">
+                </div> -->
+                <!-- <div class="search">
                     <h3>SEARCH</h3>
                     <div class="global-search">
                         <div style="padding: 6px 0px 2px 2px; flex-grow: 1">
                             <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" />
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
+            <div class="announcements">
+                <h2>NEWS AND ANNOUNCEMENTS</h2>
+                <!-- <ul id="slides"></ul>
+                <div id="dot-navigation"></div> -->
+            </div>
 
-            <div class="analyze-data">
-                <h2>ANALYZE DATA IN PATRIC</h2>
+            <div class="patric-info">
+                <h2>PATRIC</h2>
+            </div>
+
+            <div class="ird-vipr-info">
+                <h2>IRD AND ViPR</h2>
+            </div>
+
+            <div class="twitter-feed">
+                <h2>TWITTER</h2>
+                <!-- <a class="twitter-timeline" data-lang="en" data-height="385" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> -->
+            </div>
+
+            <div class="tutorials-help">
+                <h2>TUTORIALS AND HELP</h2>
+                <!-- <h2>ANALYZE DATA IN PATRIC</h2>
                 <p>
                     At PATRIC, you can upload your private data in a workspace, analyze it using high-throughput services, and compare it with
                     other public databases using visual analytics tools. Please
@@ -102,75 +122,7 @@
                     <a href="https://docs.patricbrc.org/user_guides/index.html" class="navigationLinkOut btn btn-blue">USER GUIDES</a>
                     <a href="https://docs.patricbrc.org/webinar/" class="navigationLinkOut btn btn-blue">WEBINARS</a>
                     <a href="https://docs.patricbrc.org/cli_tutorial/" class="navigationLinkOut btn btn-blue">COMMAND-LINE INTERFACE</a>
-                </div>
-            </div>
-
-            <div class="omics-data">
-                <h2>OMICS DATA</h2>
-                <p>PATRIC provides data and analysis tools for multiple omics data types</p>
-                <div class="omics-links">
-                    <ul>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a>
-                        </li>
-                    </ul>
-                    <ul>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="my-data">
-                <h2>MY DATA</h2>
-                <div class="ShowWithAuth">
-                    <div class="sub-block">
-                        <div><a class="navigationLink" id="YourWorkspaceLink2">My Workspaces</a></div>
-                        <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
-                    </div>
-                    <div class="sub-block">
-                        <div><a class="navigationLink" id="MyDataGenomeGroup">00 Genome Groups</a></div>
-                        <div><a class="navigationLink" id="MyDataFeatureGroup">00 Feature Groups</a></div>
-                        <div><a class="navigationLink" id="MyDataExperimentGroup">00 Experiment Groups</a></div>
-                        <br>
-                        <div><a class="navigationLink" href="/job/" id="MyDataJobs">00 Completed Jobs</a></div>
-                        <div><a class="navigationLink" href="/view/GenomeList/?eq(public,false)" id="MyDataGenomes">00 Private Genomes</a></div>
-                    </div>
-                </div>
-                <div class="HideWithAuth showOnLoad">
-                    <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
-                    <hr>
-                    <div class="home-login-button">
-                        <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="announcements">
-                <h2>NEWS &amp; ANNOUNCEMENTS</h2>
-                <ul id="slides"></ul>
-                <div id="dot-navigation"></div>
-            </div>
-
-            <div class="twitter-feed">
-                <a class="twitter-timeline" data-lang="en" data-height="385" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
-                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                </div> -->
             </div>
         </div>
     </div>
@@ -179,7 +131,7 @@
 <footer class="ondark linkstyle-highlight-c smallest main-footer sans-alternate footer">
     <div class="layer">
         <div class="container">
-            <div class="column" style="border: 0px;">
+            <!-- <div class="column" style="border: 0px;">
                 <div class="wrapper">
                     <h3 class="close2x">BRC Program</h3>
                     <ul>
@@ -225,7 +177,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </footer>

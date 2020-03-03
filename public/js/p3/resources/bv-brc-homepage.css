@@ -1,0 +1,101 @@
+/* BV-BRC Homepage Styles */
+#patric-homepage .bv-brc-info,
+#patric-homepage .patric-info,
+#patric-homepage .ird-vipr-info,
+#patric-homepage .tutorials-help,
+#patric-homepage .announcements,
+#patric-homepage .twitter-feed {
+  background: #ffffff;
+  border-bottom: 4px solid #a0a0a0;
+  padding: 15px 10px;
+}
+
+/* @media (max-width: 991px) {
+  #patric-homepage #patric-homepage-container {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    margin: 0 auto;
+    width: 830px;
+  }
+  #patric-homepage .grid-container {
+    display: grid;
+    grid-template-columns: 365px 365px;
+    grid-template-rows: 220px 375px 410px 220px;
+    grid-gap: 20px;
+  }
+  #patric-homepage .browse-search {
+    grid-column: 1 / 3;
+  }
+  #patric-homepage .analyze-data {
+    grid-column: 1 / 3;
+    grid-row: 2 / 3;
+  }
+  #patric-homepage .omics-data {
+    grid-column: 1 / 2;
+    grid-row: 4 / 5;
+  }
+  #patric-homepage .my-data {
+    grid-column: 2 / 3;
+    grid-row: 4 / 5;
+  }
+  #patric-homepage .announcements {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+  }
+  #patric-homepage .twitter-feed {
+    grid-column: 2 / 3;
+    grid-row: 3 / 4;
+  }
+} */
+
+@media (min-width: 992px) {
+  #patric-homepage #patric-homepage-container {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    margin: 0 auto;
+    width: 1300px;
+  }
+  #patric-homepage .grid-container {
+    display: grid;
+    grid-template-columns: 440px 440px 300px;
+    grid-template-rows: 315px 315px 315px;
+    grid-gap: 20px;
+  }
+  #patric-homepage .bv-brc-info {
+    grid-column: 1 / 3;
+    grid-row: 1 / 2;
+  }
+
+  #patric-homepage .announcements {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+  }
+
+  #patric-homepage .patric-info {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
+
+  #patric-homepage .ird-vipr-info {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+  }
+
+  #patric-homepage .twitter-feed {
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+  }
+
+  #patric-homepage .tutorials-help {
+    grid-column: 1 / 4;
+    grid-row: 3 / 4;
+  }
+}
