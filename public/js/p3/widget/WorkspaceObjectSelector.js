@@ -417,7 +417,12 @@ define([
 
       var cbContainer = domConstr.create('div', { style: { 'float': 'left' } });
       domConstr.place(cbContainer, buttonsPane.containerNode, 'last');
-      var showHidden = window.App.showHiddenFiles;
+
+      // show hidden folders when browsing for job results data
+      var showHidden = this.type.filter(function (t) {
+        return ['contigs'].indexOf(t) !== -1;
+      }).length > 0;
+      _self.set('showHidden', showHidden);
       this.showHiddenWidget = new CheckBox({ value: showHidden, checked: showHidden });
       this.showHiddenWidget.on('change', function (val) {
         _self.set('showHidden', val);
