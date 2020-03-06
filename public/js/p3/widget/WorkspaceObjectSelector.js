@@ -10,7 +10,8 @@ define([
 ], function (
   declare, WidgetBase, on, lang, query,
   domClass, Templated, WidgetsInTemplate,
-  Template, Dialog, HasDropDown, ContentPane, TextBox,
+  Template,
+  Dialog, HasDropDown, ContentPane, TextBox,
   Grid, domConstr, WorkspaceManager, Memory,
   Uploader, BorderContainer, domAttr, TooltipDialog, popup,
   Button, Deferred, CheckBox, Topic, Tooltip,
@@ -32,13 +33,14 @@ define([
     missingMessage: 'A valid workspace item is required.',
     promptMessage: 'Please choose or upload a workspace item',
     placeHolder: '',
-    allowUpload: true,          // whether or not to add the upload button
-    uploadingSelection: '',     // uploading in progress, to be copied to selection
+    allowUpload: true,                // whether or not to add the upload button
+    uploadingSelection: '',           // uploading in progress, to be copied to selection
     title: 'Choose or Upload a Workspace Object',
-    autoSelectCurrent: false,    // if true, the folder currently being viewed is selected by default
-    onlyWritable: false,        // only list writable workspaces
-    selectionText: 'Selection', // the text used beside "selected" indicator
+    autoSelectCurrent: false,         // if true, the folder currently being viewed is selected by default
+    onlyWritable: false,              // only list writable workspaces
+    selectionText: 'Selection',       // the text used beside "selected" indicator
     allowUserSpaceSelection: false,   // this allows the user to select /user@patricbrc (for operations such as moving)
+    disableDropdownSelector: false,   // if true, don't bother fetching data for filtering select (for operations such as moving)
     reset: function () {
       this.searchBox.set('value', '');
     },
@@ -562,7 +564,7 @@ define([
     },
 
     refreshWorkspaceItems: function () {
-      if (this._refreshing) {
+      if (this.disableDropdownSelector || this._refreshing) {
         return;
       }
       function compare(a, b) {
@@ -575,7 +577,7 @@ define([
         return 0;
       }
 
-      this._refreshing = WorkspaceManager.getObjectsByType(this.type, true)
+      this._refreshing = WorkspaceManager.getObjectsByType(this.type)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
 
