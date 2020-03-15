@@ -131,9 +131,7 @@ define([
           pathway_class: { label: 'Pathway Class', field: 'pathway_class' },
           annotation: { label: 'Annotation', field: 'annotation' },
           ec_number: { label: 'EC Number', field: 'ec_number' },
-          description: { label: 'Description', field: 'ec_description' },
-          genome_count: { label: 'Genome Count', field: 'genome_count' },
-          gene_count: { label: 'Unique Gene Count', field: 'gene_count' }
+          description: { label: 'Description', field: 'ec_description' }
         },
         store: ecNumberStore,
         enableFilterPanel: true,
