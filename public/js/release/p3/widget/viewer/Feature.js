@@ -255,10 +255,10 @@ define("p3/widget/viewer/Feature", [
         id: this.viewer.id + '_transcriptomics'
       });
 
-      this.correlatedGenes = new CorrelatedGenesContainer({
-        title: 'Correlated Genes',
-        id: this.viewer.id + '_correlatedGenes'
-      });
+      // this.correlatedGenes = new CorrelatedGenesContainer({
+      //   title: 'Correlated Genes',
+      //   id: this.viewer.id + '_correlatedGenes'
+      // });
 
       this.interactions = new InteractionContainer({
         title: 'Interactions',
@@ -269,7 +269,7 @@ define("p3/widget/viewer/Feature", [
       this.viewer.addChild(this.genomeBrowser);
       this.viewer.addChild(this.compareRegionViewer);
       this.viewer.addChild(this.transcriptomics);
-      this.viewer.addChild(this.correlatedGenes);
+      // this.viewer.addChild(this.correlatedGenes);
       this.viewer.addChild(this.interactions);
     }
   });

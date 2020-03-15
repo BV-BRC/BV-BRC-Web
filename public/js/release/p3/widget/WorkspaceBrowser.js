@@ -911,7 +911,8 @@ define("p3/widget/WorkspaceBrowser", [
           autoSelectCurrent: true,
           allowUserSpaceSelection: true,
           onlyWritable: true,
-          selectionText: 'Destination'
+          selectionText: 'Destination',
+          disableDropdownSelector: true
         });
         objSelector.set('type', ['folder']);
         objSelector.title = 'Copy contents of ' + selection.length +
@@ -988,7 +989,8 @@ define("p3/widget/WorkspaceBrowser", [
           autoSelectCurrent: true,
           allowUserSpaceSelection: true,
           onlyWritable: true,
-          selectionText: 'Destination'
+          selectionText: 'Destination',
+          disableDropdownSelector: true
         });
         objSelector.set('type', ['folder']);
         objSelector.title = 'Move contents of ' + selection.length +

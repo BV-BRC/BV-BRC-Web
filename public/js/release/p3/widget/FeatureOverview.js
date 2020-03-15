@@ -59,39 +59,11 @@ define("p3/widget/FeatureOverview", [
         domClass.remove(this.isRefSeqOnly, 'hidden');
       }
     },
-    _setStaticLinksAttr: function (feature) {
 
+    _setStaticLinksAttr: function (feature) {
       domConstruct.empty(this.externalLinkNode);
 
-      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence')) {
-        var linkCDDSearch = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E';
-        var dispSequenceID = [];
-        if (feature.annotation === 'PATRIC') {
-          if (feature.alt_locus_tag) {
-            dispSequenceID.push(feature.alt_locus_tag);
-          }
-          if (feature.refseq_locus_tag) {
-            dispSequenceID.push(' ');
-            dispSequenceID.push(feature.refseq_locus_tag);
-          }
-          if (feature.product) {
-            dispSequenceID.push(' ');
-            dispSequenceID.push(feature.product);
-          }
-        } else if (feature.annotation === 'RefSeq') {
-          dispSequenceID.push(feature.alt_locus_tag);
-          dispSequenceID.push(' ');
-          dispSequenceID.push(feature.product);
-        }
-
-        var cdd = domConstruct.create('a', {
-          href: linkCDDSearch + dispSequenceID.join('').replace(' ', '%20') + '%0A' + feature.aa_sequence + '&amp;FULL',
-          innerHTML: 'NCBI CDD Search',
-          target: '_blank'
-        }, this.externalLinkNode);
-        domConstruct.place('<br>', cdd, 'after');
-      }
-
+      // STRING & STITCH Links
       if (Object.prototype.hasOwnProperty.call(feature, 'refseq_locus_tag')) {
         var linkSTRING = 'http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
         var string = domConstruct.create('a', {
@@ -102,12 +74,24 @@ define("p3/widget/FeatureOverview", [
         domConstruct.place('<br>', string, 'after');
 
         var linkSTITCH = 'http://stitch.embl.de/cgi/show_network_section.pl?identifier=' + feature.refseq_locus_tag;
-        domConstruct.create('a', {
+        var stitch = domConstruct.create('a', {
           href: linkSTITCH,
           innerHTML: 'STITCH: Chemical-Protein Interaction',
           target: '_blank'
         }, this.externalLinkNode);
+        domConstruct.place('<br>', stitch, 'after');
       }
+    },
+
+    _setCDDSearchAttr: function (data) {
+      // CDD Search Link
+      var linkCDD = 'http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=' + data[0]['sequence'];
+      var cdd = domConstruct.create('a', {
+        href: linkCDD,
+        innerHTML: 'NCBI CDD Search',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', cdd, 'after');
     },
 
     _setSpecialPropertiesAttr: function (data) {
@@ -242,8 +226,10 @@ define("p3/widget/FeatureOverview", [
               field: 'id_value',
               renderCell: function (obj, val, node) {
                 var baseUrl = formatter.getExternalLinks(obj.id_type);
-                if (obj.id_type.match(/"HOGENOM|OMA|ProtClustDB|eggNOG"/)) {
-                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" taget=_blank>' + val + '</a>';
+                if (obj.id_type.match(/eggNOG/)) {
+                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '&target_nogs=' + val + '" target=_blank>' + val + '</a>';
+                } else if (obj.id_type.match(/HOGENOM|OMA|ProtClustDB/)) {
+                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" target=_blank>' + val + '</a>';
                 } else {
                   node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';
                 }
@@ -329,17 +315,23 @@ define("p3/widget/FeatureOverview", [
       var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
       var tbody = tbodyQuery[0];
 
-      var pwLink;
-      var ecLink;
+      var ecLink = '';
+      var pwLink = '';
       if (data) {
-        ecLink = data.map(function (row) {
-          return '<a href="http://enzyme.expasy.org/EC/' + row.ec_number + '" target=_blank>' + row.ec_number + '</a>&nbsp;' + row.ec_description;
-        }).join('<br>');
-
-        pwLink = data.map(function (row) {
-          return '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + row.genome_id + '&pathway_id=' + row.pathway_id + '&feature_id=' + row.feature_id + '" target="_blank">KEGG:' + row.pathway_id + '</a>&nbsp;' + row.pathway_name;
-        }).join('<br>');
+        var ecNums = [];
+        var pwNums = [];
+        for (var i = 0; i < data.length; i++) {
+          if (ecNums.includes(data[i].ec_number) !== true) {
+            ecNums.push(data[i].ec_number);
+            ecLink += '<a href="http://enzyme.expasy.org/EC/' + data[i].ec_number + '" target=_blank>' + data[i].ec_number + '</a>&nbsp;' + data[i].ec_description + '<br>';
+          }
+          if (pwNums.includes(data[i].pathway_id) !== true) {
+            pwNums.push(data[i].pathway_id);
+            pwLink += '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + data[i].genome_id + '&pathway_id=' + data[i].pathway_id + '&feature_id=' + data[i].feature_id + '" target="_blank">KEGG:' + data[i].pathway_id + '</a>&nbsp;' + data[i].pathway_name + '<br>';
+          }
+        }
       }
+
       var htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'EC Numbers', scope: 'row' }, htr);
       domConstruct.create('td', { innerHTML: ecLink || '-' }, htr);
@@ -352,11 +344,16 @@ define("p3/widget/FeatureOverview", [
       var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
       var tbody = tbodyQuery[0];
 
-      var ssLink;
+      var ssLink = '';
       if (data) {
-        ssLink = data.map(function (row) {
-          return row.subsystem_name + ' ' + row.role_name;
-        }).join('<br>');
+        var ssNames = [];
+        for (var i = 0; i < data.length; i++) {
+          if (ssNames.includes(data[i].subsystem_name + data[i].role_name) !== true) {
+            ssNames.push(data[i].subsystem_name + data[i].role_name);
+            ssLink = ssLink += data[i].subsystem_name + ' ' + data[i].role_name + '<br>';
+          }
+        }
+
       }
       var htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Subsystems', scope: 'row' }, htr);
@@ -542,17 +539,16 @@ define("p3/widget/FeatureOverview", [
     getSummaryData: function () {
 
       // uniprot mapping
-      if (this.feature.gi) {
-        var url = PathJoin(this.apiServiceUrl, 'id_ref/?and(eq(id_type,GI)&eq(id_value,' + this.feature.gi + '))&select(uniprotkb_accession)&limit(0)');
+      if (this.feature.gene_id) {
+        var url = PathJoin(this.apiServiceUrl, 'id_ref/?and(eq(id_type,GeneID)&eq(id_value,' + this.feature.gene_id + '))&select(uniprotkb_accession)&limit(0)');
         xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
-
           if (data.length === 0) return;
 
           var uniprotKbAccessions = this.uniprotkb_accessions = data.map(function (d) {
             return d.uniprotkb_accession;
           });
 
-          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&limit(25000)');
+          var url = PathJoin(this.apiServiceUrl, 'id_ref/?in(uniprotkb_accession,(' + uniprotKbAccessions + '))&select(uniprotkb_accession,id_type,id_value)&ne(id_type,GI)&ne(id_type,CRC64)&ne(id_type,Gene_Name)&ne(id_type,Gene_OrderedLocusName)&ne(id_type,UniPathway)&sort(+id_type,+id_value)&limit(25000)');
           xhr.get(url, xhrOption).then(lang.hitch(this, function (data) {
             if (data.length === 0) return;
 
@@ -634,6 +630,16 @@ define("p3/widget/FeatureOverview", [
 
         this.set('FunctionalPropertiesSubsystem', data);
       }));
+
+      // CDD Search
+      if (Object.prototype.hasOwnProperty.call(this.feature, 'aa_sequence_md5')) {
+        var seqQuery = PathJoin(this.apiServiceUrl, 'feature_sequence/?eq(md5,' + this.feature.aa_sequence_md5 + ')&eq(sequence_type,AA)&select(sequence)');
+        xhr.get(seqQuery, xhrOption).then(lang.hitch(this, function (data) {
+          if (data.length === 0) return;
+
+          this.set('CDDSearch', data);
+        }));
+      }
 
       // protein-protein interaction
       /*

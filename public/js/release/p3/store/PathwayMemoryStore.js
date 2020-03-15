@@ -110,53 +110,11 @@ define("p3/store/PathwayMemoryStore", [
     },
 
     queryTypes: {
-      pathway: '&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))' +
-        '&json(facet,' + encodeURIComponent(JSON.stringify({
-        stat: {
-          field: {
-            field: 'pathway_id',
-            limit: -1,
-            facet: {
-              genome_count: 'unique(genome_id)',
-              gene_count: 'unique(feature_id)',
-              ec_count: 'unique(ec_number)',
-              genome_ec: 'unique(genome_ec)'
-            }
-          }
-        }
-      })) + ')',
-
-      ecnumber: '&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))' +
-        '&json(facet,' + encodeURIComponent(JSON.stringify({
-        stat: {
-          field: {
-            field: 'ec_number',
-            limit: -1,
-            facet: {
-              genome_count: 'unique(genome_id)',
-              gene_count: 'unique(feature_id)',
-              ec_count: 'unique(ec_number)',
-              genome_ec: 'unique(genome_ec)'
-            }
-          }
-        }
-      })) + ')',
-      genes: '&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))' +
-        '&json(facet,' + encodeURIComponent(JSON.stringify({
-        stat: {
-          field: {
-            field: 'feature_id',
-            limit: -1,
-            facet: {
-              genome_count: 'unique(genome_id)',
-              gene_count: 'unique(feature_id)',
-              ec_count: 'unique(ec_number)',
-              genome_ec: 'unique(genome_ec)'
-            }
-          }
-        }
-      })) + ')'
+      pathway: '&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))',
+      ecnumber: '&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))',
+      genes: '&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))'
     },
+
     buildQuery: function () {
       var q = [];
       if (this.state) {
@@ -230,52 +188,24 @@ define("p3/store/PathwayMemoryStore", [
           ecnumber: 'ec_number',
           genes: 'feature_id'
         };
+
         if (response && response.grouped && response.grouped[props[this.type]]) {
-          var ds = response.grouped[props[this.type]].doclist.docs;
-          if (response.facets.stat && response.facets.stat.buckets) {
-            var buckets = response.facets.stat.buckets;
-            var map = {};
-            buckets.forEach(function (b) {
-              map[b.val] = b;
-              delete b.val;
-            });
+          var docs = response.grouped[props[this.type]].doclist.docs;
 
-            docs = ds.map(function (doc) {
-              var p = props[this.type];
-              var pv = doc[p];
-              lang.mixin(doc, map[pv] || {});
-              if (doc.genome_ec && doc.genome_count) {
-                doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
-              } else {
-                doc.ec_cons = 0;
-              }
-              if (doc.gene_count && doc.genome_count) {
-                doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
-              } else {
-                doc.gene_cons = 0;
-              }
+          // add idx keys for tables
+          docs = docs.map(function (doc) {
+            var type = this.type;
+            if (type === 'pathway') {
+              doc.idx = doc.pathway_id;
+            } else if (type === 'ecnumber') {
+              doc.idx = doc.pathway_id + '_' + doc.ec_number;
+            } else if (type === 'genes') {
+              doc.idx = doc.feature_id;
+              doc.document_type = 'genome_feature';
+            }
 
-              // compose index key
-              switch (this.type) {
-                case 'pathway':
-                  doc.idx = doc.pathway_id;
-                  break;
-                case 'ecnumber':
-                  doc.idx = doc.pathway_id + '_' + doc.ec_number;
-                  break;
-                case 'genes':
-                  doc.idx = doc.feature_id;
-                  doc.document_type = 'genome_feature';
-                  break;
-                default:
-                  break;
-              }
-              return doc;
-            }, this);
-          }
-          else {
-            this.state.filter = false;
-          }
+            return doc;
+          }, this);
 
           _self.setData(docs);
           _self._loaded = true;

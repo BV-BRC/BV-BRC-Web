@@ -16644,15 +16644,14 @@ define([
         if (typeof res.data == 'string') {
           res.data = JSON.parse(res.data);
         }
-        // console.log("Data: ", res.data);
+
         if (res && res.data && res.data.id_list && res.data.id_list[idType]) {
-          // console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
           res.data.id_list[idType] = res.data.id_list[idType].filter(function (id) {
             return (ids.indexOf(id) < 0);
           });
-          // console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+
           return Deferred.when(_self.updateObject(res.metadata, res.data), function (r) {
-            // console.log("Publish remove from group notification message");
+
             Topic.publish('/Notification', {
               message: ids.length + ' Item removed from group ' + groupPath,
               type: 'message',
@@ -16685,7 +16684,6 @@ define([
       });
       group.id_list[idType] = idsFiltered;
 
-      // console.log("Creating Group: ", group);
       return this.create({
         path: path,
         name: name,
@@ -16834,9 +16832,8 @@ define([
       }));
     },
 
-    getObjectsByType: function (types, showHidden, specialPath) {
+    getObjectsByType: function (types, specialPath) {
       types = (types instanceof Array) ? types : [types];
-      // console.log("Get ObjectsByType: ", types);
 
       return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {
         var _self = this;
@@ -16871,7 +16868,6 @@ define([
             return true;
           }) */
 
-          // console.log("Final getObjectsByType()", res)
           return res;
         });
       }));
@@ -16950,7 +16946,6 @@ define([
           });
         }
 
-        // console.log("getObjects() res", res);
         return res;
       });
 
@@ -17216,11 +17211,10 @@ define([
         objects: paths,
         metadata_only: metadataOnly
       }]), function (results) {
-        // console.log("results[0]", results[0]);
+
         var objs = results[0];
         var fin = [];
         var defs = objs.map(function (obj) {
-          // console.log("obj: ", obj);
           var meta = {
             name: obj[0][0],
             type: obj[0][1],
