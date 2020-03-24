@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                          <h1 id="publications">Publications</h1>
+                          <p><a href="https://docs.patricbrc.org/publications.html">PATRIC Publications</a></p>
+                          <p><a href="https://www.fludb.org/brc/publicationsIRD.spg?method=pubsPres&amp;decorator=influenza">IRD Publications and Presentations</a></p>
+                          <p><a href="https://www.viprbrc.org/brc/publicationsVipr.spg?method=pubsPres&amp;decorator=vipr">ViPR Publications and Presentations</a></p>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>

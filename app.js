@@ -9,7 +9,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var packageJSON = require('./package.json');
 var routes = require('./routes/index');
-// var prevHome = require('./routes/prevHome');
 var users = require('./routes/users');
 var reportProblem = require('./routes/reportProblem');
 var workspace = require('./routes/workspace');
