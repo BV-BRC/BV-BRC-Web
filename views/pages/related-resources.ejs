@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>Related Resources | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                          <h1 id="related-resources">Related Resources</h1>
+                          <h2 id="bioinformatics-resource-centers">Bioinformatics Resource Centers</h2>
+                          <p><strong>Bacterial and Viral Bioinformatics Resource Center (BV-BRC)</strong>, combining</p>
+                          <ul>
+                          <li><a href="https://patricbrc.org/">Pathosystems Resource Integration Center (PATRIC)</a> – Bacterial pathogens</li>
+                          <li><a href="http://www.fludb.org/">Influenza Research Database (IRD)</a> - Influenza virus</li>
+                          <li><a href="http://www.viprbrc.org/">Virus Pathogen Resource (ViPR)</a> - Human viral pathogens</li>
+                          </ul>
+                          <p><strong>Eukaryotic Pathogen, Host &amp; Vector Genomics Resource (VEuPathDB)</strong>, combining</p>
+                          <ul>
+                          <li><a href="http://eupathdb.org/">Eukaryotic Pathogen Database Resources (EuPathDB)</a> - Eukaryotic pathogens</li>
+                          <li><a href="http://www.vectorbase.org/">VectorBase</a> - Invertebrate vectors of human pathogens</li>
+                          </ul>
+                          <h2 id="related-niaid-programs">Related NIAID Programs</h2>
+                          <ul>
+                          <li><a href="https://www.niaid.nih.gov/">National Institute of Allergy and Infectious Diseases (NIAID)</a></li>
+                          <li><a href="https://www.niaid.nih.gov/research/emerging-infectious-diseases-pathogens">NIAID Emerging Infectious Diseases/Pathogens</a></li>
+                          <li><a href="https://www.niaid.nih.gov/research/bioinformatics-resource-centers">Bioinformatics Resource Centers</a></li>
+                          <li><a href="https://www.niaid.nih.gov/research/systems-biology-consortium-antibacterial-resistance">Systems Biology and Antibacterial Resistance Program</a></li>
+                          <li><a href="https://www.niaid.nih.gov/research/functional-genomics-program">Functional Genomics Program</a></li>
+                          <li><a href="https://www.niaid.nih.gov/research/structural-genomics-centers">Structural Genomics Centers for Infectious Diseases</a></li>
+                          <li><a href="https://www.niaid.nih.gov/research/genomic-centers-infectious-diseases">Genomics Centers for Infectious Diseases</a></li>
+                          <li><a href="http://www.niaidceirs.org/">CEIRS (Centers of Excellence for Influenza Research and Surveillance)</a></li>
+                          </ul>
+                          <h2 id="other">Other</h2>
+                          <ul>
+                          <li><a href="http://kbase.us/">Department of Energy Systems Biology Knowledgebase (KBase)</a></li>
+                          <li><a href="https://www.ncbi.nlm.nih.gov/">National Center for Biotechnology Information (NCBI)</a></li>
+                          <li><a href="https://www.gisaid.org/">Global Initiative on Sharing Avian Influenza Data (GISAID)</a></li>
+                          <li><a href="https://www.cdc.gov/">Centers for Disease Control and Prevention (CDC)</a></li>
+                          <li><a href="https://www.who.int/">World Health Organization (WHO)</a></li>
+                          <li><a href="http://www.niaidceirs.org/">Centers of Excellence for Influenza Research and Surveillance (CEIRS)</a></li>
+                          <li><a href="http://www.cidrap.umn.edu/">Center for Infectious Disease Research &amp; Policy (CIDRAP)</a></li>
+                          <li><a href="https://reactome.org/">Reactome</a></li>
+                          <li><a href="https://www.beiresources.org/">BEI Resources</a></li>
+                          <li><a href="https://www.genome.jp/kegg/">Kyoto Encyclopedia of Genes and Genomes (KEGG)</a></li>
+                          <li><a href="http://www.immport.org/">Immunology Database and Analysis Portal (ImmPort)</a></li>
+                          <li><a href="http://www.immuneepitope.org/">Immune Epitope Database and Analysis Resource (IEDB)</a></li>
+                          </ul>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>
