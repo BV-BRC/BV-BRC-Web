@@ -1,6 +1,4 @@
 /* BV-BRC Styles */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&display=swap');
 
 /* Root Variables */
 :root {
@@ -159,7 +157,7 @@
 
 #bv-brc-home .patric-info .patric-info-btn-links {
   background: var(--gray-bg);
-  margin-top: 3px;
+  margin-top: 11px;
 }
 
 #bv-brc-home .patric-info  p {
@@ -169,7 +167,7 @@
 #bv-brc-home .patric-info a {
   color: var(--main-link);
   font-family: "Roboto", Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 300;
   margin-left: 10px;
 }
@@ -185,6 +183,7 @@
 
 #bv-brc-home .ird-vipr-info-content .ird-vipr-logo {
   float: right;
+  height: 120px;
 }
 
 #bv-brc-home .ird-vipr-info-links ul {
@@ -195,7 +194,7 @@
 
 #bv-brc-home .ird-vipr-info-btn-links {
   background: var(--gray-bg);
-  margin-top: -6px;
+  margin-top: 0px;
 }
 
 #bv-brc-home .ird-vipr-info  p {
@@ -205,7 +204,7 @@
 #bv-brc-home .ird-vipr-info a {
   color: var(--main-link);
   font-family: "Roboto", Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 300;
   margin-left: 10px;
 }
@@ -445,7 +444,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 365px 365px;
-    grid-template-rows: 275px 400px 325px 465px;
+    grid-template-rows: 175px 660px 425px;
     grid-gap: 20px;
   }
   #bv-brc-home .bv-brc-info {
@@ -467,6 +466,12 @@
   #bv-brc-home .twitter-feed {
     grid-column: 2 / 3;
     grid-row: 3 / 4;
+  }
+  #bv-brc-home .patric-info .patric-info-btn-links {
+    margin-top: 28px;
+  }
+  #bv-brc-home .ird-vipr-info .ird-vipr-info-btn-links {
+    margin-top: -4px;
   }
 }
 /* Grid Desktop Layout */
@@ -538,7 +543,7 @@
 
 #bv-brc-page .teams  {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-gap: 20px;
 }
 
@@ -546,6 +551,10 @@
 #bv-brc-page .teams svg {
   height: 50px;
   width: auto;
+}
+
+#bv-brc-page .collab-team {
+  margin-top: 55px;
 }
 
 #bv-brc-page .full-list {
