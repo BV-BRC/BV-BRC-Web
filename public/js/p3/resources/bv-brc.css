@@ -303,7 +303,7 @@
   list-style: none;
 }
 
-#bv-brc-footer-container ul li a {
+#bv-brc-footer-container ul li a{
   color: var(--main-bg);
   transition: color .1s;
   font-size: 1em;
@@ -319,14 +319,14 @@
   color: var(--blue-tint);
 }
 
-#bv-brc-footer-container svg {
+#bv-brc-footer-container span::before {
   padding: 0 5px;
   color: var(--blue-tint);
   transition: color .1s;
 }
 
-#bv-brc-footer-container svg:hover,
-#bv-brc-footer-container svg:focus {
+#bv-brc-footer-container span::before:hover,
+#bv-brc-footer-container span::before:focus {
   color: var(--main-text-light);
 }
 
