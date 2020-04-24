@@ -3,13 +3,13 @@ define([
   'dojo/store/JsonRest', 'dojo/dom-construct', 'dijit/TooltipDialog',
   'dojo/on', 'dijit/popup', 'dojo/_base/lang', 'dojo/dom-construct',
   'dijit/form/CheckBox', 'dojo/string', 'dojo/when', 'dijit/form/_AutoCompleterMixin',
-  '../util/PathJoin'
+  '../util/PathJoin','dojo/request','dojo/store/Memory'
 ], function (
   FilteringSelect, declare,
   Store, domConstr, TooltipDialog,
   on, popup, lang, domConstr, Checkbox,
   string, when, AutoCompleterMixin,
-  PathJoin
+  PathJoin, request, Memory
 ) {
 
   return declare([FilteringSelect, AutoCompleterMixin], {
@@ -25,11 +25,13 @@ define([
     includePrivate: true,
     includeOtherPublic: true,
     referenceOnly: true,
+    ncbiHost: true,
     representativeOnly: true,
     pageSize: 25,
     highlightMatch: 'all',
     autoComplete: false,
     store: null,
+    hostStore: null,
     labelType: 'html',
     constructor: function () {
       var _self = this;
@@ -42,8 +44,26 @@ define([
         });
 
       }
+      
+      if (_self.ncbiHost) {
 
-      var orig = this.store.query;
+		request.get(PathJoin(_self.apiServer, 'content', 'host/patric_host_summary.json'), {
+			headers: { accept: 'application/json' },
+			handleAs: 'json'
+		}).then(lang.hitch(_self, function (hostDat) {
+			// console.log("Set Newick");
+			_self.hostStore = new Memory({ hostDat: [], idProperty: 'assembly_accession' });
+		}), lang.hitch(_self, function (err) {
+			console.log('Error retreiving  ', err);
+		}));
+	   }
+
+        //var conditionList = this.conditionStore.query({ id: query_id });
+        //this.conditionStore.put(record);
+        //var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
+
+
+      var orig_query = this.store.query;
       this.store.query = lang.hitch(this.store, function (query, options) {
         // console.log("query: ", query);
         // console.log("Store Headers: ", _self.store.headers);
@@ -77,7 +97,7 @@ define([
           q += '&select(' + _self.resultFields.join(',') + ')';
         }
         // console.log("Q: ", q);
-        return orig.apply(_self.store, [q, options]);
+        return orig_query.apply(_self.store, [q, options]);
       });
     },
 
