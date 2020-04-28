@@ -25,7 +25,6 @@ define([
     includePrivate: true,
     includeOtherPublic: true,
     referenceOnly: true,
-    // TODO: make this defaulted to false
     ncbiHost: true,
     representativeOnly: true,
     pageSize: 25,
