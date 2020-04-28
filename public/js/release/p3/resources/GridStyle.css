@@ -105,12 +105,8 @@
 .dgrid-cell.field-ec_description {
     width: 20%;
 }
-.dgrid-cell.field-gene_count,
-.dgrid-cell.field-ec_count,
-.dgrid-cell.field-ec_cons,
-.dgrid-cell.field-gene_cons {
+.dgrid-cell.field-pathway_id {
     width: 8%;
-    text-align: center;
 }
 .dgrid-cell.field-feature_id,
 .dgrid-cell.field-patric_id,

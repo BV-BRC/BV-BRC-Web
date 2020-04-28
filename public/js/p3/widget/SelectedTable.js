@@ -96,7 +96,6 @@ define([
     _rmRow: function (rowIndex) {
       // update data model
       this._rows.splice(rowIndex - 1, 1);
-      this._onRmRow(rowIndex);
     },
 
     _addDeleteEvent: function (tr) {
@@ -147,9 +146,9 @@ define([
       this._addEmptyNotice();
     },
 
-    _onRmRow: function (id) {
-      // if remove item callback is provided, call it
-      if (this.onRemove) this.onRemove(id);
+    onRmRow: function (id) {
+      // if remove item call back is provided, call it
+      if (this.onRemove) this.onRemove();
     }
 
 
