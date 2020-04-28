@@ -3,7 +3,7 @@ define([
   'dojo/store/JsonRest', 'dojo/dom-construct', 'dijit/TooltipDialog',
   'dojo/on', 'dijit/popup', 'dojo/_base/lang', 'dojo/dom-construct',
   'dijit/form/CheckBox', 'dojo/string', 'dojo/when', 'dijit/form/_AutoCompleterMixin',
-  '../util/PathJoin','dojo/request','dojo/store/Memory'
+  '../util/PathJoin', 'dojo/request', 'dojo/store/Memory'
 ], function (
   FilteringSelect, declare,
   Store, domConstr, TooltipDialog,
@@ -25,7 +25,7 @@ define([
     includePrivate: true,
     includeOtherPublic: true,
     referenceOnly: true,
-    //TODO: make this defaulted to false
+    // TODO: make this defaulted to false
     ncbiHost: true,
     representativeOnly: true,
     pageSize: 25,
@@ -35,72 +35,72 @@ define([
     hostStore: null,
     labelType: 'html',
     constructor: function () {
-        var _self = this;
+      var _self = this;
 
-        this.apiStore = new Store({
-            target: PathJoin(this.apiServiceUrl, 'genome') + '/',
-            idProperty: 'genome_id',
-            headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
-        });
-        //Fancy footwork for modified api query
-        var api_query = this.apiStore.query;
-        this.apiStore.query = lang.hitch(this.apiStore, function (query, options) {
-            // console.log("query: ", query);
-            // console.log("Store Headers: ", _self.store.headers);
-            var q = '';
-            var searchAttrStripped = '';
+      this.apiStore = new Store({
+        target: PathJoin(this.apiServiceUrl, 'genome') + '/',
+        idProperty: 'genome_id',
+        headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
+      });
+      // Fancy footwork for modified api query
+      var api_query = this.apiStore.query;
+      this.apiStore.query = lang.hitch(this.apiStore, function (query, options) {
+        // console.log("query: ", query);
+        // console.log("Store Headers: ", _self.store.headers);
+        var q = '';
+        var searchAttrStripped = '';
 
-            if (query[_self.searchAttr] && query[_self.searchAttr] != '') {
+        if (query[_self.searchAttr] && query[_self.searchAttr] != '') {
 
-            // strip the non-alphanumeric characters from the query string
-            searchAttrStripped = '*'.concat(query[_self.searchAttr].toString().replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
-            // unfooling the highlighting `~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
+          // strip the non-alphanumeric characters from the query string
+          searchAttrStripped = '*'.concat(query[_self.searchAttr].toString().replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
+          // unfooling the highlighting `~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
 
-            if (_self.extraSearch) {
-                var components = ['eq(' + _self.searchAttr + ',' + searchAttrStripped + ')'];
-                _self.extraSearch.forEach(lang.hitch(this, function (attr) {
-                components.push('eq(' + attr, searchAttrStripped + ')');
-                }));
-                q = '?or(' + components.join(',') + ')';
-            }
-            else {
-                q = '?eq(' + _self.searchAttr + ',' + searchAttrStripped + ')';
-            }
-            }
-            else {
-            return [];
-            }
-            if (_self.queryFilter) {
-            q += _self.queryFilter;
-            }
-
-            if (_self.resultFields && _self.resultFields.length > 0) {
-            q += '&select(' + _self.resultFields.join(',') + ')';
-            }
-            // console.log("Q: ", q);
-            return api_query.apply(_self.store, [q, options]);
-        });
-
-        
-        if (_self.ncbiHost) {
-
-            request.get(PathJoin(_self.apiServiceUrl, 'content', 'host/patric_host_summary.json'), {
-                headers: { accept: 'application/json' },
-                handleAs: 'json'
-            }).then(lang.hitch(_self, function (hostDat) {
-                _self.hostInfo = new Memory({ data: hostDat.genomes, idProperty: 'species_taxid' });
-                console.log("Set host memory store");
-            }), lang.hitch(_self, function (err) {
-                console.log('Error retreiving host info ', err);
+          if (_self.extraSearch) {
+            var components = ['eq(' + _self.searchAttr + ',' + searchAttrStripped + ')'];
+            _self.extraSearch.forEach(lang.hitch(this, function (attr) {
+              components.push('eq(' + attr, searchAttrStripped + ')');
             }));
+            q = '?or(' + components.join(',') + ')';
+          }
+          else {
+            q = '?eq(' + _self.searchAttr + ',' + searchAttrStripped + ')';
+          }
         }
-        if (!this.store) {
-            this.store = this.apiStore;
+        else {
+          return [];
+        }
+        if (_self.queryFilter) {
+          q += _self.queryFilter;
         }
 
-            //var conditionList = this.conditionStore.query({ id: query_id });
-            //this.conditionStore.put(record);
-            //var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
+        if (_self.resultFields && _self.resultFields.length > 0) {
+          q += '&select(' + _self.resultFields.join(',') + ')';
+        }
+        // console.log("Q: ", q);
+        return api_query.apply(_self.store, [q, options]);
+      });
+
+
+      if (_self.ncbiHost) {
+
+        request.get(PathJoin(_self.apiServiceUrl, 'content', 'host/patric_host_summary.json'), {
+          headers: { accept: 'application/json' },
+          handleAs: 'json'
+        }).then(lang.hitch(_self, function (hostDat) {
+          _self.hostInfo = new Memory({ data: hostDat.genomes, idProperty: 'species_taxid' });
+          console.log('Set host memory store');
+        }), lang.hitch(_self, function (err) {
+          console.log('Error retreiving host info ', err);
+        }));
+      }
+      if (!this.store) {
+        this.store = this.apiStore;
+      }
+
+      // var conditionList = this.conditionStore.query({ id: query_id });
+      // this.conditionStore.put(record);
+      // var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
 
 
     },
@@ -171,14 +171,14 @@ define([
 
       // console.log("Query Filter set to: " + this.queryFilter);
     },
-    onChange: function() {
-        tax_id = this.item.taxon_id;
-        if (tax_id in this.hostInfo.index){
-            ncbi_idx = this.hostInfo.index[tax_id];
-            ncbi_rec = this.hostInfo.data[ncbi_idx];
-            this.item.host = true;
-            this.item.ftp = ncbi_rec['patric_ftp'];
-        }
+    onChange: function () {
+      var tax_id = this.item.taxon_id;
+      if (tax_id in this.hostInfo.index) {
+        var ncbi_idx = this.hostInfo.index[tax_id];
+        var ncbi_rec = this.hostInfo.data[ncbi_idx];
+        this.item.host = true;
+        this.item.ftp = ncbi_rec['patric_ftp'];
+      }
     },
 
     postCreate: function () {

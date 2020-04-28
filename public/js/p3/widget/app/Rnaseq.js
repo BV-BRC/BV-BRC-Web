@@ -361,8 +361,8 @@ define([
       if (srrLibs.length) {
         assembly_values.srr_libs = srrLibs;
       }
-      if (Boolean(this.genome_nameWidget.item.host) && "ftp" in this.genome_nameWidget.item){
-          assembly_values["host_ftp"]=this.genome_nameWidget.item["ftp"];
+      if (Boolean(this.genome_nameWidget.item.host) && 'ftp' in this.genome_nameWidget.item) {
+        assembly_values['host_ftp'] = this.genome_nameWidget.item['ftp'];
       }
       return assembly_values;
 
@@ -836,7 +836,7 @@ define([
 
     onSuggestNameChange: function () {
       var curRecipe = this.recipe.value;
-      if (Boolean(this.genome_nameWidget.item.host)) {
+      if (this.genome_nameWidget.item.host) {
         var newOptions = [
           {
             label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: true
