@@ -488,80 +488,78 @@ define([
           }, 1000);
         }
       }, container);
-      
+
       domConstruct.place('<br>', container);
-      
+
       domConstruct.create('a', {
-          innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
-          onclick: function () {
-            var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
-            domConstruct.place(status, container, 'last');
-            setTimeout(function () {
-            	self.downloadJSON();
-              domConstruct.destroy(status);
-            }, 1000);
-          }
-        }, container);
-      
+        innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.downloadJSON();
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
       domConstruct.place('<br>', container);
-      
+
       domConstruct.create('a', {
-          innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
-          onclick: function () {
-            var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
-            domConstruct.place(status, container, 'last');
-            setTimeout(function () {
-              self.downloadChart();
-              domConstruct.destroy(status);
-            }, 1000);
-          }
-        }, container);
+        innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.downloadChart();
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
 
       return container;
     },
-    
-    
-    downloadJSON: function() {
-    	var _self = this;
-    	var ext = 'json';
-        var rel = 'text/plain';
-        var matrix = _self.chart.getState().matrix;
-        var rows = _self.currentData.rows;
-        var cols = _self.currentData.columns;
-        var obj = {"rows": rows, "columns": cols, "matrix": matrix };
-        saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);   
+
+
+    downloadJSON: function () {
+      var _self = this;
+      var ext = 'json';
+      var rel = 'text/plain';
+      var matrix = _self.chart.getState().matrix;
+      var rows = _self.currentData.rows;
+      var cols = _self.currentData.columns;
+      var obj = { 'rows': rows, 'columns': cols, 'matrix': matrix };
+      saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
     },
-    
-    downloadChart: function() {
-    	var _self = this;
-        var DELIMITER = '\t';
-        var id_delimit = ";";
-        var ext = 'tsv';
-        var rel = 'text/tsv';
-        
-        var colIndexes = [];
-        _self.currentData.columns.forEach(function (col, idx) {
-            colIndexes[idx] = idx;
-        });
 
-        var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
+    downloadChart: function () {
+      var _self = this;
+      var DELIMITER = '\t';
+      var ext = 'tsv';
+      var rel = 'text/tsv';
+
+      var colIndexes = [];
+      _self.currentData.columns.forEach(function (col, idx) {
+        colIndexes[idx] = idx;
+      });
+
+      var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
+      colIndexes.forEach(function (colIdx) {
+        header += DELIMITER + _self.currentData.columns[colIdx].colLabel + ' (' + _self.currentData.columns[colIdx].colID + ')';
+      });
+
+      var data = [];
+      _self.currentData.rows.forEach(function (row, idx) {
+        var r = [];
+        r.push(row.rowLabel + ' (' + row.rowID + ')');
         colIndexes.forEach(function (colIdx) {
-          header += DELIMITER + _self.currentData.columns[colIdx].colLabel + " (" + _self.currentData.columns[colIdx].colID + ")";
+          var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
+          r.push(val);
         });
+        data[idx] = r.join(DELIMITER);
+      });
 
-        var data = [];
-        _self.currentData.rows.forEach(function (row, idx) {
-            var r = [];
-            r.push(row.rowLabel + " (" + row.rowID + ")");
-            colIndexes.forEach(function (colIdx) {
-              var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
-              r.push(val);
-            });
-            data[idx] = r.join(DELIMITER);
-        });
-
-        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
-        // popup.close(downloadHM);
+      saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
     },
 
     _buildPanelButtons: function (colIDs, rowIDs, familyIds, genomeIds, features) {
@@ -611,14 +609,14 @@ define([
 
         var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
         colIndexes.forEach(function (colIdx) {
-          header += DELIMITER + _self.currentData.columns[colIdx].colLabel + " (" + _self.currentData.columns[colIdx].colID + ")";
+          header += DELIMITER + _self.currentData.columns[colIdx].colLabel + ' (' + _self.currentData.columns[colIdx].colID + ')';
         });
 
         var data = [];
         _self.currentData.rows.forEach(function (row, idx) {
           if (rowIDs.indexOf(row.rowID) > -1) {
             var r = [];
-            r.push(row.rowLabel + " (" + row.rowID + ")");
+            r.push(row.rowLabel + ' (' + row.rowID + ')');
             colIndexes.forEach(function (colIdx) {
               var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
               r.push(val);
