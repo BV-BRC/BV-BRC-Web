@@ -538,22 +538,17 @@ define([
       var ext = 'tsv';
       var rel = 'text/tsv';
 
-      var colIndexes = [];
-      _self.currentData.columns.forEach(function (col, idx) {
-        colIndexes[idx] = idx;
-      });
-
       var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
-      colIndexes.forEach(function (colIdx) {
-        header += DELIMITER + _self.currentData.columns[colIdx].colLabel + ' (' + _self.currentData.columns[colIdx].colID + ')';
+      _self.currentData.columns.forEach(function (col, idx) {
+        header += DELIMITER + col.colLabel + ' (' + col.colID + ')';
       });
 
       var data = [];
       _self.currentData.rows.forEach(function (row, idx) {
         var r = [];
         r.push(row.rowLabel + ' (' + row.rowID + ')');
-        colIndexes.forEach(function (colIdx) {
-          var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
+        _self.currentData.columns.forEach(function (col, colIdx) {
+          var val = parseInt(col.distribution.substr(idx * 2, 2), 16);
           r.push(val);
         });
         data[idx] = r.join(DELIMITER);
