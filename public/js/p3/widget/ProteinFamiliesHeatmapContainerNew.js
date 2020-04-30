@@ -492,12 +492,12 @@ define([
       domConstruct.place('<br>', container);
 
       domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
+        innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
         onclick: function () {
-          var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
+          var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
           domConstruct.place(status, container, 'last');
           setTimeout(function () {
-            self.downloadJSON();
+            self.downloadChart();
             domConstruct.destroy(status);
           }, 1000);
         }
@@ -506,12 +506,12 @@ define([
       domConstruct.place('<br>', container);
 
       domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
+        innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
         onclick: function () {
-          var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
+          var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
           domConstruct.place(status, container, 'last');
           setTimeout(function () {
-            self.downloadChart();
+            self.downloadJSON();
             domConstruct.destroy(status);
           }, 1000);
         }
