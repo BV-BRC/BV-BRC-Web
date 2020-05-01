@@ -111,10 +111,10 @@ define([
         'SaveSVG',
         'fa icon-download fa-2x',
         {
-          label: 'Save SVG',
+          label: 'Save',
           multiple: false,
           validType: ['*'],
-          tooltip: 'Download SVG snapshot'
+          tooltip: 'Download heat map'
         },
         function () {
           this.tooltip_anchoring = new TooltipDialog({
@@ -464,7 +464,7 @@ define([
       var container = domConstruct.create('div');
 
       domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save snapshot',
+        innerHTML: '<i class="fa icon-download"></i> Save snapshot (SVG)',
         onclick: function () {
           var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
           domConstruct.place(status, container, 'last');
@@ -478,7 +478,7 @@ define([
       domConstruct.place('<br>', container);
 
       domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save entire chart',
+        innerHTML: '<i class="fa icon-download"></i> Save entire chart (SVG)',
         onclick: function () {
           var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
           domConstruct.place(status, container, 'last');
@@ -489,7 +489,72 @@ define([
         }
       }, container);
 
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.downloadChart();
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.downloadJSON();
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
       return container;
+    },
+
+
+    downloadJSON: function () {
+      var _self = this;
+      var ext = 'json';
+      var rel = 'text/plain';
+      var matrix = _self.chart.getState().matrix;
+      var rows = _self.currentData.rows;
+      var cols = _self.currentData.columns;
+      var obj = { 'rows': rows, 'columns': cols, 'matrix': matrix };
+      saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
+    },
+
+    downloadChart: function () {
+      var _self = this;
+      var DELIMITER = '\t';
+      var ext = 'tsv';
+      var rel = 'text/tsv';
+
+      var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
+      _self.currentData.columns.forEach(function (col, idx) {
+        header += DELIMITER + col.colLabel + ' (' + col.colID + ')';
+      });
+
+      var data = [];
+      _self.currentData.rows.forEach(function (row, idx) {
+        var r = [];
+        r.push(row.rowLabel + ' (' + row.rowID + ')');
+        _self.currentData.columns.forEach(function (col, colIdx) {
+          var val = parseInt(col.distribution.substr(idx * 2, 2), 16);
+          r.push(val);
+        });
+        data[idx] = r.join(DELIMITER);
+      });
+
+      saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
     },
 
     _buildPanelButtons: function (colIDs, rowIDs, familyIds, genomeIds, features) {
@@ -498,9 +563,9 @@ define([
         'class': 'dijitDialogPaneActionBar'
       });
 
-      var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+      var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">TSV</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 
-      var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+      var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">TSV</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
       var downloadHM = new TooltipDialog({
         content: dhc,
         onMouseLeave: function () {
@@ -527,7 +592,7 @@ define([
           ext = 'csv';
         } else {
           DELIMITER = '\t';
-          ext = 'txt';
+          ext = 'tsv';
         }
 
         var colIndexes = [];
@@ -539,14 +604,14 @@ define([
 
         var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
         colIndexes.forEach(function (colIdx) {
-          header += DELIMITER + _self.currentData.columns[colIdx].colLabel;
+          header += DELIMITER + _self.currentData.columns[colIdx].colLabel + ' (' + _self.currentData.columns[colIdx].colID + ')';
         });
 
         var data = [];
         _self.currentData.rows.forEach(function (row, idx) {
           if (rowIDs.indexOf(row.rowID) > -1) {
             var r = [];
-            r.push(row.rowLabel);
+            r.push(row.rowLabel + ' (' + row.rowID + ')');
             colIndexes.forEach(function (colIdx) {
               var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
               r.push(val);
