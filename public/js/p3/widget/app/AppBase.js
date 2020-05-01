@@ -309,6 +309,9 @@ define([
       } else {
         // All other services.
         var toIngest = ['srr_accession'];
+        if (this.applicationName === 'Variation') {
+          var toIngest = { 'srr_accession': null };
+        }
         var lrec = { _type: 'srr_accession', title: title };
       }
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);

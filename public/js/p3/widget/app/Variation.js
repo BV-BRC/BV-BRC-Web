@@ -102,9 +102,11 @@ define([
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
       var singleList = this.libraryStore.query({ _type: 'single' });
+      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
       var condLibs = [];
       var pairedLibs = [];
       var singleLibs = [];
+      var srrAccessions = [];
       this.ingestAttachPoints(this.paramToAttachPt, submit_values);
       // for (var k in values) {
       //   if(!k.startsWith("libdat_")){
@@ -137,6 +139,12 @@ define([
       }, this);
       if (singleLibs.length) {
         submit_values.single_end_libs = singleLibs;
+      }
+      srrAccessions = srrAccessionList.map(function (lrec) {
+        return lrec._id;
+      });
+      if (srrAccessions.length) {
+        submit_values.srr_ids = srrAccessions;
       }
       return submit_values;
 
@@ -214,10 +222,12 @@ define([
       }, this);
       return (success);
     },
+
     showConditionLabels: function (item, store) {
       var label = item.condition + ' ' + item.icon;
       return label;
     },
+
     makeLibraryName: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('displayedValue');
@@ -231,28 +241,66 @@ define([
         }
         return 'P(' + fn + ', ' + fn2 + ')';
       }
+      else if (mode == 'single') {
 
-
-      var fn = this.read.searchBox.get('displayedValue');
-      maxName = 24;
-      if (fn.length > maxName) {
-        fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
+        var fn = this.read.searchBox.get('displayedValue');
+        maxName = 24;
+        if (fn.length > maxName) {
+          fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
+        }
+        return 'S(' + fn + ')';
       }
-      return 'S(' + fn + ')';
-
+      else if (mode == 'srr_accession') {
+        return '' + this.srr_accession.get('value');
+      }
+      return '';
     },
+
     makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
         return fn + fn2;
       }
-
+      if (mode == 'srr_accession') {
+        var name = this.srr_accession.get('value');
+        return name;
+      }
       var fn = this.read.searchBox.get('value');
       return fn;
-
     },
 
+    //    onAddSRR: function () {
+    //      var accession = this.srr_accession.get('value');
+    //      if ( !accession.match(/^[a-z0-9]+$/i)) {
+    //        this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
+    //      }
+    //      else {
+    //        // SRR5121082
+    //        this.srr_accession.set('disabled', true);
+    //        this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
+    //        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
+    //          .then(lang.hitch(this, function (xml_resp) {
+    //            var resp = xmlParser.parse(xml_resp).documentElement;
+    //            this.srr_accession.set('disabled', false);
+    //            try {
+    //              var title = resp.children[0].childNodes[3].innerHTML;
+    //              this.srr_accession_validation_message.innerHTML = '';
+    //              var lrec = { _type: 'srr_accession', title: title };
+    //              var chkPassed = this.ingestAttachPoints({ 'srr_accession': null }, lrec);
+    //              if (chkPassed) {
+    //                var infoLabels = {
+    //                  title: { label: 'Title', value: 1 }
+    //                };
+    //                this.addLibraryRow(lrec, infoLabels, 'srrdata');
+    //              }
+    //            } catch (e) {
+    //              this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
+    //              this.srr_accession.set('value', '');
+    //            }
+    //          }));
+    //      }
+    //    },
 
     onReset: function (evt) {
       domClass.remove(this.domNode, 'Working');
@@ -286,7 +334,6 @@ define([
         counterWidget.set('value', Number(counter.counter));
       }
     },
-
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
@@ -357,9 +404,15 @@ define([
         td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('paired') + '</div>';
         advInfo.push('Paired Library');
       }
-      else {
+      else if (mode == 'singledata') {
         td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('single') + '</div>';
         advInfo.push('Single Library');
+      }
+      else if (mode == 'srrdata') {
+        td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('srr_accession') + '</div>';
+        advInfo.push('SRA run accession');
+      } else {
+        console.error('wrong data type', lrec, infoLabels, mode);
       }
       // fill out the html of the info mouse over
       Object.keys(infoLabels).forEach(lang.hitch(this, function (key) {
@@ -403,6 +456,17 @@ define([
       this.libraryStore.put(lrec);
       lrec._handle = handle;
       this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+      this.checkParameterRequiredFields();
+    },
+
+    checkParameterRequiredFields: function () {
+      if (this.output_path.get('value') && this.output_file.get('displayedValue') ) {
+        this.validate();
+      }
+      else {
+        if (this.submitButton) { this.submitButton.set('disabled', true); }
+      }
     }
+
   });
 });
