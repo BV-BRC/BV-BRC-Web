@@ -3,17 +3,17 @@ define([
   'dojo/store/JsonRest', 'dojo/dom-construct', 'dijit/TooltipDialog',
   'dojo/on', 'dijit/popup', 'dojo/_base/lang', 'dojo/dom-construct',
   'dijit/form/CheckBox', 'dojo/string', 'dojo/when', 'dijit/form/_AutoCompleterMixin',
-  '../util/PathJoin'
+  '../util/PathJoin', 'dojo/request', 'dojo/store/Memory'
 ], function (
   FilteringSelect, declare,
   Store, domConstr, TooltipDialog,
   on, popup, lang, domConstr, Checkbox,
   string, when, AutoCompleterMixin,
-  PathJoin
+  PathJoin, request, Memory
 ) {
 
   return declare([FilteringSelect, AutoCompleterMixin], {
-    apiServiceUrl: window.App.dataAPI,
+    apiServiceUrl: window.App.dataServiceURL,
     promptMessage: 'Genome name.',
     missingMessage: 'Specify genome name.',
     placeHolder: 'e.g. Mycobacterium tuberculosis H37Rv',
@@ -21,30 +21,29 @@ define([
     extraSearch: ['genome_id'],
     queryExpr: '*${0}*',
     queryFilter: '',
-    resultFields: ['genome_id', 'genome_name', 'strain', 'public', 'owner', 'reference_genome'],
+    resultFields: ['genome_id', 'genome_name', 'strain', 'public', 'owner', 'reference_genome', 'taxon_id'],
     includePrivate: true,
     includeOtherPublic: true,
     referenceOnly: true,
+    ncbiHost: true,
     representativeOnly: true,
     pageSize: 25,
     highlightMatch: 'all',
     autoComplete: false,
     store: null,
+    hostStore: null,
     labelType: 'html',
     constructor: function () {
       var _self = this;
-      if (!this.store) {
 
-        this.store = new Store({
-          target: PathJoin(this.apiServiceUrl, 'genome') + '/',
-          idProperty: 'genome_id',
-          headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
-        });
-
-      }
-
-      var orig = this.store.query;
-      this.store.query = lang.hitch(this.store, function (query, options) {
+      this.apiStore = new Store({
+        target: PathJoin(this.apiServiceUrl, 'genome') + '/',
+        idProperty: 'genome_id',
+        headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
+      });
+      // Fancy footwork for modified api query
+      var api_query = this.apiStore.query;
+      this.apiStore.query = lang.hitch(this.apiStore, function (query, options) {
         // console.log("query: ", query);
         // console.log("Store Headers: ", _self.store.headers);
         var q = '';
@@ -54,6 +53,7 @@ define([
 
           // strip the non-alphanumeric characters from the query string
           searchAttrStripped = '*'.concat(query[_self.searchAttr].toString().replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
+          // unfooling the highlighting `~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
 
           if (_self.extraSearch) {
             var components = ['eq(' + _self.searchAttr + ',' + searchAttrStripped + ')'];
@@ -77,8 +77,31 @@ define([
           q += '&select(' + _self.resultFields.join(',') + ')';
         }
         // console.log("Q: ", q);
-        return orig.apply(_self.store, [q, options]);
+        return api_query.apply(_self.store, [q, options]);
       });
+
+
+      if (_self.ncbiHost) {
+
+        request.get(PathJoin(_self.apiServiceUrl, 'content', 'host/patric_host_summary.json'), {
+          headers: { accept: 'application/json' },
+          handleAs: 'json'
+        }).then(lang.hitch(_self, function (hostDat) {
+          _self.hostInfo = new Memory({ data: hostDat.genomes, idProperty: 'species_taxid' });
+          console.log('Set host memory store');
+        }), lang.hitch(_self, function (err) {
+          console.log('Error retreiving host info ', err);
+        }));
+      }
+      if (!this.store) {
+        this.store = this.apiStore;
+      }
+
+      // var conditionList = this.conditionStore.query({ id: query_id });
+      // this.conditionStore.put(record);
+      // var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
+
+
     },
 
     _setIncludeOtherPublicAttr: function (val) {
@@ -146,6 +169,15 @@ define([
       }
 
       // console.log("Query Filter set to: " + this.queryFilter);
+    },
+    onChange: function () {
+      var tax_id = this.item.taxon_id;
+      if (tax_id in this.hostInfo.index) {
+        var ncbi_idx = this.hostInfo.index[tax_id];
+        var ncbi_rec = this.hostInfo.data[ncbi_idx];
+        this.item.host = true;
+        this.item.ftp = ncbi_rec['patric_ftp'];
+      }
     },
 
     postCreate: function () {
