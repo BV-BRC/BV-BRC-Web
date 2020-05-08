@@ -546,7 +546,7 @@ define([
       state.rows.forEach(function (row, idx) {
         var r = [];
         r.push(row.name + ' (' + row.id + ')');
-        for (let step = 0; step < state.cols.length; step++) {
+        for (var step = 0; step < state.cols.length; step++) {
           r.push(state.matrix[idx][step]);
         }
         data[idx] = r.join(DELIMITER);

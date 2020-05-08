@@ -225,7 +225,11 @@ define([
         });
 
       return all([nameProm, featProm, contigProm])
-        .then(function ([labels, featuresObj, contigsObj]) {
+        .then(function (data) {
+          var labels = data[0],
+            featuresObj = data[1],
+            contigsObj = data[2];
+
           // update contig metadata with locations of contigs
           var contigs = {};
           genomeIDs.forEach(function (genomeID) {
