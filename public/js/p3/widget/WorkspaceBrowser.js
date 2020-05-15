@@ -1399,6 +1399,12 @@ define([
             panelCtor = window.App.getConstructor('p3/widget/viewer/ExperimentGroup');
             params.data = obj;
             break;
+          case 'csv':
+            panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
+            //panelCtor = window.App.getConstructor('p3/widget/viewer/File1');
+	    			//panelCtor = window.App.getConstructor('p3/widget/viewer/File');
+            params.file = { metadata: obj };
+            break;
           default:
             panelCtor = window.App.getConstructor('p3/widget/viewer/File');
             params.file = { metadata: obj };
