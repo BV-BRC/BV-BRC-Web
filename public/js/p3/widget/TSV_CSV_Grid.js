@@ -57,7 +57,7 @@ define([
           bubbles: true,
           cancelable: true
         };
-        on.emit(_self.domMode, 'select', newEvt);
+        on.emit(_self.domNode, 'select', newEvt);
       });
 
       this.on('dgrid-deselect', function(evt) {
