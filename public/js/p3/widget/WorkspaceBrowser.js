@@ -1377,6 +1377,10 @@ define([
                     d = 'p3/widget/viewer/GenomeComparison';
                   }
                   break;
+                case 'GenomeAssembly2':
+                case 'GenomeAssembly':
+                  d = 'p3/widget/viewer/GenomeAssembly';
+                  break;
                 case 'GenomeAnnotation':
                 case 'GenomeAnnotationGenbank':
                   d = 'p3/widget/viewer/GenomeAnnotation';
@@ -1389,6 +1393,8 @@ define([
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
+                default:
+                  console.log('A viewer could not be found for id: ' + id);
               }
             }
             panelCtor = window.App.getConstructor(d);
