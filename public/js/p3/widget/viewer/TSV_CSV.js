@@ -10,7 +10,7 @@ define([
   return declare([BorderContainer], {
     baseClass: 'CSV_Viewer',
     disabled: false,
-    containerType: 'csv',
+    containerType: 'csvFeature',
     file: null,
     viewable: false,
     url: null,
@@ -121,15 +121,15 @@ define([
 						// split on new lines, to get the grid rows
 						var dataLines = this.file.data.split(/\r?\n/);
 
-						// get the headers for the columns by splitting the first line.  Theoretically, this will
-						// work for tsv files as well because the parsing appears to be done elsewhere.
-						// Where is the parsing done??  Returned as tab delimited.  
+						// get the headers for the columns by splitting the first line.  
 						var tmpColumnHeaders = dataLines[0].split(/\t/);	
 
 						// make column labels from the first line of dataLines
 						var gridColumns = [];
 						for (i = 0; i < tmpColumnHeaders.length; i++) {
-							var columnHeaders = { label: tmpColumnHeaders[i], field: 'column' + i };
+              //var columnHeaders = { label: tmpColumnHeaders[i], field: 'column' + i };
+              var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
+
 							gridColumns.push(columnHeaders);
 						}
             //TSV_CSV_GridContainer.setColumns(gridColumns);
@@ -140,7 +140,8 @@ define([
 							var tmpData = dataLines[i].split(/\t/);
 							var dataRow = {};
 							for (j = 0; j < tmpData.length; j++) {
-								dataRow["column" + j] = tmpData[j];	
+                //dataRow["column" + j] = tmpData[j];	
+                dataRow[gridColumns[j].field] = tmpData[j];
 							}
 							columnData.push(dataRow);
 						}

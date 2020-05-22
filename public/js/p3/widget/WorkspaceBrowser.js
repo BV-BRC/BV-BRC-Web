@@ -6,7 +6,7 @@ define([
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath',
+  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request',
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +17,7 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath
+  All, encodePath, when, request
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -269,6 +269,44 @@ define([
 
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q });
         }
+      });
+
+      this.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
+        label: 'FEATURE',
+        validTypes: ['*'],
+        validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+        multiple: false,
+        tooltip: 'Switch to Feature View.  Press and Hold for more options.',
+        pressAndHold: function (selection, button, opts, evt) {
+          console.log('PressAndHold');
+          console.log('Selection: ', selection, selection[0]);
+          popup.open({
+            popup: new PerspectiveToolTipDialog({
+              perspective: 'Feature',
+              //perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[14].feature_id)
+              //perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[0].Gene_ID)
+            }),
+            around: button,
+            orient: ['below']
+          });
+        }
+      }, function (selection) {
+        var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+        //sel = sel.replace("|", "%7C");
+        var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+
+        when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          
+          }
+        }), function(response){
+          Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id})
+        });        
       });
 
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {

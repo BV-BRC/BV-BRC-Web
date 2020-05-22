@@ -23,6 +23,7 @@ define([
 
   return declare([GridContainer], {
     gridCtor: tsvGrid,
+    containerType: 'csvFeature',
     enableAnchorButton: true,
     maxDownloadSize: 25000,
     setColumns: function (newColumns) {
@@ -97,7 +98,9 @@ define([
       'left'
     ],
 
+
   ]),
+
   //gridCTor: tsvGrid  
   });
 
