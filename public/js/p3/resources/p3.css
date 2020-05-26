@@ -5,9 +5,7 @@
 
 @import url("../../dojox/widget/Toaster/Toaster.css");
 @import url("../../dojox/widget/Dialog/Dialog.css");
-/* CSS for JBrowse */
 @import url("./jbrowse/genome.css");
-/*@import url("Footer.css");*/
 @import url("Header.css");
 @import url("Carousel.css");
 @import url("Drawer.css");
@@ -18,21 +16,17 @@
 @import url("modeling.css");
 @import url("facetfilter.css");
 @import url("./GenomeList.css");
-/* @import url("./GenomeViewer.css"); */
-/*@import url("./p2.css");*/
 @import url("./JobsGrid.css");
 @import url("./SummaryWidget.css");
 @import url("./GridStyle.css");
 @import url("./SearchResults.css");
 @import url("./DataItemFormatter.css");
 @import url("./D3StackedBarChart.css");
-@import url("home-new.css");
-@import url("./HomePage.css");
+@import url("bv-brc.css");
 @import url("./dlp.css");
 @import url("./help.css");
 @import url("webpage.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
-@import url("//fonts.googleapis.com/css?family=Didact+Gothic");
 
 .icon-sort-alpha-asc {
   margin-left: 0;

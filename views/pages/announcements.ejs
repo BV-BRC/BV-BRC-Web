@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>News &amp; Announcements | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content announcements-content">
+                            <h1 id="news-and-announcements">News &amp; Announcements</h1>
+                            <h3>2020:</h3>
+                            <p>
+                                <a href="https://www.cell.com/cell-host-microbe/pdf/S1931-3128(20)30166-9.pdf">A Bioinformatic Approach To Predict Immune Responses to SARS-CoV-2</a><br>
+                            <br>
+                            </p>
+                            <p><a href="https://www.biorxiv.org/content/10.1101/2020.02.12.946087v1">Candidate targets for immune responses to 2019-Novel Coronavirus (nCoV)</a><br>
+                                Sequence homology and bioinformatic-based predictions</p>
+                            <br>
+                            <p>
+                                <a href="#rescheduled-patric-rast-bacterial-and-ird-vipr-viral-workshops-at-argonne-national-laboratory">RESCHEDULED: PATRIC/RAST Bacterial and IRD/ViPR Viral Workshops at Argonne National Laboratory.</a><br>
+                                Due to the coronavirus outbreak, the bacterial and viral workshop originally planned for March 23-27, 2020, will be <strong>RESCHEDULED</strong>
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://docs.patricbrc.org/news/2020/20200130-bv-brc-workshop-at-argonne-national-lab.html">Bacterial-Viral Bioinformatics Workshop</a><br>
+                                March 23-27, 2020 - Chicago, IL. <strong>RESCHEDULED</strong>
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://rega.kuleuven.be/cev/veme-workshop/2020/">25th International Workshop on Virus Evolution and Molecular Epidemiology (VEME2020)</a><br>
+                                July 19-24, 2020 - Rio de Janeiro, RJ, Brazil. Deadline by March 23, 2020.
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://www.cdc.gov/coronavirus/2019-ncov/summary.html">CDC's 2019 Novel Coronavirus (2019-nCoV) Situation Summary report</a>
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/30JAN2020_2019-nCoV_genomics_report.pdf">A genomic report of the 2019 Novel Coronavirus (2019-nCoV)</a><br>
+                                Doherty Institute scientists first to grow and share Wuhan coronavirus <a href="https://www.doherty.edu.au/news-events/news/coronavirus">Wuhan coronavirus</a>.
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">WHO Situation Report</a><br>
+                                As of January 26, 2020 there have been 2,014 confirmed cases of 2019-nCoV in 11 countries, with 56 deaths
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/2019-nCoV_ViPR_report_24JAN2020_v1.1.pdf">A preliminary comparative genomics (revised) of the 2019 Novel Coronavirus (2019-nCoV)
+                                </a>
+                            </p>
+                            <br>
+                            <h3>2019:</h3>
+                            <p>
+                                <a href="https://docs.patricbrc.org/news/2019/20191213-patric-sep-dec-2019-release.html">PATRIC Data and Website Releases, September – December 2019</a><br>
+                                This PATRIC release includes a new Genome Assembly Service, new Heatmap Viewer, new analysis Job Scheduler, and over 31,000 new microbial genomes.
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://www.ncbi.nlm.nih.gov/pubmed/31462570">Naito et al. report a Tyr82 mutation in PB1 polymerase</a><br>
+                                induces an Influenza virus mutator phenotype, a desirable feature in developing safe live-attenuated vaccines
+                            </p>
+                            <br>
+                            <p>
+                                <a href="https://www.cs.uchicago.edu/news/article/bioinformatics-hub/">New Bioinformatics Hub at UChicago Enables Next-Gen Infectious Disease Research</a><br>
+                                The new Bacterial and Viral Bioinformatics Resource Center (BV-BRC) combines two independent efforts at UChicago and the J. Craig Venter Institute.
+                            </p>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>

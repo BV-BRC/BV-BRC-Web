@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>Publications | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content publications-content">
+                          <h1 id="publications">Publications</h1>
+
+                          <div class="patric-publications">
+                            <h2>PATRIC Publications</h2>
+                            <a class="navigationLinkOut full-list" href="https://docs.patricbrc.org/publications.html">Full List Here</a>
+                            <br>
+                            <h3>2020:</h3>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/31667520">The PATRIC Bioinformatics Resource Center: expanding data and analysis capabilities.</a><br>
+                                Davis JJ, Wattam AR, Aziz RK, Brettin T, Butler R, Butler RM, Chlenski P, Conrad N, Dickerman A, Dietrich EM, Gabbard JL, Gerdes S, Guard A, Kenyon RW, Machi D, Mao C, Murphy-Olson D, Nguyen M, Nordberg EK, Olsen GJ, Olson RD, Overbeek JC, Overbeek R, Parrello B, Pusch GD, Shukla M, Thomas C, VanOeffelen M, Vonstein V, Warren AS, Xia F, Xie D, Yoo H, Stevens R.<br>
+                                Nucleic Acids Res. 2020 Jan 8;48(D1):D606-D612. doi: 10.1093/nar/gkz943. PMID: 31667520.
+                            </p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/31801839">Helicobacter pylori Infections in the Bronx, New York: Surveying Antibiotic Susceptibility and Strain Lineage by Whole-Genome Sequencing.</a></br>
+                                Saranathan R, Levi MH, Wattam AR, Malek A, Asare E, Behin DS, Pan DH, Jacobs WR Jr, Szymczak WA. J Clin Microbiol.<br>
+                                2020 Feb 24;58(3). pii: e01591-19. doi: 10.1128/JCM.01591-19. Print 2020 Feb 24. PMID: 31801839 PMCID: PMC7041580
+                            </p>
+                            <br>
+                            <h3>2019:</h3>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/31351494">Identification and molecular epidemiology of methicillin resistant Staphylococcus pseudintermedius strains isolated from canine clinical samples in Argentina.</a><br>
+                                Gagetti P, Wattam AR, Giacoboni G, De Paulis A, Bertona E, Corso A, Rosato AE.<br>
+                                BMC Vet Res. 2019 Jul 27;15(1):264. doi: 10.1186/s12917-019-1990-x.PMID: 31351494. PMCID: PMC6660709.</p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/30333126">Using machine learning to predict antimicrobial minimum inhibitory concentrations and associated genomic features for nontyphoidal Salmonella.</a><br>
+                                Nguyen M, Long SW, McDermott PF, Olsen RJ, Olson R, Stevens RL, Tyson GH, Zhao S, Davis JJ.<br>
+                                Journal of clinical microbiology. 2019 Feb 1;57(2):e01260-18. PMID: 30333126. DOI: 10.1128/JCM.01260-18. </p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/31581946">A machine learning-based service for estimating quality of genomes using PATRIC.</a><br>
+                                Parrello B, Butler R, Chlenski P, Olson R, Overbeek J, Pusch GD, Vonstein V, Overbeek R.<br>
+                                BMC Bioinformatics. 2019; 20, Article number: 486. Open Access. PMID: 31581946 PMCID: PMC6775668</p>
+                            <br>
+                            <h3>2018:</h3>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/30555248">Whole genome sequence analysis of NDM-1, CMY-4, and sHV-12 coproducing Salmonella enterica serovar typhimurium isolated from a case of fatal burn wound infection.</a><br>
+                                Banerjee K, Sekar P, Krishnan P, Wattam AR, Roy S, Hays JP, Menezes GA.<br>
+                                Infection and Drug Resistance. 2018;11:2491. PMID: 30555248. PMCID: PMC6278884. </p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/29451601">Cell Division in genus Corynebacterium: protein-protein interaction and molecular docking of SepF and FtsZ in the understanding of cytokinesis in pathogenic species.</a><br>
+                                Folador EL, Gomide AC, Goes-Neto AR, Azevedo VA, Wattam AR.<br>
+                                Anais da Academia Brasileira de Ciências. 2018 Aug. 90(2 suppl 1):2179-2188. doi: 10.1590/0001-3765201820170385. Epub 2018 Feb 15. PMID: 29451601. DOI: 10.1590/0001-3765201820170385. </p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/29323230">Developing an in silico minimum inhibitory concentration panel test for Klebsiella pneumoniae.</a><br>
+                                Nguyen M, Brettin T, Long SW, Musser JM, Olsen RJ, Olson R, Shukla M, Stevens RL, Xia F, Yoo H, Davis JJ.<br>
+                                Sci Rep. 2018 Jan 11;8(1):421. doi: 10.1038/s41598-017-18972-w. PMID: 29323230. PMCID:PMC5765115. </p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/30419061">Rapidly evolving changes and gene loss associated with host switching in Corynebacterium pseudotuberculosis.</a><br>
+                                Viana MV, Sahm A, Neto AG, Figueiredo HC, Wattam AR, Azevedo V.<br>
+                                PloS one. 2018 Nov 12;13(11):e0207304. PMID: 30419061. PMCID: PMC6231662. </p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/29277864">Assembly, Annotation, and Comparative Genomics in PATRIC, the All Bacterial Bioinformatics Resource Center.</a><br>
+                                Wattam AR, Brettin T, Davis JJ, Gerdes S, Kenyon R, Machi D, Mao C, Olson R, Overbeek R, Pusch GD, Shukla MP, Stevens R, Vonstein V, Warren A, Xia F, Yoo H.<br>
+                                Methods Mol Biol. 2018;1704:79-101. PMID:29277864. DOI: 10.1007/978-1-4939-7463-4_4</p>
+                            <br>
+                          </div>
+                          <div class="ird-publications">
+                            <h2>IRD Publications</h2>
+                            <a class="navigationLinkOut full-list" href="https://www.fludb.org/brc/publicationsIRD.spg?method=pubsPres&amp;decorator=influenza">Full List Here</a>
+                            <br>
+                            <h3>2017:</h3>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/27981236">OFFLU swine influenza experts develop global nomenclature system and automated annotation tool for H1 haemagglutinin genes of influenza A viruses.</a><br>
+                                Amy L. Vincent, Tavis K. Anderson, Catherine A. Macken, Yun Zhang, Nicola S. Lewis, Richard H. Scheuermann.<br>
+                                World Organization for Animal Health Bulletin, 2017, 2: 106-113 PMID: 27981236 PMCID: PMC5156671</p>
+                            <br>
+                            <p><a href="https://www.fludb.org/brcDocs/documents/rss_feed_doc/Zhang_2017AASV_swineInfluenzaAnalysis.pdf">In silico analysis of swine influenza virus sequence data in the Influenza Research Database.</a><br>
+                                Yun Zhang, Tavis K. Anderson, Amy L. Vincent, Phillip C. Gauger, Catherine A. Macken, Richard H. Scheuermann.<br>
+                                Proceedings of the 48th Annual Meeting of the American Association of Swine Veterinarians, Denver, Colorado, February 25-28, 2017</p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/28434256/">A bioinformatics roadmap for the human vaccines project.</a><br>
+                                RH Scheuermann, RS Sinkovits , T Schenkelberg, and WC Koff.<br>
+                                Expert Rev Vaccines. 2017. doi: 10.1080/14760584.2017.1322752</p>
+                            <br>
+                          </div>
+                          <div class="vipr-publications">
+                            <h2>ViPR Publications</h2>
+                            <a class="navigationLinkOut full-list" href="https://www.viprbrc.org/brc/publicationsVipr.spg?method=pubsPres&amp;decorator=vipr">Full List Here</a>
+                            <br>
+                            <h3>2020:</h3>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/32183941/">A Sequence Homology and Bioinformatic Approach Can Predict Candidate Targets for Immune Responses to SARS-CoV-2.</a><br>
+                                A, Sidney J, Zhang Y, Scheuermann RH, Peters B, Sette A.<br>
+                                Cell Host Microbe. 2020 Mar 12. pii: S1931-3128(20)30166-9. doi: 10.1016/j.chom.2020.03.002. PMID: 32183941</p>
+                            <br>
+                            <h3>2019:</h3>
+                            <p><a href="https://www.sciencedirect.com/science/article/pii/S0042682219300054?via%3Dihub">Classification of human Herpesviridae proteins using Domain-architecture Aware Inference of Orthologs (DAIO).</a><br>
+                                M. Zmasek, David M. Knipe, Phillip E. Pellett, Richard H. Scheuermann.<br>
+                                Virology 529: 29-42; DOI: 10.1016/j.virol.2019.01.005</p>
+                            <br>
+                            <h3>2018:</h3>
+                            <p><a href="https://rd.springer.com/protocol/10.1007%2F978-1-4939-8976-8_3">Hepatitis C Virus Database and Bioinformatics Analysis Tools in the Virus Pathogen Resource (ViPR).</a><br>
+                                Zhang Y., Zmasek C., Sun G., Larsen C.N., Scheuermann R.H.<br>
+                                Methods in Molecular Biology 1911: 47-69; DOI: 10.1007/978-1-4939-8976-8_3</p>
+                            <br>
+                            <p><a href="https://mbio.asm.org/content/9/5/e01954-18">Contemporary Circulating Enterovirus D68 Strains Have Acquired the Capacity for Viral Entry and Replication in Human Neuronal Cells.</a><br>
+                                David M. Brown, Alison M. Hixon, Lauren M. Oldfield, Yun Zhang, Mark Novotny, Wei Wang, Suman R.Das, Reed S. Shabman, Kenneth L. Tyler, Richard H. Scheuermann.<br>
+                                mBio Oct 2018, 9 (5) e01954-18; DOI: 10.1128/mBio.01954-18</p>
+                            <br>
+                            <p><a href="https://pubmed.ncbi.nlm.nih.gov/29757994">Bioinformatics Meets Virology: The European Virus Bioinformatics Center's Second Annual Meeting.</a><br>
+                                Ibrahim B, Arkhipova K, Andeweg AC, Posada-Céspedes S, Enault F, Gruber A, Koonin EV, Kupczok A, Lemey P, McHardy AC, McMahon DP, Pickett BE, Robertson DL, Scheuermann RH, Zhernakova A, Zwart MP, Schönhuth A, Dutilh BE, Marz M.<br>
+                                Viruses. 2018 May 14;10(5). pii: E256. doi: 10.3390/v10050256. PubMed PMID: 29757994; PubMed Central PMCID: PMC5977249.</p>
+                            <br>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>

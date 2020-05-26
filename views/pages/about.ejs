@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>About Us | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <h1 id="about-us">About Us</h1>
+                            <p>The Bacterial and Viral Bioinformatics Resource Center (BV-BRC) is an information system designed to support the biomedical research community’s work on bacterial and viral infectious diseases via integration of vital pathogen information with rich data and analysis tools. BV-BRC combines the data, technology, and extensive user communities from two long-running centers: PATRIC, the bacterial system , and IRD/ViPR, the viral systems. In addition to hundreds of thousands of bacterial genomes in PATRIC and over a million viral genomes in IRD/ViPR, the two resources host data on protein structure and function, clinical studies, drug targets and resistance, epidemiology, and other features, and provide open source tools for data analysis and genomic annotation.</p>
+                            <br>
+                            <p>Based at the University of Chicago, BV-BRC combines two independent efforts at UChicago and the J. Craig Venter Institute (JCVI), for PATRIC and IRD/ViPR respectively. BV-BRC is led by two co-principal investigators:</p>
+                            <br>
+                            <p><strong style="font-size:16px;">Rick Stevens:</strong><br />
+                            Professor of Computer Science at UChicago<br />
+                            Associate Laboratory Director for Computing, Environment and Life Sciences at Argonne National Laboratory</p>
+                            <br>
+                            <p><strong style="font-size:16px;">Richard Scheuermann:</strong><br />
+                            La Jolla Campus Director of the J. Craig Venter Institute<br />
+                            Adjunct Professor of Pathology at the University of California San Diego.</p>
+                            <br>
+                            <p>The University of Virginia (UVA) and the Fellowship for Interpretation of Genomes (FIG) complete the team.</p>
+                            <br>
+                            <p>This project has been funded in whole or in part with Federal funds from the National Institute of Allergy and Infectious Diseases, National Institutes of Health, Department of Health and Human Services, under Contract <strong>No. 75N93019C00076</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>

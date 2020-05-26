@@ -1,165 +1,9 @@
-<div id="patric-homepage">
-
-    <!-- <div class="home-banner">
-        <p class="banner-yellow"> The PATRIC Team is working on a new homepage design, shown below, and we would like hear from you.
-            Please <a class="DialogButton" rel="reportProblem:">provide your feedback</a>. You can access the previous homepage <a href="/home-prev/">here</a>.
-        </p>
-    </div> -->
-
-    <div id="patric-homepage-container">
+<div id="bv-brc-home">
+    <div id="bv-brc-home-container">
         <div class="grid-container">
-            <div class="browse-search">
-                <h2>BACTERIAL BIOINFORMATICS RESOURCE CENTER</h2>
-                <p>
-                    PATRIC, the Pathosystems Resource Integration Center, provides integrated data and analysis tools to support biomedical research on bacterial infectious diseases.
-                </p>
-                <div class="browse">
-                    <h3>BROWSE</h3>
-                    <a href="/view/Taxonomy/2" class="navigationLink btn btn-blue">BACTERIA</a>
-                    <a href="/view/Taxonomy/2157" class="navigationLink btn btn-blue">ARCHAEA</a>
-                    <a href="/view/Taxonomy/10239" class="navigationLink btn btn-blue">PHAGES</a>
-                    <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="navigationLink btn btn-blue">EUKARYOTIC HOSTS</a>
-                </div>
-                <div class="search">
-                    <h3>SEARCH</h3>
-                    <div class="global-search">
-                        <div style="padding: 6px 0px 2px 2px; flex-grow: 1">
-                            <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="analyze-data">
-                <h2>ANALYZE DATA IN PATRIC</h2>
-                <p>
-                    At PATRIC, you can upload your private data in a workspace, analyze it using high-throughput services, and compare it with
-                    other public databases using visual analytics tools. Please
-                    <a class="registrationLink">Register</a> or
-                    <a class="loginLink">Login</a> to get started.
-                </p>
-                <div class="analyze-data-links">
-                    <div class="upload-links">
-                        <h3>UPLOAD</h3>
-                        <ul>
-                            <li>
-                                <a class="navigationLinkOut" href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Upload Data</a>
-                            </li>
-                            <li>
-                                <a class="navigationLinkOut" href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Manage Workspace</a>
-                            </li>
-                            <li>
-                                <a class="navigationLinkOut" href="http://docs.patricbrc.org/tutorial/sharing_data_in_the_workplace/sharing_data_in_the_workplace.html">Share or Publish</a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="analyze-links">
-                        <h3>ANALYZE</h3>
-                        <ul>
-                            <li>
-                                <a class="navigationLink" href="/app/Assembly">Genome Assembly</a>
-                            </li>
-                            <li>
-                                <a class="navigationLink" href="/app/Annotation">Genome Annotation</a>
-                            </li>
-                            <li>
-                                <a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a>
-                            </li>
-                            <li>
-                                <a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a>
-                            </li>
-                            <li>
-                                <a class="navigationLinkOut" href="https://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="compare-links">
-                        <h3>COMPARE</h3>
-                        <ul>
-                            <li>
-                                <a class="navigationLink" href="/app/BLAST">BLAST</a>
-                            </li>
-                            <li>
-                                <a class="navigationLink" href="/app/ProteinFamily">Protein Families</a>
-                            </li>
-                            <li>
-                                <a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a>
-                            </li>
-                            <li>
-                                <a class="navigationLink" href="/app/ComparativePathway">Metabolic Pathways</a>
-                            </li>
-                            <li>
-                                <a class="navigationLinkOut" href="https://docs.patricbrc.org/user_guides/services_tab.html">see more...</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="analyze-data-buttons">
-                    <a href="https://docs.patricbrc.org/tutorial/" class="navigationLinkOut btn btn-blue">TUTORIALS</a>
-                    <a href="https://docs.patricbrc.org/user_guides/index.html" class="navigationLinkOut btn btn-blue">USER GUIDES</a>
-                    <a href="https://docs.patricbrc.org/webinar/" class="navigationLinkOut btn btn-blue">WEBINARS</a>
-                    <a href="https://docs.patricbrc.org/cli_tutorial/" class="navigationLinkOut btn btn-blue">COMMAND-LINE INTERFACE</a>
-                </div>
-            </div>
-
-            <div class="omics-data">
-                <h2>OMICS DATA</h2>
-                <p>PATRIC provides data and analysis tools for multiple omics data types</p>
-                <div class="omics-links">
-                    <ul>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a>
-                        </li>
-                    </ul>
-                    <ul>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a>
-                        </li>
-                        <li>
-                            <a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="my-data">
-                <h2>MY DATA</h2>
-                <div class="ShowWithAuth">
-                    <div class="sub-block">
-                        <div><a class="navigationLink" id="YourWorkspaceLink2">My Workspaces</a></div>
-                        <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
-                    </div>
-                    <div class="sub-block">
-                        <div><a class="navigationLink" id="MyDataGenomeGroup">00 Genome Groups</a></div>
-                        <div><a class="navigationLink" id="MyDataFeatureGroup">00 Feature Groups</a></div>
-                        <div><a class="navigationLink" id="MyDataExperimentGroup">00 Experiment Groups</a></div>
-                        <br>
-                        <div><a class="navigationLink" href="/job/" id="MyDataJobs">00 Completed Jobs</a></div>
-                        <div><a class="navigationLink" href="/view/GenomeList/?eq(public,false)" id="MyDataGenomes">00 Private Genomes</a></div>
-                    </div>
-                </div>
-                <div class="HideWithAuth showOnLoad">
-                    <p>Upload your own data and analyze it privately and securely using PATRIC analysys tools</p>
-                    <hr>
-                    <div class="home-login-button">
-                        <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">LOGIN</div>
-                    </div>
-                </div>
+            <div class="bv-brc-info">
+                <h1>BACTERIAL AND VIRAL BIOINFORMATICS RESOURCE CENTER</h1>
+                <p>The Bacterial and Viral Bioinformatics Resource Center (BV-BRC) is an information system designed to support research on bacterial and viral infectious diseases via integration of vital pathogen information with rich data and analysis tools. BV-BRC combines two long-running centers: PATRIC, the bacterial system, and IRD/ViPR, the viral systems.</p>
             </div>
 
             <div class="announcements">
@@ -168,8 +12,57 @@
                 <div id="dot-navigation"></div>
             </div>
 
+            <div class="patric-info">
+                <div class="patric-info-content">
+                    <h2>PATRIC</h2>
+                    <img src="/patric/images/bv-brc/patric-logo.png" alt="PATRIC Logo">
+                    <p>The Pathosystems Resource Integration Center (PATRIC) provides an extensive collection of integrated bacterial data, tools, and visualizations for genomic analysis to aid researchers in discovery and characterization of mechanisms of pathogenicity, supporting development of diagnostics, therapeutics, and vaccines.</p>
+                    <div class="patric-info-links">
+                        <ul>
+                            <li><a class="navigationLinkOut" href="https://www.youtube.com/watch?v=K3eL4i9vQBo&feature=emb_title">Quickstart Video</a></li>
+                            <li><a class="navigationLinkOut" href="https://docs.patricbrc.org/user_guides/">User Guides</a></li>
+                            <li><a class="navigationLinkOut" href="https://docs.patricbrc.org/tutorial/">Tutorials</a></li>
+                            <li><a class="navigationLinkOut" href="https://docs.patricbrc.org/common_tasks/">Common Tasks</a></li>
+                            <li><a class="navigationLinkOut" href="https://docs.patricbrc.org/cli_tutorial/">CLI Tutorial</a></li>
+                            <li><a class="navigationLinkOut" href="https://docs.patricbrc.org/videos/">Instructional Videos</a></li>
+                            <li><a class="navigationLinkOut" href="https://docs.patricbrc.org/contact.html">Contact Us / Provide Feedback</a></li>
+                        </ul>
+                    </div>
+                    <a href="https://patricbrc.org" target="_blank" class="hp-link"><img class="hp-img" src="/patric/images/bv-brc/patric-homepage.png" alt="PATRIC Homepage"></a>
+                </div>
+                <div class="patric-info-btn-links">
+                    <a class="navigationLinkOut btn btn-blue" href="https://patricbrc.org/">PATRIC</a>
+                </div>
+            </div>
+
+            <div class="ird-vipr-info">
+                <div class="ird-vipr-info-content">
+                    <h2>IRD AND ViPR</h2>
+                    <img class="ird-vipr-logo" src="/patric/images/bv-brc/ird-vipr-logo.png" alt="IRD and ViPR Logo">
+                    <p>The Influenza Research Database (IRD) and Virus Pathogen Resource (ViPR) provide a wide range of data, analysis and visualization tools, and personal workbenches for the virus research communities that facilitate understanding of viral pathogens and how they interact with their host, leading to new diagnostics, treatments and preventions. </p>
+                    <div class="ird-vipr-info-links">
+                        <ul>
+                            <li><a class="navigationLinkOut" href="https://www.fludb.org/brcDocs/IRDHelp/IRDhelpfile.htm">IRD Help Manual</a></li>
+                            <li><a class="navigationLinkOut" href="https://www.fludb.org/brc/influenzaTutorials.spg?decorator=influenza">IRD Tutorials &amp; Training Methods</a></li>
+                            <li><a class="navigationLinkOut" href="https://www.fludb.org/brc/problemReport.spg?decorator=influenza&category=science">Contact IRD</a></li>
+                        </ul>
+                        <ul>
+                            <li><a class="navigationLinkOut" href="https://www.viprbrc.org/brcDocs/ViPRHelp/ViPRhelpfile.htm">ViPR Help Manual</a></li>
+                            <li><a class="navigationLinkOut" href="https://www.viprbrc.org/brc/viprTutorials.spg?decorator=vipr">ViPR Tutorials &amp; Training Materials</a></li>
+                            <li><a class="navigationLinkOut" href="https://www.viprbrc.org/brc/problemReport.spg?decorator=vipr&category=science">Contact ViPR</a></li>
+                        </ul>
+                    </div>
+                    <a href="https://www.fludb.org/brc/home.spg?decorator=influenza" target="_blank" class="hp-link"><img class="hp-img hp-img1" src="/patric/images/bv-brc/ird-homepage.png" alt="IRD Homepage"></a>
+                    <a href="https://www.viprbrc.org/brc/home.spg?decorator=vipr" target="_blank" class="hp-link"><img class="hp-img hp-img2" src="/patric/images/bv-brc/vipr-homepage.png" alt="ViPR Homepage"></a>
+                </div>
+                <div class="ird-vipr-info-btn-links">
+                    <a class="navigationLinkOut btn btn-blue btn1" href="https://www.fludb.org/brc/home.spg?decorator=influenza">IRD</a>
+                    <a class="navigationLinkOut btn btn-blue btn2" href="https://www.viprbrc.org/brc/home.spg?decorator=vipr">ViPR</a>
+                </div>
+            </div>
+
             <div class="twitter-feed">
-                <a class="twitter-timeline" data-lang="en" data-height="385" data-dnt="true" data-theme="light" href="https://twitter.com/PATRICBRC?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
+                <a class="twitter-timeline" data-lang="en" data-height="310" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB?ref_src=twsrc%5Etfw">Tweets by PATRICBRC</a>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
             </div>
         </div>
@@ -230,13 +123,8 @@
     </div>
 </footer>
 
-<!-- Hide Global Search in p3header when on new homepage -->
 <style>
     body.patric {
         min-width: 830px;
-    }
-
-    #p3header-search {
-        display: none;
     }
 </style>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>BV-BRC Team | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                          <h1 id="bv-brc-team">BV-BRC Team</h1>
+                          <div class="teams">
+                            <div class="argonne-team">
+                                <img src="../patric/images/bv-brc/uc-logo.png" alt="University of Chicago Logo">
+                                <h2 id="university-of-chicago--argonne-national-laboratory--fig">University of Chicago / Argonne National Laboratory / FIG</h2>
+                                <ul>
+                                <li><strong>Rick Stevens, Co-Principal Investigator</strong></li>
+                                <li>Thomas Brettin</li>
+                                <li>Philippe Chlenski</li>
+                                <li>Neal Conrad</li>
+                                <li>James Davis</li>
+                                <li>Emily Dietrich</li>
+                                <li>Irina Goltsman</li>
+                                <li>Marcus Nguyen</li>
+                                <li>Daniel Murphy-Olson</li>
+                                <li>Robert Olson</li>
+                                <li>Ross Overbeek</li>
+                                <li>Bruce Parrello</li>
+                                <li>Gordon Pusch</li>
+                                <li>Maulik Shukla</li>
+                                <li>Chris Thomas</li>
+                                <li>Veronika Vonstein</li>
+                                <li>Harry Yoo</li>
+                                </ul>
+                              </div>
+                              <div class="jvci-team">
+                                <img src="../patric/images/bv-brc/jcvi-logo.svg" alt="J. Craig Venter Institute Logo">
+                                <h2 id="j-craig-venter-institute">J. Craig Venter Institute</h2>
+                                <ul>
+                                <li><strong>Richard H. Scheuermann, Co-Principal Investigator</strong></li>
+                                <li>Brian Aevermann</li>
+                                <li>James Christensen</li>
+                                <li>Jian Lu</li>
+                                <li>Anna Niewiadomska</li>
+                                <li>Indresh Singh</li>
+                                <li>Lucy Stewart</li>
+                                <li>Gene Tan</li>
+                                <li>Margo VanOeffelen</li>
+                                <li>Zachary Wallace</li>
+                                <li>Yun Zhang</li>
+                                <li>Christian Zmasek</li>
+                                </ul>
+                              </div>
+                              <div class="virginia-team">
+                                <img src="../patric/images/bv-brc/uva-logo.png" alt="University of Virginia Logo">
+                                <h2 id="biocomplexity-institute-and-initiative-at-university-of-virginia">Biocomplexity Institute and Initiative at University of Virginia</h2>
+                                <ul>
+                                <li>Clark Cucinell</li>
+                                <li>Allan Dickerman</li>
+                                <li>Ron Kenyon</li>
+                                <li>Chunhong Mao</li>
+                                <li>Dustin Machi</li>
+                                <li>Andrew Warren</li>
+                                <li>Rebecca Wattam</li>
+                                <li>Dawen Xie</li>
+                                </ul>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>
