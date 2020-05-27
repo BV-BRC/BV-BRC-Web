@@ -276,37 +276,54 @@ define([
         validTypes: ['*'],
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
-        tooltip: 'Switch to Feature View.  Press and Hold for more options.',
-        pressAndHold: function (selection, button, opts, evt) {
-          console.log('PressAndHold');
-          console.log('Selection: ', selection, selection[0]);
-          popup.open({
-            popup: new PerspectiveToolTipDialog({
-              perspective: 'Feature',
-              //perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[14].feature_id)
-              //perspectiveUrl: '/view/FeatureGroup/' + encodePath(selection[0].Gene_ID)
-            }),
-            around: button,
-            orient: ['below']
-          });
-        }
-      }, function (selection) {
-        var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
-        //sel = sel.replace("|", "%7C");
-        var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
-
-        when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
-          handleAs: 'json',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-            'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
-          
+        //tooltip: 'Switch to Feature View.  Press and Hold for more options.',
+        tooltip: 'Switch to Feature View.',
+        pressAndHold: function(selection, button, opts, evt) {
+          if (selection[0].Gene_ID) {
+            var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+            var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+  
+            when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+              handleAs: 'json',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                'X-Requested-With': null,
+                Authorization: (window.App.authorizationToken || '')
+              
+              }
+            }), function(response){
+              popup.open ({
+                popup: new PerspectiveToolTipDialog ({
+                  perspective: 'Feature',
+                  perspectiveUrl: '/view/Feature/' + response[0].feature_id
+                }),
+                around: button,
+                orient: ['below']
+              });
+              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+            }); 
           }
-        }), function(response){
-          Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id})
-        });        
+        },
+      
+      }, function (selection) {
+        if (selection[0].Gene_ID) {
+          var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+          var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+
+          when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }), function(response){
+            Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+          }); 
+        }       
       });
 
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
@@ -1444,8 +1461,13 @@ define([
             params.file = { metadata: obj };
             break;
           default:
-            panelCtor = window.App.getConstructor('p3/widget/viewer/File');
+            if ((obj.name).includes('tsv')) {
+              panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
+            } else {
+              panelCtor = window.App.getConstructor('p3/widget/viewer/File');
+            }
             params.file = { metadata: obj };
+            
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
