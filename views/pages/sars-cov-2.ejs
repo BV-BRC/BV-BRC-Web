@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>SARS-CoV-2 | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <h1 id="sars-cov-2">SARS-CoV-2</h1>
+                            <div class="sars-top">
+                                <div class="sars-top-content">
+                                    <p><strong>Taxonomy:</strong> Group IV ((+)ssRNA); Coronaviridae; Coronavirinae; Betacoronavirus; Sarbecovirus; Severe acute respiratory syndrome coronavirus 2</p>
+                                    <p><strong>Virion:</strong> enveloped, spherical, 60-140 nm in diameter with spikes of about 9-12 nm</p>
+                                    <p><strong>Genome:</strong> ~30 kb positive-sense, single-stranded RNA</p>
+                                    <p><strong>RNA Transcript:</strong> 5' cap, 3' poly-A tail</p>
+                                    <p><strong>Proteome:</strong> 10 proteins</p>
+                                    <p><strong>Transmission:</strong> Some early cases had some link to a seafood and animal market, suggesting animal-to-human transmission. Later cases indicate sustained human-to-human transmission.</p>
+                                    <p><strong>Phylogeny:</strong> More closely related to bat-SL-CoVZC45 and bat-SL-CoVZXC21 than SARS</p>
+                                    <p><strong>Epidemiology:</strong> First reported in Wuhan, China, in December 2019. The virus has rapidly spread to other regions of China and other countries, including Australia, Canada, France, Japan, Singapore, South Korea, Taiwan, Thailand, Vietnam, and the US.</p>
+                                    <p><strong>Clinical:</strong> Reported 2019-nCoV cases have ranged from no symptoms to severe pneumonia and death. Symptoms can include fever, cough, shortness of breath. </p>
+                                    <p><strong>References:</strong> GenBank: <a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MN908947&decorator=corona">MN908947</a>; PMID: <a href="https://www.ncbi.nlm.nih.gov/pubmed/31978945">31978945</a>; CDC: <a href="http://www.cdc.gov/coronavirus/2019-nCoV/">2019-nCoV</a></p>
+                                    <p><strong>Other Names:</strong> 2019-nCoV</p>
+                                </div>
+                                <img src="../patric/images/bv-brc/sars-cov-2.jpg" alt="SARS-CoV-2">
+                            </div>
+                            <div class="sars-mid">
+                                <div class="sars-mid-links">
+                                    <h3>2019-nCov Data Highlights</h3>
+                                    <p><a href="https://www.viprbrc.org/brc/vipr_genome_search.spg?method=SubmitForm&decorator=corona&searchId=44742&runFrom=persistent">SARS-CoV-2 (2019-nCoV) genomes</a></p>
+                                    <br>
+
+                                    <h3>Latest Analysis Reports</h3>
+                                    <p>May 4, 2020: An updated <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/SARS_CoV_2_ViPR_report_4MAY2020.pdf">comparative genomics of SARS-CoV-2 (2019-nCoV)</a>.</p>
+                                    <p>Mar 20, 2020: A <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/2020-Mar-20-Corona_Host_Factor_Response_Experiments-v5.pdf">Coronavirus Host Factor Response Experiments Report</a> summarizing the transcriptomic response to SARS- and MERS-CoV infection</p>
+                                    <p>Feb 29, 2020: SARS-CoV-2 (2019-nCoV) <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/SSGCID_nCoV_structure_report_26FEB2019.pdf">Protein Structures Report</a>.</p>
+                                    <p>Jan 30, 2020: A <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/30JAN2020_2019-nCoV_genomics_report.pdf">genomic report</a> of the 2019 Novel Coronavirus.</p>
+                                    <p><a href="https://biorxiv.org/cgi/content/short/2020.02.12.946087v1">Analysis of candidate targets</a> for immune responses in 2019-Novel Coronavirus (nCoV).</p>
+                                    <p><a href="https://www.bacpathbrc.org/brcDocs/documents/announcements/Corona/2019-nCoV_ViPR_report_24JAN2020_v1.1.pdf">A preliminary comparative genomics</a> (revised) of the 2019 Novel Coronavirus (2019-nCoV).</p>
+                                    <br>
+
+                                    <h3>Epidemiology Reports</h3>
+                                    <p><a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">WHO Situation Report</a></p>
+                                    <p><a href="https://www.cdc.gov/coronavirus/2019-nCoV/summary.html">CDC Situation Report</a></p>
+                                    <br>
+
+                                    <h3>Scientific Publications</h3>
+                                    <p><a href="https://www.ncbi.nlm.nih.gov/pubmed/?term=2019-nCoV" target="_blank">Latest Publications</a></p>
+                                    <br>
+                                </div>
+
+                                <div class="sars-mid-news">
+                                    <h3>Virus News</h3>
+                                    <p><strong>Last Updated: May 4, 2020</strong></p>
+                                    <ul style="list-style-type: circle;">
+                                        <li>May 4, 2020: An updated <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/SARS_CoV_2_ViPR_report_4MAY2020.pdf">comparative genomics</a> of SARS-CoV-2 (2019-nCoV).</li>
+                                        <li>Mar 20, 2020: A <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/2020-Mar-20-Corona_Host_Factor_Response_Experiments-v5.pdf">Coronavirus Host Factor Response Experiments Report</a> summarizing the transcriptomic response to SARS- and MERS-CoV infection</li>
+                                        <li>Feb 29, 2020: SARS-CoV-2 (2019-nCoV) <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/SSGCID_nCoV_structure_report_26FEB2019.pdf">Protein Structures Report</a></li>
+                                        <li>Analysis of <a href="https://biorxiv.org/cgi/content/short/2020.02.12.946087v1">candidate targets</a> for immune responses in 2019-Novel Coronavirus (nCoV)</li>
+                                        <li>CDC's 2019 Novel Coronavirus (2019-nCoV) <a href="https://www.cdc.gov/coronavirus/2019-ncov/summary.html">Situation Summary</a> report </li>
+                                        <li>Jan 30, 2020 : A <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/30JAN2020_2019-nCoV_genomics_report.pdf">genomic report</a> of the 2019 Novel Coronavirus (2019-nCoV) </li>
+                                        <li>Doherty Institute scientists first to grow and share Wuhan coronavirus <a href="https://www.doherty.edu.au/news-events/news/coronavirus">Wuhan coronavirus</a></li>
+                                        <li>As of January 26, 2020 there have been 2,014 confirmed cases of 2019-nCoV in 11 countries, with 56 deaths, according to the most recent <a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports/">WHO Situation Report</a></li>
+                                        <li>A preliminary <a href="https://www.viprbrc.org/brcDocs/documents/announcements/Corona/2019-nCoV_ViPR_report_24JAN2020_v1.1.pdf">comparative genomics</a> (revised) of the 2019 Novel Coronavirus (2019-nCoV)</li>
+                                        <li>The first genome sequence for the 2019 Novel <a href="https://www.cdc.gov/coronavirus/2019-nCoV/summary.html">Coronavirus</a> (2019-nCoV) from Wuhan, China is now available in ViPR. <a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MN908947&decorator=corona">View Genome</a>.</li>
+                                    </ul>
+                                    <p><a href="https://www.ncbi.nlm.nih.gov/pubmed/?term=2019-nCoV">More 2019-nCoV news</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>

@@ -634,3 +634,50 @@
 #bv-brc-page .vipr-publications h3:first-of-type {
   margin-top: 20px;
 }
+
+#bv-brc-page .sars-top,
+#bv-brc-page .sars-mid {
+  display: flex;
+  flex-direction: row;
+}
+
+.sars-top {
+
+}
+
+.sars-top .sars-top-content {
+  flex: 60%;
+}
+
+.sars-top img {
+  flex: 40%;
+}
+
+.sars-mid {
+  padding-top: 40px;
+}
+
+.sars-mid .sars-mid-links {
+  flex: 1;
+}
+
+.sars-mid .sars-mid-links h3 {
+  color: var(--main-text-light)!important;
+  background-color: var(--blue);
+  padding: 5px;
+}
+
+.sars-mid .sars-mid-news {
+  flex: 1;
+  padding-left: 50px;
+}
+
+.sars-mid .sars-mid-news h3 {
+  color: var(--main-text-light)!important;
+  background-color: var(--blue);
+  padding: 5px;
+}
+
+.sars-mid-news ul {
+  font-weight: 300;
+}
