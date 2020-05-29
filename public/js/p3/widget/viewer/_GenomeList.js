@@ -359,9 +359,7 @@ define([
       });
       this.transcriptomics = new TranscriptomicsContainer({
         title: 'Transcriptomics',
-        id: this.viewer.id + '_transcriptomics',
-        disabled: false,
-        state: this.state
+        id: this.viewer.id + '_transcriptomics'
       });
 
       this.interactions = new InteractionsContainer({
