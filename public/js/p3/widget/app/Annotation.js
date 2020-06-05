@@ -17,6 +17,7 @@ define([
     applicationDescription: 'The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features.',
     applicationHelp: 'user_guides/services/genome_annotation_service.html',
     tutorialLink: 'tutorial/genome_annotation/annotation.html',
+    videoLink: 'videos/genome_annotation_service.html',
     pageTitle: 'Genome Annotation Service',
     required: true,
     genera_four: ['Acholeplasma', 'Entomoplasma', 'Hepatoplasma', 'Hodgkinia', 'Mesoplasma', 'Mycoplasma', 'Spiroplasma', 'Ureaplasma'],
