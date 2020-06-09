@@ -112,21 +112,21 @@ app.use('/patric/', express.static(path.join(__dirname, 'public/patric/')));
 app.use('/public/', express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
 // app.use('/home-prev', prevHome);
-app.post('/reportProblem', reportProblem);
-app.use('/workspace', workspace);
-app.use('/content', contentViewer);
-app.use('/webpage', contentViewer);
-app.use('/user', contentViewer);
-app.use('/sulogin', contentViewer);
-app.use('/remote', remotePage);
-app.use('/view', viewers);
-app.use('/search', search);
-app.use('/app', apps);
-app.use('/job', jobs);
-app.use('/status', systemStatus);  // system status page
-app.use('/help', help);
-app.use('/uploads', uploads);
-app.use('/users', users);
+// app.post('/reportProblem', reportProblem);
+// app.use('/workspace', workspace);
+// app.use('/content', contentViewer);
+// app.use('/webpage', contentViewer);
+// app.use('/user', contentViewer);
+// app.use('/sulogin', contentViewer);
+// app.use('/remote', remotePage);
+// app.use('/view', viewers);
+// app.use('/search', search);
+// app.use('/app', apps);
+// app.use('/job', jobs);
+// app.use('/status', systemStatus);  // system status page
+// app.use('/help', help);
+// app.use('/uploads', uploads);
+// app.use('/users', users);
 
 // MTB Taxon Overview Route
 app.use('/pathogens/mtb', [
