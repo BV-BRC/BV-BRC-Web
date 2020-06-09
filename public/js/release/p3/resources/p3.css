@@ -14742,7 +14742,6 @@ div.appsublabel {
 }
 .DataItemValue {
     vertical-align: top;
-    word-break: break-all;
 }
 .DataItemSectionNotFound {
     font-style: italic;
@@ -16694,6 +16693,10 @@ table tr.even td {
 }
 .fa:hover {
     color: #e75200;
+}
+.tutorialButton > a:hover,
+.videoButton > a:hover {
+    text-decoration: none;
 }
 .fileUploadButton {
     position: relative;

@@ -71,12 +71,12 @@ define("p3/widget/viewer/JobResult", [
         this._resultType = this.data.autoMeta.app.id;
         // console.log("[JobResult] _resultType:",this._resultType);
       }
-      if (this._resultType == 'GenomeAssembly') {
-        this._appLabel = 'Genome Assembly';
-      }
-      else {
-        this._appLabel = this._resultType;
-      }
+      //      if (this._resultType == 'GenomeAssembly') {
+      //        this._appLabel = 'Genome Assembly';
+      //      }
+      //      else {
+      this._appLabel = this._resultType;
+      //      }
     },
     getExtraMetaDataForHeader: function (job_output) {
       return job_output;

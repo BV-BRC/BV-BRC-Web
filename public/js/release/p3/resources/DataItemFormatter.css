@@ -37,7 +37,6 @@
 }
 .DataItemValue {
     vertical-align: top;
-    word-break: break-all;
 }
 .DataItemSectionNotFound {
     font-style: italic;
