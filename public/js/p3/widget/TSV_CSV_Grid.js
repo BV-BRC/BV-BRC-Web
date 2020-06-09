@@ -1,16 +1,24 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './Grid'
+  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
+  './Grid', './GridSelector', './TsvCsvColumns', 'dojo/store/Memory'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
-  Grid
+  Grid, selector, TsvCsvColumns, store
 ) {
+
+  var store = new store({});
+
   return declare([Grid], {
     region: 'center',
     deselectOnRefresh: true,
-/*
+    store: store,
+    //columns: TsvCsvColumns.variationColumns,
+    columns: lang.mixin({
+      'Selection Checkboxes': selector({ unhidable: true })
+    }, TsvCsvColumns.variationColumns),
+/*  coluumns example
     columns: {
       column0: {label: 'Col0', field: "column0" },
       column1: {label: 'Col1', field: "column1" },
@@ -74,12 +82,23 @@ define([
     },
 
     setColumns: function(newColumns) {
-      var gridColumns = newColumns;
-      //columns: gridColumns
-      //this.columns = gridColumns;
-      //this.columns.set(gridColumns);
-      //columns=gridColumns;
-      this._setColumns(gridColumns);
+      //this._setColumns(newColumns);
+      //selector({unhidable: true});
+      //this.set("columns", lang.mixin(newColumns, {'Selection Checkboxes' : selector({ unhidable: true})}));
+      //this._setColumns(selector({ label: '', unhidable: true}));
+      //newColumns.push({'Selection Checkboxes' : selector()});
+      //newColumns.push(selector({ label: '', unhidable: true}));
+      //this._setColumns(newColumns);
+      //var mySelector = { 'Selection Checkboxes' : selector({ unhidable: true }) };
+      //newColumns.push(mySelector);
+      //this.set("columns",
+      //  {'Selection Checkboxes' : selector({})},
+      //   newColumns);
+      //this.set("columns", newColumns);
+    },
+
+    setStore: function(tsvStore) {
+      this.set ('store', tsvStore);
     },
 
     setData: function(newData) {

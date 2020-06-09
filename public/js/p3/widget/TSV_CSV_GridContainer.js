@@ -18,7 +18,7 @@ define([
   });
 
   var tsvGrid = new TSV_CSV_Grid ({
-    region: 'center'
+    region: 'center',
   }); 
 
   return declare([GridContainer], {
@@ -27,12 +27,15 @@ define([
     enableAnchorButton: true,
     maxDownloadSize: 25000,
     setColumns: function (newColumns) {
-      var gridColumns = newColumns;         //  DEV DLB Stop Here!!
+      var gridColumns = newColumns;       
       //TSV_CSV_Grid.setColumns(gridColumns);
-      tsvGrid.setColumns(gridColumns);
+      //tsvGrid.setColumns(gridColumns);
     },
     setData: function(newData) {
       tsvGrid.setData(newData);
+    },
+    setStore: function (tsvStore) {
+      tsvGrid.setStore (tsvStore);
     },
     containerActions: GridContainer.prototype.containerActions.concat([
     [
