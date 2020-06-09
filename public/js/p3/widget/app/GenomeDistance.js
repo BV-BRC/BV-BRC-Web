@@ -132,7 +132,7 @@ define([
         }
         document.getElementsByClassName('searchBy')[0].innerHTML = path;
         WorkspaceManager.getObject(path, true).then(lang.hitch(this, function (file) {
-          var isZip = (file.name.endsWith('.gz') || file.name.endsWith('.zip'));
+          var isZip = (file.name.endsWith('.bz2') || file.name.endsWith('.zip') || file.name.endsWith('.bzip2'));
           if (file.link_reference && file.size > 0 && this.fasta.type.indexOf(file.type) >= 0 && !isZip) {
             var q = {
               method: 'Minhash.compute_genome_distance_for_fasta',
@@ -142,7 +142,7 @@ define([
           } else {
             var message = 'File is not loaded completely.';
             if (isZip) {
-              message = 'Currently compressed files not supported';
+              message = 'Currently, only gzip compression is supported.';
             }
             Topic.publish('GenomeDistance_UI', 'showErrorMessage', message);
             def.reject();

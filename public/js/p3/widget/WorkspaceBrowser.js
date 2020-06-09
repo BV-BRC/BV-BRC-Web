@@ -583,22 +583,10 @@ define([
         });
       }, self.path.split('/').length < 3);
 
-      this.browserHeader.addAction('ViewCodonTree', 'fa icon-tree2 fa-2x', {
-        label: 'VIEW',
-        multiple: false,
-        validTypes: ['CodonTree'],
-        tooltip: 'View Codon Tree'
-      }, function (selection) {
-        var sel = selection[0],
-          path = sel.path + '.' + sel.name + '/codontree_treeWithGenomeIds.nwk';
-
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path) });
-      }, false);
-
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['PhylogeneticTree'],
+        validTypes: ['PhylogeneticTree', 'CodonTree'],
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
@@ -1377,6 +1365,10 @@ define([
                     d = 'p3/widget/viewer/GenomeComparison';
                   }
                   break;
+                case 'GenomeAssembly2':
+                case 'GenomeAssembly':
+                  d = 'p3/widget/viewer/GenomeAssembly';
+                  break;
                 case 'GenomeAnnotation':
                 case 'GenomeAnnotationGenbank':
                   d = 'p3/widget/viewer/GenomeAnnotation';
@@ -1389,6 +1381,8 @@ define([
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
+                default:
+                  console.log('A viewer could not be found for id: ' + id);
               }
             }
             panelCtor = window.App.getConstructor(d);

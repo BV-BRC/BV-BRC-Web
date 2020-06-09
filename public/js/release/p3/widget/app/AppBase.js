@@ -107,17 +107,6 @@ define("p3/widget/app/AppBase", [
         });
       }
 
-      var tutorials = query('.tutorialButton');
-      var tutorialLink = PathJoin(this.docsServiceURL, (this.tutorialLink || 'tutorial/'));
-      tutorials.forEach(function (item) {
-        if (domClass.contains(item, 'tutorialInfo')) {
-          on(item, 'click', function () {
-            // console.log(tutorialLink)
-            window.open(tutorialLink, 'Tutorials');
-          });
-        }
-      });
-
     },
 
     onOutputPathChange: function (val) {
