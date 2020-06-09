@@ -160,9 +160,9 @@
 }
 
 #bv-brc-home .patric-info-content .hp-img {
-  width: 150px;
+  width: 180px;
   margin-top: 10px;
-  margin-left: 113px;
+  margin-left: 98px;
   border: 2px solid var(--green)
 }
 
@@ -178,7 +178,7 @@
 
 #bv-brc-home .patric-info .patric-info-btn-links {
   background: var(--gray-bg);
-  margin-top: -20px;
+  margin-top: -6px;
 }
 
 #bv-brc-home .patric-info .patric-info-btn-links .btn {
@@ -207,17 +207,17 @@
 }
 
 #bv-brc-home .ird-vipr-info-content .hp-img {
-  width: 150px;
-  margin-top: 10px;
+  width: 180px;
+  margin-top: 20px;
   border: 2px solid var(--green)
 }
 
 #bv-brc-home .ird-vipr-info-content .hp-img1 {
-  margin-left: 15px;
+  margin-left: 0px;
 }
 
 #bv-brc-home .ird-vipr-info-content .hp-img2 {
-  margin-left: 25px;
+  margin-left: 0px;
 }
 
 #bv-brc-home .ird-vipr-info-content .hp-img:hover,
@@ -238,7 +238,7 @@
 
 #bv-brc-home .ird-vipr-info-btn-links {
   background: var(--gray-bg);
-  margin-top: -9px;
+  margin-top: -5px;
 }
 
 #bv-brc-home .ird-vipr-info-btn-links .btn1 {
