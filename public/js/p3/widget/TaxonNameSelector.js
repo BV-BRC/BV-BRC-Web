@@ -11,7 +11,7 @@ define([
     apiServiceUrl: window.App.dataAPI,
     promptMessage: 'Taxonomy name of the organism being annotated.',
     missingMessage: 'Taxonomy Name must be provided.',
-    placeHolder: 'e.g. Bacillus Cereus-2',
+    placeHolder: 'e.g. Bacillus Cereus',
     searchAttr: 'taxon_name',
     resultFields: ['taxon_name', 'taxon_id', 'taxon_rank', 'lineage_names'],
     rankAttrs: ['taxon_rank'],
