@@ -539,7 +539,7 @@ define([
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
-        this.assembly_additional_parameters_block.style.display = 'block';
+        // this.assembly_additional_parameters_block.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
         this.contigsFile.reset();
