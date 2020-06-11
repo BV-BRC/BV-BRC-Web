@@ -25,15 +25,15 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly2',
-    pageTitle: 'Comprehensive SARS-CoV-2 Analysis',
+    baseClass: 'App',
+    pageTitle: 'SARS-CoV-2 Genome Analysis',
     templateString: Template,
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
-    applicationLabel: 'Comprehensive SARS-CoV-2 Analysis',
-    applicationDescription: 'The Comprehensive SARS-CoV-2 Analysis Service provides a streamlined "meta-service" that accepts raw reads and performs a comprehensive analysis, including genome assembly, annotation, variation analysis, identification of nearest isolates from the same outbreak, and construction of phylogenetic tree. ',
-    applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
-    tutorialLink: 'tutorial/comprehensive-genome-analysis/comprehensive-genome-analysis2.html',
+    applicationLabel: 'SARS-CoV-2 Genome Analysis',
+    applicationDescription: 'The SARS-CoV-2 Genome Analysis Service provides a streamlined "meta-service" that accepts raw reads and performs a comprehensive analysis, including genome assembly, annotation, variation analysis, identification of nearest isolates from the same outbreak, and construction of phylogenetic tree. ',
+    applicationHelp: 'user_guides/services/SARS-CoV-2-Genome-Analysis.html',
+    tutorialLink: 'tutorial/SARS-CoV-2-Genome-Analysis/SARS-CoV-2-Genome-Analysis.html',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,
