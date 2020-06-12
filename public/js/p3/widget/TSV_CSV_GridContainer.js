@@ -26,17 +26,26 @@ define([
     containerType: 'csvFeature',
     enableAnchorButton: true,
     maxDownloadSize: 25000,
+    onSetState: function (attr, oldState, state) {
+      if (!state) {
+        return;
+      }
+      if (tsvGrid) {
+        tsvGrid.set('state', state);
+      }
+      
+    },
     setColumns: function (newColumns) {
       var gridColumns = newColumns;       
       //TSV_CSV_Grid.setColumns(gridColumns);
       //tsvGrid.setColumns(gridColumns);
     },
-    setData: function(newData) {
-      tsvGrid.setData(newData);
-    },
-    setStore: function (tsvStore) {
-      tsvGrid.setStore (tsvStore);
-    },
+    //setData: function(newData) {
+    //  tsvGrid.setData(newData);
+    //},
+    //setStore: function (tsvStore) {
+    //  tsvGrid.setStore (tsvStore);
+    //},
     containerActions: GridContainer.prototype.containerActions.concat([
     [
       'DownloadTable',

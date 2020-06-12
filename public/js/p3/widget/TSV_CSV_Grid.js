@@ -1,19 +1,22 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
-  './Grid', './GridSelector', './TsvCsvColumns', 'dojo/store/Memory'
+  './Grid', './GridSelector', './TsvCsvColumns', '../store/TsvCsvMemoryStore'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
-  Grid, selector, TsvCsvColumns, store
+  Grid, selector, TsvCsvColumns, TsvStore
 ) {
 
-  var store = new store({});
+  var tsvStore = new TsvStore({});
 
   return declare([Grid], {
     region: 'center',
+    query: '',
     deselectOnRefresh: true,
-    store: store,
+    store: tsvStore,
+    //store: null,
+    state: null,
     //columns: TsvCsvColumns.variationColumns,
     columns: lang.mixin({
       'Selection Checkboxes': selector({ unhidable: true })
@@ -44,6 +47,33 @@ define([
       column21: {label: 'Col21', field: "column21" }
       },
 */
+    constructor: function (options) {
+      //this.primaryKey = parent.primaryKey;
+    },
+
+    _setState: function (state) {
+      if (!state) {
+        return;
+      }
+
+      if (!this.store) {
+        this.set('store', this.createStore());
+      } else {
+        //this.store.set('state', state);
+        tsvStore.set('state', state)
+      }
+      this.refresh();
+    },
+
+    // DEV DLB not sure we need this.  The data should always be here, and if they are not, they never will be.
+    createStore: function () {
+      if (this.store) {
+        console.log('returning existing store');
+        this.store.watch('refresh', 'refresh');
+        return this.store;
+      }
+    },
+
     startup: function() {
       var _self = this;  
 

@@ -2,14 +2,18 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
-  'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', 'dojo/store/Memory'
+  'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
+  './Base'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
-  array, selector, lang, TsvCsvStore
+  array, selector, lang, TsvCsvStore, ViewerBase
 ) {
-  return declare([BorderContainer], {
+
+  var tsvGC = new TSV_CSV_GridContainer();
+
+  return declare([ViewerBase], {    // was BorderContainer
     baseClass: 'CSV_Viewer',
     disabled: false,
     containerType: 'csvFeature',
@@ -37,6 +41,7 @@ define([
         this.refresh();
       }
     },
+
     _setFilepathAttr: function (val) {
       // console.log('[File] _setFilepathAttr:', val);
       this.filepath = val;
@@ -46,6 +51,15 @@ define([
         _self.refresh();
       });
     },
+
+    //onSetState: function (attr, oldVal, state) {
+
+    //  if (!state) {
+    //    return;
+    //  }
+    //  this.tsvGC.set('state', state);
+    //},
+
     startup: function () {
       if (this._started) {
         return;
@@ -119,6 +133,7 @@ define([
           this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
           if (this.file.data || (!this.preload && this.url)) {
+
             // get data for tsv (currently typed as txt)
             if (this.file.metadata.type == 'txt') {
               // split on new lines, to get the grid rows
@@ -151,21 +166,27 @@ define([
 							columnData.push(dataRow);
             }
 
-            var tsvCsvStore = new TsvCsvStore({data: columnData});
+            // note:  dojo/store/Memory works but specialty store does not.
+            // 6/10 moving store to the grid, as per Dustin's suggestion.  
+            //var tsvCsvStore = new TsvCsvStore({dataType: this.file.metadata.type, rawData: this.file.data, data: columnData});
+            //tsvCsvStore.loadData();
+            var tsvCsvStore = new TsvCsvStore({
+              type: 'separatedValues',
+              topidId: 'TsvCsv'
+            }); 
 
             var tsvGC = new TSV_CSV_GridContainer({
               title: 'TSV View',
               id: this.viewer.id + '_tsv',
-              state: this.state,
               disable: false,
-              //store: tsvCsvStore
+              store: tsvCsvStore
             });
+            tsvGC.set('state', {dataType: this.file.metadata.type, data: this.file.data});
             //tsvGC.setData(columnData);
             tsvGC.setColumns(gridColumns);
-            tsvGC.setStore(tsvCsvStore);
+            //tsvGC.setStore(tsvCsvStore);
 
 						// make a grid and fill it 
-            //this.viewer.addChild(tsvGC);
             //this.viewer.addChild(tsvGC.gridCtor);       // DLB was set
             this.viewer.set('content', tsvGC.gridCtor);       // DLB was set
           } else {
