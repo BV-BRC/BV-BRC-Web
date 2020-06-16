@@ -13,7 +13,7 @@ define([
     'baseClass': '',
     templateString: Template,
     callbackURL: '',
-    loginMethod: 'vipr',
+    loginMethod: 'patric',
     validateViprCreds: function (evt) {
       var btn = this.submitViprBtn;
       btn.setDisabled(true);
@@ -97,8 +97,7 @@ define([
         }, function (err) {
           var data = err.response.data;
           console.log('vipr login error: ', data);
-          var dataObj = JSON.parse(data);
-          document.getElementsByClassName('loginError')[0].innerHTML = dataObj.message;
+          document.getElementsByClassName('viprLoginError')[0].innerHTML = data.error;
         });
       } else if (this.loginMethod == 'patric') {
         var vals = this.getValues();
@@ -152,43 +151,44 @@ define([
       this.resetPWbutton.set('disabled', true);
     },
     makeFPform: function () {
-      document.getElementsByClassName('loginForm')[0].style.display = 'none';
-      document.getElementsByClassName('pwReset')[0].style.display = 'block';
+      this.domNode.getElementsByClassName('loginForm')[0].style.display = 'none';
+      this.domNode.getElementsByClassName('pwReset')[0].style.display = 'block';
       var loginf2 = document.getElementsByClassName('loginForm')[1];
       if (loginf2 !== undefined) {
-        var loginF1 = document.getElementsByClassName('loginForm')[0];
-        var pwR1 = document.getElementsByClassName('pwReset')[0];
+        var loginF1 = this.domNode.getElementsByClassName('loginForm')[0];
+        var pwR1 = this.domNode.getElementsByClassName('pwReset')[0];
         loginF1.parentNode.removeChild(loginF1);
         pwR1.parentNode.removeChild(pwR1);
         loginf2.style.display = 'none';
-        document.getElementsByClassName('pwReset')[0].style.display = 'block';
+        this.domNode.getElementsByClassName('pwReset')[0].style.display = 'block';
       }
     },
     viprForgotPassNotice: function () {
       alert('The forgot password option for ViPR is not implemented... yet?.');
     },
     altLogin: function () {
-      var dlgNode = query(this.domNode).parents('.dijitDialog')[0];
+      // var dlgNode = query(this.domNode).parents('.dijitDialog')[0];
 
       // if in dialog
-      var dlg;
-      if (dlgNode) {
-        dlg = registry.byNode(dlgNode);
-      }
+      // if (dlgNode) {
+      //  var dlg = registry.byNode(dlgNode);
+      // }
 
       this.loginMethod = this.loginMethod == 'vipr' ? 'patric' : 'vipr';
       if (this.loginMethod == 'vipr') {
-        if (dlg) dlg.set('title', 'Login with ViPR / IRD');
-        document.querySelector('.patric-login').style.display = 'none';
-        document.querySelector('.vipr-login').style.display = 'block';
-        document.querySelector('.alt-login-vipr').style.display = 'none';
-        document.querySelector('.alt-login-patric').style.display = 'block';
+        // if (dlg) dlg.set('title', 'Login with ViPR / IRD');
+        this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/ird-vipr-login-icon.png" width="30" height="30" style="margin-right: 10px; border-right:2px solid #aaa; padding-right: 10px;"/> Sign in with your ViPR / IRD account';
+        this.domNode.querySelector('.patric-login').style.display = 'none';
+        this.domNode.querySelector('.vipr-login').style.display = 'block';
+        this.domNode.querySelector('.alt-login-vipr').style.display = 'none';
+        this.domNode.querySelector('.alt-login-patric').style.display = 'block';
       } else if (this.loginMethod == 'patric') {
-        if (dlg) dlg.set('title', 'Login with PATRIC');
-        document.querySelector('.vipr-login').style.display = 'none';
-        document.querySelector('.patric-login').style.display = 'block';
-        document.querySelector('.alt-login-patric').style.display = 'none';
-        document.querySelector('.alt-login-vipr').style.display = 'block';
+        // if (dlg) dlg.set('title', 'Login with PATRIC');
+        this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/patric-login-icon.jpg" width="30" height="30" style="margin-right: 10px;border-right:2px solid #aaa; padding-right: 10px;"/> Sign in with your PATRIC account';
+        this.domNode.querySelector('.vipr-login').style.display = 'none';
+        this.domNode.querySelector('.patric-login').style.display = 'block';
+        this.domNode.querySelector('.alt-login-patric').style.display = 'none';
+        this.domNode.querySelector('.alt-login-vipr').style.display = 'block';
       }
     }
   });

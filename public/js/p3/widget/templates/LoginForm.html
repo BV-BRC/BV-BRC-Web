@@ -1,9 +1,14 @@
 <div style="display: inline-block;">
+  <h4 class="alt-login-note" style="line-height: 2.0;">
+    <img class="pull-left" src="/patric/images/patric-login-icon.jpg" width="30" height="30" style="margin-right: 10px; border-right:2px solid #aaa; padding-right: 10px;"/>
+    Sign in with your PATRIC account
+  </h4>
   <div class="loginForm pull-left" style="width: 350px; margin-right: 10px; border-right: 1px solid #444;">
     <form
       dojoAttachPoint="containerNode"
       class="${baseClass} PanelForm vipr-login"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate"
+      style="display: none;"
     >
       <div class="">
         <div style="padding:2px; margin:10px;">
@@ -33,10 +38,15 @@
       </div>
 
       <div class="messageContainer workingMessage">
-        Logging into BV-BRC with ViPR account....
+        Signing into BV-BRC...
       </div>
       <div class="messageContainer errorMessage">
-        We were unable to log you in with the credentials provided.
+        We were unable to sign you in with the credentials provided.
+      </div>
+
+
+      <div style="font-size:.85em; margin:20px; float: right;">
+        <a class="forgotPW" data-dojo-attach-event="click: viprForgotPassNotice">Forgot your password?</a>
       </div>
 
       <div style="padding:2px; margin:10px; float: left;">
@@ -47,14 +57,11 @@
           data-dojo-type="dijit/form/Button"
           data-dojo-props="disabled:true"
         >
-          Login
+          Sign In
         </div>
-        <p>&nbsp;</p>
-        <p class="loginError" style="color:red"></p>
-      </div>
 
-      <div style="font-size:.85em; margin:20px; float: right;">
-        <a class="forgotPW" data-dojo-attach-event="click: viprForgotPassNotice">Forgot your password?</a>
+        <br>
+        <p class="viprLoginError pull-left" style="color:red"></p>
       </div>
     </form>
 
@@ -63,7 +70,6 @@
       dojoAttachPoint="containerNode"
       class="${baseClass} PanelForm patric-login"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate"
-      style="display: none;"
     >
       <div class="">
         <div style="padding:2px; margin:10px;">
@@ -93,10 +99,14 @@
       </div>
 
       <div class="messageContainer workingMessage">
-        Logging into BV-BRC...
+        Signing into BV-BRC...
       </div>
       <div class="messageContainer errorMessage">
-        We were unable to log you in with the credentials provided.
+        We were unable to sign you in with the credentials provided.
+      </div>
+
+      <div style="font-size:.85em; margin:20px; float: right;">
+        <a class="forgotPW" data-dojo-attach-event="click: makeFPform">Forgot your password?</a>
       </div>
 
       <div style="padding:2px; margin:10px; float: left;">
@@ -104,26 +114,26 @@
           data-dojo-attach-point="submitBtn"
           type="submit"
           value="Submit"
-          data-dojo-type="dijit/form/Button">Login</div>
-        <p>&nbsp;</p>
-        <p class="loginError" style="color:red"></p>
+          data-dojo-type="dijit/form/Button"
+          data-dojo-props="disabled:true"
+        >
+          Sign In
+        </div>
       </div>
 
-      <div style="font-size:.85em; margin:20px; float: right;">
-        <a class="forgotPW" data-dojo-attach-event="click: makeFPform">Forgot your password?</a>
-      </div>
+      <div class="loginError pull-left" style="color:red"></div>
     </form>
 
   </div>
 
   <div class="pull-left">
-    <h5>Or, login with:</h5>
-    <a class="alt-login-patric pull-left" data-dojo-attach-event="click:altLogin">
+    <h5>Or, sign in with:</h5>
+    <a class="alt-login-patric pull-left" data-dojo-attach-event="click:altLogin" style="display: none;">
       <img class="pull-left" src="/patric/images/patric-login-icon.jpg" width="50" height="50" style="border:2px solid #aaa;"/>
       <h5 class="pull-left" style="padding: 16px 7px; ">PATRIC</h5>
     </a>
 
-    <a class="alt-login-vipr pull-left" data-dojo-attach-event="click:altLogin" style="display: none;">
+    <a class="alt-login-vipr pull-left" data-dojo-attach-event="click:altLogin">
       <img class="pull-left" src="/patric/images/ird-vipr-login-icon.png" width="50" height="50" style="border:2px solid #aaa;"/>
       <h5 class="pull-left" style="padding: 16px 7px; ">ViPR / IRD</h5>
     </a>
