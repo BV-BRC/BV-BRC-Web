@@ -558,7 +558,7 @@
     grid-gap: 20px;
   }
   #bv-brc-home .home-banner {
-    grid-column: 1 / 5;
+    grid-column: 1 / 4;
     grid-row: 1 / 2
   }
   #bv-brc-home .bv-brc-info {
