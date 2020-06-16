@@ -168,17 +168,23 @@ define([
       alert('The forgot password option for ViPR is not implemented... yet?.');
     },
     altLogin: function () {
-      var dlg = registry.byNode(query(this.domNode).parents('.dijitDialog')[0]);
+      var dlgNode = query(this.domNode).parents('.dijitDialog')[0];
+
+      // if in dialog
+      var dlg;
+      if (dlgNode) {
+        dlg = registry.byNode(dlgNode);
+      }
 
       this.loginMethod = this.loginMethod == 'vipr' ? 'patric' : 'vipr';
       if (this.loginMethod == 'vipr') {
-        dlg.set('title', 'Login with ViPR / IRD');
+        if (dlg) dlg.set('title', 'Login with ViPR / IRD');
         document.querySelector('.patric-login').style.display = 'none';
         document.querySelector('.vipr-login').style.display = 'block';
         document.querySelector('.alt-login-vipr').style.display = 'none';
         document.querySelector('.alt-login-patric').style.display = 'block';
       } else if (this.loginMethod == 'patric') {
-        dlg.set('title', 'Login with PATRIC');
+        if (dlg) dlg.set('title', 'Login with PATRIC');
         document.querySelector('.vipr-login').style.display = 'none';
         document.querySelector('.patric-login').style.display = 'block';
         document.querySelector('.alt-login-patric').style.display = 'none';

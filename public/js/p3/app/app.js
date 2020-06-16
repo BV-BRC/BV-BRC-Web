@@ -529,8 +529,8 @@ define([
 
         var lp = new ContentPane({
           region: 'center',
-          content: '<div style="text-align: center;width:100%;"><h3>PATRIC Login</h3><p>This service requires authentication. Please <a class="showLoginWidget">login</a> or <a class="showRegWidget">register as a new user.</a></p>' +
-            '<div class="LoginForm" data-dojo-type="p3/widget/LoginForm" style="width:300px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;"></div>'
+          content: '<div style="text-align: center;width:100%;"><h3>Login</h3><p>This service requires authentication with your ViPR / IRD or PATRIC account.</p>' +
+            '<div class="LoginForm" data-dojo-type="p3/widget/LoginForm" style="width:500px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;"></div>'
         });
         appContainer.addChild(lp);
         return;
