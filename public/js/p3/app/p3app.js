@@ -540,7 +540,6 @@ define([
       return true;
     },
     login: function (data, token) {
-      // console.log(data);
       /* istanbul ignore else */
       if (data !== undefined) {
         localStorage.setItem('auth', JSON.stringify(data));
@@ -572,6 +571,22 @@ define([
           );
       } else {
         console.log('i am not logged in yet');
+      }
+    },
+    loginWithVipr: function (data, token) {
+      if (data !== undefined) {
+        localStorage.setItem('auth', JSON.stringify(data));
+        localStorage.setItem('tokenstring', token);
+        var userid = data.client_id.replace('@viprbrc.org', '');
+        localStorage.setItem('userid', userid);
+
+        // for vipr, we only have the userid for now.
+        localStorage.removeItem('userProfile');
+        localStorage.setItem('userProfile', JSON.stringify({ id: userid + '@viprbrc.org' }));
+
+        window.location.reload();
+      } else {
+        console.log('loginWithVipr: not logged in yet (?)');
       }
     },
     uploadJobsWidget: function (action) {

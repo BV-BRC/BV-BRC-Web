@@ -10,14 +10,30 @@ define([
   domForm, lang, validate
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-    'baseClass': 'App Sleep',
+    'baseClass': '',
     templateString: Template,
     callbackURL: '',
-    rpwi: null,
-    fieldChanged: function (evt) {
-      this.submitButton.set('disabled', true);
-      if (this.unField.get('value') !== '' && this.pwField.get('value') !== '') {
-        this.submitButton.set('disabled', false);
+    loginMethod: 'vipr',
+    validateViprCreds: function (evt) {
+      var btn = this.submitViprBtn;
+      btn.setDisabled(true);
+
+      var isValid =
+        this.viprUser.get('value') !== '' &&
+        this.viprPass.get('value') !== '';
+      if (isValid) {
+        btn.setDisabled(false);
+      }
+    },
+    validatePatricCreds: function (evt) {
+      var btn = this.submitBtn;
+      btn.setDisabled(true);
+
+      var isValid =
+        this.unField.get('value') !== '' &&
+        this.pwField.get('value') !== '';
+      if (isValid) {
+        btn.setDisabled(false);
       }
     },
     fieldChanged2: function (evt) {
@@ -43,7 +59,6 @@ define([
         }
       });
       def.then(function (data) {
-        console.log(data);
         document.getElementsByClassName('pwReset')[0].style.display = 'none';
         if (data === 'OK') {
           document.getElementsByClassName('pwrMessage')[0].style.display = 'block';
@@ -62,31 +77,55 @@ define([
     onSubmit: function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
+
       domClass.add(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
-      var vals = this.getValues();
-      var userServiceURL = window.App.userServiceURL;
-      userServiceURL.replace(/\/+$/, '');
-      var def = xhr.post(userServiceURL + '/authenticate', {
-        data: vals
-      });
-      def.then(function (data) {
-        var dataArr = data.split('|');
-        var keyValueArr = [];
-        var dataobj =  {};
-        for (var i = 0; i < dataArr.length; i++) {
-          keyValueArr = dataArr[i].split('=');
-          dataobj[keyValueArr[0]] = keyValueArr[1];
-        }
-        window.App.login(dataobj, data);
-      }, function (err) {
-        console.log('i am here');
-        var data = err.response.data;
-        console.log(data);
-        var dataObj = JSON.parse(data);
-        console.log(dataObj.message);
-        document.getElementsByClassName('loginError')[0].innerHTML = dataObj.message;
-      });
+
+      if (this.loginMethod == 'vipr') {
+        var user = this.viprUser.get('value') + '@viprbrc.org';
+        var pass =  this.viprPass.get('value');
+
+        var authURL = 'https://p3.theseed.org/goauth/token?grant_type=client_credentials';
+        var def = xhr.get(authURL, {
+          headers: {
+            'Authorization': 'Basic ' +  btoa(user + ':' + pass)
+          },
+          handleAs: 'json'
+        });
+        def.then(function (data) {
+          window.App.loginWithVipr(data, data.access_token);
+        }, function (err) {
+          var data = err.response.data;
+          console.log('vipr login error: ', data);
+          var dataObj = JSON.parse(data);
+          document.getElementsByClassName('loginError')[0].innerHTML = dataObj.message;
+        });
+      } else if (this.loginMethod == 'patric') {
+        var vals = this.getValues();
+        var userServiceURL = window.App.userServiceURL;
+        userServiceURL.replace(/\/+$/, '');
+        var def = xhr.post(userServiceURL + '/authenticate', {
+          data: vals
+        });
+
+        def.then(function (data) {
+          var dataArr = data.split('|');
+          var keyValueArr = [];
+          var dataobj =  {};
+          for (var i = 0; i < dataArr.length; i++) {
+            keyValueArr = dataArr[i].split('=');
+            dataobj[keyValueArr[0]] = keyValueArr[1];
+          }
+          window.App.login(dataobj, data);
+        }, function (err) {
+          console.log('patric login error:', err);
+          var data = err.response.data;
+          console.log(data);
+          var dataObj = JSON.parse(data);
+          console.log(dataObj.message);
+          document.getElementsByClassName('loginError')[0].innerHTML = dataObj.message;
+        });
+      }
     },
     startup: function () {
       this.prform = false;
@@ -96,20 +135,20 @@ define([
       this.inherited(arguments);
       var state = this.get('state');
       if ((state === 'Incomplete') || (state === 'Error')) {
-        this.submitButton.set('disabled', true);
+        this.submitBtn.setDisabled(true);
       }
       this.watch('state', function (prop, val, val2) {
         if (val2 === 'Incomplete' || val2 === 'Error') {
-          this.submitButton.set('disabled', true);
+          this.submitBtn.setDisabled(true);
         } else {
-          this.submitButton.set('disabled', false);
+          this.submitBtn.setDisabled(false);
         }
       });
       if (!this.showCancel && this.cancelButton) {
         domClass.add(this.cancelButton.domNode, 'dijitHidden');
       }
       this._started = true;
-      this.submitButton.set('disabled', true);
+      this.submitBtn.setDisabled(true);
       this.resetPWbutton.set('disabled', true);
     },
     makeFPform: function () {
@@ -123,6 +162,16 @@ define([
         pwR1.parentNode.removeChild(pwR1);
         loginf2.style.display = 'none';
         document.getElementsByClassName('pwReset')[0].style.display = 'block';
+      }
+    },
+    altPatricLogin: function () {
+      this.loginMethod = this.loginMethod == 'vipr' ? 'patric' : 'vipr';
+      if (this.loginMethod == 'vipr') {
+        document.getElementsByClassName('patric-login')[0].style.display = 'none';
+        document.getElementsByClassName('vipr-login')[0].style.display = 'block';
+      } else if (this.loginMethod == 'patric') {
+        document.getElementsByClassName('vipr-login')[0].style.display = 'none';
+        document.getElementsByClassName('patric-login')[0].style.display = 'block';
       }
     }
   });
