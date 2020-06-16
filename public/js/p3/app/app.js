@@ -323,7 +323,7 @@ define([
           evt.stopPropagation();
         }
         var dlg = new Dialog({
-          title: 'Login',
+          title: 'Login with ViPR / IRD',
           content: "<div class=\"LoginForm\" data-dojo-type=\"p3/widget/LoginForm\" style=\"width:500px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
         });
         dlg.show();

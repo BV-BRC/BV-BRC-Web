@@ -1,13 +1,13 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/query',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/LoginForm.html', 'dijit/form/Form', 'dojo/request',
-  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web'
+  'dijit/registry', 'dojo/_base/lang', 'dojox/validate/web', 'dojo/NodeList-traverse'
 ], function (
-  declare, WidgetBase, on,
+  declare, WidgetBase, query,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, xhr,
-  domForm, lang, validate
+  registry, lang, validate
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     'baseClass': '',
@@ -164,14 +164,25 @@ define([
         document.getElementsByClassName('pwReset')[0].style.display = 'block';
       }
     },
-    altPatricLogin: function () {
+    viprForgotPassNotice: function () {
+      alert('The forgot password option for ViPR is not implemented... yet?.');
+    },
+    altLogin: function () {
+      var dlg = registry.byNode(query(this.domNode).parents('.dijitDialog')[0]);
+
       this.loginMethod = this.loginMethod == 'vipr' ? 'patric' : 'vipr';
       if (this.loginMethod == 'vipr') {
-        document.getElementsByClassName('patric-login')[0].style.display = 'none';
-        document.getElementsByClassName('vipr-login')[0].style.display = 'block';
+        dlg.set('title', 'Login with ViPR / IRD');
+        document.querySelector('.patric-login').style.display = 'none';
+        document.querySelector('.vipr-login').style.display = 'block';
+        document.querySelector('.alt-login-vipr').style.display = 'none';
+        document.querySelector('.alt-login-patric').style.display = 'block';
       } else if (this.loginMethod == 'patric') {
-        document.getElementsByClassName('vipr-login')[0].style.display = 'none';
-        document.getElementsByClassName('patric-login')[0].style.display = 'block';
+        dlg.set('title', 'Login with PATRIC');
+        document.querySelector('.vipr-login').style.display = 'none';
+        document.querySelector('.patric-login').style.display = 'block';
+        document.querySelector('.alt-login-patric').style.display = 'none';
+        document.querySelector('.alt-login-vipr').style.display = 'block';
       }
     }
   });

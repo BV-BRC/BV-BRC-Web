@@ -1,5 +1,5 @@
 <div style="display: inline-block;">
-  <div class="loginForm pull-left" style="width: 350px; border: 2px; border-right: 1px solid #444;">
+  <div class="loginForm pull-left" style="width: 350px; margin-right: 10px; border-right: 1px solid #444;">
     <form
       dojoAttachPoint="containerNode"
       class="${baseClass} PanelForm vipr-login"
@@ -54,7 +54,7 @@
       </div>
 
       <div style="font-size:.85em; margin:20px; float: right;">
-        <a class="forgotPW" data-dojo-attach-event="click: makeFPform">Forgot Your password?</a>
+        <a class="forgotPW" data-dojo-attach-event="click: viprForgotPassNotice">Forgot Your password?</a>
       </div>
     </form>
 
@@ -116,10 +116,17 @@
 
   </div>
 
-  <div class="alt-login pull-right" data-dojo-attach-event="click:altPatricLogin">
+  <div class="pull-left">
     <h5>Or, login with:</h5>
-    <img class="pull-left" src="http://modelseed.org/img/patric.jpg" width="50" height="50" style="border:2px solid #aaa;"/>
-    <h5 class="pull-left" style="padding: 16px 7px; ">PATRIC</h5>
+    <a class="alt-login-patric pull-left" data-dojo-attach-event="click:altLogin">
+      <img class="pull-left" src="/patric/images/patric-login-icon.jpg" width="50" height="50" style="border:2px solid #aaa;"/>
+      <h5 class="pull-left" style="padding: 16px 7px; ">PATRIC</h5>
+    </a>
+
+    <a class="alt-login-vipr pull-left" data-dojo-attach-event="click:altLogin" style="display: none;">
+      <img class="pull-left" src="/patric/images/ird-vipr-login-icon.png" width="50" height="50" style="border:2px solid #aaa;"/>
+      <h5 class="pull-left" style="padding: 16px 7px; ">ViPR / IRD</h5>
+    </a>
   </div>
 
 
