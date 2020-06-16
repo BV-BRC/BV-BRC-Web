@@ -22,6 +22,7 @@
   --main-bg: #f2f2f2;
   --white-bg: #ffffff;
   --blue-light-bg: #e5eef4;
+  --green-light-bg: #e5f4ee;
   --gray-bg: #e3e3e3;
 
   --button-blue: var(--blue);
@@ -127,6 +128,13 @@
   font-size: 14px;
   font-weight: 300;
   color: var(--main-text);
+}
+
+#bv-brc-home .home-banner {
+  background-color: var(--green-light-bg);
+  border-bottom: 4px solid var(--green);
+  padding: 10px;
+  text-align: center;
 }
 
 #bv-brc-home .bv-brc-info {
@@ -497,28 +505,32 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 365px 365px;
-    grid-template-rows: 175px 660px 425px;
+    grid-template-rows: 40px 175px 660px 425px;
     grid-gap: 20px;
+  }
+  #bv-brc-home .home-banner {
+    grid-column: 1 / 3;
+    grid-row: 1 / 2
   }
   #bv-brc-home .bv-brc-info {
     grid-column: 1 / 3;
-    grid-row: 1 / 2;
+    grid-row: 2 / 3;
   }
   #bv-brc-home .announcements {
     grid-column: 1 / 2;
-    grid-row: 3 / 4;
+    grid-row: 4 / 5;
   }
   #bv-brc-home .patric-info {
     grid-column: 1 / 2;
-    grid-row: 2 / 3;
+    grid-row: 3 / 4;
   }
   #bv-brc-home .ird-vipr-info {
     grid-column: 2 / 3;
-    grid-row: 2 / 3;
+    grid-row: 3 / 4;
   }
   #bv-brc-home .twitter-feed {
     grid-column: 2 / 3;
-    grid-row: 3 / 4;
+    grid-row: 4 / 5;
   }
   #bv-brc-home .patric-info .patric-info-btn-links {
     margin-top: 28px;
@@ -542,28 +554,32 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 150px 240px 150px 150px;
+    grid-template-rows: 40px 150px 240px 150px 150px;
     grid-gap: 20px;
+  }
+  #bv-brc-home .home-banner {
+    grid-column: 1 / 4;
+    grid-row: 1 / 2
   }
   #bv-brc-home .bv-brc-info {
     grid-column: 1 / 3;
-    grid-row: 1 / 2;
+    grid-row: 2 / 3;
   }
   #bv-brc-home .announcements {
     grid-column: 3 / 4;
-    grid-row: 1 / 3;
+    grid-row: 2 / 4;
   }
   #bv-brc-home .patric-info {
     grid-column: 1 / 2;
-    grid-row: 2 / 5;
+    grid-row: 3 / 6;
   }
   #bv-brc-home .ird-vipr-info {
     grid-column: 2 / 3;
-    grid-row: 2 / 5;
+    grid-row: 3 / 6;
   }
   #bv-brc-home .twitter-feed {
     grid-column: 3 / 4;
-    grid-row: 3 / 5;
+    grid-row: 4 / 6;
   }
 }
 
