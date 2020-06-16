@@ -38,7 +38,9 @@ define([
     defaultPath: '',
     startingRows: 6,
     libCreated: 0,
-    srrValidationUrl: 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
+    // 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
+    srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
+    srrValidationUrl2: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmax=10&db=sra&id={0}', // the data we need is in xml string no matter what. might as well get it properly nested
     // below are from annotation
     required: true,
     genera_four: ['Acholeplasma', 'Entomoplasma', 'Hepatoplasma', 'Hodgkinia', 'Mesoplasma', 'Mycoplasma', 'Spiroplasma', 'Ureaplasma'],
@@ -311,20 +313,34 @@ define([
         // SRR5121082
         this.srr_accession.set('disabled', true);
         this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
-        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-          .then(lang.hitch(this, function (xml_resp) {
-            var resp = xmlParser.parse(xml_resp).documentElement;
-            this.srr_accession.set('disabled', false);
+        xhr.get(lang.replace(this.srrValidationUrl, [accession]), { headers: { 'X-Requested-With': null } })
+          .then(lang.hitch(this, function (json_resp) {
+            var resp = JSON.parse(json_resp);
             try {
-              var title = resp.children[0].childNodes[3].innerHTML;
-              this.srr_accession_validation_message.innerHTML = '';
-              var lrec = { _type: 'srr_accession', title: title };
-              var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
+              var chkPassed = resp['esearchresult']['count'] > 0;
+              var uid = resp['esearchresult']['idlist']['0'];
+              var title = '';
               if (chkPassed) {
-                var infoLabels = {
-                  title: { label: 'Title', value: 1 }
-                };
-                this.addLibraryRow(lrec, infoLabels, 'srrdata');
+                xhr.get(lang.replace(this.srrValidationUrl2, [uid]), { headers: { 'X-Requested-With': null } })
+                  .then(lang.hitch(this, function (xml_resp) {
+                    try {
+                      var xresp = xmlParser.parse(xml_resp).documentElement;
+                      title = '';
+                      title = xresp.children[0].childNodes[3].children[1].childNodes[0].innerHTML;
+                    }
+                    catch (e) {
+                    }
+                    this.srr_accession.set('disabled', false);
+                    var lrec = { _type: 'srr_accession', title: title };
+                    var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
+                    if (chkPassed) {
+                      var infoLabels = {
+                        title: { label: 'Title', value: 1 }
+                      };
+                      this.addLibraryRow(lrec, infoLabels, 'srrdata');
+                    }
+                    this.srr_accession_validation_message.innerHTML = '';
+                  }));
               }
             } catch (e) {
               this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
