@@ -329,7 +329,7 @@ define([
                       title = xresp.children[0].childNodes[3].children[1].childNodes[0].innerHTML;
                     }
                     catch (e) {
-                        console.error('could not get title from SRA record');
+                      console.error('could not get title from SRA record');
                     }
                     this.srr_accession.set('disabled', false);
                     var lrec = { _type: 'srr_accession', title: title };
