@@ -150,6 +150,9 @@ define([
         });
       }
 
+      // don't index genomes for now
+      values.skip_indexing = true;
+
       return values;
     },
 
