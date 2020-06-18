@@ -12,6 +12,7 @@ define([
     // baseQuery: {},
     rawData: [],
     dataType: 'tsv',
+    idProperty: 'RowNumber',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -116,9 +117,10 @@ define([
 
       // fill with data, start with second line of dataLines
       var columnData = [];
-      for (i = 0; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
+      for (i = 1; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
         var tmpData = dataLines[i].split(/\t/);
         var dataRow = {};
+        dataRow['RowNumber'] = i;
         for (j = 0; j < tmpData.length; j++) {
           //dataRow["column" + j] = tmpData[j];	
           dataRow[gridColumns[j].field] = tmpData[j];

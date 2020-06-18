@@ -26,6 +26,7 @@ define([
     containerType: 'csvFeature',
     enableAnchorButton: true,
     maxDownloadSize: 25000,
+    primaryKey: 'RowNumber',
     onSetState: function (attr, oldState, state) {
       if (!state) {
         return;
@@ -113,6 +114,66 @@ define([
 
   ]),
 
+  selectionActions: GridContainer.prototype.selectionActions.concat([
+    [
+      'ViewFeatureItem', 
+      'MultiButton fa icon-selection-Feature fa-2x', {
+      
+      label: 'FEATURE',
+      validTypes: ['*'],
+      validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+      multiple: false,
+      //tooltip: 'Switch to Feature View.  Press and Hold for more options.',
+      tooltip: 'Switch to Feature View.',
+      pressAndHold: function(selection, button, opts, evt) {
+        if (selection[0].Gene_ID) {
+          var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+          var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+
+          when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }), function(response){
+            popup.open ({
+              popup: new PerspectiveToolTipDialog ({
+                perspective: 'Feature',
+                perspectiveUrl: '/view/Feature/' + response[0].feature_id
+              }),
+              around: button,
+              orient: ['below']
+            });
+            //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+          }); 
+        }
+      },
+    
+    }, function (selection) {
+      if (selection[0].Gene_ID) {
+        var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+        var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+
+        when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          
+          }
+        }), function(response){
+          Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+        }); 
+      } 
+    }
+    ],
+  ])
   //gridCTor: tsvGrid  
   });
 

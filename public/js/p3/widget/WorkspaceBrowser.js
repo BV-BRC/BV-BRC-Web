@@ -276,8 +276,7 @@ define([
         validTypes: ['*'],
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
-        //tooltip: 'Switch to Feature View.  Press and Hold for more options.',
-        tooltip: 'Switch to Feature View.',
+        tooltip: 'Switch to Feature View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
           if (selection[0].Gene_ID) {
             var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
@@ -324,6 +323,64 @@ define([
             Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
           }); 
         }       
+      });
+
+      this.actionPanel.addAction('ViewFeatureGroups', 'MultiButton fa icon-selection-FeatureList fa-2x', {
+        label: 'FEATURES',
+        validTypes: ['*'],
+        validContainerTypes: ['csvFeature'],
+        multiple: true,
+        min: 2,
+        tooltip: 'Switch to the Feature List View.',
+        pressAndHold: function (selection, button, opts, evt) {
+
+          var q = selection.map(function (sel) {
+            return 'in(patric_id,FeatureGroup(' + encodeURIComponent(sel.path) + '))';
+          });
+          q = 'or(' + q.join(',') + ')';
+          popup.open({
+            popup: new PerspectiveToolTipDialog({
+              perspective: 'FeatureList',
+              perspectiveUrl: '/view/FeatureList/' + q
+            }),
+            around: button,
+            orient: ['below']
+          });
+        }
+      }, function (selection) {
+        if (selection.length == 1) {
+          Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
+        } else {
+          var q = selection.map(function (sel) {
+            if (sel.Gene_ID) {
+              return (sel.Gene_ID).replace("|", "%7C");
+            }
+            return "";
+          });
+
+          var noEmptyFeatureIDs = q.filter(function(elem) {
+            return (elem != "");
+          });
+          
+          q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
+         //q = '?in(patric_id,(' + q.join(',') + '))&select(feature_id)';
+          when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }), function(response){
+            var featureIDs = response.map(function(response) { return response.feature_id; }).join(',');
+            var featureList = '?in(feature_id,(' + featureIDs + '))';
+            Topic.publish('/navigate', { href: '/view/FeatureList/?' +  featureList})
+          }); 
+
+          //Topic.publish('/navigate', { href: '/view/FeatureList/?' + q });    // query was q
+        }
       });
 
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {

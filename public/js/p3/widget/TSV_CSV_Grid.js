@@ -1,20 +1,23 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
-  './Grid', './GridSelector', './TsvCsvColumns', '../store/TsvCsvMemoryStore'
+  './Grid', './GridSelector', './TsvCsvColumns', '../store/TsvCsvMemoryStore',
+  './PageGrid', 'dojo/_base/Deferred'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
-  Grid, selector, TsvCsvColumns, TsvStore
+  Grid, selector, TsvCsvColumns, TsvStore,
+  PageGrid, Deferred
 ) {
 
   var tsvStore = new TsvStore({});
 
-  return declare([Grid], {
+  return declare([PageGrid], {
     region: 'center',
     query: '',
     deselectOnRefresh: true,
     store: tsvStore,
+    primaryKey: 'RowNumber',
     //store: null,
     state: null,
     //columns: TsvCsvColumns.variationColumns,
@@ -49,6 +52,7 @@ define([
 */
     constructor: function (options) {
       //this.primaryKey = parent.primaryKey;
+      //this.primaryKey = 'Gene_ID';
     },
 
     _setState: function (state) {
@@ -133,6 +137,15 @@ define([
 
     setData: function(newData) {
       this.renderArray(newData);
+    },
+
+    _selectAll: function () {
+
+      this._unloadedData = {};
+      return Deferred.when(this.store.data.map(function (obj) {
+        this._unloadedData[obj[this.primaryKey]] = obj;
+        return obj[this.primaryKey];
+      }, this));
     }
 
 
