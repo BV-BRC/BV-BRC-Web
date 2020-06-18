@@ -26,12 +26,12 @@ define([
 
   return declare([AppBase], {
     baseClass: 'App',
-    pageTitle: 'SARS-CoV-2 Genome Annotation and Analysis',
+    pageTitle: 'SARS-CoV-2 Genome Assembly and Annotation',
     templateString: Template,
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
-    applicationLabel: 'SARS-CoV-2 Genome Annotation and Analysis',
-    applicationDescription: 'The SARS-CoV-2 Genome Annotation and Analysis Service provides a streamlined "meta-service" that accepts raw reads and performs a comprehensive analysis, including genome assembly, annotation, variation analysis, identification of nearest isolates from the same outbreak, and construction of phylogenetic tree. ',
+    applicationLabel: 'SARS-CoV-2 Genome Assembly and Annotation',
+    applicationDescription: 'SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs a comprehensive analysis, including genome assembly, annotation, variation analysis, identification of nearest isolates from the same outbreak, and construction of phylogenetic tree. ',
     applicationHelp: 'user_guides/services/SARS-CoV-2-Genome-Analysis.html',
     tutorialLink: 'tutorial/SARS-CoV-2-Genome-Analysis/SARS-CoV-2-Genome-Analysis.html',
     libraryData: null,
