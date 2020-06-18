@@ -367,7 +367,7 @@ define([
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
-          n.innerHTML = this.user.id.replace('@patricbrc.org', '');
+          n.innerHTML = this.user.id.replace(/@patricbrc\.org|@viprbrc\.org/, '');
         }
       }
 
@@ -435,6 +435,11 @@ define([
           // var docbody = document.getElementsByClassName('patric')[0];
           // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
+
+          // remove account settings if using a non-patric login (for now)
+          if (window.App.user.altLogin) {
+            document.querySelector('userProfile').style.display = 'none';
+          }
           window.App.authorizationToken = localStorage.getItem('tokenstring');
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
@@ -582,7 +587,10 @@ define([
 
         // for vipr, we only have the userid for now.
         localStorage.removeItem('userProfile');
-        localStorage.setItem('userProfile', JSON.stringify({ id: userid + '@viprbrc.org' }));
+        localStorage.setItem('userProfile', JSON.stringify({
+          id: userid + '@viprbrc.org',
+          altLogin: 'vipr'
+        }));
 
         window.location.reload();
       } else {
