@@ -438,7 +438,7 @@ define([
 
           // remove account settings if using a non-patric login (for now)
           if (window.App.user.altLogin) {
-            document.querySelector('userProfile').style.display = 'none';
+            document.querySelector('.userProfile').style.display = 'none';
           }
           window.App.authorizationToken = localStorage.getItem('tokenstring');
           // show the upload and jobs widget
