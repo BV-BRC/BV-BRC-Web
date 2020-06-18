@@ -166,13 +166,13 @@ define([
     altLogin: function () {
       this.loginMethod = this.loginMethod == 'vipr' ? 'patric' : 'vipr';
       if (this.loginMethod == 'vipr') {
-        this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/ird-vipr-login-icon.png" width="30" height="30" style="margin-right: 10px; border-right:2px solid #aaa; padding-right: 10px;"/> Sign in with your ViPR / IRD account';
+        this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/ird-vipr-login-icon.png" width="30" height="30" style="margin-right: 10px; border-right:1px solid #aaa; padding-right: 10px;"/> Sign in with your ViPR / IRD account';
         this.domNode.querySelector('.patric-login').style.display = 'none';
         this.domNode.querySelector('.vipr-login').style.display = 'block';
         this.domNode.querySelector('.alt-login-vipr').style.display = 'none';
         this.domNode.querySelector('.alt-login-patric').style.display = 'block';
       } else if (this.loginMethod == 'patric') {
-        this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/patric-login-icon.jpg" width="30" height="30" style="margin-right: 10px;border-right:2px solid #aaa; padding-right: 10px;"/> Sign in with your PATRIC account';
+        this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/patric-login-icon.jpg" width="30" height="30" style="margin-right: 10px;border-right:1px solid #aaa; padding-right: 10px;"/> Sign in with your PATRIC account';
         this.domNode.querySelector('.vipr-login').style.display = 'none';
         this.domNode.querySelector('.patric-login').style.display = 'block';
         this.domNode.querySelector('.alt-login-patric').style.display = 'none';

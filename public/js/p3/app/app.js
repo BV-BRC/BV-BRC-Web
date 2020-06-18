@@ -529,7 +529,7 @@ define([
 
         var lp = new ContentPane({
           region: 'center',
-          content: '<div style="text-align: center;width:100%;"><h3>Login</h3><p>This service requires authentication with your ViPR / IRD or PATRIC account.</p>' +
+          content: '<div style="text-align: center; margin-top:20px;"><p>This service requires authentication with your PATRIC or ViPR / IRD account.</p>' +
             '<div class="LoginForm" data-dojo-type="p3/widget/LoginForm" style="width:500px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;"></div>'
         });
         appContainer.addChild(lp);
