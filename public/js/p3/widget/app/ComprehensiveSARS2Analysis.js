@@ -31,7 +31,7 @@ define([
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
     applicationLabel: 'SARS-CoV-2 Genome Assembly and Annotation',
-    applicationDescription: 'SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs a comprehensive analysis, including genome assembly, annotation, variation analysis, identification of nearest isolates from the same outbreak, and construction of phylogenetic tree. ',
+    applicationDescription: 'The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
     applicationHelp: 'user_guides/services/sars_cov_2_assembly_annotation_service.html',
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
     libraryData: null,
