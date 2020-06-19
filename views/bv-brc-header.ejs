@@ -9,37 +9,38 @@
                 </a>
             </div>
 
-            <div class="nav-links">
+            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <span style="font-size: 0.9em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
 
-                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                    <span style="font-size: 0.9em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
-
-                    <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>
-                            <div style="vertical-align: top;width:175px;display:inline-block">
-                                <div class="HideWithAuth">
-                                    Please <a class="loginLink">login</a> to view your workspaces.
-                                </div>
-                                <div class="ShowWithAuth">
-                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
-                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
-                                    <div id="YourWorkspaces"></div>
-                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
-                                </div>
+                <div data-dojo-type="p3/widget/TooltipDialog">
+                    <div>
+                        <div style="vertical-align: top;width:175px;display:inline-block">
+                            <div class="HideWithAuth">
+                                Please <a class="loginLink">login</a> to view your workspaces.
                             </div>
-                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                                <div>
-                                    <a class="navigationLink" href="/job/">My Jobs</a>
-                                </div>
-                                <div>
-                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
-                                </div>
+                            <div class="ShowWithAuth">
+                                <div><i class="fa icon-caret-down fa-1x noHoverIcon"
+                                        style="color:#333;cursor:normal;"></i>&nbsp;<a
+                                            class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
+                                <div id="YourWorkspaces"></div>
+                                <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
                             </div>
+                        </div>
+                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
+                            <div>
+                                <a class="navigationLink" href="/job/">My Jobs</a>
+                            </div>
+                            <!-- <div>
+                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
+                            </div> -->
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="empty-header-space"></div>
+
+            <div class="nav-links">
                 <a href="/about">About</a>
                 <a href="/contact">Contact</a>
                 <a href="/team">Team</a>

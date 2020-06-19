@@ -52,6 +52,7 @@
 
 .nav-logo-link {
   display: flex;
+  width: 100px;
 }
 .nav-logo-link img {
   align-self: center;
