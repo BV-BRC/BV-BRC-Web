@@ -43,6 +43,8 @@ define([
       }
     },
     onResetClick: function (evt) {
+      var self = this;
+
       evt.preventDefault();
       evt.stopPropagation();
       domClass.add(this.domNode, 'Working');
@@ -59,22 +61,24 @@ define([
         }
       });
       def.then(function (data) {
-        document.getElementsByClassName('pwReset')[0].style.display = 'none';
+        self.domNode.querySelector('.pwReset').style.display = 'none';
         if (data === 'OK') {
-          document.getElementsByClassName('pwrMessage')[0].style.display = 'block';
+          self.domNode.querySelector('.pwrMessage').style.display = 'block';
         } else {
-          document.getElementsByClassName('pwrError')[0].style.display = 'block';
+          self.domNode.querySelector('.pwrError').style.display = 'block';
         }
       }, function (err) {
         console.log(err);
         var errObj = JSON.parse(err.response.data);
         var errorMessage = errObj.message;
-        console.log(errorMessage);
-        document.getElementsByClassName('pwrError')[0].innerHTML = errorMessage;
-        document.getElementsByClassName('pwrError')[0].style.display = 'block';
+        var errEle = self.domNode.querySelector('.pwrError');
+        errEle.innerHTML = errorMessage;
+        errEle.style.display = 'block';
       });
     },
     onSubmit: function (evt) {
+      var self = this;
+
       evt.preventDefault();
       evt.stopPropagation();
 
@@ -95,9 +99,9 @@ define([
         def.then(function (data) {
           window.App.loginWithVipr(data, data.access_token);
         }, function (err) {
+          console.log('vipr login error: ', err);
           var data = err.response.data;
-          console.log('vipr login error: ', data);
-          document.getElementsByClassName('viprLoginError')[0].innerHTML = data.error;
+          self.domNode.querySelector('.viprLoginError').innerHTML = data.error;
         });
       } else if (this.loginMethod == 'patric') {
         var vals = this.getValues();
@@ -119,10 +123,8 @@ define([
         }, function (err) {
           console.log('patric login error:', err);
           var data = err.response.data;
-          console.log(data);
           var dataObj = JSON.parse(data);
-          console.log(dataObj.message);
-          document.getElementsByClassName('loginError')[0].innerHTML = dataObj.message;
+          self.domNode.querySelector('.loginError').innerHTML = dataObj.message;
         });
       }
     },
@@ -165,6 +167,7 @@ define([
     },
     altLogin: function () {
       this.loginMethod = this.loginMethod == 'vipr' ? 'patric' : 'vipr';
+
       if (this.loginMethod == 'vipr') {
         this.domNode.querySelector('.alt-login-note').innerHTML = '<img class="pull-left" src="/patric/images/ird-vipr-login-icon.png" width="30" height="30" style="margin-right: 10px; border-right:1px solid #aaa; padding-right: 10px;"/> Sign in with your ViPR / IRD account';
         this.domNode.querySelector('.patric-login').style.display = 'none';
