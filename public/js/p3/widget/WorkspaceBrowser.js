@@ -611,7 +611,13 @@ define([
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
+        var labelSearch = 'true';
+        var idType = 'genome_id';
+        if (encodePath(path[0]).includes('WithGenomeNames.')) {
+          labelSearch = 'false';
+          idType = 'genome_name';
+        }
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
