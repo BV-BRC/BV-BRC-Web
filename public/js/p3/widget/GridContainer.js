@@ -1436,7 +1436,8 @@ define([
       }
 
       // The PieChart container does not have a sidebar
-      if (this.containerType != 'subsystems_overview_data') {
+      // The csv/tsv viewer uses the action panel in WorkspaceBrowser.js
+      if (this.containerType != 'subsystems_overview_data' && this.containerType != 'csvFeature') {
         this.addChild(this.selectionActionBar);
         this.addChild(this.itemDetailPanel);
       }
