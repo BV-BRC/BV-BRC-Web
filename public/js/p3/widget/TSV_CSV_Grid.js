@@ -63,8 +63,8 @@ define([
       if (!this.store) {
         this.set('store', this.createStore());
       } else {
-        //this.store.set('state', state);
-        tsvStore.set('state', state)
+        this.store.set('state', state);
+        //tsvStore.set('state', state)
       }
       this.refresh();
     },

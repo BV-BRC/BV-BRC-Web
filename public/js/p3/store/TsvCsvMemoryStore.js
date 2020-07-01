@@ -9,7 +9,7 @@ define([
 ) {
 
   return declare([Memory, Stateful], {
-    // baseQuery: {},
+    baseQuery: {},
     rawData: [],
     dataType: 'tsv',
     idProperty: 'RowNumber',
@@ -48,9 +48,9 @@ define([
       var results;
       var qr = QueryResults(when(this.loadData(), lang.hitch(this, function () {
         results = this.query(query, opts);
-        qr.total = when(results, function (results) {
-          return results.total || results.length;
-        });
+        //qr.total = when(results, function (results) {
+        //  return results.total || results.length;
+        //});
         return results;
       })));
 

@@ -11,7 +11,7 @@ define([
   array, selector, lang, TsvCsvStore, ViewerBase
 ) {
 
-  var tsvGC = new TSV_CSV_GridContainer();
+  //var tsvGC = new TSV_CSV_GridContainer();
 
   return declare([ViewerBase], {    // was BorderContainer
     baseClass: 'CSV_Viewer',
@@ -52,13 +52,19 @@ define([
       });
     },
 
-    //onSetState: function (attr, oldVal, state) {
+    onSetState: function (attr, oldVal, state) {
 
-    //  if (!state) {
-    //    return;
-    //  }
-    //  this.tsvGC.set('state', state);
-    //},
+      if (!state) {
+        return;
+      }
+      //this.tsvGC.set('state', state);
+    },
+
+    postCreate: function() {
+      console.log('in postCreate');
+      //var tsvGC = new TSV_CSV_GridContainer();
+      this.inherited(arguments);
+    },
 
     startup: function () {
       if (this._started) {
@@ -105,9 +111,11 @@ define([
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
 
-        if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
-          content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
-        }
+        // DEV DLB Filter panel(?) also adds a download option.  This one works, but it would be better
+        // if the other one worked, so I am at least temporarily removing this.
+        //if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
+        //  content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
+        //}
 
         if (showMetaDataRows) {
           var formatLabels = formatter.autoLabel('fileView', fileMeta);
@@ -188,7 +196,8 @@ define([
 
 						// make a grid and fill it 
             //this.viewer.addChild(tsvGC.gridCtor);       // DLB was set
-            this.viewer.set('content', tsvGC.gridCtor);       // DLB was set
+            //this.viewer.set('content', tsvGC.gridCtor);       // this used to work
+            this.viewer.set('content', tsvGC);
           } else {
             this.viewer.set('content', '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');
           }

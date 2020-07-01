@@ -1,11 +1,13 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
   './TSV_CSV_Grid', 'dijit/popup', 'dojo/_base/lang',
-  'dijit/TooltipDialog', 'dojo/topic', 'dojo/dom-construct'
+  'dijit/TooltipDialog', 'dojo/topic', 'dojo/dom-construct',
+  './FilterContainerActionBar'
 ], function (
   declare, GridContainer, on,
   TSV_CSV_Grid, popup, lang,
-  TooltipDialog, Topic, domConstruct
+  TooltipDialog, Topic, domConstruct,
+  FilterContainerActionBar
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActi    onTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -17,22 +19,28 @@ define([
     }
   });
 
-  var tsvGrid = new TSV_CSV_Grid ({
-    region: 'center',
-  }); 
+  //var tsvGrid = new TSV_CSV_Grid ({
+  //  region: 'center',
+  //}); 
 
   return declare([GridContainer], {
-    gridCtor: tsvGrid,
+    //gridCtor: tsvGrid,
+    gridCtor: TSV_CSV_Grid,
     containerType: 'csvFeature',
     enableAnchorButton: true,
     maxDownloadSize: 25000,
     primaryKey: 'RowNumber',
+    enableFilterPanel: true,
+    visible: true,
     onSetState: function (attr, oldState, state) {
       if (!state) {
         return;
       }
-      if (tsvGrid) {
-        tsvGrid.set('state', state);
+      //if (tsvGrid) {
+      //  tsvGrid.set('state', state);
+      //}
+      if (this.grid) {
+        this.grid.set('state', state);
       }
       
     },
