@@ -406,6 +406,61 @@ define([
           }); 
         }
       });
+
+      this.actionPanel.addAction('ViewGenomeItem', 'MultiButton fa icon-selection-Genome fa-2x', {
+        label: 'GENOME',
+        validTypes: ['*'],
+        ignoreDataType: true,
+        validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+        multiple: false,
+        tooltip: 'Switch to Genome View.  Press and Hold for more options.',
+        pressAndHold: function(selection, button, opts, evt) {
+          if (selection[0].Gene_ID) {
+            var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+            var query = '?eq(patric_id,' + sel + ')&select(genome_id)';
+  
+            when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+              handleAs: 'json',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                'X-Requested-With': null,
+                Authorization: (window.App.authorizationToken || '')
+              
+              }
+            }), function(response){
+              popup.open ({
+                popup: new PerspectiveToolTipDialog ({
+                  perspective: 'Genome',
+                  perspectiveUrl: '/view/Genome/' + response[0].genome_id
+                }),
+                around: button,
+                orient: ['below']
+              });
+              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+            }); 
+          }
+        },
+      
+      }, function (selection) {
+        if (selection[0].Gene_ID) {
+          var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+          var query = '?eq(patric_id,' + sel + ')&select(genome_id)';
+
+          when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }), function(response){
+            Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id })
+          }); 
+        }       
+      });
          
 
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
