@@ -461,6 +461,88 @@ define([
           }); 
         }       
       });
+
+      this.actionPanel.addAction('ViewGenomeItems', 'MultiButton fa icon-selection-GenomeList fa-2x', {
+        label: 'GENOMES',
+        validTypes: ['*'],
+        validContainerTypes: ['csvFeature'],
+        multiple: true,
+        min: 2,
+        tooltip: 'Switch to the Genome List View. Press and Hold for more options.',
+        pressAndHold: function (selection, button, opts, evt) { 
+          if (selection.length == 1) {
+            Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
+          } else {
+            var q = selection.map(function (sel) {
+              if (sel.Gene_ID) {
+                return (sel.Gene_ID).replace("|", "%7C");
+              }
+              return "";
+            });
+  
+            // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
+            var noEmptyFeatureIDs = q.filter(function(elem) {
+              return (elem != "");
+            });
+            
+            q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
+            when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
+              handleAs: 'json',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                'X-Requested-With': null,
+                Authorization: (window.App.authorizationToken || '')
+              
+              }
+            }), function(response){
+              var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
+              var featureList = '?in(genome_id,(' + featureIDs + '))';
+              popup.open ({
+                popup: new PerspectiveToolTipDialog ({
+                  perspective: 'GenomeList',
+                  perspectiveUrl: '/view/GenomeList/' + featureList
+                }),
+                around: button,
+                orient: ['below']
+              });
+              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+            }); 
+          }
+        },    
+      }, function (selection) {
+        if (selection.length == 1) {
+          Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
+        } else {
+          var q = selection.map(function (sel) {
+            if (sel.Gene_ID) {
+              return (sel.Gene_ID).replace("|", "%7C");
+            }
+            return "";
+          });
+
+          // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
+          var noEmptyFeatureIDs = q.filter(function(elem) {
+            return (elem != "");
+          });
+          
+          q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
+          when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }), function(response){
+            var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
+            var featureList = '?in(genome_id,(' + featureIDs + '))';
+            Topic.publish('/navigate', { href: '/view/GenomeList/' +  featureList})
+          }); 
+        }
+      });
          
 
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
