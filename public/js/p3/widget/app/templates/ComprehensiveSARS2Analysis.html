@@ -47,6 +47,7 @@
                   </div>
                 </div>
               </div>
+
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel">Paired read library</label>
@@ -63,6 +64,20 @@
                   <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
                 </div>
               </div>
+
+              <div class="appRow" data-dojo-attach-point="advrow">
+                <div class="appRow" data-dojo-attach-point="advrow2">
+                  <div class="appRowSegment" style="margin:0 0 0 17px">
+                    <select data-dojo-type="dijit/form/Select" name="paired_platform" data-dojo-attach-point="paired_platform" required="false">
+                      <option disabled="disabled" selected="selected" value="">Select a platform...</option>
+                      <option value="infer">Infer Platform</option>
+                      <option value="illumina">Illumina</option>
+                      <option value="iontorrent">Ion Torrent</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel">Single read library</label>
@@ -72,6 +87,20 @@
               <div class="appRow">
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
               </div>
+              <div class="appRow" data-dojo-attach-point="advrow">
+                <div class="appRowSegment" style="margin:0 0 0 17px">
+                  <select data-dojo-type="dijit/form/Select" name="single_platform" data-dojo-attach-point="single_platform" required="false">
+                    <option disabled="disabled" selected="selected" value="">Select a platform...</option>
+                    <option value="infer">Infer Platform</option>
+                    <option value="illumina">Illumina</option>
+                    <option value="iontorrent">Ion Torrent</option>
+                    <option value="pacbio">PacBio</option>
+                    <option value="nanopore">Nanopore</option>
+                  </select>
+                </div>
+              </div>
+
+
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>

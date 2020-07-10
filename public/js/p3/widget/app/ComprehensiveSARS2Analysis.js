@@ -51,6 +51,10 @@ define([
       this.pairToAttachPt = ['read1', 'read2'];
       this.singleToAttachPt = ['single_end_libs'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
+
+      this.advPairToAttachPt = ['paired_platform'];
+      this.advSingleToAttachPt = ['single_platform'];
+
       this._autoTaxSet = false;
       this._autoNameSet = false;
     },
@@ -182,6 +186,9 @@ define([
         }
 
         // Assign cur_value to target
+        if (attachname == 'paired_platform' || attachname == 'single_platform') {
+          alias = 'platform';
+        }
         if (attachname == 'single_end_libs') {
           alias = 'read';
         }
@@ -296,8 +303,15 @@ define([
     },
 
     onAddSingle: function () {
+      if (!this.single_platform.get('value')) {
+        var msg = 'Please select a <i>platform</i> for this reads file.';
+        new Dialog({ title: 'Notice', content: msg }).show();
+        return;
+      }
+
       var lrec = { _type: 'single' };
       var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
+      this.ingestAttachPoints(this.advSingleToAttachPt, lrec, false);
       if (chkPassed) {
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
@@ -383,9 +397,17 @@ define([
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
+
+      if (!this.paired_platform.get('value')) {
+        var msg = 'Please select a <i>platform</i> for these paired reads.';
+        new Dialog({ title: 'Notice', content: msg }).show();
+        return;
+      }
+
       var lrec = { _type: 'paired' };
       var pairToIngest = this.pairToAttachPt;
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
+      this.ingestAttachPoints(this.advPairToAttachPt, lrec, false);
       if (chkPassed) {
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
@@ -426,7 +448,7 @@ define([
       Object.keys(infoLabels).forEach(lang.hitch(this, function (key) {
         if (lrec[key] && lrec[key] != 'false') {
           if (infoLabels[key].value) {
-            advInfo.push(infoLabels[key].label + ':' + lrec[key]);
+            advInfo.push(infoLabels[key].label + ': ' + lrec[key]);
           }
           else {
             advInfo.push(infoLabels[key].label);
