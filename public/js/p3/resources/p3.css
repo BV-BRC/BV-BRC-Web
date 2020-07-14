@@ -100,6 +100,13 @@ li ul {
 	margin-left: 2em;
 }
 
+/*
+  Force old method of .dijitHidden.  New .dijitHidden 'fix' breaks our tabs.
+  See dojotoolkit issue #18612.
+*/
+.dijitHidden {
+	display: none !important;
+}
 
 iframe  {
   margin: 0;
