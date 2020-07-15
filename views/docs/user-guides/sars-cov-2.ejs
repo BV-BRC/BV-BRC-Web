@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>SARS-CoV-2 Genome Assembly &amp; Annotation Service User Guide | BV-BRC</title>
+		<% include ../../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <h1 id="about-us">SARS-CoV-2 Assembly &amp; Annotation Service User Guide</h1>
+
+                            <h2>Overview</h2>
+                            <p>The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined <strong>“meta-service”</strong> that accepts raw reads and performs genome assembly, annotation, and variation analysis for SARS-CoV-2 genome reads.</p>
+                            <br>
+
+                            <h2>Options</h2>
+                            <img src="../../patric/images/bv-brc/docs/sars_assembly_annotation_input_form.png" alt="SARS-CoV-2 Input Form">
+                            <br>
+
+                            <h2>Starts With</h2>
+                            <p>The service can accept either read files or assembled contigs. If the “Read Files” option is selected, the Assembly Service will be invoked automatically to assemble the reads into contigs before invoking the Annotation Service. If the “Assembled Contigs” option is chosen, the Annotation Service will automatically be invoked, bypassing the Assembly Service.</p>
+                            <br>
+
+                            <h2>Read Input File</h2>
+                            <p>Depending on the option chosen above (Read File or Assembled Contigs), the Input File section will request read files or assembled contigs, respectively.</p>
+                            <br>
+
+                            <h2>Paired Read File</h2>
+                            <p><strong>Read File 1 & 2:</strong> Many paired read libraries are given as file pairs, with each file containing half of each read pair. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair, the selection of which file is READ 1 and which is READ 2 does not matter.</p>
+                            <br>
+
+                            <h2>Single Read Library</h2>
+                            <p><strong>Read File:</strong> The fastq file containing the reads</p>
+                            <br>
+
+                            <h2>SRA Run Accession</h2>
+                            <p>Allows direct upload of read files from the <a href="https://www.ncbi.nlm.nih.gov/sra">NCBI Sequence Read Archive</a> to the PATRIC Assembly Service. Entering the SRR accession number and clicking the arrow will add the file to the selected libraries box for use in the assembly.</p>
+                            <br>
+
+                            <h2>Selected Libraries</h2>
+                            <p>Read files placed here will contribute to a single assembly.</p>
+                            <br>
+
+                            <h2>Parameters</h2>
+                            <br>
+
+                            <h2>Strategy</h2>
+                            <p><strong>Auto:</strong> Uses CDC-Illumina or CDC-Nanopore protocol based on the type of reads provided.</p>
+                            <br>
+
+                            <h2>CDC-Illumina</h2>
+                            <br>
+
+                            <h2>CDC-Nanopore</h2>
+                            <br>
+
+                            <h2>ARTIC-Nanopore</h2>
+                            <br>
+
+                            <h2>Taxonomy Name</h2>
+                            <p>Taxon must be specified at the genus level or below to get the latest protein family predictions.</p>
+                            <br>
+
+                            <h2>Taxonomy ID</h2>
+                            <p>Auto-populated after entering Taxonomy Name. If a Taxonomy ID is entered, auto-populates the Taxonomy Name</p>
+                            <br>
+
+                            <h2>Genetic Code</h2>
+                            <p>The codon translation used in calling genes.</p>
+                            <br>
+
+                            <h2>Output Folder</h2>
+                            <p>The workspace folder where results will be placed.</p>
+                            <br>
+
+                            <h2>Output Name</h2>
+                            <p>Name used to uniquely identify results.</p>
+                            <br>
+
+                            <h2>Output Results</h2>
+                            <img src="../../patric/images/bv-brc/docs/cga_service_output_files.png" alt="CGA Service Output Files"><br>
+                            <p>The Comprehensive Genome Analysis Service generates several files that are deposited in the Private Workspace in the designated Output Folder. These include</p><br>
+                            <ul style="list-style-type: circle;">
+                                <li>
+                                    <strong>FullGenomeReport.html</strong> - A web-browser-viewable report that summarizes the results of the service including
+                                    <ul style="list-style-type: square;">
+                                        <li>Summary information - genome name, quality,</li>
+                                        <li>Genome assembly information - contigs, GC content, plasmids, L50, genome length, chromosomes</li>
+                                        <li>Genome annotation information - taxonomy, CDS, tRNA, rRNA, partial CDS, misc RNA, repeat regions, protein feature summary, circular view with annotations</li>
+                                        <li>Specialty genes - antibiotic resistance, drug targets, transporters, virulence factors</li>
+                                        <li>Subsystem analysis - summary</li>
+                                        <li>Phylogenetic analysis - phylogenetic tree generated using the analyzed genome and the closest Reference and Representative genomes</li>
+                                        <li>References - citations to all tools used by the service</li>
+                                    </ul>
+                                </li>
+                                <li><strong>annotated.genome</strong> - A special “Genome Typed Object (GTO)” JSON-format file that encapsulates all the data from the annotated genome. See <a href="https://docs.patricbrc.org/cli_tutorial/cli_getting_started.html#extracting-and-mining-genome-typed-objects-gtos">Extracting and Mining Genome Typed Objects</a> for more information.</li>
+                                <li><strong>annotation</strong> - The Annotation sub-job that was run as part of the CGA Service. Double-clicking this item will display the Annotation job results. Note that sub-jobs are indicated by the “checkered flag” icon beside the name.</li>
+                                <li><strong>assembly</strong> - The Assembly sub-job that was run as part of the CGA Service. Double-clicking this item will display the Assembly job results. Note that sub-jobs are indicated by the “checkered flag” icon beside the name.</li>
+                                <li><strong>circos.svg</strong> - SVG-format rendering of the circular genome view used in the FullGenomeReport.html file.</li>
+                                <li><strong>circos.png</strong> - PNG-format rendering of the circular genome view used in the FullGenomeReport.html file.</li>
+                                <li><strong>codonTree.nex</strong> - NEXUS-format file containing the phylogenetic tree generated by the CGA Service</li>
+                                <li><strong>codonTree.nwk</strong> - Newick-format file containing the phylogenetic tree generated by the CGA Service.</li>
+                                <li><strong>codonTree.stats</strong> - File containing the statistics on the phylogenetic tree generated by the CGA Service.</li>
+                                <li><strong>codonTree.svg</strong> - SVG-format rendering of the phylogenetic tree used in the FullGenomeReport.html file.</li>
+                                <li><strong>subsystem_colors.json</strong> - JSON-format file used for rendering colors in the Subsystem pie chart displayed in the FullGenomeReport.html file.</li>
+                                <li><strong>tree_ingroup.txt</strong> - File containing the closely related genomes used in building the ingroup for the phylogenetic tree generated by the CGA Service.</li>
+                            </ul>
+                            <br>
+
+                            <h2>References</h2>
+                            <ol>
+                                <li>Wick, R.R., et al., Unicycler: resolving bacterial genome assemblies from short and long sequencing reads. PLoS computational biology, 2017. 13(6): p. e1005595.</li>
+                                <li>Bankevich, A., et al., SPAdes: a new genome assembly algorithm and its applications to single-cell sequencing. Journal of computational biology, 2012. 19(5): p. 455-477.</li>
+                                <li>Koren, S., et al., Canu: scalable and accurate long-read assembly via adaptive k-mer weighting and repeat separation. Genome research, 2017. 27(5): p. 722-736.</li>
+                                <li>Nurk, S., et al., metaSPAdes: a new versatile metagenomic assembler. Genome research, 2017. 27(5): p. 824-834.</li>
+                                <li>Antipov, D., et al., plasmidSPAdes: assembling plasmids from whole genome sequencing data. bioRxiv, 2016: p. 048942.</li>
+                                <li>Krueger, F., Trim Galore: a wrapper tool around Cutadapt and FastQC to consistently apply quality and adapter trimming to FastQ files, with some extra functionality for MspI-digested RRBS-type (Reduced Representation Bisufite-Seq) libraries. URL http://www. bioinformatics. babraham. ac. uk/projects/trim_galore/.(Date of access: 28/04/2016), 2012.</li>
+                                <li>Vaser, R., et al., Fast and accurate de novo genome assembly from long uncorrected reads. Genome research, 2017. 27(5): p. 737-746.</li>
+                                <li>Walker, B.J., et al., Pilon: an integrated tool for comprehensive microbial variant detection and genome assembly improvement. PloS one, 2014. 9(11): p. e112963.</li>
+                                <li>Brettin, T., et al., RASTtk: a modular and extensible implementation of the RAST algorithm for building custom annotation pipelines and annotating batches of genomes. Scientific reports, 2015. 5: p. 8365.</li>
+                                <li>Davis, J.J., et al., PATtyFams: Protein families for the microbial genomes in the PATRIC database. 2016. 7: p. 118.</li>
+                                <li>Overbeek, R., et al., The SEED and the Rapid Annotation of microbial genomes using Subsystems Technology (RAST). Nucleic Acids Res, 2014. 42(Database issue): p. D206-14.</li>
+                                <li>Ondov, B.D., et al., Mash: fast genome and metagenome distance estimation using MinHash. Genome biology, 2016. 17(1): p. 132.</li>
+                                <li>Davis, J.J., et al., PATtyFams: Protein Families for the Microbial Genomes in the PATRIC Database. Front Microbiol, 2016. 7: p. 118.</li>
+                                <li>Edgar, R.C., MUSCLE: multiple sequence alignment with high accuracy and high throughput. Nucleic acids research, 2004. 32(5): p. 1792-1797.</li>
+                                <li>Stamatakis, A., RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies. Bioinformatics, 2014. 30(9): p. 1312-1313.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <% include ../../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../../javascript %>
+	</body>
+</html>
