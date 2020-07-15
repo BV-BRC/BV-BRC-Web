@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
   './TSV_CSV_Grid', 'dijit/popup', 'dojo/_base/lang',
   'dijit/TooltipDialog', 'dojo/topic', 'dojo/dom-construct',
-  './FilterContainerActionBar'
+  'dijit/layout/ContentPane', 'dijit/form/Textarea'
 ], function (
   declare, GridContainer, on,
   TSV_CSV_Grid, popup, lang,
   TooltipDialog, Topic, domConstruct,
-  FilterContainerActionBar
+  ContentPane, TextArea
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActi    onTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -30,7 +30,7 @@ define([
     enableAnchorButton: true,
     maxDownloadSize: 25000,
     primaryKey: 'RowNumber',
-    enableFilterPanel: true,
+    enableFilterPanel: false,
     visible: true,
     onSetState: function (attr, oldState, state) {
       if (!state) {
@@ -49,12 +49,7 @@ define([
       //TSV_CSV_Grid.setColumns(gridColumns);
       //tsvGrid.setColumns(gridColumns);
     },
-    //setData: function(newData) {
-    //  tsvGrid.setData(newData);
-    //},
-    //setStore: function (tsvStore) {
-    //  tsvGrid.setStore (tsvStore);
-    //},
+
     containerActions: GridContainer.prototype.containerActions.concat([
     [
       'DownloadTable',

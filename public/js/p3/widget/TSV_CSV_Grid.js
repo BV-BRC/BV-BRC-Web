@@ -51,8 +51,7 @@ define([
       },
 */
     constructor: function (options) {
-      //this.primaryKey = parent.primaryKey;
-      //this.primaryKey = 'Gene_ID';
+      this.store = this.createStore();
     },
 
     _setState: function (state) {
@@ -69,11 +68,12 @@ define([
       this.refresh();
     },
 
-    // DEV DLB not sure we need this.  The data should always be here, and if they are not, they never will be.
+    // DEV DLB not sure we need this??
     createStore: function () {
       if (this.store) {
         console.log('returning existing store');
-        this.store.watch('refresh', 'refresh');
+        //this.store.watch('refresh', 'refresh');
+        this.store.watch('refresh', lang.hitch(this, 'refresh'));
         return this.store;
       }
     },
@@ -131,9 +131,9 @@ define([
       //this.set("columns", newColumns);
     },
 
-    setStore: function(tsvStore) {
-      this.set ('store', tsvStore);
-    },
+    //setStore: function(tsvStore) {
+    //  this.set ('store', tsvStore);
+    //},
 
     setData: function(newData) {
       this.renderArray(newData);

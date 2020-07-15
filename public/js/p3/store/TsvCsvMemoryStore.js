@@ -13,6 +13,7 @@ define([
     rawData: [],
     dataType: 'tsv',
     idProperty: 'RowNumber',
+    keyword: '',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -20,11 +21,23 @@ define([
       }
       // console.log("onSetState", state, this);
       this.reload();
+
+      this._filtered = undefined; // reset flag prevent to read stored _original
     },
 
     constructor: function (options) {
       this._loaded = false;
       this.topicId = options.topicId;
+
+      // from protein family sorter, needs change
+      Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
+        //this.keyword = value;
+        this.keyword = arguments[0];
+        this.keywordFilter();
+        // console.log("received:", arguments);
+      }));
+
+      this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
     reload: function () {
@@ -65,6 +78,43 @@ define([
       return when(this.loadData(), lang.hitch(this, function () {
         return this.get(id, opts);
       }));
+
+    },
+
+    keywordFilter: function() {
+      if (this._filtered == undefined) { // first time
+        this._filtered = true;
+        this._original = this.query('', {});
+        //this._original = this.query('', {});
+      }
+      var data = this._original;
+      var newData = [];
+
+      var keywordRegex = this.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
+        .split('~')
+        .map(function (k) { return k.trim(); });
+
+      data.forEach(function (dataLine) {
+        var skip = false;
+
+        // keyword search
+        if (!skip && this.keyword !== '' && dataLine.Function) {
+          skip = !keywordRegex.some(function (needle) {
+            console.log(dataLine);
+            console.log (dataLine.Function);
+            return needle && (dataLine.Function.toLowerCase().indexOf(needle) >= 0 || dataLine.Function.toLowerCase().indexOf(needle) >= 0);
+          });
+        }
+
+        if (!skip) {
+          newData.push(dataLine);
+        }
+
+      }, this);
+
+      this.setData(newData);
+      this._loaded = false;
+      this.set('refresh');
 
     },
 

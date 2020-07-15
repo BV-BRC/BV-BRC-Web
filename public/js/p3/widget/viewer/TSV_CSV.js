@@ -3,12 +3,13 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
-  './Base'
+  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dojo/topic'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
-  array, selector, lang, TsvCsvStore, ViewerBase
+  array, selector, lang, TsvCsvStore, 
+  ViewerBase, TextArea, Button, Topic
 ) {
 
   //var tsvGC = new TSV_CSV_GridContainer();
@@ -21,6 +22,7 @@ define([
     viewable: false,
     url: null,
     preload: true,
+    //pfState: null,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
@@ -78,6 +80,8 @@ define([
       this.addChild(this.viewSubHeader);
       this.addChild(this.viewer);
 
+      //this.createFilterPanel();
+
       var _self = this;
       Deferred.when(WS.getDownloadUrls(_self.filepath), function (url) {
         _self.url = url;
@@ -93,6 +97,8 @@ define([
       if (!this.file.data && this.viewable) {
         var _self = this;
 
+        //this.createFilterPanel();
+
 				// DEV DLB, remove reference to non-csv/tsv files
         // get the object to display
         Deferred.when(WS.getObject(this.filepath, !this.preload), function (obj) {
@@ -106,21 +112,73 @@ define([
 			this.refresh();
     },
 
+    createFilterPanel: function() {
+
+      console.log ("in createFilterPanel in viewer");
+
+      var filterPanel = new ContentPane({
+        region: 'top'
+      });
+
+      var downld = '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
+
+      var ta_keyword = this.ta_keyword = new TextArea({
+        style: 'width:272px; min-height:20px; margin-bottom: 10px'
+      });
+      var label_keyword = domConstruct.create('label', { innerHTML: 'KEYWORDS   ' });
+      domConstruct.place(downld, filterPanel.containerNode, 'last');
+      domConstruct.place(label_keyword, filterPanel.containerNode, 'last');
+      domConstruct.place(ta_keyword.domNode, filterPanel.containerNode, 'last');
+
+      var btn_reset = new Button({
+        label: 'Reset',
+        onClick: lang.hitch(this, function () {
+
+          ta_keyword.set('value', '');
+
+          // reset store
+          //this.pfState = lang.mixin(this.pfState, defaultFilterValue);
+          // console.log(this.pfState);
+          //Topic.publish(this.topicId, 'applyConditionFilter', this.pfState);
+        })
+      });
+      //domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
+
+      var btn_submit = new Button({
+        label: 'Filter',
+        onClick: lang.hitch(this, function () {
+
+          var filter = {};
+
+          filter.keyword = ta_keyword.get('value');
+         
+          Topic.publish('applyKeywordFilter', filter.keyword);
+          console.log("after publish");
+        })
+      });
+      domConstruct.place(btn_submit.domNode, filterPanel.containerNode, 'last');
+      domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
+
+      this.addChild(filterPanel);
+      //return filterPanel;
+    },
+
     formatFileMetaData: function (showMetaDataRows) {
       var fileMeta = this.file.metadata;
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
 
-        // DEV DLB Filter panel(?) also adds a download option.  This one works, but it would be better
-        // if the other one worked, so I am at least temporarily removing this.
-        //if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
-        //  content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
-        //}
-
-        if (showMetaDataRows) {
-          var formatLabels = formatter.autoLabel('fileView', fileMeta);
-          content += formatter.keyValueTable(formatLabels);
+        if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
+          content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
         }
+
+        //var filterPanel = this.createFilterPanel();
+        //content += filterPanel;
+
+        //if (showMetaDataRows) {
+        //  var formatLabels = formatter.autoLabel('fileView', fileMeta);
+        //  content += formatter.keyValueTable(formatLabels);
+        //}
         content += '</tbody></table></div>';
       }
 
@@ -140,7 +198,13 @@ define([
         if (this.viewable) {
           this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
+          //if (this.url) {
+          //  this.createFilterPanel();
+          //}
+
           if (this.file.data || (!this.preload && this.url)) {
+
+            this.createFilterPanel();
 
             // get data for tsv (currently typed as txt)
             if (this.file.metadata.type == 'txt') {
@@ -178,6 +242,7 @@ define([
             // 6/10 moving store to the grid, as per Dustin's suggestion.  
             //var tsvCsvStore = new TsvCsvStore({dataType: this.file.metadata.type, rawData: this.file.data, data: columnData});
             //tsvCsvStore.loadData();
+            
             var tsvCsvStore = new TsvCsvStore({
               type: 'separatedValues',
               topidId: 'TsvCsv'
@@ -189,6 +254,7 @@ define([
               disable: false,
               store: tsvCsvStore
             });
+            
             tsvGC.set('state', {dataType: this.file.metadata.type, data: this.file.data});
             //tsvGC.setData(columnData);
             tsvGC.setColumns(gridColumns);
