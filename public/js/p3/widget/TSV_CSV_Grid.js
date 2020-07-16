@@ -10,15 +10,15 @@ define([
   PageGrid, Deferred
 ) {
 
-  var tsvStore = new TsvStore({});
+  //var tsvStore = new TsvStore({});
 
   return declare([PageGrid], {
     region: 'center',
     query: '',
     deselectOnRefresh: true,
-    store: tsvStore,
+    //store: tsvStore,
     primaryKey: 'RowNumber',
-    //store: null,
+    store: null,
     state: null,
     //columns: TsvCsvColumns.variationColumns,
     columns: lang.mixin({
@@ -51,7 +51,8 @@ define([
       },
 */
     constructor: function (options) {
-      this.store = this.createStore();
+      //this.store = this.createStore();
+      
     },
 
     _setState: function (state) {
@@ -63,6 +64,7 @@ define([
         this.set('store', this.createStore());
       } else {
         this.store.set('state', state);
+        this.store.watch('refresh', lang.hitch(this, 'refresh'));
         //tsvStore.set('state', state)
       }
       this.refresh();
@@ -70,12 +72,17 @@ define([
 
     // DEV DLB not sure we need this??
     createStore: function () {
-      if (this.store) {
+      //var tsvStore = new TsvStore({});
+      //this.set ('store', tsvStore);
+      this.store.watch('refresh', lang.hitch(this, 'refresh'));
+      return this.store;
+
+      /*if (this.store) {
         console.log('returning existing store');
         //this.store.watch('refresh', 'refresh');
         this.store.watch('refresh', lang.hitch(this, 'refresh'));
         return this.store;
-      }
+      } */
     },
 
     startup: function() {

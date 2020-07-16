@@ -98,11 +98,15 @@ define([
         var skip = false;
 
         // keyword search
-        if (!skip && this.keyword !== '' && dataLine.Function) {
+        if (!skip && this.keyword !== '') {
           skip = !keywordRegex.some(function (needle) {
             console.log(dataLine);
-            console.log (dataLine.Function);
-            return needle && (dataLine.Function.toLowerCase().indexOf(needle) >= 0 || dataLine.Function.toLowerCase().indexOf(needle) >= 0);
+            if (dataLine.Function) {
+              console.log (dataLine.Function);
+              return needle && (dataLine.Function.toLowerCase().indexOf(needle) >= 0 || dataLine.Function.toLowerCase().indexOf(needle) >= 0);
+            } else {
+              skip = true;  // no Function
+            }
           });
         }
 
@@ -113,7 +117,6 @@ define([
       }, this);
 
       this.setData(newData);
-      this._loaded = false;
       this.set('refresh');
 
     },

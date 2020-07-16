@@ -64,7 +64,6 @@ define([
 
     postCreate: function() {
       console.log('in postCreate');
-      //var tsvGC = new TSV_CSV_GridContainer();
       this.inherited(arguments);
     },
 
@@ -198,10 +197,6 @@ define([
         if (this.viewable) {
           this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
-          //if (this.url) {
-          //  this.createFilterPanel();
-          //}
-
           if (this.file.data || (!this.preload && this.url)) {
 
             this.createFilterPanel();
@@ -253,7 +248,7 @@ define([
               id: this.viewer.id + '_tsv',
               disable: false,
               store: tsvCsvStore
-            });
+            }); 
             
             tsvGC.set('state', {dataType: this.file.metadata.type, data: this.file.data});
             //tsvGC.setData(columnData);
