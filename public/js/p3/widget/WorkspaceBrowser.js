@@ -1381,6 +1381,12 @@ define([
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
+                case 'ComprehensiveSARS2Analysis':
+                  d = 'p3/widget/viewer/ComprehensiveSARS2Analysis';
+                  break;
+                case 'SARS2Assembly':
+                  d = 'p3/widget/viewer/SARS2Assembly';
+                  break;
                 default:
                   console.log('A viewer could not be found for id: ' + id);
               }
