@@ -94,6 +94,7 @@ define([
         .split('~')
         .map(function (k) { return k.trim(); });
 
+      if (this.keyword !== '') {
       data.forEach(function (dataLine) {
         var skip = false;
 
@@ -115,8 +116,12 @@ define([
         }
 
       }, this);
+    
 
       this.setData(newData);
+    } else {
+      this.setData(this._original);
+    }
       this.set('refresh');
 
     },

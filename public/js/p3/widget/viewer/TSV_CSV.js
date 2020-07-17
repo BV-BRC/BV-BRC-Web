@@ -134,11 +134,10 @@ define([
         onClick: lang.hitch(this, function () {
 
           ta_keyword.set('value', '');
+          var filter = {};
+          filter.keyword = '';
 
-          // reset store
-          //this.pfState = lang.mixin(this.pfState, defaultFilterValue);
-          // console.log(this.pfState);
-          //Topic.publish(this.topicId, 'applyConditionFilter', this.pfState);
+          Topic.publish('applyKeywordFilter', filter.keyword);
         })
       });
       //domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
