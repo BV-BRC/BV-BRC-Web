@@ -12,8 +12,6 @@ define([
   ViewerBase, TextArea, Button, Topic
 ) {
 
-  //var tsvGC = new TSV_CSV_GridContainer();
-
   return declare([ViewerBase], {    // was BorderContainer
     baseClass: 'CSV_Viewer',
     disabled: false,
@@ -140,7 +138,6 @@ define([
           Topic.publish('applyKeywordFilter', filter.keyword);
         })
       });
-      //domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
 
       var btn_submit = new Button({
         label: 'Filter',
@@ -169,14 +166,6 @@ define([
         if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
           content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
         }
-
-        //var filterPanel = this.createFilterPanel();
-        //content += filterPanel;
-
-        //if (showMetaDataRows) {
-        //  var formatLabels = formatter.autoLabel('fileView', fileMeta);
-        //  content += formatter.keyValueTable(formatLabels);
-        //}
         content += '</tbody></table></div>';
       }
 
@@ -199,43 +188,6 @@ define([
           if (this.file.data || (!this.preload && this.url)) {
 
             this.createFilterPanel();
-
-            // get data for tsv (currently typed as txt)
-            if (this.file.metadata.type == 'txt') {
-              // split on new lines, to get the grid rows
-              var dataLines = this.file.data.split(/\r?\n/);
-
-              // get the headers for the columns by splitting the first line.  
-              var tmpColumnHeaders = dataLines[0].split(/\t/);	
-            } else {    // csv
-              var dataLines = this.file.data.split(/\r?\n/); 
-            }
-            // make column labels from the first line of dataLines
-            var gridColumns = [];
-            //gridColumns.push({'Selection Checkboxes' : selector({ unhidable: true})});
-            for (i = 0; i < tmpColumnHeaders.length; i++) {
-              //var columnHeaders = { label: tmpColumnHeaders[i], field: 'column' + i };
-              var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
-
-              gridColumns.push(columnHeaders);
-            }
-          
-						// fill with data, start with second line of dataLines
-						var columnData = [];
-						for (i = 1; i < dataLines.length; i++) {
-							var tmpData = dataLines[i].split(/\t/);
-							var dataRow = {};
-							for (j = 0; j < tmpData.length; j++) {
-                //dataRow["column" + j] = tmpData[j];	
-                dataRow[gridColumns[j].field] = tmpData[j];
-							}
-							columnData.push(dataRow);
-            }
-
-            // note:  dojo/store/Memory works but specialty store does not.
-            // 6/10 moving store to the grid, as per Dustin's suggestion.  
-            //var tsvCsvStore = new TsvCsvStore({dataType: this.file.metadata.type, rawData: this.file.data, data: columnData});
-            //tsvCsvStore.loadData();
             
             var tsvCsvStore = new TsvCsvStore({
               type: 'separatedValues',
@@ -250,9 +202,6 @@ define([
             }); 
             
             tsvGC.set('state', {dataType: this.file.metadata.type, data: this.file.data});
-            //tsvGC.setData(columnData);
-            tsvGC.setColumns(gridColumns);
-            //tsvGC.setStore(tsvCsvStore);
 
 						// make a grid and fill it 
             //this.viewer.addChild(tsvGC.gridCtor);       // DLB was set

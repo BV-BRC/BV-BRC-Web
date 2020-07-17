@@ -148,11 +148,7 @@ define([
         return def.promise;
       }
 
-      // console.warn("loadData", this.type, this.state);
-
-      // Dev DLB:  Start here...
-      // get data for tsv (currently typed as txt)
-      
+      // get data for tsv (currently typed as txt)      
       if (this.state.dataType == 'txt') {
         // split on new lines, to get the grid rows
         var dataLines = this.state.data.split(/\r?\n/);
@@ -160,23 +156,29 @@ define([
         // get the headers for the columns by splitting the first line.  
         var tmpColumnHeaders = dataLines[0].split(/\t/);	
       } else {    // csv
+        // split on new lines, to get the grid rows
         var dataLines = this.state.data.split(/\r?\n/); 
+
+        var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
       }
 
       // make column labels from the first line of dataLines
       var gridColumns = [];
-      //gridColumns.push({'Selection Checkboxes' : selector({ unhidable: true})});
       for (i = 0; i < tmpColumnHeaders.length; i++) {
-        //var columnHeaders = { label: tmpColumnHeaders[i], field: 'column' + i };
         var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
 
         gridColumns.push(columnHeaders);
-}
+      }
 
       // fill with data, start with second line of dataLines
       var columnData = [];
       for (i = 1; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
-        var tmpData = dataLines[i].split(/\t/);
+              // get data for tsv (currently typed as txt)      
+        if (this.state.dataType == 'txt') {
+          var tmpData = dataLines[i].split(/\t/);
+        } else {
+          var tmpData = dataLines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
+        }
         var dataRow = {};
         dataRow['RowNumber'] = i;
         for (j = 0; j < tmpData.length; j++) {
