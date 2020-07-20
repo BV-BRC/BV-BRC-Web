@@ -61,4 +61,10 @@ router.get('/docs/user-guides/sars-cov-2', function (req, res) {
   res.render('docs/user-guides/sars-cov-2', { title: 'PATRIC', request: req, response: res });
 });
 
+/* SARS-CoV-2 Tutorial */
+router.get('/docs/tutorials/sars-cov-2', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('docs/tutorials/sars-cov-2', { title: 'PATRIC', request: req, response: res });
+});
+
 module.exports = router;
