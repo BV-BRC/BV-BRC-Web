@@ -3,13 +3,13 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
-  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dojo/topic'
+  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojo/topic'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
   array, selector, lang, TsvCsvStore, 
-  ViewerBase, TextArea, Button, Topic
+  ViewerBase, TextArea, Button, Select, Topic
 ) {
 
   return declare([ViewerBase], {    // was BorderContainer
@@ -121,12 +121,50 @@ define([
       var downld = '<div><a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a></div>';
 
       var ta_keyword = this.ta_keyword = new TextArea({
-        style: 'width:272px; min-height:20px; margin-bottom: 10px'
+        style: 'width:272px; min-height:20px; marginRight: 2.0em'
       });
       var label_keyword = domConstruct.create('label', { innerHTML: 'KEYWORDS   ' });
+
+      var columnFilter = domConstruct.create('span', {
+        style: {
+          'float': 'right'
+        }
+      });
+
+      /**
+       * app filter
+       */
+      var selector = new Select({
+        name: 'type',
+        style: {
+          width: '150px', marginRight: '2.0em'
+        },
+        options: [
+          { label: 'All Columns', value: 'all', selected: true }
+        ],
+      }, columnFilter);
+
+      this.filters = {
+        column: 'all',
+        status: null
+      };
+      on(selector, 'change', function (val) {
+        self.filters.column = val;
+        //Topic.publish('/ColumnFilter', self.filters);
+      });
+
+      // initialize app filters
+      // [{label: 'AppName  (count)', value: 'AppName', count: x}, ... ]
+      var cols = [{label: 'one', value: 'one'}, {label: 'two', value: 'two'}, {label: 'three', value: 'three'} ];
+      selector.set('options', cols).reset();
+
+      //var spacer = domConstruct.create('span', {style: {'title': '     ', 'width': '10000px'} });
+
       domConstruct.place(downld, filterPanel.containerNode, 'last');
       domConstruct.place(label_keyword, filterPanel.containerNode, 'last');
       domConstruct.place(ta_keyword.domNode, filterPanel.containerNode, 'last');
+      //domConstruct.place(spacer, filterPanel.containerNode, 'last');
+      domConstruct.place(selector.domNode, filterPanel.containerNode, 'last');
 
       var btn_reset = new Button({
         label: 'Reset',
