@@ -114,10 +114,11 @@ define([
       console.log ("in createFilterPanel in viewer");
 
       var filterPanel = new ContentPane({
-        region: 'top'
+        region: 'top',
+        style: {display: 'inline-block', 'vertical-align': 'top'}
       });
 
-      var downld = '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
+      var downld = '<div><a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a></div>';
 
       var ta_keyword = this.ta_keyword = new TextArea({
         style: 'width:272px; min-height:20px; margin-bottom: 10px'
@@ -183,7 +184,7 @@ define([
 
       if (this.file && this.file.metadata) {
         if (this.viewable) {
-          this.viewSubHeader.set('content', this.formatFileMetaData(false));
+          //this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
           if (this.file.data || (!this.preload && this.url)) {
 
