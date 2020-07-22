@@ -14,6 +14,7 @@ define([
     dataType: 'tsv',
     idProperty: 'RowNumber',
     keyword: '',
+    columns: '',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -169,11 +170,12 @@ define([
 
         gridColumns.push(columnHeaders);
       }
+      this.columns = gridColumns;
 
       // fill with data, start with second line of dataLines
       var columnData = [];
       for (i = 1; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
-              // get data for tsv (currently typed as txt)      
+        // get data for tsv (currently typed as txt)      
         if (this.state.dataType == 'txt') {
           var tmpData = dataLines[i].split(/\t/);
         } else {

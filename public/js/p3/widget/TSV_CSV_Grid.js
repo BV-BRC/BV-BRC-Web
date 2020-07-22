@@ -9,21 +9,16 @@ define([
   Grid, selector, TsvCsvColumns, TsvStore,
   PageGrid, Deferred
 ) {
-
-  //var tsvStore = new TsvStore({});
-
   return declare([PageGrid], {
     region: 'center',
     query: '',
     deselectOnRefresh: true,
-    //store: tsvStore,
     primaryKey: 'RowNumber',
     store: null,
     state: null,
-    //columns: TsvCsvColumns.variationColumns,
-    columns: lang.mixin({
-      'Selection Checkboxes': selector({ unhidable: true })
-    }, TsvCsvColumns.variationColumns),
+    //columns: lang.mixin({
+    //  'Selection Checkboxes': selector({ unhidable: true })
+    //}, TsvCsvColumns.variationColumns),   // hard coded columns, this works
 /*  coluumns example
     columns: {
       column0: {label: 'Col0', field: "column0" },
@@ -51,7 +46,7 @@ define([
       },
 */
     constructor: function (options) {
-      //this.store = this.createStore();
+      //this.store = this.createStore(); //DEV come back to this later
       
     },
 
@@ -65,24 +60,18 @@ define([
       } else {
         this.store.set('state', state);
         this.store.watch('refresh', lang.hitch(this, 'refresh'));
-        //tsvStore.set('state', state)
       }
+      //this.set("columns", this.store.columns); // this works with no check boxes
+      this.set("columns", lang.mixin({'Selection Checkboxes': selector({ unhidable: true })}, this.store.columns));  // this works but checkboxes are on the right.
+      //this.set("columns", lang.mixin(this.store.columns, {'Selection Checkboxes': selector({ unhidable: true })} ));  // this does not work.  No checkboxes.
       this.refresh();
     },
 
-    // DEV DLB not sure we need this??
+    // DEV not sure ever get here
     createStore: function () {
-      //var tsvStore = new TsvStore({});
-      //this.set ('store', tsvStore);
       this.store.watch('refresh', lang.hitch(this, 'refresh'));
       return this.store;
 
-      /*if (this.store) {
-        console.log('returning existing store');
-        //this.store.watch('refresh', 'refresh');
-        this.store.watch('refresh', lang.hitch(this, 'refresh'));
-        return this.store;
-      } */
     },
 
     startup: function() {
@@ -122,6 +111,7 @@ define([
       this.inherited(arguments);
     },
 
+    // DEV this is temporary
     setColumns: function(newColumns) {
       //this._setColumns(newColumns);
       //selector({unhidable: true});
@@ -136,6 +126,9 @@ define([
       //  {'Selection Checkboxes' : selector({})},
       //   newColumns);
       //this.set("columns", newColumns);
+      this.set("columns", lang.mixin({
+        'Selection Checkboxes': selector({ unhidable: true })
+      }, TsvCsvColumns.variationColumns))
     },
 
     //setStore: function(tsvStore) {

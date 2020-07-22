@@ -17,11 +17,7 @@ define([
     onMouseLeave: function() {
       popup.close(downloadTT);
     }
-  });
-
-  //var tsvGrid = new TSV_CSV_Grid ({
-  //  region: 'center',
-  //}); 
+  }); 
 
   return declare([GridContainer], {
     //gridCtor: tsvGrid,
@@ -36,18 +32,14 @@ define([
       if (!state) {
         return;
       }
-      //if (tsvGrid) {
-      //  tsvGrid.set('state', state);
-      //}
       if (this.grid) {
         this.grid.set('state', state);
       }
       
     },
     setColumns: function (newColumns) {
-      var gridColumns = newColumns;       
-      //TSV_CSV_Grid.setColumns(gridColumns);
-      //tsvGrid.setColumns(gridColumns);
+      var gridColumns = newColumns; 
+      this.grid.setColumns(gridColumns);      
     },
 
     containerActions: GridContainer.prototype.containerActions.concat([
