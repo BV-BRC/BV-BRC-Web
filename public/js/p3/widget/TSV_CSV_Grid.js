@@ -61,8 +61,8 @@ define([
         this.store.set('state', state);
         this.store.watch('refresh', lang.hitch(this, 'refresh'));
       }
-      //this.set("columns", this.store.columns); // this works with no check boxes
-      this.set("columns", lang.mixin({'Selection Checkboxes': selector({ unhidable: true })}, this.store.columns));  // this works but checkboxes are on the right.
+      this.set("columns", this.store.columns); 
+      //this.set("columns", lang.mixin({'Selection Checkboxes': selector({ unhidable: true })}, this.store.columns));  // this works but checkboxes are on the right.
       //this.set("columns", lang.mixin(this.store.columns, {'Selection Checkboxes': selector({ unhidable: true })} ));  // this does not work.  No checkboxes.
       this.refresh();
     },

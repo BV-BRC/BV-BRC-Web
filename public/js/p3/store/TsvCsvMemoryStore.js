@@ -1,11 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/topic',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults', 'dojo/Stateful'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', 'dojo/Stateful',
+  '../widget/GridSelector'
 ], function (
   declare, lang, Deferred,
   request, when, Topic,
-  Memory, QueryResults, Stateful
+  Memory, QueryResults, Stateful,
+  selector
 ) {
 
   return declare([Memory, Stateful], {
@@ -170,7 +172,6 @@ define([
 
         gridColumns.push(columnHeaders);
       }
-      this.columns = gridColumns;
 
       // fill with data, start with second line of dataLines
       var columnData = [];
@@ -189,6 +190,8 @@ define([
         }
         columnData.push(dataRow);
       }
+      gridColumns.unshift(selector({ label: selector({ unidable: true})}));  // add checkboxes to beginning of array
+      this.columns = gridColumns;
       this.setData(columnData);
       this._loaded = true;
 
