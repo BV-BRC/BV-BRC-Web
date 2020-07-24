@@ -414,7 +414,7 @@ define([
           auth = JSON.parse(auth);
           // console.log('Auth: ', auth);
           // console.log('CheckExpToken', auth.expiry);
-          if (auth.expiry) {
+          if (auth && auth.expiry) {
             validToken = this.checkExpToken(auth.expiry);
             // console.log('this is a valid token: ' + validToken );
             if (validToken && window.App.alreadyLoggedIn) {
