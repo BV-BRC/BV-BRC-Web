@@ -15,7 +15,7 @@ define([
     rawData: [],
     dataType: 'tsv',
     idProperty: 'RowNumber',
-    keyword: '',
+    filterOptions: {},
     columns: '',
 
     onSetState: function (attr, oldVal, state) {
@@ -35,7 +35,7 @@ define([
       // from protein family sorter, needs change
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
         //this.keyword = value;
-        this.keyword = arguments[0];
+        this.filterOptions = arguments[0];
         this.keywordFilter();
         // console.log("received:", arguments);
       }));
@@ -93,33 +93,64 @@ define([
       var data = this._original;
       var newData = [];
 
-      var keywordRegex = this.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
+      var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
         .split('~')
         .map(function (k) { return k.trim(); });
 
-      if (this.keyword !== '') {
-      data.forEach(function (dataLine) {
-        var skip = false;
+      if (this.filterOptions.keyword !== '') {
+        var keyword = this.filterOptions.keyword;
+        var columnSelection = this.filterOptions.columnSelection;
 
-        // keyword search
-        if (!skip && this.keyword !== '') {
-          skip = !keywordRegex.some(function (needle) {
-            console.log(dataLine);
-            if (dataLine.Function) {
-              console.log (dataLine.Function);
-              return needle && (dataLine.Function.toLowerCase().indexOf(needle) >= 0 || dataLine.Function.toLowerCase().indexOf(needle) >= 0);
-            } else {
-              skip = true;  // no Function
+        // all columns
+        if (columnSelection == "All Columns") {
+          data.forEach(function (dataLine) {
+            var skip = false;
+
+            var dataLineArray = Object.values(dataLine);
+            // keyword search
+            if (!skip && keyword !== '') {
+              skip = !keywordRegex.some(function (needle) {
+                if (dataLine) {
+                  var dataLineArray = Object.values(dataLine);
+                  dataLineArray.shift();  // remove row number, first element
+                  dataLineArray.some( function(dataValue) {
+                    return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase.indexOf(needle) >= 0);
+
+                  })
+
+                } else {
+                  skip = true;  // no data in this row
+                }
+              });
             }
-          });
-        }
 
-        if (!skip) {
-          newData.push(dataLine);
-        }
+            if (!skip) {
+              newData.push(dataLine);
+            }
+          }, this);
+        } else {
 
-      }, this);
-    
+        data.forEach(function (dataLine) {
+          var skip = false;
+
+          // keyword search
+          if (!skip && keyword !== '') {
+            skip = !keywordRegex.some(function (needle) {
+              if (dataLine[columnSelection]) {
+                console.log (dataLine[columnSelection]);
+                return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
+              } else {
+                skip = true;  // no Function
+              }
+            });
+          }
+
+          if (!skip) {
+            newData.push(dataLine);
+          }
+
+        }, this);
+      }
 
       this.setData(newData);
     } else {

@@ -77,8 +77,6 @@ define([
       this.addChild(this.viewSubHeader);
       this.addChild(this.viewer);
 
-      //this.createFilterPanel();
-
       var _self = this;
       Deferred.when(WS.getDownloadUrls(_self.filepath), function (url) {
         _self.url = url;
@@ -94,8 +92,6 @@ define([
       if (!this.file.data && this.viewable) {
         var _self = this;
 
-        //this.createFilterPanel();
-
 				// DEV DLB, remove reference to non-csv/tsv files
         // get the object to display
         Deferred.when(WS.getObject(this.filepath, !this.preload), function (obj) {
@@ -109,7 +105,7 @@ define([
 			this.refresh();
     },
 
-    createFilterPanel: function() {
+    createFilterPanel: function(columnHeaders) {
 
       console.log ("in createFilterPanel in viewer");
 
@@ -155,8 +151,13 @@ define([
 
       // initialize app filters
       // [{label: 'AppName  (count)', value: 'AppName', count: x}, ... ]
-      var cols = [{label: 'one', value: 'one'}, {label: 'two', value: 'two'}, {label: 'three', value: 'three'} ];
-      selector.set('options', cols).reset();
+      var items = [];
+      columnHeaders.forEach(function(header){
+        items.push({'label': header.label, 'value': header.label});
+      });
+      items.shift(); // remove checkboxes from column selection item list
+      items.unshift({'label': "All Columns", 'value': "All Columns"}); // add an All Columns option to the top of the list
+      selector.set('options', items).reset();
 
       //var spacer = domConstruct.create('span', {style: {'title': '     ', 'width': '10000px'} });
 
@@ -185,8 +186,9 @@ define([
           var filter = {};
 
           filter.keyword = ta_keyword.get('value');
+          filter.columnSelection = selector.get('value');
          
-          Topic.publish('applyKeywordFilter', filter.keyword);
+          Topic.publish('applyKeywordFilter', filter); // was filter.keyword.  Filter now contains both keyword and column
           console.log("after publish");
         })
       });
@@ -194,7 +196,6 @@ define([
       domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
 
       this.addChild(filterPanel);
-      //return filterPanel;
     },
 
     formatFileMetaData: function (showMetaDataRows) {
@@ -225,12 +226,10 @@ define([
           //this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
           if (this.file.data || (!this.preload && this.url)) {
-
-            this.createFilterPanel();
             
             var tsvCsvStore = new TsvCsvStore({
               type: 'separatedValues',
-              topidId: 'TsvCsv'
+              topicId: 'TsvCsv'
             }); 
 
             var tsvGC = new TSV_CSV_GridContainer({
@@ -241,6 +240,7 @@ define([
             }); 
             
             tsvGC.set('state', {dataType: this.file.metadata.type, data: this.file.data});
+            this.createFilterPanel(tsvCsvStore.columns);
 
 						// make a grid and fill it 
             //this.viewer.addChild(tsvGC.gridCtor);       // DLB was set
