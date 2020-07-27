@@ -93,9 +93,13 @@ define([
       var data = this._original;
       var newData = [];
 
+      if (this.filterOptions.keyword !== '') {
       var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
         .split('~')
         .map(function (k) { return k.trim(); });
+      } else {
+        keywordRegex = '';    // on Reset
+      }
 
       if (this.filterOptions.keyword !== '') {
         var keyword = this.filterOptions.keyword;
@@ -105,19 +109,17 @@ define([
         if (columnSelection == "All Columns") {
           data.forEach(function (dataLine) {
             var skip = false;
-
             var dataLineArray = Object.values(dataLine);
-            // keyword search
+
             if (!skip && keyword !== '') {
-              skip = !keywordRegex.some(function (needle) {
+              keywordRegex.some(function (needle) {
                 if (dataLine) {
-                  var dataLineArray = Object.values(dataLine);
+                  var dataLineArray = Object.values(dataLine);  // array elems can be searched for partial words
                   dataLineArray.shift();  // remove row number, first element
-                  dataLineArray.some( function(dataValue) {
-                    return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase.indexOf(needle) >= 0);
-
-                  })
-
+                  skip = !dataLineArray.some( function(dataValue) {
+                    console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
+                    return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);                  
+                  });
                 } else {
                   skip = true;  // no data in this row
                 }
@@ -129,15 +131,15 @@ define([
             }
           }, this);
         } else {
-
+        // keyword search
         data.forEach(function (dataLine) {
           var skip = false;
 
-          // keyword search
           if (!skip && keyword !== '') {
             skip = !keywordRegex.some(function (needle) {
               if (dataLine[columnSelection]) {
-                console.log (dataLine[columnSelection]);
+                //console.log (dataLine[columnSelection]);
+                console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
                 return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
               } else {
                 skip = true;  // no Function
@@ -151,7 +153,6 @@ define([
 
         }, this);
       }
-
       this.setData(newData);
     } else {
       this.setData(this._original);

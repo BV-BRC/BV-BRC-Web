@@ -171,11 +171,13 @@ define([
         label: 'Reset',
         onClick: lang.hitch(this, function () {
 
-          ta_keyword.set('value', '');
+          //filter.keyword = ta_keyword.set('value', '');
+          //filter.columnSelection = selector.get('value');
           var filter = {};
           filter.keyword = '';
+          filter.columnSelection = "All Columns";
 
-          Topic.publish('applyKeywordFilter', filter.keyword);
+          Topic.publish('applyKeywordFilter', filter);
         })
       });
 
