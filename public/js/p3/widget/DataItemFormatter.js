@@ -441,7 +441,7 @@ define([
     feature_data: function (item, options) {
       options = options || {};
 
-      var sectionList = ['Summary', 'Identifiers', 'Genome', 'Location', 'Sequences'];
+      var sectionList = ['Summary', 'Identifiers', 'Genome', 'Location', 'Sequences', 'Other'];
       var section = {};
 
       section.Summary = [{
@@ -558,6 +558,16 @@ define([
         link: function (obj) {
           return '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
         }
+      }];
+
+      section.Other = [{
+        name: 'Insert Date',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Last Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
