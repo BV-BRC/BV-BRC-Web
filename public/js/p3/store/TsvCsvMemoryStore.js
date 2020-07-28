@@ -117,7 +117,7 @@ define([
                   var dataLineArray = Object.values(dataLine);  // array elems can be searched for partial words
                   dataLineArray.shift();  // remove row number, first element
                   skip = !dataLineArray.some( function(dataValue) {
-                    console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
+                    //console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
                     return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);                  
                   });
                 } else {
@@ -139,7 +139,7 @@ define([
             skip = !keywordRegex.some(function (needle) {
               if (dataLine[columnSelection]) {
                 //console.log (dataLine[columnSelection]);
-                console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
+                //console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
                 return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
               } else {
                 skip = true;  // no Function

@@ -171,7 +171,8 @@ define([
         label: 'Reset',
         onClick: lang.hitch(this, function () {
 
-          //filter.keyword = ta_keyword.set('value', '');
+          ta_keyword.set('value', '');
+          selector.set('value', "All Columns");
           //filter.columnSelection = selector.get('value');
           var filter = {};
           filter.keyword = '';
