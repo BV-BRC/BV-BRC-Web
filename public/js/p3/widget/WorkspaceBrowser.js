@@ -6,7 +6,7 @@ define([
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath',
+  'dojo/promise/all', '../util/encodePath', './viewer/JobResult',
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +17,7 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath
+  All, encodePath, JobResult
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -1371,10 +1371,6 @@ define([
                     d = 'p3/widget/viewer/GenomeComparison';
                   }
                   break;
-                case 'GenomeAssembly2':
-                case 'GenomeAssembly':
-                  d = 'p3/widget/viewer/GenomeAssembly';
-                  break;
                 case 'GenomeAnnotation':
                 case 'GenomeAnnotationGenbank':
                   d = 'p3/widget/viewer/GenomeAnnotation';
@@ -1388,7 +1384,7 @@ define([
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
                 default:
-                  console.log('A viewer could not be found for id: ' + id);
+                  console.log('Using the default JobResult viewer. A viewer could not be found for id: ' + id);
               }
             }
             panelCtor = window.App.getConstructor(d);
@@ -1405,7 +1401,7 @@ define([
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          if (!this.activePanel || !(this.activePanel instanceof Panel)) {
+          if ((!this.activePanel) || !(this.activePanel instanceof Panel) || this.activePanel instanceof JobResult) {
             if (this.activePanel) {
               this.removeChild(this.activePanel);
             }
@@ -1468,7 +1464,7 @@ define([
             this.activePanel = newPanel;
           } else {
             this.activePanel.set('path', this.path);
-            if (this.activePaneal && 'clearSelection' in this.activePaneal) {
+            if (this.activePanel && 'clearSelection' in this.activePanel) {
               this.activePanel.clearSelection();
             }
           }
