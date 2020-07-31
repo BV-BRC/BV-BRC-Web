@@ -6,7 +6,7 @@ define([
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request',
+  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures',
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +17,7 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath, when, request
+  All, encodePath, when, request, tsvCsvFeatures
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -48,6 +48,8 @@ define([
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/workspaces/workspace.html',
+    tsvCsvFilename: '',
+
     startup: function () {
       var self = this;
 
@@ -276,8 +278,10 @@ define([
         validTypes: ['*'],
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
+        //disabled: true,
         tooltip: 'Switch to Feature View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
+          console.log (self.tsvCsvFilename);
           if (selection[0].Gene_ID) {
             var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
             var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
@@ -306,9 +310,22 @@ define([
         },
       
       }, function (selection) {
-        if (selection[0].Gene_ID) {
-          var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
-          var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+
+        var keyList = Object.keys(tsvCsvFeatures);
+        var columnName = '';
+        var featureName = '';
+        keyList.forEach(function (keyName) {
+          if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+            // key name is found
+            columnName = tsvCsvFeatures[keyName].columnName;
+            featureName = tsvCsvFeatures[keyName].feature;
+          }
+        });
+
+        if (selection[0][columnName]) {   // Gene_ID
+          var sel = (selection[0][columnName]).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+          //var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+          var query = '?eq(' + featureName + ',' + sel + ')&select(feature_id)';
 
           when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
             handleAs: 'json',
@@ -1686,7 +1703,19 @@ define([
               panelCtor = window.App.getConstructor('p3/widget/viewer/File');
             }
             params.file = { metadata: obj };
-            
+            this.tsvCsvFilename = obj.name;
+
+            /*
+            // get file suffix to use when finding features
+            var dotCount = (obj.name.match(/\./g)).length;      
+            if (dotCount > 1) {
+              var secondToLastDot = obj.name.lastIndexOf('.', obj.name.lastIndexOf('.') - 1);
+              this.tsvCsvFilenameSuffix = obj.name.slice(secondToLastDot);
+            } else {
+              this.tsvCsvFilenameSuffix = obj.name;
+            }
+            */
+        
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
@@ -1800,5 +1829,6 @@ define([
       return this.buttons;
 
     }
+
   });
 });
