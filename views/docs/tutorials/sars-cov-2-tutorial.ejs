@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>SARS-CoV-2 Genome Assembly &amp; Annotation Service User Guide | BV-BRC</title>
+		<% include ../../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <h1 id="about-us">SARS-CoV-2 Genome Assembly and Annotation Service Tutorial</h1>
+
+                            <p>The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that
+                                accepts raw reads and performs genome assembly, annotation, and variation analysis.</p><br>
+
+                            <p>A genome assembly is the sequence produced after chromosomes from the organism have been
+                                fragmented, those fragments have been sequenced, and the resulting sequences have been put back
+                                together. This is currently needed as DNA sequencing technology cannot read whole genomes in one go,
+                                but rather can read small pieces of between 20 and 30,000 bases, depending on the technology used.
+                                Typically, the short fragments, called reads, result from shotgun (random) sequencing of genomic DNA.</p><br>
+
+                            <p>The protocol used for assembly and the downstream quality measures are provided by the Centers for
+                                Disease Control (CDC). This protocol was developed, tuned and validated by the Viral Discovery
+                                laboratory at CDC/NCIRD, where it was used to generate the first 16 SARS-CoV-2 genome sequences
+                                from the United States. In practice, it has been used for situations with a relatively low or predictable
+                                volume of samples and is often used in conjunction with Sanger-based tiling to resolve any potential
+                                sequencing or assembly issues. This is a reference-based assembly, which uses the genome Severe
+                                acute respiratory syndrome coronavirus 2 (Taxonomy ID: 2697049). Additional information and the
+                                code can be found here: <a href="https://github.com/CDCgov/SARS-CoV-2_Sequencing">https://github.com/CDCgov/SARS-CoV-2_Sequencing</a></p><br>
+
+                            <p>Genome annotation uses the Viral Genome ORF Reader pipeline (VIGOR4), which was developed at the
+                                J. Craig Venter Institute. VIGOR 4 predicts protein sequences encoded in a viral genome by sequences
+                                similarity searching against curated viral protein databases. The code for VIGOR4 can be found here: <a href="https://github.com/VirusBRC/VIGOR4">https://github.com/VirusBRC/VIGOR4</a></p><br>
+
+                            <p>The landing page for the SARS-CoV-2 genome assembly and annotation service has three parts.  You can start with reads or contigs, select the files that you would like to analyze, and then select the parameters.</p><br>
+
+                            <img src="../../patric/images/bv-brc/tutorials/sars-cov-2/Picture1.png" alt="Picture 1"><br><br>
+
+                            <h2>Submitting Reads to the Service</h2>
+
+
+                            <ol>
+                                <li>Submitting paired read libraries.  To assemble paired or single read libraries, or a read file from the Sequence Read Archive (SRA), click on Read File.</li><br>
+                                <img src="../../patric/images/bv-brc/tutorials/sars-cov-2/Picture1.png" alt="Picture 2"><br><br>
+
+                                <li>Read files must be uploaded into the workspace.  To upload paired read files, click on the folder icon at the end of the text box underneath the words Paired Read Library.</li>
+
+                            </ol>
+
+                            <p></p><br>
+
+                            <p></p><br>
+
+                            <p></p><br>
+
+                            <p></p><br>
+
+                            <p></p><br>
+                        </div>
+                    </div>
+                </div>
+                <% include ../../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../../javascript %>
+	</body>
+</html>
