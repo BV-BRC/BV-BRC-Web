@@ -8,7 +8,7 @@ define("dijit/_ConfirmDialogMixin", [
 	"./form/Button"		// used by template
 ], function(declare, _WidgetsInTemplateMixin, strings, actionBarMarkup) {
 
-	return declare("dijit/_ConfirmDialogMixin", _WidgetsInTemplateMixin, {
+	return declare("dijit._ConfirmDialogMixin", _WidgetsInTemplateMixin, {
 		// summary:
 		//		Mixin for Dialog/TooltipDialog with OK/Cancel buttons.
 

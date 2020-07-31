@@ -1,4 +1,4 @@
-define("dojo/has", ["require", "module"], function(require, module){
+define("dojo/has", ["./global", "require", "module"], function(global, require, module){
 	// module:
 	//		dojo/has
 	// summary:
@@ -26,7 +26,6 @@ define("dojo/has", ["require", "module"], function(require, module){
 				window.location == location && window.document == document,
 
 			// has API variables
-			global = (function () { return this; })(),
 			doc = isBrowser && document,
 			element = doc && doc.createElement("DiV"),
 			cache = (module.config && module.config()) || {};
@@ -109,9 +108,17 @@ define("dojo/has", ["require", "module"], function(require, module){
 		// Touch events support
 		has.add("touch-events", "ontouchstart" in document);
 
-		// Pointer Events support
-		has.add("pointer-events", "onpointerdown" in document);
-		has.add("MSPointer", "msMaxTouchPoints" in navigator); //IE10 (+IE11 preview)
+		// Test if pointer events are supported and enabled, with either standard names ("pointerdown" etc.) or
+		// IE specific names ("MSPointerDown" etc.).  Tests are designed to work on embedded C# WebBrowser Controls
+		// in addition to IE, Edge, and future versions of Firefox and Chrome.
+		// Note that on IE11, has("pointer-events") and has("MSPointer") are both true.
+		has.add("pointer-events", "pointerEnabled" in window.navigator ?
+				window.navigator.pointerEnabled : "PointerEvent" in window);
+		has.add("MSPointer", window.navigator.msPointerEnabled);
+		// The "pointermove"" event is only continuously emitted in a touch environment if
+		// the target node's "touch-action"" CSS property is set to "none"
+		// https://www.w3.org/TR/pointerevents/#the-touch-action-css-property
+		has.add("touch-action", has("touch") && has("pointer-events"));
 
 		// I don't know if any of these tests are really correct, just a rough guess
 		has.add("device-width", screen.availWidth || innerWidth);

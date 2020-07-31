@@ -1,4 +1,4 @@
-define("dojo/_base/kernel", ["../has", "./config", "require", "module"], function(has, config, require, module){
+define("dojo/_base/kernel", ["../global", "../has", "./config", "require", "module"], function(global, has, config, require, module){
 	// module:
 	//		dojo/_base/kernel
 
@@ -10,7 +10,6 @@ define("dojo/_base/kernel", ["../has", "./config", "require", "module"], functio
 
 		// create dojo, dijit, and dojox
 		// FIXME: in 2.0 remove dijit, dojox being created by dojo
-		global = (function () { return this; })(),
 		dijit = {},
 		dojox = {},
 		dojo = {
@@ -80,7 +79,7 @@ define("dojo/_base/kernel", ["../has", "./config", "require", "module"], functio
 	dojo.isAsync = ! 1  || require.async;
 	dojo.locale = config.locale;
 
-	var rev = "$Rev$".match(/[0-9a-f]{7,}/);
+	var rev = "$Rev:$".match(/[0-9a-f]{7,}/);
 	dojo.version = {
 		// summary:
 		//		Version number of the Dojo Toolkit
@@ -93,7 +92,7 @@ define("dojo/_base/kernel", ["../has", "./config", "require", "module"], functio
 		//		- flag: String: Descriptor flag. If total version is "1.2.0beta1", will be "beta1"
 		//		- revision: Number: The Git rev from which dojo was pulled
 
-		major: 1, minor: 11, patch: 0, flag: "-pre",
+		major: 1, minor: 16, patch: 3, flag: "",
 		revision: rev ? rev[0] : NaN,
 		toString: function(){
 			var v = dojo.version;
@@ -107,8 +106,9 @@ define("dojo/_base/kernel", ["../has", "./config", "require", "module"], functio
 	// is migrated. Absent specific advice otherwise, set extend-dojo to truthy.
 	 1 || has.add("extend-dojo", 1);
 
-
-	(Function("d", "d.eval = function(){return d.global.eval ? d.global.eval(arguments[0]) : eval(arguments[0]);}"))(dojo);
+	if(!has("csp-restrictions")){
+		(Function("d", "d.eval = function(){return d.global.eval ? d.global.eval(arguments[0]) : eval(arguments[0]);}"))(dojo);
+	}
 	/*=====
 	dojo.eval = function(scriptText){
 		// summary:
@@ -146,12 +146,21 @@ define("dojo/_base/kernel", ["../has", "./config", "require", "module"], functio
 		};
 	}
 
-	 1 || has.add("dojo-guarantee-console",
-		// ensure that console.log, console.warn, etc. are defined
-		1
-	);
+	if(!has("host-webworker")){
+		// console is immutable in FF30+, https://bugs.dojotoolkit.org/ticket/18100
+		 1 || has.add("dojo-guarantee-console",
+			// ensure that console.log, console.warn, etc. are defined
+			1
+		);
+	}
+
 	if( 1 ){
-		typeof console != "undefined" || (console = {});
+		// IE 9 bug: https://bugs.dojotoolkit.org/ticket/18197
+		has.add("console-as-object", function () {
+			return Function.prototype.bind && console && typeof console.log === "object";
+		});
+
+		typeof console != "undefined" || (console = {});  // intentional assignment
 		//	Be careful to leave 'log' always at the end
 		var cn = [
 			"assert", "count", "debug", "dir", "dirxml", "error", "group",
@@ -171,6 +180,8 @@ define("dojo/_base/kernel", ["../has", "./config", "require", "module"], functio
 					} : function(){};
 					console[tcn]._fake = true;
 				})();
+			}else if(has("console-as-object")){
+				console[tn] = Function.prototype.bind.call(console[tn], console);
 			}
 		}
 	}

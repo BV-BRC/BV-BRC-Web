@@ -110,7 +110,7 @@ define("dijit/_HasDropDown", [
 			//
 			// Also, don't call preventDefault() on MSPointerDown event (on IE10) because that prevents the button
 			// from getting focus, and then the focus manager doesn't know what's going on (#17262)
-			if(e.type != "MSPointerDown" && e.type != "pointerdown"){
+			if(e.type != "MSPointerDown"){
 				e.preventDefault();
 			}
 
@@ -412,6 +412,7 @@ define("dijit/_HasDropDown", [
 				var resizeArgs = {
 					w: dropDown.domNode.offsetWidth + widthAdjust
 				};
+				this._origStyle = ddNode.style.cssText;
 				if(lang.isFunction(dropDown.resize)){
 					dropDown.resize(resizeArgs);
 				}else{
@@ -461,7 +462,11 @@ define("dijit/_HasDropDown", [
 				popup.close(this.dropDown);
 				this._opened = false;
 			}
-		}
 
+			if(this._origStyle){
+				this.dropDown.domNode.style.cssText = this._origStyle;
+				delete this._origStyle;
+			}
+		}
 	});
 });

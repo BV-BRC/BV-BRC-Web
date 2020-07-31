@@ -116,7 +116,7 @@ define("p3/widget/WorkspaceObjectSelector", [
       }
 
       if (this.currentPathNode) {
-        this.currentPathNode.innerHTML = val;
+        this.currentPathNode.innerHTML = val.replace(/@patricbrc\.org|@viprbrc\.org/, '');
       }
 
       // hide/show new workspace/folder icons
@@ -255,7 +255,7 @@ define("p3/widget/WorkspaceObjectSelector", [
       var self = this;
       var wrap = domConstr.create('div', {});
       this.currentPathNode = domConstr.create('div', {
-        innerHTML: this.path,
+        innerHTML: this.path.replace(/@patricbrc\.org|@viprbrc\.org/, ''),
         style: { margin: '5px 0 0 0' }
       }, wrap);
       // domConstr.place('<br>', wrap)

@@ -84,6 +84,9 @@ define("dijit/Tree", [
 			this.labelNode[this.labelType == "html" ? "innerHTML" : "innerText" in this.labelNode ?
 				"innerText" : "textContent"] = val;
 			this._set("label", val);
+			if(has("dojo-bidi")){
+				this.applyTextDir(this.labelNode);
+			}
 		},
 
 		// labelType: [const] String
@@ -414,10 +417,10 @@ define("dijit/Tree", [
 						}
 
 						// If we've orphaned the focused node then move focus to the root node
-						if(tree.lastFocusedChild && !dom.isDescendant(tree.lastFocusedChild, tree.domNode)){
+						if(tree.lastFocusedChild && !dom.isDescendant(tree.lastFocusedChild.domNode, tree.domNode)){
 							delete tree.lastFocusedChild;
 						}
-						if(focusedChild && !dom.isDescendant(focusedChild, tree.domNode)){
+						if(focusedChild && !dom.isDescendant(focusedChild.domNode, tree.domNode)){
 							tree.focus();	// could alternately focus this node (parent of the deleted node)
 						}
 
@@ -920,6 +923,7 @@ define("dijit/Tree", [
 							this.domNode.removeAttribute("aria-labelledby");
 						}
 						rn.labelNode.setAttribute("role", "presentation");
+						rn.labelNode.removeAttribute("aria-selected");
 						rn.containerNode.setAttribute("role", "tree");
 						rn.containerNode.setAttribute("aria-expanded", "true");
 						rn.containerNode.setAttribute("aria-multiselectable", !this.dndController.singular);
@@ -1040,7 +1044,7 @@ define("dijit/Tree", [
 				return all(array.map(paths, function(path){
 					// normalize path to use identity
 					path = array.map(path, function(item){
-						return lang.isString(item) ? item : tree.model.getIdentity(item);
+						return item && lang.isObject(item) ? tree.model.getIdentity(item) : item;
 					});
 
 					if(path.length){
@@ -1570,10 +1574,23 @@ define("dijit/Tree", [
 			//		Focus on the specified node (which must be visible)
 			// tags:
 			//		protected
-
-			var scrollLeft = this.domNode.scrollLeft;
+                        var tmp = [];
+                        for(var domNode = this.domNode; 
+                            domNode && domNode.tagName && domNode.tagName.toUpperCase() !== 'IFRAME';
+                            domNode = domNode.parentNode) {
+                            tmp.push({
+                                domNode: domNode.contentWindow || domNode,
+                                scrollLeft: domNode.scrollLeft || 0,
+                                scrollTop: domNode.scrollTop || 0
+                            });
+                        }
 			this.focusChild(node);
-			this.domNode.scrollLeft = scrollLeft;
+			this.defer(function() {
+                            for (var i = 0, max = tmp.length; i < max; i++) {
+                                tmp[i].domNode.scrollLeft = tmp[i].scrollLeft;
+                                tmp[i].domNode.scrollTop = tmp[i].scrollTop;
+                            }
+			}, 0);
 		},
 
 		_onNodeMouseEnter: function(/*dijit/_WidgetBase*/ /*===== node =====*/){
@@ -1646,10 +1663,10 @@ define("dijit/Tree", [
 					}
 
 					// If we've orphaned the focused node then move focus to the root node
-					if(this.lastFocusedChild && !dom.isDescendant(this.lastFocusedChild, this.domNode)){
+					if(this.lastFocusedChild && !dom.isDescendant(this.lastFocusedChild.domNode, this.domNode)){
 						delete this.lastFocusedChild;
 					}
-					if(this.focusedChild && !dom.isDescendant(this.focusedChild, this.domNode)){
+					if(this.focusedChild && !dom.isDescendant(this.focusedChild.domNode, this.domNode)){
 						this.focus();
 					}
 

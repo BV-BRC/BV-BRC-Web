@@ -1,16 +1,16 @@
 define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "dojo/_base/declare", "dojo/has", "./CartesianBase", "./_PlotEvents", "./common",
-	"dojox/gfx/fx", "dojox/lang/utils", "dojox/lang/functional", "dojox/lang/functional/reversed"], 
-	function(lang, arr, declare, has, CartesianBase, _PlotEvents, dc, fx, du, df, dfr){
-		
+	"dojox/gfx/fx", "dojox/lang/utils", "dojox/lang/functional"],
+	function(lang, arr, declare, has, CartesianBase, _PlotEvents, dc, fx, du, df){
+
 	/*=====
 	declare("dojox.charting.plot2d.__BarCtorArgs", dojox.charting.plot2d.__DefaultCtorArgs, {
 		// summary:
 		//		Additional keyword arguments for bar charts.
-	
+
 		// minBarSize: Number?
 		//		The minimum size for a bar in pixels.  Default is 1.
 		minBarSize: 1,
-	
+
 		// maxBarSize: Number?
 		//		The maximum size for a bar in pixels.  Default is 1.
 		maxBarSize: 1,
@@ -47,14 +47,15 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 		// fontColor: String|dojo.Color?
 		//		The color to be used for any text-based elements on the plot.
 		fontColor:	"",
-		
+
 		// enableCache: Boolean?
 		//		Whether the bars rect are cached from one rendering to another. This improves the rendering performance of
 		//		successive rendering but penalize the first rendering.  Default false.
 		enableCache: false
 	});
 	=====*/
-	var purgeGroup = dfr.lambda("item.purgeGroup()");
+
+	var alwaysFalse = function(){ return false; }
 
 	return declare("dojox.charting.plot2d.Bars", [CartesianBase, _PlotEvents], {
 		// summary:
@@ -97,14 +98,14 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 			//		Calculate the min/max on all attached series in both directions.
 			// returns: Object
 			//		{hmin, hmax, vmin, vmax} min/max in both directions.
-			var stats = dc.collectSimpleStats(this.series), t;
+			var stats = dc.collectSimpleStats(this.series, lang.hitch(this, "isNullValue")), t;
 			stats.hmin -= 0.5;
 			stats.hmax += 0.5;
 			t = stats.hmin, stats.hmin = stats.vmin, stats.vmin = t;
 			t = stats.hmax, stats.hmax = stats.vmax, stats.vmax = t;
 			return stats; // Object
 		},
-		
+
 		createRect: function(run, creator, params){
 			var rect;
 			if(this.opt.enableCache && run._rectFreePool.length > 0){
@@ -147,7 +148,7 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 			this.resetEvents();
 			var s;
 			if(this.dirty){
-				arr.forEach(this.series, purgeGroup);
+				arr.forEach(this.series, dc.purgeGroup);
 				this._eventSeries = {};
 				this.cleanGroup();
 				s = this.getGroup();
@@ -156,7 +157,8 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 			var t = this.chart.theme,
 				ht = this._hScaler.scaler.getTransformerFromModel(this._hScaler),
 				vt = this._vScaler.scaler.getTransformerFromModel(this._vScaler),
-				baseline = Math.max(0, this._hScaler.bounds.lower),
+				baseline = Math.max(this._hScaler.bounds.lower,
+					this._hAxis ? this._hAxis.naturalBaseline : 0),
 				baselineWidth = ht(baseline),
 				events = this.events();
 			var bar = this.getBarProperties();
@@ -164,7 +166,12 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 			var actualLength = this.series.length;
 			arr.forEach(this.series, function(serie){if(serie.hidden){actualLength--;}});
 			var z = actualLength;
-			for(var i = this.series.length - 1; i >= 0; --i){
+
+			// Collect and calculate all values
+			var extractedValues = this.extractValues(this._vScaler);
+			extractedValues = this.rearrangeValues(extractedValues, ht, baselineWidth);
+
+			for(var i = 0; i < this.series.length; i++){
 				var run = this.series[i];
 				if(!this.dirty && !run.dirty){
 					t.skip();
@@ -185,7 +192,7 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 				z--;
 
 				var	eventSeries = new Array(run.data.length);
-				s = run.group;	
+				s = run.group;
 				var indexed = arr.some(run.data, function(item){
 					return typeof item == "number" || (item && !item.hasOwnProperty("x"));
 				});
@@ -195,12 +202,9 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 				var max = indexed?Math.min(run.data.length, Math.ceil(this._vScaler.bounds.to)):run.data.length;
 				for(var j = min; j < max; ++j){
 					var value = run.data[j];
-					if(value != null){
+					if(!this.isNullValue(value)){
 						var val = this.getValue(value, j, i, indexed),
-							hv = ht(val.y),
-							w = Math.abs(hv - baselineWidth),
-							finalTheme,
-							sshape;
+							w = extractedValues[i][j], finalTheme, sshape;
 						if(this.opt.styleFunc || typeof value != "number"){
 							var tMixin = typeof value != "number" ? [value] : [];
 							if(this.opt.styleFunc){
@@ -210,12 +214,11 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 						}else{
 							finalTheme = t.post(theme, "bar");
 						}
-						if(w >= 0 && bar.height >= 1){
+						if(w && bar.height >= 1){
 							var rect = {
-								x: offsets.l + (val.y < baseline ? hv : baselineWidth),
+								x: offsets.l + baselineWidth + Math.min(w, 0),
 								y: dim.height - offsets.b - vt(val.x + 1.5) + bar.gap + bar.thickness * (actualLength - z - 1),
-								// y: dim.height - offsets.b - vt(val.x + 1.5) + bar.gap + bar.thickness * z,
-								width: w,
+								width: Math.abs(w),
 								height: bar.height
 							};
 							if(finalTheme.series.shadow){
@@ -227,6 +230,7 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 									this._animateBar(sshape, offsets.l + baselineWidth, -w);
 								}
 							}
+
 							var specialFill = this._plotFill(finalTheme.series.fill, dim, offsets);
 							specialFill = this._shapeFill(specialFill, rect);
 							var shape = this.createRect(run, s, rect).setFill(specialFill).setStroke(finalTheme.series.stroke);
@@ -250,15 +254,13 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 								this._connectEvents(o);
 								eventSeries[j] = o;
 							}
-							// if val.py is here, this means we are stacking and we need to subtract previous
-							// value to get the high in which we will lay out the label
 							if(!isNaN(val.py) && val.py > baseline){
 								rect.x += ht(val.py);
 								rect.width -= ht(val.py);
 							}
 							this.createLabel(s, value, rect, finalTheme);
 							if(this.animate){
-								this._animateBar(shape, offsets.l + baselineWidth, -w);
+								this._animateBar(shape, offsets.l + baselineWidth, -Math.abs(w));
 							}
 						}
 					}
@@ -288,7 +290,56 @@ define("dojox/charting/plot2d/Bars", ["dojo/_base/lang", "dojo/_base/array", "do
 				x = value.x -1;
 			}
 			return {y:y, x:x};
-		},	
+		},
+		extractValues: function(scaler){
+			var extracted = [];
+			for(var i = this.series.length - 1; i >= 0; --i){
+				var run = this.series[i];
+				if(!this.dirty && !run.dirty){
+					continue;
+				}
+				// on indexed charts we can easily just interate from the first visible to the last visible
+				// data point to save time
+				var indexed = arr.some(run.data, function(item){
+						return typeof item == "number" || (item && !item.hasOwnProperty("x"));
+					}),
+					min = indexed ? Math.max(0, Math.floor(scaler.bounds.from - 1)) : 0,
+					max = indexed ? Math.min(run.data.length, Math.ceil(scaler.bounds.to)) : run.data.length,
+					extractedSet = extracted[i] = [];
+				extractedSet.min = min;
+				extractedSet.max = max;
+				for(var j = min; j < max; ++j){
+					var value = run.data[j];
+					extractedSet[j] = this.isNullValue(value) ? 0 :
+						(typeof value == "number" ? value : value.y);
+				}
+			}
+			return extracted;
+		},
+		rearrangeValues: function(values, transform, baseline){
+			// transform to pixels
+			for(var i = 0, n = values.length; i < n; ++i){
+				var extractedSet = values[i];
+				if(extractedSet){
+					for(var j = extractedSet.min, k = extractedSet.max; j < k; ++j){
+						var value = extractedSet[j];
+						extractedSet[j] = this.isNullValue(value) ? 0 : transform(value) - baseline;
+					}
+				}
+			}
+			return values;
+		},
+		isNullValue: function(value){
+			if(value === null || typeof value == "undefined"){
+				return true;
+			}
+			var h = this._hAxis ? this._hAxis.isNullValue : alwaysFalse,
+				v = this._vAxis ? this._vAxis.isNullValue : alwaysFalse;
+			if(typeof value == "number"){
+				return v(0.5) || h(value);
+			}
+			return v(isNaN(value.x) ? 0.5 : value.x + 0.5) || value.y === null || h(value.y);
+		},
 		getBarProperties: function(){
 			var f = dc.calculateBarSize(this._vScaler.bounds.scale, this.opt);
 			return {gap: f.gap, height: f.size, thickness: 0};

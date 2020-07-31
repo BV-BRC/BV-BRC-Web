@@ -440,7 +440,7 @@ define("dijit/layout/ContentPane", [
 			try{
 				this.onLoadDeferred.resolve(data);
 			}catch(e){
-				console.error('Error ' + this.widgetId + ' running custom onLoad code: ' + e.message);
+				console.error('Error ' + (this.widgetId || this.id) + ' running custom onLoad code: ' + e.message);
 			}
 		},
 
@@ -513,6 +513,7 @@ define("dijit/layout/ContentPane", [
 			// returns:
 			//		Returns a Deferred promise that is resolved when the content is parsed.
 
+			cont = this.preprocessContent(cont);
 			// first get rid of child widgets
 			this.destroyDescendants();
 
@@ -574,6 +575,17 @@ define("dijit/layout/ContentPane", [
 					self._onLoadHandler(cont);
 				}
 			});
+		},
+
+		preprocessContent: function(/*String|DocumentFragment*/ content){
+			// summary:
+			//		Hook, called after content has loaded, before being processed.
+			// description:
+			//		A subclass should preprocess the content and return the preprocessed content.
+			//		See https://bugs.dojotoolkit.org/ticket/9622
+			// returns:
+			//		Returns preprocessed content, either a String or DocumentFragment
+			return content;
 		},
 
 		_onError: function(type, err, consoleText){

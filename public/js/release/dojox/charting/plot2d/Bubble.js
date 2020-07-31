@@ -1,9 +1,7 @@
-define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/array", "dojo/has", 
-		"./CartesianBase", "./_PlotEvents", "./common", "dojox/lang/functional", "dojox/lang/functional/reversed",
-		"dojox/lang/utils", "dojox/gfx/fx"], 
-	function(lang, declare, arr, has, CartesianBase, _PlotEvents, dc, df, dfr, du, fx){
-
-	var purgeGroup = dfr.lambda("item.purgeGroup()");
+define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/array", "dojo/has",
+		"./CartesianBase", "./_PlotEvents", "./common", "dojox/lang/functional",
+		"dojox/lang/utils", "dojox/gfx/fx"],
+	function(lang, declare, arr, has, CartesianBase, _PlotEvents, dc, df, du, fx){
 
 	return declare("dojox.charting.plot2d.Bubble", [CartesianBase, _PlotEvents], {
 		// summary:
@@ -60,7 +58,7 @@ define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare",
 			this.resetEvents();
 			this.dirty = this.isDirty();
 			if(this.dirty){
-				arr.forEach(this.series, purgeGroup);
+				arr.forEach(this.series, dc.purgeGroup);
 				this._eventSeries = {};
 				this.cleanGroup();
 				s = this.getGroup();
@@ -72,7 +70,7 @@ define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare",
 				vt = this._vScaler.scaler.getTransformerFromModel(this._vScaler),
 				events = this.events();
 
-			for(var i = this.series.length - 1; i >= 0; --i){
+			for(var i = 0; i < this.series.length; i++){
 				var run = this.series[i];
 				if(!this.dirty && !run.dirty){
 					t.skip();
@@ -106,7 +104,7 @@ define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare",
 					continue;
 				}
 				s = run.group;
-                
+
 				var frontCircles = null, outlineCircles = null, shadowCircles = null, styleFunc = this.opt.styleFunc;
 
 				var getFinalTheme = function(item){
@@ -119,7 +117,7 @@ define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare",
 				// make shadows if needed
 				if(theme.series.shadow){
 					shadowCircles = arr.map(points, function(item, i){
-						if(item !== null){
+						if(!this.isNullValue(item)){
 							var finalTheme = getFinalTheme(run.data[i]),
 								shadow = finalTheme.series.shadow;
 							var shape = s.createCircle({
@@ -140,7 +138,7 @@ define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare",
 				// make outlines if needed
 				if(theme.series.outline){
 					outlineCircles = arr.map(points, function(item, i){
-						if(item !== null){
+						if(!this.isNullValue(item)){
 							var finalTheme = getFinalTheme(run.data[i]),
 								outline = dc.makeStroke(finalTheme.series.outline);
 							outline.width = 2 * outline.width + (theme.series.stroke && theme.series.stroke.width || 0);
@@ -161,7 +159,7 @@ define("dojox/charting/plot2d/Bubble", ["dojo/_base/lang", "dojo/_base/declare",
 
 				//	run through the data and add the circles.
 				frontCircles = arr.map(points, function(item, i){
-					if(item !== null){
+					if(!this.isNullValue(item)){
 						var finalTheme = getFinalTheme(run.data[i]),
 							rect = {
 								x: item.x - item.radius,

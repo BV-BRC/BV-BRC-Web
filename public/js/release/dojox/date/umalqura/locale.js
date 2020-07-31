@@ -1,4 +1,4 @@
-define("dojox/date/umalqura/locale", ["../..", "dojo/_base/lang", "dojo/_base/array", "dojo/date", "dojo/i18n", "dojo/regexp", "dojo/string", "./Date", "dojo/i18n!dojo/cldr/nls/islamic"],
+define("dojox/date/umalqura/locale", ["dojox/main", "dojo/_base/lang", "dojo/_base/array", "dojo/date", "dojo/i18n", "dojo/regexp", "dojo/string", "./Date", "dojo/i18n!dojo/cldr/nls/islamic"],
        function (dojox, lang, arr, dd, i18n, regexp, string, IDate, bundle) {
 
            var ilocale = lang.getObject("date.umalqura.locale", true, dojox);

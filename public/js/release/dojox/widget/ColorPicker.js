@@ -500,19 +500,22 @@ define("dojox/widget/ColorPicker", [
 		_setHuePoint: function(/* Event */evt){
 			// summary:
 			//		set the hue picker handle on relative y coordinates
+
+			//#13268 Fix for IE and Edge, as they don't support evt.layerX/Y
 			var selCenter = this.PICKER_HUE_SELECTOR_H/2;
-			var ypos = evt.layerY - selCenter;
+			var ypos = evt.layerY || (evt.y - evt.target.getBoundingClientRect().top);
+			ypos -= selCenter;
 			if(this.animatePoint){
 				fx.slideTo({
 					node: this.hueCursorNode,
 					duration:this.slideDuration,
 					top: ypos,
 					left: 0,
-					onEnd: lang.hitch(this, function(){ this._updateColor(false); FocusManager.focus(this.hueCursorNode); })
+					onEnd: lang.hitch(this, function(){ this._updateColor(true); FocusManager.focus(this.hueCursorNode); })
 				}).play();
 			}else{
 				html.style(this.hueCursorNode, "top", ypos + "px");
-				this._updateColor(false);
+				this._updateColor(true);
 			}
 		},
 		
@@ -523,8 +526,13 @@ define("dojox/widget/ColorPicker", [
 			//	evt.preventDefault();
 			var satSelCenterH = this.PICKER_SAT_SELECTOR_H/2;
 			var satSelCenterW = this.PICKER_SAT_SELECTOR_W/2;
-			var newTop = evt.layerY - satSelCenterH;
-			var newLeft = evt.layerX - satSelCenterW;
+
+			//#13268 Fix for IE and Edge, as they don't support evt.layerX/Y
+
+			var newTop = evt.layerY || (evt.y - evt.target.getBoundingClientRect().top);
+			newTop -= satSelCenterH;
+			var newLeft = evt.layerX || (evt.x - evt.target.getBoundingClientRect().left);
+			newLeft -= satSelCenterW;
 			
 			if(evt){ FocusManager.focus(evt.target); }
 
@@ -541,7 +549,7 @@ define("dojox/widget/ColorPicker", [
 					left: newLeft + "px",
 					top: newTop + "px"
 				});
-				this._updateColor(false);
+				this._updateColor(true);
 			}
 		},
 		

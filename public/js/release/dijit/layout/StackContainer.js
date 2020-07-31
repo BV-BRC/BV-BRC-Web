@@ -232,7 +232,7 @@ define("dijit/layout/StackContainer", [
 				// Deselect old page and select new one
 				d = this._transition(page, this.selectedChildWidget, animate);
 				this._set("selectedChildWidget", page);
-				topic.publish(this.id + "-selectChild", page);	// publish
+				topic.publish(this.id + "-selectChild", page, this._focused);	// publish
 
 				if(this.persist){
 					cookie(this.id + "_selectedChild", this.selectedChildWidget.id);
@@ -353,7 +353,7 @@ define("dijit/layout/StackContainer", [
 			//		If onClose() returns true then remove and destroy the child.
 			// tags:
 			//		private
-			var remove = page.onClose && page.onClose(this, page);
+			var remove = !page.onClose || page.onClose(this, page);
 			if(remove){
 				this.removeChild(page);
 				// makes sure we can clean up executeScripts in ContentPane onUnLoad

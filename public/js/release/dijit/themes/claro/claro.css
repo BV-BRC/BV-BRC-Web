@@ -28,12 +28,17 @@ table.dijitInline {
 }
 .dijitHidden {
 	
-	display: none !important;
+	position: absolute; 
+	visibility: hidden; 
+}
+.dijitHidden * {
+	visibility: hidden !important; 
 }
 .dijitVisible {
 	
 	display: block !important;	
 	position: relative;			
+	visibility: visible;
 }
 .dj_ie6 .dijitComboBox .dijitInputContainer,
 .dijitInputContainer {
@@ -312,6 +317,7 @@ div.dijitArrowButton {
 	left: 0;
 	#filter: ""; 
 	white-space: nowrap;
+	pointer-events: none;   
 }
 .dijitTimeTextBox {
 	width: 8em;
@@ -953,12 +959,22 @@ body .dijitAlignClient { position: absolute; }
 	
 	overflow: hidden;
 }
-.dijitCalendarContainer {
+.dijitCalendarContainer table {
 	width: auto;	
+	clear: both;    
 }
 .dijitCalendarContainer th, .dijitCalendarContainer td {
 	padding: 0;
 	vertical-align: middle;
+}
+.dijitCalendarMonthContainer {
+	text-align: center;
+}
+.dijitCalendarDecrementArrow {
+	float: left;
+}
+.dijitCalendarIncrementArrow {
+	float: right;
 }
 .dijitCalendarYearLabel {
     white-space: nowrap;    
@@ -1259,6 +1275,7 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
 .dijitTree {
 	overflow: auto;	
 	-webkit-tap-highlight-color: transparent;
+	-moz-user-select: none;
 }
 .dijitTreeContainer {
 	float: left;	
@@ -1706,6 +1723,17 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
 .dijitNumberTextBox .dijitInputInner {
 	text-align: inherit; 
 }
+.dijitNumberTextBox input.dijitInputInner,
+.dijitCurrencyTextBox input.dijitInputInner,
+.dijitSpinner input.dijitInputInner {
+	text-align: right;
+}
+.dj_ie8 .dijitNumberTextBox input.dijitInputInner, .dj_ie9 .dijitNumberTextBox input.dijitInputInner,
+.dj_ie8 .dijitCurrencyTextBox input.dijitInputInner, .dj_ie9 .dijitCurrencyTextBox input.dijitInputInner,
+.dj_ie8 .dijitSpinner input.dijitInputInner, .dj_ie9 .dijitSpinner input.dijitInputInner {
+	
+	padding-right: 1px !important;
+}
 .dijitToolbar .dijitSelect {
 	margin: 0;
 }
@@ -1938,7 +1966,7 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
 .dijitIconFolderClosed, .dijitFolderClosed { background-position: -464px; }
 .dijitIconFolderOpen, .dijitFolderOpened { background-position: -480px; }
 .dijitIconLoading {
-	background:url("../../icons/images/loadingAnimation_rtl.gif") no-repeat;
+	background: url("../../icons/images/loadingAnimation.gif") no-repeat;
 	height: 20px;
 	width: 20px;
 }
@@ -3129,7 +3157,6 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
 }
 .claro .dijitCalendar {
   border: solid 1px #b5bcc7;
-  border-collapse: separate;
   -moz-border-radius: 4px;
   border-radius: 4px;
   background-color: #cfe5fa;
@@ -3154,6 +3181,9 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
   
   background-color: #abd6ff;
   border: solid 1px #759dc0;
+}
+.claro .dijitCalendar table {
+  border-collapse: separate;
 }
 .claro .dijitCalendarMonthContainer th {
   text-align: center;
@@ -4146,7 +4176,8 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
   background-image: none;
 }
 .claro .dijitTreeExpandoLoading {
-  background-image: url("images/loadingAnimation.gif");
+  background-image: url("../../icons/images/loadingAnimation.gif");
+  background-position: 0 0;
 }
 .claro .dijitTreeNode .dojoDndItemBefore .dijitTreeContent {
   border-top: 2px solid #759dc0;
@@ -4658,6 +4689,12 @@ div.dijitTabDisabled, .dj_ie div.dijitTabDisabled {
 div.dijitNumberTextBoxRtl {
 	text-align: right;
 }
+.dijitCalendarRtl .dijitCalendarDecrementArrow {
+	float: right;
+}
+.dijitCalendarRtl .dijitCalendarIncrementArrow {
+	float: left;
+}
 .dijitCalendarRtl .dijitCalendarNextYear {
 	margin:0 0.55em 0 0;
 }
@@ -4929,6 +4966,9 @@ div.dijitNumberTextBoxRtl {
 .dijitRtl .dijitDisabled .dijitIconError {
 	background-image: url("../../icons/images/commonIconsObjActDisabled_rtl.png"); 
 }
+.dijitRtl .dijitIconLoading {
+	background-image: url("../../icons/images/loadingAnimation_rtl.gif");
+}
 .claro .dijitTitlePaneRtl .dijitClosed .dijitArrowNode,
 .claro .dijitFieldsetRtl .dijitFieldsetTitleClosed .dijitArrowNode {
   background-position: -7px 0;
@@ -4985,6 +5025,10 @@ div.dijitNumberTextBoxRtl {
   border-right-width: 0;
   padding-left: 1px;
   padding-right: 2px;
+}
+.claro .dijitTreeRtl .dijitTreeExpandoLoading {
+  background-image: url("../../icons/images/loadingAnimation_rtl.gif");
+  background-position: 100% 0;
 }
 .claro .dijitProgressBarRtl .dijitProgressBarFull {
   border-left-width: 1px;

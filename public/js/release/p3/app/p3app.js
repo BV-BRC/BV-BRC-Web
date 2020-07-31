@@ -136,7 +136,7 @@ define("p3/app/p3app", [
       }
 
       Router.register('/$', function (params, oldPath, newPath, state) {
-        var homeNode = dom.byId('patric-homepage');
+        var homeNode = dom.byId('bv-brc-home');
         if (homeNode) {
           return;
         }
@@ -367,7 +367,7 @@ define("p3/app/p3app", [
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
-          n.innerHTML = this.user.id.replace('@patricbrc.org', '');
+          n.innerHTML = this.user.id.replace(/@patricbrc\.org|@viprbrc\.org/, '');
         }
       }
 
@@ -435,6 +435,11 @@ define("p3/app/p3app", [
           // var docbody = document.getElementsByClassName('patric')[0];
           // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
+
+          // remove account settings if using a non-patric login (for now)
+          if (window.App.user.altLogin) {
+            document.querySelector('.userProfile').style.display = 'none';
+          }
           window.App.authorizationToken = localStorage.getItem('tokenstring');
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
@@ -540,7 +545,6 @@ define("p3/app/p3app", [
       return true;
     },
     login: function (data, token) {
-      // console.log(data);
       /* istanbul ignore else */
       if (data !== undefined) {
         localStorage.setItem('auth', JSON.stringify(data));
@@ -572,6 +576,25 @@ define("p3/app/p3app", [
           );
       } else {
         console.log('i am not logged in yet');
+      }
+    },
+    loginWithVipr: function (data, token) {
+      if (data !== undefined) {
+        localStorage.setItem('auth', JSON.stringify(data));
+        localStorage.setItem('tokenstring', token);
+        var userid = data.client_id.replace('@viprbrc.org', '');
+        localStorage.setItem('userid', userid);
+
+        // for vipr, we only have the userid for now.
+        localStorage.removeItem('userProfile');
+        localStorage.setItem('userProfile', JSON.stringify({
+          id: userid + '@viprbrc.org',
+          altLogin: 'vipr'
+        }));
+
+        window.location.reload();
+      } else {
+        console.log('loginWithVipr: not logged in yet (?)');
       }
     },
     uploadJobsWidget: function (action) {

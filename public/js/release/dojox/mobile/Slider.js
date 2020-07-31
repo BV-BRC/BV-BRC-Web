@@ -12,9 +12,10 @@ define("dojox/mobile/Slider", [
 	"dojo/keys",
 	"dojo/touch",
 	"dijit/_WidgetBase",
-	"dijit/form/_FormValueMixin"
+	"dijit/form/_FormValueMixin",
+	"./common"
 ],
-	function(array, connect, declare, lang, win, has, domClass, domConstruct, domGeometry, domStyle, keys, touch, WidgetBase, FormValueMixin){
+	function(array, connect, declare, lang, win, has, domClass, domConstruct, domGeometry, domStyle, keys, touch, WidgetBase, FormValueMixin, common){
 
 	return declare("dojox.mobile.Slider", [WidgetBase, FormValueMixin], {
 		// summary:
@@ -72,9 +73,7 @@ define("dojox/mobile/Slider", [
 			}
 			this.inherited(arguments);
 			// prevent browser scrolling on IE10 (evt.preventDefault() is not enough)
-			if(typeof this.domNode.style.msTouchAction != "undefined"){
-				this.domNode.style.msTouchAction = "none";
-			}
+			common._setTouchAction(this.domNode, "none");
 		},
 
 		_setMinAttr: function(/*Number*/ min){
@@ -114,6 +113,7 @@ define("dojox/mobile/Slider", [
 			this.inherited(arguments);
 
 			function beginDrag(e){
+				e.stopPropagation(); // in case of slider enclosed in a scrollable container, this prevents the widget from scrolling while it's being used
 				e.target.focus();
 				function getEventData(e){
 					point = isMouse ? e[this._attrs.pageX] : (e.touches ? e.touches[0][this._attrs.pageX] : e[this._attrs.clientX]);
@@ -130,7 +130,7 @@ define("dojox/mobile/Slider", [
 					lang.hitch(this, getEventData)(e);
 					this.set('value', value, false);
 				}
-		
+
 				function endDrag(e){
 					e.preventDefault();
 					array.forEach(actionHandles, lang.hitch(this, "disconnect"));

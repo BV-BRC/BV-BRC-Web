@@ -43,29 +43,35 @@ define([
 		return map;
 	}
 
-	// Map from widget name or list of widget names(ex: "dijit/form/Button,acme/MyMixin") to a constructor.
-	var _ctorMap = {};
-
 	function getCtor(/*String[]*/ types, /*Function?*/ contextRequire){
 		// summary:
 		//		Retrieves a constructor.  If the types array contains more than one class/MID then the
 		//		subsequent classes will be mixed into the first class and a unique constructor will be
 		//		returned for that array.
 
+		if(!contextRequire){
+			contextRequire = require;
+		}
+
+		// Map from widget name or list of widget names(ex: "dijit/form/Button,acme/MyMixin") to a constructor.
+		// Keep separate map for each requireContext to avoid false matches (ex: "./Foo" can mean different things
+		// depending on context.)
+		var ctorMap = contextRequire._dojoParserCtorMap || (contextRequire._dojoParserCtorMap = {});
+
 		var ts = types.join();
-		if(!_ctorMap[ts]){
+		if(!ctorMap[ts]){
 			var mixins = [];
 			for(var i = 0, l = types.length; i < l; i++){
 				var t = types[i];
 				// TODO: Consider swapping getObject and require in the future
-				mixins[mixins.length] = (_ctorMap[t] = _ctorMap[t] || (dlang.getObject(t) || (~t.indexOf('/') &&
-					(contextRequire ? contextRequire(t) : require(t)))));
+				mixins[mixins.length] = (ctorMap[t] = ctorMap[t] || (dlang.getObject(t) || (~t.indexOf('/') &&
+					contextRequire(t))));
 			}
 			var ctor = mixins.shift();
-			_ctorMap[ts] = mixins.length ? (ctor.createSubclass ? ctor.createSubclass(mixins) : ctor.extend.apply(ctor, mixins)) : ctor;
+			ctorMap[ts] = mixins.length ? (ctor.createSubclass ? ctor.createSubclass(mixins) : ctor.extend.apply(ctor, mixins)) : ctor;
 		}
 
-		return _ctorMap[ts];
+		return ctorMap[ts];
 	}
 
 	var parser = {
@@ -281,7 +287,7 @@ define([
 				hash[attrData + "props"] = "data-dojo-props";
 				hash[attrData + "type"] = "data-dojo-type";
 				hash[attrData + "mixins"] = "data-dojo-mixins";
-				hash[scope + "type"] = "dojoType";
+				hash[scope + "type"] = "dojotype";
 				hash[attrData + "id"] = "data-dojo-id";
 			}
 
@@ -865,17 +871,12 @@ define([
 			//	|		parser.parse({ noStart:true, rootNode: someNode });
 
 			// determine the root node and options based on the passed arguments.
-			var root;
-			if(!options && rootNode && rootNode.rootNode){
+			if(rootNode && typeof rootNode != "string" && !("nodeType" in rootNode)){
+				// If called as parse(options) rather than parse(), parse(rootNode), or parse(rootNode, options)...
 				options = rootNode;
-				root = options.rootNode;
-			}else if(rootNode && dlang.isObject(rootNode) && !("nodeType" in rootNode)){
-				options = rootNode;
-			}else{
-				root = rootNode;
+				rootNode = options.rootNode;
 			}
-			root = root ? dom.byId(root) : dwindow.body();
-
+			var root = rootNode ? dom.byId(rootNode) : dwindow.body();
 			options = options || {};
 
 			var mixin = options.template ? { template: true } : {},
@@ -1037,9 +1038,10 @@ define(["./kernel"], function(dojo){
 'dojo/promise/all':function(){
 define([
 	"../_base/array",
+	"../_base/lang",
 	"../Deferred",
 	"../when"
-], function(array, Deferred, when){
+], function(array, lang, Deferred, when){
 	"use strict";
 
 	// module:
@@ -1064,7 +1066,7 @@ define([
 		// returns: dojo/promise/Promise
 
 		var object, array;
-		if(objectOrArray instanceof Array){
+		if(lang.isArray(objectOrArray)){
 			array = objectOrArray;
 		}else if(objectOrArray && typeof objectOrArray === "object"){
 			object = objectOrArray;
@@ -2079,6 +2081,10 @@ define([
 		// |		_setMyClassAttr: { node: "domNode", type: "class" }
 		//		Maps this.myClass to this.domNode.className
 		//
+		//		- Toggle DOM node CSS class
+		// |		_setMyClassAttr: { node: "domNode", type: "toggleClass" }
+		//		Toggles myClass on this.domNode by this.myClass
+		//
 		//		If the value of _setXXXAttr is an array, then each element in the array matches one of the
 		//		formats of the above list.
 		//
@@ -2249,6 +2255,21 @@ define([
 		//		Used by `<img>` nodes in templates that really get their image via CSS background-image.
 		_blankGif: config.blankGif || require.toUrl("dojo/resources/blank.gif"),
 
+		// textDir: String
+		//		Bi-directional support,	the main variable which is responsible for the direction of the text.
+		//		The text direction can be different than the GUI direction by using this parameter in creation
+		//		of a widget.
+		//
+		//		This property is only effective when `has("dojo-bidi")` is defined to be true.
+		//
+		//		Allowed values:
+		//
+		//		1. "" - default value; text is same direction as widget
+		//		2. "ltr"
+		//		3. "rtl"
+		//		4. "auto" - contextual the direction of a text defined by first strong letter.
+		textDir: "",
+
 		//////////// INITIALIZATION METHODS ///////////////////////////////////////
 
 		/*=====
@@ -2351,7 +2372,7 @@ define([
 			this._supportingWidgets = [];
 
 			// this is here for back-compat, remove in 2.0 (but check NodeList-instantiate.html test)
-			if(this.srcNodeRef && (typeof this.srcNodeRef.id == "string")){
+			if(this.srcNodeRef && this.srcNodeRef.id  && (typeof this.srcNodeRef.id == "string")){
 				this.id = this.srcNodeRef.id;
 			}
 
@@ -2719,14 +2740,21 @@ define([
 						}
 						break;
 					case "innerText":
+						// Deprecated, use "textContent" instead.
 						mapNode.innerHTML = "";
 						mapNode.appendChild(this.ownerDocument.createTextNode(value));
+						break;
+					case "textContent":
+						mapNode.textContent = value;
 						break;
 					case "innerHTML":
 						mapNode.innerHTML = value;
 						break;
 					case "class":
 						domClass.replace(mapNode, value, this[attr]);
+						break;
+					case "toggleClass":
+						domClass.toggle(mapNode, command.className || attr, value);
 						break;
 				}
 			}, this);
@@ -3691,7 +3719,7 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 			// so just use that regardless of hasTouch.
 			return function(node, listener){
 				return on(node, pointerType, listener);
-			}
+			};
 		}else if(hasTouch){
 			return function(node, listener){
 				var handle1 = on(node, touchType, function(evt){
@@ -3718,7 +3746,7 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 			// Avoid creating listeners for touch events on performance sensitive older browsers like IE6
 			return function(node, listener){
 				return on(node, mouseType, listener);
-			}
+			};
 		}
 	}
 
@@ -3729,7 +3757,7 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 			if(node.dojoClick !== undefined){ return node; }
 		}while(node = node.parentNode);
 	}
-	
+
 	function doClicks(e, moveType, endType){
 		// summary:
 		//		Setup touch listeners to generate synthetic clicks immediately (rather than waiting for the browser
@@ -3738,14 +3766,18 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 		//		its dojoClick property set to truthy. If a node receives synthetic clicks because one of its ancestors has its
 		//      dojoClick property set to truthy, you can disable synthetic clicks on this node by setting its own dojoClick property
 		//      to falsy.
-		
+
+		if(mouse.isRight(e)){
+			return;		// avoid spurious dojoclick event on IE10+; right click is just for context menu
+		}
+
 		var markedNode = marked(e.target);
 		clickTracker  = !e.target.disabled && markedNode && markedNode.dojoClick; // click threshold = true, number, x/y object, or "useTarget"
 		if(clickTracker){
 			useTarget = (clickTracker == "useTarget");
 			clickTarget = (useTarget?markedNode:e.target);
 			if(useTarget){
-				// We expect a click, so prevent any other 
+				// We expect a click, so prevent any other
 				// default action on "touchpress"
 				e.preventDefault();
 			}
@@ -3775,6 +3807,9 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 				}
 
 				win.doc.addEventListener(moveType, function(e){
+					if(mouse.isRight(e)){
+						return;		// avoid spurious dojoclick event on IE10+; right click is just for context menu
+					}
 					updateClickTracker(e);
 					if(useTarget){
 						// prevent native scroll event and ensure touchend is
@@ -3784,6 +3819,9 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 				}, true);
 
 				win.doc.addEventListener(endType, function(e){
+					if(mouse.isRight(e)){
+						return;		// avoid spurious dojoclick event on IE10+; right click is just for context menu
+					}
 					updateClickTracker(e);
 					if(clickTracker){
 						clickTime = (new Date()).getTime();
@@ -3795,27 +3833,36 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 						//some attributes can be on the Touch object, not on the Event:
 						//http://www.w3.org/TR/touch-events/#touch-interface
 						var src = (e.changedTouches) ? e.changedTouches[0] : e;
-						//create the synthetic event.
-						//http://www.w3.org/TR/DOM-Level-3-Events/#widl-MouseEvent-initMouseEvent
-						var clickEvt = document.createEvent("MouseEvents");
-						clickEvt._dojo_click = true;
-						clickEvt.initMouseEvent("click",
-							true, //bubbles
-							true, //cancelable
-							e.view,
-							e.detail,
-							src.screenX,
-							src.screenY,
-							src.clientX,
-							src.clientY,
-							e.ctrlKey,
-							e.altKey,
-							e.shiftKey,
-							e.metaKey,
-							0, //button
-							null //related target
-						);
+						function createMouseEvent(type){
+							//create the synthetic event.
+							//http://www.w3.org/TR/DOM-Level-3-Events/#widl-MouseEvent-initMouseEvent
+							var evt = document.createEvent("MouseEvents");
+							evt._dojo_click = true;
+							evt.initMouseEvent(type,
+								true, //bubbles
+								true, //cancelable
+								e.view,
+								e.detail,
+								src.screenX,
+								src.screenY,
+								src.clientX,
+								src.clientY,
+								e.ctrlKey,
+								e.altKey,
+								e.shiftKey,
+								e.metaKey,
+								0, //button
+								null //related target
+							);
+							return evt;
+						}
+						var mouseDownEvt = createMouseEvent("mousedown");
+						var mouseUpEvt = createMouseEvent("mouseup");
+						var clickEvt = createMouseEvent("click");
+
 						setTimeout(function(){
+							on.emit(target, "mousedown", mouseDownEvt);
+							on.emit(target, "mouseup", mouseUpEvt);
 							on.emit(target, "click", clickEvt);
 
 							// refresh clickTime in case app-defined click handler took a long time to run
@@ -3833,16 +3880,29 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 						// sent shortly after ours, similar to what is done in dualEvent.
 						// The INPUT.dijitOffScreen test is for offscreen inputs used in dijit/form/Button, on which
 						// we call click() explicitly, we don't want to stop this event.
-							if(!e._dojo_click &&
+						var target = e.target;
+						if(clickTracker && !e._dojo_click &&
 								(new Date()).getTime() <= clickTime + 1000 &&
-								!(e.target.tagName == "INPUT" && domClass.contains(e.target, "dijitOffScreen"))){
+								!(target.tagName == "INPUT" && domClass.contains(target, "dijitOffScreen"))){
 							e.stopPropagation();
 							e.stopImmediatePropagation && e.stopImmediatePropagation();
-							if(type == "click" && (e.target.tagName != "INPUT" || e.target.type == "radio" || e.target.type == "checkbox")
-								&& e.target.tagName != "TEXTAREA" && e.target.tagName != "AUDIO" && e.target.tagName != "VIDEO"){
-								 // preventDefault() breaks textual <input>s on android, keyboard doesn't popup,
-								 // but it is still needed for checkboxes and radio buttons, otherwise in some cases
-								 // the checked state becomes inconsistent with the widget's state
+							if(type == "click" &&
+								(target.tagName != "INPUT" ||
+								(target.type == "radio" &&
+									// #18352 Do not preventDefault for radios that are not dijit or
+									// dojox/mobile widgets.
+									// (The CSS class dijitCheckBoxInput holds for both checkboxes and radio buttons.)
+									(domClass.contains(target, "dijitCheckBoxInput") ||
+										domClass.contains(target, "mblRadioButton"))) ||
+								(target.type == "checkbox" &&
+									// #18352 Do not preventDefault for checkboxes that are not dijit or
+									// dojox/mobile widgets.
+									(domClass.contains(target, "dijitCheckBoxInput") ||
+										domClass.contains(target, "mblCheckBox")))) &&
+								target.tagName != "TEXTAREA" && target.tagName != "AUDIO" && target.tagName != "VIDEO"){
+								// preventDefault() breaks textual <input>s on android, keyboard doesn't popup,
+								// but it is still needed for checkboxes and radio buttons, otherwise in some cases
+								// the checked state becomes inconsistent with the widget's state
 								e.preventDefault();
 							}
 						}
@@ -3861,107 +3921,109 @@ function(dojo, aspect, dom, domClass, lang, on, has, mouse, domReady, win){
 
 	var hoveredNode;
 
-	if(hasPointer){
-		 // MSPointer (IE10+) already has support for over and out, so we just need to init click support
-		domReady(function(){
-			win.doc.addEventListener(pointer.down, function(evt){
-				doClicks(evt, pointer.move, pointer.up);
-			}, true);
-		});
-	}else if(hasTouch){
-		domReady(function(){
-			// Keep track of currently hovered node
-			hoveredNode = win.body();	// currently hovered node
+	if(has("touch")){
+		if(hasPointer){
+			// MSPointer (IE10+) already has support for over and out, so we just need to init click support
+			domReady(function(){
+				win.doc.addEventListener(pointer.down, function(evt){
+					doClicks(evt, pointer.move, pointer.up);
+				}, true);
+			});
+		}else{
+			domReady(function(){
+				// Keep track of currently hovered node
+				hoveredNode = win.body();	// currently hovered node
 
-			win.doc.addEventListener("touchstart", function(evt){
-					lastTouch = (new Date()).getTime();
+				win.doc.addEventListener("touchstart", function(evt){
+						lastTouch = (new Date()).getTime();
 
-				// Precede touchstart event with touch.over event.  DnD depends on this.
-				// Use addEventListener(cb, true) to run cb before any touchstart handlers on node run,
-				// and to ensure this code runs even if the listener on the node does event.stop().
-				var oldNode = hoveredNode;
-				hoveredNode = evt.target;
-				on.emit(oldNode, "dojotouchout", {
-					relatedTarget: hoveredNode,
-					bubbles: true
-				});
-				on.emit(hoveredNode, "dojotouchover", {
-					relatedTarget: oldNode,
-					bubbles: true
-				});
+					// Precede touchstart event with touch.over event.  DnD depends on this.
+					// Use addEventListener(cb, true) to run cb before any touchstart handlers on node run,
+					// and to ensure this code runs even if the listener on the node does event.stop().
+					var oldNode = hoveredNode;
+					hoveredNode = evt.target;
+					on.emit(oldNode, "dojotouchout", {
+						relatedTarget: hoveredNode,
+						bubbles: true
+					});
+					on.emit(hoveredNode, "dojotouchover", {
+						relatedTarget: oldNode,
+						bubbles: true
+					});
 
-				doClicks(evt, "touchmove", "touchend"); // init click generation
-			}, true);
+					doClicks(evt, "touchmove", "touchend"); // init click generation
+				}, true);
 
-			function copyEventProps(evt){
-				// Make copy of event object and also set bubbles:true.  Used when calling on.emit().
-				var props = lang.delegate(evt, {
-					bubbles: true
-				});
+				function copyEventProps(evt){
+					// Make copy of event object and also set bubbles:true.  Used when calling on.emit().
+					var props = lang.delegate(evt, {
+						bubbles: true
+					});
 
-				if(has("ios") >= 6){
-					// On iOS6 "touches" became a non-enumerable property, which
-					// is not hit by for...in.  Ditto for the other properties below.
-					props.touches = evt.touches;
-					props.altKey = evt.altKey;
-					props.changedTouches = evt.changedTouches;
-					props.ctrlKey = evt.ctrlKey;
-					props.metaKey = evt.metaKey;
-					props.shiftKey = evt.shiftKey;
-					props.targetTouches = evt.targetTouches;
-				}
-
-				return props;
-			}
-
-			on(win.doc, "touchmove", function(evt){
-				lastTouch = (new Date()).getTime();
-
-				var newNode = win.doc.elementFromPoint(
-					evt.pageX - (ios4 ? 0 : win.global.pageXOffset), // iOS 4 expects page coords
-					evt.pageY - (ios4 ? 0 : win.global.pageYOffset)
-				);
-
-				if(newNode){
-					// Fire synthetic touchover and touchout events on nodes since the browser won't do it natively.
-					if(hoveredNode !== newNode){
-						// touch out on the old node
-						on.emit(hoveredNode, "dojotouchout", {
-							relatedTarget: newNode,
-							bubbles: true
-						});
-
-						// touchover on the new node
-						on.emit(newNode, "dojotouchover", {
-							relatedTarget: hoveredNode,
-							bubbles: true
-						});
-
-						hoveredNode = newNode;
+					if(has("ios") >= 6){
+						// On iOS6 "touches" became a non-enumerable property, which
+						// is not hit by for...in.  Ditto for the other properties below.
+						props.touches = evt.touches;
+						props.altKey = evt.altKey;
+						props.changedTouches = evt.changedTouches;
+						props.ctrlKey = evt.ctrlKey;
+						props.metaKey = evt.metaKey;
+						props.shiftKey = evt.shiftKey;
+						props.targetTouches = evt.targetTouches;
 					}
 
-					// Unlike a listener on "touchmove", on(node, "dojotouchmove", listener) fires when the finger
-					// drags over the specified node, regardless of which node the touch started on.
-					if(!on.emit(newNode, "dojotouchmove", copyEventProps(evt))){
-						// emit returns false when synthetic event "dojotouchmove" is cancelled, so we prevent the
-						// default behavior of the underlying native event "touchmove".
-						evt.preventDefault();
-					}
+					return props;
 				}
-			});
 
-			// Fire a dojotouchend event on the node where the finger was before it was removed from the screen.
-			// This is different than the native touchend, which fires on the node where the drag started.
-			on(win.doc, "touchend", function(evt){
+				on(win.doc, "touchmove", function(evt){
 					lastTouch = (new Date()).getTime();
-				var node = win.doc.elementFromPoint(
-					evt.pageX - (ios4 ? 0 : win.global.pageXOffset), // iOS 4 expects page coords
-					evt.pageY - (ios4 ? 0 : win.global.pageYOffset)
-				) || win.body(); // if out of the screen
 
-				on.emit(node, "dojotouchend", copyEventProps(evt));
+					var newNode = win.doc.elementFromPoint(
+						evt.pageX - (ios4 ? 0 : win.global.pageXOffset), // iOS 4 expects page coords
+						evt.pageY - (ios4 ? 0 : win.global.pageYOffset)
+					);
+
+					if(newNode){
+						// Fire synthetic touchover and touchout events on nodes since the browser won't do it natively.
+						if(hoveredNode !== newNode){
+							// touch out on the old node
+							on.emit(hoveredNode, "dojotouchout", {
+								relatedTarget: newNode,
+								bubbles: true
+							});
+
+							// touchover on the new node
+							on.emit(newNode, "dojotouchover", {
+								relatedTarget: hoveredNode,
+								bubbles: true
+							});
+
+							hoveredNode = newNode;
+						}
+
+						// Unlike a listener on "touchmove", on(node, "dojotouchmove", listener) fires when the finger
+						// drags over the specified node, regardless of which node the touch started on.
+						if(!on.emit(newNode, "dojotouchmove", copyEventProps(evt))){
+							// emit returns false when synthetic event "dojotouchmove" is cancelled, so we prevent the
+							// default behavior of the underlying native event "touchmove".
+							evt.preventDefault();
+						}
+					}
+				});
+
+				// Fire a dojotouchend event on the node where the finger was before it was removed from the screen.
+				// This is different than the native touchend, which fires on the node where the drag started.
+				on(win.doc, "touchend", function(evt){
+						lastTouch = (new Date()).getTime();
+					var node = win.doc.elementFromPoint(
+						evt.pageX - (ios4 ? 0 : win.global.pageXOffset), // iOS 4 expects page coords
+						evt.pageY - (ios4 ? 0 : win.global.pageYOffset)
+					) || win.body(); // if out of the screen
+
+					on.emit(node, "dojotouchend", copyEventProps(evt));
+				});
 			});
-		});
+		}
 	}
 
 	//device neutral events - touch.press|move|release|cancel/over/out
@@ -4679,11 +4741,12 @@ define(["./_base/lang", "./sniff", "./_base/window", "./dom", "./dom-geometry", 
 				var	doc = node.ownerDocument || baseWindow.doc,	// TODO: why baseWindow.doc?  Isn't node.ownerDocument always defined?
 					body = baseWindow.body(doc),
 					html = doc.documentElement || body.parentNode,
-					isIE = has("ie"),
+					isIE = has("ie") || has("trident"),
 					isWK = has("webkit");
 				// if an untested browser, then use the native method
 				if(node == body || node == html){ return; }
-				if(!(has("mozilla") || isIE || isWK || has("opera") || has("trident")) && ("scrollIntoView" in node)){
+				if(!(has("mozilla") || isIE || isWK || has("opera") || has("trident") || has("edge"))
+						&& ("scrollIntoView" in node)){
 					node.scrollIntoView(false); // short-circuit to native if possible
 					return;
 				}
@@ -4716,9 +4779,11 @@ define(["./_base/lang", "./sniff", "./_base/window", "./dom", "./dom-geometry", 
 
 					if(el == scrollRoot){
 						elPos.w = rootWidth; elPos.h = rootHeight;
-						if(scrollRoot == html && (isIE || has("trident")) && rtl){ elPos.x += scrollRoot.offsetWidth-elPos.w; } // IE workaround where scrollbar causes negative x
-						if(elPos.x < 0 || !isIE || isIE >= 9 || has("trident")){ elPos.x = 0; } // older IE can have values > 0
-						if(elPos.y < 0 || !isIE || isIE >= 9 || has("trident")){ elPos.y = 0; }
+						if(scrollRoot == html && (isIE || has("trident")) && rtl){
+							elPos.x += scrollRoot.offsetWidth-elPos.w;// IE workaround where scrollbar causes negative x
+						}
+						elPos.x = 0;
+						elPos.y = 0;
 					}else{
 						var pb = geom.getPadBorderExtents(el);
 						elPos.w -= pb.w; elPos.h -= pb.h; elPos.x += pb.l; elPos.y += pb.t;
@@ -4759,7 +4824,7 @@ define(["./_base/lang", "./sniff", "./_base/window", "./dom", "./dom-geometry", 
 					var s, old;
 					if(r * l > 0 && (!!el.scrollLeft || el == scrollRoot || el.scrollWidth > el.offsetHeight)){
 						s = Math[l < 0? "max" : "min"](l, r);
-						if(rtl && ((isIE == 8 && !backCompat) || isIE >= 9 || has("trident"))){ s = -s; }
+						if(rtl && ((isIE == 8 && !backCompat) || has("trident") >= 5)){ s = -s; }
 						old = el.scrollLeft;
 						scrollElementBy(el, s, 0);
 						s = el.scrollLeft - old;
@@ -5008,6 +5073,7 @@ define(["./dom-geometry", "./_base/lang", "./domReady", "./sniff", "./_base/wind
 	var
 		html = baseWindow.doc.documentElement,
 		ie = has("ie"),
+		trident = has("trident"),
 		opera = has("opera"),
 		maj = Math.floor,
 		ff = has("ff"),
@@ -5024,6 +5090,7 @@ define(["./dom-geometry", "./_base/lang", "./domReady", "./sniff", "./_base/wind
 			"dj_webkit": has("webkit"),
 			"dj_safari": has("safari"),
 			"dj_chrome": has("chrome"),
+			"dj_edge": has("edge"),
 
 			"dj_gecko": has("mozilla"),
 
@@ -5035,6 +5102,10 @@ define(["./dom-geometry", "./_base/lang", "./domReady", "./sniff", "./_base/wind
 		classes["dj_ie"] = true;
 		classes["dj_ie" + maj(ie)] = true;
 		classes["dj_iequirks"] = has("quirks");
+	}
+	if(trident){
+		classes["dj_trident"] = true;
+		classes["dj_trident" + maj(trident)] = true;
 	}
 	if(ff){
 		classes["dj_ff" + maj(ff)] = true;
@@ -5793,6 +5864,7 @@ string.substitute = function(	/*String*/		template,
 	// template:
 	//		a string with expressions in the form `${key}` to be replaced or
 	//		`${key:format}` which specifies a format function. keys are case-sensitive.
+	//		The special sequence `${}` can be used escape `$`.
 	// map:
 	//		hash to search for substitutions
 	// transform:
@@ -5844,13 +5916,22 @@ string.substitute = function(	/*String*/		template,
 	transform = transform ?
 		lang.hitch(thisObject, transform) : function(v){ return v; };
 
-	return template.replace(/\$\{([^\s\:\}]+)(?:\:([^\s\:\}]+))?\}/g,
+	return template.replace(/\$\{([^\s\:\}]*)(?:\:([^\s\:\}]+))?\}/g,
 		function(match, key, format){
+			if (key == ''){
+				return '$';
+			}
 			var value = lang.getObject(key, false, map);
 			if(format){
 				value = lang.getObject(format, false, thisObject).call(thisObject, value, key);
 			}
-			return transform(value, key).toString();
+			var result = transform(value, key);
+
+			if (typeof result === 'undefined') {
+				throw new Error('string.substitute could not find key "' + key + '" in template');
+			}
+
+			return result.toString();
 		}); // String
 };
 
@@ -6042,7 +6123,7 @@ define([
 			var attachEvent = getAttrFunc(baseNode, "dojoAttachEvent") || getAttrFunc(baseNode, "data-dojo-attach-event");
 			if(attachEvent){
 				// NOTE: we want to support attributes that have the form
-				// "domEvent: nativeEvent; ..."
+				// "domEvent: nativeEvent, ..."
 				var event, events = attachEvent.split(/\s*,\s*/);
 				var trim = lang.trim;
 				while((event = events.shift())){
@@ -7818,11 +7899,24 @@ define([
 
 		_setDisabledAttr: function(/*Boolean*/ value){
 			this._set("disabled", value);
-			domAttr.set(this.focusNode, 'disabled', value);
+
+			// Set disabled property if focusNode is an <input>, but aria-disabled attribute if focusNode is a <span>.
+			// Can't use "disabled" in this.focusNode as a test because on IE, that's true for all nodes.
+			if(/^(button|input|select|textarea|optgroup|option|fieldset)$/i.test(this.focusNode.tagName)){
+				domAttr.set(this.focusNode, 'disabled', value);
+				// IE has a Caret Browsing mode (hit F7 to activate) where disabled textboxes can be modified
+				// textboxes marked readonly if disabled to avoid this issue.
+				if (has('trident') && 'readOnly' in this) {
+					domAttr.set(this.focusNode, 'readonly', value || this.readOnly);
+				}
+			}else{
+				this.focusNode.setAttribute("aria-disabled", value ? "true" : "false");
+			}
+
+			// And also set disabled on the hidden <input> node
 			if(this.valueNode){
 				domAttr.set(this.valueNode, 'disabled', value);
 			}
-			this.focusNode.setAttribute("aria-disabled", value ? "true" : "false");
 
 			if(value){
 				// reset these, because after the domNode is disabled, we can no longer receive
@@ -7996,8 +8090,9 @@ define([
 	"dojo/keys", // keys.ESCAPE
 	"dojo/_base/lang",
 	"dojo/on",
+	"dojo/sniff", // has("webkit")
 	"./_FormWidgetMixin"
-], function(declare, domAttr, keys, lang, on, _FormWidgetMixin){
+], function(declare, domAttr, keys, lang, on, has, _FormWidgetMixin){
 
 	// module:
 	//		dijit/form/_FormValueMixin
@@ -8018,7 +8113,13 @@ define([
 		readOnly: false,
 
 		_setReadOnlyAttr: function(/*Boolean*/ value){
-			domAttr.set(this.focusNode, 'readOnly', value);
+			// IE has a Caret Browsing mode (hit F7 to activate) where disabled textboxes can be modified
+			// focusNode enforced readonly if currently disabled to avoid this issue.
+			if (has('trident') && 'disabled' in this) {
+				domAttr.set(this.focusNode, 'readOnly', value || this.disabled);
+			} else {
+				domAttr.set(this.focusNode, 'readOnly', value);
+			}
 			this._set("readOnly", value);
 		},
 
@@ -8071,7 +8172,7 @@ define([
 	"dojo/_base/array", // array.forEach
 	"dojo/_base/declare", // declare
 	"dojo/dom", // dom.byId
-	"dojo/has",
+	"dojo/sniff",	// has("ie"), has("dojo-bidi")
 	"dojo/keys", // keys.ALT keys.CAPS_LOCK keys.CTRL keys.META keys.SHIFT
 	"dojo/_base/lang", // lang.mixin
 	"dojo/on", // on
@@ -8265,34 +8366,41 @@ define([
 			//		protected
 		},
 
-		 onInput: function(/*===== event =====*/){
+		 onInput: function(/*Event*/ /*===== evt =====*/){
 			 // summary:
 			 //		Connect to this function to receive notifications of various user data-input events.
 			 //		Return false to cancel the event and prevent it from being processed.
+			 //		Note that although for historical reasons this method is called `onInput()`, it doesn't
+			 //		correspond to the standard DOM "input" event, because it occurs before the input has been processed.
 			 // event:
-			 //		keydown | keypress | cut | paste | input
+			 //		keydown | keypress | cut | paste | compositionend
 			 // tags:
 			 //		callback
 		 },
 
-		__skipInputEvent: false,
 		_onInput: function(/*Event*/ evt){
 			// summary:
-			//		Called AFTER the input event has happened
+			//		Called AFTER the input event has happened and this.textbox.value has new value.
 
-			this._processInput(evt);
+			this._lastInputEventValue = this.textbox.value;
+
+			// For Combobox, this needs to be called w/the keydown/keypress event that was passed to onInput().
+			// As a backup, use the "input" event itself.
+			this._processInput(this._lastInputProducingEvent || evt);
+			delete this._lastInputProducingEvent;
 
 			if(this.intermediateChanges){
-				// allow the key to post to the widget input box
-				this.defer(function(){
-					this._handleOnChange(this.get('value'), false);
-				});
+				this._handleOnChange(this.get('value'), false);
 			}
 		},
 
-		_processInput: function(/*Event*/ evt){
+		_processInput: function(/*Event*/ /*===== evt =====*/){
 			// summary:
-			//		Default action handler for user input events
+			//		Default action handler for user input events.
+			//		Called after the "input" event (i.e. after this.textbox.value has been updated),
+			//		but `evt` is the keydown/keypress/etc. event that triggered the "input" event.
+			// tags:
+			//		protected
 
 			this._refreshState();
 
@@ -8308,14 +8416,16 @@ define([
 			this.inherited(arguments);
 
 			// normalize input events to reduce spurious event processing
-			//	onkeydown: do not forward modifier keys
+			//	keydown: do not forward modifier keys
 			//		       set charOrCode to numeric keycode
-			//	onkeypress: do not forward numeric charOrCode keys (already sent through onkeydown)
-			//	onpaste & oncut: set charOrCode to 229 (IME)
-			//	oninput: if primary event not already processed, set charOrCode to 229 (IME), else do not forward
+			//	keypress: do not forward numeric charOrCode keys (already sent through onkeydown)
+			//	paste, cut, compositionend: set charOrCode to 229 (IME)
 			function handleEvent(e){
 				var charOrCode;
-				if(e.type == "keydown"){
+
+				// Filter out keydown events that will be followed by keypress events.  Note that chrome/android
+				// w/word suggestion has keydown/229 events on typing with no corresponding keypress events.
+				if(e.type == "keydown" && e.keyCode != 229){
 					charOrCode = e.keyCode;
 					switch(charOrCode){ // ignore state keys
 						case keys.SHIFT:
@@ -8362,6 +8472,7 @@ define([
 						} // only allow named ones through
 					}
 				}
+
 				charOrCode = e.charCode >= 32 ? String.fromCharCode(e.charCode) : e.charCode;
 				if(!charOrCode){
 					charOrCode = (e.keyCode >= 65 && e.keyCode <= 90) || (e.keyCode >= 48 && e.keyCode <= 57) || e.keyCode == keys.SPACE ? String.fromCharCode(e.keyCode) : e.keyCode;
@@ -8379,14 +8490,7 @@ define([
 						} // can only be stopped reliably in keydown
 					}
 				}
-				if(e.type == "input"){
-					if(this.__skipInputEvent){ // duplicate event
-						this.__skipInputEvent = false;
-						return;
-					}
-				}else{
-					this.__skipInputEvent = true;
-				}
+
 				// create fake event to set charOrCode and to know if preventDefault() was called
 				var faux = { faux: true }, attr;
 				for(attr in e){
@@ -8408,7 +8512,11 @@ define([
 						e.stopPropagation();
 					}
 				});
-				// give web page author a chance to consume the event
+
+				this._lastInputProducingEvent = faux;
+
+				// Give web page author a chance to consume the event.  Note that onInput() may be called multiple times
+				// for same keystroke: once for keypress event and once for input event.
 				//console.log(faux.type + ', charOrCode = (' + (typeof charOrCode) + ') ' + charOrCode + ', ctrl ' + !!faux.ctrlKey + ', alt ' + !!faux.altKey + ', meta ' + !!faux.metaKey + ', shift ' + !!faux.shiftKey);
 				if(this.onInput(faux) === false){ // return false means stop
 					faux.preventDefault();
@@ -8417,12 +8525,37 @@ define([
 				if(faux._wasConsumed){
 					return;
 				} // if preventDefault was called
-				this.defer(function(){
-					this._onInput(faux);
-				}); // widget notification after key has posted
+
+				// IE8 doesn't emit the "input" event at all, and IE9 doesn't emit it for backspace, delete, cut, etc.
+				// Since the code below (and perhaps user code) depends on that event, emit it synthetically.
+				// See http://benalpert.com/2013/06/18/a-near-perfect-oninput-shim-for-ie-8-and-9.html.
+				if(has("ie") <= 9){
+					switch(e.keyCode){
+					case keys.TAB:
+					case keys.ESCAPE:
+					case keys.DOWN_ARROW:
+					case keys.UP_ARROW:
+					case keys.LEFT_ARROW:
+					case keys.RIGHT_ARROW:
+						// These keys may alter the <input>'s value indirectly, but we don't want to emit an "input"
+						// event.  For example, the up/down arrows in TimeTextBox or ComboBox will cause the next
+						// dropdown item's value to be copied to the <input>.
+						break;
+					default:
+						if(e.keyCode == keys.ENTER && this.textbox.tagName.toLowerCase() != "textarea"){
+							break;
+						}
+						this.defer(function(){
+							if(this.textbox.value !== this._lastInputEventValue){
+								on.emit(this.textbox, "input", {bubbles: true});
+							}
+						});
+					}
+				}
 			}
 			this.own(
-				on(this.textbox, "keydown, keypress, paste, cut, input, compositionend", lang.hitch(this, handleEvent)),
+				on(this.textbox, "keydown, keypress, paste, cut, compositionend", lang.hitch(this, handleEvent)),
+				on(this.textbox, "input", lang.hitch(this, "_onInput")),
 
 				// Allow keypress to bubble to this.domNode, so that TextBox.on("keypress", ...) works,
 				// but prevent it from further propagating, so that typing into a TextBox inside a Toolbar doesn't
@@ -8651,16 +8784,18 @@ define([
 			}
 		},
 
-		_fillContent: function(/*DomNode*/ source){
-			// Overrides _Templated._fillContent().
-			// If button label is specified as srcNodeRef.innerHTML rather than
-			// this.params.label, handle it here.
-			// TODO: remove the method in 2.0, parser will do it all for me
-			if(source && (!this.params || !("label" in this.params))){
-				var sourceLabel = lang.trim(source.innerHTML);
-				if(sourceLabel){
-					this.label = sourceLabel; // _applyAttributes will be called after buildRendering completes to update the DOM
-				}
+		postCreate: function(){
+			this.inherited(arguments);
+			this._setLabelFromContainer();
+		},
+
+		_setLabelFromContainer: function(){
+			if(this.containerNode && !this.label){
+				// When markup was set as srcNodeRef.innerHTML, copy it to this.label, in case someone tries to
+				// reference that variable.  Alternately, could have a _getLabelAttr() method to return
+				// this.containerNode.innerHTML.
+				this.label = lang.trim(this.containerNode.innerHTML);
+				this.onLabelSet();		// set this.titleNode.title etc. according to label
 			}
 		},
 
@@ -8678,13 +8813,7 @@ define([
 			this.set("label", content);
 		},
 
-		_setLabelAttr: function(/*String*/ content){
-			// summary:
-			//		Hook for set('label', ...) to work.
-			// description:
-			//		Set the label (text) of the button; takes an HTML string.
-			//		If the label is hidden (showLabel=false) then and no title has
-			//		been specified, then label is also set as title attribute of icon.
+		onLabelSet: function(){
 			this.inherited(arguments);
 			if(!this.showLabel && !("title" in this.params)){
 				this.titleNode.title = lang.trim(this.containerNode.innerText || this.containerNode.textContent || '');
@@ -8694,7 +8823,7 @@ define([
 
 	if(has("dojo-bidi")){
 		Button = declare("dijit.form.Button", Button, {
-			_setLabelAttr: function(/*String*/ content){
+			onLabelSet: function(){
 				this.inherited(arguments);
 				if(this.titleNode.title){
 					this.applyTextDir(this.titleNode, this.titleNode.title);
@@ -8816,12 +8945,16 @@ define([
 			this._set("label", content);
 			var labelNode = this.containerNode || this.focusNode;
 			labelNode.innerHTML = content;
+			this.onLabelSet();
+		},
+
+		onLabelSet: function(){
 		}
 	});
 
 	if(has("dojo-bidi")){
 		ButtonMixin = declare("dijit.form._ButtonMixin", ButtonMixin, {
-			_setLabelAttr: function(){
+			onLabelSet: function(){
 				this.inherited(arguments);
 				var labelNode = this.containerNode || this.focusNode;
 				this.applyTextDir(labelNode);
@@ -9229,9 +9362,14 @@ number._applyPattern = function(/*Number*/ value, /*String*/ pattern, /*number._
 	}else if(pattern.indexOf('\u00a4') != -1){
 		group = options.customs.currencyGroup || group;//mixins instead?
 		decimal = options.customs.currencyDecimal || decimal;// Should these be mixins instead?
-		pattern = pattern.replace(/\u00a4{1,3}/, function(match){
-			var prop = ["symbol", "currency", "displayName"][match.length-1];
-			return options[prop] || options.currency || "";
+		pattern = pattern.replace(/([\s\xa0]*)(\u00a4{1,3})([\s\xa0]*)/, function(match, before, target, after){
+			var prop = ["symbol", "currency", "displayName"][target.length-1],
+				symbol = options[prop] || options.currency || "";
+			// if there is no symbol, also remove surrounding whitespaces
+			if(!symbol){
+				return "";
+			}
+			return before+symbol+after;
 		});
 	}else if(pattern.indexOf('E') != -1){
 		throw new Error("exponential notation not supported");
@@ -9386,7 +9524,7 @@ number._formatAbsolute = function(/*Number*/ value, /*String*/ pattern, /*number
 		whole = (off > 0) ? whole.slice(0, off) : "";
 		if(groupSize2){
 			groupSize = groupSize2;
-			delete groupSize2;
+			groupSize2 = undefined;
 		}
 	}
 	valueParts[0] = pieces.reverse().join(options.group || ",");
@@ -9493,6 +9631,12 @@ number._parseInfo = function(/*Object?*/ options){
 		re = re.replace(/([\s\xa0]*)(\u00a4{1,3})([\s\xa0]*)/g, function(match, before, target, after){
 			var prop = ["symbol", "currency", "displayName"][target.length-1],
 				symbol = dregexp.escapeString(options[prop] || options.currency || "");
+
+			// if there is no symbol there is no need to take white-spaces into account.
+			if(!symbol){
+				return "";
+			}
+
 			before = before ? "[\\s\\xa0]" : "";
 			after = after ? "[\\s\\xa0]" : "";
 			if(!options.strict){
@@ -9941,24 +10085,6 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 			//		of these additional transactions can be done concurrently. Owing to this analysis, the entire preloading
 			//		algorithm can be discard during a build by setting the has feature dojo-preload-i18n-Api to false.
 
-			if(has("dojo-preload-i18n-Api")){
-				var split = id.split("*"),
-					preloadDemand = split[1] == "preload";
-				if(preloadDemand){
-					if(!cache[id]){
-						// use cache[id] to prevent multiple preloads of the same preload; this shouldn't happen, but
-						// who knows what over-aggressive human optimizers may attempt
-						cache[id] = 1;
-						preloadL10n(split[2], json.parse(split[3]), 1, require);
-					}
-					// don't stall the loader!
-					load(1);
-				}
-				if(preloadDemand || waitForPreloads(id, require, load)){
-					return;
-				}
-			}
-
 			var match = nlsRe.exec(id),
 				bundlePath = match[1] + "/",
 				bundleName = match[5] || match[4],
@@ -9972,7 +10098,38 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 					if(!--remaining){
 						load(lang.delegate(cache[loadTarget]));
 					}
-				};
+				},
+				split = id.split("*"),
+				preloadDemand = split[1] == "preload";
+
+			if(has("dojo-preload-i18n-Api")){
+				if(preloadDemand){
+					if(!cache[id]){
+						// use cache[id] to prevent multiple preloads of the same preload; this shouldn't happen, but
+						// who knows what over-aggressive human optimizers may attempt
+						cache[id] = 1;
+						preloadL10n(split[2], json.parse(split[3]), 1, require);
+					}
+					// don't stall the loader!
+					load(1);
+				}
+				if(preloadDemand || (waitForPreloads(id, require, load) && !cache[loadTarget])){
+					return;
+				}
+			}
+			else if (preloadDemand) {
+				// If a build is created with nls resources and 'dojo-preload-i18n-Api' has not been set to false,
+				// the built file will include a preload in the cache (which looks about like so:)
+				// '*now':function(r){r(['dojo/i18n!*preload*dojo/nls/dojo*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
+				// If the consumer of the build sets 'dojo-preload-i18n-Api' to false in the Dojo config, the cached
+				// preload will not be parsed and will result in an attempt to call 'require' passing it the unparsed
+				// preload, which is not a valid module id.
+				// In this case we should skip this request.
+				load(1);
+
+				return;
+			}
+
 			array.forEach(loadList, function(locale){
 				var target = bundlePathAndName + "/" + locale;
 				if(has("dojo-preload-i18n-Api")){
@@ -9985,10 +10142,6 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 				}
 			});
 		};
-
-	if(has("dojo-unit-tests")){
-		var unitTests = thisModule.unitTests = [];
-	}
 
 	if(has("dojo-preload-i18n-Api") ||  1 ){
 		var normalizeLocale = thisModule.normalizeLocale = function(locale){
@@ -10069,7 +10222,7 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 										var bundle = rollup[p],
 											match = p.match(/(.+)\/([^\/]+)$/),
 											bundleName, bundlePath;
-											
+
 											// If there is no match, the bundle is not a regular bundle from an AMD layer.
 											if (!match){continue;}
 
@@ -10077,7 +10230,7 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 											bundlePath = match[1] + "/";
 
 										// backcompat
-										bundle._localized = bundle._localized || {};
+										if(!bundle._localized){continue;}
 
 										var localized;
 										if(loc === "ROOT"){
@@ -10122,7 +10275,10 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 												if(requiredBundles.length){
 													preloadingAddLock();
 													contextRequire(requiredBundles, function(){
-														for(var i = 0; i < requiredBundles.length; i++){
+														// requiredBundles was constructed by forEachLocale so it contains locales from
+														// less specific to most specific.
+														// the loop starts with the most specific locale, the last one.
+														for(var i = requiredBundles.length - 1; i >= 0 ; i--){
 															bundle = lang.mixin(lang.clone(bundle), arguments[i]);
 															cache[cacheIds[i]] = bundle;
 														}
@@ -10164,44 +10320,8 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 	if( 1 ){
 		// this code path assumes the dojo loader and won't work with a standard AMD loader
 		var amdValue = {},
-			evalBundle =
-				// use the function ctor to keep the minifiers away (also come close to global scope, but this is secondary)
-				new Function(
-					"__bundle",				   // the bundle to evalutate
-					"__checkForLegacyModules", // a function that checks if __bundle defined __mid in the global space
-					"__mid",				   // the mid that __bundle is intended to define
-					"__amdValue",
-
-					// returns one of:
-					//		1 => the bundle was an AMD bundle
-					//		a legacy bundle object that is the value of __mid
-					//		instance of Error => could not figure out how to evaluate bundle
-
-					  // used to detect when __bundle calls define
-					  "var define = function(mid, factory){define.called = 1; __amdValue.result = factory || mid;},"
-					+ "	   require = function(){define.called = 1;};"
-
-					+ "try{"
-					+		"define.called = 0;"
-					+		"eval(__bundle);"
-					+		"if(define.called==1)"
-								// bundle called define; therefore signal it's an AMD bundle
-					+			"return __amdValue;"
-
-					+		"if((__checkForLegacyModules = __checkForLegacyModules(__mid)))"
-								// bundle was probably a v1.6- built NLS flattened NLS bundle that defined __mid in the global space
-					+			"return __checkForLegacyModules;"
-
-					+ "}catch(e){}"
-					// evaulating the bundle was *neither* an AMD *nor* a legacy flattened bundle
-					// either way, re-eval *after* surrounding with parentheses
-
-					+ "try{"
-					+		"return eval('('+__bundle+')');"
-					+ "}catch(e){"
-					+		"return e;"
-					+ "}"
-				),
+			l10nCache = {},
+			evalBundle,
 
 			syncRequire = function(deps, callback, require){
 				var results = [];
@@ -10209,6 +10329,45 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 					var url = require.toUrl(mid + ".js");
 
 					function load(text){
+						if (!evalBundle) {
+							// use the function ctor to keep the minifiers away (also come close to global scope, but this is secondary)
+							evalBundle = new Function(
+								"__bundle",				   // the bundle to evalutate
+								"__checkForLegacyModules", // a function that checks if __bundle defined __mid in the global space
+								"__mid",				   // the mid that __bundle is intended to define
+								"__amdValue",
+
+								// returns one of:
+								//		1 => the bundle was an AMD bundle
+								//		a legacy bundle object that is the value of __mid
+								//		instance of Error => could not figure out how to evaluate bundle
+
+								// used to detect when __bundle calls define
+								"var define = function(mid, factory){define.called = 1; __amdValue.result = factory || mid;},"
+								+ "	   require = function(){define.called = 1;};"
+
+								+ "try{"
+								+		"define.called = 0;"
+								+		"eval(__bundle);"
+								+		"if(define.called==1)"
+											// bundle called define; therefore signal it's an AMD bundle
+								+			"return __amdValue;"
+
+								+		"if((__checkForLegacyModules = __checkForLegacyModules(__mid)))"
+											// bundle was probably a v1.6- built NLS flattened NLS bundle that defined __mid in the global space
+								+			"return __checkForLegacyModules;"
+
+								+ "}catch(e){}"
+								// evaulating the bundle was *neither* an AMD *nor* a legacy flattened bundle
+								// either way, re-eval *after* surrounding with parentheses
+
+								+ "try{"
+								+		"return eval('('+__bundle+')');"
+								+ "}catch(e){"
+								+		"return e;"
+								+ "}"
+							);
+						}
 						var result = evalBundle(text, checkForLegacyModules, mid, amdValue);
 						if(result===amdValue){
 							// the bundle was an AMD module; re-inject it through the normal AMD path
@@ -10231,13 +10390,15 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 						results.push(cache[url]);
 					}else{
 						var bundle = require.syncLoadNls(mid);
-						// don't need to check for legacy since syncLoadNls returns a module if the module
-						// (1) was already loaded, or (2) was in the cache. In case 1, if syncRequire is called
-						// from getLocalization --> load, then load will have called checkForLegacyModules() before
-						// calling syncRequire; if syncRequire is called from preloadLocalizations, then we
-						// don't care about checkForLegacyModules() because that will be done when a particular
-						// bundle is actually demanded. In case 2, checkForLegacyModules() is never relevant
-						// because cached modules are always v1.7+ built modules.
+						// need to check for legacy module here because there might be a legacy module for a
+						// less specific locale (which was not looked up during the first checkForLegacyModules
+						// call in load()).
+						// Also need to reverse the locale and the module name in the mid because syncRequire
+						// deps parameters uses the AMD style package/nls/locale/module while legacy code uses
+						// package/nls/module/locale.
+						if(!bundle){
+							bundle = checkForLegacyModules(mid.replace(/nls\/([^\/]*)\/([^\/]*)$/, "nls/$2/$1"));
+						}
 						if(bundle){
 							results.push(bundle);
 						}else{
@@ -10282,6 +10443,11 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 		thisModule.getLocalization = function(moduleName, bundleName, locale){
 			var result,
 				l10nName = getBundleName(moduleName, bundleName, locale);
+
+			if (l10nCache[l10nName]) {
+				return l10nCache[l10nName];
+			}
+
 			load(
 				l10nName,
 
@@ -10290,39 +10456,19 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 				// dojo/i18n module, which, itself may have been mapped.
 				(!isXd(l10nName, require) ? function(deps, callback){ syncRequire(deps, callback, require); } : require),
 
-				function(result_){ result = result_; }
+				function(result_){
+					l10nCache[l10nName] = result_;
+					result = result_;
+				}
 			);
 			return result;
 		};
-
-		if(has("dojo-unit-tests")){
-			unitTests.push(function(doh){
-				doh.register("tests.i18n.unit", function(t){
-					var check;
-
-					check = evalBundle("{prop:1}", checkForLegacyModules, "nonsense", amdValue);
-					t.is({prop:1}, check); t.is(undefined, check[1]);
-
-					check = evalBundle("({prop:1})", checkForLegacyModules, "nonsense", amdValue);
-					t.is({prop:1}, check); t.is(undefined, check[1]);
-
-					check = evalBundle("{'prop-x':1}", checkForLegacyModules, "nonsense", amdValue);
-					t.is({'prop-x':1}, check); t.is(undefined, check[1]);
-
-					check = evalBundle("({'prop-x':1})", checkForLegacyModules, "nonsense", amdValue);
-					t.is({'prop-x':1}, check); t.is(undefined, check[1]);
-
-					check = evalBundle("define({'prop-x':1})", checkForLegacyModules, "nonsense", amdValue);
-					t.is(amdValue, check); t.is({'prop-x':1}, amdValue.result);
-
-					check = evalBundle("define('some/module', {'prop-x':1})", checkForLegacyModules, "nonsense", amdValue);
-					t.is(amdValue, check); t.is({'prop-x':1}, amdValue.result);
-
-					check = evalBundle("this is total nonsense and should throw an error", checkForLegacyModules, "nonsense", amdValue);
-					t.is(check instanceof Error, true);
-				});
-			});
-		}
+	}
+	else {
+		thisModule.getLocalization = function(moduleName, bundleName, locale){
+			var key = moduleName.replace(/\./g, '/') + '/nls/' + bundleName + '/' + (locale || config.locale);
+			return this.cache[key];
+		};
 	}
 
 	return lang.mixin(thisModule, {
@@ -10444,7 +10590,7 @@ dxregexp = dojox.validate.regexp = {
 		//TODO: support unicode hostnames?
 		// Domain name labels can not end with a dash.
 		var domainLabelRE = "(?:[\\da-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)";
-		var domainNameRE = "(?:[a-zA-Z](?:[-\\da-zA-Z]{0,6}[\\da-zA-Z])?)"; // restricted version to allow backwards compatibility with allowLocal, allowIP
+		var domainNameRE = "(?:[a-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)"; // restricted version to allow backwards compatibility with allowLocal, allowIP
 
 		// port number RE
 		var portRE = flags.allowPort ? "(\\:\\d+)?" : "";
@@ -10646,6 +10792,7 @@ define(["dojo/_base/kernel"], function(dojo) {
 'dijit/form/DropDownButton':function(){
 define([
 	"dojo/_base/declare", // declare
+	"dojo/_base/kernel",
 	"dojo/_base/lang", // hitch
 	"dojo/query", // query
 	"../registry", // registry.byNode
@@ -10655,7 +10802,7 @@ define([
 	"../_HasDropDown",
 	"dojo/text!./templates/DropDownButton.html",
 	"../a11yclick"	// template uses ondijitclick
-], function(declare, lang, query, registry, popup, Button, _Container, _HasDropDown, template){
+], function(declare, kernel, lang, query, registry, popup, Button, _Container, _HasDropDown, template){
 
 	// module:
 	//		dijit/form/DropDownButton
@@ -10680,20 +10827,26 @@ define([
 		templateString: template,
 
 		_fillContent: function(){
-			// Overrides Button._fillContent().
-			//
-			// My inner HTML contains both the button contents and a drop down widget, like
+			// Overrides _TemplatedMixin#_fillContent().
+			// My inner HTML possibly contains both the button label and/or a drop down widget, like
 			// <DropDownButton>  <span>push me</span>  <Menu> ... </Menu> </DropDownButton>
-			// The first node is assumed to be the button content. The widget is the popup.
 
-			if(this.srcNodeRef){ // programatically created buttons might not define srcNodeRef
-				//FIXME: figure out how to filter out the widget and use all remaining nodes as button
-				//	content, not just nodes[0]
-				var nodes = query("*", this.srcNodeRef);
-				this.inherited(arguments, [nodes[0]]);
-
-				// save pointer to srcNode so we can grab the drop down widget after it's instantiated
-				this.dropDownContainer = this.srcNodeRef;
+			var source = this.srcNodeRef;
+			var dest = this.containerNode;
+			if(source && dest){
+				while(source.hasChildNodes()){
+					var child = source.firstChild;
+					if(child.hasAttribute && (child.hasAttribute("data-dojo-type") || child.hasAttribute("dojoType") ||
+							child.hasAttribute("data-" + kernel._scopeName + "-type") ||
+							child.hasAttribute(kernel._scopeName + "Type"))){
+						// The parser hasn't gotten to this node yet, so save it in a wrapper <div>
+						// and then grab the instantiated widget in startup().
+						this.dropDownContainer = this.ownerDocument.createElement("div");
+						this.dropDownContainer.appendChild(child);
+					}else{
+						dest.appendChild(child);
+					}
+				}
 			}
 		},
 
@@ -10705,10 +10858,7 @@ define([
 			// the child widget from srcNodeRef is the dropdown widget.  Insert it in the page DOM,
 			// make it invisible, and store a reference to pass to the popup code.
 			if(!this.dropDown && this.dropDownContainer){
-				var dropDownNode = query("[widgetId]", this.dropDownContainer)[0];
-				if(dropDownNode){
-					this.dropDown = registry.byNode(dropDownNode);
-				}
+				this.dropDown = registry.byNode(this.dropDownContainer.firstChild);
 				delete this.dropDownContainer;
 			}
 			if(this.dropDown){
@@ -10964,9 +11114,9 @@ define([
 
 			domStyle.set(wrapper, {
 				display: "none",
-				height: "auto",		// Open may have limited the height to fit in the viewport
-				overflow: "visible",
-				border: ""			// Open() may have moved border from popup to wrapper.
+				height: "auto",			// Open() may have limited the height to fit in the viewport,
+				overflowY: "visible",	// and set overflowY to "auto".
+				border: ""				// Open() may have moved border from popup to wrapper.
 			});
 
 			// Open() may have moved border from popup to wrapper.  Move it back.
@@ -11445,7 +11595,7 @@ define([
 			//		True if widget is LTR, false if widget is RTL.   Affects the behavior of "above" and "below"
 			//		positions slightly.
 			// example:
-			//	|	placeAroundNode(node, aroundNode, {'BL':'TL', 'TR':'BR'});
+			//	|	placeAroundNode(node, aroundNode, ['below', 'above-alt']);
 			//		This will try to position node such that node's top-left corner is at the same position
 			//		as the bottom left corner of the aroundNode (ie, put node below
 			//		aroundNode, with left edges aligned).	If that fails it will try to put
@@ -11498,7 +11648,7 @@ define([
 					}
 					parent = parent.parentNode;
 				}
-			}			
+			}
 
 			var x = aroundNodePos.x,
 				y = aroundNodePos.y,
@@ -11618,13 +11768,11 @@ define([
 	// Flag for whether to create background iframe behind popups like Menus and Dialog.
 	// A background iframe is useful to prevent problems with popups appearing behind applets/pdf files,
 	// and is also useful on older versions of IE (IE6 and IE7) to prevent the "bleed through select" problem.
-	// By default, it's enabled for IE6-10, excluding Windows Phone 8,
-	// and it's also enabled for IE11 on Windows 7 and Windows 2008 Server.
+	// By default, it's enabled for IE6-11, excluding Windows Phone 8.
 	// TODO: For 2.0, make this false by default.  Also, possibly move definition to has.js so that this module can be
 	// conditionally required via  dojo/has!bgIfame?dijit/BackgroundIframe
 	has.add("config-bgIframe",
-		(has("ie") && !/IEMobile\/10\.0/.test(navigator.userAgent)) || // No iframe on WP8, to match 1.9 behavior
-		(has("trident") && /Windows NT 6.[01]/.test(navigator.userAgent)));
+    	(has("ie") || has("trident")) && !/IEMobile\/10\.0/.test(navigator.userAgent)); // No iframe on WP8, to match 1.9 behavior
 
 	var _frames = new function(){
 		// summary:
@@ -11818,7 +11966,6 @@ define([
 			//		if -1, get the previous sibling
 			// tags:
 			//		private
-			kernel.deprecated(this.declaredClass+"::_getSiblingOfChild() is deprecated. Use _KeyNavMixin::_getNext() instead.", "", "2.0");
 			var children = this.getChildren(),
 				idx = array.indexOf(children, child);	// int
 			return children[idx + dir];
@@ -11946,7 +12093,7 @@ define([
 			//
 			// Also, don't call preventDefault() on MSPointerDown event (on IE10) because that prevents the button
 			// from getting focus, and then the focus manager doesn't know what's going on (#17262)
-			if(e.type != "MSPointerDown" && e.type != "pointerdown"){
+			if(e.type != "MSPointerDown"){
 				e.preventDefault();
 			}
 
@@ -12248,6 +12395,7 @@ define([
 				var resizeArgs = {
 					w: dropDown.domNode.offsetWidth + widthAdjust
 				};
+				this._origStyle = ddNode.style.cssText;
 				if(lang.isFunction(dropDown.resize)){
 					dropDown.resize(resizeArgs);
 				}else{
@@ -12297,8 +12445,12 @@ define([
 				popup.close(this.dropDown);
 				this._opened = false;
 			}
-		}
 
+			if(this._origStyle){
+				this.dropDown.domNode.style.cssText = this._origStyle;
+				delete this._origStyle;
+			}
+		}
 	});
 });
 
@@ -14143,9 +14295,9 @@ define([
 
 },
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
-'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
-'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
-'url:dijit/form/templates/ComboButton.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tcellspacing='0' cellpadding='0' role=\"presentation\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonNode\" data-dojo-attach-point=\"buttonNode\" data-dojo-attach-event=\"ondijitclick:__onClick,onkeydown:_onButtonKeyDown\"\n\t\t><div id=\"${id}_button\" class=\"dijitReset dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><div class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitInline dijitButtonText\" id=\"${id}_label\" data-dojo-attach-point=\"containerNode\" role=\"presentation\"></div\n\t\t></div\n\t\t></td\n\t\t><td id=\"${id}_arrow\" class='dijitReset dijitRight dijitButtonNode dijitArrowButton'\n\t\t\tdata-dojo-attach-point=\"_popupStateNode,focusNode,_buttonNode\"\n\t\t\tdata-dojo-attach-event=\"onkeydown:_onArrowKeyDown\"\n\t\t\ttitle=\"${optionsTitle}\"\n\t\t\trole=\"button\" aria-haspopup=\"true\"\n\t\t\t><div class=\"dijitReset dijitArrowButtonInner\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitArrowButtonChar\" role=\"presentation\">&#9660;</div\n\t\t></td\n\t\t><td style=\"display:none !important;\"\n\t\t\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" data-dojo-attach-point=\"valueNode\"\n\t\t\t\tclass=\"dijitOffScreen\"\n\t\t\t\trole=\"presentation\" aria-hidden=\"true\"\n\t\t\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\t/></td></tr></tbody\n></table>\n",
+'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
+'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\" data-dojo-attach-point=\"valueNode\" aria-hidden=\"true\"\n/></span>\n",
+'url:dijit/form/templates/ComboButton.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tcellspacing='0' cellpadding='0' role=\"presentation\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonNode\" data-dojo-attach-point=\"buttonNode\" data-dojo-attach-event=\"ondijitclick:__onClick,onkeydown:_onButtonKeyDown\"\n\t\t><div id=\"${id}_button\" class=\"dijitReset dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><div class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitInline dijitButtonText\" id=\"${id}_label\" data-dojo-attach-point=\"containerNode\" role=\"presentation\"></div\n\t\t></div\n\t\t></td\n\t\t><td id=\"${id}_arrow\" class='dijitReset dijitRight dijitButtonNode dijitArrowButton'\n\t\t\tdata-dojo-attach-point=\"_popupStateNode,focusNode,_buttonNode\"\n\t\t\tdata-dojo-attach-event=\"onkeydown:_onArrowKeyDown\"\n\t\t\ttitle=\"${optionsTitle}\"\n\t\t\trole=\"button\" aria-haspopup=\"true\"\n\t\t\t><div class=\"dijitReset dijitArrowButtonInner\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitArrowButtonChar\" role=\"presentation\">&#9660;</div\n\t\t></td\n\t\t><td style=\"display:none !important;\"\n\t\t\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" data-dojo-attach-point=\"valueNode\"\n\t\t\t\tclass=\"dijitOffScreen\" aria-hidden=\"true\" data-dojo-attach-event=\"onclick:_onClick\"\n\t\t/></td></tr></tbody\n></table>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/p3user*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
 define("p3/layer/p3user", [], 1);

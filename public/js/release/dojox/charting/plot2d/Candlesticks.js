@@ -1,8 +1,6 @@
 define("dojox/charting/plot2d/Candlesticks", ["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/array", "dojo/has", "./CartesianBase", "./_PlotEvents", "./common",
-		"dojox/lang/functional", "dojox/lang/functional/reversed", "dojox/lang/utils", "dojox/gfx/fx"], 
-	function(lang, declare, arr, has, CartesianBase, _PlotEvents, dc, df, dfr, du, fx){
-
-	var purgeGroup = dfr.lambda("item.purgeGroup()");
+		"dojox/lang/functional", "dojox/lang/utils", "dojox/gfx/fx"],
+	function(lang, declare, arr, has, CartesianBase, _PlotEvents, dc, df, du, fx){
 
 	//	Candlesticks are based on the Bars plot type; we expect the following passed
 	//	as values in a series:
@@ -64,14 +62,14 @@ define("dojox/charting/plot2d/Candlesticks", ["dojo/_base/lang", "dojo/_base/dec
 				var old_vmin = stats.vmin, old_vmax = stats.vmax;
 				if(!("ymin" in run) || !("ymax" in run)){
 					arr.forEach(run.data, function(val, idx){
-						if(val !== null){
+						if(!this.isNullValue(val)){
 							var x = val.x || idx + 1;
 							stats.hmin = Math.min(stats.hmin, x);
 							stats.hmax = Math.max(stats.hmax, x);
 							stats.vmin = Math.min(stats.vmin, val.open, val.close, val.high, val.low);
 							stats.vmax = Math.max(stats.vmax, val.open, val.close, val.high, val.low);
 						}
-					});
+					}, this);
 				}
 				if("ymin" in run){ stats.vmin = Math.min(old_vmin, run.ymin); }
 				if("ymax" in run){ stats.vmax = Math.max(old_vmax, run.ymax); }
@@ -106,7 +104,7 @@ define("dojox/charting/plot2d/Candlesticks", ["dojo/_base/lang", "dojo/_base/dec
 			this.dirty = this.isDirty();
 			var s;
 			if(this.dirty){
-				arr.forEach(this.series, purgeGroup);
+				arr.forEach(this.series, dc.purgeGroup);
 				this._eventSeries = {};
 				this.cleanGroup();
 				s = this.getGroup();
@@ -136,10 +134,10 @@ define("dojox/charting/plot2d/Candlesticks", ["dojo/_base/lang", "dojo/_base/dec
 					continue;
 				}
 				s = run.group;
-                
+
 				for(var j = 0; j < run.data.length; ++j){
 					var v = run.data[j];
-					if(v !== null){
+					if(!this.isNullValue(v)){
 						var finalTheme = t.addMixin(theme, "candlestick", v, true);
 
 						//	calculate the points we need for OHLC

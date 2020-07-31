@@ -216,7 +216,7 @@ define("dojo/_base/lang", ["./kernel", "../has", "../sniff"], function(dojo, has
 			// context: Object?
 			//		Optional. Object to use as root of path. Defaults to
 			//		'dojo.global'. Null may be passed.
-			return getProp(name ? name.split(".") : [], create, context); // Object
+			return !name ? context : getProp(name.split("."), create, context); // Object
 		},
 
 		exists: function(name, obj){
@@ -502,7 +502,7 @@ define("dojo/_base/lang", ["./kernel", "../has", "../sniff"], function(dojo, has
 				r = [];
 				for(i = 0, l = src.length; i < l; ++i){
 					if(i in src){
-						r.push(lang.clone(src[i]));
+						r[i] = lang.clone(src[i]);
 					}
 				}
 				// we don't clone functions for performance reasons

@@ -10,7 +10,7 @@ define("dojox/mvc/StatefulArray", [
 
 		// Notify change of elements.
 		if(a._watchElementCallbacks){
-			a._watchElementCallbacks();
+			a._watchElementCallbacks(undefined, [], []);
 		}
 
 		return a; // dojox/mvc/StatefulArray

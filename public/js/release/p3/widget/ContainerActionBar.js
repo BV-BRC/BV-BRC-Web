@@ -54,20 +54,20 @@ define("p3/widget/ContainerActionBar", [
 
       parts.forEach(function (part, idx) {
         if (idx == (parts.length - 1)) {
-          out.push('<b class="perspective">' + part.replace('@patricbrc.org', '') + '</b>');
+          out.push('<b class="perspective">' + part.replace(/@patricbrc\.org|@viprbrc\.org/, '') + '</b>');
           return;
         }
 
         // don't create links for top level path of public path
         if (isPublic && idx == 0) {
-          out.push('<b class="perspective">' + ((idx == 0) ? part.replace('@patricbrc.org', '') : part) + '</b> / ');
+          out.push('<b class="perspective">' + ((idx == 0) ? part.replace(/@patricbrc\.org|@viprbrc\.org/, '') : part) + '</b> / ');
           return;
         }
 
         out.push("<a class='navigationLink' href='");
         bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
         out.push('/' + bp.join('/'));
-        out.push("'>" + ((idx == 0) ? part.replace('@patricbrc.org', '') : part) + '</a> / ');
+        out.push("'>" + ((idx == 0) ? part.replace(/@patricbrc\.org|@viprbrc\.org/, '') : part) + '</a> / ');
       });
 
       return out.join('');

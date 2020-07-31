@@ -134,13 +134,15 @@ define("dojox/charting/SimpleTheme", ["dojo/_base/lang", "dojo/_base/array","doj
 	//	|		markerSymbol:  "m-3,0 c0,-4 6,-4 6,0 m-6,0 c0,4 6,4 6,0",	// marker symbol
 	//	|		markerStroke:  {width: 1.5, color: "#333"},		// marker stroke
 	//	|		markerOutline: {width: 0.1, color: "#ccc"},		// marker outline
-	//	|		markerShadow: null,								// no marker shadow
-	//	|	}
+	//	|		markerShadow: null								// no marker shadow
+	//	|	},
+	//	|	pieInnerRadius: 33
 	//
 	// example:
 	//		Defining a new theme is pretty simple:
 	//	|	var Grasslands = new SimpleTheme({
-	//	|		colors: [ "#70803a", "#dde574", "#788062", "#b1cc5d", "#eff2c2" ]
+	//	|		colors: [ "#70803a", "#dde574", "#788062", "#b1cc5d", "#eff2c2" ],
+	//	|		pieInnerRadius: 15
 	//	|	});
 	//	|
 	//	|	myChart.setTheme(Grasslands);
@@ -206,7 +208,8 @@ define("dojox/charting/SimpleTheme", ["dojo/_base/lang", "dojo/_base/array","doj
 			markerThemes: this.markerThemes,
 			// flags
 			noGradConv: this.noGradConv,
-			noRadialConv: this.noRadialConv
+			noRadialConv: this.noRadialConv,
+			pieInnerRadius: this.pieInnerRadius
 		});
 		// copy custom methods
 		arr.forEach(
@@ -495,7 +498,8 @@ lang.mixin(SimpleTheme, {
 			titleGap:		20,
 			titlePos:		"top",
 			titleFont:      "normal normal bold 14pt Tahoma",	// chart title
-			titleFontColor: "#333"
+			titleFontColor: "#333",
+			titleAlign: "middle"
 		},
 		plotarea:{
 			stroke: null,

@@ -135,13 +135,19 @@ define("dijit/form/NumberTextBox", [
 			this._decimalInfo = getDecimalInfo(constraints);
 		},
 
-		_onFocus: function(){
+		_onFocus: function(/*String*/ by){
 			if(this.disabled || this.readOnly){ return; }
 			var val = this.get('value');
 			if(typeof val == "number" && !isNaN(val)){
 				var formattedValue = this.format(val, this.constraints);
 				if(formattedValue !== undefined){
 					this.textbox.value = formattedValue;
+					// when NumberTextBox or descendants (i.e. CurrencyTextBox) format textbox.value when focused
+					// all browsers except Chrome will select textbox contents when tabbed to by keyboard
+					// force selection if not focused by mouse
+					if (by !== "mouse") {
+						this.textbox.select();
+					}
 				}
 			}
 			this.inherited(arguments);
@@ -187,8 +193,13 @@ define("dijit/form/NumberTextBox", [
 			//		Replaceable function to convert a formatted string to a number value
 			// tags:
 			//		protected extension
-
-			var v = this._parser(value, lang.mixin({}, constraints, (this.editOptions && this.focused) ? this.editOptions : {}));
+			var parserOptions = lang.mixin({}, constraints, (this.editOptions && this.focused) ? this.editOptions : {})
+			if(this.focused && parserOptions.places != null /* or undefined */){
+				var places = parserOptions.places;
+				var maxPlaces = typeof places === "number" ? places : Number(places.split(",").pop()); // handle number and range
+				parserOptions.places = "0," + maxPlaces;
+			}
+			var v = this._parser(value, parserOptions);
 			if(this.editOptions && this.focused && isNaN(v)){
 				v = this._parser(value, constraints); // parse w/o editOptions: not technically needed but is nice for the user
 			}

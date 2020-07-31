@@ -70,9 +70,7 @@ define("dojox/mobile/Switch", [
 					this.srcNodeRef : domConstruct.create("span");
 			}
 			// prevent browser scrolling on IE10 (evt.preventDefault() is not enough)
-			if(typeof this.domNode.style.msTouchAction != "undefined"){
-				this.domNode.style.msTouchAction = "none";
-			}
+			dm._setTouchAction(this.domNode, "none");
 			this.inherited(arguments);
 			if(!this.templateString){ // true if this widget is not templated
 				var c = (this.srcNodeRef && this.srcNodeRef.className) || this.className || this["class"];
@@ -88,7 +86,7 @@ define("dojox/mobile/Switch", [
 					+		'<div class="mblSwitchText mblSwitchTextRight"></div>'
 					+	'</div>'
 					+	'<div class="mblSwitchKnob"></div>'
-					+	'<input type="hidden"'+nameAttr+'></div>'
+					+	'<input type="hidden"'+nameAttr+' value="'+this.value+'"></div>'
 					+ '</div>';
 				var n = this.inner = this.domNode.firstChild;
 				this.left = n.childNodes[0];
@@ -125,7 +123,9 @@ define("dojox/mobile/Switch", [
 		},
 
 		startup: function(){
-			if(!this._started){
+			var started = this._started;
+			this.inherited(arguments);
+			if(!started){
 				this.resize();
 			}
 		},
@@ -191,12 +191,13 @@ define("dojox/mobile/Switch", [
 			this._hasMaskImage = true;
 			if(!(has("mask-image"))){ return; }
 			var rDef = domStyle.get(this.left, "borderTopLeftRadius");
-			if(rDef == "0px"){ return; }
+			if(!rDef || rDef == "0px"){ return; }
 			var rDefs = rDef.split(" ");
 			var rx = parseFloat(rDefs[0]), ry = (rDefs.length == 1) ? rx : parseFloat(rDefs[1]);
-			var id = (this.shape+"Mask"+w+h+rx+ry).replace(/\./,"_");
 
-			maskUtils.createRoundMask(this.switchNode, 0, 0, 0, 0, w, h, rx, ry, 1);
+			if(rx && ry){
+				maskUtils.createRoundMask(this.switchNode, 0, 0, 0, 0, w, h, rx, ry, 1);
+			}
 		},
 
 		_onClick: function(e){
