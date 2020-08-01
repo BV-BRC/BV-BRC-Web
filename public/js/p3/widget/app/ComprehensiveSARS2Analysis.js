@@ -31,9 +31,14 @@ define([
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
     applicationLabel: 'SARS-CoV-2 Genome Assembly and Annotation',
+
+    isBVBRC: true,  // override patric configuration and tell AppBase to use bvbrcHelpURL and bvbrcTutorialURL
+    bvbrcHelpURL: '/docs/user-guides/sars-cov-2',
+    bvbrcTutorialURL: '/patric/pdf/sars-cov-2-tutorial.pdf',
+
     applicationDescription: 'The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
-    applicationHelp: 'user_guides/services/sars_cov_2_assembly_annotation_service.html',
-    tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
+    applicationHelp: 'user_guides/services/sars_cov_2_assembly_annotation_service.html', // NOTE: help content is still pulled from docs.patricbrc.org
+    tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',  // Note: NOT USED, a PDF is used instead.
     libraryData: null,
     defaultPath: '',
     startingRows: 6,
