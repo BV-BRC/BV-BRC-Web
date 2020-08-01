@@ -7,7 +7,7 @@ define([
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
-  Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
+  LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
 ) {
@@ -29,9 +29,20 @@ define([
     postMixInProperties: function () {
       // use AppLogin.html when requireAuth & user is not logged in
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
-        this.templateString = Template;
+
+        // also, if this is a bv-brc specific app, the docs are
+        // on the same site, so don't preapend docsServiceURL, and use newer urls
+        if (this.isBVBRC) {
+          this.templateString = LoginTemplate
+            .replace(/\$\{docsServiceURL\}\$\{applicationHelp\}/g, '${bvbrcHelpURL}')
+            .replace(/\${docsServiceURL\}\${tutorialLink\}/g, '${bvbrcTutorialURL}');
+          return;
+        }
+
+        this.templateString = LoginTemplate;
         return;
       }
+
       this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
       this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
       this.inherited(arguments);
