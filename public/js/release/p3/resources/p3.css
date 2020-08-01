@@ -14993,7 +14993,7 @@ div.appsublabel {
 }
 .nav-logo-link span:hover,
 .nav-logo-link span:focus {
-  color: var(--green);
+  color: #cbcbcb;
 }
 #bv-brc-header-container .bv-brc-logo {
   margin-right: 0;

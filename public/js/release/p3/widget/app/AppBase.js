@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/app/templates/AppLogin.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>${applicationLabel}\n      </h3>\n      <p>${applicationDescription} For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">${applicationLabel} Service User Guide</a> and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n      <br>\n        <div class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-lock fa-1x\" title=\"Please log in with your ViPR or PATRIC account use this service\"></i>\n        </div> Please sign in with your PATRIC or ViPR / IRD account use this service.\n    </div>\n    <div class=\"LoginForm\" data-dojo-type=\"p3/widget/LoginForm\" style=\"display: inlin-block;width:500px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;\">\n    </div>\n  </div>\n</form>\n"}});
+'url:p3/widget/app/templates/AppLogin.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>${applicationLabel}\n      </h3>\n      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">User Guide</a> and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n      <br>\n        <div class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-lock fa-1x\" title=\"Please log in with your ViPR or PATRIC account use this service\"></i>\n        </div> Please sign in with your PATRIC or ViPR / IRD account to use this service.\n    </div>\n    <div class=\"LoginForm\" data-dojo-type=\"p3/widget/LoginForm\" style=\"display: inlin-block;width:500px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;\">\n    </div>\n  </div>\n</form>\n"}});
 define("p3/widget/app/AppBase", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
@@ -9,7 +9,7 @@ define("p3/widget/app/AppBase", [
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
-  Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
+  LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
 ) {
@@ -31,9 +31,20 @@ define("p3/widget/app/AppBase", [
     postMixInProperties: function () {
       // use AppLogin.html when requireAuth & user is not logged in
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
-        this.templateString = Template;
+
+        // also, if this is a bv-brc specific app, the docs are
+        // on the same site, so don't preapend docsServiceURL, and use newer urls
+        if (this.isBVBRC) {
+          this.templateString = LoginTemplate
+            .replace(/\$\{docsServiceURL\}\$\{applicationHelp\}/g, '${bvbrcHelpURL}')
+            .replace(/\${docsServiceURL\}\${tutorialLink\}/g, '${bvbrcTutorialURL}');
+          return;
+        }
+
+        this.templateString = LoginTemplate;
         return;
       }
+
       this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
       this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
       this.inherited(arguments);
