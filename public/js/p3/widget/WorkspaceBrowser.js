@@ -499,7 +499,7 @@ define([
         var isLegacy = parts[1] == 'models';
         path = parts.slice(0, -1).join('/') + '/' + (isLegacy ? '' : '.') + parts.slice(-1)[0];
 
-        var url = 'http://modelseed.theseed.org/#/model' + path + '?login=patric';
+        var url = 'https://modelseed.org/model' + path + '?login=patric';
         window.open(url, '_blank');
       }, false);
 
