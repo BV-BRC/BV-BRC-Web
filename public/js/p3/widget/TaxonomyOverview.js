@@ -82,7 +82,7 @@ define([
       var linkBEI = 'https://www.beiresources.org/Catalog.aspx?f_instockflag=In+Stock%23~%23Temporarily+Out+of+Stock&q=' + genome.taxon_name;
       var string = domConstruct.create('a', {
         href: linkBEI,
-        innerHTML: 'BEI: Resources',
+        innerHTML: 'BEI Resources',
         target: '_blank'
       }, this.externalLinkNode);
       domConstruct.place('<br>', string, 'after');
