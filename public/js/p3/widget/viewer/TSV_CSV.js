@@ -242,7 +242,7 @@ define([
               store: tsvCsvStore
             }); 
             
-            tsvGC.set('state', {dataType: this.file.metadata.type, data: this.file.data});
+            tsvGC.set('state', {dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data});
             this.createFilterPanel(tsvCsvStore.columns);
 
 						// make a grid and fill it 

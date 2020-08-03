@@ -279,6 +279,7 @@ define([
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
         //disabled: true,
+        //disabled: function() {},
         tooltip: 'Switch to Feature View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
           console.log (self.tsvCsvFilename);
@@ -322,8 +323,8 @@ define([
           }
         });
 
-        if (selection[0][columnName]) {   // Gene_ID
-          var sel = (selection[0][columnName]).replace("|", "%7C");      // if the table has Gene_ID, this should work.
+        if (selection[0][columnName]) {   
+          var sel = (selection[0][columnName]).replace("|", "%7C");  
           //var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
           var query = '?eq(' + featureName + ',' + sel + ')&select(feature_id)';
 

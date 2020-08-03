@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
   './Grid', './GridSelector', './TsvCsvColumns',
-  './PageGrid', 'dojo/_base/Deferred'
+  './PageGrid', 'dojo/_base/Deferred', './TsvCsvFeatures'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
   Grid, selector, TsvCsvColumns,
-  PageGrid, Deferred
+  PageGrid, Deferred, tsvCsvFeatures
 ) {
   return declare([PageGrid], {
     region: 'center',
@@ -16,6 +16,7 @@ define([
     primaryKey: 'RowNumber',
     store: null,
     state: null,
+    dataFilename: '',
     //columns: lang.mixin({
     //  'Selection Checkboxes': selector({ unhidable: true })
     //}, TsvCsvColumns.variationColumns),   // hard coded columns, this works
@@ -61,6 +62,7 @@ define([
         this.store.set('state', state);
         this.store.watch('refresh', lang.hitch(this, 'refresh'));
       }
+      this.set("dataFilename", state.dataFile);
       this.set("columns", this.store.columns); 
       //this.set("columns", lang.mixin({'Selection Checkboxes': selector({ unhidable: true })}, this.store.columns));  // this works but checkboxes are on the right.
       //this.set("columns", lang.mixin(this.store.columns, {'Selection Checkboxes': selector({ unhidable: true })} ));  // this does not work.  No checkboxes.
@@ -88,12 +90,27 @@ define([
       });
 
       this.on('dgrid-select', function(evt) {
+
+        // DEV
+        var keyList = Object.keys(tsvCsvFeatures);
+        var columnName = '';
+        var isVisible = true;
+        keyList.forEach(function (keyName) {
+          if (_self.dataFilename.indexOf(keyName) >= 0) {
+            // key name is found
+            if(tsvCsvFeatures[keyName].columnName === '') {
+              isVisible = false;
+            }
+          }
+        });
+
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
           grid: _self,
           bubbles: true,
-          cancelable: true
+          cancelable: true,
+          disabled: isVisible
         };
         on.emit(_self.domNode, 'select', newEvt);
       });
