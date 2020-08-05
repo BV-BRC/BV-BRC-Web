@@ -9,7 +9,11 @@ define([], function() {
         '.pgfamsAndGenesIncludedInAlignment.txt': {columnName: '', feature: '', columnHeaders: false},   // check this
         '.stats.txt': {columnName: '', feature: '', columnHeaders: false},                    // Metagenomic Binning Service
         '_transcripts.txt': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // RNA-Seq Service
-        '.diff': {columnName: 'gene', feature: 'patric_id', columnHeaders: true}
+        '.diff': {columnName: 'gene', feature: 'patric_id', columnHeaders: true},
+
+        '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},  //*** temporary test line */
+        '_transcripts.tsv': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // temp test
+
     }
 
 });

@@ -273,19 +273,40 @@ define([
         }
       });
 
+      // For tsv/csv displays, we need to disable the FEATURE(S) and GENOME(S) buttons when
+      // the tables do not have the right features.
+      var keyList = Object.keys(tsvCsvFeatures);
+      var columnName = '';
+      var isDisabled = false;
+      keyList.forEach(function (keyName) {
+        if (self.path.indexOf(keyName) >= 0) {
+          // key name is found
+          if(tsvCsvFeatures[keyName].columnName === '') {
+            isDisabled = true;
+          }
+        }
+      });
       this.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
         label: 'FEATURE',
         validTypes: ['*'],
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
-        //disabled: true,
-        //disabled: function() {},
+        disabled: isDisabled,
         tooltip: 'Switch to Feature View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
-          console.log (self.tsvCsvFilename);
-          if (selection[0].Gene_ID) {
-            var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
-            var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
+          var keyList = Object.keys(tsvCsvFeatures);
+          var columnName = '';
+          var featureName = '';
+          keyList.forEach(function (keyName) {
+            if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+              // key name is found
+              columnName = tsvCsvFeatures[keyName].columnName;
+              featureName = tsvCsvFeatures[keyName].feature;
+            }
+          });
+          if (selection[0][columnName]) {
+            var sel = (selection[0][columnName]).replace("|", "%7C");      
+            var query = '?eq(' + featureName + ',' + sel + ')&select(feature_id)';
   
             when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
               handleAs: 'json',
@@ -305,7 +326,6 @@ define([
                 around: button,
                 orient: ['below']
               });
-              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
             }); 
           }
         },
@@ -349,14 +369,26 @@ define([
         validContainerTypes: ['csvFeature'],
         multiple: true,
         min: 2,
+        disabled: isDisabled,
         tooltip: 'Switch to the Feature List View. Press and Hold for more options.',
         pressAndHold: function (selection, button, opts, evt) { 
+          var keyList = Object.keys(tsvCsvFeatures);
+          var columnName = '';
+          var featureName = '';
+          keyList.forEach(function (keyName) {
+            if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+              // key name is found
+              columnName = tsvCsvFeatures[keyName].columnName;
+              featureName = tsvCsvFeatures[keyName].feature;
+            }
+          });
+
           if (selection.length == 1) {
             Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
           } else {
             var q = selection.map(function (sel) {
-              if (sel.Gene_ID) {
-                return (sel.Gene_ID).replace("|", "%7C");
+              if (sel[columnName]) {
+                return (sel[columnName]).replace("|", "%7C");
               }
               return "";
             });
@@ -366,7 +398,7 @@ define([
               return (elem != "");
             });
             
-            q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
+            q = '?in('+ featureName + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
             when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
               handleAs: 'json',
               headers: {
@@ -387,17 +419,26 @@ define([
                 around: button,
                 orient: ['below']
               });
-              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
             }); 
           }
         },    
       }, function (selection) {
+        var keyList = Object.keys(tsvCsvFeatures);
+        var columnName = '';
+        var featureName = '';
+        keyList.forEach(function (keyName) {
+          if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+            // key name is found
+            columnName = tsvCsvFeatures[keyName].columnName;
+            featureName = tsvCsvFeatures[keyName].feature;
+          }
+        });
         if (selection.length == 1) {
           Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
-            if (sel.Gene_ID) {
-              return (sel.Gene_ID).replace("|", "%7C");
+            if (sel[columnName]) {
+              return (sel[columnName]).replace("|", "%7C");
             }
             return "";
           });
@@ -407,7 +448,7 @@ define([
             return (elem != "");
           });
           
-          q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
+          q = '?in(' + featureName + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
           when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
             handleAs: 'json',
             headers: {
@@ -431,11 +472,22 @@ define([
         ignoreDataType: true,
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
+        disabled: isDisabled,
         tooltip: 'Switch to Genome View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
-          if (selection[0].Gene_ID) {
-            var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
-            var query = '?eq(patric_id,' + sel + ')&select(genome_id)';
+          var keyList = Object.keys(tsvCsvFeatures);
+          var columnName = '';
+          var featureName = '';
+          keyList.forEach(function (keyName) {
+            if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+              // key name is found
+              columnName = tsvCsvFeatures[keyName].columnName;
+              featureName = tsvCsvFeatures[keyName].feature;
+            }
+          });
+          if (selection[0][columnName]) {
+            var sel = (selection[0][columnName]).replace("|", "%7C");      
+            var query = '?eq(' + featureName + ',' + sel + ')&select(genome_id)';
   
             when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
               handleAs: 'json',
@@ -455,15 +507,24 @@ define([
                 around: button,
                 orient: ['below']
               });
-              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
             }); 
           }
         },
       
       }, function (selection) {
-        if (selection[0].Gene_ID) {
-          var sel = (selection[0].Gene_ID).replace("|", "%7C");      // if the table has Gene_ID, this should work.
-          var query = '?eq(patric_id,' + sel + ')&select(genome_id)';
+        var keyList = Object.keys(tsvCsvFeatures);
+        var columnName = '';
+        var featureName = '';
+        keyList.forEach(function (keyName) {
+          if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+            // key name is found
+            columnName = tsvCsvFeatures[keyName].columnName;
+            featureName = tsvCsvFeatures[keyName].feature;
+          }
+        });
+        if (selection[0][columnName]) {
+          var sel = (selection[0][columnName]).replace("|", "%7C");      
+          var query = '?eq(' + featureName + ',' + sel + ')&select(genome_id)';
 
           when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
             handleAs: 'json',
@@ -486,14 +547,25 @@ define([
         validContainerTypes: ['csvFeature'],
         multiple: true,
         min: 2,
+        disabled: isDisabled,
         tooltip: 'Switch to the Genome List View. Press and Hold for more options.',
         pressAndHold: function (selection, button, opts, evt) { 
+          var keyList = Object.keys(tsvCsvFeatures);
+          var columnName = '';
+          var featureName = '';
+          keyList.forEach(function (keyName) {
+            if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+              // key name is found
+              columnName = tsvCsvFeatures[keyName].columnName;
+              featureName = tsvCsvFeatures[keyName].feature;
+            }
+          });
           if (selection.length == 1) {
             Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
           } else {
             var q = selection.map(function (sel) {
-              if (sel.Gene_ID) {
-                return (sel.Gene_ID).replace("|", "%7C");
+              if (sel[columnName]) {
+                return (sel[columnName]).replace("|", "%7C");
               }
               return "";
             });
@@ -503,7 +575,7 @@ define([
               return (elem != "");
             });
             
-            q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
+            q = '?in(' + featureName + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
             when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
               handleAs: 'json',
               headers: {
@@ -524,17 +596,26 @@ define([
                 around: button,
                 orient: ['below']
               });
-              //Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
             }); 
           }
         },    
       }, function (selection) {
+        var keyList = Object.keys(tsvCsvFeatures);
+        var columnName = '';
+        var featureName = '';
+        keyList.forEach(function (keyName) {
+          if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
+            // key name is found
+            columnName = tsvCsvFeatures[keyName].columnName;
+            featureName = tsvCsvFeatures[keyName].feature;
+          }
+        });
         if (selection.length == 1) {
           Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
         } else {
           var q = selection.map(function (sel) {
-            if (sel.Gene_ID) {
-              return (sel.Gene_ID).replace("|", "%7C");
+            if (sel[columnName]) {
+              return (sel[columnName]).replace("|", "%7C");
             }
             return "";
           });
@@ -544,7 +625,7 @@ define([
             return (elem != "");
           });
           
-          q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
+          q = '?in(' + featureName + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
           when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
             handleAs: 'json',
             headers: {
@@ -1705,6 +1786,10 @@ define([
             }
             params.file = { metadata: obj };
             this.tsvCsvFilename = obj.name;
+            console.log (this.actionPanel._actions);
+            //this.actionPanel._actions['ViewFeatureItem'].options["disabled"] = true;
+            //this.actionPanel._actions['ViewFeatureItem'].options.setDisabled = true;
+            //this.actionPanel._actions['ViewFeatureItem'].options.disabled = true;
 
             /*
             // get file suffix to use when finding features
