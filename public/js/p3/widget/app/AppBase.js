@@ -232,6 +232,11 @@ define([
         domClass.remove(this.domNode, 'Error');
         domClass.remove(this.domNode, 'Submitted');
 
+        // tack on container build ID if specified in debugging panel
+        if (window.App.containerBuildID) {
+          values.container_id = window.App.containerBuildID;
+        }
+
         if (window.App.noJobSubmission) {
           var dlg = new Dialog({
             title: 'Job Submission Params: ',
@@ -241,6 +246,7 @@ define([
           dlg.show();
           return;
         }
+
         this.submitButton.set('disabled', true);
         window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
           console.log('Job Submission Results: ', results);
