@@ -3,24 +3,26 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
-  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojo/topic'
+  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojo/topic',
+  '../TsvCsvFeatures'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
   array, selector, lang, TsvCsvStore, 
-  ViewerBase, TextArea, Button, Select, Topic
+  ViewerBase, TextArea, Button, Select, Topic,
+  tsvCsvFeatures
 ) {
 
   return declare([ViewerBase], {    // was BorderContainer
     baseClass: 'CSV_Viewer',
     disabled: false,
-    containerType: 'csvFeature',
+    //containerType: 'csvFeature',
     file: null,
     viewable: false,
     url: null,
     preload: true,
-    //pfState: null,
+    containerType: null,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
@@ -38,6 +40,23 @@ define([
           + val.metadata.name : '/';
 
         this.file = val;
+
+        // For tsv/csv displays, we need to disable the FEATURE(S) and GENOME(S) buttons when
+        // the tables do not have the right features.
+        var _self = this;
+        var keyList = Object.keys(tsvCsvFeatures);
+        var columnName = '';
+        var newType = null;
+        keyList.forEach(function (keyName) {
+          if (_self.file.metadata.name.indexOf(keyName) >= 0) {
+            // key name is found
+            if(tsvCsvFeatures[keyName].columnName !== '') {
+              newType = 'csvFeature';
+            }
+          }
+        });
+        this.set('containerType', newType);
+
         this.refresh();
       }
     },
@@ -92,16 +111,12 @@ define([
       if (!this.file.data && this.viewable) {
         var _self = this;
 
-				// DEV DLB, remove reference to non-csv/tsv files
         // get the object to display
         Deferred.when(WS.getObject(this.filepath, !this.preload), function (obj) {
-          // console.log('[File] obj:', obj);
           _self.set('file', obj);
-        //}).then(function () {
-        //  _self.refresh();
         });
       }
-
+      
 			this.refresh();
     },
 

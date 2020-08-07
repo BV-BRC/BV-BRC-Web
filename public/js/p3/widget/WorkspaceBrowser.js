@@ -273,25 +273,11 @@ define([
         }
       });
 
-      // For tsv/csv displays, we need to disable the FEATURE(S) and GENOME(S) buttons when
-      // the tables do not have the right features.
-      var keyList = Object.keys(tsvCsvFeatures);
-      var columnName = '';
-      var isDisabled = false;
-      keyList.forEach(function (keyName) {
-        if (self.path.indexOf(keyName) >= 0) {
-          // key name is found
-          if(tsvCsvFeatures[keyName].columnName === '') {
-            isDisabled = true;
-          }
-        }
-      });
       this.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
         label: 'FEATURE',
         validTypes: ['*'],
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
-        disabled: isDisabled,
         tooltip: 'Switch to Feature View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
           var keyList = Object.keys(tsvCsvFeatures);
@@ -369,7 +355,6 @@ define([
         validContainerTypes: ['csvFeature'],
         multiple: true,
         min: 2,
-        disabled: isDisabled,
         tooltip: 'Switch to the Feature List View. Press and Hold for more options.',
         pressAndHold: function (selection, button, opts, evt) { 
           var keyList = Object.keys(tsvCsvFeatures);
@@ -472,7 +457,6 @@ define([
         ignoreDataType: true,
         validContainerTypes: ['csvFeature'],    // csv and tsv tables only
         multiple: false,
-        disabled: isDisabled,
         tooltip: 'Switch to Genome View.  Press and Hold for more options.',
         pressAndHold: function(selection, button, opts, evt) {
           var keyList = Object.keys(tsvCsvFeatures);
@@ -547,7 +531,6 @@ define([
         validContainerTypes: ['csvFeature'],
         multiple: true,
         min: 2,
-        disabled: isDisabled,
         tooltip: 'Switch to the Genome List View. Press and Hold for more options.',
         pressAndHold: function (selection, button, opts, evt) { 
           var keyList = Object.keys(tsvCsvFeatures);
@@ -1787,20 +1770,6 @@ define([
             params.file = { metadata: obj };
             this.tsvCsvFilename = obj.name;
             console.log (this.actionPanel._actions);
-            //this.actionPanel._actions['ViewFeatureItem'].options["disabled"] = true;
-            //this.actionPanel._actions['ViewFeatureItem'].options.setDisabled = true;
-            //this.actionPanel._actions['ViewFeatureItem'].options.disabled = true;
-
-            /*
-            // get file suffix to use when finding features
-            var dotCount = (obj.name.match(/\./g)).length;      
-            if (dotCount > 1) {
-              var secondToLastDot = obj.name.lastIndexOf('.', obj.name.lastIndexOf('.') - 1);
-              this.tsvCsvFilenameSuffix = obj.name.slice(secondToLastDot);
-            } else {
-              this.tsvCsvFilenameSuffix = obj.name;
-            }
-            */
         
         }
 

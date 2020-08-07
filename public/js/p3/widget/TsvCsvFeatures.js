@@ -15,6 +15,7 @@ define([], function() {
         '_transcripts.tsv': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // temp test
         '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},                 // check this
         '.pgfamsAndGenesIncludedInAlignment.tsv': {columnName: '', feature: '', columnHeaders: false},   // check this
+        'diff.tsv': {columnName: 'gene', feature: 'patric_id', columnHeaders: true},
 
 
     }
