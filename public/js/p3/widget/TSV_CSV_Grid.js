@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
   './Grid', './GridSelector', './TsvCsvColumns',
-  './PageGrid', 'dojo/_base/Deferred', './TsvCsvFeatures'
+  './PageGrid', 'dojo/_base/Deferred'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
   Grid, selector, TsvCsvColumns,
-  PageGrid, Deferred, tsvCsvFeatures
+  PageGrid, Deferred
 ) {
   return declare([PageGrid], {
     region: 'center',
@@ -17,9 +17,6 @@ define([
     store: null,
     state: null,
     dataFilename: '',
-    //columns: lang.mixin({
-    //  'Selection Checkboxes': selector({ unhidable: true })
-    //}, TsvCsvColumns.variationColumns),   // hard coded columns, this works
 /*  coluumns example
     columns: {
       column0: {label: 'Col0', field: "column0" },
@@ -56,16 +53,16 @@ define([
         return;
       }
 
+      this.set("dataFilename", state.dataFile);
+
       if (!this.store) {
         this.set('store', this.createStore());
       } else {
         this.store.set('state', state);
         this.store.watch('refresh', lang.hitch(this, 'refresh'));
       }
-      this.set("dataFilename", state.dataFile);
+      //this.set("dataFilename", state.dataFile);
       this.set("columns", this.store.columns); 
-      //this.set("columns", lang.mixin({'Selection Checkboxes': selector({ unhidable: true })}, this.store.columns));  // this works but checkboxes are on the right.
-      //this.set("columns", lang.mixin(this.store.columns, {'Selection Checkboxes': selector({ unhidable: true })} ));  // this does not work.  No checkboxes.
       this.refresh();
     },
 
@@ -91,26 +88,12 @@ define([
 
       this.on('dgrid-select', function(evt) {
 
-        // DEV
-        var keyList = Object.keys(tsvCsvFeatures);
-        var columnName = '';
-        var isVisible = true;
-        keyList.forEach(function (keyName) {
-          if (_self.dataFilename.indexOf(keyName) >= 0) {
-            // key name is found
-            if(tsvCsvFeatures[keyName].columnName === '') {
-              isVisible = false;
-            }
-          }
-        });
-
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
           grid: _self,
           bubbles: true,
           cancelable: true,
-          disabled: isVisible
         };
         on.emit(_self.domNode, 'select', newEvt);
       });
@@ -127,30 +110,6 @@ define([
       });
       this.inherited(arguments);
     },
-
-    // DEV this is temporary
-    setColumns: function(newColumns) {
-      //this._setColumns(newColumns);
-      //selector({unhidable: true});
-      //this.set("columns", lang.mixin(newColumns, {'Selection Checkboxes' : selector({ unhidable: true})}));
-      //this._setColumns(selector({ label: '', unhidable: true}));
-      //newColumns.push({'Selection Checkboxes' : selector()});
-      //newColumns.push(selector({ label: '', unhidable: true}));
-      //this._setColumns(newColumns);
-      //var mySelector = { 'Selection Checkboxes' : selector({ unhidable: true }) };
-      //newColumns.push(mySelector);
-      //this.set("columns",
-      //  {'Selection Checkboxes' : selector({})},
-      //   newColumns);
-      //this.set("columns", newColumns);
-      this.set("columns", lang.mixin({
-        'Selection Checkboxes': selector({ unhidable: true })
-      }, TsvCsvColumns.variationColumns))
-    },
-
-    //setStore: function(tsvStore) {
-    //  this.set ('store', tsvStore);
-    //},
 
     setData: function(newData) {
       this.renderArray(newData);

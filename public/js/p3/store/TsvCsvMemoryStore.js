@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/topic',
   'dojo/store/Memory', 'dojo/store/util/QueryResults', 'dojo/Stateful',
-  '../widget/GridSelector'
+  '../widget/GridSelector', '../widget/TsvCsvFeatures'
 ], function (
   declare, lang, Deferred,
   request, when, Topic,
   Memory, QueryResults, Stateful,
-  selector
+  selector, tsvCsvFeatures
 ) {
 
   return declare([Memory, Stateful], {
@@ -22,7 +22,6 @@ define([
       if (!state) {
         return;
       }
-      // console.log("onSetState", state, this);
       this.reload();
 
       this._filtered = undefined; // reset flag prevent to read stored _original
@@ -32,12 +31,10 @@ define([
       this._loaded = false;
       this.topicId = options.topicId;
 
-      // from protein family sorter, needs change
+      // for keyword filtering
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
-        //this.keyword = value;
         this.filterOptions = arguments[0];
         this.keywordFilter();
-        // console.log("received:", arguments);
       }));
 
       this.watch('state', lang.hitch(this, 'onSetState'));
@@ -88,7 +85,6 @@ define([
       if (this._filtered == undefined) { // first time
         this._filtered = true;
         this._original = this.query('', {});
-        //this._original = this.query('', {});
       }
       var data = this._original;
       var newData = [];
@@ -183,6 +179,19 @@ define([
         return def.promise;
       }
 
+      // does this file have column headers in the first line?
+      var _self = this.state;
+      var keyList = Object.keys(tsvCsvFeatures);
+      var hasColumnHeaders = false;
+      keyList.forEach(function (keyName) {
+        if (_self.dataFile.indexOf(keyName) >= 0) {
+          // key name is found
+          if (tsvCsvFeatures[keyName].columnHeaders) {
+            hasColumnHeaders = true;
+          }
+        }
+      });
+
       // get data for tsv (currently typed as txt)      
       if (this.state.dataType == 'txt') {
         // split on new lines, to get the grid rows
@@ -197,10 +206,17 @@ define([
         var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
       }
 
-      // make column labels from the first line of dataLines
+      
       var gridColumns = [];
       for (i = 0; i < tmpColumnHeaders.length; i++) {
-        var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
+
+        // make column labels from the first line of dataLines or if column headers are not present
+        // then name them as "Column 1", "Column 2", etc.
+        if (hasColumnHeaders) {
+          var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
+        } else {
+          var columnHeaders = { label: "Column " + (i + 1), field: "Column " + (i + 1) };
+        }
 
         gridColumns.push(columnHeaders);
       }
@@ -216,8 +232,7 @@ define([
         }
         var dataRow = {};
         dataRow['RowNumber'] = i;
-        for (j = 0; j < tmpData.length; j++) {
-          //dataRow["column" + j] = tmpData[j];	
+        for (j = 0; j < tmpData.length; j++) {	
           dataRow[gridColumns[j].field] = tmpData[j];
         }
         columnData.push(dataRow);
@@ -225,8 +240,8 @@ define([
       gridColumns.unshift(selector({ label: selector({ unidable: true})}));  // add checkboxes to beginning of array
       this.columns = gridColumns;
       this.setData(columnData);
-      this._loaded = true;
 
+      this._loaded = true;
       return this._loadingDeferred;
     }
 

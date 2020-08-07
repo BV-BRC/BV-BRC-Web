@@ -7,12 +7,15 @@ define([], function() {
         '.genesPerGenome.txt': {columnName: 'Genome', feature: 'genome_id', columnHeaders: true},    // Phylogenetic Tree Service, check this
         '.pgfamAlignmentStats.txt': {columnName: '', feature: '', columnHeaders: true},                 // check this
         '.pgfamsAndGenesIncludedInAlignment.txt': {columnName: '', feature: '', columnHeaders: false},   // check this
-        '.stats.txt': {columnName: '', feature: '', columnHeaders: false},                    // Metagenomic Binning Service
         '_transcripts.txt': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // RNA-Seq Service
         '.diff': {columnName: 'gene', feature: 'patric_id', columnHeaders: true},
 
+        // these are test cases and will need to be removed:
         '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},  //*** temporary test line */
         '_transcripts.tsv': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // temp test
+        '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},                 // check this
+        '.pgfamsAndGenesIncludedInAlignment.tsv': {columnName: '', feature: '', columnHeaders: false},   // check this
+
 
     }
 
