@@ -33,23 +33,23 @@ define([
       var _self = this;
       this.checkLogin();
 
-      on(document.body, 'keypress', function (evt) {
-        var charOrCode = evt.charCode || evt.keyCode;
-        if ((charOrCode === 4) && evt.ctrlKey && evt.shiftKey) {
-          if (!this._devDlg) {
-            this._devDlg = new ConfirmDialog({
-              title: 'Debugging Panel',
-              style: { width: '350px' },
-              content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="height: 125px"></div>'
-            });
-            this._devDlg.cancelButton.domNode.style.display = 'none';
-          }
+      on(document, 'keydown', function (evt) {
+        // only act if ctrl-shift-d
+        if (!(evt.ctrlKey && evt.shiftKey && evt.keyCode === 68)) {
+          return;
+        }
 
-          if (this._devDlg.open) {
-            this._devDlg.hide();
-          } else {
-            this._devDlg.show();
-          }
+        if (!this._devDlg) {
+          this._devDlg = new ConfirmDialog({
+            title: 'Debugging Panel',
+            style: { width: '350px' },
+            content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="height: 125px"></div>'
+          });
+          this._devDlg.cancelButton.domNode.style.display = 'none';
+        }
+
+        if (!this._devDlg.open) {
+          this._devDlg.show();
         }
       });
       /* istanbul ignore next */
