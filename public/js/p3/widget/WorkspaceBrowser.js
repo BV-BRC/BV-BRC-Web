@@ -1756,21 +1756,27 @@ define([
             params.data = obj;
             break;
           case 'csv':
+          case 'tsv':
             panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
-            //panelCtor = window.App.getConstructor('p3/widget/viewer/File1');
-	    			//panelCtor = window.App.getConstructor('p3/widget/viewer/File');
-            params.file = { metadata: obj };
+            params.file = { metadata: obj }; 
             break;
           default:
-            if ((obj.name).includes('tsv')) {
+            tsvCsvFilename = this.tsvCsvFilename = obj.name;
+            var isTsv = false;
+            var keyList = Object.keys(tsvCsvFeatures);
+            keyList.forEach(function (keyName) {
+              if (tsvCsvFilename.indexOf(keyName) >= 0) {
+                // key name is found
+                isTsv = true;
+              }
+            });
+            //if ((obj.name).includes('tsv')) {
+            if (isTsv) {
               panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
             } else {
               panelCtor = window.App.getConstructor('p3/widget/viewer/File');
             }
             params.file = { metadata: obj };
-            this.tsvCsvFilename = obj.name;
-            console.log (this.actionPanel._actions);
-        
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
