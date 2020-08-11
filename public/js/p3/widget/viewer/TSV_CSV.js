@@ -50,7 +50,9 @@ define([
         keyList.forEach(function (keyName) {
           if (_self.file.metadata.name.indexOf(keyName) >= 0) {
             // key name is found
-            if(tsvCsvFeatures[keyName].columnName !== '') {
+            //if(tsvCsvFeatures[keyName].columnName !== '') {
+            //if (tsvCsvFeatures[keyName].feature.columnName) {
+            if (Object.keys(tsvCsvFeatures[keyName]).length > 1) {
               newType = 'csvFeature';
             }
           }

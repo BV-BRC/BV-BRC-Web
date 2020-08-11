@@ -2,21 +2,45 @@ define([], function() {
     return {
         // column headers associated with features in tsv/csv files
         // columnHeaders value indicates whether 1st row in data file contains column headers
-        '.annotated.tsv': {columnName: 'Gene_ID', feature: 'patric_id', columnHeaders: true},        // Variation Service
-        '.all.tsv': {columnName: 'Gene_ID', feature: 'patric_id', columnHeaders: true},
-        '.genesPerGenome.txt': {columnName: 'Genome', feature: 'genome_id', columnHeaders: true},    // Phylogenetic Tree Service, check this
-        '.pgfamAlignmentStats.txt': {columnName: '', feature: '', columnHeaders: true},                 // check this
-        '.pgfamsAndGenesIncludedInAlignment.txt': {columnName: '', feature: '', columnHeaders: false},   // check this
-        '_transcripts.txt': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // RNA-Seq Service
-        '.diff': {columnName: 'gene', feature: 'patric_id', columnHeaders: true},
+        // the following values define which buttons will be displayed in the action panel. 
+        // Only the FEATURE(S) and GENE(S) buttons current work.  (Dev:  Add other buttons?)
+
+        // variation service
+        '.annotated.tsv': {columnHeaders: true, 
+                          feature: {columnName: 'Gene_ID', feature: 'patric_id'},
+                          gene: {columnName: 'Gene_ID', feature: 'patric_id'}
+                        },
+        
+        '.all.tsv': {columnHeaders: true,
+                    feature: {columnName: 'Gene_ID', feature: 'patric_id'},
+                    gene: {columnName: 'Gene_ID', feature: 'patric_id'}},
+
+        // phylogenetic tree service
+        '.genesPerGenome.txt': {columnHeaders: true,
+                                feature: {columnName: 'Genome', feature: 'genome_id'},
+                                gene: {columnName: 'Genome', feature: 'genome_id'}},
+
+        '.pgfamAlignmentStats.txt': {columnHeaders: true},
+        
+        '.pgfamsAndGenesIncludedInAlignment.txt': {columnHeaders: false},
+
+        // RNA-Seq Service
+        '_transcripts.txt': {columnHeaders: true,
+                            feature: {columnName: 'Name', feature: 'patric_id'},
+                            gene: {columnName: 'Name', feature: 'patric_id'}},
+
+        '.diff': {columnHeaders: true, 
+                feature: {columnName: 'gene', feature: 'patric_id'},
+                gene: {columnName: 'gene', feature: 'patric_id'}}
 
         // these are test cases and will need to be removed:
-        '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},  //*** temporary test line */
+        /*
+        '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},  
         '_transcripts.tsv': {columnName: 'Name', feature: 'patric_id', columnHeaders: true}, // temp test
         '.pgfamAlignmentStats.tsv': {columnName: '', feature: '', columnHeaders: true},                 // check this
         '.pgfamsAndGenesIncludedInAlignment.tsv': {columnName: '', feature: '', columnHeaders: false},   // check this
         'diff.tsv': {columnName: 'gene', feature: 'patric_id', columnHeaders: true},
-
+*/
 
     }
 

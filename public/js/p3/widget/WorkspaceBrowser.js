@@ -285,9 +285,9 @@ define([
           var featureName = '';
           keyList.forEach(function (keyName) {
             if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-              // key name is found
-              columnName = tsvCsvFeatures[keyName].columnName;
-              featureName = tsvCsvFeatures[keyName].feature;
+              // key name is found, so find the right button
+              columnName = tsvCsvFeatures[keyName].feature.columnName;
+              featureName = tsvCsvFeatures[keyName].feature.feature;
             }
           });
           if (selection[0][columnName]) {
@@ -323,9 +323,9 @@ define([
         var featureName = '';
         keyList.forEach(function (keyName) {
           if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-            // key name is found
-            columnName = tsvCsvFeatures[keyName].columnName;
-            featureName = tsvCsvFeatures[keyName].feature;
+            // key name is found, so find the right button
+            columnName = tsvCsvFeatures[keyName].feature.columnName;
+            featureName = tsvCsvFeatures[keyName].feature.feature;
           }
         });
 
@@ -362,9 +362,9 @@ define([
           var featureName = '';
           keyList.forEach(function (keyName) {
             if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-              // key name is found
-              columnName = tsvCsvFeatures[keyName].columnName;
-              featureName = tsvCsvFeatures[keyName].feature;
+              // key name is found, so find the right button
+              columnName = tsvCsvFeatures[keyName].feature.columnName;
+              featureName = tsvCsvFeatures[keyName].feature.feature;
             }
           });
 
@@ -413,9 +413,9 @@ define([
         var featureName = '';
         keyList.forEach(function (keyName) {
           if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-            // key name is found
-            columnName = tsvCsvFeatures[keyName].columnName;
-            featureName = tsvCsvFeatures[keyName].feature;
+            // key name is found, so find the right button
+            columnName = tsvCsvFeatures[keyName].feature.columnName;
+            featureName = tsvCsvFeatures[keyName].feature.feature;
           }
         });
         if (selection.length == 1) {
@@ -464,9 +464,9 @@ define([
           var featureName = '';
           keyList.forEach(function (keyName) {
             if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-              // key name is found
-              columnName = tsvCsvFeatures[keyName].columnName;
-              featureName = tsvCsvFeatures[keyName].feature;
+              // key name is found, so find the right button
+              columnName = tsvCsvFeatures[keyName].gene.columnName;
+              featureName = tsvCsvFeatures[keyName].gene.feature;
             }
           });
           if (selection[0][columnName]) {
@@ -501,9 +501,9 @@ define([
         var featureName = '';
         keyList.forEach(function (keyName) {
           if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-            // key name is found
-            columnName = tsvCsvFeatures[keyName].columnName;
-            featureName = tsvCsvFeatures[keyName].feature;
+            // key name is found, so find the right button
+            columnName = tsvCsvFeatures[keyName].gene.columnName;
+            featureName = tsvCsvFeatures[keyName].gene.feature;
           }
         });
         if (selection[0][columnName]) {
@@ -538,9 +538,9 @@ define([
           var featureName = '';
           keyList.forEach(function (keyName) {
             if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-              // key name is found
-              columnName = tsvCsvFeatures[keyName].columnName;
-              featureName = tsvCsvFeatures[keyName].feature;
+              // key name is found, so find the right button
+              columnName = tsvCsvFeatures[keyName].gene.columnName;
+              featureName = tsvCsvFeatures[keyName].gene.feature;
             }
           });
           if (selection.length == 1) {
@@ -588,9 +588,9 @@ define([
         var featureName = '';
         keyList.forEach(function (keyName) {
           if (self.tsvCsvFilename.indexOf(keyName) >= 0) {
-            // key name is found
-            columnName = tsvCsvFeatures[keyName].columnName;
-            featureName = tsvCsvFeatures[keyName].feature;
+            // key name is found, so find the right button
+            columnName = tsvCsvFeatures[keyName].gene.columnName;
+            featureName = tsvCsvFeatures[keyName].gene.feature;
           }
         });
         if (selection.length == 1) {
