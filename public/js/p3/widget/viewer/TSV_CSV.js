@@ -3,14 +3,14 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
-  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/Select', 'dojo/topic',
+  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
   array, selector, lang, TsvCsvStore, 
-  ViewerBase, TextArea, Button, Select, Topic,
+  ViewerBase, TextArea, Button, CheckBox, Select, Topic,
   tsvCsvFeatures
 ) {
 
@@ -23,6 +23,7 @@ define([
     url: null,
     preload: true,
     containerType: null,
+    hasColumnHeaders: true,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
@@ -50,8 +51,6 @@ define([
         keyList.forEach(function (keyName) {
           if (_self.file.metadata.name.indexOf(keyName) >= 0) {
             // key name is found
-            //if(tsvCsvFeatures[keyName].columnName !== '') {
-            //if (tsvCsvFeatures[keyName].feature.columnName) {
             if (Object.keys(tsvCsvFeatures[keyName]).length > 1) {
               newType = 'csvFeature';
             }
@@ -167,7 +166,6 @@ define([
       });
 
       // initialize app filters
-      // [{label: 'AppName  (count)', value: 'AppName', count: x}, ... ]
       var items = [];
       columnHeaders.forEach(function(header){
         items.push({'label': header.label, 'value': header.label});
@@ -208,13 +206,36 @@ define([
           filter.keyword = ta_keyword.get('value');
           filter.columnSelection = selector.get('value');
          
-          Topic.publish('applyKeywordFilter', filter); // was filter.keyword.  Filter now contains both keyword and column
+          Topic.publish('applyKeywordFilter', filter); 
           console.log("after publish");
         })
       });
       domConstruct.place(btn_submit.domNode, filterPanel.containerNode, 'last');
       domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
 
+      // add button or checkbox for column headers if suffix is not known (user supplied data file)
+      var _self = this;
+      var isNotKnownSuffix = true;
+      var keyList = Object.keys(tsvCsvFeatures);
+      keyList.forEach(function (keyName) {
+        if (_self.file.metadata.name.indexOf(keyName) >= 0) {
+          isNotKnownSuffix = false;
+        }
+      });
+      if (isNotKnownSuffix) {
+        var columnDiv = domConstruct.create('div', {});
+        var checkBox_headers = new CheckBox({
+          style: { checked: true, 'margin-left': '10px'}
+        });
+        checkBox_headers.on('change', lang.hitch(this, function (val) {
+          this.set('hasColumnHeaders', val);
+        }));
+        domConstruct.create('label', {innerHTML: 'testing'}, this.checkBox_headers);
+
+        domConstruct.place(checkBox_headers.domNode, columnDiv, 'first');
+        domConstruct.place(columnDiv, filterPanel.containerNode, 'last');
+        domConstruct.create('span', { innerHTML: 'First Row Contains Column Headers' }, columnDiv);
+      }
       this.addChild(filterPanel);
     },
 
@@ -263,8 +284,6 @@ define([
             this.createFilterPanel(tsvCsvStore.columns);
 
 						// make a grid and fill it 
-            //this.viewer.addChild(tsvGC.gridCtor);       // DLB was set
-            //this.viewer.set('content', tsvGC.gridCtor);       // this used to work
             this.viewer.set('content', tsvGC);
           } else {
             this.viewer.set('content', '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');

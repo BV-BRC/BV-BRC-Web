@@ -30,6 +30,7 @@ define([
     constructor: function (options) {
       this._loaded = false;
       this.topicId = options.topicId;
+      //this.userDefinedHeaderColumns = options.userDefinedHeaderColumns;
 
       // for keyword filtering
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
@@ -206,7 +207,7 @@ define([
         var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
       }
 
-      
+      var rowStart = 0;
       var gridColumns = [];
       for (i = 0; i < tmpColumnHeaders.length; i++) {
 
@@ -214,6 +215,7 @@ define([
         // then name them as "Column 1", "Column 2", etc.
         if (hasColumnHeaders) {
           var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
+          rowStart = 1;
         } else {
           var columnHeaders = { label: "Column " + (i + 1), field: "Column " + (i + 1) };
         }
@@ -223,9 +225,9 @@ define([
 
       // fill with data, start with second line of dataLines
       var columnData = [];
-      for (i = 1; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
+      for (i = rowStart; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
         // get data for tsv (currently typed as txt)      
-        if (this.state.dataType == 'txt') {
+        if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
           var tmpData = dataLines[i].split(/\t/);
         } else {
           var tmpData = dataLines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);

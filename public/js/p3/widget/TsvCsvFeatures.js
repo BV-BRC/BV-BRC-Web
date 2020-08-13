@@ -3,7 +3,7 @@ define([], function() {
         // column headers associated with features in tsv/csv files
         // columnHeaders value indicates whether 1st row in data file contains column headers
         // the following values define which buttons will be displayed in the action panel. 
-        // Only the FEATURE(S) and GENE(S) buttons current work.  (Dev:  Add other buttons?)
+        // Only the FEATURE(S) and GENE(S) buttons currently work.  (Dev:  Add other buttons?)
 
         // variation service
         '.annotated.tsv': {columnHeaders: true, 
