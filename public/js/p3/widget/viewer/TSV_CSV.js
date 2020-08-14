@@ -23,7 +23,7 @@ define([
     url: null,
     preload: true,
     containerType: null,
-    hasColumnHeaders: true,
+    userDefinedColumnHeaders: false,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
@@ -122,8 +122,9 @@ define([
     },
 
     createFilterPanel: function(columnHeaders) {
-
-      console.log ("in createFilterPanel in viewer");
+      if (this._filterCreated) {
+        return;
+      }
 
       var filterPanel = new ContentPane({
         region: 'top',
@@ -228,7 +229,8 @@ define([
           style: { checked: true, 'margin-left': '10px'}
         });
         checkBox_headers.on('change', lang.hitch(this, function (val) {
-          this.set('hasColumnHeaders', val);
+          this.set('userDefinedColumnHeaders', val);
+          this.refresh();
         }));
         domConstruct.create('label', {innerHTML: 'testing'}, this.checkBox_headers);
 
@@ -268,22 +270,27 @@ define([
 
           if (this.file.data || (!this.preload && this.url)) {
             
+            // store
             var tsvCsvStore = new TsvCsvStore({
               type: 'separatedValues',
-              topicId: 'TsvCsv'
+              topicId: 'TsvCsv',
+              userDefinedColumnHeaders: this.userDefinedColumnHeaders
             }); 
 
+            this.viewer.set('content', '');
+
+            // gridContainer
             var tsvGC = new TSV_CSV_GridContainer({
               title: 'TSV View',
               id: this.viewer.id + '_tsv',
               disable: false,
               store: tsvCsvStore
             }); 
-            
+
             tsvGC.set('state', {dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data});
             this.createFilterPanel(tsvCsvStore.columns);
-
-						// make a grid and fill it 
+            this._filterCreated = true;
+ 
             this.viewer.set('content', tsvGC);
           } else {
             this.viewer.set('content', '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');

@@ -30,7 +30,7 @@ define([
     constructor: function (options) {
       this._loaded = false;
       this.topicId = options.topicId;
-      //this.userDefinedHeaderColumns = options.userDefinedHeaderColumns;
+      this.userDefinedColumnHeaders = options.userDefinedColumnHeaders;
 
       // for keyword filtering
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
@@ -213,7 +213,7 @@ define([
 
         // make column labels from the first line of dataLines or if column headers are not present
         // then name them as "Column 1", "Column 2", etc.
-        if (hasColumnHeaders) {
+        if (hasColumnHeaders || this.userDefinedColumnHeaders) {
           var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
           rowStart = 1;
         } else {
