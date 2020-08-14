@@ -290,6 +290,13 @@ define([
           charError.innerHTML = '&nbsp;';
         }
       }
+    },
+
+    onAddSRR: function () {
+      var accession = this.srr_accession.get('value');
+      var lrec = { _type: 'srr_accession', title: accession };
+      this.ingestAttachPoints(['srr_accession'], lrec);
+      this.addLibraryRow(lrec, {}, 'srrdata');
     }
   });
 });
