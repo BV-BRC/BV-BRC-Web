@@ -273,6 +273,7 @@ define("p3/widget/app/MetagenomicReadMapping", [
       }
     },
 
+    /*
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
 
@@ -300,6 +301,7 @@ define("p3/widget/app/MetagenomicReadMapping", [
           }
         }));
     },
+    */
 
     destroyLibRow: function (query_id, id_type) {
       var query_obj = {};

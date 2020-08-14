@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.6.6 - August 14, 2020
+
+* [Bug Fix] Allow SRA on most apps (pending validation fixes). [56cb481](https://github.com/PATRIC3/p3_web/commit/56cb481914410172c6a34b566541241f1231150d)
+
+* [Bug Fix] Support newick files with no genome ids. [#985](https://github.com/PATRIC3/p3_web/pull/985)
+
+* [Minor] Add BEI links; add dates to feature overview. [#992](https://github.com/PATRIC3/p3_web/pull/992)
+
+* [Minor] Improve Pathway Summary error handling. [#977](https://github.com/PATRIC3/p3_web/pull/977)
+
+* [Minor] Fix link (and auth) to ModelSEED.
+
+* [Patch] Handle auth issue preventing re-login.
+
+* [Dev Enhancement] Allow devs to specify build container IDs in app submissions; related improvements. [7a4ff1f](https://github.com/PATRIC3/p3_web/commit/7a4ff1fd47f7da545322d5a1240756fcabae1f2f)
+
+* [Dev Enhancement] Navigate to default job result viewer if not implemented. [#994](https://github.com/PATRIC3/p3_web/pull/994)
 
 ## 3.6.5 - June 5, 2020
 

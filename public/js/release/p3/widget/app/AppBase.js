@@ -234,6 +234,11 @@ define("p3/widget/app/AppBase", [
         domClass.remove(this.domNode, 'Error');
         domClass.remove(this.domNode, 'Submitted');
 
+        // tack on container build ID if specified in debugging panel
+        if (window.App.containerBuildID) {
+          values.container_id = window.App.containerBuildID;
+        }
+
         if (window.App.noJobSubmission) {
           var dlg = new Dialog({
             title: 'Job Submission Params: ',
@@ -243,6 +248,7 @@ define("p3/widget/app/AppBase", [
           dlg.show();
           return;
         }
+
         this.submitButton.set('disabled', true);
         window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
           console.log('Job Submission Results: ', results);
@@ -286,6 +292,13 @@ define("p3/widget/app/AppBase", [
           charError.innerHTML = '&nbsp;';
         }
       }
+    },
+
+    onAddSRR: function () {
+      var accession = this.srr_accession.get('value');
+      var lrec = { _type: 'srr_accession', title: accession };
+      this.ingestAttachPoints(['srr_accession'], lrec);
+      this.addLibraryRow(lrec, {}, 'srrdata');
     }
   });
 });
