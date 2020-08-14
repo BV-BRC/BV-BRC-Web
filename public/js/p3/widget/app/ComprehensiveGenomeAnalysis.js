@@ -293,6 +293,7 @@ define([
       }
     },
 
+    /*
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
       if ( !accession.match(/^[a-z0-9]+$/i)) {
@@ -324,6 +325,7 @@ define([
           }));
       }
     },
+    */
 
     destroyLibRow: function (query_id, id_type) {
       var query_obj = {};

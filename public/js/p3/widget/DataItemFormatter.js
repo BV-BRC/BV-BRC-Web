@@ -27,7 +27,9 @@ define([
 
   function evaluateLink(link, value, item) {
     return (link && value !== '-' && value !== '0') ? (
-      (typeof (link) == 'function') ? link.apply(this, [item]) : '<a href="' + link + value + '" target="_blank">' + value + '</a>'
+      (typeof (link) == 'function') ?
+        link.apply(this, [item]) :
+        '<a href="' + link + value + '" target="_blank">' + String(value).split(',').join(', ') + '</a>'
     ) : value;
   }
 

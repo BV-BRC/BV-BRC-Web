@@ -271,6 +271,7 @@ define([
       }
     },
 
+    /*
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
 
@@ -298,6 +299,7 @@ define([
           }
         }));
     },
+    */
 
     destroyLibRow: function (query_id, id_type) {
       var query_obj = {};

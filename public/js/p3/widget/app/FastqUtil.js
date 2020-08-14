@@ -120,7 +120,6 @@ define([
       this._started = true;
     },
 
-
     onAddSRR: function () {
       console.log('Create New Row', domConstruct);
       var toIngest = this.srrToAttachPt;
@@ -194,6 +193,7 @@ define([
           }
         }));
     },
+
     addLibraryInfo: function (lrec, infoLabels, tr) {
       var advInfo = [];
       // fill out the html of the info mouse over
