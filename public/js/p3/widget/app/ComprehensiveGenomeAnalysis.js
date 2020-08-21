@@ -2,14 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/array', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/ComprehensiveGenomeAnalysis.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
-  'dojox/xml/parser',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
   declare, array, WidgetBase, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
-  xmlParser,
   popup, TooltipDialog, Dialog,
   AppBase, WorkspaceManager
 ) {
@@ -28,7 +26,6 @@ define([
     defaultPath: '',
     startingRows: 6,
     libCreated: 0,
-    srrValidationUrl: 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     // below are from annotation
     required: true,
     genera_four: ['Acholeplasma', 'Entomoplasma', 'Hepatoplasma', 'Hodgkinia', 'Mesoplasma', 'Mycoplasma', 'Spiroplasma', 'Ureaplasma'],
@@ -292,40 +289,6 @@ define([
         this.addLibraryRow(lrec, infoLabels, 'singledata');
       }
     },
-
-    /*
-    onAddSRR: function () {
-      var accession = this.srr_accession.get('value');
-      if ( !accession.match(/^[a-z0-9]+$/i)) {
-        this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
-      }
-      else {
-        // SRR5121082
-        this.srr_accession.set('disabled', true);
-        this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
-        xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-          .then(lang.hitch(this, function (xml_resp) {
-            var resp = xmlParser.parse(xml_resp).documentElement;
-            this.srr_accession.set('disabled', false);
-            try {
-              var title = resp.children[0].childNodes[3].innerHTML;
-              this.srr_accession_validation_message.innerHTML = '';
-              var lrec = { _type: 'srr_accession', title: title };
-              var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
-              if (chkPassed) {
-                var infoLabels = {
-                  title: { label: 'Title', value: 1 }
-                };
-                this.addLibraryRow(lrec, infoLabels, 'srrdata');
-              }
-            } catch (e) {
-              this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
-              this.srr_accession.set('value', '');
-            }
-          }));
-      }
-    },
-    */
 
     destroyLibRow: function (query_id, id_type) {
       var query_obj = {};

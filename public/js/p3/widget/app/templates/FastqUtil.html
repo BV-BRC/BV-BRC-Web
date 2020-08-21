@@ -111,13 +111,13 @@
             <div class="appBox appShadow">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">SRA run accession <small>(Temporarily Disabled)</small></label>
+                  <label class="appBoxLabel">SRA run accession</label>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">SRR Accession</label><br>
-                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateSRR" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="disabled:true,intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
+                <label class="paramlabel">SRR Accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i><br>
+                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateSRR" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
               </div>
             </div>
           </td>
