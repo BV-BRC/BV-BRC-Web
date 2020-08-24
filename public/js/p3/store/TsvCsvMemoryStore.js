@@ -194,7 +194,7 @@ define([
       });
 
       // get data for tsv (currently typed as txt)      
-      if (this.state.dataType == 'txt') {
+      if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
         // split on new lines, to get the grid rows
         var dataLines = this.state.data.split(/\r?\n/);
 

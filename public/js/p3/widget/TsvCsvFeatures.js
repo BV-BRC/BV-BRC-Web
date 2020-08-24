@@ -31,7 +31,11 @@ define([], function() {
 
         '.diff': {columnHeaders: true, 
                 feature: {columnName: 'gene', feature: 'patric_id'},
-                gene: {columnName: 'gene', feature: 'patric_id'}}
+                gene: {columnName: 'gene', feature: 'patric_id'}},
+
+        '.gene_counts': {columnHeaders: true},
+
+        '.deseq2': {columnHeaders: true}
 
         // these are test cases and will need to be removed:
         /*
