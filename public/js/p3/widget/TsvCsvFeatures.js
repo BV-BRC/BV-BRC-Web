@@ -33,7 +33,9 @@ define([], function() {
                 feature: {columnName: 'gene', feature: 'patric_id'},
                 gene: {columnName: 'gene', feature: 'patric_id'}},
 
-        '.gene_counts': {columnHeaders: true},
+        '.gene_counts': {columnHeaders: true,
+                        feature: {columnName: 'gene_id', feature: 'patric_id'},
+                        gene: {columnName: 'gene_id', feature: 'patric_id'}},
 
         '.deseq2': {columnHeaders: true}
 

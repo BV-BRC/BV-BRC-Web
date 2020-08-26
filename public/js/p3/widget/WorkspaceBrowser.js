@@ -1757,6 +1757,7 @@ define([
             break;
           case 'csv':
           case 'tsv':
+            tsvCsvFilename = this.tsvCsvFilename = obj.name;
             panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
             params.file = { metadata: obj }; 
             break;
