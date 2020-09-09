@@ -11,6 +11,22 @@
             <div class="bv-brc-info">
                 <h1>BACTERIAL AND VIRAL BIOINFORMATICS RESOURCE CENTER</h1>
                 <p>The Bacterial and Viral Bioinformatics Resource Center (BV-BRC) is an information system designed to support research on bacterial and viral infectious diseases via integration of vital pathogen information with rich data and analysis tools. BV-BRC combines two long-running centers: PATRIC, the bacterial system, and IRD/ViPR, the viral systems.</p>
+                <div class="browse" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3>BROWSE</h3>
+                    <a href="/view/Taxonomy/2157" class="navigationLink btn btn-blue">ARCHAEA</a>
+                    <a href="/view/Taxonomy/2" class="navigationLink btn btn-blue">BACTERIA</a>
+                    <a href="/view/Taxonomy/10239" class="navigationLink btn btn-blue">PHAGES</a>
+                    <a href="/view/Taxonomy/10239" class="navigationLink btn btn-blue">VIRUSES</a>
+                    <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="navigationLink btn btn-blue" style="width: 150px;">EUKARYOTIC HOSTS</a>
+                </div>
+                <div class="search" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3>SEARCH</h3>
+                    <div class="global-search" style="flex-grow: 5;">
+                        <div style="padding: 6px 0px 2px 2px; flex-grow: 1">
+                            <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="announcements">
@@ -69,7 +85,10 @@
             </div>
 
             <div class="twitter-feed">
-                <a class="twitter-timeline" data-lang="en" data-height="310" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB?ref_src=twsrc%5Etfw">Tweets by BVBRC_DB</a>
+                <!-- <a class="twitter-timeline" data-lang="en" data-height="470" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB?ref_src=twsrc%5Etfw">Tweets by BVBRC_DB</a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> -->
+
+                <a class="twitter-timeline" data-lang="en" data-height="410" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter List by BVBRC_DB</a>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
             </div>
         </div>
@@ -81,5 +100,8 @@
 <style>
     body.patric {
         min-width: 830px;
+    }
+    #p3header-search {
+        display: none;
     }
 </style>

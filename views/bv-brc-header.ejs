@@ -66,128 +66,130 @@
                 </a>
             </div>
 
-            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                <span>ORGANISMS</span>
-                <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div style="vertical-align: top;width:225px;display:inline-block;margin-right: 5px;">
-                        <div class="menuHeader">Bacterial Pathogens</div>
-                        <div class="menuItems">
-                            <% for (var i = 0; i < servicesMiddle;i++){ %>
-                            <div>
-                                <span class="menuItem half">
-                                    <a class="navigationLink" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
-                                </span>
-                                <span class="menuItem half">
-                                    <% if (services[servicesMiddle + i]) { %>
-                                    <a class="navigationLink" title="<%- services[servicesMiddle + i].name %> overview"
-                                       href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
-                                    <% } %>
-                                </span>
-                            </div>
-                            <% } %>
-                            <br>
-                            <div>
-                                <span class="menuItem half">
-                                    <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
-                                </span>
-                                <span class="menuItem half">
-                                    <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
-                                </span>
-                                <span class="menuItem half">
-                                    <a class="navigationLink" href="/view/Taxonomy/10239" title="Overview page for all Phage genomes">All Phages</a>
-                                </span>
-                                <span class="menuItem half">
-                                    <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
-                                        title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="vertical-align: top;width:300px;display:inline-block;margin-right: 5px;">
-                        <div class="menuHeader">Viral Families</div>
-
-                        <div class="menuItems">
-                            <% for (var i = 0; i < virusMiddle;i++){ %>
-                            <div>
-                                <span class="menuItem half">
-                                    <a class="navigationLink" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
-                                </span>
-                                <span class="menuItem half">
-                                    <% if (virus[virusMiddle + i]) { %>
-                                    <a class="navigationLink" title="<%- virus[virusMiddle + i].name %> overview"
-                                       href="<%- virus[virusMiddle + i].href %>"><%- virus[virusMiddle + i].name %></a>
-                                    <% } %>
-                                </span>
-                            </div>
-                            <% } %>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                <span>DATA</span>
-                <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div>
-                        <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
-                            <div class="menuHeader">Data Types</div>
+            <div style="vertical-align: top; min-width: 435px; flex: 1">
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>ORGANISMS</span>
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div style="vertical-align: top;width:225px;display:inline-block;margin-right: 5px;">
+                            <div class="menuHeader">Bacterial Pathogens</div>
                             <div class="menuItems">
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance (AMR)</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a></div>
-                            </div>
-                            <div class="menuHeader">Download Data</div>
-                            <div class="menuItems">
-                                <div><a class="navigationLinkOut" href="ftp://ftp.patricbrc.org/"
-                                        target="_blank" rel="noopener">FTP Server</a>
+                                <% for (var i = 0; i < servicesMiddle;i++){ %>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <% if (services[servicesMiddle + i]) { %>
+                                        <a class="navigationLink" title="<%- services[servicesMiddle + i].name %> overview"
+                                           href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
+                                        <% } %>
+                                    </span>
+                                </div>
+                                <% } %>
+                                <br>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Taxonomy/10239" title="Overview page for all Phage genomes">All Phages</a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                                            title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
                                 </div>
                             </div>
                         </div>
-                        <div style="vertical-align:top;width:200px;display: inline-block">
-                            <div class="menuHeader">Specialty Data Collections</div>
+
+                        <div style="vertical-align: top;width:300px;display:inline-block;margin-right: 5px;">
+                            <div class="menuHeader">Viral Families</div>
+
                             <div class="menuItems">
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_collaborations.html">PATRIC Collaborations</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_dbps.html">PATRIC DBPS</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_clinical_proteomics.html">NIAID Clinical Proteomics</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_genome_sequencing.html">NIAID Genome Sequencing</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_structural_genomics.html">NIAID Structural Genomics</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_systems_biology.html">NIAID Systems Biology</a></div>
-                                <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_functional_genomics.html">NIAID Functional Genomics</a></div>
+                                <% for (var i = 0; i < virusMiddle;i++){ %>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <% if (virus[virusMiddle + i]) { %>
+                                        <a class="navigationLink" title="<%- virus[virusMiddle + i].name %> overview"
+                                           href="<%- virus[virusMiddle + i].href %>"><%- virus[virusMiddle + i].name %></a>
+                                        <% } %>
+                                    </span>
+                                </div>
+                                <% } %>
                             </div>
 
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                <span style="font-size: 1em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
-
-                <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div>
-                        <div style="vertical-align: top;width:175px;display:inline-block">
-                            <div class="HideWithAuth">
-                                Please <a class="loginLink">sign in</a> to view your workspaces.
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>DATA</span>
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div>
+                            <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
+                                <div class="menuHeader">Data Types</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance (AMR)</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a></div>
+                                </div>
+                                <div class="menuHeader">Download Data</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLinkOut" href="ftp://ftp.patricbrc.org/"
+                                            target="_blank" rel="noopener">FTP Server</a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="ShowWithAuth">
-                                <div><i class="fa icon-caret-down fa-1x noHoverIcon"
-                                        style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                            class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
-                                <div id="YourWorkspaces"></div>
-                                <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
+                            <div style="vertical-align:top;width:200px;display: inline-block">
+                                <div class="menuHeader">Specialty Data Collections</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_collaborations.html">PATRIC Collaborations</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_dbps.html">PATRIC DBPS</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_clinical_proteomics.html">NIAID Clinical Proteomics</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_genome_sequencing.html">NIAID Genome Sequencing</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_structural_genomics.html">NIAID Structural Genomics</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_systems_biology.html">NIAID Systems Biology</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_functional_genomics.html">NIAID Functional Genomics</a></div>
+                                </div>
+
                             </div>
                         </div>
-                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                            <div>
-                                <a class="navigationLink" href="/job/">My Jobs</a>
+                    </div>
+                </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span style="font-size: 1em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
+
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div>
+                            <div style="vertical-align: top;width:175px;display:inline-block">
+                                <div class="HideWithAuth">
+                                    Please <a class="loginLink">sign in</a> to view your workspaces.
+                                </div>
+                                <div class="ShowWithAuth">
+                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
+                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
+                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
+                                    <div id="YourWorkspaces"></div>
+                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
+                                </div>
                             </div>
-                            <div>
-                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
+                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
+                                <div>
+                                    <a class="navigationLink" href="/job/">My Jobs</a>
+                                </div>
+                                <div>
+                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -198,6 +200,8 @@
                 <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden"
                        data-dojo-type="p3/widget/GlobalSearch"/>
             </div>
+
+            <!-- <div class="navbar-flex-space" style="flex-grow: 0.85;"></div> -->
 
             <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 3px 10px 0 0;">
                 <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
