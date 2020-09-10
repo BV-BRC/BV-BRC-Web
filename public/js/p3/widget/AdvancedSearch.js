@@ -18,10 +18,11 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
+      genome_sequence: 'Genomic Sequences',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
       transcriptomics_experiment: 'Transcriptomics Experiments',
@@ -77,6 +78,13 @@ define([
           return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
         return ['/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score'].join('');
+
+      },
+      genome_sequence: function (docs, total) {
+        if (total == 1) {
+          return ['/view/Genome/', docs[0].feature_id, '#view_tab=overview'].join('');
+        }
+        return ['/view/GenomeList/?', this.state.search, '#view_tab=sequences'].join('');
 
       },
       taxonomy: function (docs, total) {
@@ -218,6 +226,57 @@ define([
       return out.join('');
     },
 
+    formatgenome_sequence: function (docs, total) {
+      var out = ['<div class="searchResultsContainer genomeResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/GenomeList/?', this.state.search, '#view_tab=sequences', '">Genomic Sequences&nbsp;(', total, ')</div></a>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
+
+        out.push("<div class='resultInfo'>");
+        out.push('<span> Genome ID: ' + doc.genome_id + '</span>');
+
+        if (doc.plasmids && doc.plasmids > 0) {
+          out.push(' | ');
+          out.push('<span>' + doc.plasmids + ' Plasmids</span>');
+        }
+
+        if (doc.contigs && doc.contigs > 0) {
+          out.push(' | ');
+          out.push('<span>' + doc.contigs + ' Contigs</span>');
+        }
+
+        out.push('</div>');
+
+        out.push("<div class='resultInfo'>");
+        if (doc.completion_date) {
+          out.push('<span> SEQUENCED: ' + formatter.dateOnly(doc.completion_date) + '</span>');
+        }
+
+        if (doc.sequencing_centers) {
+
+          out.push('&nbsp;(' + doc.sequencing_centers + ')');
+        }
+        out.push('</div>');
+
+        out.push("<div class='resultInfo'>");
+        if (doc.collection_date) {
+          out.push('<span>COLLECTED: ' + formatter.dateOnly(doc.collection_date) + '</span>');
+        }
+        if (doc.host_name) {
+          out.push('<span>HOST:  ' + doc.host_name + '</span>');
+        }
+
+        out.push('</div>');
+
+        if (doc.comments && doc.comments != '-') {
+          out.push("<div class='resultInfo comments'>" + doc.comments + '</div>');
+        }
+        out.push('</div>');
+      });
+      out.push('</div>');
+      return out.join('');
+    },
 
     formatsp_gene: function (docs, total) {
       var out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, '#view_tab=specialtyGenes&filter=false', '">Specialty Genes&nbsp;(', total, ')</div> </a>'];
