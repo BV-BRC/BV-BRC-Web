@@ -50,7 +50,9 @@ define([
       this.pairToAttachPt1 = { read1: null, read2: null };
       this.pairConditionToAttachPt = { read1: null, read2: null, condition_paired: ['condition'] };
       this.advPairToAttachPt = { interleaved: null, insert_size_mean: null, insert_size_stdev: null };
-      this.paramToAttachPt = { output_path: null, output_file: null, recipe: null };
+      this.paramToAttachPt = {
+        output_path: null, output_file: null, recipe: null, protocol: null, primer: null
+      };
       this.singleToAttachPt = { read: null };
       this.singleConditionToAttachPt = { read: null, condition_single: ['condition'] };
       this.conditionToAttachPt = { condition: ['condition', 'id', 'label'] };
@@ -93,7 +95,6 @@ define([
       this.updateConditionStore(treatment, false);
       this.addedCond.counter = 2;
 
-
       // adjust validation for each of the attach points associated with read files
       Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function (attachname) {
         this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function (/* anything */ value, /* __Constraints */ constraints) {
@@ -115,9 +116,11 @@ define([
       // this.read2.set('value',"/" +  window.App.user.id +"/home/");
       // this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
       // this.output_path.set('value',"/" +  window.App.user.id +"/home/");
+      this.primer.set('disabled', true);
+      this.transposon.set('disabled', true);
+      this.onProtocolChange();
       this._started = true;
     },
-
 
     onRecipeChange: function () {
       var strategy = this.recipe.get('value');
@@ -129,9 +132,47 @@ define([
       }
       this.onDesignToggle();
     },
+
+    onProtocolChange: function () {
+      var protocol = this.protocol.get('value');
+      if (protocol == 'sassetti') {
+        this.transposon.set('value', 'himar1');
+      } else if (protocol == 'tn5') {
+        this.transposon.set('value', 'tn5');
+      } else {
+        this.transposon.set('value', 'himar1');
+      }
+    },
+
+    onTransposonChange: function () {
+      if (this.primer_trimming.get('value') == 'Default') {
+        var transposon = this.transposon.get('value');
+        if (transposon == 'himar1') {
+          this.primer.set('value', 'ACTTATCAGCCAACCTGTTA');
+        } else if (transposon == 'tn5') {
+          this.primer.set('value', 'TAAGAGACAG');
+        } else {
+          this.primer.set('value', 'err');
+        }
+      }
+    },
+
+    onPrimerTrimming: function () {
+      var value = this.primer_trimming.get('value');
+      if (value == 'Default') {
+        this.primer.set('disabled', true);
+        this.onTransposonChange();
+      } else if (value == 'Custom') {
+        this.primer.set('disabled', false);
+      } else {
+        this.primer.set('disabled', true);
+        this.primer.set('value', '');
+      }
+    },
+
     onDesignToggle: function () {
-      var disable = !this.exp_design.checked;
       // this.condition.set("disabled", disable);
+      var disable = !this.exp_design.checked;
       this.condition_single.set('disabled', disable);
       this.condition_paired.set('disabled', disable);
       if (disable) {
@@ -244,9 +285,7 @@ define([
       else {
         assembly_values.contrasts = [['control']];
       }
-
       return assembly_values;
-
     },
     // gets values from dojo attach points listed in input_ptsi keys.
     // aliases them to input_pts values.  validates all values present if req
@@ -271,6 +310,12 @@ define([
           }
           // cur_value=this[attachname].searchBox.get('value');
           // incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
+        }
+        else if (attachname == 'primer') {
+          cur_value = this[attachname].value.toUpperCase();
+        }
+        else if (attachname == 'recipe' && this.protocol.get('value') == 'tn5' && this[attachname].value == 'gumbel') {
+          cur_value = 'tn5gaps';
         }
         else if (attachname == 'condition') {
           cur_value = this[attachname].displayedValue;// ? "/_uuid/"+this[attachname].searchBox.value : "";
@@ -345,16 +390,20 @@ define([
       return 'S(' + fn + ')';
 
     },
+
     makeLibraryID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
         var fn2 = this.read2.searchBox.get('value');
         return fn + fn2;
       }
-
       var fn = this.read.searchBox.get('value');
+      if (!(fn)) {
+        var fn1 = this.read1.searchBox.get('value');
+        var fn2 = this.read2.searchBox.get('value');
+        fn = fn1 + fn2;
+      }
       return fn;
-
     },
 
     onReset: function (evt) {
