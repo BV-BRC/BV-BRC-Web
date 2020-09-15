@@ -4,14 +4,14 @@ define([
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
-  '../TsvCsvFeatures'
+  '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dojo/NodeList-traverse'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
   array, selector, lang, TsvCsvStore, 
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
-  tsvCsvFeatures
+  tsvCsvFeatures, request, PathJoin
 ) {
 
   return declare([ViewerBase], {    // was BorderContainer
@@ -23,7 +23,9 @@ define([
     url: null,
     preload: true,
     containerType: null,
+    userDefinedTable: true,
     userDefinedColumnHeaders: false,
+    userDefinedGeneIDHeader: null,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
@@ -50,12 +52,21 @@ define([
         var newType = null;
         keyList.forEach(function (keyName) {
           if (_self.file.metadata.name.indexOf(keyName) >= 0) {
-            // key name is found
+            // key name is found, this is a known suffix
+            _self.userDefinedTable = false;
+            _self.userDefinedGeneIDHeader = null;
             if (Object.keys(tsvCsvFeatures[keyName]).length > 1) {
               newType = 'csvFeature';
             }
           }
         });
+
+        // if suffix was not found in tsvCsvFeatures, then this is a user imported custom table.
+        // Does it have auto-detected feature column?
+        //if (this.userDefinedTable && val.data) {        
+          
+        //}
+
         this.set('containerType', newType);
 
         this.refresh();
@@ -70,6 +81,10 @@ define([
         _self.file = { metadata: meta };
         _self.refresh();
       });
+    },
+
+    setActionPanel: function (actionPanel) {
+        this.actionPanel = actionPanel;
     },
 
     onSetState: function (attr, oldVal, state) {
@@ -241,6 +256,96 @@ define([
       this.addChild(filterPanel);
     },
 
+    checkForGenomeIDs: function (data) {
+      //console.log(data);
+      _self = this;
+      var numColumns = Object.keys(data[0]).length;
+      var checkIds = [];
+      var checkFeatureIDs = [];
+      var checkGeneIDs = [];
+      for (i = 0; i < numColumns; i++) {
+        // check the first 50 rows to see if this column contains gene_id, skip the first row because it may contain headers
+
+        for (j = 1; j < 20 && j < data.length; j++) {
+
+          // if this cell contains a feature id
+          if (String(data[j][Object.keys(data[j])[i]]).match(/^fig\|\d+.\d+/)) {
+            var elementPos = checkFeatureIDs.map(function(x) {return x.feature; }).indexOf(String(data[j][Object.keys(data[j])[i]]));
+            if (elementPos === -1) {
+              var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
+              //checkFeatureIDs.push({columns: [i], feature: (String(data[j][Object.keys(data[j])[i]])).replace("|", "%7C")});
+              checkFeatureIDs.push({featureString: [i]});
+
+
+            }
+            else {
+              if (checkFeatureIDs[elementPos].columns.indexOf(i) === -1) {
+                checkFeatureIDs[elementPos].columns.push(i);
+              }
+            }
+          }
+
+          // if the cell contains a gene_id
+          var testData = String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/);
+
+          if (String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/)) {
+            var elementPos = checkGeneIDs.map(function(x) {return x.geneID; }).indexOf(testData[0]);
+            if (elementPos === -1) {
+              checkGeneIDs.push({columns: [i], geneID: String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/)[0]});
+            }
+            else {
+              if (checkGeneIDs[elementPos].columns.indexOf(i) === -1) {
+                checkGeneIDs[elementPos].columns.push(i);
+              }
+            }
+          }
+        } 
+        if (checkFeatureIDs.length > 0) {
+          var featureList = checkFeatureIDs.map(function(item) {
+            return item.feature;
+          }).join(",");
+          query = '?in(patric_id,(' + featureList + '))&select(feature_id)&limit(1)'
+          request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/solr+json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }).then(function (response) {
+            console.log ("in response");
+            if (response.response.numFound > 0) {
+              _self.set('containerType', 'csvFeature');
+              _self.set('userDefinedGeneIDHeader', i)   // column number that contains gene id
+              // must specify column
+            }
+          });
+        } 
+        if (checkIds.length > 0) {
+          query = '?in(genome_id,(' + checkIds.join() + '))&select(genome_id)&limit(1)'
+          request.get(PathJoin(window.App.dataAPI, 'genome', query), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/solr+json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            
+            }
+          }).then(function (response) {
+            console.log ("in response");
+            if (response.response.numFound > 0) {
+              _self.set('containerType', 'csvFeature');
+              _self.set('userDefinedGeneIDHeader', i)   // column number that contains gene id
+              // must specify column
+            }
+          });
+        }      
+      }  // end for each column
+    },
+
     formatFileMetaData: function (showMetaDataRows) {
       var fileMeta = this.file.metadata;
       if (this.file && fileMeta) {
@@ -290,6 +395,11 @@ define([
             tsvGC.set('state', {dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data});
             this.createFilterPanel(tsvCsvStore.columns);
             this._filterCreated = true;
+
+            if (this.userDefinedTable) {
+              // check for feature/genome columns
+              this.checkForGenomeIDs(tsvCsvStore.data);
+            }
  
             this.viewer.set('content', tsvGC);
           } else {

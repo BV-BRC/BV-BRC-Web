@@ -1789,7 +1789,11 @@ define([
             var newPanel = new Panel(params);
             var hideTimer;
 
+            //newPanel.actionPanel = this.actionPanel;
+            if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
+
             if (this.actionPanel) {
+              //newPanel.actionPanel = this.actionPanel;
               this.actionPanel.set('currentContainerWidget', newPanel);
               this.itemDetailPanel.set('containerWidget', newPanel);
             }
