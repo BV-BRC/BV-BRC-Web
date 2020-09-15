@@ -82,9 +82,9 @@ define([
       },
       genome_sequence: function (docs, total) {
         if (total == 1) {
-          return ['/view/Genome/', docs[0].feature_id, '#view_tab=overview'].join('');
+          return ['/view/Sequence/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
-        return ['/view/GenomeList/?', this.state.search, '#view_tab=sequences'].join('');
+        return ['/view/SequenceList/?', this.state.search].join('');
 
       },
       taxonomy: function (docs, total) {
@@ -227,51 +227,13 @@ define([
     },
 
     formatgenome_sequence: function (docs, total) {
-      var out = ['<div class="searchResultsContainer genomeResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/GenomeList/?', this.state.search, '#view_tab=sequences', '">Genomic Sequences&nbsp;(', total, ')</div></a>'];
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer sequenceResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SequenceList/?', q, '">Genomic Sequences</a>&nbsp;(', total, ')</div>'];
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
-
-        out.push("<div class='resultInfo'>");
-        out.push('<span> Genome ID: ' + doc.genome_id + '</span>');
-
-        if (doc.plasmids && doc.plasmids > 0) {
-          out.push(' | ');
-          out.push('<span>' + doc.plasmids + ' Plasmids</span>');
-        }
-
-        if (doc.contigs && doc.contigs > 0) {
-          out.push(' | ');
-          out.push('<span>' + doc.contigs + ' Contigs</span>');
-        }
-
-        out.push('</div>');
-
-        out.push("<div class='resultInfo'>");
-        if (doc.completion_date) {
-          out.push('<span> SEQUENCED: ' + formatter.dateOnly(doc.completion_date) + '</span>');
-        }
-
-        if (doc.sequencing_centers) {
-
-          out.push('&nbsp;(' + doc.sequencing_centers + ')');
-        }
-        out.push('</div>');
-
-        out.push("<div class='resultInfo'>");
-        if (doc.collection_date) {
-          out.push('<span>COLLECTED: ' + formatter.dateOnly(doc.collection_date) + '</span>');
-        }
-        if (doc.host_name) {
-          out.push('<span>HOST:  ' + doc.host_name + '</span>');
-        }
-
-        out.push('</div>');
-
-        if (doc.comments && doc.comments != '-') {
-          out.push("<div class='resultInfo comments'>" + doc.comments + '</div>');
-        }
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SequenceList/?'>" + doc.genome_sequence + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.description + ' | ' + doc.accession);
         out.push('</div>');
       });
       out.push('</div>');
@@ -289,7 +251,7 @@ define([
 
         out.push("<div class='resultInfo'>" + doc.genome_name +  '</div>');
 
-        out.push("<div class='resultInfo'>" + doc.property + ' | ' + doc.source);
+        out.push("<div class='resultInfo'>" + doc.propert + ' | ' + doc.source);
 
         if (doc.evidence) {
           out.push('&nbsp;|&nbsp;' + doc.evidence);
