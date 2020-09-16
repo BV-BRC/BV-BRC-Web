@@ -260,7 +260,6 @@ define([
       //console.log(data);
       _self = this;
       var numColumns = Object.keys(data[0]).length;
-      var checkIds = [];
       var checkFeatureIDs = [];
       var checkGeneIDs = [];
       for (i = 0; i < numColumns; i++) {
@@ -270,80 +269,117 @@ define([
 
           // if this cell contains a feature id
           if (String(data[j][Object.keys(data[j])[i]]).match(/^fig\|\d+.\d+/)) {
-            var elementPos = checkFeatureIDs.map(function(x) {return x.feature; }).indexOf(String(data[j][Object.keys(data[j])[i]]));
+            var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
+            var elementPos = checkFeatureIDs.map(function(x) {return x.feature; }).indexOf(featureString);
             if (elementPos === -1) {
-              var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
-              //checkFeatureIDs.push({columns: [i], feature: (String(data[j][Object.keys(data[j])[i]])).replace("|", "%7C")});
-              checkFeatureIDs.push({featureString: [i]});
-
-
+              //var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
+              checkFeatureIDs.push({columns: [i], feature: (featureString)});
+              //checkFeatureIDs.push({[featureString]: [i]});
             }
             else {
-              if (checkFeatureIDs[elementPos].columns.indexOf(i) === -1) {
+              if (checkFeatureIDs[elementPos].columns.indexOf(i) == -1) {
                 checkFeatureIDs[elementPos].columns.push(i);
               }
             }
           }
 
           // if the cell contains a gene_id
-          var testData = String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/);
+          var geneMatch = String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/);
 
-          if (String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/)) {
-            var elementPos = checkGeneIDs.map(function(x) {return x.geneID; }).indexOf(testData[0]);
+          if (geneMatch) {
+            var elementPos = checkGeneIDs.map(function(x) {return x.geneID; }).indexOf(geneMatch[0]);
             if (elementPos === -1) {
-              checkGeneIDs.push({columns: [i], geneID: String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/)[0]});
+              checkGeneIDs.push({columns: [i], geneID: geneMatch[0]});
             }
             else {
-              if (checkGeneIDs[elementPos].columns.indexOf(i) === -1) {
+              if (checkGeneIDs[elementPos].columns.indexOf(i) == -1) {
                 checkGeneIDs[elementPos].columns.push(i);
               }
             }
           }
-        } 
-        if (checkFeatureIDs.length > 0) {
-          var featureList = checkFeatureIDs.map(function(item) {
-            return item.feature;
-          }).join(",");
-          query = '?in(patric_id,(' + featureList + '))&select(feature_id)&limit(1)'
-          request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
-            handleAs: 'json',
-            headers: {
-              Accept: 'application/solr+json',
-              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            
-            }
-          }).then(function (response) {
-            console.log ("in response");
-            if (response.response.numFound > 0) {
-              _self.set('containerType', 'csvFeature');
-              _self.set('userDefinedGeneIDHeader', i)   // column number that contains gene id
-              // must specify column
-            }
-          });
-        } 
-        if (checkIds.length > 0) {
-          query = '?in(genome_id,(' + checkIds.join() + '))&select(genome_id)&limit(1)'
-          request.get(PathJoin(window.App.dataAPI, 'genome', query), {
-            handleAs: 'json',
-            headers: {
-              Accept: 'application/solr+json',
-              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            
-            }
-          }).then(function (response) {
-            console.log ("in response");
-            if (response.response.numFound > 0) {
-              _self.set('containerType', 'csvFeature');
-              _self.set('userDefinedGeneIDHeader', i)   // column number that contains gene id
-              // must specify column
-            }
-          });
-        }      
+        }  // end for rows
       }  // end for each column
+      if (checkFeatureIDs.length > 0) {
+        var featureList = checkFeatureIDs.map(function(item) {
+          return item.feature;
+        }).join(",");
+        query = '?in(patric_id,(' + featureList + '))&select(feature_id)';            //&limit(10)', when limited to 10 later columns are skipped
+        request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          
+          }
+        }).then(function (response) {
+          console.log ("in response");
+          if (response.response.numFound > 0) {
+
+            // build array of unique response features
+            var featureResponses = [];
+            response.response.docs.forEach(function (item) {
+              var testFeature = item.feature_id.match(/\d+\.\d+/)[0];
+              var elementPos = featureResponses.map(function(x) {return x; }).indexOf(testFeature);
+              if (elementPos === -1) {
+                featureResponses.push (testFeature);
+              }
+            });
+
+            var featureCounts = [];
+            checkFeatureIDs.forEach(function (item) {
+              var cols = item.columns;
+              cols.forEach (function (colItem) {
+                var elementPos = featureCounts.map(function(x) {return x.columnNum; }).indexOf(colItem);
+                if (elementPos === -1) {
+                  featureCounts.push ({ columnNum: colItem, featureCount: 1 });
+                }
+                else {
+                  featureCounts[elementPos]['featureCount']++;
+                }
+              });
+            });
+
+            // DEV:  Stop Here
+            // needs to be matched to just number
+            featureResponses.forEach(function (item) {
+              var elementPos = checkFeatureIDs.map(function(x) {return x; }).indexOf(item);
+              if (elementPos > 1) {
+                // get cols and find them in featureCounts, add or increment responseCount
+                var cols = checkFeatureIDs[elementPos].columns;
+
+              }
+            });
+            
+
+          }
+        });
+      } 
+      if (checkGeneIDs.length > 0) {
+        var geneIDList = checkGeneIDs.map(function(item) {
+          return item.geneID;
+        }).join(",");
+        query = '?in(genome_id,(' + geneIDList + '))&select(genome_id)';    
+        request.get(PathJoin(window.App.dataAPI, 'genome', query), {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          
+          }
+        }).then(function (response) {
+          console.log ("in response");
+          if (response.response.numFound > 0) {
+            _self.set('containerType', 'csvFeature');
+            _self.set('userDefinedGeneIDHeader', i)   // column number that contains gene id
+            // must specify column
+          }
+        });
+      }      
+      //}  // end for each column
     },
 
     formatFileMetaData: function (showMetaDataRows) {
