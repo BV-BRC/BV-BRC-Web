@@ -317,14 +317,9 @@ define([
           console.log ("in response");
           if (response.response.numFound > 0) {
 
-            // build array of unique response features
             var featureResponses = [];
             response.response.docs.forEach(function (item) {
-              var testFeature = item.feature_id.match(/\d+\.\d+/)[0];
-              var elementPos = featureResponses.map(function(x) {return x; }).indexOf(testFeature);
-              if (elementPos === -1) {
-                featureResponses.push (testFeature);
-              }
+              featureResponses.push (item.feature_id.match(/\d+\.\d+/)[0]);
             });
 
             var featureCounts = [];
@@ -341,18 +336,29 @@ define([
               });
             });
 
-            // DEV:  Stop Here
-            // needs to be matched to just number
             featureResponses.forEach(function (item) {
-              var elementPos = checkFeatureIDs.map(function(x) {return x; }).indexOf(item);
-              if (elementPos > 1) {
-                // get cols and find them in featureCounts, add or increment responseCount
+              var elementPos = checkFeatureIDs.map(function(x) {return x.feature.match(/\d+\.\d+/)[0]; }).indexOf(item);
+              if (elementPos > -1) {
+                 //get cols and find them in featureCounts, add or increment responseCount
                 var cols = checkFeatureIDs[elementPos].columns;
-
+                cols.forEach (function (colItem) {
+                  var countPosition = featureCounts.map(function(x) {return x.columnNum; }).indexOf(colItem);
+                  if (featureCounts[countPosition]['responseCount']) {
+                    featureCounts[countPosition]['responseCount']++;
+                  }
+                  else {
+                    featureCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
+                  }
+                })                
               }
             });
-            
 
+            // detection of feature(s) if over 90%
+            if (featureCounts.responseCount/featureCounts.featureCount > .90) {
+              this.containerType = 'csvFeature';
+              
+            }
+            
           }
         });
       } 
