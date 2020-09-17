@@ -235,7 +235,6 @@ define([
         out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.accession + ' | ' + doc.description +  '</div>');
         out.push('</div>');
-        console.log(doc);
       });
       out.push('</div>');
 
