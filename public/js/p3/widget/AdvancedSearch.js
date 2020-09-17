@@ -232,11 +232,13 @@ define([
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/SequenceList/?'>" + doc.genome_sequence + '</a></div>');
-        out.push("<div class='resultInfo'>" + doc.description + ' | ' + doc.accession);
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.accession + ' | ' + doc.description +  '</div>');
         out.push('</div>');
+        console.log(doc);
       });
       out.push('</div>');
+
       return out.join('');
     },
 
