@@ -8,9 +8,13 @@ A Cytoscape.js extension to provide context menu around elements and core instan
 
 ![Image of extension](example.png)
 
+Please cite the following paper when using this extension:
+
+U. Dogrusoz , A. Karacelik, I. Safarli, H. Balci, L. Dervishi, and M.C. Siper, "[Efficient methods and readily customizable libraries for managing complexity of large networks](https://doi.org/10.1371/journal.pone.0197238)", PLoS ONE, 13(5): e0197238, 2018.
+
 ## Demo
 
-Click [here](https://rawgit.com/iVis-at-Bilkent/cytoscape.js-context-menus/master/demo.html) (simple) or [here](https://rawgit.com/iVis-at-Bilkent/cytoscape.js-context-menus/master/demo-customized.html) (customized) or [here](https://rawgit.com/iVis-at-Bilkent/cytoscape.js-context-menus/master/demo-show-hide-menuitem.html) (with different menu items) for demos
+Click [here](https://ivis-at-bilkent.github.io/cytoscape.js-context-menus/demo.html) (simple) or [here](https://ivis-at-bilkent.github.io/cytoscape.js-context-menus/demo-customized.html) (customized) or [here](https://ivis-at-bilkent.github.io/cytoscape.js-context-menus/demo-show-hide-menuitem.html) (with different menu items) for demos
 
 ## Dependencies
 
@@ -25,7 +29,21 @@ Download the library:
  * via bower: `bower install cytoscape-context-menus`, or
  * via direct download in the repository (probably from a tag).
 
-`require()` the library as appropriate for your project:
+Import the library as appropriate for your project:
+
+ES import:
+
+```js
+import cytoscape from 'cytoscape';
+import $ from 'jquery';
+import contextMenus from 'cytoscape-context-menus';
+
+// register extension
+cytoscape.use(contextMenus, $);
+
+// import CSS as well
+import 'cytoscape-context-menus/cytoscape-context-menus.css';
+```
 
 CommonJS:
 ```js
@@ -38,8 +56,8 @@ contextMenus( cytoscape, jquery ); // register extension
 
 AMD:
 ```js
-require(['cytoscape', 'cytoscape-context-menus', 'jquery'], function( cytoscape, context-menus, jquery ){
-  context-menus( cytoscape, jquery ); // register extension
+require(['cytoscape', 'cytoscape-context-menus', 'jquery'], function( cytoscape, contextMenus, jquery ){
+  contextMenus( cytoscape, jquery ); // register extension
 });
 ```
 
@@ -48,6 +66,9 @@ Plain HTML/JS has the extension registered for you automatically, because no `re
 ## Default Options
 ```js
 var options = {
+    // Customize event to bring up the context menu
+    // Possible options https://js.cytoscape.org/#events/user-input-device-events
+    evtType: 'cxttap',
     // List of initial menu items
     menuItems: [/*
       {

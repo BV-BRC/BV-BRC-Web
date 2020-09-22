@@ -1,8 +1,8 @@
 {
   "_from": "cytoscape-context-menus@^3.0.2",
-  "_id": "cytoscape-context-menus@3.0.6",
+  "_id": "cytoscape-context-menus@3.1.0",
   "_inBundle": false,
-  "_integrity": "sha512-eRsAIg/HYOZOUfTvBK4L0t9ikdRuQULoB8ilB8AZ9D7zGfRjQip/quDH/H20n3IFMe6pb9XYAwVMHWZtlMjR1w==",
+  "_integrity": "sha512-UE7g+zrx43m6WNmkHgiJFUMqxkTHTiciEjufvgSBgyBZOIY/H2U6sSsRtepXukeILs7/8FeHTAbmJRqQsJlpcg==",
   "_location": "/cytoscape-context-menus",
   "_phantomChildren": {},
   "_requested": {
@@ -18,10 +18,10 @@
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-3.0.6.tgz",
-  "_shasum": "a4d9390c1c27424aaa974c9df09f362a4a9c5f9f",
+  "_resolved": "https://registry.npmjs.org/cytoscape-context-menus/-/cytoscape-context-menus-3.1.0.tgz",
+  "_shasum": "82374039f6c55c62ac1bbe5214f917eb013ff43f",
   "_spec": "cytoscape-context-menus@^3.0.2",
-  "_where": "/Users/nc/patric/p3_test_web",
+  "_where": "/Users/nc/patric/p3_web",
   "bugs": {
     "url": "https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus/issues"
   },
@@ -60,5 +60,5 @@
     "main": "cytoscape-context-menus.js"
   },
   "style": "cytoscape-context-menus.css",
-  "version": "3.0.6"
+  "version": "3.1.0"
 }

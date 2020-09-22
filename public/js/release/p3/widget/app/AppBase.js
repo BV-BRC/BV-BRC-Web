@@ -4,13 +4,13 @@ define("p3/widget/app/AppBase", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
-  '../../util/PathJoin',
+  '../../util/PathJoin', 'dojox/xml/parser',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
-  PathJoin,
+  PathJoin, xmlParser,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
@@ -27,6 +27,8 @@ define("p3/widget/app/AppBase", [
     activeWorkspacePath: '',
     help_doc: null,
     activeUploads: [],
+    // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
+    srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmax=10&db=sra&id={0}', // the data we need is in xml string no matter what.
 
     postMixInProperties: function () {
       // use AppLogin.html when requireAuth & user is not logged in
@@ -294,11 +296,111 @@ define("p3/widget/app/AppBase", [
       }
     },
 
+    onAddSRRHelper: function (title) {
+      this.srr_accession.set('state', '');
+      if (!(typeof this.exp_design === 'undefined')) {
+        // For the Rnaseq service.
+        var toIngest = this.exp_design.checked ? this.srrConditionToAttachPt : this.srrToAttachPt;
+        var lrec = { type: 'srr_accession', title: title };
+        console.log('Create New Row', domConstruct);
+      } else if (!(typeof this.srrToAttachPt === 'undefined')) {
+        // For the FastqUtil service.
+        var toIngest = this.srrToAttachPt;
+        var lrec = { type: 'srr_accession', title: title };
+        console.log('Create New Row', domConstruct);
+      } else {
+        // All other services.
+        var toIngest = ['srr_accession'];
+        if (this.applicationName === 'Variation') {
+          var toIngest = { 'srr_accession': null };
+        }
+        var lrec = { _type: 'srr_accession', title: title };
+      }
+      var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+      if (chkPassed) {
+        var infoLabels = {
+          title: { label: 'Title', value: 1 }
+        };
+        this.addLibraryRow(lrec, infoLabels, 'srrdata');
+      } else {
+        throw new Error('Did not pass add library check. ');
+      }
+      this.srr_accession_validation_message.innerHTML = '';
+      this.srr_accession.set('disabled', false);
+      return true;
+    },
+
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
-      var lrec = { _type: 'srr_accession', title: accession };
-      this.ingestAttachPoints(['srr_accession'], lrec);
-      this.addLibraryRow(lrec, {}, 'srrdata');
+      var isrun = false;
+      if (!accession.match(/^[a-z]{3}[0-9]+$/i)) {
+        this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
+      }
+      else {
+        // SRR5121082, ERR3827346, SRX981334
+        this.srr_accession.set('disabled', true);
+        this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
+        var title = '';
+        try {
+          xhr.get(lang.replace(this.srrValidationUrl, [accession]),
+            {
+              sync: false, handleAs: 'xml', headers: { 'X-Requested-With': null }, timeout: 15000
+            }).then(
+            lang.hitch(this, function (xml_resp) {
+              try {
+                title = xml_resp.children[0].children[0].childNodes[3].children[1].childNodes[0].innerHTML;
+              }
+              catch (e) {
+                console.log(xml_resp);
+                console.error('Could not get title from SRA record.  Error: ' + e);
+              }
+              try {
+                xml_resp.children[0].children[0].childNodes.forEach(function (item) {
+                  if (item.nodeName == 'RUN_SET') {
+                    item.childNodes.forEach(function (currentValue) {
+                      if (accession == currentValue.attributes.accession.nodeValue) {
+                        isrun = true;
+                      }
+                    });
+                  }
+                });
+              }
+              catch (e) {
+                console.log(xml_resp);
+                console.error('Could not get run id from SRA record.  Error: ' + e);
+              }
+              if (isrun) {
+                this.onAddSRRHelper(title);
+              } else {
+                this.srr_accession.set('disabled', false);
+                this.srr_accession_validation_message.innerHTML = ' The accession is not a run id.';
+              }
+            }),
+            lang.hitch(this,
+              function (err) {
+                var status = err.response.status;
+                this.srr_accession.set('disabled', false);
+                //                console.log(status);
+                //                console.log(err);
+                if (status >= 400 && status < 500) {
+                  // NCBI eutils gives error code 400 when the accession does not exist.
+                  this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
+                } else if (err.message.startsWith('Timeout exceeded')) {
+                  this.onAddSRRHelper(title);
+                  this.srr_accession_validation_message.innerHTML = ' Timeout exceeded.';
+                } else {
+                  throw new Error('Unhandled SRA validation error.');
+                }
+              })
+          );
+        } catch (e) {
+          console.error(e);
+          this.srr_accession.set('disabled', false);
+          this.srr_accession_validation_message.innerHTML = ' Something went wrong.';
+          // this.srr_accession.set('value', '');
+        }
+      }
     }
+
   });
 });

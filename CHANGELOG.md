@@ -1,4 +1,14 @@
+
 # Changelog
+
+## 3.6.7 - Sept 22, 2020
+
+* [Bug Fix] ID Mapping: fix handling of uniprotkb_accession. [#2370](https://github.com/PATRIC3/patric3_website/issues/2370)
+
+* [Enhancement] TnSeq: add protocol and primer support for transit3 upgrade. [#1002](https://github.com/PATRIC3/p3_web/pull/1002)
+
+* [Enhancement] Improve and enable all SRA validation; add SRA to Variation Service. [#1000](https://github.com/PATRIC3/p3_web/pull/1000), [#1001](https://github.com/PATRIC3/p3_web/pull/1001)
+
 
 ## 3.6.6 - August 14, 2020
 

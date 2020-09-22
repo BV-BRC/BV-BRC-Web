@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/app/templates/Rnaseq.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>${applicationLabel}\n        <div name=\"overview\" class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n        </div>\n        <div class=\"infobox iconbox tutorialButton tutorialInfo\">\n          <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\" ><i class=\"fa icon-books fa-1x\" title=\"click to open tutorial\"></i></a>\n        </div>\n      </h3>\n      <p>${applicationDescription} For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">${applicationLabel} Service User Guide</a>        and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n    </div>\n    <div class=\"formFieldsContainer\">\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numCondWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numContrastWidget\" data-dojo-props=\"constraints:{min:1,max:1000},disabled:false\" />\n      </div>\n      <table class=\"assemblyblocks\" style=\"width:100%\">\n        <tr>\n          <td>\n            <div id=\"pipelineBox\" class=\"appBox appShadow\">\n              <div style=\"width:85%;display:inline-block;\">\n                <label class=\"appBoxLabel\">Parameters</label>\n                <div name=\"parameters\" class=\"infobox iconbox infobutton dialoginfo\">\n                  <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Strategy</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:onStrategyChange\" name=\"recipe\" data-dojo-attach-point=\"recipe\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"RNA-Rocket\">Tuxedo</option>\n                  <option value=\"Host\">Host HISAT2</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appField\">\n                  <label>Target Genome</label><br>\n                  <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"genome_name\" maxHeight=\"200\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"genome_nameWidget\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Folder</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Name</label><span class=\"charError\" style=\"color:red; font-size:8pt; padding-left:10px; font-weight:bold\">&nbsp;</span><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" data-dojo-attach-event=\"onChange:checkOutputName\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div id=\"conditionbox\" class=\"appBox appShadow\" style=\"min-height: 217px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Groups/Conditions</label>\n                <div name=\"groups-conditions\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <!--<div class=\"mblSwRoundShape1\" style=\"margin-bottom:10px\" data-dojo-attach-point=\"exp_design\" data-dojo-attach-event=\"stateChanged:onDesignToggle\" data-dojo-props=\"value:'off'\" style=\"font-size: 13px; width: 80px;\" data-dojo-type=\"dojox/mobile/Switch\"></div>-->\n                <div style=\"margin-left:10px\" data-dojo-attach-point=\"group_switch\" class=\"onoffswitch\">\n                  <input type=\"checkbox\" value=\"off\" name=\"onoffswitch\" class=\"onoffswitch-checkbox\" data-dojo-attach-point=\"exp_design\">\n                  <label class=\"onoffswitch-label\">\n                    <span class=\"onoffswitch-inner\"></span>\n                    <span class=\"onoffswitch-switch\"></span>\n                  </label>\n                </div>\n              </div>\n              <div class=\"appRow\" style=\"width:270px; padding-left:10px; padding-right:40px;\" data-dojo-attach-point=\"advrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"condition\" data-dojo-attach-point=\"condition\" required=\"false\" data-dojo-props=\"disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'\"></div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddCondition\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"condTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"condTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n        <tr>\n          <td>\n            <div id=\"pairedBox\" class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\"> Paired read library</label>\n                  <div name=\"paired-read-library\" class=\"infobox iconbox infobutton dialoginfo\">\n                    <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                  </div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddPair\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File 1</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <div data-dojo-attach-point=\"read2block\">\n                  <label class=\"paramlabel\">Read File 2</label><br>\n                  <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_paired\" data-dojo-attach-point=\"condition_paired\" style=\"width:300px\" required=\"false\" data-dojo-props=\"disabled: true,labelType:'html', searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">Single read library</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"read\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_single\" data-dojo-attach-point=\"condition_single\" style=\"width:300px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">SRA run accession <small>(Temporarily Disabled)</small></label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSRR\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">SRR Accession</label><br>\n                <div data-dojo-type=\"dijit/form/ValidationTextBox\" data-dojo-attach-event=\"onChange:updateSRR\" data-dojo-attach-point=\"srr_accession\" style=\"width: 300px\" required=\"false\" data-dojo-props=\"disabled: true,intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_srr\" data-dojo-attach-point=\"condition_srr\" style=\"width:300px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div class=\"appBox appShadow\" style=\"min-height: 320px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Selected libraries</label>\n                <div name=\"selected-libraries\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n                <div class=\"appsublabel\">Place read files here using the arrow buttons.</div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"libsTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n          </td>\n        </tr>\n        <tr>\n          <td colspan=\"2\">\n            <div class=\"appBox appShadow\" style=\"padding-left: 38px; min-height: 217px; height:auto; width:660px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Contrasts </label>\n                <div name=\"contrasts\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-info-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appRowSegment\" style=\"text-align: left;\">\n                  <label class=\"paramlabel\">Condition 1</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd1\" data-dojo-attach-point=\"contrast_cd1\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div class=\"appRowSegment\" style=\"text-align: left\">\n                  <label class=\"paramlabel\">Condition 2</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd2\" data-dojo-attach-point=\"contrast_cd2\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div style=\"width:10%;display:inline-block;margin-left:10px\"><i data-dojo-attach-event=\"click:onAddContrast\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"contrastTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"contrastTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n      </table>\n    </div>\n    <div class=\"appSubmissionArea\">\n      <div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n        Submitting RNA-Seq job\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n        RNA-Seq job has been queued.\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n        <div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Assembly Job</div>\n        <p data-dojo-attach-point=\"errorMessage\">Error</p>\n      </div>\n      <div style=\"margin-top: 10px; text-align:center;\">\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel\n        </div>\n        <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n        <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
+'url:p3/widget/app/templates/Rnaseq.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\" dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n  <div class=\"appTemplate\">\n    <div class=\"appTitle\">\n      <span class=\"breadcrumb\">Services</span>\n      <h3>${applicationLabel}\n        <div name=\"overview\" class=\"infobox iconbox infobutton dialoginfo\">\n          <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n        </div>\n        <div class=\"infobox iconbox tutorialButton tutorialInfo\">\n          <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\" ><i class=\"fa icon-books fa-1x\" title=\"click to open tutorial\"></i></a>\n        </div>\n      </h3>\n      <p>${applicationDescription} For further explanation, please see <a href=\"${docsServiceURL}${applicationHelp}\" target=\"_blank\">${applicationLabel} Service User Guide</a>        and\n        <a href=\"${docsServiceURL}${tutorialLink}\" target=\"_blank\">Tutorial</a>.\n      </p>\n    </div>\n    <div class=\"formFieldsContainer\">\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numCondWidget\" data-dojo-props=\"constraints:{min:1,max:1000},\" />\n      </div>\n      <div style=\"display: none;\">\n        <input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"1\" required=\"true\" data-dojo-attach-point=\"numContrastWidget\" data-dojo-props=\"constraints:{min:1,max:1000},disabled:false\" />\n      </div>\n      <table class=\"assemblyblocks\" style=\"width:100%\">\n        <tr>\n          <td>\n            <div id=\"pipelineBox\" class=\"appBox appShadow\">\n              <div style=\"width:85%;display:inline-block;\">\n                <label class=\"appBoxLabel\">Parameters</label>\n                <div name=\"parameters\" class=\"infobox iconbox infobutton dialoginfo\">\n                  <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Strategy</label><br>\n                <select data-dojo-type=\"dijit/form/Select\" data-dojo-attach-event=\"onChange:onStrategyChange\" name=\"recipe\" data-dojo-attach-point=\"recipe\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n                  <option value=\"RNA-Rocket\">Tuxedo</option>\n                  <option value=\"Host\">Host HISAT2</option>\n                </select>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appField\">\n                  <label>Target Genome</label><br>\n                  <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"genome_name\" maxHeight=\"200\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"genome_nameWidget\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Folder</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Output Name</label><span class=\"charError\" style=\"color:red; font-size:8pt; padding-left:10px; font-weight:bold\">&nbsp;</span><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" data-dojo-attach-event=\"onChange:checkOutputName\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div id=\"conditionbox\" class=\"appBox appShadow\" style=\"min-height: 217px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Groups/Conditions</label>\n                <div name=\"groups-conditions\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <!--<div class=\"mblSwRoundShape1\" style=\"margin-bottom:10px\" data-dojo-attach-point=\"exp_design\" data-dojo-attach-event=\"stateChanged:onDesignToggle\" data-dojo-props=\"value:'off'\" style=\"font-size: 13px; width: 80px;\" data-dojo-type=\"dojox/mobile/Switch\"></div>-->\n                <div style=\"margin-left:10px\" data-dojo-attach-point=\"group_switch\" class=\"onoffswitch\">\n                  <input type=\"checkbox\" value=\"off\" name=\"onoffswitch\" class=\"onoffswitch-checkbox\" data-dojo-attach-point=\"exp_design\">\n                  <label class=\"onoffswitch-label\">\n                    <span class=\"onoffswitch-inner\"></span>\n                    <span class=\"onoffswitch-switch\"></span>\n                  </label>\n                </div>\n              </div>\n              <div class=\"appRow\" style=\"width:270px; padding-left:10px; padding-right:40px;\" data-dojo-attach-point=\"advrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"condition\" data-dojo-attach-point=\"condition\" required=\"false\" data-dojo-props=\"disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'\"></div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddCondition\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"condTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"condTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n        <tr>\n          <td>\n            <div id=\"pairedBox\" class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\"> Paired read library</label>\n                  <div name=\"paired-read-library\" class=\"infobox iconbox infobutton dialoginfo\">\n                    <i class=\"fa icon-info-circle fa\" title=\"click to open info dialog\"></i>\n                  </div>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddPair\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File 1</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <div data-dojo-attach-point=\"read2block\">\n                  <label class=\"paramlabel\">Read File 2</label><br>\n                  <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n                </div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_paired\" data-dojo-attach-point=\"condition_paired\" style=\"width:300px\" required=\"false\" data-dojo-props=\"disabled: true,labelType:'html', searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">Single read library</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Read File</label><br>\n                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"read\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['reads'],multi:false\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_single\" data-dojo-attach-point=\"condition_single\" style=\"width:300px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n            <div class=\"appBox appShadow\">\n              <div class=\"headerrow\">\n                <div style=\"width:85%;display:inline-block;\">\n                  <label class=\"appBoxLabel\">SRA run accession</label>\n                </div>\n                <div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSRR\" class=\"fa icon-arrow-circle-o-right fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">SRR Accession</label><br><i data-dojo-attach-point=\"srr_accession_validation_message\"></i><br>\n                <div data-dojo-type=\"dijit/form/ValidationTextBox\" data-dojo-attach-event=\"onChange:updateSRR\" data-dojo-attach-point=\"srr_accession\" style=\"width: 300px\" required=\"false\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'\"></div>\n              </div>\n              <div class=\"appRow\">\n                <label class=\"paramlabel\">Condition</label><br>\n                <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"condition_srr\" data-dojo-attach-point=\"condition_srr\" style=\"width:300px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                </select>\n              </div>\n            </div>\n          </td>\n          <td>\n            <div class=\"appBox appShadow\" style=\"min-height: 320px; height:auto; width:330px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Selected libraries</label>\n                <div name=\"selected-libraries\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-question-circle fa\"></i>\n                </div>\n                <br>\n                <div class=\"appsublabel\">Place read files here using the arrow buttons.</div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"libsTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n          </td>\n        </tr>\n        <tr>\n          <td colspan=\"2\">\n            <div class=\"appBox appShadow\" style=\"padding-left: 38px; min-height: 217px; height:auto; width:660px\">\n              <div class=\"headerrow\">\n                <label class=\"appBoxLabel\">Contrasts </label>\n                <div name=\"contrasts\" class=\"infobox iconbox infobutton tooltipinfo\">\n                  <i class=\"fa icon-info-circle fa\"></i>\n                </div>\n                <br>\n              </div>\n              <div class=\"appRow\">\n                <div class=\"appRowSegment\" style=\"text-align: left;\">\n                  <label class=\"paramlabel\">Condition 1</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd1\" data-dojo-attach-point=\"contrast_cd1\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div class=\"appRowSegment\" style=\"text-align: left\">\n                  <label class=\"paramlabel\">Condition 2</label><br>\n                  <select data-dojo-type=\"dijit/form/FilteringSelect\" name=\"contrast_cd2\" data-dojo-attach-point=\"contrast_cd2\" style=\"width:250px\" required=\"false\" data-dojo-props=\"labelType:'html',disabled: true,searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'\">\n                  </select>\n                </div>\n                <div style=\"width:10%;display:inline-block;margin-left:10px\"><i data-dojo-attach-event=\"click:onAddContrast\" class=\"fa icon-plus-circle fa-lg\"></i></div>\n              </div>\n              <div class=\"appRow\" style=\"width:100%; margin-top:10px; text-align: center;\">\n                <table class=\"librarytable disabled\" frame=\"box\" data-dojo-attach-point=\"contrastTable\" style=\"margin:0 0 0 10px; width:90%;\">\n                  <tbody data-dojo-attach-point=\"contrastTableBody\">\n                  </tbody>\n                </table>\n              </div>\n            </div>\n            <!-- <div data-dojo-attach-point=\"block_condition\" data-dojo-type=\"dojox.widget.Standby\" data-dojo-props=\"opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'\"></div> -->\n          </td>\n        </tr>\n      </table>\n    </div>\n    <div class=\"appSubmissionArea\">\n      <div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n        Submitting RNA-Seq job\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n        RNA-Seq job has been queued.\n      </div>\n      <div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n        <div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Assembly Job</div>\n        <p data-dojo-attach-point=\"errorMessage\">Error</p>\n      </div>\n      <div style=\"margin-top: 10px; text-align:center;\">\n        <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel\n        </div>\n        <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n        <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Submit</div>\n      </div>\n    </div>\n  </div>\n</form>\n"}});
 define("p3/widget/app/Rnaseq", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class',
@@ -34,8 +34,6 @@ define("p3/widget/app/Rnaseq", [
     initContrasts: 8,
     maxConditions: 10,
     maxContrasts: 100,
-    conditionStore: null,
-    srrValidationUrl: 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     hostGenomes: {
       9606.33: '', 6239.6: '', 7955.5: '', 7227.4: '', 9031.4: '', 9544.2: '', 10090.24: '', 9669.1: '', 10116.5: '', 9823.5: ''
     },
@@ -48,7 +46,6 @@ define("p3/widget/app/Rnaseq", [
     },
 
     constructor: function () {
-
       this.addedLibs = { counter: 0 };
       this.addedCond = { counter: 0 };
       this.addedContrast = { counter: 0 };
@@ -160,79 +157,6 @@ define("p3/widget/app/Rnaseq", [
       }
     },
 
-    onAddSRR: function () {
-      console.log('Create New Row', domConstruct);
-      var toIngest = this.exp_design.checked ? this.srrConditionToAttachPt : this.srrToAttachPt;
-      var accession = this.srr_accession.get('value');
-      // console.log("updateSRR", accession, accession.substr(0, 3))
-      // var prefixList = ['SRR', 'ERR']
-      // if(prefixList.indexOf(accession.substr(0, 3)) == -1){
-      //   this.srr_accession.set("state", "Error")
-      //   return false;
-      // }
-
-      // TODO: validate and populate title
-      // SRR5121082
-      this.srr_accession.set('disabled', true);
-      xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-        .then(lang.hitch(this, function (xml_resp) {
-          var resp = xmlParser.parse(xml_resp).documentElement;
-          this.srr_accession.set('disabled', false);
-          try {
-            var title = resp.children[0].childNodes[3].innerHTML;
-
-            this.srr_accession.set('state', '');
-            var lrec = { type: 'srr_accession', title: title };
-
-            var chkPassed = this.ingestAttachPoints(toIngest, lrec);
-            if (chkPassed) {
-              var infoLabels = {
-                title: { label: 'Title', value: 1 }
-              };
-              var tr = this.libsTable.insertRow(0);
-              lrec.row = tr;
-              // this code needs to be refactored to use addLibraryRow like the Assembly app
-              var td = domConstruct.create('td', { 'class': 'textcol srrdata', innerHTML: '' }, tr);
-              td.libRecord = lrec;
-              td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('srr_accession') + '</div>';
-              this.addLibraryInfo(lrec, infoLabels, tr);
-              var advPairInfo = [];
-              if (lrec.condition) {
-                advPairInfo.push('Condition:' + lrec.condition);
-              }
-              if (advPairInfo.length) {
-                lrec.design = true;
-                var condition_icon = this.getConditionIcon(lrec.condition);
-                var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-                new Tooltip({
-                  connectId: [tdinfo],
-                  label: advPairInfo.join('</br>')
-                });
-              }
-              else {
-                lrec.design = false;
-                var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
-              }
-              var td2 = domConstruct.create('td', {
-                'class': 'iconcol',
-                innerHTML: "<i class='fa icon-x fa-1x' />"
-              }, tr);
-              if (this.addedLibs.counter < this.startingRows) {
-                this.libsTable.deleteRow(-1);
-              }
-              var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-                this.destroyLib(lrec, lrec.id, 'id');
-              }));
-              lrec.handle = handle;
-              this.createLib(lrec);
-              this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
-            }
-          } catch (e) {
-            this.srr_accession.set('state', 'Error');
-            console.debug(e);
-          }
-        }));
-    },
     addLibraryInfo: function (lrec, infoLabels, tr) {
       var advInfo = [];
       // fill out the html of the info mouse over
@@ -272,6 +196,46 @@ define("p3/widget/app/Rnaseq", [
     updateSRR: function () {
     },
 
+    addLibraryRow: function (lrec, infoLabels, mode) {
+
+      var tr = this.libsTable.insertRow(0);
+      lrec.row = tr;
+      // this code needs to be refactored to use addLibraryRow like the Assembly app
+      var td = domConstruct.create('td', { 'class': 'textcol srrdata', innerHTML: '' }, tr);
+      td.libRecord = lrec;
+      td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('srr_accession') + '</div>';
+      this.addLibraryInfo(lrec, infoLabels, tr);
+      var advPairInfo = [];
+      if (lrec.condition) {
+        advPairInfo.push('Condition:' + lrec.condition);
+      }
+      if (advPairInfo.length) {
+        lrec.design = true;
+        var condition_icon = this.getConditionIcon(lrec.condition);
+        var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
+        new Tooltip({
+          connectId: [tdinfo],
+          label: advPairInfo.join('</br>')
+        });
+      }
+      else {
+        lrec.design = false;
+        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+      }
+      var td2 = domConstruct.create('td', {
+        'class': 'iconcol',
+        innerHTML: "<i class='fa icon-x fa-1x' />"
+      }, tr);
+      if (this.addedLibs.counter < this.startingRows) {
+        this.libsTable.deleteRow(-1);
+      }
+      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+        this.destroyLib(lrec, lrec.id, 'id');
+      }));
+      lrec.handle = handle;
+      this.createLib(lrec);
+      this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+    },
 
     emptyTable: function (target, rowLimit, colNum) {
       for (var i = 0; i < rowLimit; i++) {
@@ -320,7 +284,6 @@ define("p3/widget/app/Rnaseq", [
         });
         assembly_values.contrasts = contrastPairs;
       }
-
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
@@ -367,8 +330,8 @@ define("p3/widget/app/Rnaseq", [
         assembly_values['host_ftp'] = this.genome_nameWidget.item['ftp'];
       }
       return assembly_values;
-
     },
+
     // gets values from dojo attach points listed in input_ptsi keys.
     // aliases them to input_pts values.  validates all values present if req
     ingestAttachPoints: function (input_pts, target, req) {
@@ -440,10 +403,12 @@ define("p3/widget/app/Rnaseq", [
       }, this);
       return (success);
     },
+
     showConditionLabels: function (item, store) {
       var label = item.condition + ' ' + item.icon;
       return label;
     },
+
     makeLibraryName: function (mode) {
       switch (mode) {
         case 'paired':
@@ -471,6 +436,7 @@ define("p3/widget/app/Rnaseq", [
           return '';
       }
     },
+
     makeStoreID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
@@ -521,12 +487,14 @@ define("p3/widget/app/Rnaseq", [
         counterWidget.set('value', Number(counter.counter));
       }
     },
+
     decreaseRows: function (targetTable, counter, counterWidget) {
       counter.counter -= 1;
       if (typeof counterWidget != 'undefined') {
         counterWidget.set('value', Number(counter.counter));
       }
     },
+
     getConditionIcon: function (query_id) {
       var result = '';
       if (!query_id) {
@@ -689,7 +657,6 @@ define("p3/widget/app/Rnaseq", [
       }
     },
 
-
     createLib: function (lrec) {
       this.libraryStore.put(lrec);
       if (lrec.condition) {
@@ -739,7 +706,6 @@ define("p3/widget/app/Rnaseq", [
         this.contrast_cd2.reset();
       }
     },
-
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
@@ -834,7 +800,6 @@ define("p3/widget/app/Rnaseq", [
     onStrategyChange: function () {
       this.onDesignToggle();
     },
-
 
     onSuggestNameChange: function () {
       var curRecipe = this.recipe.value;
