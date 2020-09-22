@@ -263,7 +263,7 @@ define([
       var checkFeatureIDs = [];
       var checkGeneIDs = [];
       for (i = 0; i < numColumns; i++) {
-        // check the first 50 rows to see if this column contains gene_id, skip the first row because it may contain headers
+        // check the first 20 rows to see if this column contains gene_id, skip the first row because it may contain headers
 
         for (j = 1; j < 20 && j < data.length; j++) {
 
@@ -354,9 +354,24 @@ define([
             });
 
             // detection of feature(s) if over 90%
-            if (featureCounts.responseCount/featureCounts.featureCount > .90) {
+            if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
               this.containerType = 'csvFeature';
+
+              _self.actionPanel._actions.ViewFeatureItem.options.disabled = true;
               
+              _self.actionPanel.addAction('Test', 'fa icon-pencil-square-o fa-2x', {
+                label: 'TEST',
+                validTypes: ['*'],
+                validContainerTypes: ['csvFeature'],
+                //disabled: true,
+                tooltip: 'Rename has been <b>temporarily disabled</b><br>while we address a technical issue.'
+              }, function (sel) {
+
+              }, false);
+
+              // ********DEV
+              Topic.publish('changeActionPanel', _self.actionPanel);
+
             }
             
           }

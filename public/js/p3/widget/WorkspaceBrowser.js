@@ -1427,6 +1427,16 @@ define([
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
+
+                  // ******DEV
+                  /*
+                  Topic.subscribe('changeActionPanel', function (actionPanel) {
+                    //if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
+                    _self.actionPanel = newPanel.actionPanel;
+                    self.removeChild(this.actionPanel);
+                    self.addChild(this.actionPanel);
+                  });
+                  */
     },
 
     showPermDialog: function (selection) {
@@ -1791,11 +1801,20 @@ define([
 
             //newPanel.actionPanel = this.actionPanel;
             if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
+            
+                          // ******DEV
+                          
+                          Topic.subscribe('changeActionPanel', function (actionPanel) {
+                            //if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
+                            _self.actionPanel = newPanel.actionPanel;
+                            //_self.getParent().removeChild(this.actionPanel);
+                            //_self.getParent().addChild(this.actionPanel);
+                          });
 
             if (this.actionPanel) {
               //newPanel.actionPanel = this.actionPanel;
               this.actionPanel.set('currentContainerWidget', newPanel);
-              this.itemDetailPanel.set('containerWidget', newPanel);
+              this.itemDetailPanel.set('containerWidget', newPanel);              
             }
 
             if (newPanel.on) {
