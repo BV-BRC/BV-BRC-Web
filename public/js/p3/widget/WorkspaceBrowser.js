@@ -1802,14 +1802,12 @@ define([
             //newPanel.actionPanel = this.actionPanel;
             if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
             
-                          // ******DEV
-                          
-                          Topic.subscribe('changeActionPanel', function (actionPanel) {
-                            //if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
-                            _self.actionPanel = newPanel.actionPanel;
-                            //_self.getParent().removeChild(this.actionPanel);
-                            //_self.getParent().addChild(this.actionPanel);
-                          });
+            // ******DEV
+            
+            Topic.subscribe('changeActionPanel', function (actionPanel) {
+              _self.actionPanel.set('selection', []);
+              _self.actionPanel.set('currentContainerWidget', newPanel);
+            });
 
             if (this.actionPanel) {
               //newPanel.actionPanel = this.actionPanel;

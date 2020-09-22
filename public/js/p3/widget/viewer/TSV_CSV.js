@@ -359,15 +359,6 @@ define([
 
               _self.actionPanel._actions.ViewFeatureItem.options.disabled = true;
               
-              _self.actionPanel.addAction('Test', 'fa icon-pencil-square-o fa-2x', {
-                label: 'TEST',
-                validTypes: ['*'],
-                validContainerTypes: ['csvFeature'],
-                //disabled: true,
-                tooltip: 'Rename has been <b>temporarily disabled</b><br>while we address a technical issue.'
-              }, function (sel) {
-
-              }, false);
 
               // ********DEV
               Topic.publish('changeActionPanel', _self.actionPanel);
