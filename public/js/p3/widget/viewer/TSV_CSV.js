@@ -4,14 +4,16 @@ define([
   '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
-  '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dojo/NodeList-traverse'
+  '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup', 
+  '../PerspectiveToolTip'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
   TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
   array, selector, lang, TsvCsvStore, 
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
-  tsvCsvFeatures, request, PathJoin
+  tsvCsvFeatures, request, PathJoin, popup, 
+  PerspectiveToolTipDialog
 ) {
 
   return declare([ViewerBase], {    // was BorderContainer
@@ -262,6 +264,7 @@ define([
       var numColumns = Object.keys(data[0]).length;
       var checkFeatureIDs = [];
       var checkGeneIDs = [];
+
       for (i = 0; i < numColumns; i++) {
         // check the first 20 rows to see if this column contains gene_id, skip the first row because it may contain headers
 
@@ -272,13 +275,11 @@ define([
             var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
             var elementPos = checkFeatureIDs.map(function(x) {return x.feature; }).indexOf(featureString);
             if (elementPos === -1) {
-              //var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
-              checkFeatureIDs.push({columns: [i], feature: (featureString)});
-              //checkFeatureIDs.push({[featureString]: [i]});
+              checkFeatureIDs.push({columns: [Object.keys(data[j])[i]], feature: (featureString)});
             }
             else {
-              if (checkFeatureIDs[elementPos].columns.indexOf(i) == -1) {
-                checkFeatureIDs[elementPos].columns.push(i);
+              if (checkFeatureIDs[elementPos].columns.indexOf(Object.keys(data[j])[i]) == -1) {
+                checkFeatureIDs[elementPos].columns.push(Object.keys(data[j])[i]);
               }
             }
           }
@@ -289,11 +290,11 @@ define([
           if (geneMatch) {
             var elementPos = checkGeneIDs.map(function(x) {return x.geneID; }).indexOf(geneMatch[0]);
             if (elementPos === -1) {
-              checkGeneIDs.push({columns: [i], geneID: geneMatch[0]});
+              checkGeneIDs.push({columns: [Object.keys(data[j])[i]], geneID: geneMatch[0]});
             }
             else {
-              if (checkGeneIDs[elementPos].columns.indexOf(i) == -1) {
-                checkGeneIDs[elementPos].columns.push(i);
+              if (checkGeneIDs[elementPos].columns.indexOf(Object.keys(data[j])[i]) == -1) {
+                checkGeneIDs[elementPos].columns.push(Object.keys(data[j])[i]);
               }
             }
           }
@@ -326,9 +327,9 @@ define([
             checkFeatureIDs.forEach(function (item) {
               var cols = item.columns;
               cols.forEach (function (colItem) {
-                var elementPos = featureCounts.map(function(x) {return x.columnNum; }).indexOf(colItem);
+                var elementPos = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
                 if (elementPos === -1) {
-                  featureCounts.push ({ columnNum: colItem, featureCount: 1 });
+                  featureCounts.push ({ columnName: colItem, featureCount: 1 });
                 }
                 else {
                   featureCounts[elementPos]['featureCount']++;
@@ -342,7 +343,7 @@ define([
                  //get cols and find them in featureCounts, add or increment responseCount
                 var cols = checkFeatureIDs[elementPos].columns;
                 cols.forEach (function (colItem) {
-                  var countPosition = featureCounts.map(function(x) {return x.columnNum; }).indexOf(colItem);
+                  var countPosition = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
                   if (featureCounts[countPosition]['responseCount']) {
                     featureCounts[countPosition]['responseCount']++;
                   }
@@ -355,10 +356,63 @@ define([
 
             // detection of feature(s) if over 90%
             if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
-              this.containerType = 'csvFeature';
-
-              _self.actionPanel._actions.ViewFeatureItem.options.disabled = true;
+              _self.containerType = 'csvFeature';
               
+              /***************************** */
+              _self.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
+                label: 'FEATURE',
+                validTypes: ['*'],
+                validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+                multiple: false,
+                tooltip: 'Switch to Feature View.  Press and Hold for more options.',
+                pressAndHold: function(selection, button, opts, evt) {
+                  var columnName = featureCounts[0].columnName;
+                  if (columnName in selection[0]) {
+                    var sel = (selection[0][columnName]).replace("|", "%7C");      
+                    var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
+          
+                    request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+                      handleAs: 'json',
+                      headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                        'X-Requested-With': null,
+                        Authorization: (window.App.authorizationToken || '')
+                      
+                      }
+                    }) .then(function(response){
+                      popup.open ({
+                        popup: new PerspectiveToolTipDialog ({
+                          perspective: 'Feature',
+                          perspectiveUrl: '/view/Feature/' + response[0].feature_id
+                        }),
+                        around: button,
+                        orient: ['below']
+                      });
+                    }); 
+                  }
+                }
+              
+              }, function (selection) {
+                var columnName = featureCounts[0].columnName;      
+                if (columnName in selection[0]) {   
+                  var sel = (selection[0][columnName]).replace("|", "%7C");  
+                  var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
+
+                  request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+                    handleAs: 'json',
+                    headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                      'X-Requested-With': null,
+                      Authorization: (window.App.authorizationToken || '')
+                    
+                    }
+                  }).then( function(response){
+                    Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+                  }); 
+                }       
+              });
 
               // ********DEV
               Topic.publish('changeActionPanel', _self.actionPanel);
