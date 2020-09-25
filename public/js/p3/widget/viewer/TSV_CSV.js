@@ -143,6 +143,9 @@ define([
         return;
       }
 
+      // ****DEV may not need this
+      this.containerType = '';
+
       var filterPanel = new ContentPane({
         region: 'top',
         style: {display: 'inline-block', 'vertical-align': 'top'}
@@ -259,8 +262,14 @@ define([
     },
 
     checkForGenomeIDs: function (data) {
+
       //console.log(data);
       _self = this;
+
+      // clear out the last used action panel buttons and start again
+      _self.containerType = '';
+      Topic.publish('changeActionPanel', _self.actionPanel);
+
       var numColumns = Object.keys(data[0]).length;
       var checkFeatureIDs = [];
       var checkGeneIDs = [];
@@ -356,9 +365,11 @@ define([
 
             // detection of feature(s) if over 90%
             if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
+
               _self.containerType = 'csvFeature';
+              _self.actionPanel._actions['ViewFeatureItem'].options.disabled = true;
               
-              /***************************** */
+              
               _self.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
                 label: 'FEATURE',
                 validTypes: ['*'],
@@ -414,7 +425,6 @@ define([
                 }       
               });
 
-              // ********DEV
               Topic.publish('changeActionPanel', _self.actionPanel);
 
             }
@@ -446,6 +456,8 @@ define([
         });
       }      
       //}  // end for each column
+
+      this.isActionPanelSet = true;
     },
 
     formatFileMetaData: function (showMetaDataRows) {

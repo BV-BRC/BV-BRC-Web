@@ -1427,16 +1427,6 @@ define([
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
-
-                  // ******DEV
-                  /*
-                  Topic.subscribe('changeActionPanel', function (actionPanel) {
-                    //if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
-                    _self.actionPanel = newPanel.actionPanel;
-                    self.removeChild(this.actionPanel);
-                    self.addChild(this.actionPanel);
-                  });
-                  */
     },
 
     showPermDialog: function (selection) {
