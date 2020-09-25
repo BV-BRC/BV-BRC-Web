@@ -309,6 +309,7 @@ define([
           }
         }  // end for rows
       }  // end for each column
+
       if (checkFeatureIDs.length > 0) {
         var featureList = checkFeatureIDs.map(function(item) {
           return item.feature;
@@ -436,6 +437,7 @@ define([
         var geneIDList = checkGeneIDs.map(function(item) {
           return item.geneID;
         }).join(",");
+
         query = '?in(genome_id,(' + geneIDList + '))&select(genome_id)';    
         request.get(PathJoin(window.App.dataAPI, 'genome', query), {
           handleAs: 'json',
@@ -449,9 +451,112 @@ define([
         }).then(function (response) {
           console.log ("in response");
           if (response.response.numFound > 0) {
-            _self.set('containerType', 'csvFeature');
-            _self.set('userDefinedGeneIDHeader', i)   // column number that contains gene id
-            // must specify column
+
+            var geneIDResponses = [];
+            response.response.docs.forEach(function (item) {
+              geneIDResponses.push (item.genome_id.match(/\d+\.\d+/)[0]);
+            });
+
+            var geneIDCounts = [];
+            checkGeneIDs.forEach(function (item) {
+              var cols = item.columns;
+              cols.forEach (function (colItem) {
+                var elementPos = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+                if (elementPos === -1) {
+                  geneIDCounts.push ({ columnName: colItem, geneIDCount: 1 });
+                }
+                else {
+                  geneIDCounts[elementPos]['geneIDCount']++;
+                }
+              });
+            });
+
+            geneIDResponses.forEach(function (item) {
+              var elementPos = checkGeneIDs.map(function(x) {return x.geneID.match(/\d+\.\d+/)[0]; }).indexOf(item);
+              if (elementPos > -1) {
+                 //get cols and find them in featureCounts, add or increment responseCount
+                var cols = checkGeneIDs[elementPos].columns;
+                cols.forEach (function (colItem) {
+                  var countPosition = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+                  if (geneIDCounts[countPosition]['responseCount']) {
+                    geneIDCounts[countPosition]['responseCount']++;
+                  }
+                  else {
+                    geneIDCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
+                  }
+                })                
+              }
+            });
+
+            // detection of genome(s) if over 90%
+            if (geneIDCounts[0].responseCount/geneIDCounts[0].geneIDCount > .90) {
+
+              _self.containerType = 'csvFeature';
+              _self.actionPanel._actions['ViewGenomeItem'].options.disabled = true;
+              
+              _self.actionPanel.addAction('ViewGenomeItem', 'MultiButton fa icon-selection-Genome fa-2x', {
+                label: 'GENOME',
+                validTypes: ['*'],
+                ignoreDataType: true,
+                validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+                multiple: false,
+                tooltip: 'Switch to Genome View.  Press and Hold for more options.',
+                pressAndHold: function(selection, button, opts, evt) {
+                  var columnName = geneIDCounts[0].columnName;
+                  if (selection[0][columnName]) {
+                    //var sel = (selection[0][columnName]).replace("|", "%7C");    
+                    var sel = (selection[0][columnName]).match(/\d+\.\d+/);  
+                    var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
+          
+                    request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+                      handleAs: 'json',
+                      headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                        'X-Requested-With': null,
+                        Authorization: (window.App.authorizationToken || '')
+                      
+                      }
+                    }).then(function(response){
+                      popup.open ({
+                        popup: new PerspectiveToolTipDialog ({
+                          perspective: 'Genome',
+                          perspectiveUrl: '/view/Genome/' + response[0].genome_id
+                        }),
+                        around: button,
+                        orient: ['below']
+                      });
+                    }); 
+                  }
+                },
+              
+              }, function (selection) {
+                var columnName = geneIDCounts[0].columnName;
+                if (selection[0][columnName]) {
+                  //var sel = (selection[0][columnName]).replace("|", "%7C");  
+                  var sel = (selection[0][columnName]).match(/\d+\.\d+/);     
+                  var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
+        
+                  request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+                    handleAs: 'json',
+                    headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                      'X-Requested-With': null,
+                      Authorization: (window.App.authorizationToken || '')
+                    
+                    }
+                  }).then(function(response){
+                    Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id })
+                  }); 
+                }       
+              }); 
+              Topic.publish('changeActionPanel', _self.actionPanel);
+
+            }  // end if genome counts greater than .90
+
+
+
           }
         });
       }      
