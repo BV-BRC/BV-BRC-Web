@@ -48,6 +48,7 @@ define([
 
         // For tsv/csv displays, we need to disable the FEATURE(S) and GENOME(S) buttons when
         // the tables do not have the right features.
+        /*
         var _self = this;
         var keyList = Object.keys(tsvCsvFeatures);
         var columnName = '';
@@ -63,14 +64,8 @@ define([
           }
         });
 
-        // if suffix was not found in tsvCsvFeatures, then this is a user imported custom table.
-        // Does it have auto-detected feature column?
-        //if (this.userDefinedTable && val.data) {        
-          
-        //}
-
         this.set('containerType', newType);
-
+*/
         this.refresh();
       }
     },
@@ -143,7 +138,6 @@ define([
         return;
       }
 
-      // ****DEV may not need this
       this.containerType = '';
 
       var filterPanel = new ContentPane({
@@ -183,7 +177,6 @@ define([
       };
       on(selector, 'change', function (val) {
         self.filters.column = val;
-        //Topic.publish('/ColumnFilter', self.filters);
       });
 
       // initialize app filters
@@ -195,12 +188,9 @@ define([
       items.unshift({'label': "All Columns", 'value': "All Columns"}); // add an All Columns option to the top of the list
       selector.set('options', items).reset();
 
-      //var spacer = domConstruct.create('span', {style: {'title': '     ', 'width': '10000px'} });
-
       domConstruct.place(downld, filterPanel.containerNode, 'last');
       domConstruct.place(label_keyword, filterPanel.containerNode, 'last');
       domConstruct.place(ta_keyword.domNode, filterPanel.containerNode, 'last');
-      //domConstruct.place(spacer, filterPanel.containerNode, 'last');
       domConstruct.place(selector.domNode, filterPanel.containerNode, 'last');
 
       var btn_reset = new Button({
@@ -209,7 +199,6 @@ define([
 
           ta_keyword.set('value', '');
           selector.set('value', "All Columns");
-          //filter.columnSelection = selector.get('value');
           var filter = {};
           filter.keyword = '';
           filter.columnSelection = "All Columns";
@@ -276,7 +265,6 @@ define([
 
       for (i = 0; i < numColumns; i++) {
         // check the first 20 rows to see if this column contains gene_id, skip the first row because it may contain headers
-
         for (j = 1; j < 20 && j < data.length; j++) {
 
           // if this cell contains a feature id
@@ -367,9 +355,7 @@ define([
             // detection of feature(s) if over 90%
             if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
 
-              _self.containerType = 'csvFeature';
-              _self.actionPanel._actions['ViewFeatureItem'].options.disabled = true;
-              
+              _self.containerType = 'csvFeature';              
               
               _self.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
                 label: 'FEATURE',
@@ -577,7 +563,6 @@ define([
             if (geneIDCounts[0].responseCount/geneIDCounts[0].geneIDCount > .90) {
 
               _self.containerType = 'csvFeature';
-              _self.actionPanel._actions['ViewGenomeItem'].options.disabled = true;
               
               _self.actionPanel.addAction('ViewGenomeItem', 'MultiButton fa icon-selection-Genome fa-2x', {
                 label: 'GENOME',
@@ -589,7 +574,6 @@ define([
                 pressAndHold: function(selection, button, opts, evt) {
                   var columnName = geneIDCounts[0].columnName;
                   if (selection[0][columnName]) {
-                    //var sel = (selection[0][columnName]).replace("|", "%7C");    
                     var sel = (selection[0][columnName]).match(/\d+\.\d+/);  
                     var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
           
@@ -617,8 +601,7 @@ define([
               
               }, function (selection) {
                 var columnName = geneIDCounts[0].columnName;
-                if (selection[0][columnName]) {
-                  //var sel = (selection[0][columnName]).replace("|", "%7C");  
+                if (selection[0][columnName]) { 
                   var sel = (selection[0][columnName]).match(/\d+\.\d+/);     
                   var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
         
@@ -651,9 +634,7 @@ define([
                   } else {
                     var q = selection.map(function (sel) {
                       if (sel[columnName]) {
-                        //return (sel[columnName]).replace("|", "%7C");
                         return (selection[0][columnName]).match(/\d+\.\d+/);  
-
                       }
                       return "";
                     });
@@ -694,7 +675,6 @@ define([
                 } else {
                   var q = selection.map(function (sel) {
                     if (sel[columnName]) {
-                      //return (sel[columnName]).replace("|", "%7C");
                       return (selection[0][columnName]).match(/\d+\.\d+/);  
 
                     }
@@ -789,10 +769,10 @@ define([
             this.createFilterPanel(tsvCsvStore.columns);
             this._filterCreated = true;
 
-            if (this.userDefinedTable) {
+            //if (this.userDefinedTable) {
               // check for feature/genome columns
               this.checkForGenomeIDs(tsvCsvStore.data);
-            }
+            //}
  
             this.viewer.set('content', tsvGC);
           } else {
