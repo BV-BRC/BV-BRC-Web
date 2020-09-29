@@ -150,7 +150,7 @@ define("p3/widget/GenomeNameSelector", [
         queryFilterComponents.push('and(eq(reference_genome,%22Representative%22),eq(public,true))');
       }
       else if (this.includeOtherPublic) {
-        queryFilterComponents.push('and(not(reference_genome,%22Reference%22),not(reference_genome,%22Representative%22), eq(public,true))');
+        queryFilterComponents.push('and(not(reference_genome,%22Reference%22),not(reference_genome,%22Representative%22),eq(public,true))');
       }
 
       if (this.includePrivate) {

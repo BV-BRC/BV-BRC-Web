@@ -18,7 +18,7 @@
     "cytoscape-cola": "^1.6.0",
     "cytoscape-context-menus": "^3.0.2",
     "cytoscape-cose-bilkent": "^2.0.4",
-    "cytoscape-dagre": "^2.2.2",
+    "cytoscape-dagre": "~2.1.0",
     "cytoscape-panzoom": "^2.5.2",
     "dagre": "^0.8.2",
     "debug": "^2.6.9",
