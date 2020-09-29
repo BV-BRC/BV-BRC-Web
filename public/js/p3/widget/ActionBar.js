@@ -275,6 +275,12 @@ define([
 
       // return the wrapper for use.
       return target;
-    }
+    },
+       
+    deleteAction: function (name, label) {
+      if (this._actions[name] && this._actions[name].options.label === label) {
+        delete this._actions[name];
+      }
+    } 
   });
 });

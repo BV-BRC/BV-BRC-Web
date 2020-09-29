@@ -257,6 +257,10 @@ define([
 
       // clear out the last used action panel buttons and start again
       _self.containerType = '';
+      _self.actionPanel.deleteAction('ViewFeatureItem', 'FEATURE');
+      _self.actionPanel.deleteAction('ViewFeatureGroups', 'FEATURES');
+      _self.actionPanel.deleteAction('ViewGenomeItem', 'GENOME');
+      _self.actionPanel.deleteAction('ViewGenomeItems', 'GENOMES');
       Topic.publish('changeActionPanel', _self.actionPanel);
 
       var numColumns = Object.keys(data[0]).length;
