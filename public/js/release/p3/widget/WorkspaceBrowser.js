@@ -6,7 +6,11 @@ define("p3/widget/WorkspaceBrowser", [
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
+<<<<<<< HEAD
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './viewer/JobResult',
+=======
+  'dojo/promise/all', '../util/encodePath', './viewer/JobResult',
+>>>>>>> merge in latest p3_web changes (#24)
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +21,11 @@ define("p3/widget/WorkspaceBrowser", [
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
+<<<<<<< HEAD
   All, encodePath, when, request, tsvCsvFeatures, JobResult
+=======
+  All, encodePath, JobResult
+>>>>>>> merge in latest p3_web changes (#24)
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
