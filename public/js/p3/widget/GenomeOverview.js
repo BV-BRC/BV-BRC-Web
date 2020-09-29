@@ -49,6 +49,7 @@ define([
 
       this.createSummary(genome);
       this.createPubMed(genome);
+      this.createExternalLinks(genome);
 
       this.sumWidgets.forEach(function (w) {
         if (this[w]) {
@@ -119,6 +120,19 @@ define([
         });
         domConstruct.place(editBtn, this.genomeSummaryNode, 'first');
       }
+    },
+
+    createExternalLinks: function (genome) {
+      domConstruct.empty(this.externalLinkNode);
+
+      // BEI Resources
+      var linkBEI = 'https://www.beiresources.org/Catalog.aspx?f_instockflag=In+Stock%23~%23Temporarily+Out+of+Stock&q=' + genome.genome_name;
+      var string = domConstruct.create('a', {
+        href: linkBEI,
+        innerHTML: 'BEI Resources',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', string, 'after');
     },
 
     createPubMed: function (genome) {

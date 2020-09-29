@@ -221,7 +221,17 @@ define("p3/store/PathwaySummaryMemoryStore", [
           return true;
         }, function (err) {
           console.error('Error in PathwaySummaryMemoryStore: ', err);
+          Topic.publish('PathwaySummary', 'hideLoadingMask');
+          Topic.publish('PathwaySummary', 'timeOut');
+          setTimeout(function () {  alert('The query took too long or could not be loaded.', err); }, 1000);
         });
+      }, function (err) {
+        console.error('Error in PathwaySummaryMemoryStore: ', err);
+        if (err.message != 'Request canceled') {
+          Topic.publish('PathwaySummary', 'hideLoadingMask');
+          Topic.publish('PathwaySummary', 'timeOut');
+          setTimeout(function () {  alert('The query took too long or could not be loaded.', err); }, 1000);
+        }
       });
       return this._loadingDeferred;
     }

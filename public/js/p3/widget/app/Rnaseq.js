@@ -32,8 +32,6 @@ define([
     initContrasts: 8,
     maxConditions: 10,
     maxContrasts: 100,
-    conditionStore: null,
-    srrValidationUrl: 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     hostGenomes: {
       9606.33: '', 6239.6: '', 7955.5: '', 7227.4: '', 9031.4: '', 9544.2: '', 10090.24: '', 9669.1: '', 10116.5: '', 9823.5: ''
     },
@@ -46,7 +44,6 @@ define([
     },
 
     constructor: function () {
-
       this.addedLibs = { counter: 0 };
       this.addedCond = { counter: 0 };
       this.addedContrast = { counter: 0 };
@@ -158,79 +155,6 @@ define([
       }
     },
 
-    onAddSRR: function () {
-      console.log('Create New Row', domConstruct);
-      var toIngest = this.exp_design.checked ? this.srrConditionToAttachPt : this.srrToAttachPt;
-      var accession = this.srr_accession.get('value');
-      // console.log("updateSRR", accession, accession.substr(0, 3))
-      // var prefixList = ['SRR', 'ERR']
-      // if(prefixList.indexOf(accession.substr(0, 3)) == -1){
-      //   this.srr_accession.set("state", "Error")
-      //   return false;
-      // }
-
-      // TODO: validate and populate title
-      // SRR5121082
-      this.srr_accession.set('disabled', true);
-      xhr.get(lang.replace(this.srrValidationUrl, [accession]), {})
-        .then(lang.hitch(this, function (xml_resp) {
-          var resp = xmlParser.parse(xml_resp).documentElement;
-          this.srr_accession.set('disabled', false);
-          try {
-            var title = resp.children[0].childNodes[3].innerHTML;
-
-            this.srr_accession.set('state', '');
-            var lrec = { type: 'srr_accession', title: title };
-
-            var chkPassed = this.ingestAttachPoints(toIngest, lrec);
-            if (chkPassed) {
-              var infoLabels = {
-                title: { label: 'Title', value: 1 }
-              };
-              var tr = this.libsTable.insertRow(0);
-              lrec.row = tr;
-              // this code needs to be refactored to use addLibraryRow like the Assembly app
-              var td = domConstruct.create('td', { 'class': 'textcol srrdata', innerHTML: '' }, tr);
-              td.libRecord = lrec;
-              td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('srr_accession') + '</div>';
-              this.addLibraryInfo(lrec, infoLabels, tr);
-              var advPairInfo = [];
-              if (lrec.condition) {
-                advPairInfo.push('Condition:' + lrec.condition);
-              }
-              if (advPairInfo.length) {
-                lrec.design = true;
-                var condition_icon = this.getConditionIcon(lrec.condition);
-                var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
-                new Tooltip({
-                  connectId: [tdinfo],
-                  label: advPairInfo.join('</br>')
-                });
-              }
-              else {
-                lrec.design = false;
-                var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
-              }
-              var td2 = domConstruct.create('td', {
-                'class': 'iconcol',
-                innerHTML: "<i class='fa icon-x fa-1x' />"
-              }, tr);
-              if (this.addedLibs.counter < this.startingRows) {
-                this.libsTable.deleteRow(-1);
-              }
-              var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-                this.destroyLib(lrec, lrec.id, 'id');
-              }));
-              lrec.handle = handle;
-              this.createLib(lrec);
-              this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
-            }
-          } catch (e) {
-            this.srr_accession.set('state', 'Error');
-            console.debug(e);
-          }
-        }));
-    },
     addLibraryInfo: function (lrec, infoLabels, tr) {
       var advInfo = [];
       // fill out the html of the info mouse over
@@ -270,6 +194,46 @@ define([
     updateSRR: function () {
     },
 
+    addLibraryRow: function (lrec, infoLabels, mode) {
+
+      var tr = this.libsTable.insertRow(0);
+      lrec.row = tr;
+      // this code needs to be refactored to use addLibraryRow like the Assembly app
+      var td = domConstruct.create('td', { 'class': 'textcol srrdata', innerHTML: '' }, tr);
+      td.libRecord = lrec;
+      td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryName('srr_accession') + '</div>';
+      this.addLibraryInfo(lrec, infoLabels, tr);
+      var advPairInfo = [];
+      if (lrec.condition) {
+        advPairInfo.push('Condition:' + lrec.condition);
+      }
+      if (advPairInfo.length) {
+        lrec.design = true;
+        var condition_icon = this.getConditionIcon(lrec.condition);
+        var tdinfo = domConstruct.create('td', { 'class': 'iconcol', innerHTML: condition_icon }, tr);
+        new Tooltip({
+          connectId: [tdinfo],
+          label: advPairInfo.join('</br>')
+        });
+      }
+      else {
+        lrec.design = false;
+        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+      }
+      var td2 = domConstruct.create('td', {
+        'class': 'iconcol',
+        innerHTML: "<i class='fa icon-x fa-1x' />"
+      }, tr);
+      if (this.addedLibs.counter < this.startingRows) {
+        this.libsTable.deleteRow(-1);
+      }
+      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+        this.destroyLib(lrec, lrec.id, 'id');
+      }));
+      lrec.handle = handle;
+      this.createLib(lrec);
+      this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+    },
 
     emptyTable: function (target, rowLimit, colNum) {
       for (var i = 0; i < rowLimit; i++) {
@@ -318,7 +282,6 @@ define([
         });
         assembly_values.contrasts = contrastPairs;
       }
-
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
@@ -365,8 +328,8 @@ define([
         assembly_values['host_ftp'] = this.genome_nameWidget.item['ftp'];
       }
       return assembly_values;
-
     },
+
     // gets values from dojo attach points listed in input_ptsi keys.
     // aliases them to input_pts values.  validates all values present if req
     ingestAttachPoints: function (input_pts, target, req) {
@@ -438,10 +401,12 @@ define([
       }, this);
       return (success);
     },
+
     showConditionLabels: function (item, store) {
       var label = item.condition + ' ' + item.icon;
       return label;
     },
+
     makeLibraryName: function (mode) {
       switch (mode) {
         case 'paired':
@@ -469,6 +434,7 @@ define([
           return '';
       }
     },
+
     makeStoreID: function (mode) {
       if (mode == 'paired') {
         var fn = this.read1.searchBox.get('value');
@@ -519,12 +485,14 @@ define([
         counterWidget.set('value', Number(counter.counter));
       }
     },
+
     decreaseRows: function (targetTable, counter, counterWidget) {
       counter.counter -= 1;
       if (typeof counterWidget != 'undefined') {
         counterWidget.set('value', Number(counter.counter));
       }
     },
+
     getConditionIcon: function (query_id) {
       var result = '';
       if (!query_id) {
@@ -687,7 +655,6 @@ define([
       }
     },
 
-
     createLib: function (lrec) {
       this.libraryStore.put(lrec);
       if (lrec.condition) {
@@ -737,7 +704,6 @@ define([
         this.contrast_cd2.reset();
       }
     },
-
 
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
@@ -832,7 +798,6 @@ define([
     onStrategyChange: function () {
       this.onDesignToggle();
     },
-
 
     onSuggestNameChange: function () {
       var curRecipe = this.recipe.value;

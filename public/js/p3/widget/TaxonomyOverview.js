@@ -61,6 +61,7 @@ define([
     _setTaxonomyAttr: function (genome) {
       this.genome = genome;
       this.createSummary(genome);
+      this.createExternalLinks(genome);
       // this.getWikiDescription(genome);
     },
 
@@ -72,6 +73,19 @@ define([
         domConstruct.empty(this.pubmedSummaryNode);
         domConstruct.place(ExternalItemFormatter(genome, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
       }
+    },
+
+    createExternalLinks: function (genome) {
+      domConstruct.empty(this.externalLinkNode);
+
+      // BEI Resources
+      var linkBEI = 'https://www.beiresources.org/Catalog.aspx?f_instockflag=In+Stock%23~%23Temporarily+Out+of+Stock&q=' + genome.taxon_name;
+      var string = domConstruct.create('a', {
+        href: linkBEI,
+        innerHTML: 'BEI Resources',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', string, 'after');
     },
 
     getWikiDescription: function (genome) {

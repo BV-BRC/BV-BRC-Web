@@ -7,7 +7,7 @@ define("p3/app/p3app", [
   'dojo/ready', './app', '../router',
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
-  'dijit/Dialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController'
+  'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController'
 ], function (
   declare,
   Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
@@ -18,7 +18,7 @@ define("p3/app/p3app", [
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  Dialog, PathJoin, xhr, WorkspaceController
+  ConfirmDialog, PathJoin, xhr, WorkspaceController
 ) {
   return declare([App], {
     panels: Panels,
@@ -32,24 +32,24 @@ define("p3/app/p3app", [
     startup: function () {
       var _self = this;
       this.checkLogin();
-      // this.upploadInProgress = false;
-      on(document.body, 'keypress', function (evt) {
-        var charOrCode = evt.charCode || evt.keyCode;
-        // console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
-        /* istanbul ignore next */
-        if ((charOrCode === 4) && evt.ctrlKey && evt.shiftKey) {
-          if (!this._devDlg) {
-            this._devDlg = new Dialog({
-              title: 'Debugging Panel',
-              content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'
-            });
-          }
-          // console.log("Dialog: ", this._devDlg);
-          if (this._devDlg.open) {
-            this._devDlg.hide();
-          } else {
-            this._devDlg.show();
-          }
+
+      on(document, 'keydown', function (evt) {
+        // only act if ctrl-shift-d
+        if (!(evt.ctrlKey && evt.shiftKey && evt.keyCode === 68)) {
+          return;
+        }
+
+        if (!this._devDlg) {
+          this._devDlg = new ConfirmDialog({
+            title: 'Debugging Panel',
+            style: { width: '350px' },
+            content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="height: 125px"></div>'
+          });
+          this._devDlg.cancelButton.domNode.style.display = 'none';
+        }
+
+        if (!this._devDlg.open) {
+          this._devDlg.show();
         }
       });
       /* istanbul ignore next */
@@ -414,7 +414,7 @@ define("p3/app/p3app", [
           auth = JSON.parse(auth);
           // console.log('Auth: ', auth);
           // console.log('CheckExpToken', auth.expiry);
-          if (auth.expiry) {
+          if (auth && auth.expiry) {
             validToken = this.checkExpToken(auth.expiry);
             // console.log('this is a valid token: ' + validToken );
             if (validToken && window.App.alreadyLoggedIn) {

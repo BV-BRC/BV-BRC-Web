@@ -203,7 +203,7 @@ define([
       }));
     },
 
-    processTreeData: function (treeDat) {
+    processTreeData: function (treeDat, idType) {
       if (!treeDat.tree) {
         console.log('No newick+json in Request Response');
         return;
@@ -224,7 +224,7 @@ define([
         }
         this.treeHeader.innerHTML = headerParts.join(' ');
       }
-
+      this.set('idType', idType);
       this.set('newick', treeDat.tree);
     },
 
@@ -248,12 +248,12 @@ define([
 
       var idMenuDivs = [];
       if (this.labels) {
-        this.tree.setTree(this.newick, this.labels, 'Organism Names');
+        this.tree.setTree(this.newick, this.labels, 'Organism Names', this.idType);
         idMenuDivs.push('<div class="wsActionTooltip" rel="Organism Names">Organism Names</div>');
         idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
       }
       else {
-        this.tree.setTree(this.newick);
+        this.tree.setTree(this.newick, null, null, this.idType);
         idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
       }
       idMenu.set('content', idMenuDivs.join(''));
@@ -389,6 +389,7 @@ define([
           label: 'GENOME',
           validTypes: ['*'],
           multiple: false,
+          disabled: false,
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           validContainerTypes: ['genome_data'],
           pressAndHold: function (selection, button, opts, evt) {
@@ -420,6 +421,7 @@ define([
           label: 'GENOMES',
           validTypes: ['*'],
           multiple: true,
+          disabled: false,
           min: 2,
           max: 1000,
           tooltip: 'Switch to Genome List View. Press and Hold for more options.',
@@ -464,6 +466,7 @@ define([
           ignoreDataType: true,
           multiple: true,
           validTypes: ['*'],
+          disabled: false,
           tooltip: 'Add selection to a new or existing group',
           validContainerTypes: ['*']
         },
@@ -532,9 +535,21 @@ define([
           this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
         }, this);
       }
-
       this.selectionActions.forEach(function (a) {
-        this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+        var cont = false;
+        if (this.state && this.state.href.includes('WithGenomeNames.') && a[0] == 'IDSelection') {
+          cont = true;
+        }
+        if (this.state && this.state.href.includes('WithGenomeNames.') && (a[0] == 'ViewGenomeItemFromGenome' || a[0] == 'ViewGenomeItems' || a[0] == 'AddGroup')) {
+          a[2].disabled = true;
+          this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, undefined), false, a[5]);
+          cont = true;
+        } else if (a[0] == 'ViewGenomeItemFromGenome' || a[0] == 'ViewGenomeItems' || a[0] == 'AddGroup') {
+          a[2].disabled = false;
+        }
+        if (!cont) {
+          this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+        }
       }, this);
 
     }

@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n  <div class=\"column-sub\">\n    <div class=\"section\">\n      <div data-dojo-attach-point=\"taxonomySummaryNode\">\n        Loading Taxonomy Summary...\n      </div>\n    </div>\n\n    <div class=\"section\">\n      <h3 class=\"section-title close\" title=\"Select genomes of high quality sequences and annotations and/or used by researchers for clinical studies, experimental validation, and comparative analysis.\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n      <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n        data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n      </div>\n    </div>\n  </div>\n\n  <div class=\"column-prime\">\n    <div class=\"section hidden\">\n      <h3 class=\"section-title close\" title=\"Summary of genomes by available antimicrobial resistance phenotype data.\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n      <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n        data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n      </div>\n    </div>\n\n    <div class=\"section\">\n      <h3 class=\"section-title close\" title=\"Summary of genomes by key metadata attributes.\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n      <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n        data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n      </div>\n    </div>\n  </div>\n\n  <div class=\"column-opt\">\n    <div class=\"section\">\n        <div class=\"BrowserHeader right\">\n            <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onClickUserGuide\" style=\"margin-top: 2px\">\n                <div class=\"ActionButton fa icon-info-circle fa-2x\"></div>\n                <div class=\"ActionButtonText\">GUIDE</div>\n            </div>\n        </div>\n        <div class=\"clear\"></div>\n    </div>\n    <div class=\"section\">\n      <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context.\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n      <div data-dojo-attach-point=\"pubmedSummaryNode\">\n        Loading...\n      </div>\n    </div>\n  </div>\n</div>\n"}});
+'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n  <div class=\"column-sub\">\n    <div class=\"section\">\n      <div data-dojo-attach-point=\"taxonomySummaryNode\">\n        Loading Taxonomy Summary...\n      </div>\n    </div>\n\n    <div class=\"section\">\n      <h3 class=\"section-title close\" title=\"Select genomes of high quality sequences and annotations and/or used by researchers for clinical studies, experimental validation, and comparative analysis.\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n      <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n        data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n      </div>\n    </div>\n  </div>\n\n  <div class=\"column-prime\">\n    <div class=\"section hidden\">\n      <h3 class=\"section-title close\" title=\"Summary of genomes by available antimicrobial resistance phenotype data.\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n      <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n        data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n      </div>\n    </div>\n\n    <div class=\"section\">\n      <h3 class=\"section-title close\" title=\"Summary of genomes by key metadata attributes.\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n      <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n        data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n      </div>\n    </div>\n  </div>\n\n  <div class=\"column-opt\">\n    <div class=\"section\">\n        <div class=\"BrowserHeader right\">\n            <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onClickUserGuide\" style=\"margin-top: 2px\">\n                <div class=\"ActionButton fa icon-info-circle fa-2x\"></div>\n                <div class=\"ActionButtonText\">GUIDE</div>\n            </div>\n        </div>\n        <div class=\"clear\"></div>\n    </div>\n    <div class=\"section\">\n      <h3 class=\"close section-title\"><span class=\"wrap\">External Tools</span></h3>\n      <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n    </div>\n    <div class=\"section\">\n      <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context.\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n      <div data-dojo-attach-point=\"pubmedSummaryNode\">\n        Loading...\n      </div>\n    </div>\n  </div>\n</div>\n"}});
 define("p3/widget/TaxonomyOverview", [
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/TaxonomyOverview.html',
@@ -63,6 +63,7 @@ define("p3/widget/TaxonomyOverview", [
     _setTaxonomyAttr: function (genome) {
       this.genome = genome;
       this.createSummary(genome);
+      this.createExternalLinks(genome);
       // this.getWikiDescription(genome);
     },
 
@@ -74,6 +75,19 @@ define("p3/widget/TaxonomyOverview", [
         domConstruct.empty(this.pubmedSummaryNode);
         domConstruct.place(ExternalItemFormatter(genome, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
       }
+    },
+
+    createExternalLinks: function (genome) {
+      domConstruct.empty(this.externalLinkNode);
+
+      // BEI Resources
+      var linkBEI = 'https://www.beiresources.org/Catalog.aspx?f_instockflag=In+Stock%23~%23Temporarily+Out+of+Stock&q=' + genome.taxon_name;
+      var string = domConstruct.create('a', {
+        href: linkBEI,
+        innerHTML: 'BEI Resources',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', string, 'after');
     },
 
     getWikiDescription: function (genome) {

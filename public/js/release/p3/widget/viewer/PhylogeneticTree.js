@@ -110,7 +110,12 @@ define("p3/widget/viewer/PhylogeneticTree", [
       else { labelType = 'genome_name'; }
       var labelSearch = this.state.search.match(/labelSearch=.*/);
       if (labelSearch && !isNaN(labelSearch.index)) {
-        labelSearch = labelSearch[0].split('=')[1];
+        labelSearch = labelSearch[0].split('=')[1].split('&')[0];
+        if (labelSearch == 'true') {
+          labelSearch = true;
+        } else {
+          labelSearch = false;
+        }
       }
       else { labelSearch = false; }
       if (folderCheck && !isNaN(folderCheck.index)) {
@@ -127,7 +132,7 @@ define("p3/widget/viewer/PhylogeneticTree", [
           .then(function (objs) {
             // console.log("[JobResult] objects: ", objs);
             Object.values(objs).forEach(function (obj) {
-              if (obj.type == 'json') {
+              if (obj.type == 'json' && !obj.path.endsWith('final_rooted.json')) {
                 dataFiles.push(obj.path);
               } else if (obj.type == 'nwk' && obj.path.endsWith('treeWithGenomeIds.nwk')) {
                 nwkIds = obj.path;
@@ -176,7 +181,7 @@ define("p3/widget/viewer/PhylogeneticTree", [
         this.findLabels(treeDat, idType, labelType);
       }
       else {
-        this.viewer.processTreeData(treeDat);
+        this.viewer.processTreeData(treeDat, idType);
       }
     },
 
@@ -218,10 +223,13 @@ define("p3/widget/viewer/PhylogeneticTree", [
         else {
           console.warn('Invalid Response for: ', url);
         }
-        _self.viewer.processTreeData(treeDat);
+        _self.viewer.processTreeData(treeDat, idType);
+        return true;
       }, function (err) {
         console.error('Error Retreiving Genomes: ', err);
+        return false;
       });
+      return true;
     }
   });
 });
