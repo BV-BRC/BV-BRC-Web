@@ -238,6 +238,7 @@ define([
           style: { checked: true, 'margin-left': '10px'}
         });
         checkBox_headers.on('change', lang.hitch(this, function (val) {
+          _self.actionPanel.set('selection', []);     // if user clicks while row(s) selected, must clear out the action panel
           this.set('userDefinedColumnHeaders', val);
           this.refresh();
         }));
@@ -261,6 +262,8 @@ define([
       _self.actionPanel.deleteAction('ViewFeatureGroups', 'FEATURES');
       _self.actionPanel.deleteAction('ViewGenomeItem', 'GENOME');
       _self.actionPanel.deleteAction('ViewGenomeItems', 'GENOMES');
+      //_self.actionPanel.set('selection', []);
+      //_self.actionPanel.set('currentContainerWidget', newPanel);
       Topic.publish('changeActionPanel', _self.actionPanel);
 
       var numColumns = Object.keys(data[0]).length;
