@@ -1718,8 +1718,7 @@ define([
           text: 'plasmids'
         }, {
           name: 'Segments',
-          text: 'segments',
-          editable: true
+          text: 'segments'
         }, {
           name: 'Contigs',
           text: 'contigs',
@@ -1734,8 +1733,7 @@ define([
           text: 'gc_content'
         }, {
           name: 'Mat Peptide',
-          text: 'mat_peptide',
-          editable: true
+          text: 'mat_peptide'
         }],
 
         'Isolate Info': [{
