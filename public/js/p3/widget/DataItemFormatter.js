@@ -1661,6 +1661,10 @@ define([
           link: 'http://www.ncbi.nlm.nih.gov/pubmed/',
           editable: true
         }, {
+          name: 'Authors',
+          text: 'authors',
+          editable: true
+        }, {
           name: 'BioProject Accession',
           text: 'bioproject_accession',
           link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
@@ -1713,6 +1717,9 @@ define([
           name: 'Plasmids',
           text: 'plasmids'
         }, {
+          name: 'Segments',
+          text: 'segments'
+        }, {
           name: 'Contigs',
           text: 'contigs',
           link: function (obj) {
@@ -1724,6 +1731,9 @@ define([
         }, {
           name: 'GC Content',
           text: 'gc_content'
+        }, {
+          name: 'Mat Peptide',
+          text: 'mat_peptide'
         }],
 
         'Isolate Info': [{
