@@ -25,14 +25,8 @@
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/cytoscape-cola/-/cytoscape-cola-1.6.0.tgz",
-<<<<<<< HEAD
   "_spec": "1.6.0",
   "_where": "/Users/nc/patric/website",
-=======
-  "_shasum": "8e99be89caad8d2f04c1adcb3916abc1ff7564b2",
-  "_spec": "cytoscape-cola@^1.6.0",
-  "_where": "/Users/nc/patric/p3_web",
->>>>>>> master
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-cola/issues"
   },
