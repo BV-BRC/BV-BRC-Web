@@ -503,7 +503,7 @@ define([
                 }
               });
 
-              Topic.publish('changeActionPanel', _self.actionPanel);
+              //Topic.publish('changeActionPanel', _self.actionPanel);
 
             }  // end FEATURE if feature count > .9
             
@@ -712,11 +712,11 @@ define([
               });
 
 
-              Topic.publish('changeActionPanel', _self.actionPanel);
+              //Topic.publish('changeActionPanel', _self.actionPanel);
 
             }  // end if genome counts greater than .90
 
-
+            Topic.publish('changeActionPanel', _self.actionPanel);
 
           }
         });
