@@ -1051,8 +1051,17 @@ define([
         text: 'gc_content',
         mini: true
       }, {
+        name: 'Sequence MD5',
+        text: 'sequence_md5'
+      }, {
         name: 'Sequence Type',
         text: 'sequence_type'
+      }, {
+        name: 'Sequence Status',
+        text: 'sequence_status'
+      }, {
+        name: 'Mol Type',
+        text: 'mol_type'
       }, {
         name: 'Topology',
         text: 'topology'
@@ -1065,6 +1074,9 @@ define([
       }, {
         name: 'Plasmid',
         text: 'plasmid'
+      }, {
+        name: 'Segment',
+        text: 'segment'
       }, {
         name: 'GI',
         text: 'gi'
