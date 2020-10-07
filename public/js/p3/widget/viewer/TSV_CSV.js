@@ -5,7 +5,7 @@ define([
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup', 
-  '../PerspectiveToolTip'
+  '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
@@ -13,7 +13,7 @@ define([
   array, selector, lang, TsvCsvStore, 
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup, 
-  PerspectiveToolTipDialog
+  PerspectiveToolTipDialog, all, when
 ) {
 
   return declare([ViewerBase], {    // was BorderContainer
@@ -28,6 +28,8 @@ define([
     userDefinedTable: true,
     userDefinedColumnHeaders: false,
     userDefinedGeneIDHeader: null,
+    //featureQueryReturned: false,
+    //genomeIDQueryReturned: false,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
@@ -251,6 +253,10 @@ define([
       this.addChild(filterPanel);
     },
 
+    processData: function(test) {
+      console.log ('in process data')
+    },
+
     checkForGenomeIDs: function (data) {
 
       //console.log(data);
@@ -262,8 +268,6 @@ define([
       _self.actionPanel.deleteAction('ViewFeatureGroups', 'FEATURES');
       _self.actionPanel.deleteAction('ViewGenomeItem', 'GENOME');
       _self.actionPanel.deleteAction('ViewGenomeItems', 'GENOMES');
-      //_self.actionPanel.set('selection', []);
-      //_self.actionPanel.set('currentContainerWidget', newPanel);
       Topic.publish('changeActionPanel', _self.actionPanel);
 
       var numColumns = Object.keys(data[0]).length;
@@ -304,6 +308,55 @@ define([
           }
         }  // end for rows
       }  // end for each column
+
+      var getFeatureReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', this.featurequery), {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        
+        }}), function (response) {
+          return response;
+      });
+
+      var getGeneIDReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome', this.genequery), {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        
+        }}), function (response) {
+          return response;
+      });
+
+      if (checkFeatureIDs.length > 0) {
+        var featureList = checkFeatureIDs.map(function(item) {
+          return item.feature;
+        }).join(",");
+        this.featurequery = '?in(patric_id,(' + featureList + '))&select(feature_id)';
+      }
+
+      if (checkGeneIDs.length > 0) {
+        var geneIDList = checkGeneIDs.map(function(item) {
+          return item.geneID;
+        }).join(",");
+
+        this.genequery = '?in(genome_id,(' + geneIDList + '))&select(genome_id)'; 
+      }   
+
+      //return when(all([getFeatureReturned, getGeneIDReturned, testagain]), lang.hitch(this, 'processData'));
+      return when(all([getFeatureReturned, getGeneIDReturned]), function(results)
+      {
+        console.log(results);
+        // move results here.  Also need to take into account that sometimes both responses are not necessary.
+      });
+
+
+/*
 
       if (checkFeatureIDs.length > 0) {
         var featureList = checkFeatureIDs.map(function(item) {
@@ -711,19 +764,18 @@ define([
                 }
               });
 
-
-              //Topic.publish('changeActionPanel', _self.actionPanel);
-
             }  // end if genome counts greater than .90
 
-            Topic.publish('changeActionPanel', _self.actionPanel);
+            Topic.publish('changeActionPanel', _self.actionPanel);  //THIS ONE WORKS
 
           }
         });
       }      
       //}  // end for each column
-
+      
       this.isActionPanelSet = true;
+
+      */
     },
 
     formatFileMetaData: function (showMetaDataRows) {
