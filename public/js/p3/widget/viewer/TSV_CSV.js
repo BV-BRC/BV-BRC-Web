@@ -253,10 +253,6 @@ define([
       this.addChild(filterPanel);
     },
 
-    processData: function(test) {
-      console.log ('in process data')
-    },
-
     checkForGenomeIDs: function (data) {
 
       //console.log(data);
@@ -309,30 +305,7 @@ define([
         }  // end for rows
       }  // end for each column
 
-      var getFeatureReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', this.featurequery), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        
-        }}), function (response) {
-          return response;
-      });
-
-      var getGeneIDReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome', this.genequery), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        
-        }}), function (response) {
-          return response;
-      });
-
+      this.featurequery = null;
       if (checkFeatureIDs.length > 0) {
         var featureList = checkFeatureIDs.map(function(item) {
           return item.feature;
@@ -340,6 +313,7 @@ define([
         this.featurequery = '?in(patric_id,(' + featureList + '))&select(feature_id)';
       }
 
+      this.genequery = null;
       if (checkGeneIDs.length > 0) {
         var geneIDList = checkGeneIDs.map(function(item) {
           return item.geneID;
@@ -348,22 +322,8 @@ define([
         this.genequery = '?in(genome_id,(' + geneIDList + '))&select(genome_id)'; 
       }   
 
-      //return when(all([getFeatureReturned, getGeneIDReturned, testagain]), lang.hitch(this, 'processData'));
-      return when(all([getFeatureReturned, getGeneIDReturned]), function(results)
-      {
-        console.log(results);
-        // move results here.  Also need to take into account that sometimes both responses are not necessary.
-      });
-
-
-/*
-
-      if (checkFeatureIDs.length > 0) {
-        var featureList = checkFeatureIDs.map(function(item) {
-          return item.feature;
-        }).join(",");
-        query = '?in(patric_id,(' + featureList + '))&select(feature_id)';            //&limit(10)', when limited to 10 later columns are skipped
-        request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+      if (this.featurequery) {
+        var getFeatureReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', this.featurequery), {
           handleAs: 'json',
           headers: {
             Accept: 'application/solr+json',
@@ -371,92 +331,85 @@ define([
             'X-Requested-With': null,
             Authorization: (window.App.authorizationToken || '')
           
-          }
-        }).then(function (response) {
-          console.log ("in response");
-          if (response.response.numFound > 0) {
+          }}),function (response) {
+            return response;
+        });
+      }
 
-            var featureResponses = [];
-            response.response.docs.forEach(function (item) {
-              featureResponses.push (item.feature_id.match(/\d+\.\d+/)[0]);
-            });
+      if (this.genequery) {
+        var getGeneIDReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome', this.genequery), {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          
+          }}), function (response) {
+            return response;
+        });
+      }
 
-            var featureCounts = [];
-            checkFeatureIDs.forEach(function (item) {
-              var cols = item.columns;
-              cols.forEach (function (colItem) {
-                var elementPos = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
-                if (elementPos === -1) {
-                  featureCounts.push ({ columnName: colItem, featureCount: 1 });
-                }
-                else {
-                  featureCounts[elementPos]['featureCount']++;
-                }
-              });
-            });
+      return when(all([!this.featurequery || getFeatureReturned, !this.genequery || getGeneIDReturned]), function(results)
+      {
+        console.log(results);
 
-            featureResponses.forEach(function (item) {
-              var elementPos = checkFeatureIDs.map(function(x) {return x.feature.match(/\d+\.\d+/)[0]; }).indexOf(item);
-              if (elementPos > -1) {
-                 //get cols and find them in featureCounts, add or increment responseCount
-                var cols = checkFeatureIDs[elementPos].columns;
-                cols.forEach (function (colItem) {
-                  var countPosition = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
-                  if (featureCounts[countPosition]['responseCount']) {
-                    featureCounts[countPosition]['responseCount']++;
-                  }
-                  else {
-                    featureCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
-                  }
-                })                
+        // move results here.  Also need to take into account that sometimes both responses are not necessary.
+        if (results[0].response && results[0].response.numFound > 0) {
+
+          var featureResponses = [];
+          results[0].response.docs.forEach(function (item) {
+            featureResponses.push (item.feature_id.match(/\d+\.\d+/)[0]);
+          });
+
+          var featureCounts = [];
+          checkFeatureIDs.forEach(function (item) {
+            var cols = item.columns;
+            cols.forEach (function (colItem) {
+              var elementPos = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+              if (elementPos === -1) {
+                featureCounts.push ({ columnName: colItem, featureCount: 1 });
+              }
+              else {
+                featureCounts[elementPos]['featureCount']++;
               }
             });
+          });
 
-            // detection of feature(s) if over 90%
-            if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
-
-              _self.containerType = 'csvFeature';              
-              
-              _self.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
-                label: 'FEATURE',
-                validTypes: ['*'],
-                validContainerTypes: ['csvFeature'],    // csv and tsv tables only
-                multiple: false,
-                tooltip: 'Switch to Feature View.  Press and Hold for more options.',
-                pressAndHold: function(selection, button, opts, evt) {
-                  var columnName = featureCounts[0].columnName;
-                  if (columnName in selection[0]) {
-                    var sel = (selection[0][columnName]).replace("|", "%7C");      
-                    var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
-          
-                    request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
-                      handleAs: 'json',
-                      headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-                        'X-Requested-With': null,
-                        Authorization: (window.App.authorizationToken || '')
-                      
-                      }
-                    }) .then(function(response){
-                      popup.open ({
-                        popup: new PerspectiveToolTipDialog ({
-                          perspective: 'Feature',
-                          perspectiveUrl: '/view/Feature/' + response[0].feature_id
-                        }),
-                        around: button,
-                        orient: ['below']
-                      });
-                    }); 
-                  }
+          featureResponses.forEach(function (item) {
+            var elementPos = checkFeatureIDs.map(function(x) {return x.feature.match(/\d+\.\d+/)[0]; }).indexOf(item);
+            if (elementPos > -1) {
+              //get cols and find them in featureCounts, add or increment responseCount
+              var cols = checkFeatureIDs[elementPos].columns;
+              cols.forEach (function (colItem) {
+                var countPosition = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+                if (featureCounts[countPosition]['responseCount']) {
+                  featureCounts[countPosition]['responseCount']++;
                 }
-              
-              }, function (selection) {
-                var columnName = featureCounts[0].columnName;      
-                if (columnName in selection[0]) {   
-                  var sel = (selection[0][columnName]).replace("|", "%7C");  
-                  var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
+                else {
+                  featureCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
+                }
+              })                
+            }
+          });
 
+          // detection of feature(s) if over 90%
+          if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
+
+            _self.containerType = 'csvFeature';              
+            
+            _self.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
+              label: 'FEATURE',
+              validTypes: ['*'],
+              validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+              multiple: false,
+              tooltip: 'Switch to Feature View.  Press and Hold for more options.',
+              pressAndHold: function(selection, button, opts, evt) {
+                var columnName = featureCounts[0].columnName;
+                if (columnName in selection[0]) {
+                  var sel = (selection[0][columnName]).replace("|", "%7C");      
+                  var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
+        
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
                     headers: {
@@ -466,62 +419,49 @@ define([
                       Authorization: (window.App.authorizationToken || '')
                     
                     }
-                  }).then( function(response){
-                    Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+                  }) .then(function(response){
+                    popup.open ({
+                      popup: new PerspectiveToolTipDialog ({
+                        perspective: 'Feature',
+                        perspectiveUrl: '/view/Feature/' + response[0].feature_id
+                      }),
+                      around: button,
+                      orient: ['below']
+                    });
                   }); 
-                }       
-              });
+                }
+              }
+            
+            }, function (selection) {
+              var columnName = featureCounts[0].columnName;      
+              if (columnName in selection[0]) {   
+                var sel = (selection[0][columnName]).replace("|", "%7C");  
+                var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
 
-              _self.actionPanel.addAction('ViewFeatureGroups', 'MultiButton fa icon-selection-FeatureList fa-2x', {
-                label: 'FEATURES',
-                validTypes: ['*'],
-                validContainerTypes: ['csvFeature'],
-                multiple: true,
-                min: 2,
-                tooltip: 'Switch to the Feature List View. Press and Hold for more options.',
-                pressAndHold: function (selection, button, opts, evt) { 
-
-                  var columnName = featureCounts[0].columnName;
-                  if (selection.length == 1) {
-                    Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
-                  } else {
-                    var q = selection.map(function (sel) {
-                      if (sel[columnName]) {
-                        return (sel[columnName]).replace("|", "%7C");
-                      }
-                      return "";
-                    });
-          
-                    // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
-                    var noEmptyFeatureIDs = q.filter(function(elem) {
-                      return (elem != "");
-                    });
-                    
-                    q = '?in('+ 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
-                    request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
-                      handleAs: 'json',
-                      headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-                        'X-Requested-With': null,
-                        Authorization: (window.App.authorizationToken || '')
-                      
-                      }
-                    }).then(function(response){
-                      var featureIDs = response.map(function(response) { return response.feature_id; }).join(',');
-                      var featureList = '?in(feature_id,(' + featureIDs + '))';
-                      popup.open ({
-                        popup: new PerspectiveToolTipDialog ({
-                          perspective: 'FeatureList',
-                          perspectiveUrl: '/view/FeatureList/' + featureList
-                        }),
-                        around: button,
-                        orient: ['below']
-                      });
-                    }); 
+                request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+                  handleAs: 'json',
+                  headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                    'X-Requested-With': null,
+                    Authorization: (window.App.authorizationToken || '')
+                  
                   }
-                },    
-              }, function (selection) {
+                }).then( function(response){
+                  Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
+                }); 
+              }       
+            });
+
+            _self.actionPanel.addAction('ViewFeatureGroups', 'MultiButton fa icon-selection-FeatureList fa-2x', {
+              label: 'FEATURES',
+              validTypes: ['*'],
+              validContainerTypes: ['csvFeature'],
+              multiple: true,
+              min: 2,
+              tooltip: 'Switch to the Feature List View. Press and Hold for more options.',
+              pressAndHold: function (selection, button, opts, evt) { 
+
                 var columnName = featureCounts[0].columnName;
                 if (selection.length == 1) {
                   Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
@@ -538,7 +478,7 @@ define([
                     return (elem != "");
                   });
                   
-                  q = '?in(' + 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
+                  q = '?in('+ 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
                     headers: {
@@ -551,118 +491,108 @@ define([
                   }).then(function(response){
                     var featureIDs = response.map(function(response) { return response.feature_id; }).join(',');
                     var featureList = '?in(feature_id,(' + featureIDs + '))';
-                    Topic.publish('/navigate', { href: '/view/FeatureList/' +  featureList})
+                    popup.open ({
+                      popup: new PerspectiveToolTipDialog ({
+                        perspective: 'FeatureList',
+                        perspectiveUrl: '/view/FeatureList/' + featureList
+                      }),
+                      around: button,
+                      orient: ['below']
+                    });
                   }); 
                 }
-              });
-
-              //Topic.publish('changeActionPanel', _self.actionPanel);
-
-            }  // end FEATURE if feature count > .9
-            
-          }  // end responses
-        });
-      } 
+              },    
+            }, function (selection) {
+              var columnName = featureCounts[0].columnName;
+              if (selection.length == 1) {
+                Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
+              } else {
+                var q = selection.map(function (sel) {
+                  if (sel[columnName]) {
+                    return (sel[columnName]).replace("|", "%7C");
+                  }
+                  return "";
+                });
       
-      if (checkGeneIDs.length > 0) {
-        var geneIDList = checkGeneIDs.map(function(item) {
-          return item.geneID;
-        }).join(",");
-
-        query = '?in(genome_id,(' + geneIDList + '))&select(genome_id)';    
-        request.get(PathJoin(window.App.dataAPI, 'genome', query), {
-          handleAs: 'json',
-          headers: {
-            Accept: 'application/solr+json',
-            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-            'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
-          
-          }
-        }).then(function (response) {
-          console.log ("in response");
-          if (response.response.numFound > 0) {
-
-            var geneIDResponses = [];
-            response.response.docs.forEach(function (item) {
-              geneIDResponses.push (item.genome_id.match(/\d+\.\d+/)[0]);
-            });
-
-            var geneIDCounts = [];
-            checkGeneIDs.forEach(function (item) {
-              var cols = item.columns;
-              cols.forEach (function (colItem) {
-                var elementPos = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
-                if (elementPos === -1) {
-                  geneIDCounts.push ({ columnName: colItem, geneIDCount: 1 });
-                }
-                else {
-                  geneIDCounts[elementPos]['geneIDCount']++;
-                }
-              });
-            });
-
-            geneIDResponses.forEach(function (item) {
-              var elementPos = checkGeneIDs.map(function(x) {return x.geneID.match(/\d+\.\d+/)[0]; }).indexOf(item);
-              if (elementPos > -1) {
-                 //get cols and find them in featureCounts, add or increment responseCount
-                var cols = checkGeneIDs[elementPos].columns;
-                cols.forEach (function (colItem) {
-                  var countPosition = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
-                  if (geneIDCounts[countPosition]['responseCount']) {
-                    geneIDCounts[countPosition]['responseCount']++;
+                // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
+                var noEmptyFeatureIDs = q.filter(function(elem) {
+                  return (elem != "");
+                });
+                
+                q = '?in(' + 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
+                request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
+                  handleAs: 'json',
+                  headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                    'X-Requested-With': null,
+                    Authorization: (window.App.authorizationToken || '')
+                  
                   }
-                  else {
-                    geneIDCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
-                  }
-                })                
+                }).then(function(response){
+                  var featureIDs = response.map(function(response) { return response.feature_id; }).join(',');
+                  var featureList = '?in(feature_id,(' + featureIDs + '))';
+                  Topic.publish('/navigate', { href: '/view/FeatureList/' +  featureList})
+                }); 
               }
             });
+          }  // end FEATURE if feature count > .9           
+        }  // end features
 
-            // detection of genome(s) if over 90%
-            if (geneIDCounts[0].responseCount/geneIDCounts[0].geneIDCount > .90) {
+        if (results[1].response && results[1].response.numFound > 0) {
 
-              _self.containerType = 'csvFeature';
-              
-              _self.actionPanel.addAction('ViewGenomeItem', 'MultiButton fa icon-selection-Genome fa-2x', {
-                label: 'GENOME',
-                validTypes: ['*'],
-                ignoreDataType: true,
-                validContainerTypes: ['csvFeature'],    // csv and tsv tables only
-                multiple: false,
-                tooltip: 'Switch to Genome View.  Press and Hold for more options.',
-                pressAndHold: function(selection, button, opts, evt) {
-                  var columnName = geneIDCounts[0].columnName;
-                  if (selection[0][columnName]) {
-                    var sel = (selection[0][columnName]).match(/\d+\.\d+/);  
-                    var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
-          
-                    request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
-                      handleAs: 'json',
-                      headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-                        'X-Requested-With': null,
-                        Authorization: (window.App.authorizationToken || '')
-                      
-                      }
-                    }).then(function(response){
-                      popup.open ({
-                        popup: new PerspectiveToolTipDialog ({
-                          perspective: 'Genome',
-                          perspectiveUrl: '/view/Genome/' + response[0].genome_id
-                        }),
-                        around: button,
-                        orient: ['below']
-                      });
-                    }); 
-                  }
-                },
-              
-              }, function (selection) {
+          var geneIDResponses = [];
+          results[1].response.docs.forEach(function (item) {
+            geneIDResponses.push (item.genome_id.match(/\d+\.\d+/)[0]);
+          });
+
+          var geneIDCounts = [];
+          checkGeneIDs.forEach(function (item) {
+            var cols = item.columns;
+            cols.forEach (function (colItem) {
+              var elementPos = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+              if (elementPos === -1) {
+                geneIDCounts.push ({ columnName: colItem, geneIDCount: 1 });
+              }
+              else {
+                geneIDCounts[elementPos]['geneIDCount']++;
+              }
+            });
+          });
+
+          geneIDResponses.forEach(function (item) {
+            var elementPos = checkGeneIDs.map(function(x) {return x.geneID.match(/\d+\.\d+/)[0]; }).indexOf(item);
+            if (elementPos > -1) {
+                //get cols and find them in featureCounts, add or increment responseCount
+              var cols = checkGeneIDs[elementPos].columns;
+              cols.forEach (function (colItem) {
+                var countPosition = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+                if (geneIDCounts[countPosition]['responseCount']) {
+                  geneIDCounts[countPosition]['responseCount']++;
+                }
+                else {
+                  geneIDCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
+                }
+              })                
+            }
+          });
+
+          // detection of genome(s) if over 90%
+          if (geneIDCounts[0].responseCount/geneIDCounts[0].geneIDCount > .90) {
+
+            _self.containerType = 'csvFeature';
+            
+            _self.actionPanel.addAction('ViewGenomeItem', 'MultiButton fa icon-selection-Genome fa-2x', {
+              label: 'GENOME',
+              validTypes: ['*'],
+              ignoreDataType: true,
+              validContainerTypes: ['csvFeature'],    // csv and tsv tables only
+              multiple: false,
+              tooltip: 'Switch to Genome View.  Press and Hold for more options.',
+              pressAndHold: function(selection, button, opts, evt) {
                 var columnName = geneIDCounts[0].columnName;
-                if (selection[0][columnName]) { 
-                  var sel = (selection[0][columnName]).match(/\d+\.\d+/);     
+                if (selection[0][columnName]) {
+                  var sel = (selection[0][columnName]).match(/\d+\.\d+/);  
                   var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
         
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
@@ -675,60 +605,47 @@ define([
                     
                     }
                   }).then(function(response){
-                    Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id })
+                    popup.open ({
+                      popup: new PerspectiveToolTipDialog ({
+                        perspective: 'Genome',
+                        perspectiveUrl: '/view/Genome/' + response[0].genome_id
+                      }),
+                      around: button,
+                      orient: ['below']
+                    });
                   }); 
-                }       
-              }); 
-
-              _self.actionPanel.addAction('ViewGenomeItems', 'MultiButton fa icon-selection-GenomeList fa-2x', {
-                label: 'GENOMES',
-                validTypes: ['*'],
-                validContainerTypes: ['csvFeature'],
-                multiple: true,
-                min: 2,
-                tooltip: 'Switch to the Genome List View. Press and Hold for more options.',
-                pressAndHold: function (selection, button, opts, evt) { 
-                  var columnName = geneIDCounts[0].columnName;
-                  if (selection.length == 1) {
-                    Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
-                  } else {
-                    var q = selection.map(function (sel) {
-                      if (sel[columnName]) {
-                        return (selection[0][columnName]).match(/\d+\.\d+/);  
-                      }
-                      return "";
-                    });
-          
-                    // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
-                    var noEmptyFeatureIDs = q.filter(function(elem) {
-                      return (elem != "");
-                    });
-                    
-                    q = '?in(' + 'genome_id' + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
-                    request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
-                      handleAs: 'json',
-                      headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-                        'X-Requested-With': null,
-                        Authorization: (window.App.authorizationToken || '')
-                      
-                      }
-                    }).then(function(response){
-                      var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
-                      var featureList = '?in(genome_id,(' + featureIDs + '))';
-                      popup.open ({
-                        popup: new PerspectiveToolTipDialog ({
-                          perspective: 'GenomeList',
-                          perspectiveUrl: '/view/GenomeList/' + featureList
-                        }),
-                        around: button,
-                        orient: ['below']
-                      });
-                    }); 
+                }
+              },
+            
+            }, function (selection) {
+              var columnName = geneIDCounts[0].columnName;
+              if (selection[0][columnName]) { 
+                var sel = (selection[0][columnName]).match(/\d+\.\d+/);     
+                var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
+      
+                request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
+                  handleAs: 'json',
+                  headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                    'X-Requested-With': null,
+                    Authorization: (window.App.authorizationToken || '')
+                  
                   }
-                },    
-              }, function (selection) {
+                }).then(function(response){
+                  Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id })
+                }); 
+              }       
+            }); 
+
+            _self.actionPanel.addAction('ViewGenomeItems', 'MultiButton fa icon-selection-GenomeList fa-2x', {
+              label: 'GENOMES',
+              validTypes: ['*'],
+              validContainerTypes: ['csvFeature'],
+              multiple: true,
+              min: 2,
+              tooltip: 'Switch to the Genome List View. Press and Hold for more options.',
+              pressAndHold: function (selection, button, opts, evt) { 
                 var columnName = geneIDCounts[0].columnName;
                 if (selection.length == 1) {
                   Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
@@ -736,7 +653,6 @@ define([
                   var q = selection.map(function (sel) {
                     if (sel[columnName]) {
                       return (selection[0][columnName]).match(/\d+\.\d+/);  
-
                     }
                     return "";
                   });
@@ -759,23 +675,58 @@ define([
                   }).then(function(response){
                     var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
                     var featureList = '?in(genome_id,(' + featureIDs + '))';
-                    Topic.publish('/navigate', { href: '/view/GenomeList/' +  featureList})
+                    popup.open ({
+                      popup: new PerspectiveToolTipDialog ({
+                        perspective: 'GenomeList',
+                        perspectiveUrl: '/view/GenomeList/' + featureList
+                      }),
+                      around: button,
+                      orient: ['below']
+                    });
                   }); 
                 }
-              });
+              },    
+            }, function (selection) {
+              var columnName = geneIDCounts[0].columnName;
+              if (selection.length == 1) {
+                Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
+              } else {
+                var q = selection.map(function (sel) {
+                  if (sel[columnName]) {
+                    return (selection[0][columnName]).match(/\d+\.\d+/);  
 
-            }  // end if genome counts greater than .90
-
-            Topic.publish('changeActionPanel', _self.actionPanel);  //THIS ONE WORKS
-
-          }
-        });
-      }      
-      //}  // end for each column
+                  }
+                  return "";
+                });
       
-      this.isActionPanelSet = true;
+                // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
+                var noEmptyFeatureIDs = q.filter(function(elem) {
+                  return (elem != "");
+                });
+                
+                q = '?in(' + 'genome_id' + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
+                request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
+                  handleAs: 'json',
+                  headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+                    'X-Requested-With': null,
+                    Authorization: (window.App.authorizationToken || '')
+                  
+                  }
+                }).then(function(response){
+                  var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
+                  var featureList = '?in(genome_id,(' + featureIDs + '))';
+                  Topic.publish('/navigate', { href: '/view/GenomeList/' +  featureList})
+                }); 
+              }
+            });
+          }  // end if genome counts greater than .90
+        }
 
-      */
+        // update the action panel for display
+        Topic.publish('changeActionPanel', _self.actionPanel);
+      });
     },
 
     formatFileMetaData: function (showMetaDataRows) {
