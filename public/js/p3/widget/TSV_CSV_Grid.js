@@ -17,6 +17,7 @@ define([
     store: null,
     state: null,
     dataFilename: '',
+    rowIsSelected: false,
 /*  coluumns example
     columns: {
       column0: {label: 'Col0', field: "column0" },
@@ -88,6 +89,8 @@ define([
 
       this.on('dgrid-select', function(evt) {
 
+        _self.rowIsSelected = true;
+
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
@@ -96,9 +99,14 @@ define([
           cancelable: true,
         };
         on.emit(_self.domNode, 'select', newEvt);
+
+        _self.storedEvt = newEvt;
       });
 
       this.on('dgrid-deselect', function(evt) {
+
+        _self.rowIsSelected = false;
+        
         var newEvt = {
           rows:evt.rows,
           selected: evt.grid.selection,
@@ -109,6 +117,12 @@ define([
         on.emit(_self.domNode, 'deselect', newEvt);
       });
       this.inherited(arguments);
+    },
+
+    triggerSelectionEvent: function () {
+      on.emit(this.domNode, 'select', this.storedEvt);
+      this.rowIsSelected = false;
+
     },
 
     setData: function(newData) {

@@ -47,27 +47,6 @@ define([
           + val.metadata.name : '/';
 
         this.file = val;
-
-        // For tsv/csv displays, we need to disable the FEATURE(S) and GENOME(S) buttons when
-        // the tables do not have the right features.
-        /*
-        var _self = this;
-        var keyList = Object.keys(tsvCsvFeatures);
-        var columnName = '';
-        var newType = null;
-        keyList.forEach(function (keyName) {
-          if (_self.file.metadata.name.indexOf(keyName) >= 0) {
-            // key name is found, this is a known suffix
-            _self.userDefinedTable = false;
-            _self.userDefinedGeneIDHeader = null;
-            if (Object.keys(tsvCsvFeatures[keyName]).length > 1) {
-              newType = 'csvFeature';
-            }
-          }
-        });
-
-        this.set('containerType', newType);
-*/
         this.refresh();
       }
     },
@@ -91,7 +70,6 @@ define([
       if (!state) {
         return;
       }
-      //this.tsvGC.set('state', state);
     },
 
     postCreate: function() {
@@ -240,6 +218,7 @@ define([
           style: { checked: true, 'margin-left': '10px'}
         });
         checkBox_headers.on('change', lang.hitch(this, function (val) {
+          this.tsvGC.grid.set('rowIsSelected', false);
           _self.actionPanel.set('selection', []);     // if user clicks while row(s) selected, must clear out the action panel
           this.set('userDefinedColumnHeaders', val);
           this.refresh();
@@ -723,9 +702,14 @@ define([
             });
           }  // end if genome counts greater than .90
         }
-
+      
         // update the action panel for display
         Topic.publish('changeActionPanel', _self.actionPanel);
+       
+        // if a row was selected before the queries finished, retrigger the selection event
+        if (_self.tsvGC.grid.rowIsSelected) {
+          _self.tsvGC.grid.triggerSelectionEvent();
+        }      
       });
     },
 
@@ -768,14 +752,14 @@ define([
             this.viewer.set('content', '');
 
             // gridContainer
-            var tsvGC = new TSV_CSV_GridContainer({
+            this.tsvGC = new TSV_CSV_GridContainer({
               title: 'TSV View',
               id: this.viewer.id + '_tsv',
               disable: false,
               store: tsvCsvStore
             }); 
 
-            tsvGC.set('state', {dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data});
+            this.tsvGC.set('state', {dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data});
             this.createFilterPanel(tsvCsvStore.columns);
             this._filterCreated = true;
 
@@ -783,8 +767,8 @@ define([
               // check for feature/genome columns
               this.checkForGenomeIDs(tsvCsvStore.data);
             //}
- 
-            this.viewer.set('content', tsvGC);
+
+            this.viewer.set('content', this.tsvGC);
           } else {
             this.viewer.set('content', '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');
           }
