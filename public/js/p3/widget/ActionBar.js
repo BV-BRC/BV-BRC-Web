@@ -128,6 +128,12 @@ define([
           return false;
         }
 
+        // if this is a tsv or csv table, hide move, rename, delete, edit type buttons
+        console.log (act.options.label);
+        if (this.currentContainerType == "csvFeature" && 
+            (act.options.label == "DELETE" || act.options.label == "MOVE" || act.options.label == "RENAME" || act.options.label == "EDIT TYPE")) {
+          return false;
+        }
 
         var validContainerTypes = act.options.validContainerTypes || null;
 

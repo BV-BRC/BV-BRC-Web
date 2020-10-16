@@ -19,7 +19,6 @@ define([
   return declare([ViewerBase], {    // was BorderContainer
     baseClass: 'CSV_Viewer',
     disabled: false,
-    //containerType: 'csvFeature',
     file: null,
     viewable: false,
     url: null,
@@ -28,8 +27,6 @@ define([
     userDefinedTable: true,
     userDefinedColumnHeaders: false,
     userDefinedGeneIDHeader: null,
-    //featureQueryReturned: false,
-    //genomeIDQueryReturned: false,
 
     _setFileAttr: function (val) {
       // console.log('[File] _setFileAttr:', val);
