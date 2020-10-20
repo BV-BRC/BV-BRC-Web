@@ -5,7 +5,8 @@ define([
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup', 
-  '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when'
+  '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when', 
+  '../CopyTooltipDialog'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
@@ -13,8 +14,12 @@ define([
   array, selector, lang, TsvCsvStore, 
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup, 
-  PerspectiveToolTipDialog, all, when
+  PerspectiveToolTipDialog, all, when,
+  CopyTooltipDialog
 ) {
+
+  var copySelectionTT = new CopyTooltipDialog({});
+  copySelectionTT.startup();
 
   return declare([ViewerBase], {    // was BorderContainer
     baseClass: 'CSV_Viewer',
@@ -240,7 +245,37 @@ define([
       _self.actionPanel.deleteAction('ViewFeatureGroups', 'FEATURES');
       _self.actionPanel.deleteAction('ViewGenomeItem', 'GENOME');
       _self.actionPanel.deleteAction('ViewGenomeItems', 'GENOMES');
+      _self.actionPanel.deleteAction('CopySelection', 'COPY');
       Topic.publish('changeActionPanel', _self.actionPanel);
+
+      // add copy button to action panel
+      this.actionPanel.addAction ('CopySelection', 'fa icon-clipboard2 fa-2x', {
+        label: 'COPY',
+        multiple: true,
+        validTypes: ['*'],
+        ignoreDataType: true,
+        tooltip: 'Copy Selection to Clipboard.',
+        tooltipDialog: copySelectionTT,
+        max: 5000,
+        validContainerTypes: ['csvFeature']
+      },
+      function (selection, container) {
+        _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);
+        _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('containerType', this.containerType);
+        if (container && container.tsvGC.grid) {
+          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('grid', container.tsvGC.grid);
+        }
+
+        _self.actionPanel._actions.CopySelection.options.tooltipDialog.timeout(3500);
+
+        setTimeout(lang.hitch(this, function () {
+          popup.open({
+            popup: _self.actionPanel._actions.CopySelection.options.tooltipDialog,
+            around: _self.actionPanel._actions.CopySelection.button,
+            orient: ['below']
+          });
+        }), 10);
+      });
 
       var numColumns = Object.keys(data[0]).length;
       var checkFeatureIDs = [];
@@ -760,10 +795,8 @@ define([
             this.createFilterPanel(tsvCsvStore.columns);
             this._filterCreated = true;
 
-            //if (this.userDefinedTable) {
-              // check for feature/genome columns
-              this.checkForGenomeIDs(tsvCsvStore.data);
-            //}
+            // check for feature/genome columns
+            this.checkForGenomeIDs(tsvCsvStore.data);
 
             this.viewer.set('content', this.tsvGC);
           } else {
