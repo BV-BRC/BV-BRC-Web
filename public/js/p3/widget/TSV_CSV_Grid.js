@@ -1,13 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
-  './Grid', './GridSelector', 
-  './PageGrid', 'dojo/_base/Deferred'
+  './Grid', './GridSelector', './PageGrid', 'dojo/_base/Deferred'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
-  Grid, selector, 
-  PageGrid, Deferred
+  Grid, selector, PageGrid, Deferred
 ) {
   return declare([PageGrid], {
     region: 'center',
