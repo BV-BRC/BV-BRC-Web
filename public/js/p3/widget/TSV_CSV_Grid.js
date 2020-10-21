@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
-  './Grid', './GridSelector', './TsvCsvColumns',
+  './Grid', './GridSelector', 
   './PageGrid', 'dojo/_base/Deferred'
 ], function (
   declare, lang, BorderContainer, on,
   domClass, ContentPane, domConstruct,
-  Grid, selector, TsvCsvColumns,
+  Grid, selector, 
   PageGrid, Deferred
 ) {
   return declare([PageGrid], {
