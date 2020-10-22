@@ -62,9 +62,6 @@ define([
       var results;
       var qr = QueryResults(when(this.loadData(), lang.hitch(this, function () {
         results = this.query(query, opts);
-        //qr.total = when(results, function (results) {
-        //  return results.total || results.length;
-        //});
         return results;
       })));
 
@@ -82,7 +79,7 @@ define([
 
     },
 
-    keywordFilter: function() {
+    keywordFilter: function () {
       if (this._filtered == undefined) { // first time
         this._filtered = true;
         this._original = this.query('', {});
@@ -91,9 +88,9 @@ define([
       var newData = [];
 
       if (this.filterOptions.keyword !== '') {
-      var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
-        .split('~')
-        .map(function (k) { return k.trim(); });
+        var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
+          .split('~')
+          .map(function (k) { return k.trim(); });
       } else {
         keywordRegex = '';    // on Reset
       }
@@ -103,7 +100,7 @@ define([
         var columnSelection = this.filterOptions.columnSelection;
 
         // all columns
-        if (columnSelection == "All Columns") {
+        if (columnSelection == 'All Columns') {
           data.forEach(function (dataLine) {
             var skip = false;
             var dataLineArray = Object.values(dataLine);
@@ -113,9 +110,9 @@ define([
                 if (dataLine) {
                   var dataLineArray = Object.values(dataLine);  // array elems can be searched for partial words
                   dataLineArray.shift();  // remove row number, first element
-                  skip = !dataLineArray.some( function(dataValue) {
-                    //console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
-                    return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);                  
+                  skip = !dataLineArray.some( function (dataValue) {
+                    // console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
+                    return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);
                   });
                 } else {
                   skip = true;  // no data in this row
@@ -129,31 +126,31 @@ define([
           }, this);
         } else {
         // keyword search
-        data.forEach(function (dataLine) {
-          var skip = false;
+          data.forEach(function (dataLine) {
+            var skip = false;
 
-          if (!skip && keyword !== '') {
-            skip = !keywordRegex.some(function (needle) {
-              if (dataLine[columnSelection]) {
-                //console.log (dataLine[columnSelection]);
-                //console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
-                return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
-              } else {
+            if (!skip && keyword !== '') {
+              skip = !keywordRegex.some(function (needle) {
+                if (dataLine[columnSelection]) {
+                // console.log (dataLine[columnSelection]);
+                // console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
+                  return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
+                }
                 skip = true;  // no Function
-              }
-            });
-          }
 
-          if (!skip) {
-            newData.push(dataLine);
-          }
+              });
+            }
 
-        }, this);
+            if (!skip) {
+              newData.push(dataLine);
+            }
+
+          }, this);
+        }
+        this.setData(newData);
+      } else {
+        this.setData(this._original);
       }
-      this.setData(newData);
-    } else {
-      this.setData(this._original);
-    }
       this.set('refresh');
 
     },
@@ -193,16 +190,16 @@ define([
         }
       });
 
-      // get data for tsv (currently typed as txt)      
+      // get data for tsv (currently typed as txt)
       if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
         // split on new lines, to get the grid rows
         var dataLines = this.state.data.split(/\r?\n/);
 
-        // get the headers for the columns by splitting the first line.  
-        var tmpColumnHeaders = dataLines[0].split(/\t/);	
+        // get the headers for the columns by splitting the first line.
+        var tmpColumnHeaders = dataLines[0].split(/\t/);
       } else {    // csv
         // split on new lines, to get the grid rows
-        var dataLines = this.state.data.split(/\r?\n/); 
+        var dataLines = this.state.data.split(/\r?\n/);
 
         var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
       }
@@ -217,7 +214,7 @@ define([
           var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
           rowStart = 1;
         } else {
-          var columnHeaders = { label: "Column " + (i + 1), field: "Column " + (i + 1) };
+          var columnHeaders = { label: 'Column ' + (i + 1), field: 'Column ' + (i + 1) };
         }
 
         gridColumns.push(columnHeaders);
@@ -226,7 +223,7 @@ define([
       // fill with data, start with second line of dataLines
       var columnData = [];
       for (i = rowStart; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
-        // get data for tsv (currently typed as txt)      
+        // get data for tsv (currently typed as txt)
         if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
           var tmpData = dataLines[i].split(/\t/);
         } else {
@@ -234,12 +231,12 @@ define([
         }
         var dataRow = {};
         dataRow['RowNumber'] = i;
-        for (j = 0; j < tmpData.length; j++) {	
+        for (j = 0; j < tmpData.length; j++) {
           dataRow[gridColumns[j].field] = tmpData[j];
         }
         columnData.push(dataRow);
       }
-      gridColumns.unshift(selector({ label: selector({ unidable: true})}));  // add checkboxes to beginning of array
+      gridColumns.unshift(selector({ label: selector({ unidable: true }) }));  // add checkboxes to beginning of array
       this.columns = gridColumns;
       this.setData(columnData);
 
@@ -247,6 +244,6 @@ define([
       return this._loadingDeferred;
     }
 
-    
+
   });
 });

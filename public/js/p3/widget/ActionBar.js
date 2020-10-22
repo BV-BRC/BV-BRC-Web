@@ -129,9 +129,9 @@ define([
         }
 
         // if this is a tsv or csv table, hide copy folder, move, rename, delete, edit type buttons
-        if (this.currentContainerType == "csvFeature" && 
-            (act.options.label == "DELETE" || act.options.label == "MOVE" || act.options.label == "RENAME" || act.options.label == "EDIT TYPE" ||
-            (act.options.label == "COPY" && act.options.validContainerTypes != "csvFeature"))) {
+        if (this.currentContainerType == 'csvFeature' &&
+            (act.options.label == 'DELETE' || act.options.label == 'MOVE' || act.options.label == 'RENAME' || act.options.label == 'EDIT TYPE' ||
+            (act.options.label == 'COPY' && act.options.validContainerTypes != 'csvFeature'))) {
           return false;
         }
 
@@ -282,11 +282,11 @@ define([
       // return the wrapper for use.
       return target;
     },
-       
+
     deleteAction: function (name, label) {
       if (this._actions[name] && this._actions[name].options.label === label) {
         delete this._actions[name];
       }
-    } 
+    }
   });
 });

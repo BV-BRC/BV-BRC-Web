@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 
+  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   './Grid', './GridSelector', './PageGrid', 'dojo/_base/Deferred'
 ], function (
   declare, lang, BorderContainer, on,
@@ -16,7 +16,7 @@ define([
     state: null,
     dataFilename: '',
     rowIsSelected: false,
-/*  coluumns example
+    /*  coluumns example
     columns: {
       column0: {label: 'Col0', field: "column0" },
       column1: {label: 'Col1', field: "column1" },
@@ -42,17 +42,13 @@ define([
       column21: {label: 'Col21', field: "column21" }
       },
 */
-    constructor: function (options) {
-      //this.store = this.createStore(); //DEV come back to this later
-      
-    },
 
     _setState: function (state) {
       if (!state) {
         return;
       }
 
-      this.set("dataFilename", state.dataFile);
+      this.set('dataFilename', state.dataFile);
 
       if (!this.store) {
         this.set('store', this.createStore());
@@ -60,22 +56,20 @@ define([
         this.store.set('state', state);
         this.store.watch('refresh', lang.hitch(this, 'refresh'));
       }
-      //this.set("dataFilename", state.dataFile);
-      this.set("columns", this.store.columns); 
+      this.set('columns', this.store.columns);
       this.refresh();
     },
 
-    // DEV not sure ever get here
     createStore: function () {
       this.store.watch('refresh', lang.hitch(this, 'refresh'));
       return this.store;
 
     },
 
-    startup: function() {
-      var _self = this;  
+    startup: function () {
+      var _self = this;
 
-      this.on('.dgrid-content .dgrid-row:dblclick', function(evt) {
+      this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
         var row = _self.row(evt);
         on.emit(_self.domNode, 'ItemDblClick', {
           item_path: row.data.path,
@@ -85,7 +79,7 @@ define([
         });
       });
 
-      this.on('dgrid-select', function(evt) {
+      this.on('dgrid-select', function (evt) {
 
         _self.rowIsSelected = true;
 
@@ -94,19 +88,19 @@ define([
           selected: evt.grid.selection,
           grid: _self,
           bubbles: true,
-          cancelable: true,
+          cancelable: true
         };
         on.emit(_self.domNode, 'select', newEvt);
 
         _self.storedEvt = newEvt;
       });
 
-      this.on('dgrid-deselect', function(evt) {
+      this.on('dgrid-deselect', function (evt) {
 
         _self.rowIsSelected = false;
-        
+
         var newEvt = {
-          rows:evt.rows,
+          rows: evt.rows,
           selected: evt.grid.selection,
           grid: _self,
           bubbles: true,
@@ -123,7 +117,7 @@ define([
 
     },
 
-    setData: function(newData) {
+    setData: function (newData) {
       this.renderArray(newData);
     },
 

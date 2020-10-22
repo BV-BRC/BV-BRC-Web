@@ -44,16 +44,6 @@ define([
       'pdf', 'string', 'json', 'csv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample',
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
-    // testTypes: ['bam', 'bai', 'bigwig', 'biochemistry', 'contigs', 'csv', 'de_novo_assembled_transcripts', 
-    //   'diffexp_experiment', 'diffexp_expression', 'diffexp_input_data', 'diffexp_input_metadata',
-    //   'diffexp_mapping', 'diffexp_sample', 'doc', 'docx', 'embl', 'experiment_group', 'fba',
-    //   'feature_dna_fasta', 'feature_group', 'feature_protein_fasta', 'feature_table', 'folder',
-    //   'genbank_file', 'genome', 'genome_annotation_result', 'genome_comparison_table',
-    //   'genome_group', 'gff', 'gif', 'html', 'job_result', 'jpg', 'json', 'mapping', 'media',
-    //   'model', 'modelfolder', 'model_edit', 'modeltemplate', 'nwk', 'pdf', 'png', 'ppt', 'pptx',
-    //   'proteomics_experiment', 'reads', 'rxnprobs', 'string', 'svg', 'tar_gz', 'tbi', 
-    //   'transcriptomics_experiment', 'transcripts', 'tsv', 'txt', 'vcf', 'vcf_gz', 'wig',
-    //   'xls', 'xlsx', 'zip', 'contigset', 'xml'],
     design: 'sidebar',
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
@@ -1415,7 +1405,7 @@ define([
           case 'tsv':
             tsvCsvFilename = this.tsvCsvFilename = obj.name;
             panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
-            params.file = { metadata: obj }; 
+            params.file = { metadata: obj };
             break;
           default:
             tsvCsvFilename = this.tsvCsvFilename = obj.name;
@@ -1427,7 +1417,6 @@ define([
                 isTsv = true;
               }
             });
-            //if ((obj.name).includes('tsv')) {
             if (isTsv) {
               panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
             } else {
@@ -1446,7 +1435,7 @@ define([
             var hideTimer;
 
             if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
-            
+
             Topic.subscribe('changeActionPanel', function (actionPanel) {
               _self.actionPanel.set('selection', []);
               _self.actionPanel.set('currentContainerWidget', newPanel);
@@ -1454,7 +1443,7 @@ define([
 
             if (this.actionPanel) {
               this.actionPanel.set('currentContainerWidget', newPanel);
-              this.itemDetailPanel.set('containerWidget', newPanel);              
+              this.itemDetailPanel.set('containerWidget', newPanel);
             }
 
             if (newPanel.on) {

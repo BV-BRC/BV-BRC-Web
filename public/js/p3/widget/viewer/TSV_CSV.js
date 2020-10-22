@@ -1,19 +1,19 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
-  '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 
+  '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr',
   'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
-  '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup', 
-  '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when', 
+  '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup',
+  '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when',
   '../CopyTooltipDialog'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
-  TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr, 
-  array, selector, lang, TsvCsvStore, 
+  TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr,
+  array, selector, lang, TsvCsvStore,
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
-  tsvCsvFeatures, request, PathJoin, popup, 
+  tsvCsvFeatures, request, PathJoin, popup,
   PerspectiveToolTipDialog, all, when,
   CopyTooltipDialog
 ) {
@@ -64,18 +64,10 @@ define([
     },
 
     setActionPanel: function (actionPanel) {
-        this.actionPanel = actionPanel;
+      this.actionPanel = actionPanel;
     },
 
-    onSetState: function (attr, oldVal, state) {
-
-      if (!state) {
-        return;
-      }
-    },
-
-    postCreate: function() {
-      console.log('in postCreate');
+    postCreate: function () {
       this.inherited(arguments);
     },
 
@@ -84,10 +76,8 @@ define([
         return;
       }
       this.inherited(arguments);
-      //this.viewHeader = new ContentPane({ content: '', region: 'top' });
       this.viewSubHeader = new ContentPane({ content: '', region: 'top' });
       this.viewer = new ContentPane({ content: '', region: 'center' });
-      //this.addChild(this.viewHeader);
       this.addChild(this.viewSubHeader);
       this.addChild(this.viewer);
 
@@ -101,7 +91,6 @@ define([
       if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000) {
         this.viewable = true;
       }
-      // console.log('[File] viewable?:', this.viewable);
 
       if (!this.file.data && this.viewable) {
         var _self = this;
@@ -111,11 +100,11 @@ define([
           _self.set('file', obj);
         });
       }
-      
-			this.refresh();
+
+      this.refresh();
     },
 
-    createFilterPanel: function(columnHeaders) {
+    createFilterPanel: function (columnHeaders) {
       if (this._filterCreated) {
         return;
       }
@@ -124,7 +113,7 @@ define([
 
       var filterPanel = new ContentPane({
         region: 'top',
-        style: {display: 'inline-block', 'vertical-align': 'top'}
+        style: { display: 'inline-block', 'vertical-align': 'top' }
       });
 
       var downld = '<div><a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a></div>';
@@ -150,7 +139,7 @@ define([
         },
         options: [
           { label: 'All Columns', value: 'all', selected: true }
-        ],
+        ]
       }, columnFilter);
 
       this.filters = {
@@ -163,11 +152,11 @@ define([
 
       // initialize app filters
       var items = [];
-      columnHeaders.forEach(function(header){
-        items.push({'label': header.label, 'value': header.label});
+      columnHeaders.forEach(function (header) {
+        items.push({ 'label': header.label, 'value': header.label });
       });
       items.shift(); // remove checkboxes from column selection item list
-      items.unshift({'label': "All Columns", 'value': "All Columns"}); // add an All Columns option to the top of the list
+      items.unshift({ 'label': 'All Columns', 'value': 'All Columns' }); // add an All Columns option to the top of the list
       selector.set('options', items).reset();
 
       domConstruct.place(downld, filterPanel.containerNode, 'last');
@@ -180,10 +169,10 @@ define([
         onClick: lang.hitch(this, function () {
 
           ta_keyword.set('value', '');
-          selector.set('value', "All Columns");
+          selector.set('value', 'All Columns');
           var filter = {};
           filter.keyword = '';
-          filter.columnSelection = "All Columns";
+          filter.columnSelection = 'All Columns';
 
           Topic.publish('applyKeywordFilter', filter);
         })
@@ -197,9 +186,8 @@ define([
 
           filter.keyword = ta_keyword.get('value');
           filter.columnSelection = selector.get('value');
-         
-          Topic.publish('applyKeywordFilter', filter); 
-          console.log("after publish");
+
+          Topic.publish('applyKeywordFilter', filter);
         })
       });
       domConstruct.place(btn_submit.domNode, filterPanel.containerNode, 'last');
@@ -217,7 +205,7 @@ define([
       if (isNotKnownSuffix) {
         var columnDiv = domConstruct.create('div', {});
         var checkBox_headers = new CheckBox({
-          style: { checked: true, 'margin-left': '10px'}
+          style: { checked: true, 'margin-left': '10px' }
         });
         checkBox_headers.on('change', lang.hitch(this, function (val) {
           this.tsvGC.grid.set('rowIsSelected', false);
@@ -225,7 +213,7 @@ define([
           this.set('userDefinedColumnHeaders', val);
           this.refresh();
         }));
-        domConstruct.create('label', {innerHTML: 'testing'}, this.checkBox_headers);
+        domConstruct.create('label', { innerHTML: 'testing' }, this.checkBox_headers);
 
         domConstruct.place(checkBox_headers.domNode, columnDiv, 'first');
         domConstruct.place(columnDiv, filterPanel.containerNode, 'last');
@@ -236,7 +224,6 @@ define([
 
     checkForGenomeIDs: function (data) {
 
-      //console.log(data);
       _self = this;
 
       // clear out the last used action panel buttons and start again
@@ -249,7 +236,7 @@ define([
       Topic.publish('changeActionPanel', _self.actionPanel);
 
       // add copy button to action panel
-      this.actionPanel.addAction ('CopySelection', 'fa icon-clipboard2 fa-2x', {
+      this.actionPanel.addAction('CopySelection', 'fa icon-clipboard2 fa-2x', {
         label: 'COPY',
         multiple: true,
         validTypes: ['*'],
@@ -287,10 +274,10 @@ define([
 
           // if this cell contains a feature id
           if (String(data[j][Object.keys(data[j])[i]]).match(/^fig\|\d+.\d+/)) {
-            var featureString = String(data[j][Object.keys(data[j])[i]]).replace("|", "%7C");
-            var elementPos = checkFeatureIDs.map(function(x) {return x.feature; }).indexOf(featureString);
+            var featureString = String(data[j][Object.keys(data[j])[i]]).replace('|', '%7C');
+            var elementPos = checkFeatureIDs.map(function (x) { return x.feature; }).indexOf(featureString);
             if (elementPos === -1) {
-              checkFeatureIDs.push({columns: [Object.keys(data[j])[i]], feature: (featureString)});
+              checkFeatureIDs.push({ columns: [Object.keys(data[j])[i]], feature: (featureString) });
             }
             else {
               if (checkFeatureIDs[elementPos].columns.indexOf(Object.keys(data[j])[i]) == -1) {
@@ -303,9 +290,9 @@ define([
           var geneMatch = String(data[j][Object.keys(data[j])[i]]).match(/\d+\.\d+/);
 
           if (geneMatch) {
-            var elementPos = checkGeneIDs.map(function(x) {return x.geneID; }).indexOf(geneMatch[0]);
+            var elementPos = checkGeneIDs.map(function (x) { return x.geneID; }).indexOf(geneMatch[0]);
             if (elementPos === -1) {
-              checkGeneIDs.push({columns: [Object.keys(data[j])[i]], geneID: geneMatch[0]});
+              checkGeneIDs.push({ columns: [Object.keys(data[j])[i]], geneID: geneMatch[0] });
             }
             else {
               if (checkGeneIDs[elementPos].columns.indexOf(Object.keys(data[j])[i]) == -1) {
@@ -318,20 +305,20 @@ define([
 
       this.featurequery = null;
       if (checkFeatureIDs.length > 0) {
-        var featureList = checkFeatureIDs.map(function(item) {
+        var featureList = checkFeatureIDs.map(function (item) {
           return item.feature;
-        }).join(",");
+        }).join(',');
         this.featurequery = '?in(patric_id,(' + featureList + '))&select(feature_id)';
       }
 
       this.genequery = null;
       if (checkGeneIDs.length > 0) {
-        var geneIDList = checkGeneIDs.map(function(item) {
+        var geneIDList = checkGeneIDs.map(function (item) {
           return item.geneID;
-        }).join(",");
+        }).join(',');
 
-        this.genequery = '?in(genome_id,(' + geneIDList + '))&select(genome_id)'; 
-      }   
+        this.genequery = '?in(genome_id,(' + geneIDList + '))&select(genome_id)';
+      }
 
       if (this.featurequery) {
         var getFeatureReturned = when(request.get(PathJoin(window.App.dataAPI, 'genome_feature', this.featurequery), {
@@ -341,9 +328,10 @@ define([
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
             Authorization: (window.App.authorizationToken || '')
-          
-          }}),function (response) {
-            return response;
+
+          }
+        }), function (response) {
+          return response;
         });
       }
 
@@ -355,31 +343,32 @@ define([
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
             Authorization: (window.App.authorizationToken || '')
-          
-          }}), function (response) {
-            return response;
+
+          }
+        }), function (response) {
+          return response;
         });
       }
 
-      return when(all([!this.featurequery || getFeatureReturned, !this.genequery || getGeneIDReturned]), function(results)
+      return when(all([!this.featurequery || getFeatureReturned, !this.genequery || getGeneIDReturned]), function (results)
       {
-        console.log(results);
+        // console.log(results);
 
         // move results here.  Also need to take into account that sometimes both responses are not necessary.
         if (results[0].response && results[0].response.numFound > 0) {
 
           var featureResponses = [];
           results[0].response.docs.forEach(function (item) {
-            featureResponses.push (item.feature_id.match(/\d+\.\d+/)[0]);
+            featureResponses.push(item.feature_id.match(/\d+\.\d+/)[0]);
           });
 
           var featureCounts = [];
           checkFeatureIDs.forEach(function (item) {
             var cols = item.columns;
-            cols.forEach (function (colItem) {
-              var elementPos = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+            cols.forEach(function (colItem) {
+              var elementPos = featureCounts.map(function (x) { return x.columnName; }).indexOf(colItem);
               if (elementPos === -1) {
-                featureCounts.push ({ columnName: colItem, featureCount: 1 });
+                featureCounts.push({ columnName: colItem, featureCount: 1 });
               }
               else {
                 featureCounts[elementPos]['featureCount']++;
@@ -388,39 +377,39 @@ define([
           });
 
           featureResponses.forEach(function (item) {
-            var elementPos = checkFeatureIDs.map(function(x) {return x.feature.match(/\d+\.\d+/)[0]; }).indexOf(item);
+            var elementPos = checkFeatureIDs.map(function (x) { return x.feature.match(/\d+\.\d+/)[0]; }).indexOf(item);
             if (elementPos > -1) {
-              //get cols and find them in featureCounts, add or increment responseCount
+              // get cols and find them in featureCounts, add or increment responseCount
               var cols = checkFeatureIDs[elementPos].columns;
-              cols.forEach (function (colItem) {
-                var countPosition = featureCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+              cols.forEach(function (colItem) {
+                var countPosition = featureCounts.map(function (x) { return x.columnName; }).indexOf(colItem);
                 if (featureCounts[countPosition]['responseCount']) {
                   featureCounts[countPosition]['responseCount']++;
                 }
                 else {
                   featureCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
                 }
-              })                
+              });
             }
           });
 
           // detection of feature(s) if over 90%
-          if (featureCounts[0].responseCount/featureCounts[0].featureCount > .90) {
+          if (featureCounts[0].responseCount / featureCounts[0].featureCount > 0.90) {
 
-            _self.containerType = 'csvFeature';              
-            
+            _self.containerType = 'csvFeature';
+
             _self.actionPanel.addAction('ViewFeatureItem', 'MultiButton fa icon-selection-Feature fa-2x', {
               label: 'FEATURE',
               validTypes: ['*'],
               validContainerTypes: ['csvFeature'],    // csv and tsv tables only
               multiple: false,
               tooltip: 'Switch to Feature View.  Press and Hold for more options.',
-              pressAndHold: function(selection, button, opts, evt) {
+              pressAndHold: function (selection, button, opts, evt) {
                 var columnName = featureCounts[0].columnName;
                 if (columnName in selection[0]) {
-                  var sel = (selection[0][columnName]).replace("|", "%7C");      
+                  var sel = (selection[0][columnName]).replace('|', '%7C');
                   var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
-        
+
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
                     headers: {
@@ -428,25 +417,25 @@ define([
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
                       Authorization: (window.App.authorizationToken || '')
-                    
+
                     }
-                  }) .then(function(response){
-                    popup.open ({
-                      popup: new PerspectiveToolTipDialog ({
+                  }).then(function (response) {
+                    popup.open({
+                      popup: new PerspectiveToolTipDialog({
                         perspective: 'Feature',
                         perspectiveUrl: '/view/Feature/' + response[0].feature_id
                       }),
                       around: button,
                       orient: ['below']
                     });
-                  }); 
+                  });
                 }
               }
-            
+
             }, function (selection) {
-              var columnName = featureCounts[0].columnName;      
-              if (columnName in selection[0]) {   
-                var sel = (selection[0][columnName]).replace("|", "%7C");  
+              var columnName = featureCounts[0].columnName;
+              if (columnName in selection[0]) {
+                var sel = (selection[0][columnName]).replace('|', '%7C');
                 var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
 
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
@@ -456,12 +445,12 @@ define([
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
                     Authorization: (window.App.authorizationToken || '')
-                  
+
                   }
-                }).then( function(response){
-                  Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id })
-                }); 
-              }       
+                }).then( function (response) {
+                  Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id });
+                });
+              }
             });
 
             _self.actionPanel.addAction('ViewFeatureGroups', 'MultiButton fa icon-selection-FeatureList fa-2x', {
@@ -471,7 +460,7 @@ define([
               multiple: true,
               min: 2,
               tooltip: 'Switch to the Feature List View. Press and Hold for more options.',
-              pressAndHold: function (selection, button, opts, evt) { 
+              pressAndHold: function (selection, button, opts, evt) {
 
                 var columnName = featureCounts[0].columnName;
                 if (selection.length == 1) {
@@ -479,17 +468,17 @@ define([
                 } else {
                   var q = selection.map(function (sel) {
                     if (sel[columnName]) {
-                      return (sel[columnName]).replace("|", "%7C");
+                      return (sel[columnName]).replace('|', '%7C');
                     }
-                    return "";
+                    return '';
                   });
-        
+
                   // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
-                  var noEmptyFeatureIDs = q.filter(function(elem) {
-                    return (elem != "");
+                  var noEmptyFeatureIDs = q.filter(function (elem) {
+                    return (elem != '');
                   });
-                  
-                  q = '?in('+ 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
+
+                  q = '?in(' + 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
                     headers: {
@@ -497,22 +486,22 @@ define([
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
                       Authorization: (window.App.authorizationToken || '')
-                    
+
                     }
-                  }).then(function(response){
-                    var featureIDs = response.map(function(response) { return response.feature_id; }).join(',');
+                  }).then(function (response) {
+                    var featureIDs = response.map(function (response) { return response.feature_id; }).join(',');
                     var featureList = '?in(feature_id,(' + featureIDs + '))';
-                    popup.open ({
-                      popup: new PerspectiveToolTipDialog ({
+                    popup.open({
+                      popup: new PerspectiveToolTipDialog({
                         perspective: 'FeatureList',
                         perspectiveUrl: '/view/FeatureList/' + featureList
                       }),
                       around: button,
                       orient: ['below']
                     });
-                  }); 
+                  });
                 }
-              },    
+              }
             }, function (selection) {
               var columnName = featureCounts[0].columnName;
               if (selection.length == 1) {
@@ -520,16 +509,16 @@ define([
               } else {
                 var q = selection.map(function (sel) {
                   if (sel[columnName]) {
-                    return (sel[columnName]).replace("|", "%7C");
+                    return (sel[columnName]).replace('|', '%7C');
                   }
-                  return "";
+                  return '';
                 });
-      
+
                 // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
-                var noEmptyFeatureIDs = q.filter(function(elem) {
-                  return (elem != "");
+                var noEmptyFeatureIDs = q.filter(function (elem) {
+                  return (elem != '');
                 });
-                
+
                 q = '?in(' + 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                   handleAs: 'json',
@@ -538,32 +527,32 @@ define([
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
                     Authorization: (window.App.authorizationToken || '')
-                  
+
                   }
-                }).then(function(response){
-                  var featureIDs = response.map(function(response) { return response.feature_id; }).join(',');
+                }).then(function (response) {
+                  var featureIDs = response.map(function (response) { return response.feature_id; }).join(',');
                   var featureList = '?in(feature_id,(' + featureIDs + '))';
-                  Topic.publish('/navigate', { href: '/view/FeatureList/' +  featureList})
-                }); 
+                  Topic.publish('/navigate', { href: '/view/FeatureList/' +  featureList });
+                });
               }
             });
-          }  // end FEATURE if feature count > .9           
+          }  // end FEATURE if feature count > .9
         }  // end features
 
         if (results[1].response && results[1].response.numFound > 0) {
 
           var geneIDResponses = [];
           results[1].response.docs.forEach(function (item) {
-            geneIDResponses.push (item.genome_id.match(/\d+\.\d+/)[0]);
+            geneIDResponses.push(item.genome_id.match(/\d+\.\d+/)[0]);
           });
 
           var geneIDCounts = [];
           checkGeneIDs.forEach(function (item) {
             var cols = item.columns;
-            cols.forEach (function (colItem) {
-              var elementPos = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+            cols.forEach(function (colItem) {
+              var elementPos = geneIDCounts.map(function (x) { return x.columnName; }).indexOf(colItem);
               if (elementPos === -1) {
-                geneIDCounts.push ({ columnName: colItem, geneIDCount: 1 });
+                geneIDCounts.push({ columnName: colItem, geneIDCount: 1 });
               }
               else {
                 geneIDCounts[elementPos]['geneIDCount']++;
@@ -572,27 +561,27 @@ define([
           });
 
           geneIDResponses.forEach(function (item) {
-            var elementPos = checkGeneIDs.map(function(x) {return x.geneID.match(/\d+\.\d+/)[0]; }).indexOf(item);
+            var elementPos = checkGeneIDs.map(function (x) { return x.geneID.match(/\d+\.\d+/)[0]; }).indexOf(item);
             if (elementPos > -1) {
-                //get cols and find them in featureCounts, add or increment responseCount
+              // get cols and find them in featureCounts, add or increment responseCount
               var cols = checkGeneIDs[elementPos].columns;
-              cols.forEach (function (colItem) {
-                var countPosition = geneIDCounts.map(function(x) {return x.columnName; }).indexOf(colItem);
+              cols.forEach(function (colItem) {
+                var countPosition = geneIDCounts.map(function (x) { return x.columnName; }).indexOf(colItem);
                 if (geneIDCounts[countPosition]['responseCount']) {
                   geneIDCounts[countPosition]['responseCount']++;
                 }
                 else {
                   geneIDCounts[countPosition]['responseCount'] = 1;    // first time this col is counted in response
                 }
-              })                
+              });
             }
           });
 
           // detection of genome(s) if over 90%
-          if (geneIDCounts[0].responseCount/geneIDCounts[0].geneIDCount > .90) {
+          if (geneIDCounts[0].responseCount / geneIDCounts[0].geneIDCount > 0.90) {
 
             _self.containerType = 'csvFeature';
-            
+
             _self.actionPanel.addAction('ViewGenomeItem', 'MultiButton fa icon-selection-Genome fa-2x', {
               label: 'GENOME',
               validTypes: ['*'],
@@ -600,12 +589,12 @@ define([
               validContainerTypes: ['csvFeature'],    // csv and tsv tables only
               multiple: false,
               tooltip: 'Switch to Genome View.  Press and Hold for more options.',
-              pressAndHold: function(selection, button, opts, evt) {
+              pressAndHold: function (selection, button, opts, evt) {
                 var columnName = geneIDCounts[0].columnName;
                 if (selection[0][columnName]) {
-                  var sel = (selection[0][columnName]).match(/\d+\.\d+/);  
+                  var sel = (selection[0][columnName]).match(/\d+\.\d+/);
                   var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
-        
+
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
                     headers: {
@@ -613,27 +602,27 @@ define([
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
                       Authorization: (window.App.authorizationToken || '')
-                    
+
                     }
-                  }).then(function(response){
-                    popup.open ({
-                      popup: new PerspectiveToolTipDialog ({
+                  }).then(function (response) {
+                    popup.open({
+                      popup: new PerspectiveToolTipDialog({
                         perspective: 'Genome',
                         perspectiveUrl: '/view/Genome/' + response[0].genome_id
                       }),
                       around: button,
                       orient: ['below']
                     });
-                  }); 
+                  });
                 }
-              },
-            
+              }
+
             }, function (selection) {
               var columnName = geneIDCounts[0].columnName;
-              if (selection[0][columnName]) { 
-                var sel = (selection[0][columnName]).match(/\d+\.\d+/);     
+              if (selection[0][columnName]) {
+                var sel = (selection[0][columnName]).match(/\d+\.\d+/);
                 var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
-      
+
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                   handleAs: 'json',
                   headers: {
@@ -641,13 +630,13 @@ define([
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
                     Authorization: (window.App.authorizationToken || '')
-                  
+
                   }
-                }).then(function(response){
-                  Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id })
-                }); 
-              }       
-            }); 
+                }).then(function (response) {
+                  Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id });
+                });
+              }
+            });
 
             _self.actionPanel.addAction('ViewGenomeItems', 'MultiButton fa icon-selection-GenomeList fa-2x', {
               label: 'GENOMES',
@@ -656,23 +645,23 @@ define([
               multiple: true,
               min: 2,
               tooltip: 'Switch to the Genome List View. Press and Hold for more options.',
-              pressAndHold: function (selection, button, opts, evt) { 
+              pressAndHold: function (selection, button, opts, evt) {
                 var columnName = geneIDCounts[0].columnName;
                 if (selection.length == 1) {
                   Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
                 } else {
                   var q = selection.map(function (sel) {
                     if (sel[columnName]) {
-                      return (selection[0][columnName]).match(/\d+\.\d+/);  
+                      return (selection[0][columnName]).match(/\d+\.\d+/);
                     }
-                    return "";
+                    return '';
                   });
-        
+
                   // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
-                  var noEmptyFeatureIDs = q.filter(function(elem) {
-                    return (elem != "");
+                  var noEmptyFeatureIDs = q.filter(function (elem) {
+                    return (elem != '');
                   });
-                  
+
                   q = '?in(' + 'genome_id' + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
@@ -681,22 +670,22 @@ define([
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
                       Authorization: (window.App.authorizationToken || '')
-                    
+
                     }
-                  }).then(function(response){
-                    var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
+                  }).then(function (response) {
+                    var featureIDs = response.map(function (response) { return response.genome_id; }).join(',');
                     var featureList = '?in(genome_id,(' + featureIDs + '))';
-                    popup.open ({
-                      popup: new PerspectiveToolTipDialog ({
+                    popup.open({
+                      popup: new PerspectiveToolTipDialog({
                         perspective: 'GenomeList',
                         perspectiveUrl: '/view/GenomeList/' + featureList
                       }),
                       around: button,
                       orient: ['below']
                     });
-                  }); 
+                  });
                 }
-              },    
+              }
             }, function (selection) {
               var columnName = geneIDCounts[0].columnName;
               if (selection.length == 1) {
@@ -704,17 +693,17 @@ define([
               } else {
                 var q = selection.map(function (sel) {
                   if (sel[columnName]) {
-                    return (selection[0][columnName]).match(/\d+\.\d+/);  
+                    return (selection[0][columnName]).match(/\d+\.\d+/);
 
                   }
-                  return "";
+                  return '';
                 });
-      
+
                 // some entries in the table do not have PATRIC_ID, so they cannot be linked to the features list
-                var noEmptyFeatureIDs = q.filter(function(elem) {
-                  return (elem != "");
+                var noEmptyFeatureIDs = q.filter(function (elem) {
+                  return (elem != '');
                 });
-                
+
                 q = '?in(' + 'genome_id' + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                   handleAs: 'json',
@@ -723,25 +712,25 @@ define([
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
                     Authorization: (window.App.authorizationToken || '')
-                  
+
                   }
-                }).then(function(response){
-                  var featureIDs = response.map(function(response) { return response.genome_id; }).join(',');
+                }).then(function (response) {
+                  var featureIDs = response.map(function (response) { return response.genome_id; }).join(',');
                   var featureList = '?in(genome_id,(' + featureIDs + '))';
-                  Topic.publish('/navigate', { href: '/view/GenomeList/' +  featureList})
-                }); 
+                  Topic.publish('/navigate', { href: '/view/GenomeList/' +  featureList });
+                });
               }
             });
           }  // end if genome counts greater than .90
         }
-      
+
         // update the action panel for display
         Topic.publish('changeActionPanel', _self.actionPanel);
-       
+
         // if a row was selected before the queries finished, retrigger the selection event
         if (_self.tsvGC.grid.rowIsSelected) {
           _self.tsvGC.grid.triggerSelectionEvent();
-        }      
+        }
       });
     },
 
@@ -770,16 +759,15 @@ define([
 
       if (this.file && this.file.metadata) {
         if (this.viewable) {
-          //this.viewSubHeader.set('content', this.formatFileMetaData(false));
 
           if (this.file.data || (!this.preload && this.url)) {
-            
+
             // store
             var tsvCsvStore = new TsvCsvStore({
               type: 'separatedValues',
               topicId: 'TsvCsv',
               userDefinedColumnHeaders: this.userDefinedColumnHeaders
-            }); 
+            });
 
             this.viewer.set('content', '');
 
@@ -789,9 +777,9 @@ define([
               id: this.viewer.id + '_tsv',
               disable: false,
               store: tsvCsvStore
-            }); 
+            });
 
-            this.tsvGC.set('state', {dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data});
+            this.tsvGC.set('state', { dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data });
             this.createFilterPanel(tsvCsvStore.columns);
             this._filterCreated = true;
 
