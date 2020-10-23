@@ -6,7 +6,7 @@ define([
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup',
   '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when',
-  '../CopyTooltipDialog', '../../util/encodePath'
+  '../CopyTooltipDialog', '../../util/encodePath', 'dijit/registry'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
@@ -15,7 +15,7 @@ define([
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup,
   PerspectiveToolTipDialog, all, when,
-  CopyTooltipDialog, encodePath
+  CopyTooltipDialog, encodePath, registry
 ) {
 
   var copySelectionTT = new CopyTooltipDialog({});
@@ -75,6 +75,7 @@ define([
       if (this._started) {
         return;
       }
+
       this.inherited(arguments);
       this.viewSubHeader = new ContentPane({ content: '', region: 'top' });
       this.viewer = new ContentPane({ content: '', region: 'center' });
@@ -104,14 +105,24 @@ define([
       this.refresh();
     },
 
-    createFilterPanel: function (columnHeaders) {
+    createFilterPanel: function () {
       if (this._filterCreated) {
         return;
       }
 
+      // if the user has already displayed a table, these must be destroyed
+      if (registry.byId('filterPanel') !== undefined) {
+        registry.byId('filterPanel').destroyRecursive();
+        registry.remove('filterPanel');
+
+        registry.byId('filterPanel_splitter').destroyRecursive();
+        registry.byId('filterPanel_splitter');
+      }
+
       this.containerType = '';
 
-      var filterPanel = new ContentPane({
+      this.filterPanel = new ContentPane({
+        id: 'filterPanel',
         region: 'top',
         style: { display: 'inline-block', 'vertical-align': 'top' }
       });
@@ -134,6 +145,7 @@ define([
        */
       var selector = new Select({
         name: 'type',
+        id: 'columnsList',
         style: {
           width: '150px', marginRight: '2.0em'
         },
@@ -152,17 +164,17 @@ define([
 
       // initialize app filters
       var items = [];
-      columnHeaders.forEach(function (header) {
+      this.tsvCsvStore.columns.forEach(function (header) {
         items.push({ 'label': header.label, 'value': header.label });
       });
       items.shift(); // remove checkboxes from column selection item list
       items.unshift({ 'label': 'All Columns', 'value': 'All Columns' }); // add an All Columns option to the top of the list
       selector.set('options', items).reset();
 
-      domConstruct.place(downld, filterPanel.containerNode, 'last');
-      domConstruct.place(label_keyword, filterPanel.containerNode, 'last');
-      domConstruct.place(ta_keyword.domNode, filterPanel.containerNode, 'last');
-      domConstruct.place(selector.domNode, filterPanel.containerNode, 'last');
+      domConstruct.place(downld, this.filterPanel.containerNode, 'last');
+      domConstruct.place(label_keyword, this.filterPanel.containerNode, 'last');
+      domConstruct.place(ta_keyword.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(selector.domNode, this.filterPanel.containerNode, 'last');
 
       var btn_reset = new Button({
         label: 'Reset',
@@ -190,8 +202,8 @@ define([
           Topic.publish('applyKeywordFilter', filter);
         })
       });
-      domConstruct.place(btn_submit.domNode, filterPanel.containerNode, 'last');
-      domConstruct.place(btn_reset.domNode, filterPanel.containerNode, 'last');
+      domConstruct.place(btn_submit.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(btn_reset.domNode, this.filterPanel.containerNode, 'last');
 
       // add button or checkbox for column headers if suffix is not known (user supplied data file)
       var _self = this;
@@ -212,14 +224,23 @@ define([
           _self.actionPanel.set('selection', []);     // if user clicks while row(s) selected, must clear out the action panel
           this.set('userDefinedColumnHeaders', val);
           this.refresh();
-        }));
-        domConstruct.create('label', { innerHTML: 'testing' }, this.checkBox_headers);
 
+          // update the select list of column names on the filter panel
+          var items = [];
+          this.tsvCsvStore.columns.forEach(function (header) {
+            items.push({ 'label': header.label, 'value': header.label });
+          });
+          items.shift(); // remove checkboxes from column selection item list
+          items.unshift({ 'label': 'All Columns', 'value': 'All Columns' }); // add an All Columns option to the top of the list
+          dijit.byId('columnsList').set('options', items).reset();
+        }));
+
+        domConstruct.create('label', { innerHTML: 'testing' }, this.checkBox_headers);
         domConstruct.place(checkBox_headers.domNode, columnDiv, 'first');
-        domConstruct.place(columnDiv, filterPanel.containerNode, 'last');
+        domConstruct.place(columnDiv, this.filterPanel.containerNode, 'last');
         domConstruct.create('span', { innerHTML: 'First Row Contains Column Headers' }, columnDiv);
       }
-      this.addChild(filterPanel);
+      this.addChild(this.filterPanel);
     },
 
     checkForGenomeIDs: function (data) {
@@ -763,7 +784,7 @@ define([
           if (this.file.data || (!this.preload && this.url)) {
 
             // store
-            var tsvCsvStore = new TsvCsvStore({
+            this.tsvCsvStore = new TsvCsvStore({
               type: 'separatedValues',
               topicId: 'TsvCsv',
               userDefinedColumnHeaders: this.userDefinedColumnHeaders
@@ -776,15 +797,15 @@ define([
               title: 'TSV View',
               id: this.viewer.id + '_tsv',
               disable: false,
-              store: tsvCsvStore
+              store: this.tsvCsvStore
             });
 
             this.tsvGC.set('state', { dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data });
-            this.createFilterPanel(tsvCsvStore.columns);
+            this.createFilterPanel();
             this._filterCreated = true;
 
             // check for feature/genome columns
-            this.checkForGenomeIDs(tsvCsvStore.data);
+            this.checkForGenomeIDs(this.tsvCsvStore.data);
 
             this.viewer.set('content', this.tsvGC);
           } else {
