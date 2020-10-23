@@ -1403,12 +1403,12 @@ define([
             break;
           case 'csv':
           case 'tsv':
-            tsvCsvFilename = this.tsvCsvFilename = obj.name;
+            var tsvCsvFilename = this.tsvCsvFilename = obj.name;
             panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
             params.file = { metadata: obj };
             break;
           default:
-            tsvCsvFilename = this.tsvCsvFilename = obj.name;
+            var tsvCsvFilename = this.tsvCsvFilename = obj.name;
             var isTsv = false;
             var keyList = Object.keys(tsvCsvFeatures);    // for older tsv files typed as txt
             keyList.forEach(function (keyName) {
@@ -1436,6 +1436,7 @@ define([
 
             if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
 
+            var _self = this;
             Topic.subscribe('changeActionPanel', function (actionPanel) {
               _self.actionPanel.set('selection', []);
               _self.actionPanel.set('currentContainerWidget', newPanel);

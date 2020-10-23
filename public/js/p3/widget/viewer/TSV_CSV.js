@@ -6,7 +6,7 @@ define([
   './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup',
   '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when',
-  '../CopyTooltipDialog'
+  '../CopyTooltipDialog', '../../util/encodePath'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct, domStyle,
@@ -15,7 +15,7 @@ define([
   ViewerBase, TextArea, Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup,
   PerspectiveToolTipDialog, all, when,
-  CopyTooltipDialog
+  CopyTooltipDialog, encodePath
 ) {
 
   var copySelectionTT = new CopyTooltipDialog({});
@@ -224,7 +224,7 @@ define([
 
     checkForGenomeIDs: function (data) {
 
-      _self = this;
+      var _self = this;
 
       // clear out the last used action panel buttons and start again
       _self.containerType = '';
@@ -268,9 +268,9 @@ define([
       var checkFeatureIDs = [];
       var checkGeneIDs = [];
 
-      for (i = 0; i < numColumns; i++) {
+      for (var i = 0; i < numColumns; i++) {
         // check the first 20 rows to see if this column contains gene_id, skip the first row because it may contain headers
-        for (j = 1; j < 20 && j < data.length; j++) {
+        for (var j = 1; j < 20 && j < data.length; j++) {
 
           // if this cell contains a feature id
           if (String(data[j][Object.keys(data[j])[i]]).match(/^fig\|\d+.\d+/)) {
@@ -408,7 +408,7 @@ define([
                 var columnName = featureCounts[0].columnName;
                 if (columnName in selection[0]) {
                   var sel = (selection[0][columnName]).replace('|', '%7C');
-                  var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
+                  var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
 
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
@@ -436,7 +436,7 @@ define([
               var columnName = featureCounts[0].columnName;
               if (columnName in selection[0]) {
                 var sel = (selection[0][columnName]).replace('|', '%7C');
-                var query = '?eq(' + 'patric_id' + ',' + sel + ')&select(feature_id)';
+                var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
 
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                   handleAs: 'json',
@@ -478,7 +478,7 @@ define([
                     return (elem != '');
                   });
 
-                  q = '?in(' + 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
+                  q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
                     headers: {
@@ -519,7 +519,7 @@ define([
                   return (elem != '');
                 });
 
-                q = '?in(' + 'patric_id' + ',(' + noEmptyFeatureIDs + '))&select(feature_id)';
+                q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                   handleAs: 'json',
                   headers: {
@@ -593,7 +593,7 @@ define([
                 var columnName = geneIDCounts[0].columnName;
                 if (selection[0][columnName]) {
                   var sel = (selection[0][columnName]).match(/\d+\.\d+/);
-                  var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
+                  var query = '?eq(genome_id,' + sel + ')&select(genome_id)';
 
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
@@ -621,7 +621,7 @@ define([
               var columnName = geneIDCounts[0].columnName;
               if (selection[0][columnName]) {
                 var sel = (selection[0][columnName]).match(/\d+\.\d+/);
-                var query = '?eq(' + 'genome_id' + ',' + sel + ')&select(genome_id)';
+                var query = '?eq(genome_id,' + sel + ')&select(genome_id)';
 
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                   handleAs: 'json',
@@ -662,7 +662,7 @@ define([
                     return (elem != '');
                   });
 
-                  q = '?in(' + 'genome_id' + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
+                  q = '?in(genome_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
                     headers: {
@@ -704,7 +704,7 @@ define([
                   return (elem != '');
                 });
 
-                q = '?in(' + 'genome_id' + ',(' + noEmptyFeatureIDs + '))&select(genome_id)';
+                q = '?in(genome_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                   handleAs: 'json',
                   headers: {

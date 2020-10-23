@@ -103,8 +103,6 @@ define([
         if (columnSelection == 'All Columns') {
           data.forEach(function (dataLine) {
             var skip = false;
-            var dataLineArray = Object.values(dataLine);
-
             if (!skip && keyword !== '') {
               keywordRegex.some(function (needle) {
                 if (dataLine) {
@@ -200,13 +198,12 @@ define([
       } else {    // csv
         // split on new lines, to get the grid rows
         var dataLines = this.state.data.split(/\r?\n/);
-
-        var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
+        var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^"]*"[^"]*")*(?![^"]*"))/);
       }
 
       var rowStart = 0;
       var gridColumns = [];
-      for (i = 0; i < tmpColumnHeaders.length; i++) {
+      for (var i = 0; i < tmpColumnHeaders.length; i++) {
 
         // make column labels from the first line of dataLines or if column headers are not present
         // then name them as "Column 1", "Column 2", etc.
@@ -222,16 +219,16 @@ define([
 
       // fill with data, start with second line of dataLines
       var columnData = [];
-      for (i = rowStart; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
+      for (var i = rowStart; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
         // get data for tsv (currently typed as txt)
         if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
           var tmpData = dataLines[i].split(/\t/);
         } else {
-          var tmpData = dataLines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
+          var tmpData = dataLines[i].split(/,(?=(?:[^"]*"[^"]*")*(?![^"]*"))/);
         }
         var dataRow = {};
         dataRow['RowNumber'] = i;
-        for (j = 0; j < tmpData.length; j++) {
+        for (var j = 0; j < tmpData.length; j++) {
           dataRow[gridColumns[j].field] = tmpData[j];
         }
         columnData.push(dataRow);
@@ -243,7 +240,5 @@ define([
       this._loaded = true;
       return this._loadingDeferred;
     }
-
-
   });
 });
