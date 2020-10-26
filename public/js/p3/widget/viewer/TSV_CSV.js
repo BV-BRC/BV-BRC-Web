@@ -1,27 +1,25 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
-  '../TSV_CSV_GridContainer', '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr',
-  'dojo/_base/array', '../GridSelector', 'dojo/_base/lang', '../../store/TsvCsvMemoryStore',
-  './Base', 'dijit/form/Textarea', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
+  'dojo/_base/declare', 'dojo/on', 'dijit/layout/ContentPane', 'dojo/dom-construct',
+  '../TSV_CSV_GridContainer', '../../WorkspaceManager', 'dojo/_base/Deferred',
+  'dojo/_base/lang', '../../store/TsvCsvMemoryStore', './Base', 'dijit/form/Textarea', 
+  'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup',
   '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when',
-  '../CopyTooltipDialog', '../../util/encodePath', 'dijit/registry'
+  '../CopyTooltipDialog', '../../util/encodePath', 'dijit/registry', 'dijit/dijit'
 ], function (
-  declare, BorderContainer, on,
-  domClass, ContentPane, domConstruct, domStyle,
-  TSV_CSV_GridContainer, formatter, WS, Deferred, domAttr,
-  array, selector, lang, TsvCsvStore,
-  ViewerBase, TextArea, Button, CheckBox, Select, Topic,
+  declare, on, ContentPane, domConstruct,
+  TSV_CSV_GridContainer, WS, Deferred,
+  lang, TsvCsvStore, ViewerBase, TextArea, 
+  Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup,
   PerspectiveToolTipDialog, all, when,
-  CopyTooltipDialog, encodePath, registry
+  CopyTooltipDialog, encodePath, registry, dijit
 ) {
 
   var copySelectionTT = new CopyTooltipDialog({});
   copySelectionTT.startup();
 
-  return declare([ViewerBase], {    // was BorderContainer
+  return declare([ViewerBase], {
     baseClass: 'CSV_Viewer',
     disabled: false,
     file: null,

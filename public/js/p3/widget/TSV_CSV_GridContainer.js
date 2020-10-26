@@ -1,13 +1,11 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './TSV_CSV_Grid', 'dijit/popup', 'dojo/_base/lang',
-  'dijit/TooltipDialog', 'dojo/topic', 'dojo/dom-construct',
-  'dijit/layout/ContentPane', 'dijit/form/Textarea'
+  './TSV_CSV_Grid', 'dijit/popup',
+  'dijit/TooltipDialog', 'dojo/dom-construct'
 ], function (
   declare, GridContainer, on,
-  TSV_CSV_Grid, popup, lang,
-  TooltipDialog, Topic, domConstruct,
-  ContentPane, TextArea
+  TSV_CSV_Grid, popup,
+  TooltipDialog, domConstruct
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActi    onTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
