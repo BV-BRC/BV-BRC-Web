@@ -7,12 +7,13 @@
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
         <div class="infobox iconbox tutorialButton tutorialInfo">
-          <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+        </div>
+        <div class="infobox iconbox videoButton videoInfo">
+          <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
         </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a>        and
-        <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
-      </p>
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>, and <a href="${docsServiceURL}${videoLink}" target="_blank" >Instructional Video</a>.</p>
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">

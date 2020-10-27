@@ -22,6 +22,7 @@ define([
     applicationDescription: 'The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP. This service allows users to select genomes and compare them to reference genome.',
     applicationHelp: 'user_guides/services/proteome_comparison_service.html',
     tutorialLink: 'tutorial/proteome_comparison/proteome_comparison.html',
+    videoLink: '/videos/proteome_comparison_service.html',
     pageTitle: 'Proteome Comparison',
     defaultPath: '',
     startingRows: 9,

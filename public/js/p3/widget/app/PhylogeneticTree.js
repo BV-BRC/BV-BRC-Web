@@ -20,6 +20,7 @@ define([
     applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
     applicationHelp: 'user_guides/services/phylogenetic_tree_building_service.html',
     tutorialLink: 'tutorial/codon_tree_building/codon_tree_building.html',
+    videoLink: 'videos/phylogenetic_codon_tree.html',
     pageTitle: 'Phylogenetic Tree Building',
     defaultPath: '',
     startingRows: 9,

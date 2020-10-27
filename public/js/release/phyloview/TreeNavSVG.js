@@ -78,12 +78,12 @@ define("phyloview/TreeNavSVG", [
     this.margin = {top: 10, right: 10, bottom: 10, left: 10};
     
     },
-    setTree : function(treeString, labelsInit, labelAliasInit) {
+    setTree : function(treeString, labelsInit, labelAliasInit, idType) {
         _self=this;
         labelsInit = typeof labelsInit !== 'undefined' ? labelsInit : null;
         labelAliasInit = typeof labelAliasInit !== 'undefined' ? labelAliasInit : null;
 
-        phylotree = new PhyloTree.PhyloTree(treeString);
+        phylotree = new PhyloTree.PhyloTree(treeString, idType);
         this.treeData = phylotree.getJSONTree();
         if (labelsInit != null && labelAliasInit != null){
             this.addLabels(labelsInit,labelAliasInit);

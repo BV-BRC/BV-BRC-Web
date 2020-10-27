@@ -6,7 +6,7 @@ define("p3/widget/WorkspaceBrowser", [
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath',
+  'dojo/promise/all', '../util/encodePath', './viewer/JobResult',
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +17,7 @@ define("p3/widget/WorkspaceBrowser", [
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath
+  All, encodePath, JobResult
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -499,7 +499,7 @@ define("p3/widget/WorkspaceBrowser", [
         var isLegacy = parts[1] == 'models';
         path = parts.slice(0, -1).join('/') + '/' + (isLegacy ? '' : '.') + parts.slice(-1)[0];
 
-        var url = 'http://modelseed.theseed.org/#/model' + path + '?login=patric';
+        var url = 'https://modelseed.org/model' + path + '?login=patric';
         window.open(url, '_blank');
       }, false);
 
@@ -583,22 +583,10 @@ define("p3/widget/WorkspaceBrowser", [
         });
       }, self.path.split('/').length < 3);
 
-      this.browserHeader.addAction('ViewCodonTree', 'fa icon-tree2 fa-2x', {
-        label: 'VIEW',
-        multiple: false,
-        validTypes: ['CodonTree'],
-        tooltip: 'View Codon Tree'
-      }, function (selection) {
-        var sel = selection[0],
-          path = sel.path + '.' + sel.name + '/codontree_treeWithGenomeIds.nwk';
-
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path) });
-      }, false);
-
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['PhylogeneticTree'],
+        validTypes: ['PhylogeneticTree', 'CodonTree'],
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
@@ -623,7 +611,13 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
+        var labelSearch = 'true';
+        var idType = 'genome_id';
+        if (encodePath(path[0]).includes('WithGenomeNames.')) {
+          labelSearch = 'false';
+          idType = 'genome_name';
+        }
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -1389,6 +1383,8 @@ define("p3/widget/WorkspaceBrowser", [
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
+                default:
+                  console.log('Using the default JobResult viewer. A viewer could not be found for id: ' + id);
               }
             }
             panelCtor = window.App.getConstructor(d);
@@ -1405,7 +1401,7 @@ define("p3/widget/WorkspaceBrowser", [
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          if (!this.activePanel || !(this.activePanel instanceof Panel)) {
+          if ((!this.activePanel) || !(this.activePanel instanceof Panel) || this.activePanel instanceof JobResult) {
             if (this.activePanel) {
               this.removeChild(this.activePanel);
             }
@@ -1468,7 +1464,7 @@ define("p3/widget/WorkspaceBrowser", [
             this.activePanel = newPanel;
           } else {
             this.activePanel.set('path', this.path);
-            if (this.activePaneal && 'clearSelection' in this.activePaneal) {
+            if (this.activePanel && 'clearSelection' in this.activePanel) {
               this.activePanel.clearSelection();
             }
           }

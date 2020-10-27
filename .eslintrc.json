@@ -18,6 +18,9 @@
     "MauveViewer": true,
     "Hotmap": true
   },
+  "parserOptions": {
+    "ecmaVersion": 5
+  },
   "rules": {
     "_comment_reactivate_later": ["block-scoped-var", "no-restricted-globals", "no-redeclare",
       "no-nested-ternary", "no-return-assign", "no-restricted-syntax", "no-multi-assign", "no-loop-func",

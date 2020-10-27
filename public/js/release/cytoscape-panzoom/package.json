@@ -21,7 +21,7 @@
   "_resolved": "https://registry.npmjs.org/cytoscape-panzoom/-/cytoscape-panzoom-2.5.3.tgz",
   "_shasum": "edf041b5aa8be1cbe3c001f16a8b2193b46127a7",
   "_spec": "cytoscape-panzoom@^2.5.2",
-  "_where": "/Users/nc/patric/p3_test_web",
+  "_where": "/Users/nc/patric/p3_web",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-panzoom/issues"
   },

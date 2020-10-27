@@ -47,6 +47,9 @@ define([
           case 'updateHeader':
             this.totalCountNode.innerHTML = lang.replace('Out of {summary.total} genes selected, {summary.found} genes found in {summary.pathways} pathways', { summary: value });
             break;
+          case 'timeOut':
+            this.totalCountNode.innerHTML = lang.replace('The query took too long or could not be loaded.');
+            break;
           case 'showLoadingMask':
             this.loadingMask.show();
             break;

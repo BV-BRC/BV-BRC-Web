@@ -8,7 +8,7 @@ dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
       </div>
       <div class="infobox iconbox tutorialButton tutorialInfo">
-        <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+        <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
       </div>
     </h3>
   </div>
@@ -172,8 +172,7 @@ dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
               </div>
               <div class="appField" style="width:120px;">
                 <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="joinUsing">
-                  <option value="gene_id">GeneID</option>
-                  <option selected="true" value="gi">GI</option>
+                  <option selected="true" value="gene_id">GeneID</option>
                   <option value="refseq_locus_tag">Refseq locus tag</option>
                   <option value="protein_id">Refseq Protein Acc</option>
                 </select>

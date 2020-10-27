@@ -8,7 +8,7 @@
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
                 <div class="infobox iconbox tutorialButton tutorialInfo">
-                  <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
                 </div>
             </h3>
             <p>The Similar Genome Finder Service will find similar public genomes in PATRIC or compute genome distance estimation
@@ -73,23 +73,23 @@
                         <label class="paramlabel">P value threshold: </label><br/>
                         <div data-dojo-type="dijit/form/Select"
                              data-dojo-attach-point="pvalue"
-                             value="1" style="width:60px">
+                             style="width:60px">
                             <option value="0.001">0.001</option>
                             <option value="0.01">0.01</option>
                             <option value="0.1">0.1</option>
-                            <option value="1">1</option>
+                            <option value="1" selected="selected">1</option>
                         </div>
                     </div>
                     <div class="left" style="width:20%">
                         <label class="paramlabel">Distance: </label><br/>
                         <div data-dojo-type="dijit/form/Select"
                              data-dojo-attach-point="distance"
-                             value="0.05" style="width:60px">
+                             style="width:60px">
                             <option value="0.01">0.01</option>
                             <option value="0.05">0.05</option>
                             <option value="0.1">0.1</option>
                             <option value="0.5">0.5</option>
-                            <option value="1">1</option>
+                            <option value="1" selected="selected">1</option>
                         </div>
                     </div>
 

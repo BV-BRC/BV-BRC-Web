@@ -7,7 +7,7 @@
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
         <div class="infobox iconbox tutorialButton tutorialInfo">
-          <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
       </h3>
       <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
@@ -34,11 +34,51 @@
               </div>
               <div class="appRow">
                 <label class="paramlabel">Strategy</label><br>
-                <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                  <option value="gumbel">Essential</option>
-                  <option value="resampling">Conditionally Essential</option>
+                <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
+                  <option value="gumbel">Essential (gumbel or tn5gaps)</option>
+                  <option value="resampling">Conditionally Essential (resampling)</option>
                 </select>
               </div>
+          	  <div class="appRow">
+          	    <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:40%">
+                <label class="paramlabel">Protocol</label><br>
+                <div>
+                <select data-dojo-type="dijit/form/Select" name="protocol" data-dojo-attach-point="protocol" style="width:100%" required="true" data-dojo-attach-event="onChange:onProtocolChange">
+                  <option value="sassetti">sassetti</option>
+                  <option value="tn5">tn5     </option>
+                  <option value="mme1">mme1    </option>
+                </select>
+                </div>
+              </div>
+          	  <div class="appRowSegment" style="text-align:left; width:40%">
+                <label class="paramlabel">Transposon</label><br>
+                <div data-dojo-type="dijit/form/TextBox" name="transposon" data-dojo-attach-point="transposon" style="width:100%" required="true" data-dojo-attach-event="onChange:onTransposonChange">
+                </div>
+              </div>
+              </div>
+              
+              <div class="appRow" style="text-align:left;">
+                <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:23%">
+                  <label class="paramlabel" style="text-align:left">Trimming</label><br>
+                  <div>
+                  <select data-dojo-type="dijit/form/Select" name="primer_trimming" data-dojo-attach-point="primer_trimming" style="width:100%" required="true" data-dojo-attach-event="onChange:onPrimerTrimming">
+                    <option value="Default">Default</option>
+                    <option value="Custom">Custom</option>
+                    <option value="None">None</option>
+                  </select>
+                  </div>
+                </div>
+              
+               <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
+                 <label class="paramlabel" style="text-align:left">Primer Sequence</label>
+                 <div name="primer_info" class="infobox iconbox infobutton dialoginfo">
+                   <i class="fa icon-info-circle fa" title="This must be a DNA string. It is used for trimming reads."></i>
+                 </div>
+                 <br>
+                 <div data-dojo-type="dijit/form/ValidationTextBox" name="primer" data-dojo-props="regExp:'[A|C|T|G|N|a|c|t|g|n]*', invalidMessage:'Must be a DNA string.'" data-dojo-attach-point="primer" style="width:100%" required="false" uppercase="true" />
+                 </div>
+               </div>
+                
               <div class="appRow">
                 <div class="appField">
                   <label>Target Genome</label><br>

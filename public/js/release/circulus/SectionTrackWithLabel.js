@@ -101,9 +101,13 @@ define("circulus/SectionTrackWithLabel", [
 		renderData: function(data) {
 			var totalLength = 0;
 			var numSections = data.length;
-			var sections={}
+			var sections={};
+			var maxLength = 0;
 			data.forEach(function(d){
 				totalLength += d.length;
+				if (d.length > maxLength) {
+					maxLength = d.length; 
+				}
 				//console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
@@ -162,7 +166,7 @@ define("circulus/SectionTrackWithLabel", [
 				
 				var unit = 10000;
 				
-				if (totalLength >5000000) {
+				if (totalLength >5000000 && maxLength >1000000) {
 					unit = 100000;
 				}
 				else if (totalLength <300000)

@@ -94,6 +94,8 @@ define("p3/widget/viewer/PhylogeneticTree", [
       this.addChild(this.viewer);
       this.inherited(arguments);
       var dataFiles = [];
+      var nwkIds = null;
+      var nwkNames = null;
       var folderCheck = this.state.search.match(/wsTreeFolder=..+?(?=&|$)/);
       var fileCheck = this.state.search.match(/wsTreeFile=..+?(?=&|$)/);
       var idType = this.state.search.match(/idType=..+?(?=&|$)/);
@@ -108,7 +110,12 @@ define("p3/widget/viewer/PhylogeneticTree", [
       else { labelType = 'genome_name'; }
       var labelSearch = this.state.search.match(/labelSearch=.*/);
       if (labelSearch && !isNaN(labelSearch.index)) {
-        labelSearch = labelSearch[0].split('=')[1];
+        labelSearch = labelSearch[0].split('=')[1].split('&')[0];
+        if (labelSearch == 'true') {
+          labelSearch = true;
+        } else {
+          labelSearch = false;
+        }
       }
       else { labelSearch = false; }
       if (folderCheck && !isNaN(folderCheck.index)) {
@@ -125,8 +132,12 @@ define("p3/widget/viewer/PhylogeneticTree", [
           .then(function (objs) {
             // console.log("[JobResult] objects: ", objs);
             Object.values(objs).forEach(function (obj) {
-              if (obj.type == 'json') {
+              if (obj.type == 'json' && !obj.path.endsWith('final_rooted.json')) {
                 dataFiles.push(obj.path);
+              } else if (obj.type == 'nwk' && obj.path.endsWith('treeWithGenomeIds.nwk')) {
+                nwkIds = obj.path;
+              } else if (obj.type == 'nwk' && obj.path.endsWith('treeWithGenomeNames.nwk')) {
+                nwkNames = obj.path;
               }
             });
             if (dataFiles.length >= 1) {
@@ -139,6 +150,16 @@ define("p3/widget/viewer/PhylogeneticTree", [
                   }
                   _self.prepareTree(treeDat, idType, labelType, labelSearch);
                 });
+            } else if (nwkIds || nwkNames) {
+              var objPath = nwkIds || nwkNames;
+              WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
+                var obj = objs[0];
+                var treeDat = {};
+                if (typeof obj.data == 'string') {
+                  treeDat.tree = obj.data.replace(/[^(,)]+_@_/g, ''); // get rid of ridiculously annoying, super dirty embedded labels
+                  _self.prepareTree(treeDat, idType, labelType, labelSearch);
+                }
+              }));
             }
           });
       }
@@ -160,7 +181,7 @@ define("p3/widget/viewer/PhylogeneticTree", [
         this.findLabels(treeDat, idType, labelType);
       }
       else {
-        this.viewer.processTreeData(treeDat);
+        this.viewer.processTreeData(treeDat, idType);
       }
     },
 
@@ -202,10 +223,13 @@ define("p3/widget/viewer/PhylogeneticTree", [
         else {
           console.warn('Invalid Response for: ', url);
         }
-        _self.viewer.processTreeData(treeDat);
+        _self.viewer.processTreeData(treeDat, idType);
+        return true;
       }, function (err) {
         console.error('Error Retreiving Genomes: ', err);
+        return false;
       });
+      return true;
     }
   });
 });

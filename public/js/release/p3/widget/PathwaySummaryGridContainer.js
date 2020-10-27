@@ -49,6 +49,9 @@ define("p3/widget/PathwaySummaryGridContainer", [
         return;
       }
       // console.log("PathwaySummaryGridContainer _setStateAttr: ", state);
+      if (!this._firstView) {
+        this._setVisibleAttr(true);
+      }
       if (this.grid) {
         // console.log("   call set state on this.grid: ", this.grid);
         this.grid.set('state', state);

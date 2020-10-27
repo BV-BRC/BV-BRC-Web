@@ -7,11 +7,13 @@
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
         <div class="infobox iconbox tutorialButton tutorialInfo">
-          <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+        </div>
+        <div class="infobox iconbox videoButton videoInfo">
+          <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
         </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
-        <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>, and <a href="${docsServiceURL}${videoLink}" target="_blank" >Instructional Video</a>.</p>
       </p>
     </div>
     <div style="width:450px; margin:auto" class="formFieldsContainer">
@@ -36,7 +38,7 @@
             <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="Bacteria">Bacteria</option>
               <option value="Archaea">Archaea</option>
-              <option value="Viruses">Viruses</option>
+              <option value="Viruses">Bacteriophages</option>
             </select>
           </div>
         </div>
@@ -96,8 +98,8 @@
             data-dojo-attach-point="recipe"
             data-dojo-props="intermediateChanges:true"
             style="width:300px" required="true">
-            <option value="default">Default</option>
-            <option value="phage">Phage</option>
+            <option value="default">Bacteria/Archaea</option>
+            <option value="phage">Bacteriophage</option>
           </select>
         </div>
       </div>
