@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../TSV_CSV_GridContainer', '../../WorkspaceManager', 'dojo/_base/Deferred',
-  'dojo/_base/lang', '../../store/TsvCsvMemoryStore', './Base', 'dijit/form/Textarea', 
+  'dojo/_base/lang', '../../store/TsvCsvMemoryStore', './Base', 'dijit/form/Textarea',
   'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup',
   '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when',
@@ -9,7 +9,7 @@ define([
 ], function (
   declare, on, ContentPane, domConstruct,
   TSV_CSV_GridContainer, WS, Deferred,
-  lang, TsvCsvStore, ViewerBase, TextArea, 
+  lang, TsvCsvStore, ViewerBase, TextArea,
   Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup,
   PerspectiveToolTipDialog, all, when,
