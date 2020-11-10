@@ -1331,7 +1331,8 @@ define([
       ],
       [
         'ViewSubsystems',
-        'MultiButton fa icon-hub fa-2x',
+        //'MultiButton fa icon-hub fa-2x',
+        'MultiButton fa icon-pie-chart fa-2x',
         {
           label: 'SUBSYS',
           validTypes: ['*'],
@@ -1349,6 +1350,32 @@ define([
           console.log('/view/GenomeList/?in(genome_id,(' + genome_id + '))#view_tab=subsystems&filter=in(' + selectionList.join(',') + ')');
           Topic.publish('/navigate', {
             href: '/view/GenomeList/?in(genome_id,(' + genome_id + '))#view_tab=subsystems&filter=in(' + selectionList.join(',') + ')',
+            target: 'blank'
+          });
+        },
+        false
+      ],
+      [
+        'ViewAMR',
+        //'MultiButton fa icon-hub fa-2x',
+        'MultiButton fa icon-delicious fa-2x',
+        {
+          label: 'AMR',
+          validTypes: ['*'],
+          multiple: true,
+          validContainerTypes: ['feature_data'],
+          tooltip: 'View Antimicrobial Resistance'
+        },
+        function (selection) {
+          var genome_id = selection[0].genome_id;
+          var selectionList = selection.map(function (sel) {
+            return sel.feature_id;
+          });
+          //https://www.patricbrc.org/view/GenomeList/#view_tab=amr&filter=in(PATRIC.242231.10.NC_002946.CDS.14081.14431.rev,PATRIC.242231.10.NC_002946.CDS.14438.15211.rev,PATRIC.242231.10.NC_002946.CDS.16000.16656.fwd))
+          console.log('/view/GenomeList/#view_tab=amr&filter=in(' + selectionList.join(',') + ')');
+          Topic.publish('/navigate', {
+            href: '/view/GenomeList/#view_tab=amr&filter=in(' + selectionList.join(',') + ')',
+
             target: 'blank'
           });
         },
