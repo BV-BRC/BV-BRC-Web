@@ -4,14 +4,16 @@ define([
   './ActionBar', './FilterContainerActionBar', 'dojo/_base/lang', './ItemDetailPanel', './SelectionToGroup',
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
-  './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin'
+  './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
+  './FeatureDetailsTooltipDialog'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
   ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
-  CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin
+  CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
+  FeatureDetailsTooltipDialog
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -1009,7 +1011,7 @@ define([
           max: 5000,
           validTypes: ['*'],
           tooltip: 'Pathway Summary',
-          validContainerTypes: ['feature_data', 'spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data']
+          validContainerTypes: ['spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data']
         },
         function (selection, containerWidget) {
 
@@ -1309,6 +1311,47 @@ define([
         false
       ],
       [
+        'ViewFeatureDetails',
+        'MultiButton fa icon-pie-chart fa-2x',
+        {
+          label: 'FEATURE DETAILS',
+          validTypes: ['*'],
+          multiple: true,
+          validContainerTypes: ['feature_data'],
+          tooltip: 'View Feature Details Menu',
+          pressAndHold: function (selection, button, opts, evt) {
+            console.log ("in pressAndHold");
+            popup.open({
+              popup: new FeatureDetailsTooltipDialog({
+                perspective: 'FeatureDetails',
+                //perspectiveUrl: '/view/GenomeList/'
+              }),
+              around: button,
+              orient: ['below']
+            });
+          }
+        },
+        function (selection) {
+          console.log ("in selection");
+          var genome_id = selection[0].genome_id;
+          var selectionList = selection.map(function (sel) {
+            return sel.feature_id;
+          });
+          
+          popup.open({
+            popup: new FeatureDetailsTooltipDialog({
+              genome_id: genome_id,
+              selectionList: selectionList,
+              perspective: 'FeatureDetails',
+              perspectiveUrl: '/view/GenomeList/'
+            }),
+            around: this.selectionActionBar._actions['ViewFeatureDetails'].button,
+            orient: ['below', 'above'],
+          });
+        }
+      ],
+/*
+      [
         'ViewVirulenceFactor',
         'MultiButton fa icon-selection-VirulenceFactor fa-2x',
         {
@@ -1380,7 +1423,7 @@ define([
           });
         },
         false
-      ]
+      ] */
     ],
 
     buildQuery: function () {
