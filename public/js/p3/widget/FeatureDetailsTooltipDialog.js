@@ -1,20 +1,14 @@
 define([
     'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
     'dojo/_base/lang', 'dojo/mouse',
-    'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane',
-    'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog',
-    './AdvancedDownload', 'dojo/dom-class'
+    'dijit/popup', 'dijit/TooltipDialog'
   ], function (
     declare, on, domConstruct,
     lang, Mouse,
-    Topic, query, ContentPane,
-    Dialog, popup, TooltipDialog,
-    AdvancedDownload, domClass
+    popup, TooltipDialog
   ) {
   
     return declare([TooltipDialog], {
-      perspective: 'Genome',
-      perspectiveUrl: '',
       selection: null,
       label: '',
       selectionList: null,
@@ -67,14 +61,13 @@ define([
         this.selectedCount = domConstruct.create('div', {}, dstContent);
   
         var d = domConstruct.create('div', {}, dstContent);
-        //domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Pathways', href: '/view/PathwaySummary/?features=' + this.selectionList.join(','), 'target': '_blank' }, d);
-        domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Pathways', href: '/view/PathwaySummary/?features=' + this.selectionList.join(',') }, d);
+        domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Pathways', href: '/view/PathwaySummary/?features=' + this.selectionList.join(',') }, d);
         var d = domConstruct.create('div', {}, dstContent);
-        domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Subsystems', href: '/view/GenomeList/?in(genome_id,(' + this.genome_id + '))#view_tab=subsystems&filter=in(' + this.selectionList.join(',') + ')' }, d);
+        domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Subsystems', href: '/view/GenomeList/?in(genome_id,(' + this.genome_id + '))#view_tab=subsystems&filter=in(' + this.selectionList.join(',') + ')' }, d);
         var d = domConstruct.create('div', {}, dstContent);
-        domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Virulence Factors', href: '/view/GenomeList/#view_tab=specialtyGenes&filter=and(eq(property,"Virulence%20Factor"),in(feature_id,(' + this.selectionList.join(',') + ')))' }, d);
+        domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Virulence Factors', href: '/view/GenomeList/#view_tab=specialtyGenes&filter=and(eq(property,"Virulence%20Factor"),in(feature_id,(' + this.selectionList.join(',') + ')))' }, d);
         var d = domConstruct.create('div', {}, dstContent);
-        domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Antimicrobial Resistance', href: '/view/GenomeList/#view_tab=amr&filter=in(' + this.selectionList.join(',') + ')' }, d);
+        domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Antimicrobial Resistance', href: '/view/GenomeList/#view_tab=amr&filter=in(' + this.selectionList.join(',') + ')' }, d);
   
         this.set('content', dstContent);
   
