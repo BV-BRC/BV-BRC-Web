@@ -1320,11 +1320,11 @@ define([
           validContainerTypes: ['feature_data'],
           tooltip: 'View Feature Details Menu',
           pressAndHold: function (selection, button, opts, evt) {
-            console.log ("in pressAndHold");
+            console.log('in pressAndHold');
             popup.open({
               popup: new FeatureDetailsTooltipDialog({
-                perspective: 'FeatureDetails',
-                //perspectiveUrl: '/view/GenomeList/'
+                perspective: 'FeatureDetails'
+                // perspectiveUrl: '/view/GenomeList/'
               }),
               around: button,
               orient: ['below']
@@ -1332,12 +1332,12 @@ define([
           }
         },
         function (selection) {
-          console.log ("in selection");
+          console.log('in selection');
           var genome_id = selection[0].genome_id;
           var selectionList = selection.map(function (sel) {
             return sel.feature_id;
           });
-          
+
           popup.open({
             popup: new FeatureDetailsTooltipDialog({
               genome_id: genome_id,
@@ -1346,11 +1346,11 @@ define([
               perspectiveUrl: '/view/GenomeList/'
             }),
             around: this.selectionActionBar._actions['ViewFeatureDetails'].button,
-            orient: ['below', 'above'],
+            orient: ['below', 'above']
           });
         }
-      ],
-/*
+      ]
+      /*
       [
         'ViewVirulenceFactor',
         'MultiButton fa icon-selection-VirulenceFactor fa-2x',
