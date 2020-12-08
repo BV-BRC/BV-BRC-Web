@@ -84,6 +84,11 @@ define("p3/widget/Uploader", [
         formats: ['.csv'],
         description: 'A CSV (comma separated values) file.'
       },
+      tsv: {
+        label: 'TSV',
+        formats: ['.tsv'],
+        description: 'A TSV (tab separated values) file.'
+      },
       jpg: {
         label: 'JPEG Image',
         formats: ['.jpg', '.jpeg'],

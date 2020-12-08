@@ -1,6 +1,17 @@
 
 # Changelog
 
+## 3.6.8 - Dec 8, 2020
+
+* [Feature] Table viewer for CSV/TSV files in workspaces.  Allows filtering, sorting, etc.  Detects genome ids, feature ids, and more. [#1004](https://github.com/PATRIC3/p3_web/pull/1004)
+
+* [Feature] New shortcut links on Taxon > Features view [#1004](https://github.com/PATRIC3/p3_web/pull/1004)
+
+* [Minor] Update query for Data API upadate. [#fe383d2](https://github.com/PATRIC3/p3_web/commit/fe383d257024734d15c6e60c916eb78edbe7e838)
+
+* [Bug Fixes] [#1005](https://github.com/PATRIC3/p3_web/pull/1005)
+
+
 ## 3.6.7 - Sept 22, 2020
 
 * [Bug Fix] ID Mapping: fix handling of uniprotkb_accession. [#2370](https://github.com/PATRIC3/patric3_website/issues/2370)
@@ -28,6 +39,7 @@
 
 * [Dev Enhancement] Navigate to default job result viewer if not implemented. [#994](https://github.com/PATRIC3/p3_web/pull/994)
 
+
 ## 3.6.5 - June 5, 2020
 
 * [Bug Fix] Fix assembly job result viewer within Comprehensive Genome Analysis job results. [#970](https://github.com/PATRIC3/p3_web/pull/970)
@@ -39,8 +51,6 @@
 * [Enhancement] Support gzip files in Similar Genome Finder service. [#972](https://github.com/PATRIC3/p3_web/pull/972)
 
 * [Enhancement] Add video tutorial links to assembly, annotation, and family sorter. [#2360](https://github.com/PATRIC3/patric3_website/issues/2360)
-
-
 
 
 ## 3.6.4 - May 17, 2020

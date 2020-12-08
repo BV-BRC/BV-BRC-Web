@@ -16480,7 +16480,7 @@ define([
       'reads', 'rxnprobs', 'string', 'svg', 'tar_gz', 'tbi',
       'transcriptomics_experiment', 'transcripts', 'txt', 'unspecified', 'vcf',
       'vcf_gz', 'wig', 'xls', 'xlsx', 'zip', 'contigset', 'xml'],
-    viewableTypes: ['txt', 'html', 'json', 'csv', 'diffexp_experiment',
+    viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
 
@@ -16776,7 +16776,7 @@ define([
         }
       }
 
-      return Deferred.when(All(prom, jobProms), function () {
+      return Deferred.when(All([prom, jobProms]), function () {
         Topic.publish('/Notification', {
           message: paths.length + (paths.length > 1 ? ' items' : ' item') + ' deleted',
           type: 'message'
@@ -16984,7 +16984,7 @@ define([
           move: false
         }]);
 
-        return Deferred.when(All(copyProm, jobProms), function (res) {
+        return Deferred.when(All([copyProm, jobProms]), function (res) {
           Topic.publish('/refreshWorkspace', {});
           Topic.publish('/Notification', {
             message: 'Copied contents of ' + paths.length + (paths.length > 1 ? ' items' : 'item'),
@@ -17081,7 +17081,7 @@ define([
           if (isJob) {
             // if job, also need to rename hiden folder
             var jobProm = self.renameJobData(path, newName);
-            prom = All(prom, jobProm);
+            prom = All([prom, jobProm]);
           }
 
           return Deferred.when(prom);
