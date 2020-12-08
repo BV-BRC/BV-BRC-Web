@@ -164,8 +164,8 @@ define([
 
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_w_header', innerHTML: 'Full Table (with headers)' }, tData);
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_wo_header', innerHTML: 'Full Table (without headers)' }, tData);
-      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_w_header', innerHTML: 'Selected Columns (with headers)' }, tData);
-      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_wo_header', innerHTML: 'Selected Columns (without headers)' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_w_header', innerHTML: 'Selected Rows (with headers)' }, tData);
+      domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_wo_header', innerHTML: 'Selected Rows (without headers)' }, tData);
 
       tr = domConstruct.create('tr', {}, table);
       domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
