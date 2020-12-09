@@ -21,7 +21,7 @@
   "_resolved": "https://registry.npmjs.org/cytoscape-dagre/-/cytoscape-dagre-2.1.0.tgz",
   "_shasum": "74345af05af4b9297dea736497a5f0f77d97e16c",
   "_spec": "cytoscape-dagre@~2.1.0",
-  "_where": "/Users/nc/patric/p3_web",
+  "_where": "/Users/nc/patric/website",
   "bugs": {
     "url": "https://github.com/cytoscape/cytoscape.js-dagre/issues"
   },
