@@ -25,8 +25,9 @@
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/swfobject-amd/-/swfobject-amd-2.3.1.tgz",
-  "_spec": "2.3.1",
-  "_where": "/Users/nc/patric/website",
+  "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
+  "_spec": "swfobject-amd@~2.3.1",
+  "_where": "/Users/nc/patric/p3_web",
   "bugs": {
     "url": "https://github.com/HenningM/swfobject-amd/issues"
   },

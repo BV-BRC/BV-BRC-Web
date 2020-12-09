@@ -17,7 +17,7 @@ define("p3/widget/TaxonNameSelector", [
     rankAttrs: ['taxon_rank'],
     subStringAttrs: ['taxon_name'],
     promoteAttrs: ['taxon_name'],
-    boostQuery: ['taxon_rank:(superkingdom)^7000000', 'taxon_rank:(phylum)^6000000', 'taxon_rank:(class)^5000000', 'taxon_rank:(order)^4000000', 'taxon_rank:(family)^3000000', 'taxon_rank:(genus)^2000000', 'taxon_rank:(species)^1000000', 'taxon_rank:*'],
+    boostQuery: ['taxon_rank:superkingdom^7000000', 'taxon_rank:phylum^6000000', 'taxon_rank:class^5000000', 'taxon_rank:order^4000000', 'taxon_rank:family^3000000', 'taxon_rank:genus^2000000', 'taxon_rank:species^1000000', 'taxon_rank:*'],
     intAttrs: ['taxon_id'],
     rankList: ['species', 'no rank', 'genus', 'subspecies', 'family', 'order', 'class', 'phylum', 'species group', 'suborder', 'varietas', 'species subgroup', 'subclass', 'subgenus', 'forma', 'superphylum', 'superkingdom', 'tribe', 'subfamily', 'subphylum'],
     // query: "?&select(taxon_name)",

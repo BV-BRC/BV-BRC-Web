@@ -2,13 +2,13 @@
 define("phyloview/PhyloTree", ["dojo","dijit","dojox"], function(dojo,dijit,dojox){
 window.PhyloTree = {
 
-    PhyloTree: function(treeString) {
+    PhyloTree: function(treeString, idType) {
         //console.log("new PhyloTree for: " + treeString);
         var leafCount = 0;
         var jsonTree;
         if(treeString[0] == "(" ){
             console.log("tree looks like newick");
-            jsonTree = newickToJSON(treeString);
+            jsonTree = newickToJSON(treeString, idType);
         } else {
             jsonTree = eval("("+treeString+")");
             finalizeTree(jsonTree);
@@ -85,21 +85,30 @@ window.PhyloTree = {
             finalizeTree(tree);
             return tree;
         }
-
-        function newickToJSON(nwk) {
+        
+        function replacer(match, p1, offset, string) {
+            return "\"n\":" + p1.replace(/\(|\{|\[/, "l*").replace(/\)|\}|\]/, "r*");
+          }
+        
+        function newickToJSON(nwk, idType) {
             var commaProtect = "&&";
             nwk=nwk.trim();
             if(nwk.substr(-1) != ";"){
                 nwk=nwk+";";
             }
+            console.log("Initial tree json string: " + nwk);
             nwk = nwk.replace(/;/, "}")
                 .replace(/\=/g,"")
                 .replace(/\'/g,"")
                 .replace(/\#/g,"")
-                .replace(/\)$/g, "}]}")
-                .replace(/,([\w+\|\.\/-]+)/g, ",\"n\":\"$1\"")
-                .replace(/\(([\w+\|\.\/-]+)/g, "\(\"n\":\"$1\"")
-                .replace(/^\(/, "{\"c\":[{")
+                .replace(/\)$/g, "}]}");
+            if (idType == "genome_id" || idType == undefined || idType == null) {
+        	nwk = nwk.replace(/,([\w+\|\.\/-]+)/g, ",\"n\":\"$1\"")
+                .replace(/\(([\w+\|\.\/-]+)/g, "\(\"n\":\"$1\"");
+            } else {
+        	nwk = nwk.replace(/(\"[^\"]+\")/g, replacer);
+            }
+                 nwk = nwk.replace(/^\(/, "{\"c\":[{")
                 .replace(/:([-+]?[0-9]*\.?[0-9]+)/g, commaProtect + "\"l\":$1")
                 .replace(/\)(\d*)/g, ")" + commaProtect + "\"s\":$1")
                 .replace(/&&\"s\":&&/g, "&&\"s\":0&&")
@@ -107,9 +116,11 @@ window.PhyloTree = {
                 .replace(/\)/g, "}]")
                 .replace(/,/g, "},{")
                 .replace(/\"s\":\}/,"\"s\":0}")
-                .replace(/&&/g, ",");
-    //            .replace(/^\{\"c\"\:\[\{([\w+\.\/-]+)/,"{\"c\":[{\"n\":\"$1\"");
-            console.log("tree json string: " + nwk);
+                .replace(/&&/g, ",")
+                .replace(/l\*/g, "(")
+                .replace(/r\*/g, ")")
+                //.replace(/^\{\"c\"\:\[\{([\w+\.\/-]+)/,"{\"c\":[{\"n\":\"$1\"")
+            console.log("Final tree json string: " + nwk);
             var r = JSON.parse(nwk);
             r.labels=[{}]; //list of objects that map node id to label
             finalizeTree(r);

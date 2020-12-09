@@ -54,7 +54,7 @@ define([
       });
 
       // get the contents directly from the hidden folder, since metadata may be stale after a move
-      WorkspaceManager.getFolderContents(this._hiddenPath, true, true)
+      WorkspaceManager.getFolderContents(this._hiddenPath, true, false)
         .then(function (objs) {
           _self._resultObjects = objs;
           _self.setupResultType();

@@ -1,4 +1,43 @@
+
 # Changelog
+
+## 3.6.8 - Dec 8, 2020
+
+* [Feature] Table viewer for CSV/TSV files in workspaces.  Allows filtering, sorting, etc.  Detects genome ids, feature ids, and more. [#1004](https://github.com/PATRIC3/p3_web/pull/1004)
+
+* [Feature] New shortcut links on Taxon > Features view [#1004](https://github.com/PATRIC3/p3_web/pull/1004)
+
+* [Minor] Update query for Data API upadate. [#fe383d2](https://github.com/PATRIC3/p3_web/commit/fe383d257024734d15c6e60c916eb78edbe7e838)
+
+* [Bug Fixes] [#1005](https://github.com/PATRIC3/p3_web/pull/1005)
+
+
+## 3.6.7 - Sept 22, 2020
+
+* [Bug Fix] ID Mapping: fix handling of uniprotkb_accession. [#2370](https://github.com/PATRIC3/patric3_website/issues/2370)
+
+* [Enhancement] TnSeq: add protocol and primer support for transit3 upgrade. [#1002](https://github.com/PATRIC3/p3_web/pull/1002)
+
+* [Enhancement] Improve and enable all SRA validation; add SRA to Variation Service. [#1000](https://github.com/PATRIC3/p3_web/pull/1000), [#1001](https://github.com/PATRIC3/p3_web/pull/1001)
+
+
+## 3.6.6 - August 14, 2020
+
+* [Bug Fix] Allow SRA on most apps (pending validation fixes). [56cb481](https://github.com/PATRIC3/p3_web/commit/56cb481914410172c6a34b566541241f1231150d)
+
+* [Bug Fix] Support newick files with no genome ids. [#985](https://github.com/PATRIC3/p3_web/pull/985)
+
+* [Minor] Add BEI links; add dates to feature overview. [#992](https://github.com/PATRIC3/p3_web/pull/992)
+
+* [Minor] Improve Pathway Summary error handling. [#977](https://github.com/PATRIC3/p3_web/pull/977)
+
+* [Minor] Fix link (and auth) to ModelSEED.
+
+* [Patch] Handle auth issue preventing re-login.
+
+* [Dev Enhancement] Allow devs to specify build container IDs in app submissions; related improvements. [7a4ff1f](https://github.com/PATRIC3/p3_web/commit/7a4ff1fd47f7da545322d5a1240756fcabae1f2f)
+
+* [Dev Enhancement] Navigate to default job result viewer if not implemented. [#994](https://github.com/PATRIC3/p3_web/pull/994)
 
 
 ## 3.6.5 - June 5, 2020
@@ -12,8 +51,6 @@
 * [Enhancement] Support gzip files in Similar Genome Finder service. [#972](https://github.com/PATRIC3/p3_web/pull/972)
 
 * [Enhancement] Add video tutorial links to assembly, annotation, and family sorter. [#2360](https://github.com/PATRIC3/patric3_website/issues/2360)
-
-
 
 
 ## 3.6.4 - May 17, 2020

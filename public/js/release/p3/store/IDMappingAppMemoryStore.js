@@ -23,7 +23,6 @@ define("p3/store/IDMappingAppMemoryStore", [
       if (!state) {
         return;
       }
-      // console.log("onSetState", state, this);
       this.reload();
     },
 
@@ -113,9 +112,7 @@ define("p3/store/IDMappingAppMemoryStore", [
       }
 
       var _self = this;
-      // console.warn(this.state, this.state.genome_ids, !this.state.genome_ids);
       if (!this.state) {
-        // console.log("No Genome IDS, use empty data set for initial store");
 
         // this is done as a deferred instead of returning an empty array
         // in order to make it happen on the next tick.  Otherwise it
@@ -124,7 +121,6 @@ define("p3/store/IDMappingAppMemoryStore", [
         setTimeout(lang.hitch(_self, function () {
           this.setData([]);
           this._loaded = true;
-          // def.resolve(true);
         }), 0);
         return def.promise;
       }
@@ -160,8 +156,6 @@ define("p3/store/IDMappingAppMemoryStore", [
       _self.summary.total = fromIdValue.length;
       _self.summary.type = toId;
 
-      // console.log(this.state);
-
       if (fromIdGroup === 'PATRIC') {
         if (toIdGroup === 'PATRIC') {
           this._loadingDeferred = when(request.post(_self.apiServer + '/genome_feature/', {
@@ -195,7 +189,6 @@ define("p3/store/IDMappingAppMemoryStore", [
           }, function (error) {
             console.log(error);
             _self.expandNoMap(null);
-            // _self.setDta({});
             _self._loaded = true;
             return false;
           });
@@ -227,8 +220,6 @@ define("p3/store/IDMappingAppMemoryStore", [
               return d !== undefined && d > 0;
             });
 
-            // console.log(giNumbers);
-
             if (giNumbers.length === 0) {
               Topic.publish(_self.topicId, 'hideLoadingMask');
               _self.findFailure(fromIdValue, toId);
@@ -237,7 +228,6 @@ define("p3/store/IDMappingAppMemoryStore", [
               return true;
             }
             console.log('am i in features?');
-            // console.log("giNumbers: ", giNumbers);
             return when(request.post(_self.apiServer + '/id_ref/', {
               handleAs: 'json',
               headers: {
@@ -259,8 +249,6 @@ define("p3/store/IDMappingAppMemoryStore", [
               response.forEach(function (d) {
                 accessionGiMap[d.uniprotkb_accession] = d.id_value;
               });
-
-              // console.log(accessionGiMap);
 
               return when(request.post(_self.apiServer + '/id_ref/', {
                 handleAs: 'json',
@@ -297,8 +285,6 @@ define("p3/store/IDMappingAppMemoryStore", [
 
                 });
 
-                // console.log(giTarget);
-
                 var data = [];
                 features.forEach(function (d) {
                   var item = Object.create(d);
@@ -328,7 +314,6 @@ define("p3/store/IDMappingAppMemoryStore", [
               }, function (error) {
                 console.log(error);
                 _self.expandNoMap(null);
-                // _self.setDta({});
                 _self._loaded = true;
                 return false;
               });
@@ -345,7 +330,6 @@ define("p3/store/IDMappingAppMemoryStore", [
           // step 3: get PATRIC feature from GI (query to genome_feature) // defUniprotKB2PATRIC()
 
           var defUniprotKB2PATRIC = function (uniprotKBAccession, accessionSource) {
-
             return when(request.post(_self.apiServer + '/id_ref/', {
               handleAs: 'json',
               headers: {
@@ -359,17 +343,18 @@ define("p3/store/IDMappingAppMemoryStore", [
                 rows: _self.rowLimit
               }
             }), function (response) {
-
-
               if (response.length === 0) {
                 return _self.findFailure(fromIdValue, toId);
               }
 
-              var giNumbers = []; // response.map(function(d){ return d.id_value;});
+              var giNumbers = [];
               var giSource = [];
 
               response.forEach(function (d) {
                 var gi = d.id_value;
+                if (typeof gi === 'string') {
+                  gi = gi.trim();
+                }
                 giNumbers.push(gi);
                 var accession = d.uniprotkb_accession;
                 giSource[gi] = { uniprotkb_accession: accession, source: accessionSource[accession] };
@@ -388,12 +373,15 @@ define("p3/store/IDMappingAppMemoryStore", [
                   rows: _self.rowLimit
                 }
               }), function (response) {
-
                 var data = [];
                 response.forEach(function (d) {
                   var item = Object.create(d);
                   item.source = giSource[d[joinId.genome_feature]].source;
-                  item.uniprotkb_accession = giSource[d[joinId.genome_feature]].uniprotkb_accession;
+                  var stuff = d[joinId.genome_feature];
+                  if (typeof stuff === 'string') {
+                    stuff = stuff.trim();
+                  }
+                  item.uniprotkb_accession = giSource[stuff].uniprotkb_accession;
                   item.target = d[toId];
                   item.feature_id = d.feature_id;
                   item.document_type = 'feature_data';
@@ -403,7 +391,9 @@ define("p3/store/IDMappingAppMemoryStore", [
                 });
                 _self.expandNoMap(data);
                 return data;
-              });
+              }, function (error) {
+                console.log(error);
+              } );
             });
           };
 
@@ -421,7 +411,6 @@ define("p3/store/IDMappingAppMemoryStore", [
             }, function (error) {
               console.log(error);
               _self.expandNoMap(null);
-              // _self.setDta({});
               _self._loaded = true;
               return false;
             });
@@ -461,7 +450,6 @@ define("p3/store/IDMappingAppMemoryStore", [
               }, function (error) {
                 console.log(error);
                 _self.expandNoMap(null);
-                // _self.setDta({});
                 _self._loaded = true;
                 return false;
               });
@@ -491,8 +479,6 @@ define("p3/store/IDMappingAppMemoryStore", [
               }
             }), function (response) {
               var data = [];
-              // var giNumbers = []; // response.map(function(d){ return d.id_value;});
-              // var giSource = [];
               var idx = 0;
               response.forEach(function (d) {
                 var accession = d.uniprotkb_accession;
@@ -502,17 +488,22 @@ define("p3/store/IDMappingAppMemoryStore", [
                 item.target = d.id_value;
                 item.uniprotkb_accession = accession;
                 console.log(item);
-                if (item.source !== undefined) {
+                if (typeof item.source === 'undefined' ) {
+                  item.source = uniprotKBAccession;
+                }
+                else {
                   _self.sourceToTarget[item.source][d.id_value] = true;
-                } else {
-                  console.log('no sources');
-                  return false;
                 }
                 data.push(item);
                 idx += 1;
               });
               _self.expandNoMap(data);
               return data;
+            }, function (error) {
+              console.log(error);
+              _self.expandNoMap(null);
+              _self._loaded = true;
+              return false;
             });
           };
 
@@ -530,7 +521,6 @@ define("p3/store/IDMappingAppMemoryStore", [
             }, function (error) {
               console.log(error);
               _self.expandNoMap(null);
-              // _self.setDta({});
               _self._loaded = true;
               return false;
             });

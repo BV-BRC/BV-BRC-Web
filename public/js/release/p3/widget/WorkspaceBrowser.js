@@ -6,7 +6,7 @@ define("p3/widget/WorkspaceBrowser", [
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath',
+  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './viewer/JobResult',
 
   'dojo/NodeList-traverse'
 ], function (
@@ -17,7 +17,7 @@ define("p3/widget/WorkspaceBrowser", [
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath
+  All, encodePath, when, request, tsvCsvFeatures, JobResult
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -48,6 +48,8 @@ define("p3/widget/WorkspaceBrowser", [
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/workspaces/workspace.html',
+    tsvCsvFilename: '',
+
     startup: function () {
       var self = this;
 
@@ -501,7 +503,7 @@ define("p3/widget/WorkspaceBrowser", [
         var isLegacy = parts[1] == 'models';
         path = parts.slice(0, -1).join('/') + '/' + (isLegacy ? '' : '.') + parts.slice(-1)[0];
 
-        var url = 'http://modelseed.theseed.org/#/model' + path + '?login=patric';
+        var url = 'https://modelseed.org/model' + path + '?login=patric';
         window.open(url, '_blank');
       }, false);
 
@@ -615,7 +617,13 @@ define("p3/widget/WorkspaceBrowser", [
         tooltip: 'View Tree'
       }, function (selection) {
         var path = selection.map(function (obj) { return obj.path; });
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
+        var labelSearch = 'true';
+        var idType = 'genome_id';
+        if (encodePath(path[0]).includes('WithGenomeNames.')) {
+          labelSearch = 'false';
+          idType = 'genome_name';
+        }
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -1369,10 +1377,6 @@ define("p3/widget/WorkspaceBrowser", [
                     d = 'p3/widget/viewer/GenomeComparison';
                   }
                   break;
-                case 'GenomeAssembly2':
-                case 'GenomeAssembly':
-                  d = 'p3/widget/viewer/GenomeAssembly';
-                  break;
                 case 'GenomeAnnotation':
                 case 'GenomeAnnotationGenbank':
                   d = 'p3/widget/viewer/GenomeAnnotation';
@@ -1392,7 +1396,7 @@ define("p3/widget/WorkspaceBrowser", [
                   d = 'p3/widget/viewer/SARS2Assembly';
                   break;
                 default:
-                  console.log('A viewer could not be found for id: ' + id);
+                  console.log('Using the default JobResult viewer. A viewer could not be found for id: ' + id);
               }
             }
             panelCtor = window.App.getConstructor(d);
@@ -1403,19 +1407,46 @@ define("p3/widget/WorkspaceBrowser", [
             panelCtor = window.App.getConstructor('p3/widget/viewer/ExperimentGroup');
             params.data = obj;
             break;
+          case 'csv':
+          case 'tsv':
+            var tsvCsvFilename = this.tsvCsvFilename = obj.name;
+            panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
+            params.file = { metadata: obj };
+            break;
           default:
-            panelCtor = window.App.getConstructor('p3/widget/viewer/File');
+            var tsvCsvFilename = this.tsvCsvFilename = obj.name;
+            var isTsv = false;
+            var keyList = Object.keys(tsvCsvFeatures);    // for older tsv files typed as txt
+            keyList.forEach(function (keyName) {
+              if (tsvCsvFilename.indexOf(keyName) >= 0) {
+                // key name is found
+                isTsv = true;
+              }
+            });
+            if (isTsv) {
+              panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
+            } else {
+              panelCtor = window.App.getConstructor('p3/widget/viewer/File');
+            }
             params.file = { metadata: obj };
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          if (!this.activePanel || !(this.activePanel instanceof Panel)) {
+          if ((!this.activePanel) || !(this.activePanel instanceof Panel) || this.activePanel instanceof JobResult) {
             if (this.activePanel) {
               this.removeChild(this.activePanel);
             }
 
             var newPanel = new Panel(params);
             var hideTimer;
+
+            if (newPanel.setActionPanel) { newPanel.setActionPanel(this.actionPanel); }
+
+            var _self = this;
+            Topic.subscribe('changeActionPanel', function (actionPanel) {
+              _self.actionPanel.set('selection', []);
+              _self.actionPanel.set('currentContainerWidget', newPanel);
+            });
 
             if (this.actionPanel) {
               this.actionPanel.set('currentContainerWidget', newPanel);
@@ -1472,7 +1503,7 @@ define("p3/widget/WorkspaceBrowser", [
             this.activePanel = newPanel;
           } else {
             this.activePanel.set('path', this.path);
-            if (this.activePaneal && 'clearSelection' in this.activePaneal) {
+            if (this.activePanel && 'clearSelection' in this.activePanel) {
               this.activePanel.clearSelection();
             }
           }
@@ -1519,5 +1550,6 @@ define("p3/widget/WorkspaceBrowser", [
       return this.buttons;
 
     }
+
   });
 });
