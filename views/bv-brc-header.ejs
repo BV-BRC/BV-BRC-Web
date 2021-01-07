@@ -27,32 +27,42 @@
     ]
 
     var virus = [
+        {name: "Adenoviridae", href: "/view/Taxonomy/10508#view_tab=overview"},
+        {name: "Asfarviridae", href: "/view/Taxonomy/137992#view_tab=overview"},
+        {name: "Bunyavirales", href: "/view/Taxonomy/1980410#view_tab=overview"},
         {name: "Caliciviridae", href: "/view/Taxonomy/11974#view_tab=overview"},
         {name: "Coronaviridae", href: "/view/Taxonomy/11118#view_tab=overview"},
-        {name: "Flaviviridae", href: "/view/Taxonomy/11050#view_tab=overview"},
-        {name: "Hepeviridae", href: "/view/Taxonomy/291484#view_tab=overview"},
-        {name: "Picornaviridae", href: "/view/Taxonomy/12058#view_tab=overview"},
-        {name: "Togaviridae", href: "/view/Taxonomy/11018#view_tab=overview"},
-        {name: "Bunyavirales", href: "/view/Taxonomy/1980410#view_tab=overview"},
         {name: "Filoviridae", href: "/view/Taxonomy/11266#view_tab=overview"},
-        {name: "Paramyxoviridae", href: "/view/Taxonomy/11158#view_tab=overview"},
-        {name: "Pneumoviridae", href: "/view/Taxonomy/11244#view_tab=overview"},
-        {name: "Rhabdoviridae", href: "/view/Taxonomy/11270#view_tab=overview"},
-        {name: "Reoviridae", href: "/view/Taxonomy/10880#view_tab=overview"},
+        {name: "Flaviviridae", href: "/view/Taxonomy/11050#view_tab=overview"},
+        {name: "Hepadnaviridae", href: "/view/Taxonomy/10404#view_tab=overview"},
+        {name: "Hepeviridae", href: "/view/Taxonomy/291484#view_tab=overview"},
         {name: "Herpesviridae", href: "/view/Taxonomy/10292#view_tab=overview"},
+        {name: "Orthomyxoviridae", href: "/view/Taxonomy/11308#view_tab=overview"},
+        {name: "Paramyxoviridae", href: "/view/Taxonomy/11158#view_tab=overview"},
+        {name: "Paravoviridae", href: "/view/Taxonomy/10780#view_tab=overview"},
+        {name: "Picornaviridae", href: "/view/Taxonomy/12058#view_tab=overview"},
+        {name: "Pneumoviridae", href: "/view/Taxonomy/11244#view_tab=overview"},
+        {name: "Polyomaviridae", href: "/view/Taxonomy/151341#view_tab=overview"},
         {name: "Poxviridae", href: "/view/Taxonomy/10240#view_tab=overview"},
+        {name: "Reoviridae", href: "/view/Taxonomy/10880#view_tab=overview"},
+        {name: "Rhabdoviridae", href: "/view/Taxonomy/11270#view_tab=overview"},
+        {name: "Togaviridae", href: "/view/Taxonomy/11018#view_tab=overview"},
+    ]
+
+    var featured_virus = [
         {name: "Dengue virus", href: "/view/Taxonomy/12637#view_tab=overview"},
         {name: "Lassa mammarenavirus", href: "/view/Taxonomy/11620#view_tab=overview"},
         {name: "Ebolavirus", href: "/view/Taxonomy/186536#view_tab=overview"},
         {name: "Enterovirus", href: "/view/Taxonomy/12059#view_tab=overview"},
         {name: "Zika virus", href: "/view/Taxonomy/64320#view_tab=overview"},
         {name: "Hepatitis C virus", href: "/view/Taxonomy/63746#view_tab=overview"},
-        {name: "SARS-CoV-2", href: "/view/Taxonomy/2697049#view_tab=overview"}
+        {name: "SARS-CoV-2", href: "/view/Taxonomy/2697049#view_tab=overview"},
     ]
 
 
     var servicesMiddle = Math.round(services.length / 2);
     var virusMiddle = Math.round(virus.length / 2);
+    var featuredVirusMiddle = Math.round(featured_virus.length / 2);
     var isProd = request.applicationOptions.appLabel == "";
     %>
 
@@ -117,6 +127,24 @@
                                         <% if (virus[virusMiddle + i]) { %>
                                         <a class="navigationLink" title="<%- virus[virusMiddle + i].name %> overview"
                                            href="<%- virus[virusMiddle + i].href %>"><%- virus[virusMiddle + i].name %></a>
+                                        <% } %>
+                                    </span>
+                                </div>
+                                <% } %>
+                            </div>
+
+                            <div class="menuHeader">Featured Viral Families</div>
+
+                            <div class="menuItems">
+                                <% for (var i = 0; i < featuredVirusMiddle;i++){ %>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="<%- featured_virus[i].href %>" title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <% if (featured_virus[featuredVirusMiddle + i]) { %>
+                                        <a class="navigationLink" title="<%- featured_virus[featuredVirusMiddle + i].name %> overview"
+                                           href="<%- featured_virus[featuredVirusMiddle + i].href %>"><%- featured_virus[featuredVirusMiddle + i].name %></a>
                                         <% } %>
                                     </span>
                                 </div>
