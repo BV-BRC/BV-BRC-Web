@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>SARS-CoV-2 | BV-BRC</title>
+		<% include ../../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <h1 id="sars-cov-2">SARS-CoV-2 Variants of Concern</h1>
+                            <div class="sars-top">
+                                <div class="sars-top-content">
+
+                                    <h2>B.1.1.7</h2>
+                                    <table class="p3basic striped">
+                                        <tr><th scope="row" width="25%">VoC name</th><td>B.1.1.7</td></tr>
+                                        <tr><th>PANGO lineage</th><td><a href="https://cov-lineages.org/global_report_B.1.1.7.html" target=_blank">B.1.1.7</a></td></tr>
+                                        <tr><th>NextStrain lineage</th><td>20I/501Y.V1</td></tr>
+                                        <tr><th>Other synonyms	VOC</th><td>202012/01, UK variant</td></tr>
+                                        <tr><th>Emergence location</th><td>Southeast England</td></tr>
+                                        <tr><th>Emergence date</th><td>September 2020</td></tr>
+                                        <tr><th>Amino acid substitutions vs Wuhan-Hu-1:</th><td>Spike	H69-, V70-, N501Y, A570D, D614G, P681H, T716I, S982A, D1118H</td></tr>
+                                        <tr><th>Amino acid substitutions vs Wuhan-Hu-1:</th><td>Non-Spike	ORF8: Q27stop</td></tr>
+                                        <tr><th>Nucleotide substitutions vs Wuhan-Hu-1</th><td>C241T, C913T, C3037T, C3267T, C5388A, C5986T, T6954C, T11288-, C11289-, T11290-, G11291-, G11292-, T11293-, T11294-, T11295-, T11296-, C14408T, C14676T, C15279T, T16176C, A17615G, T21765-, A21766-, C21767-, A21768-, T21769-, G21770-, T21991-, T21992-, A21993-, A23063T, A23271C, A23403G, A23604C, T23709C, G24506T, C24914G, T27972C, G28048T, G28111A, A28271-, G28280C, A28281T, T28282A, G28881A, G28882A, G28883C, C28977T</td></tr>
+                                        <tr><th>Impact</th><td>Increased transmissibility; S gene target failure (SGTF)</td></tr>
+                                        <tr><th>SF overlap</th><td>TBD</td></tr>
+                                        <tr><th>ViPR representative strain link</th>
+                                            <td><a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW430974&decorator=corona&context=1611876836946" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-P012/2020</a>
+                                            </td>
+                                        </tr>
+                                        <tr><th>GISAID representative strain</th><td>hCoV-19/England/MILK-9E05B3/2020 EPI_ISL_601443</td></tr>
+                                        <tr><th>Consensus genome sequence</th><td>B.1.1.7_North America_genome_consensus.fasta</td></tr>
+                                        <tr><th>Consensus Spike protein sequence</th><td>B.1.1.7_North America_S protein_consensus.fasta</td></tr>
+                                        <tr><th>Consensus all protein sequences</th><td>B.1.1.7_North America_all proteins_consensus.fasta</td></tr>
+                                        <tr>
+                                            <th>Relevant publications</th>
+                                            <td>
+                                                <ol>
+                                                    <li><a href="https://www.cdc.gov/coronavirus/2019-ncov/more/science-and-research/scientific-brief-emerging-variants.html" target=_blank>https://www.cdc.gov/coronavirus/2019-ncov/more/science-and-research/scientific-brief-emerging-variants.html</a>;</li>
+                                                    <li><a href="https://virological.org/t/transmission-of-sars-cov-2-lineage-b-1-1-7-in-england-insights-from-linking-epidemiological-and-genetic-data/576/2" target=_blank>https://virological.org/t/transmission-of-sars-cov-2-lineage-b-1-1-7-in-england-insights-from-linking-epidemiological-and-genetic-data/576/2</a></li>
+                                                </ol>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../../javascript %>
+	</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>SARS-CoV-2 | BV-BRC</title>
+		<% include ../../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+    <div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <h1 id="sars-cov-2">SARS-CoV-2 Variants of Concern</h1>
+                            <div class="sars-top">
+                                <div class="sars-top-content">
+
+                                    <h2>B.1.375</h2>
+                                    <table class="p3basic striped">
+                                        <tr><th width="25%">VoC name</th><td>B.1.375</td></tr>
+                                        <tr><th>PANGO lineage</th><td><a href="https://cov-lineages.org/lineages/lineage_B.1.375.html" target=_blank>B.1.375</a></td></tr>
+                                        <tr><th>NextStrain lineage</th><td>&nbsp;</td></tr>
+                                        <tr><th>Other synonyms	VOC</th><td>&nbsp;</td></tr>
+                                        <tr><th>Emergence location</th><td>Massachusetts, USA</td></tr>
+                                        <tr><th>Emergence date</th><td>September 2020</td></tr>
+                                        <tr><th>Amino acid substitutions vs Wuhan-Hu-1:</th><td>H69-, V70-, D614G</td></tr>
+                                        <tr><th>Amino acid substitutions vs Wuhan-Hu-1:</th><td>TBD</td></tr>
+                                        <tr><th>Nucleotide substitutions vs Wuhan-Hu-1</th><td>C241T, C1059T, T1171C, C3037T, A5747G, C10789T, C14408T, G17259T, C21431T, T21765-, A21766-, C21767-, A21768-, T21769-, G21770-, A23403G, G24007A, G25563T, C25844T, A26664G, C28887T, A29863-, G29864-, A29865-, A29866-, T29867-, G29868-, A29869-, C29870-, A29871-, A29872-, A29873-, A29874-, A29875-, A29876-, A29877-, A29878-, A29886C</td></tr>
+                                        <tr><th>Impact</th><td>unknown</td></tr>
+                                        <tr><th>SF overlap</th><td>TBD</td></tr>
+                                        <tr><th>ViPR representative strain link</th>
+                                            <td><a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW430977&decorator=corona" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-P015/2020</a>
+                                            </td>
+                                        </tr>
+                                        <tr><th>GISAID representative strain</th><td>&nbsp;</td></tr>
+                                        <tr><th>Consensus genome sequence</th><td>B.1.375_North America_genome_consensus.fasta</td></tr>
+                                        <tr><th>Consensus Spike protein sequence</th><td>B.1.375_North America_S protein_consensus</td></tr>
+                                        <tr><th>Consensus all protein sequences</th><td>B.1.375_North America_all proteins_consensus.fasta</td></tr>
+                                        <tr><th>Relevant publications</th>
+                                            <td><a href="https://virological.org/t/detection-of-non-b-1-1-7-spike-69-70-sequences-b-1-375-in-the-united-states/587" target=_blank>https://virological.org/t/detection-of-non-b-1-1-7-spike-69-70-sequences-b-1-375-in-the-united-states/587</a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../../javascript %>
+	</body>
+</html>
