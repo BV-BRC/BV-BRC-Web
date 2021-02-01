@@ -74,7 +74,7 @@ define([
             activeQueryState = lang.mixin(this.state, {
               genome_id: '2697049.107626',
               hashParams: {
-                view_tab: ' jbrowse',
+                view_tab: 'jbrowse',
                 loc: 'NC_045512%3A1..29903',
                 tracks: 'refseqs%2CRefSeqGenes%2CUniprotFeatures%2CVOCMarkers'
               }
