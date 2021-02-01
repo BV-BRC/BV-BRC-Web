@@ -1,19 +1,39 @@
 <div>
-    <div class="column-sub"></div>
+    <div class="column-sub" style="width:1%">
+        &nbsp;
+    </div>
 
-    <div class="column-prime" style="width:80%">
-        <div class="section">
-            <h3 class="close2x section-title"><span class="wrap">SARS-CoV-2 Variants of Concern</span></h3>
+    <div class="column-prime" style="width:75%">
+        <br/>
+        <div class="section far2x">
+
+            <b>Welcome to BV-BRC SARS-CoV-2 Resource, designed to help identify, characterize, and analyze "variants and lineages of concern" (VoCs/LoCs).</b>
+            <p>
+                The VoCs/LoCs are sequence variants or lineages that may significantly affect vaccine efficacy, transmissibility, disease outcomes, or other factors
+                critical to gaining control of COVID-19 disease. <br/> The BV-BRC SARS-CoV-2 resource
+                <ul>
+                    <li>Identifies and tracks emerging AA variants and lineages through daily processing of publicly available SARS-CoV-2 sequences</li>
+                    <li>Performs risk assessment on the variants to identify candidate VoCs/LoCs by leveraging a growing knowledgebase of
+                        sequence features, including protein domains, functional regions, secondary structure elements, antibody and T cell epitopes,
+                        and sites involved in post-translational modifications, protein-protein interactions, and differences in virus phenotypes</li>
+                    <li>Provides detail information about each VoC/LoC</li>
+                    <li>Provides their prevalence in various countries and regions over time using interactive dash board and charts</li>
+                    <li>Provides integrated view of the VoCs/LoCs and importance sequence features using genome browser and protein structure viewer</li>
+                </ul>
+            </p>
+        </div>
+        <div class="section far2x">
+            <h3 class="close2x section-title"><span class="wrap">Lineages of Concern</span></h3>
             <table class="p3basic striped">
                 <thead>
                     <tr>
-                        <th>VoC name</th>
+                        <th>LoC name</th>
                         <th>PANGO lineage</th>
                         <th>NextStrain lineage</th>
                         <th>Other synonyms</th>
                         <th>Emergence date</th>
                         <th>Emergence location</th>
-                        <th>Amino acid substitutions vs Wuhan-Hu-1: Spike</th>
+                        <th>Key AA substitutions in spike protein</th>
                         <th>Impact</th>
                     </tr>
                 </thead>
@@ -71,7 +91,19 @@
                 </tbody>
             </table>
         </div>
+        <br/>
+        <div class="section">
+            <h3 class="close2x section-title"><span class="wrap">Variants of Concern</span></h3>
+            Will be implemented soon.
+        </div>
     </div>
 
-    <div class="column-opt"></div>
+    <div class="column-opt">
+        <div class="section">
+            <h3 class="close2x section-title"><span class="wrap">Recent PubMed Articles</span></h3>
+            <div data-dojo-attach-point="pubmedSummaryNode">
+                Loading...
+            </div>
+        </div>
+    </div>
 </div>

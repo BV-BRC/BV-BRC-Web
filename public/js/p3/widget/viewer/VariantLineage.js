@@ -1,18 +1,22 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase',
-  '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer', '../VariantResources',
+  '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
+  '../VariantDetail', '../VariantContainer',
+  '../VariantJBrowseContainer', '../VariantStructureContainer', '../VariantResources',
   '../../util/QueryToEnglish'
 ], function (
   declare, lang,
   TabViewerBase,
-  VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer, VariantResources,
+  VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
+  VariantDetailView, VariantContainer,
+  VariantJBContainer, VariantStructure, VariantResources,
   QueryToEnglish
 ) {
 
   return declare([TabViewerBase], {
 
-    perspectiveLabel: 'Variant Lineage of Concern',
+    perspectiveLabel: '',
     perspectiveIconClass: 'icon-selection-Antibiotic',
 
     onSetState: function (attr, oldVal, state) {
@@ -52,7 +56,7 @@ define([
       activeQueryState = lang.mixin({}, this.state);
 
       switch (active) {
-        case 'prevalence':
+        case 'loc_prevalence':
           if (!this.state.search && this.state.hashParams.filter) {
             this.state.search = this.state.hashParams.filter;
           } else {
@@ -60,6 +64,11 @@ define([
           }
           activeTab.set('state', lang.mixin({}, this.state));
           break;
+
+        case 'voc_prevalence':
+            this.state.search = 'keyword(*)'
+            activeTab.set('state', lang.mixin({}, this.state));
+            break;
 
         default:
           if (activeQueryState) {
@@ -72,7 +81,7 @@ define([
     },
 
     buildHeaderContent: function (search) {
-      this.queryNode.innerHTML = '<span class="searchField">SARS-CoV-2</span>'; // QueryToEnglish(search);
+      this.queryNode.innerHTML = '<span class="searchField" style="font-size:large">SARS-CoV-2 Variants and Lineages of Concern </span>'; // QueryToEnglish(search);
       this.totalCountNode.innerHTML = '';
     },
 
@@ -89,14 +98,39 @@ define([
       });
 
       this.lineage = new VariantLineageDetailView({
-        title: 'Variant of Concern',
+        title: 'Lineages of Concern',
         id: this.viewer.id + '_lineage'
       })
 
-      this.prevalence = new VariantLineageContainer({
-        title: 'Prevalence',
-        id: this.viewer.id + '_prevalence'
+      this.loc_prevalence = new VariantLineageContainer({
+        title: 'LoC Prevalence',
+        id: this.viewer.id + '_loc_prevalence'
       });
+
+      this.variant = new VariantDetailView({
+        title: 'Varaints of Concern',
+        id: this.viewer.id + '_variant'
+      })
+
+      this.voc_prevalence = new VariantContainer({
+        title: 'VoC Prevalence',
+        id: this.viewer.id + '_voc_prevalence'
+      })
+
+      this.jbrowse  = new VariantJBContainer({
+        title: 'Genome Browser',
+        id: this.viewer.id + '_jbrowse'
+      })
+
+      this.structure = new VariantStructure({
+        title: 'Protein Structure',
+        id: this.viewer.id + '_structure'
+      })
+
+      this.phlyogeny = new VariantStructure({
+        title: 'Phlyogeny',
+        id: this.viewer.id + '_phlyogeny'
+      })
 
       this.resources = new VariantResources({
         title: 'Resources',
@@ -105,7 +139,12 @@ define([
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.lineage);
-      this.viewer.addChild(this.prevalence);
+      this.viewer.addChild(this.loc_prevalence);
+      this.viewer.addChild(this.variant);
+      this.viewer.addChild(this.voc_prevalence);
+      this.viewer.addChild(this.jbrowse);
+      this.viewer.addChild(this.structure);
+      this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
     }
   });

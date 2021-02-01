@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/request', 'dojo/when', 'dojo/_base/Deferred',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
   'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  './VariantGridContainer'
+  './VariantGridContainer', './VariantChartContainer'
 ], function (
   declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
   BorderContainer, StackContainer, TabController, ContentPane,
   TextBox, Button, Select,
-  VariantGridContainer
+  VariantGridContainer, VariantChartContainer
 ) {
 
   return declare([BorderContainer], {
@@ -90,19 +90,31 @@ define([
             'class': 'TextTabButtons'
           });
 
-          // var chartContainer1 = new VariantChartContainer({
-          //   region: 'leading',
-          //   style: 'height: 350px; width: 500px;',
-          //   doLayout: false,
-          //   id: self.id + '_chartContainer1',
-          //   title: 'Chart',
-          //   content: 'Gene Expression Chart',
-          //   state: self.state,
-          //   tgtate: self.tgState,
-          //   apiServer: self.apiServer
-          // });
-          // chartContainer1.startup();
+          var chartContainer1 = new VariantChartContainer({
+            region: 'leading',
+            style: 'height: 500px; width: 500px;',
+            doLayout: false,
+            id: self.id + '_chartContainer1',
+            title: 'By Country Chart',
+            content: 'Variant Chart',
+            state: self.state,
+            tgtate: self.tgState,
+            apiServer: self.apiServer
+          });
+          chartContainer1.startup();
 
+          var chartContainer2 = new VariantChartContainer({
+            region: 'leading',
+            style: 'height: 500px; width: 500px;',
+            doLayout: false,
+            id: self.id + '_chartContainer2',
+            title: 'By Lineage Chart',
+            content: 'Variant Chart',
+            state: self.state,
+            tgtate: self.tgState,
+            apiServer: self.apiServer
+          });
+          chartContainer2.startup();
 
           // for data grid
           self.VariantGridContainer = new VariantGridContainer({
@@ -116,8 +128,9 @@ define([
           self.VariantGridContainer.startup();
           self.addChild(tabController);
           self.addChild(filterPanel);
-          // self.tabContainer.addChild(chartContainer1);
           self.tabContainer.addChild(self.VariantGridContainer);
+          self.tabContainer.addChild(chartContainer1);
+          self.tabContainer.addChild(chartContainer2);
           self.addChild(self.tabContainer);
 
           Topic.subscribe(self.id + '_TabContainer-selectChild', lang.hitch(self, function (page) {
@@ -247,7 +260,7 @@ define([
       // country
       var select_country = new Select({
         name: 'selectCountry',
-        id: 'selectCountry',
+        id: 'selectVoCCountry',
         options: [{label: 'Any', value:''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
@@ -265,7 +278,7 @@ define([
       // region -- need to be further filtered by country
       var select_region = new Select({
         name: 'selectRegion',
-        id: 'selectRegion',
+        id: 'selectVoCRegion',
         options: [{label: 'Any', value:''}].concat(filter_data['region'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
@@ -279,7 +292,7 @@ define([
       // month -- need to be further filtered by country
       var select_month = new Select({
         name: 'selectMonth',
-        id: 'selectMonth',
+        id: 'selectVoCMonth',
         options: [{label: 'Any', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
@@ -290,10 +303,12 @@ define([
       domConstruct.place(label_select_month, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_month.domNode, otherFilterPanel.containerNode, 'last');
 
+      domConstruct.place('<br>', otherFilterPanel.containerNode, 'last');
+
       // total isolate
       var select_total_isolates = new Select({
         name: 'selectTotalIsolates',
-        id: 'selectTotalIsolates',
+        id: 'selectVoCTotalIsolates',
         options: [{ value: 0, label: '0'}, { value: 10, label: '10', selected: true }, { value: 100, label: '100' },
           { value: 1000, label: '1000' }],
         style: 'width: 40px; margin: 5px 0'
@@ -308,7 +323,7 @@ define([
       //  lineage_count
       var select_lineage_count = new Select({
         name: 'selectLineageCount',
-        id: 'selectLineageCount',
+        id: 'selectVoCLineageCount',
         options: [{ value: 0, label: '0'}, { value: 5, label: '5', selected: true },
           { value: 10, label: '10' }, { value: 50, label: '50' },
           { value: 100, label: '100' }, { value: 100, label: '500' },
@@ -325,7 +340,7 @@ define([
       //  prevalence
       var select_prevalence = new Select({
         name: 'selectPrevalence',
-        id: 'selectPrevalence',
+        id: 'selectVoCPrevalence',
         options: [{ value: 0, label: '0'},
           { value: 0.001, label: '0.001' }, { value: 0.001, label: '0.005' },
           { value: 0.01, label: '0.01' }, { value: 0.01, label: '0.05', selected: true },
@@ -342,7 +357,7 @@ define([
       //  growth_rate
       var select_growth_rate = new Select({
         name: 'selectGrowthRate',
-        id: 'selectGrowthRate',
+        id: 'selectVocGrowthRate',
         options: [{ value: 0, label: '0'}, { value: 1, label: '1', selected: true }, { value: 2, label: '2' }, { value: 5, label: '5' },
           { value: 10, label: '10' }],
         style: 'width: 40px; margin: 5px 0'

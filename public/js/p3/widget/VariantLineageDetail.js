@@ -25,7 +25,7 @@ define([
       var htr;
       Object.entries(this.data[lineage_id]).forEach(([key, value]) => {
         htr = domConstruct.create('tr', {}, tbody);
-        domConstruct.create('th', { innerHTML: key, scope: 'row', style: 'width:25%' }, htr);
+        domConstruct.create('th', { innerHTML: key, scope: 'row', style: 'width:25%;font-weight:bold' }, htr);
         if (typeof(value) != 'string') {
           var inner = ['<ol>'];
           value.forEach(function(el) {
@@ -42,8 +42,8 @@ define([
     _buildSelectBox: function() {
 
       var select_lineage = new Select({
-        name: 'selectVoC',
-        id: 'selectVoC',
+        name: 'selectLoC',
+        id: 'selectLoC',
         options: ['B.1.1.7', 'B.1.351', 'P.1', 'CAL.20C', 'B.1.375'].map((el) => {return {'label': el, 'value': el}}),
         style: 'width: 200px; margin: 5px 0'
       });
@@ -55,7 +55,7 @@ define([
       });
       var label_select_lineage = domConstruct.create('label', {
         style: 'margin-left: 5px;',
-        innerHTML: 'Select Variant of Concern (VoC): '
+        innerHTML: 'Select Lineage of Concern (LoC): '
       });
       domConstruct.place(label_select_lineage, this.lineageSelectNode, 'last');
       domConstruct.place(select_lineage.domNode, this.lineageSelectNode, 'last');
@@ -69,7 +69,7 @@ define([
     },
     data: {
       'B.1.1.7': {
-        'VoC name':'B.1.1.7',
+        'LoC name':'B.1.1.7',
         'PANGO lineage':'<a href="https://cov-lineages.org/global_report_B.1.1.7.html" target=_blank>B.1.1.7</a>',
         'NextStrain lineage':'20I/501Y.V1',
         'Other synonyms VOC':'202012/01, UK variant',
@@ -91,7 +91,7 @@ define([
         ]
       },
       'B.1.351': {
-        'VoC name':'B.1.351',
+        'LoC name':'B.1.351',
         'PANGO lineage':'<a href="https://cov-lineages.org/global_report_B.1.351.html" target=_blank>B.1.351</a>',
         'NextStrain lineage':'20H/501Y.V2',
         'Other synonyms VOC':'South African variant',
@@ -114,7 +114,7 @@ define([
         ]
       },
       'P.1': {
-        'VoC name':'P.1',
+        'LoC name':'P.1',
         'PANGO lineage':'<a href="https://cov-lineages.org/lineages/lineage_B.1.1.248.html" target=_blank>B.1.1.248</a>',
         'NextStrain lineage':'20J/501Y.V3',
         'Other synonyms VOC':'Brazilian variant',
@@ -137,7 +137,7 @@ define([
         ]
       },
       'CAL.20C': {
-        'VoC name':'CAL.20C',
+        'LoC name':'CAL.20C',
         'PANGO lineage':'',
         'NextStrain lineage':'',
         'Other synonyms VOC':'',
@@ -159,7 +159,7 @@ define([
         ]
       },
       'B.1.375': {
-        'VoC name':'B.1.375',
+        'LoC name':'B.1.375',
         'PANGO lineage':'B.1.375',
         'NextStrain lineage':'',
         'Other synonyms VOC':'',
