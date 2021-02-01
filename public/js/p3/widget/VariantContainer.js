@@ -397,7 +397,7 @@ define([
 
       this.tgState = defaultFilterValue;
       var btn_submit = new Button({
-        label: 'Filter',
+        label: '&nbsp; &nbsp; Filter &nbsp; &nbsp;',
         style: 'margin-left: 10px;',
         onClick: lang.hitch(this, function () {
 

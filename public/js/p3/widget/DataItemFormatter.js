@@ -1498,6 +1498,9 @@ define([
         name: 'Lineage',
         text: 'lineage'
       }, {
+        name: 'Sequence Features',
+        text: 'sequence_features'
+      }, {
         name: 'Country',
         text: 'country'
       }, {
@@ -1532,6 +1535,9 @@ define([
       var columns = [{
         name: 'AA Variant',
         text: 'aa_variant'
+      }, {
+        name: 'Sequence Features',
+        text: 'sequence_features'
       }, {
         name: 'Country',
         text: 'country'
