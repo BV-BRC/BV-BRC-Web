@@ -3,7 +3,7 @@ define([
   './TabViewerBase',
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantDetail', '../VariantContainer',
-  '../VariantJBrowseContainer', '../VariantStructureContainer', '../VariantResources',
+  '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
   '../../util/QueryToEnglish'
 ], function (
   declare, lang,
@@ -67,6 +67,11 @@ define([
 
         case 'voc_prevalence':
             this.state.search = 'keyword(*)'
+            activeTab.set('state', lang.mixin({}, this.state));
+            break;
+
+        case 'jbrowse':
+            this.state.genome_id = '2697049.107626'
             activeTab.set('state', lang.mixin({}, this.state));
             break;
 
