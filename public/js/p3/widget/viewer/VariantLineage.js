@@ -71,8 +71,15 @@ define([
             break;
 
         case 'jbrowse':
-            this.state.genome_id = '2697049.107626'
-            activeTab.set('state', lang.mixin({}, this.state));
+            activeQueryState = lang.mixin(this.state, {
+              genome_id: '2697049.107626',
+              hashParams: {
+                view_tab: ' jbrowse',
+                loc: 'NC_045512%3A1..29903',
+                tracks: 'refseqs%2CRefSeqGenes%2CUniprotFeatures%2CVOCMarkers'
+              }
+            });
+            activeTab.set('state', activeQueryState);
             break;
 
         default:
