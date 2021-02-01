@@ -1,0 +1,154 @@
+define([
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dijit/popup', 'dijit/TooltipDialog',
+  './VariantLineageGrid', './GridContainer'
+], function (
+  declare, lang, on, Topic, domConstruct,
+  popup, TooltipDialog,
+  VariantLineageGrid, GridContainer
+) {
+
+  /*
+  var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+  var downloadTT = new TooltipDialog({
+    content: dfc,
+    onMouseLeave: function () {
+      popup.close(downloadTT);
+    }
+  });
+
+  on(downloadTT.domNode, 'div:click', function (evt) {
+    var rel = evt.target.attributes.rel.value;
+    var self = this;
+
+    // var selection = self.actionPanel.get('selection');
+    var dataType = (self.actionPanel.currentContainerWidget.containerType == 'genome_group') ? 'genome' : 'genome_feature';
+    var currentQuery = self.actionPanel.currentContainerWidget.get('query');
+
+    window.open('/api/' + dataType + '/' + currentQuery + '&http_authorization=' + encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download');
+    popup.close(downloadTT);
+  });
+  */
+
+  return declare([GridContainer], {
+    gridCtor: VariantLineageGrid,
+    containerType: 'variant_lineage_data',
+    facetFields: [],
+    tgState: null,
+    enableFilterPanel: false,
+    constructor: function () {
+      var self = this;
+      Topic.subscribe('VariantLineage', lang.hitch(self, function () {
+        var key = arguments[0],
+          value = arguments[1];
+
+        switch (key) {
+          case 'updateTgState':
+            self.tgState = value;
+            break;
+          default:
+            break;
+        }
+      }));
+    },
+    buildQuery: function () {
+      // prevent further filtering. DO NOT DELETE
+    },
+    _setQueryAttr: function (query) {
+      // block default query handler for now.
+    },
+    _setStateAttr: function (state) {
+      this.inherited(arguments);
+      if (!state) {
+        return;
+      }
+      var self = this;
+      if (this.grid) {
+        this.grid.set('state', state);
+      } else {
+        console.log('No Grid Yet (VariantLineageGridContainer), this is ', self);
+      }
+
+      this._set('state', state);
+    },
+
+    startup: function () {
+      if (this._started) {
+        return;
+      }
+      this.inherited(arguments);
+      this._set('state', this.get('state'));
+    },
+
+    containerActions: GridContainer.prototype.containerActions.concat([
+      /*
+      [
+        'DownloadTable',
+        'fa icon-download fa-2x',
+        {
+          label: 'DOWNLOAD',
+          multiple: false,
+          validTypes: ['*'],
+          tooltip: 'Download Table',
+          tooltipDialog: downloadTT
+        },
+        function () {
+          // console.log("GeneExpressionGrid Download: ", selection);
+          var _self = this;
+
+          var totalRows = _self.grid.totalRows;
+          // console.log("TOTAL ROWS: ", totalRows);
+          if (totalRows > _self.maxDownloadSize) {
+            downloadTT.set('content', 'This table exceeds the maximum download size of ' + _self.maxDownloadSize);
+          } else {
+            downloadTT.set('content', dfc);
+
+            on(downloadTT.domNode, 'div:click', function (evt) {
+              var rel = evt.target.attributes.rel.value;
+              var dataType = _self.dataModel;
+              var currentQuery = _self.grid.get('query');
+
+              // console.log("DownloadQuery: ", currentQuery);
+              var query = currentQuery + '&sort(+' + _self.primaryKey + ')&limit(' + _self.maxDownloadSize + ')';
+
+              var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : '');
+              if (baseUrl.charAt(-1) !== '/') {
+                baseUrl += '/';
+              }
+              baseUrl = baseUrl + dataType + '/?';
+
+              if (window.App.authorizationToken) {
+                baseUrl = baseUrl + '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
+              }
+
+              baseUrl = baseUrl + '&http_accept=' + rel + '&http_download=true';
+              var form = domConstruct.create('form', {
+                style: 'display: none;',
+                id: 'downloadForm',
+                enctype: 'application/x-www-form-urlencoded',
+                name: 'downloadForm',
+                method: 'post',
+                action: baseUrl
+              }, _self.domNode);
+              domConstruct.create('input', {
+                type: 'hidden',
+                value: encodeURIComponent(query),
+                name: 'rql'
+              }, form);
+              form.submit();
+
+              popup.close(downloadTT);
+            });
+          }
+
+          popup.open({
+            popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+            around: this.containerActionBar._actions.DownloadTable.button,
+            orient: ['below']
+          });
+        },
+        true
+      ]*/
+    ])
+  });
+});

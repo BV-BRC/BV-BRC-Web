@@ -1491,6 +1491,76 @@ define([
       return div;
     },
 
+    variant_lineage_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Lineage',
+        text: 'lineage'
+      }, {
+        name: 'Country',
+        text: 'country'
+      }, {
+        name: 'Region',
+        text: 'region'
+      }, {
+        name: 'Month',
+        text: 'month'
+      }, {
+        name: 'Total Isolates',
+        text: 'total_isolates'
+      }, {
+        name: 'Lineage Count',
+        text: 'lineage_count'
+      }, {
+        name: 'Prevalence',
+        text: 'prevalence'
+      }, {
+        name: 'Growth Rate',
+        text: 'growth_rate'
+      }];
+
+      var div = domConstruct.create('div');
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    variant_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'AA Variant',
+        text: 'aa_variant'
+      }, {
+        name: 'Country',
+        text: 'country'
+      }, {
+        name: 'Region',
+        text: 'region'
+      }, {
+        name: 'Month',
+        text: 'month'
+      }, {
+        name: 'Total Isolates',
+        text: 'total_isolates'
+      }, {
+        name: 'Lineage Count',
+        text: 'lineage_count'
+      }, {
+        name: 'Prevalence',
+        text: 'prevalence'
+      }, {
+        name: 'Growth Rate',
+        text: 'growth_rate'
+      }];
+
+      var div = domConstruct.create('div');
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     genome_data: function (item, options) {
       options = options || {};
 
