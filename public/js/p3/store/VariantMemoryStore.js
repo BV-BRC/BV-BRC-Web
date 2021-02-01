@@ -11,6 +11,7 @@ define([
 ) {
 
   var tgState = {
+    sequence_features: '',
     country: '',
     region: '',
     month: '',
@@ -130,6 +131,9 @@ define([
       if (_self.tgState.keyword !== '')
       {
         range += '&keyword(' + encodeURIComponent(_self.tgState.keyword) + ')';
+      }
+      if (_self.tgState.sequence_features !== '') {
+        range += '&eq(sequence_features,' + encodeURIComponent('"' + _self.tgState.sequence_features + '"') + ')';
       }
       if (_self.tgState.country !== '') {
         range += '&eq(country,' + encodeURIComponent(_self.tgState.country) + ')';

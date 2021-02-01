@@ -58,7 +58,7 @@ define([
     },
     _buildPanels: function (state) {
       var self = this;
-      var q = state.search + '&facet((field,country),(field,region),(field,month)(field,lineage),(mincount,1))&json(nl,map)'
+      var q = state.search + '&facet((field,country),(field,region),(field,month)(field,lineage),(field,sequence_features),(mincount,1))&json(nl,map)'
       xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
         data: q,
         headers: {
@@ -81,8 +81,9 @@ define([
           var dict =  {}
           dict['country'] = Object.keys(res.facet_counts.facet_fields.country).sort()
           dict['region'] = Object.keys(res.facet_counts.facet_fields.region).sort()
-          dict['month'] = Object.keys(res.facet_counts.facet_fields.month).sort()
+          dict['month'] = Object.keys(res.facet_counts.facet_fields.month).sort((a, b) => b - a)
           dict['lineage'] = Object.keys(res.facet_counts.facet_fields.lineage).sort()
+          dict['sequence_features'] = Object.keys(res.facet_counts.facet_fields.sequence_features).sort()
 
           var filterPanel = self._buildFilterPanel(dict);
 
@@ -277,6 +278,19 @@ define([
       domConstruct.place(label_select_lineage, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_lineage.domNode, otherFilterPanel.containerNode, 'last');
 
+      var select_sequence_features = new Select({
+        name: 'selectSequenceFeatures',
+        id: 'selectSequenceFeatures',
+        options: [{label: 'Any', value: ''}].concat(filter_data['sequence_features'].map(function(c) { return {label: c, value: c}; })),
+        style: 'width: 200px; margin: 5px 0'
+      });
+      var label_select_sequence_features = domConstruct.create('label', {
+        style: 'margin-left: 10px;',
+        innerHTML: ' Sequence Features: '
+      });
+      domConstruct.place(label_select_sequence_features, otherFilterPanel.containerNode, 'last');
+      domConstruct.place(select_sequence_features.domNode, otherFilterPanel.containerNode, 'last');
+
       domConstruct.place('<br>', otherFilterPanel.containerNode, 'last');
 
       // country
@@ -386,6 +400,7 @@ define([
 
       var defaultFilterValue = {
         lineage: '',
+        sequence_features: '',
         country: '',
         region: '',
         month: '',
@@ -404,6 +419,7 @@ define([
 
           var filter = {
             lineage: '',
+            sequence_features: '',
             country: '',
             region: '',
             month: '',
@@ -438,6 +454,10 @@ define([
           var lineage = select_lineage.get('value').trim();
           if (lineage) {
             filter.lineage = lineage;
+          }
+          var sequence_features = select_sequence_features.get('value').trim();
+          if (sequence_features) {
+            filter.sequence_features = sequence_features;
           }
           var country = select_country.get('value').trim();
           if (country) {
@@ -482,6 +502,7 @@ define([
 
           keyword_textbox.reset();
           select_lineage.reset();
+          select_sequence_features.reset();
           select_country.reset();
           select_region.reset();
           select_month.reset();

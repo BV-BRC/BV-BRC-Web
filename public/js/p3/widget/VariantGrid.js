@@ -23,6 +23,7 @@ define([
       'Selection Checkboxes': selector({ unhidable: true }),
       pid: { label: 'id', field: 'id', hidden: true },
       aa_variant: { label: 'AA Variant', field: 'aa_variant' },
+      sequence_features: { label: 'Sequence Features', field: 'sequence_features' },
       country: { label: 'Country', field: 'country', hidden: false },
       region: { label: 'Region', field: 'region', hidden: false },
       month: { label: 'Month', field: 'month' },
