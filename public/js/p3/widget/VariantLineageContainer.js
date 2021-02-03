@@ -300,6 +300,7 @@ define([
         options: [{label: 'Any', value:''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
+      select_country.attr('value', 'All') // default
       var label_select_country = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Country: '
@@ -314,6 +315,7 @@ define([
         options: [{label: 'Any', value:''}].concat(filter_data['region'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
+      select_region.attr('value', 'All') // default
       var label_select_region = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Region: '
@@ -328,6 +330,7 @@ define([
         options: [{label: 'Any', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
+      select_month.attr('value', 'All') // default
       var label_select_month = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Month: '
@@ -339,10 +342,11 @@ define([
       var select_total_isolates = new Select({
         name: 'selectTotalIsolates',
         id: 'selectTotalIsolates',
-        options: [{ value: 0, label: '0'}, { value: 10, label: '10', selected: true }, { value: 100, label: '100' },
+        options: [{ value: 0, label: '0'}, { value: 10, label: '10'}, { value: 100, label: '100' },
           { value: 1000, label: '1000' }],
         style: 'width: 40px; margin: 5px 0'
       });
+      select_total_isolates.attr('value', 10)
       var label_total_isolates = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Total Isolates >= '
@@ -354,12 +358,13 @@ define([
       var select_lineage_count = new Select({
         name: 'selectLineageCount',
         id: 'selectLineageCount',
-        options: [{ value: 0, label: '0'}, { value: 5, label: '5', selected: true },
+        options: [{ value: 0, label: '0'}, { value: 5, label: '5' },
           { value: 10, label: '10' }, { value: 50, label: '50' },
           { value: 100, label: '100' }, { value: 100, label: '500' },
           { value: 1000, label: '1000' }],
         style: 'width: 40px; margin: 5px 0'
       });
+      select_lineage_count.attr('value', '5')
       var label_lineage_count = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Lineage Count >= '
@@ -372,11 +377,12 @@ define([
         name: 'selectPrevalence',
         id: 'selectPrevalence',
         options: [{ value: 0, label: '0'},
-          { value: 0.001, label: '0.001' }, { value: 0.001, label: '0.005' },
-          { value: 0.01, label: '0.01' }, { value: 0.01, label: '0.05', selected: true },
-          { value: 0.1, label: '0.1' }, { value: 0.1, label: '0.5' }],
+          { value: 0.001, label: '0.001' }, { value: 0.005, label: '0.005' },
+          { value: 0.01, label: '0.01' }, { value: 0.05, label: '0.05'},
+          { value: 0.1, label: '0.1' }, { value: 0.5, label: '0.5' }],
         style: 'width: 40px; margin: 5px 0'
       });
+      select_prevalence.attr('value', '0.05')
       var label_prevalence = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Prevalence >= '
@@ -387,10 +393,11 @@ define([
       //  growth_rate
       var select_growth_rate = new Select({
         name: 'selectGrowthRate',
-        options: [{ value: 0, label: '0'}, { value: 1, label: '1', selected: true }, { value: 2, label: '2' }, { value: 5, label: '5' },
+        options: [{ value: 0, label: '0'}, { value: 1, label: '1'}, { value: 2, label: '2' }, { value: 5, label: '5' },
           { value: 10, label: '10' }],
         style: 'width: 40px; margin: 5px 0'
       });
+      select_growth_rate.attr('value', 1)
       var label_growth_rate = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Growth Rate >= '
@@ -401,9 +408,9 @@ define([
       var defaultFilterValue = {
         lineage: '',
         sequence_features: '',
-        country: '',
-        region: '',
-        month: '',
+        country: 'All',
+        region: 'All',
+        month: 'All',
         min_total_isolates: 10,
         min_lineage_count: 5,
         min_prevalence: 0.05,

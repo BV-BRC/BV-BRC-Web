@@ -56,16 +56,16 @@ define([
       activeQueryState = lang.mixin({}, this.state);
 
       switch (active) {
-        case 'loc_prevalence':
+        case 'lineage_prevalence':
           if (!this.state.search && this.state.hashParams.filter) {
             this.state.search = this.state.hashParams.filter;
           } else {
-            this.state.search = 'ne(country,All)'
+            this.state.search = 'keyword(*)'
           }
           activeTab.set('state', lang.mixin({}, this.state));
           break;
 
-        case 'voc_prevalence':
+        case 'variant_prevalence':
             this.state.search = 'keyword(*)'
             activeTab.set('state', lang.mixin({}, this.state));
             break;
@@ -114,19 +114,19 @@ define([
         id: this.viewer.id + '_lineage'
       })
 
-      this.loc_prevalence = new VariantLineageContainer({
-        title: 'LoC Prevalence',
-        id: this.viewer.id + '_loc_prevalence'
+      this.lineage_prevalence = new VariantLineageContainer({
+        title: 'Lineage Prevalence',
+        id: this.viewer.id + '_lineage_prevalence'
       });
 
-      this.variant = new VariantDetailView({
-        title: 'Varaints of Concern',
-        id: this.viewer.id + '_variant'
-      })
+      // this.variant = new VariantDetailView({
+      //   title: 'Variants of Concern',
+      //   id: this.viewer.id + '_variant'
+      // })
 
-      this.voc_prevalence = new VariantContainer({
-        title: 'VoC Prevalence',
-        id: this.viewer.id + '_voc_prevalence'
+      this.variant_prevalence = new VariantContainer({
+        title: 'Variant Prevalence',
+        id: this.viewer.id + '_variant_prevalence'
       })
 
       this.jbrowse  = new VariantJBContainer({
@@ -151,9 +151,9 @@ define([
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.lineage);
-      this.viewer.addChild(this.loc_prevalence);
-      this.viewer.addChild(this.variant);
-      this.viewer.addChild(this.voc_prevalence);
+      this.viewer.addChild(this.lineage_prevalence);
+      // this.viewer.addChild(this.variant);
+      this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
       this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phlyogeny);

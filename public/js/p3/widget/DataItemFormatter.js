@@ -1516,7 +1516,7 @@ define([
         name: 'Lineage Count',
         text: 'lineage_count'
       }, {
-        name: 'Prevalence',
+        name: 'Sequence Prevalence',
         text: 'prevalence'
       }, {
         name: 'Growth Rate',
@@ -1554,7 +1554,7 @@ define([
         name: 'Lineage Count',
         text: 'lineage_count'
       }, {
-        name: 'Prevalence',
+        name: 'Sequence Prevalence',
         text: 'prevalence'
       }, {
         name: 'Growth Rate',

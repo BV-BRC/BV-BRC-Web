@@ -29,7 +29,7 @@ define([
       month: { label: 'Month', field: 'month' },
       total_isolates: { label: 'Total Isolates', field: 'total_isolates' },
       lineage_count: { label: 'Lineage Count', field: 'lineage_count' },
-      prevalence: { label: 'Prevalence', field: 'prevalence' },
+      prevalence: { label: 'Sequence Prevalence', field: 'prevalence' },
       growth_rate: { label: 'Growth Rate', field: 'growth_rate' }
     },
     constructor: function (options) {
