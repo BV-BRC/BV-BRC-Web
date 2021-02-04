@@ -366,7 +366,7 @@ define([
           { value: 0.1, label: '0.1' }, { value: 0.1, label: '0.5' }],
         style: 'width: 40px; margin: 5px 0'
       });
-      select_prevalence.attr('value', '0.005')
+      select_prevalence.attr('value', 0.005)
       var label_prevalence = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Prevalence >= '
@@ -403,28 +403,28 @@ define([
       };
       this.defaultFilterValue = defaultFilterValue;
 
-      this.tgState = this.defaultFilterValue;
+      this.tgState = lang.mixin(this.tgState, this.defaultFilterValue);
       var btn_submit = new Button({
         label: '&nbsp; &nbsp; Filter &nbsp; &nbsp;',
         style: 'margin-left: 10px;',
         onClick: lang.hitch(this, function () {
 
-          var filter = lang.mixin({}, this.defaultFilterValue);
+          var filter = {};
 
           var total_isolates = parseInt(select_total_isolates.get('value'));
-          if (total_isolates > 0) {
+          if (total_isolates >= 0) {
             filter.min_total_isolates = total_isolates;
           }
           var lineage_count = parseInt(select_lineage_count.get('value'));
-          if (lineage_count > 0) {
+          if (lineage_count >= 0) {
             filter.min_lineage_count = lineage_count;
           }
           var prevalence = parseFloat(select_prevalence.get('value'));
-          if (prevalence > 0) {
+          if (prevalence >= 0) {
             filter.min_prevalence = prevalence;
           }
           var growth_rate = parseInt(select_growth_rate.get('value'));
-          if (growth_rate > 0) {
+          if (growth_rate >= 0) {
             filter.min_growth_rate = growth_rate;
           }
 

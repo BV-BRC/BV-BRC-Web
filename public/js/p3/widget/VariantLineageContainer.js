@@ -315,7 +315,7 @@ define([
         options: [{label: '&nbsp;', value:''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
-      select_country.attr('value', 'All') // default
+      select_country.attr('value', 'All')
       var label_select_country = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Country: '
@@ -330,7 +330,7 @@ define([
         options: [{label: '&nbsp;', value:''}].concat(filter_data['region'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
-      select_region.attr('value', 'All') // default
+      select_region.attr('value', 'All')
       var label_select_region = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Region: '
@@ -345,7 +345,7 @@ define([
         options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
-      select_month.attr('value', 'All') // default
+      select_month.attr('value', 'All')
       var label_select_month = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Month: '
@@ -441,22 +441,22 @@ define([
         style: 'margin-left: 10px;',
         onClick: lang.hitch(this, function () {
 
-          var filter = lang.mixin({}, this.defaultFilterValue);
+          var filter = {};
 
           var total_isolates = parseInt(select_total_isolates.get('value'));
-          if (total_isolates > 0) {
+          if (total_isolates >= 0) {
             filter.min_total_isolates = total_isolates;
           }
           var lineage_count = parseInt(select_lineage_count.get('value'));
-          if (lineage_count > 0) {
+          if (lineage_count >= 0) {
             filter.min_lineage_count = lineage_count;
           }
           var prevalence = parseFloat(select_prevalence.get('value'));
-          if (prevalence > 0) {
+          if (prevalence >= 0) {
             filter.min_prevalence = prevalence;
           }
           var growth_rate = parseInt(select_growth_rate.get('value'));
-          if (growth_rate > 0) {
+          if (growth_rate >= 0) {
             filter.min_growth_rate = growth_rate;
           }
 
