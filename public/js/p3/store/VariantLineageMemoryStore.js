@@ -130,6 +130,9 @@ define([
       {
         range += '&keyword(' + encodeURIComponent(_self.tgState.keyword) + ')';
       }
+      if (_self.tgState.lineage_of_concern !== '') {
+        range += '&eq(lineage_of_concern,' + encodeURIComponent(_self.tgState.lineage_of_concern) + ')';
+      }
       if (_self.tgState.lineage !== '') {
         range += '&eq(lineage,' + encodeURIComponent(_self.tgState.lineage) + ')';
       }

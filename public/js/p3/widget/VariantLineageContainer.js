@@ -58,7 +58,7 @@ define([
     },
     _buildPanels: function (state) {
       var self = this;
-      var q = state.search + '&facet((field,country),(field,region),(field,month)(field,lineage),(field,sequence_features),(mincount,1))&json(nl,map)'
+      var q = state.search + '&facet((field,country),(field,region),(field,month)(field,lineage),(field,sequence_features),(field,lineage_of_concern),(mincount,1))&json(nl,map)'
       xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
         data: q,
         headers: {
@@ -84,6 +84,7 @@ define([
           dict['month'] = Object.keys(res.facet_counts.facet_fields.month).sort((a, b) => b - a)
           dict['lineage'] = Object.keys(res.facet_counts.facet_fields.lineage).sort()
           dict['sequence_features'] = Object.keys(res.facet_counts.facet_fields.sequence_features).sort()
+          dict['loc'] = Object.keys(res.facet_counts.facet_fields.lineage_of_concern).sort()
 
           var filterPanel = self._buildFilterPanel(dict);
 
@@ -265,6 +266,20 @@ define([
       domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, 'last');
 
       // lineage
+      var select_loc = new Select({
+        name: 'selectLoC',
+        id: 'selectLLoC',
+        options: [{label: 'Any', value: ''}].concat(filter_data['loc'].map(function(c) { return {label: c, value: c}; })),
+        style: 'width: 200px; margin: 5px 0'
+      });
+      var label_select_loc = domConstruct.create('label', {
+        style: 'margin-left: 10px;',
+        innerHTML: ' LoC: '
+      });
+      domConstruct.place(label_select_loc, otherFilterPanel.containerNode, 'last');
+      domConstruct.place(select_loc.domNode, otherFilterPanel.containerNode, 'last');
+
+      // lineage
       var select_lineage = new Select({
         name: 'selectLineage',
         id: 'selectLineage',
@@ -382,7 +397,7 @@ define([
           { value: 0.1, label: '0.1' }, { value: 0.5, label: '0.5' }],
         style: 'width: 40px; margin: 5px 0'
       });
-      select_prevalence.attr('value', '0.05')
+      select_prevalence.attr('value', '0.005')
       var label_prevalence = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Prevalence >= '
@@ -406,6 +421,7 @@ define([
       domConstruct.place(select_growth_rate.domNode, otherFilterPanel.containerNode, 'last');
 
       var defaultFilterValue = {
+        lineage_of_concern: '',
         lineage: '',
         sequence_features: '',
         country: 'All',
@@ -425,6 +441,7 @@ define([
         onClick: lang.hitch(this, function () {
 
           var filter = {
+            lineage_of_concern: '',
             lineage: '',
             sequence_features: '',
             country: '',
@@ -457,6 +474,10 @@ define([
           var keyword = keyword_textbox.get('value').trim();
           if (keyword) {
             filter.keyword = keyword;
+          }
+          var lineage_of_concern = select_loc.get('value').trim();
+          if (lineage_of_concern) {
+            filter.lineage_of_concern = lineage_of_concern;
           }
           var lineage = select_lineage.get('value').trim();
           if (lineage) {

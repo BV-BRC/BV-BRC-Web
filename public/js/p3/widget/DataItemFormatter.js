@@ -1495,6 +1495,9 @@ define([
       options = options || {};
 
       var columns = [{
+        name: 'Lineage of Concern',
+        text: 'lineage_of_concern'
+      }, {
         name: 'Lineage',
         text: 'lineage'
       }, {
