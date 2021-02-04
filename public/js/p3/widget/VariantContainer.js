@@ -261,7 +261,7 @@ define([
       var select_sequence_features = new Select({
         name: 'selectSequenceFeatures',
         id: 'selectVoCSequenceFeatures',
-        options: [{label: 'Any', value: ''}].concat(filter_data['sequence_features'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['sequence_features'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 200px; margin: 5px 0'
       });
       var label_select_sequence_features = domConstruct.create('label', {
@@ -275,7 +275,7 @@ define([
       var select_country = new Select({
         name: 'selectCountry',
         id: 'selectVoCCountry',
-        options: [{label: 'Any', value:''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value: ''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_country.attr('value', 'All')
@@ -294,7 +294,7 @@ define([
       var select_region = new Select({
         name: 'selectRegion',
         id: 'selectVoCRegion',
-        options: [{label: 'Any', value:''}].concat(filter_data['region'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value:''}].concat(filter_data['region'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_region.attr('value', 'All')
@@ -309,7 +309,7 @@ define([
       var select_month = new Select({
         name: 'selectMonth',
         id: 'selectVoCMonth',
-        options: [{label: 'Any', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_month.attr('value', 'All')
@@ -348,7 +348,7 @@ define([
           { value: 1000, label: '1000' }],
         style: 'width: 40px; margin: 5px 0'
       });
-      select_lineage_count.attr('value', 5)
+      select_lineage_count.attr('value', 10)
       var label_lineage_count = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Lineage Count >= '
@@ -361,12 +361,12 @@ define([
         name: 'selectPrevalence',
         id: 'selectVoCPrevalence',
         options: [{ value: 0, label: '0'},
-          { value: 0.001, label: '0.001' }, { value: 0.001, label: '0.005' },
-          { value: 0.01, label: '0.01' }, { value: 0.01, label: '0.05' },
+          { value: 0.001, label: '0.001' }, { value: 0.005, label: '0.005' },
+          { value: 0.01, label: '0.01' }, { value: 0.05, label: '0.05' },
           { value: 0.1, label: '0.1' }, { value: 0.1, label: '0.5' }],
         style: 'width: 40px; margin: 5px 0'
       });
-      select_prevalence.attr('value', '0.05')
+      select_prevalence.attr('value', '0.005')
       var label_prevalence = domConstruct.create('label', {
         style: 'margin-left: 10px;',
         innerHTML: ' Prevalence >= '
@@ -390,35 +390,26 @@ define([
       domConstruct.place(label_growth_rate, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_growth_rate.domNode, otherFilterPanel.containerNode, 'last');
 
-      var defaultFilterValue = {
+      const defaultFilterValue = {
         sequence_features: '',
         country: 'All',
         region: 'All',
         month: 'All',
         min_total_isolates: 10,
-        min_lineage_count: 5,
-        min_prevalence: 0.05,
-        min_growth_rate: 0,
+        min_lineage_count: 10,
+        min_prevalence: 0.005,
+        min_growth_rate: 1,
         keyword: ''
       };
+      this.defaultFilterValue = defaultFilterValue;
 
-      this.tgState = defaultFilterValue;
+      this.tgState = this.defaultFilterValue;
       var btn_submit = new Button({
         label: '&nbsp; &nbsp; Filter &nbsp; &nbsp;',
         style: 'margin-left: 10px;',
         onClick: lang.hitch(this, function () {
 
-          var filter = {
-            sequence_features: '',
-            country: '',
-            region: '',
-            month: '',
-            min_total_isolates: 0,
-            min_lineage_count: 0,
-            min_prevalence: 0,
-            min_growth_rate: 0,
-            keyword: ''
-          };
+          var filter = lang.mixin({}, this.defaultFilterValue);
 
           var total_isolates = parseInt(select_total_isolates.get('value'));
           if (total_isolates > 0) {
@@ -459,7 +450,7 @@ define([
           }
           // console.log('submit btn clicked: filter', filter);
 
-          this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
+          this.tgState = lang.mixin(this.tgState, this.defaultFilterValue, filter);
           Topic.publish('Variant', 'updateTgState', this.tgState);
           // console.log('submit btn clicked: this.tgState', this.tgState);
         })
@@ -472,29 +463,18 @@ define([
         type: 'reset',
         onClick: lang.hitch(this, function () {
 
-          var filter = {
-            sequence_features: '',
-            country: '',
-            region: '',
-            month: '',
-            min_total_isolates: 0,
-            min_lineage_count: 0,
-            min_prevalence: 0,
-            min_growth_rate: 0,
-            keyword: ''
-          };
-          this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
+          this.tgState = lang.mixin(this.tgState, this.defaultFilterValue);
           Topic.publish('Variant', 'updateTgState', this.tgState);
 
           keyword_textbox.reset();
-          select_sequence_features.reset();
-          select_country.reset();
-          select_region.reset();
-          select_month.reset();
-          select_total_isolates.reset();
-          select_lineage_count.reset();
-          select_prevalence.reset();
-          select_growth_rate.reset();
+          select_sequence_features.attr('value', this.defaultFilterValue['sequence_features'] || '&nbsp;');
+          select_country.attr('value', this.defaultFilterValue['country']);
+          select_region.attr('value', this.defaultFilterValue['region']);
+          select_month.attr('value', this.defaultFilterValue['month']);
+          select_total_isolates.attr('value', this.defaultFilterValue['min_total_isolates']);
+          select_lineage_count.attr('value', this.defaultFilterValue['min_lineage_count']);
+          select_prevalence.attr('value', this.defaultFilterValue['min_prevalence']);
+          select_growth_rate.attr('value', this.defaultFilterValue['min_growth_rate']);
         })
       });
       domConstruct.place(reset_submit.domNode, otherFilterPanel.containerNode, 'last');

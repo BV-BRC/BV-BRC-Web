@@ -137,7 +137,11 @@ define([
         range += '&eq(lineage,' + encodeURIComponent(_self.tgState.lineage) + ')';
       }
       if (_self.tgState.sequence_features !== '') {
-        range += '&eq(sequence_features,' + encodeURIComponent('"' + _self.tgState.sequence_features + '"') + ')';
+        if (_self.tgState.sequence_features == '*') {
+          range += '&eq(sequence_features,*)';
+        } else {
+          range += '&eq(sequence_features,' + encodeURIComponent('"' + _self.tgState.sequence_features + '"') + ')';
+        }
       }
       if (_self.tgState.country !== '') {
         range += '&eq(country,' + encodeURIComponent(_self.tgState.country) + ')';

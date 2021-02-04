@@ -16,8 +16,8 @@ define([
     region: '',
     month: '',
     min_total_isolates: 10,
-    min_lineage_count: 5,
-    min_prevalence: 0.05,
+    min_lineage_count: 10,
+    min_prevalence: 0.005,
     min_growth_rate: 0,
     keyword: ''
   };
@@ -133,7 +133,11 @@ define([
         range += '&keyword(' + encodeURIComponent(_self.tgState.keyword) + ')';
       }
       if (_self.tgState.sequence_features !== '') {
-        range += '&eq(sequence_features,' + encodeURIComponent('"' + _self.tgState.sequence_features + '"') + ')';
+        if (_self.tgState.sequence_features == '*') {
+          range += '&eq(sequence_features,*)';
+        } else {
+          range += '&eq(sequence_features,' + encodeURIComponent('"' + _self.tgState.sequence_features + '"') + ')';
+        }
       }
       if (_self.tgState.country !== '') {
         range += '&eq(country,' + encodeURIComponent(_self.tgState.country) + ')';
