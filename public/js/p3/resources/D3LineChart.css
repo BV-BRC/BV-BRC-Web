@@ -1,0 +1,92 @@
+
+.d3_line_chart text {
+    font: 12px sans-serif;
+  }
+
+/**********
+*  Legend
+*/
+.d3_line_chart  .legend .series {
+    cursor: pointer;
+  }
+
+.d3_line_chart  .legend circle {
+    stroke-width: 2px;
+  }
+
+.d3_line_chart  .legend .disabled circle {
+    fill-opacity: 0;
+  }
+
+
+
+  /**********
+  *  Axes
+  */
+
+.d3_line_chart  .axis path {
+    fill: none;
+    stroke: #000;
+    stroke-opacity: .75;
+    shape-rendering: crispEdges;
+  }
+
+.d3_line_chart  .axis path.domain {
+    stroke-opacity: .75;
+  }
+
+.d3_line_chart  .axis line {
+    fill: none;
+    stroke: #000;
+    stroke-opacity: .25;
+    shape-rendering: crispEdges;
+  }
+
+.d3_line_chart  .axis line.zero {
+    stroke-opacity: .75;
+  }
+
+
+
+  /**********
+  *  Line chart
+  */
+
+.d3_line_chart  .point-paths path {
+    /*
+    fill: #eee;
+    stroke: #aaa;
+    */
+    stroke-opacity: 0;
+    fill-opacity: 0;
+  }
+
+
+.d3_line_chart  .lines path {
+    fill: none;
+    stroke-width: 1.5px;
+    stroke-linecap: round;
+
+    transition: stroke-width 250ms linear;
+    -moz-transition: stroke-width 250ms linear;
+    -webkit-transition: stroke-width 250ms linear;
+
+    transition-delay: 250ms;
+    -moz-transition-delay: 250ms;
+    -webkit-transition-delay: 250ms;
+  }
+
+.d3_line_chart  .line.hover path {
+    stroke-width: 6px;
+  }
+
+.d3_line_chart  .lines .point {
+    transition: stroke-width 250ms linear;
+    -moz-transition: stroke-width 250ms linear;
+    -webkit-transition: stroke-width 250ms linear;
+  }
+
+.d3_line_chart  .lines .point.hover {
+    stroke-width: 20px;
+    stroke-opacity: .5;
+  }
