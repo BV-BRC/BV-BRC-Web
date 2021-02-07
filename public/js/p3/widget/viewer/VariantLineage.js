@@ -76,7 +76,7 @@ define([
               hashParams: {
                 view_tab: 'jbrowse',
                 loc: 'NC_045512%3A1..29903',
-                tracks: 'refseqs%2CRefSeqGenes%2CUniprotFeatures%2CVOCMarkers'
+                tracks: 'RefSeqGenes%2CUniprotFeatures%2CVOCMarkers%2CHumanBCellEpitopes'
               }
             });
             activeTab.set('state', activeQueryState);
