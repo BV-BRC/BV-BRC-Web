@@ -16,11 +16,11 @@
     fill: #777777;
 }
 .bar_chart_r text.label{
-    font-weight: 600;
+    font-weight: 300;
 }
 
 .bar_chart_r text.valueLabel{
-    font-weight: 300;
+    font-weight: 600;
 }
 
 .bar_chart_r text.yearText{

@@ -7,10 +7,13 @@ define([
     init: function (target, id) {
       // https://bl.ocks.org/jrzief/70f1f8a5d066a286da3a1e699823470f
       this.node = domConstruct.place(`<div id=${id} class="bar_chart_r"></div>`, target, 'only');
-
+      function colores(n) {
+        var palette = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+        return palette[n % palette.length];
+      }
       this.config = {
-        top_n: 10,
-        height: 300,
+        top_n: 15,
+        height: 500,
         width: 960,
         margin: {
           top: 20,
@@ -18,10 +21,13 @@ define([
           bottom: 5,
           left: 0
         },
-        tickPause: 2000,
-        tickDuration: 1000,
+        valueOffset: -8,
+        valueLableOffset: 5,
+        tickPause: 1500,
+        tickDuration: 700,
         startYear: 2020.01,
         stopYear: 2021.01,
+        colorScheme: colores,
       };
 
       this.canvas = d3.select(`#${id}`)
@@ -33,10 +39,10 @@ define([
       this.halo = function(text, strokeWidth) {
         text.select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
           .style('fill', '#ffffff')
-           .style('stroke','#ffffff')
-           .style('stroke-width', strokeWidth)
-           .style('stroke-linejoin', 'round')
-           .style('opacity', 1);
+          .style('stroke','#ffffff')
+          .style('stroke-width', strokeWidth)
+          .style('stroke-linejoin', 'round')
+          .style('opacity', 1);
       }
     },
     setPeriod: function(start, end) {
@@ -52,15 +58,14 @@ define([
         d.value = +d.value,
         d.lastValue = +d.lastValue,
         d.value = isNaN(d.value) ? 0 : d.value,
-        d.year = +d.year,
-        d.colour = d3.hsl(Math.random()*360,0.75,0.75)
+        d.year = +d.year
       });
 
       // console.log(data);
 
       let yearSlice = data.filter(d => d.year == year && !isNaN(d.value))
-      .sort((a,b) => b.value - a.value)
-      .slice(0, this.config.top_n);
+        .sort((a,b) => b.value - a.value)
+        .slice(0, this.config.top_n);
 
       yearSlice.forEach((d,i) => d.rank = i);
 
@@ -78,7 +83,10 @@ define([
         .tickSize(-(this.config.height-this.config.margin.top-this.config.margin.bottom))
         .tickFormat(d => d3.format(',')(d));
 
+      // remove old
       this.canvas.selectAll('g.axis').remove();
+      this.canvas.selectAll('text.yearText').remove();
+      this.canvas.selectAll('rect.bar').remove();
 
       this.canvas.append('g')
         .attr('class', 'axis xAxis')
@@ -96,26 +104,26 @@ define([
         .attr('width', d => x(d.value)-x(0)-1)
         .attr('y', d => y(d.rank)+5)
         .attr('height', y(1)-y(0)-this.barPadding)
-        .style('fill', d => d.colour);
+        .style('fill', (d, i) => this.config.colorScheme(i))
 
       this.canvas.selectAll('text.label')
         .data(yearSlice, d => d.name)
         .enter()
         .append('text')
         .attr('class', 'label')
-        .attr('x', d => x(d.value)-8)
+        .attr('x', d => x(d.value) + this.config.valueOffset)
         .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
         .style('text-anchor', 'end')
-        .html(d => d.name);
+        .text(d => d.value);
 
       this.canvas.selectAll('text.valueLabel')
         .data(yearSlice, d => d.name)
         .enter()
         .append('text')
         .attr('class', 'valueLabel')
-        .attr('x', d => x(d.value)+5)
-        .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
-        .text(d => d3.format(',.3f')(d.lastValue));
+        .attr('x', d => x(d.value) + this.config.valueLableOffset)
+        .attr('y', d => y(d.rank) + 5 + ((y(1)-y(0))/2) + 1)
+        .text(d => d.name)
 
       let yearText = this.canvas.append('text')
         .attr('class', 'yearText')
@@ -143,17 +151,17 @@ define([
           .ease(d3.easeLinear)
           .call(xAxis);
 
-          let bars = svg.selectAll('.bar').data(yearSlice, d => d.name);
+        let bars = svg.selectAll('.bar').data(yearSlice, d => d.name);
 
         bars
         .enter()
         .append('rect')
         .attr('class', d => `bar ${d.name.replace(/\s/g,'_')}`)
         .attr('x', x(0)+1)
-        .attr( 'width', d => x(d.value)-x(0)-1)
+        .attr('width', d => x(d.value)-x(0)-1)
         .attr('y', d => y(this.config.top_n+1)+5)
         .attr('height', y(1)-y(0)-this.barPadding)
-        .style('fill', d => d.colour)
+        .style('fill', (d, i) => this.config.colorScheme(i))
         .transition()
           .duration(this.config.tickDuration)
           .ease(d3.easeLinear)
@@ -182,41 +190,40 @@ define([
         .enter()
         .append('text')
         .attr('class', 'label')
-        .attr('x', d => x(d.value)-8)
+        .attr('x', d => x(d.value) + this.config.valueOffset)
         .attr('y', d => y(this.config.top_n+1)+5+((y(1)-y(0))/2))
         .style('text-anchor', 'end')
-        .html(d => d.name)
+        // .text(d => d.value)
         .transition()
           .duration(this.config.tickDuration)
           .ease(d3.easeLinear)
           .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
 
-
         labels
           .transition()
           .duration(this.config.tickDuration)
             .ease(d3.easeLinear)
-            .attr('x', d => x(d.value)-8)
-            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
+            .attr('x', d => x(d.value) + this.config.valueOffset)
+            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
+            .text(d => d3.format('.4f')(d.value))
 
         labels
           .exit()
           .transition()
             .duration(this.config.tickDuration)
             .ease(d3.easeLinear)
-            .attr('x', d => x(d.value)-8)
+            .attr('x', d => x(d.value) + this.config.valueOffset)
             .attr('y', d => y(this.config.top_n+1)+5)
             .remove();
 
         let valueLabels = svg.selectAll('.valueLabel').data(yearSlice, d => d.name);
-
         valueLabels
           .enter()
           .append('text')
           .attr('class', 'valueLabel')
-          .attr('x', d => x(d.value)+5)
+          .attr('x', d => x(d.value) + this.config.valueLableOffset)
           .attr('y', d => y(this.config.top_n+1)+5)
-          .text(d => d3.format(',.3f')(d.lastValue))
+          .text(d => d.name)
           .transition()
             .duration(this.config.tickDuration)
             .ease(d3.easeLinear)
@@ -226,21 +233,15 @@ define([
           .transition()
             .duration(this.config.tickDuration)
             .ease(d3.easeLinear)
-            .attr('x', d => x(d.value)+5)
+            .attr('x', d => x(d.value) + this.config.valueLableOffset)
             .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
-            .tween("text", function(d) {
-                let i = d3.interpolateRound(d.lastValue, d.value);
-                return function(t) {
-                  this.textContent = d3.format(',')(i(t));
-              };
-            });
 
         valueLabels
           .exit()
           .transition()
             .duration(this.config.tickDuration)
             .ease(d3.easeLinear)
-            .attr('x', d => x(d.value)+5)
+            .attr('x', d => x(d.value) + this.config.valueLableOffset)
             .attr('y', d => y(this.config.top_n+1)+5)
             .remove();
 
