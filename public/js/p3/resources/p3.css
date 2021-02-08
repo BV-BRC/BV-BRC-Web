@@ -26,6 +26,7 @@
 @import url("./dlp.css");
 @import url("./help.css");
 @import url("webpage.css");
+@import url("./D3BarChartRace.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
 
 .icon-sort-alpha-asc {
