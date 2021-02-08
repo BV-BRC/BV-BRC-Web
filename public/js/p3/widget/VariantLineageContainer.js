@@ -1,13 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/request', 'dojo/when', 'dojo/_base/Deferred',
-  'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
-  'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  './VariantLineageGridContainer', './VariantLineageChartContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup'
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
+  'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
+  './VariantLineageGridContainer', './VariantLineageChartContainer',
 ], function (
-  declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
-  BorderContainer, StackContainer, TabController, ContentPane,
-  TextBox, Button, Select,
-  VariantLineageGridContainer, VariantLineageChartContainer, TooltipDialog, Dialog, popup
+  declare, lang, on, Topic,
+  BorderContainer, StackContainer, TabController,
+  VariantLineageGridContainer, VariantLineageChartContainer,
 ) {
 
   return declare([BorderContainer], {
@@ -30,9 +28,6 @@ define([
       if (this.VariantLineageGridContainer) {
         this.VariantLineageGridContainer.set('state', state);
       }
-      // if (this.VariantLineageChartContainer) {
-      //   this.VariantLineageChartContainer.set('state', state);
-      // }
       this._set('state', state);
     },
 
@@ -73,8 +68,9 @@ define([
         id: this.id + '_chartContainer1',
         title: 'By Country Chart',
         content: 'LoC By Country Chart',
-        state: this.state,
-        tgtate: this.tgState,
+        state: lang.mixin({}, {
+          groupBy: 'country'
+        }),
         apiServer: this.apiServer
       });
 
@@ -85,8 +81,9 @@ define([
         id: self.id + '_chartContainer2',
         title: 'By Lineage Chart',
         content: 'LoC By Country Chart',
-        state: self.state,
-        tgtate: self.tgState,
+        state: lang.mixin({}, {
+          groupBy: 'lineage'
+        }),
         apiServer: self.apiServer
       });
 
@@ -106,7 +103,9 @@ define([
       self.addChild(self.tabContainer);
 
       Topic.subscribe(self.id + '_TabContainer-selectChild', lang.hitch(self, function (page) {
-        page.set('state', self.state);
+        if (page.title == 'Table') {
+          page.set('state', self.state);
+        }
         page.set('visible', true);
       }));
     }

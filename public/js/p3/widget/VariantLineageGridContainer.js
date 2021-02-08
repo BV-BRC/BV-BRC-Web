@@ -64,7 +64,7 @@ define([
         layoutPriority: 7,
         splitter: true,
         className: 'BrowserHeader',
-        style:'height:70px'
+        style:'height:100px'
       });
       this.getFilterPanel()
     },
