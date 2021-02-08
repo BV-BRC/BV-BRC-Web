@@ -153,7 +153,10 @@ define([
       var select_month = new Select({
         name: 'selectMonth',
         id: 'selectVoCMonth',
-        options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) {
+          let label = (c == 'All') ? c : `${c.substring(0,4)}-${c.substring(4,6)}`
+          return {label: label, value: c};
+        })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_month.attr('value', 'All')

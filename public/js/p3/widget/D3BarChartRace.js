@@ -17,7 +17,7 @@ define([
         width: 960,
         margin: {
           top: 20,
-          right: 5,
+          right: 150,
           bottom: 5,
           left: 0
         },
