@@ -12,13 +12,13 @@ define([
 
   var tgState = {
     sequence_features: '',
-    country: '',
-    region: '',
-    month: '',
+    country: 'All',
+    region: 'All',
+    month: 'All',
     min_total_isolates: 10,
     min_lineage_count: 10,
     min_prevalence: 0.005,
-    min_growth_rate: 0,
+    min_growth_rate: 1,
     keyword: ''
   };
 
@@ -50,7 +50,6 @@ define([
       var self = this;
 
       Topic.subscribe('Variant', function () {
-        console.log('VariantMemoryStore received:', arguments);
         var key = arguments[0],
           value = arguments[1];
 
@@ -91,7 +90,6 @@ define([
       }));
 
       return qr;
-
     },
 
     get: function (id, opts) {
@@ -102,7 +100,6 @@ define([
       return when(this.loadData(), function () {
         return _self.get(id, opts);
       });
-
     },
 
     loadData: function () {
@@ -113,7 +110,7 @@ define([
       var _self = this;
 
       if (!this.state || this.state.search == null) {
-        console.warn('No State, use empty data set for initial store');
+        console.log('No State, use empty data set for initial store');
 
         // this is done as a deferred instead of returning an empty array
         // in order to make it happen on the next tick.  Otherwise it

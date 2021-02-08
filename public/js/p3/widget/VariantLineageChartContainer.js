@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/dom-construct',
   'dojo/when', 'dojo/request',
   'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/form/Select',
   './D3BarChartRace', '../store/VariantLineageChartMemoryStore'
 ], function (
-  declare, lang, on, Topic, domConstruct,
+  declare, lang, domConstruct,
   when, xhr,
   BorderContainer, ContentPane, Select,
   D3BarChartRace, Store
@@ -24,7 +24,7 @@ define([
         return;
       }
 
-      console.log("In VariantLineageChartContainer _setStateAttr: state", state);
+      // console.log("In VariantLineageChartContainer _setStateAttr: state", state);
       if (!this.store) {
         this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
       } else {

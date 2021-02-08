@@ -52,7 +52,6 @@ define([
       this._firstView = true;
     },
     _buildPanels: function () {
-      var self = this;
       this.tabContainer = new StackContainer({ region: 'center', id: this.id + '_TabContainer' });
       var tabController = new TabController({
         containerId: this.id + '_TabContainer',
@@ -63,11 +62,9 @@ define([
       // for charts
       var chartContainer1 = new VariantLineageChartContainer({
         region: 'leading',
-        style: 'height: 500px; width: 500px;',
         doLayout: false,
         id: this.id + '_chartContainer1',
         title: 'By Country Chart',
-        content: 'LoC By Country Chart',
         state: lang.mixin({}, {
           groupBy: 'country'
         }),
@@ -76,19 +73,17 @@ define([
 
       var chartContainer2 = new VariantLineageChartContainer({
         region: 'leading',
-        style: 'height: 500px; width: 500px;',
         doLayout: false,
-        id: self.id + '_chartContainer2',
+        id: this.id + '_chartContainer2',
         title: 'By Lineage Chart',
-        content: 'LoC By Country Chart',
         state: lang.mixin({}, {
           groupBy: 'lineage'
         }),
-        apiServer: self.apiServer
+        apiServer: this.apiServer
       });
 
       // for data grid
-      self.VariantLineageGridContainer = new VariantLineageGridContainer({
+      this.VariantLineageGridContainer = new VariantLineageGridContainer({
         title: 'Table',
         content: 'Variant Lineage Table',
         visible: true,
@@ -96,15 +91,15 @@ define([
         tgtate: this.tgState
       });
 
-      self.addChild(tabController);
-      self.tabContainer.addChild(self.VariantLineageGridContainer);
-      self.tabContainer.addChild(chartContainer1);
-      self.tabContainer.addChild(chartContainer2);
-      self.addChild(self.tabContainer);
+      this.addChild(tabController);
+      this.tabContainer.addChild(this.VariantLineageGridContainer);
+      this.tabContainer.addChild(chartContainer1);
+      this.tabContainer.addChild(chartContainer2);
+      this.addChild(this.tabContainer);
 
-      Topic.subscribe(self.id + '_TabContainer-selectChild', lang.hitch(self, function (page) {
+      Topic.subscribe(this.id + '_TabContainer-selectChild', lang.hitch(this, function (page) {
         if (page.title == 'Table') {
-          page.set('state', self.state);
+          page.set('state', this.state);
         }
         page.set('visible', true);
       }));
