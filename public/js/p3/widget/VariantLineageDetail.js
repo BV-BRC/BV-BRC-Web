@@ -83,9 +83,9 @@ define([
         'SF overlap':'TBD',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW430974&decorator=corona&context=1611876836946" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-P012/2020</a>',
         'GISAID representative strain':'hCoV-19/England/MILK-9E05B3/2020 EPI_ISL_601443',
-        'Consensus genome sequence':'B.1.1.7_North America_genome_consensus.fasta',
-        'Consensus Spike protein':'sequence	B.1.1.7_North America_S protein_consensus.fasta',
-        'Consensus all protein':'sequences	B.1.1.7_North America_all proteins_consensus.fasta',
+        'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_genome_consensus.fasta" target=_blank>B.1.1.7_North America_genome_consensus.fasta</a>',
+        'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_S%20protein_consensus.fasta" target=_blank>B.1.1.7_North America_S protein_consensus.fasta</a>',
+        'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_all%20proteins_consensus.fasta" target=_blank>B.1.1.7_North America_all proteins_consensus.fasta</a>',
         'Relevant publications':[
           '<a href="https://www.cdc.gov/coronavirus/2019-ncov/more/science-and-research/scientific-brief-emerging-variants.html" target=_blank>CDC Emerging Variants</a>',
           '<a href="https://virological.org/t/transmission-of-sars-cov-2-lineage-b-1-1-7-in-england-insights-from-linking-epidemiological-and-genetic-data/576/2" target=_blank>Virological.org</a>'
@@ -106,9 +106,9 @@ define([
         'SF overlap':'TBD',
         'ViPR representative strain link':'NA',
         'GISAID representative strain':'hCoV-19/South Africa/KRISP-K004312/2020|EPI_ISL_660190|2020-10-23',
-        'Consensus genome sequence':'B.1.351_genome_consensus.fasta',
-        'Consensus Spike protein sequence':'B.1.351_S protein_consensus.fasta',
-        'Consensus all protein sequences':'B.1.351_all proteins_consensus.fasta',
+        'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_genome_consensus.fasta" target=_blank>B.1.351_genome_consensus.fasta</a>',
+        'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_S%20protein_consensus.fasta" target=_blank>B.1.351_S protein_consensus.fasta</a>',
+        'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_all%20proteins_consensus.fasta" target=_blank>B.1.351_all proteins_consensus.fasta</a>',
         'Relevant publications':[
           '<a href="https://www.medrxiv.org/content/10.1101/2020.12.21.20248640v1" target=_blank>Tegally et al. 2020</a>',
           '<a href="https://www.biorxiv.org/content/10.1101/2020.12.31.425021v1" target=_blank>Greaney et al. 2021</a>',
@@ -131,9 +131,9 @@ define([
         'SF overlap':'TBD',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW520923&decorator=corona&context=1611876882126" target=_blank>SARS-CoV-2/human/USA/MN-MDH-2399/2021</a>',
         'GISAID representative strain':'hCoV-19/Brazil/AM-L70-CD1722/2020 (incomplete); hCoV-19/Japan/IC-0564/2021',
-        'Consensus genome sequence':'P.1_US_genome_consensus.fasta',
-        'Consensus Spike protein sequence':'P.1_US_S protein_consensus.fasta',
-        'Consensus all protein sequences':'P.1_US_all proteins_consensus.fasta',
+        'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_genome_consensus.fasta" target=_blank>P.1_US_genome_consensus.fasta</a>',
+        'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_S%20protein_consensus.fasta" target=_blank>P.1_US_S protein_consensus.fasta</a>',
+        'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_all%20proteins_consensus.fasta" target=_blank>P.1_US_all proteins_consensus.fasta</a>',
         'Relevant publications':[
           '<a href="https://www.cdc.gov/coronavirus/2019-ncov/more/science-and-research/scientific-brief-emerging-variants.html" target=_blank>CDC Emerging Variants</a>',
           '<a href="https://virological.org/t/spike-e484k-mutation-in-the-first-sars-cov-2-reinfection-case-confirmed-in-brazil-2020/584" target=_blank>Resende et al. 2021</a>',
@@ -155,9 +155,9 @@ define([
         'SF overlap':'TBD',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW485882&decorator=corona&context=1611876924806" target=_blank>SARS-CoV-2/human/USA/CA-LACPHL-AF00141/2021</a>',
         'GISAID representative strain':'',
-        'Consensus genome sequence':'CAL.20C_genome_consensus.fasta',
-        'Consensus Spike protein sequence':'CAL.20C_S protein_consensus.fasta',
-        'Consensus all protein sequences':'CAL.20C_all proteins_consensus.fasta',
+        'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_genome_consensus.fasta" target=_blank>CAL.20C_genome_consensus.fasta</a>',
+        'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_S%20protein_consensus.fasta" target=_blank>CAL.20C_S protein_consensus.fasta</a>',
+        'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_all%20proteins_consensus.fasta" target=_blank>CAL.20C_all proteins_consensus.fasta</a>',
         'Relevant publications':[
           '<a href="https://en.wikipedia.org/wiki/Variants_of_SARS-CoV-2" target=_blank>Wikipedia CoV-2 Variants</a>',
           '<a href="https://www.medrxiv.org/content/10.1101/2021.01.18.21249786v1" target=_blank>Zhang et al. 2021</a>'
@@ -178,9 +178,9 @@ define([
         'SF overlap':'TBD',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW430977&decorator=corona" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-P015/2020</a>',
         'GISAID representative strain':'',
-        'Consensus genome sequence':'B.1.375_North America_genome_consensus.fasta',
-        'Consensus Spike protein sequence':'B.1.375_North America_S protein_consensus',
-        'Consensus all protein sequences':'B.1.375_North America_all proteins_consensus.fasta',
+        'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_genome_consensus.fasta" target=_blank>B.1.375_North America_genome_consensus.fasta</a>',
+        'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_S%20protein_consensus.fasta" target=_blank>B.1.375_North America_S protein_consensus.fasta</a>',
+        'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_all%20proteins_consensus.fasta" target=_blank>B.1.375_North America_all proteins_consensus.fasta</a>',
         'Relevant publications':'<a href="https://virological.org/t/detection-of-non-b-1-1-7-spike-69-70-sequences-b-1-375-in-the-united-states/587" target=_blank>Moreno et al. 2021</a>'
       }
     },
