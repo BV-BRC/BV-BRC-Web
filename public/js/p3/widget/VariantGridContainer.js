@@ -64,7 +64,7 @@ define([
         layoutPriority: 7,
         splitter: true,
         className: 'BrowserHeader',
-        style:'height:70px'
+        style:'height:85px'
       });
       this.getFilterPanel()
     },
@@ -98,7 +98,7 @@ define([
         name: 'keywordText',
         value: '',
         placeHolder: 'keyword',
-        style: 'width: 300px; margin: 5px 0 5px 10px'
+        style: 'width: 120px; margin: 5px 0 5px 10px'
       });
       domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, 'last');
 
@@ -106,7 +106,7 @@ define([
         name: 'selectSequenceFeatures',
         id: 'selectVoCSequenceFeatures',
         options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['sequence_features'].map(function(c) { return {label: c, value: c}; })),
-        style: 'width: 200px; margin: 5px 0'
+        style: 'width: 100px; margin: 5px 0'
       });
       var label_select_sequence_features = domConstruct.create('label', {
         style: 'margin-left: 10px;',
@@ -119,7 +119,7 @@ define([
       var select_country = new Select({
         name: 'selectCountry',
         id: 'selectVoCCountry',
-        options: [{label: '&nbsp;', value: ''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value:''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_country.attr('value', 'All')
@@ -153,7 +153,10 @@ define([
       var select_month = new Select({
         name: 'selectMonth',
         id: 'selectVoCMonth',
-        options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) { return {label: c, value: c}; })),
+        options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) {
+          let label = (c == 'All') ? c : `${c.substring(0,4)}-${c.substring(4,6)}`
+          return {label: label, value: c};
+        })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_month.attr('value', 'All')
@@ -206,8 +209,8 @@ define([
         id: 'selectVoCPrevalence',
         options: [{ value: 0, label: '0'},
           { value: 0.001, label: '0.001' }, { value: 0.005, label: '0.005' },
-          { value: 0.01, label: '0.01' }, { value: 0.05, label: '0.05' },
-          { value: 0.1, label: '0.1' }, { value: 0.1, label: '0.5' }],
+          { value: 0.01, label: '0.01' }, { value: 0.05, label: '0.05'},
+          { value: 0.1, label: '0.1' }, { value: 0.5, label: '0.5' }],
         style: 'width: 40px; margin: 5px 0'
       });
       select_prevalence.attr('value', 0.005)
@@ -222,7 +225,7 @@ define([
       var select_growth_rate = new Select({
         name: 'selectGrowthRate',
         id: 'selectVocGrowthRate',
-        options: [{ value: 0, label: '0'}, { value: 1, label: '1' }, { value: 2, label: '2' }, { value: 5, label: '5' },
+        options: [{ value: 0, label: '0'}, { value: 1, label: '1'}, { value: 2, label: '2' }, { value: 5, label: '5' },
           { value: 10, label: '10' }],
         style: 'width: 40px; margin: 5px 0'
       });
@@ -321,7 +324,7 @@ define([
           Topic.publish('Variant', 'updateTgState', this.tgState);
 
           keyword_textbox.reset();
-          select_sequence_features.attr('value', this.defaultFilterValue['sequence_features'] || '&nbsp;');
+          select_sequence_features.attr('value', this.defaultFilterValue['sequence_features']);
           select_country.attr('value', this.defaultFilterValue['country']);
           select_region.attr('value', this.defaultFilterValue['region']);
           select_month.attr('value', this.defaultFilterValue['month']);

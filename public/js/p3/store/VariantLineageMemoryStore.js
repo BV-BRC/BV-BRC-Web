@@ -11,15 +11,16 @@ define([
 ) {
 
   var tgState = {
+    lineage_of_concern: '',
     lineage: '',
     sequence_features: '',
-    country: '',
-    region: '',
-    month: '',
-    min_total_isolates: 0,
-    min_lineage_count: 0,
-    min_prevalence: 0,
-    min_growth_rate: 0,
+    country: 'All',
+    region: 'All',
+    month: 'All',
+    min_total_isolates: 10,
+    min_lineage_count: 10,
+    min_prevalence: 0.005,
+    min_growth_rate: 1,
     keyword: ''
   };
 
@@ -111,7 +112,7 @@ define([
       var _self = this;
 
       if (!this.state || this.state.search == null) {
-        console.warn('No State, use empty data set for initial store');
+        console.log('No State, use empty data set for initial store');
 
         // this is done as a deferred instead of returning an empty array
         // in order to make it happen on the next tick.  Otherwise it

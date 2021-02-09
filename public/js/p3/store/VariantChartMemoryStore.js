@@ -97,14 +97,14 @@ define([
       var q = this.state.search
 
       if (this.state.groupBy == 'country') {
-        q += '&eq(month,All)&eq(region,All)&ne(lineage,D614G)&sort(-prevalence)&select(lineage,prevalence)&limit(20)';
+        q += '&eq(month,All)&eq(region,All)&ne(aa_variant,D614G)&sort(-prevalence)&select(aa_variant,prevalence)&limit(20)';
       } else if (this.state.groupBy == 'lineage') {
         q += '&eq(month,All)&eq(region,All)&ne(country,All)&sort(-prevalence)&select(country,prevalence)&limit(20)';
       } else {
         return;
       }
 
-      this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/spike_lineage', {
+      this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/spike_variant', {
         data: q,
         headers: {
           accept: 'application/json',
@@ -118,8 +118,8 @@ define([
         let subq
 
         if (_self.state.groupBy == 'country') {
-          subq = '&in(lineage,(' + res.map(function(el) {
-            return encodeURIComponent('"' + el.lineage + '"')
+          subq = '&in(aa_variant,(' + res.map(function(el) {
+            return encodeURIComponent('"' + el.aa_variant + '"')
           }).join(',') + '))'
         } else if (_self.state.groupBy == 'lineage') {
           subq = '&in(country,(' + res.map(function(el) {
@@ -127,8 +127,8 @@ define([
           }).join(',') + '))'
         }
 
-        let q = _self.state.search + subq + '&eq(region,All)&ne(month,All)&eq(month,*)&select(lineage,country,month,prevalence,id)&limit(2500)';
-        return when(request.post(window.App.dataServiceURL + '/spike_lineage/', {
+        let q = _self.state.search + subq + '&eq(region,All)&ne(month,All)&eq(month,*)&select(aa_variant,country,month,prevalence,id)&limit(2500)';
+        return when(request.post(window.App.dataServiceURL + '/spike_variant/', {
           data: q,
           headers: {
             accept: 'application/json',
