@@ -4,7 +4,7 @@ define([
   'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore',
-  'heatmap/dist/hotmap'
+  'heatmap/hotmap'
 ], function (
   declare, lang,
   on, Topic, domConstruct, Query, when, request,
