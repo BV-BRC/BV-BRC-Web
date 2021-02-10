@@ -4,7 +4,7 @@ define("p3/widget/SubsystemMapHeatmapContainer", [
   'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore',
-  'heatmap/hotmap'
+  'heatmap/dist/hotmap'
 ], function (
   declare, lang,
   on, Topic, domConstruct, Query, when, request,

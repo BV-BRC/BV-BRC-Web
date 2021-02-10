@@ -2137,7 +2137,7 @@
 				},
 				{
 					 location:"../heatmap",
-					 main:"hotmap",
+					 main:"dist/hotmap.js",
 					 name:"heatmap"
 				}
 		]
