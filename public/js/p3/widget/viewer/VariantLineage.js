@@ -17,7 +17,7 @@ define([
   return declare([TabViewerBase], {
 
     perspectiveLabel: '',
-    perspectiveIconClass: 'icon-selection-Antibiotic',
+    perspectiveIconClass: '',
 
     onSetState: function (attr, oldVal, state) {
 
