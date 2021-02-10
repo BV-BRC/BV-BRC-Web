@@ -28,6 +28,10 @@ define("p3/widget/SequenceGrid", [
       length: { label: 'Length (bp)', field: 'length', hidden: false },
       gc_content: { label: 'GC Content %', field: 'gc_content', hidden: false },
       sequence_type: { label: 'Sequence Type', field: 'sequence_type', hidden: false },
+      sequence_status: { label: 'Sequence Status', field: 'sequence_status', hidden: false },
+      mol_type: { label: 'Mol Type', field: 'mol_type', hidden: false },
+      segment: { label: 'Segment', field: 'segment', hidden: false },
+      sequence_md5: { label: 'Sequence MD5', field: 'sequence_md5', hidden: false },
       topology: { label: 'Topology', field: 'topology', hidden: false },
       description: { label: 'Description', field: 'description', hidden: false }
     },

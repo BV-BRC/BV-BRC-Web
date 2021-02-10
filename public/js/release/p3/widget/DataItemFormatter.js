@@ -466,6 +466,9 @@ define("p3/widget/DataItemFormatter", [
         name: 'Feature Type',
         text: 'feature_type'
       }, {
+        name: 'BRC ID',
+        text: 'brc_id'
+      }, {
         name: 'Classifier Score',
         text: 'classifier_score'
       }, {
@@ -506,6 +509,17 @@ define("p3/widget/DataItemFormatter", [
             { obj: obj }
           );
         }
+      }, {
+        name: 'SOG ID',
+        text: 'sog_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(sog_id,' + obj.sog_id + ')#view_tab=features">' +
+              obj.sog_id +
+            '</a>',
+            { obj: obj }
+          );
+        }
       }];
 
       section.Genome = [{
@@ -527,6 +541,12 @@ define("p3/widget/DataItemFormatter", [
       section.Location = [{
         name: 'Accession',
         text: 'accession'
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'PDB Accession',
+        text: 'pdb_accession'
       }, {
         name: 'Start',
         text: 'start'
@@ -1051,8 +1071,17 @@ define("p3/widget/DataItemFormatter", [
         text: 'gc_content',
         mini: true
       }, {
+        name: 'Sequence MD5',
+        text: 'sequence_md5'
+      }, {
         name: 'Sequence Type',
         text: 'sequence_type'
+      }, {
+        name: 'Sequence Status',
+        text: 'sequence_status'
+      }, {
+        name: 'Mol Type',
+        text: 'mol_type'
       }, {
         name: 'Topology',
         text: 'topology'
@@ -1065,6 +1094,9 @@ define("p3/widget/DataItemFormatter", [
       }, {
         name: 'Plasmid',
         text: 'plasmid'
+      }, {
+        name: 'Segment',
+        text: 'segment'
       }, {
         name: 'GI',
         text: 'gi'
@@ -1740,6 +1772,10 @@ define("p3/widget/DataItemFormatter", [
           link: 'http://www.ncbi.nlm.nih.gov/pubmed/',
           editable: true
         }, {
+          name: 'Authors',
+          text: 'authors',
+          editable: true
+        }, {
           name: 'BioProject Accession',
           text: 'bioproject_accession',
           link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
@@ -1792,6 +1828,9 @@ define("p3/widget/DataItemFormatter", [
           name: 'Plasmids',
           text: 'plasmids'
         }, {
+          name: 'Segments',
+          text: 'segments'
+        }, {
           name: 'Contigs',
           text: 'contigs',
           link: function (obj) {
@@ -1803,6 +1842,9 @@ define("p3/widget/DataItemFormatter", [
         }, {
           name: 'GC Content',
           text: 'gc_content'
+        }, {
+          name: 'Mat Peptide',
+          text: 'mat_peptide'
         }],
 
         'Isolate Info': [{
