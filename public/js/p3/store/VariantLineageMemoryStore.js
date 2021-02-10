@@ -165,7 +165,7 @@ define([
       if (_self.tgState.min_growth_rate > 0) {
         range += '&gt(growth_rate,' + _self.tgState.min_growth_rate + ')';
       }
-      var q = this.state.search + range + '&limit(25000)';
+      var q = this.state.search + range + '&sort(-prevalence)&limit(25000)';
 
       this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/spike_lineage/', {
         data: q,

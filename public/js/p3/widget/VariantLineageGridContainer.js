@@ -104,20 +104,6 @@ define([
       });
       domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, 'last');
 
-      // lineage_of_concern
-      var select_loc = new Select({
-        name: 'selectLoC',
-        id: 'selectLLoC',
-        options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['loc'].map(function(c) { return {label: c, value: c}; })),
-        style: 'width: 80px; margin: 5px 0'
-      });
-      var label_select_loc = domConstruct.create('label', {
-        style: 'margin-left: 10px;',
-        innerHTML: ' LoC: '
-      });
-      domConstruct.place(label_select_loc, otherFilterPanel.containerNode, 'last');
-      domConstruct.place(select_loc.domNode, otherFilterPanel.containerNode, 'last');
-
       // lineage
       var select_lineage = new Select({
         name: 'selectLineage',
@@ -132,6 +118,21 @@ define([
       domConstruct.place(label_select_lineage, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_lineage.domNode, otherFilterPanel.containerNode, 'last');
 
+      // lineage_of_concern
+      var select_loc = new Select({
+        name: 'selectLoC',
+        id: 'selectLLoC',
+        options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['loc'].map(function(c) { return {label: c, value: c}; })),
+        style: 'width: 80px; margin: 5px 0'
+      });
+      var label_select_loc = domConstruct.create('label', {
+        style: 'margin-left: 10px;',
+        innerHTML: ' LoC: '
+      });
+      domConstruct.place(label_select_loc, otherFilterPanel.containerNode, 'last');
+      domConstruct.place(select_loc.domNode, otherFilterPanel.containerNode, 'last');
+
+      // sequence_Features
       var select_sequence_features = new Select({
         name: 'selectSequenceFeatures',
         id: 'selectSequenceFeatures',
