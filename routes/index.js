@@ -50,34 +50,6 @@ router.get('/team', function (req, res) {
 });
 
 /* SARS-CoV-2 */
-router.get('/sars-cov-2/voc', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/voc', { title: 'PATRIC', request: req, response: res });
-});
-router.get('/sars-cov-2/voc_B_1_1_7', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/voc_B_1_1_7', { title: 'PATRIC', request: req, response: res });
-});
-router.get('/sars-cov-2/voc_B_1_351', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/voc_B_1_351', { title: 'PATRIC', request: req, response: res });
-});
-router.get('/sars-cov-2/voc_P_1', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/voc_P_1', { title: 'PATRIC', request: req, response: res });
-});
-router.get('/sars-cov-2/voc_CAL_20C', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/voc_CAL_20C', { title: 'PATRIC', request: req, response: res });
-});
-router.get('/sars-cov-2/voc_B_1_375', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/voc_B_1_375', { title: 'PATRIC', request: req, response: res });
-});
-router.get('/sars-cov-2/resources', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/sars-cov-2/resources', { title: 'PATRIC', request: req, response: res });
-});
 router.get('/sars-cov-2', function (req, res) {
   req.applicationModule = 'p3/app/p3app';
   res.render('pages/sars-cov-2', { title: 'PATRIC', request: req, response: res });
