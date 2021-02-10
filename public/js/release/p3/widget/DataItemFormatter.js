@@ -1491,6 +1491,85 @@ define("p3/widget/DataItemFormatter", [
       return div;
     },
 
+    variant_lineage_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Lineage of Concern',
+        text: 'lineage_of_concern'
+      }, {
+        name: 'Lineage',
+        text: 'lineage'
+      }, {
+        name: 'Sequence Features',
+        text: 'sequence_features'
+      }, {
+        name: 'Country',
+        text: 'country'
+      }, {
+        name: 'Region',
+        text: 'region'
+      }, {
+        name: 'Month',
+        text: 'month'
+      }, {
+        name: 'Total Isolates',
+        text: 'total_isolates'
+      }, {
+        name: 'Lineage Count',
+        text: 'lineage_count'
+      }, {
+        name: 'Sequence Prevalence',
+        text: 'prevalence'
+      }, {
+        name: 'Growth Rate',
+        text: 'growth_rate'
+      }];
+
+      var div = domConstruct.create('div');
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    variant_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'AA Variant',
+        text: 'aa_variant'
+      }, {
+        name: 'Sequence Features',
+        text: 'sequence_features'
+      }, {
+        name: 'Country',
+        text: 'country'
+      }, {
+        name: 'Region',
+        text: 'region'
+      }, {
+        name: 'Month',
+        text: 'month'
+      }, {
+        name: 'Total Isolates',
+        text: 'total_isolates'
+      }, {
+        name: 'Lineage Count',
+        text: 'lineage_count'
+      }, {
+        name: 'Sequence Prevalence',
+        text: 'prevalence'
+      }, {
+        name: 'Growth Rate',
+        text: 'growth_rate'
+      }];
+
+      var div = domConstruct.create('div');
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     genome_data: function (item, options) {
       options = options || {};
 

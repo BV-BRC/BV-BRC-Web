@@ -7,7 +7,7 @@ define("p3/widget/PathwayMapHeatmapContainerNew", [
   'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
   'dijit/Dialog', 'dijit/popup', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  'heatmap/dist/hotmap',  'dojo/query', './Confirmation'
+  'heatmap/hotmap',  'dojo/query', './Confirmation'
 
 ], function (
   declare, lang, on, Topic, domConstruct,

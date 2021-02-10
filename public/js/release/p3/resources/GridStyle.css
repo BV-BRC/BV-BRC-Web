@@ -130,6 +130,9 @@
 .dgrid-cell.field-sig_z_score {
     width: 5%
 }
+.dgrid-cell.field-lineage {
+    width: 30%;
+}
 .patric .dijitTab .tabLabel {
     font-weight: 600;
 }
