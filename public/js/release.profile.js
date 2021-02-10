@@ -45,7 +45,7 @@ var profile = {
     { name: 'cytoscape-context-menus', location:'./cytoscape-context-menus' },
     { name: 'cytoscape-cola', location:'./cytoscape-cola' },
     { name: 'cytoscape-dagre', location:'./cytoscape-dagre' },
-    { name: 'heatmap', location:'./heatmap/dist', main: 'hotmap' }
+    { name: 'heatmap', location:'./heatmap' }
   ],
   layers: {
     'p3/layer/core': {
