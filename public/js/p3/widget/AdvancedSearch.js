@@ -18,10 +18,11 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
+      genome_sequence: 'Genomic Sequences',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
       transcriptomics_experiment: 'Transcriptomics Experiments',
@@ -77,6 +78,13 @@ define([
           return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
         return ['/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score'].join('');
+
+      },
+      genome_sequence: function (docs, total) {
+        if (total == 1) {
+          return ['/view/Sequence/', docs[0].feature_id, '#view_tab=overview'].join('');
+        }
+        return ['/view/SequenceList/?', this.state.search].join('');
 
       },
       taxonomy: function (docs, total) {
@@ -218,6 +226,20 @@ define([
       return out.join('');
     },
 
+    formatgenome_sequence: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer sequenceResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SequenceList/?', q, '">Genomic Sequences</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.accession + ' | ' + doc.description +  '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
 
     formatsp_gene: function (docs, total) {
       var out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, '#view_tab=specialtyGenes&filter=false', '">Specialty Genes&nbsp;(', total, ')</div> </a>'];
@@ -230,7 +252,7 @@ define([
 
         out.push("<div class='resultInfo'>" + doc.genome_name +  '</div>');
 
-        out.push("<div class='resultInfo'>" + doc.property + ' | ' + doc.source);
+        out.push("<div class='resultInfo'>" + doc.propert + ' | ' + doc.source);
 
         if (doc.evidence) {
           out.push('&nbsp;|&nbsp;' + doc.evidence);

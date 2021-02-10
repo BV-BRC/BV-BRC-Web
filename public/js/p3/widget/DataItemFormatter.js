@@ -466,6 +466,9 @@ define([
         name: 'Feature Type',
         text: 'feature_type'
       }, {
+        name: 'BRC ID',
+        text: 'brc_id'
+      }, {
         name: 'Classifier Score',
         text: 'classifier_score'
       }, {
@@ -506,6 +509,17 @@ define([
             { obj: obj }
           );
         }
+      }, {
+        name: 'SOG ID',
+        text: 'sog_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(sog_id,' + obj.sog_id + ')#view_tab=features">' +
+              obj.sog_id +
+            '</a>',
+            { obj: obj }
+          );
+        }
       }];
 
       section.Genome = [{
@@ -527,6 +541,12 @@ define([
       section.Location = [{
         name: 'Accession',
         text: 'accession'
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'PDB Accession',
+        text: 'pdb_accession'
       }, {
         name: 'Start',
         text: 'start'
@@ -1051,8 +1071,17 @@ define([
         text: 'gc_content',
         mini: true
       }, {
+        name: 'Sequence MD5',
+        text: 'sequence_md5'
+      }, {
         name: 'Sequence Type',
         text: 'sequence_type'
+      }, {
+        name: 'Sequence Status',
+        text: 'sequence_status'
+      }, {
+        name: 'Mol Type',
+        text: 'mol_type'
       }, {
         name: 'Topology',
         text: 'topology'
@@ -1065,6 +1094,9 @@ define([
       }, {
         name: 'Plasmid',
         text: 'plasmid'
+      }, {
+        name: 'Segment',
+        text: 'segment'
       }, {
         name: 'GI',
         text: 'gi'
@@ -1612,6 +1644,11 @@ define([
           text: 'genome_name',
           mini: true
         }, {
+          name: 'Other Names',
+          text: 'other_names',
+          mini: true,
+          editable: true
+        }, {
           name: 'NCBI Taxon ID',
           text: 'taxon_id',
           link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
@@ -1678,14 +1715,6 @@ define([
           text: 'type_strain',
           editable: true
         }, {
-          name: 'Antimicrobial Resistance',
-          text: 'antimicrobial_resistance',
-          link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=amr">AMR Phenotypes</a>', { obj: obj });
-          },
-          editable: true,
-          isList: false // not displayed as list although returned as list
-        }, {
           name: 'Reference Genome',
           text: 'reference_genome'
         }],
@@ -1743,6 +1772,10 @@ define([
           link: 'http://www.ncbi.nlm.nih.gov/pubmed/',
           editable: true
         }, {
+          name: 'Authors',
+          text: 'authors',
+          editable: true
+        }, {
           name: 'BioProject Accession',
           text: 'bioproject_accession',
           link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
@@ -1774,18 +1807,9 @@ define([
           text: 'genbank_accessions',
           link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
           editable: true
-        }, {
-          name: 'RefSeq Accessions',
-          text: 'refseq_accessions',
-          link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
-          editable: true
         }],
 
         'Sequence Info': [{
-          name: 'Sequencing Status',
-          text: 'sequencing_status',
-          editable: true
-        }, {
           name: 'Sequencing Platform',
           text: 'sequencing_platform',
           editable: true
@@ -1804,6 +1828,9 @@ define([
           name: 'Plasmids',
           text: 'plasmids'
         }, {
+          name: 'Segments',
+          text: 'segments'
+        }, {
           name: 'Contigs',
           text: 'contigs',
           link: function (obj) {
@@ -1816,21 +1843,11 @@ define([
           name: 'GC Content',
           text: 'gc_content'
         }, {
-          name: 'PATRIC CDS',
-          text: 'patric_cds',
-          link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">{obj.patric_cds}</a>', { obj: obj });
-          }
-        }, {
-          name: 'RefSeq CDS',
-          text: 'refseq_cds'
+          name: 'Mat Peptide',
+          text: 'mat_peptide'
         }],
 
         'Isolate Info': [{
-          name: 'Isolation Site',
-          text: 'isolation_site',
-          editable: true
-        }, {
           name: 'Isolation Source',
           text: 'isolation_source',
           editable: true,
@@ -1850,28 +1867,16 @@ define([
           editable: true,
           type: 'date'
         }, {
+          name: 'Season',
+          text: 'season',
+          editable: true
+        }, {
           name: 'Isolation Country',
           text: 'isolation_country',
           editable: true
         }, {
           name: 'Geographic Location',
           text: 'geographic_location',
-          editable: true
-        }, {
-          name: 'Latitude',
-          text: 'latitude',
-          editable: true
-        }, {
-          name: 'Longitude',
-          text: 'longitude',
-          editable: true
-        }, {
-          name: 'Altitude',
-          text: 'altitude',
-          editable: true
-        }, {
-          name: 'Depth',
-          text: 'depth',
           editable: true
         }, {
           name: 'Other Environmental',
@@ -1885,6 +1890,10 @@ define([
           text: 'host_name',
           editable: true
         }, {
+          name: 'Host Common Name',
+          text: 'host_common_name',
+          editable: true
+        }, {
           name: 'Host Gender',
           text: 'host_gender',
           editable: true
@@ -1895,14 +1904,6 @@ define([
         }, {
           name: 'Host Health',
           text: 'host_health',
-          editable: true
-        }, {
-          name: 'Body Sample Site',
-          text: 'body_sample_site',
-          editable: true
-        }, {
-          name: 'Body Sample Subsite',
-          text: 'body_sample_subsite',
           editable: true
         }, {
           name: 'Other Clinical',
