@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
-  './VariantLineageGridContainer', './VariantLineageCountryChartContainer', './VariantLineageLineageChartContainer',
+  './VariantLineageGridContainer', './VariantLineageByCountryChartContainer', './VariantLineageByLineageChartContainer',
 ], function (
   declare, lang, on, Topic,
   BorderContainer, StackContainer, TabController,
-  VariantLineageGridContainer, VariantLineageCountryChartContainer, VariantLineageLineageChartContainer
+  VariantLineageGridContainer, VariantLineageByCountryChartContainer, VariantLineageByLineageChartContainer
 ) {
 
   return declare([BorderContainer], {
@@ -60,7 +60,7 @@ define([
       });
 
       // for charts
-      var chartContainer1 = new VariantLineageCountryChartContainer({
+      var chartContainer1 = new VariantLineageByCountryChartContainer({
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer1',
@@ -68,7 +68,7 @@ define([
         apiServer: this.apiServer
       });
 
-      var chartContainer2 = new VariantLineageLineageChartContainer({
+      var chartContainer2 = new VariantLineageByLineageChartContainer({
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer2',
