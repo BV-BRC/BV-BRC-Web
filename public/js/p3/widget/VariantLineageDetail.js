@@ -1,9 +1,9 @@
 define([
-  'dojo/_base/declare', 'dojo/dom-construct', 'dojo/text!./templates/VariantLineageDetail.html',
+  'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct', 'dojo/text!./templates/VariantLineageDetail.html',
   'dijit/form/Select', 'dijit/_WidgetBase', 'dijit/_Templated'
 
 ], function (
-  declare, domConstruct, Template,
+  declare, on, domConstruct, Template,
   Select, WidgetBase, Templated
 ) {
   return declare([WidgetBase, Templated], {
@@ -15,7 +15,7 @@ define([
     docsServiceURL: window.App.docsServiceURL,
     _setStateAttr: function (state) {
       this._set('state', state);
-      this.set('properties', state.lineage_id || 'B.1.1.7');
+      this.set('properties', state.hashParams.loc || 'B.1.1.7');
     },
     _setPropertiesAttr: function(lineage_id) {
       domConstruct.empty(this.lineagePropertiesNode);
@@ -44,14 +44,22 @@ define([
       var select_lineage = new Select({
         name: 'selectLoC',
         id: 'selectLoC',
-        options: ['B.1.1.7', 'B.1.351', 'P.1', 'CAL.20C', 'B.1.375'].map((el) => {return {'label': el, 'value': el}}),
+        options: ['', 'B.1.1.7', 'B.1.351', 'P.1', 'CAL.20C', 'B.1.375'].map((el) => {return {'label': el, 'value': el}}),
         style: 'width: 200px; margin: 5px 0'
       });
+      this.select_lineage = select_lineage;
 
       var self = this;
-      select_lineage.on('change', function() {
-        var selected = this.get("value");
-        self.set('properties', selected);
+      select_lineage.on('change', function(value) {
+        if (value !== '') {
+          on.emit(self.domNode, 'UpdateHash', {
+            bubbles: true,
+            cancelable: true,
+            hashProperty: 'loc',
+            value: value,
+            oldValue: ''
+          })
+        }
       });
       var label_select_lineage = domConstruct.create('label', {
         style: 'margin-left: 5px;',

@@ -13,7 +13,7 @@ declare, lang, domConstruct, d3
         margin: {
           top: 60,
           right: 150,
-          bottom: 30,
+          bottom: 50,
           left: 40
         }
       }
@@ -90,12 +90,15 @@ declare, lang, domConstruct, d3
       this.canvas.selectAll('text.legend').remove();
       this.canvas.selectAll('text.banner').remove();
 
-
+      // Add X axis
       this.canvas.append('g')
         .attr('transform', 'translate(0,' + (this.config.height - this.config.margin.bottom) + ')')
         .call(d3.axisBottom(x)
         .tickFormat(d => d3.format('.2f')(d))
         .ticks(sumstat.length))
+        .selectAll('text')
+          .attr('transform', 'rotate(-30)')
+          .attr('text-anchor', 'end')
 
       // Add Y axis
       let y = d3.scaleLinear()
