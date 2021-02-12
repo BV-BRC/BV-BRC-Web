@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
-  './VariantLineageGridContainer', './VariantLineageChartContainer',
+  './VariantLineageGridContainer', './VariantLineageCountryChartContainer', './VariantLineageLineageChartContainer',
 ], function (
   declare, lang, on, Topic,
   BorderContainer, StackContainer, TabController,
-  VariantLineageGridContainer, VariantLineageChartContainer,
+  VariantLineageGridContainer, VariantLineageCountryChartContainer, VariantLineageLineageChartContainer
 ) {
 
   return declare([BorderContainer], {
@@ -60,25 +60,19 @@ define([
       });
 
       // for charts
-      var chartContainer1 = new VariantLineageChartContainer({
+      var chartContainer1 = new VariantLineageCountryChartContainer({
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer1',
         title: 'By Country Chart',
-        state: lang.mixin({}, {
-          groupBy: 'country'
-        }),
         apiServer: this.apiServer
       });
 
-      var chartContainer2 = new VariantLineageChartContainer({
+      var chartContainer2 = new VariantLineageLineageChartContainer({
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer2',
         title: 'By Lineage Chart',
-        state: lang.mixin({}, {
-          groupBy: 'lineage'
-        }),
         apiServer: this.apiServer
       });
 
