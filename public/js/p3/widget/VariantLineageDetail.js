@@ -72,7 +72,7 @@ define([
         'LoC name':'B.1.1.7',
         'PANGO lineage':'<a href="https://cov-lineages.org/global_report_B.1.1.7.html" target=_blank>B.1.1.7</a>',
         'NextStrain lineage':'20I/501Y.V1',
-        'Other synonyms VOC':'202012/01, UK variant',
+        'Other synonyms':'VOC 202012/01, UK variant',
         'Emergence location':'Southeast England',
         'Emergence date':'September 2020',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'H69-**, V70-**, N501Y**, A570D, D614G**, P681H, T716I, S982A, D1118H',
@@ -86,6 +86,7 @@ define([
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_genome_consensus.fasta" target=_blank>B.1.1.7_North America_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_S%20protein_consensus.fasta" target=_blank>B.1.1.7_North America_S protein_consensus.fasta</a>',
         'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_all%20proteins_consensus.fasta" target=_blank>B.1.1.7_North America_all proteins_consensus.fasta</a>',
+        'SOP':'<a href="/patric/pdf/sequence_variants_sop_20210130.pdf" target=_blank>Sequence variations calculation descriptions</a>',
         'Relevant publications':[
           '<a href="https://www.cdc.gov/coronavirus/2019-ncov/more/science-and-research/scientific-brief-emerging-variants.html" target=_blank>CDC Emerging Variants</a>',
           '<a href="https://virological.org/t/transmission-of-sars-cov-2-lineage-b-1-1-7-in-england-insights-from-linking-epidemiological-and-genetic-data/576/2" target=_blank>Virological.org</a>'
@@ -95,7 +96,7 @@ define([
         'LoC name':'B.1.351',
         'PANGO lineage':'<a href="https://cov-lineages.org/global_report_B.1.351.html" target=_blank>B.1.351</a>',
         'NextStrain lineage':'20H/501Y.V2',
-        'Other synonyms VOC':'South African variant',
+        'Other synonyms':'South African variant',
         'Emergence location':'Nelson Mandela Bay, South African',
         'Emergence date':'October 2020',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike':'(L18F*)**, D80A, D215G, L242-, A243-, L244-, (R246I*), K417N**, E484K**, N501Y**, D614G**, A701V',
@@ -109,6 +110,7 @@ define([
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_genome_consensus.fasta" target=_blank>B.1.351_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_S%20protein_consensus.fasta" target=_blank>B.1.351_S protein_consensus.fasta</a>',
         'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_all%20proteins_consensus.fasta" target=_blank>B.1.351_all proteins_consensus.fasta</a>',
+        'SOP':'<a href="/patric/pdf/sequence_variants_sop_20210130.pdf" target=_blank>Sequence variations calculation descriptions</a>',
         'Relevant publications':[
           '<a href="https://www.medrxiv.org/content/10.1101/2020.12.21.20248640v1" target=_blank>Tegally et al. 2020</a>',
           '<a href="https://www.biorxiv.org/content/10.1101/2020.12.31.425021v1" target=_blank>Greaney et al. 2021</a>',
@@ -120,7 +122,7 @@ define([
         'LoC name':'P.1',
         'PANGO lineage':'<a href="https://cov-lineages.org/lineages/lineage_B.1.1.28.html" target=_blank>B.1.1.28</a>',
         'NextStrain lineage':'20J/501Y.V3',
-        'Other synonyms VOC':'Brazilian variant',
+        'Other synonyms':'Brazilian variant',
         'Emergence location':'Brazil',
         'Emergence date':'July 2020',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike':'L18F**, T20N, P26S, D138Y, R190S, K417T**, E484K**, N501Y**, D614G**, H655Y, T1027I, V1176F',
@@ -134,6 +136,7 @@ define([
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_genome_consensus.fasta" target=_blank>P.1_US_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_S%20protein_consensus.fasta" target=_blank>P.1_US_S protein_consensus.fasta</a>',
         'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_all%20proteins_consensus.fasta" target=_blank>P.1_US_all proteins_consensus.fasta</a>',
+        'SOP':'<a href="/patric/pdf/sequence_variants_sop_20210130.pdf" target=_blank>Sequence variations calculation descriptions</a>',
         'Relevant publications':[
           '<a href="https://www.cdc.gov/coronavirus/2019-ncov/more/science-and-research/scientific-brief-emerging-variants.html" target=_blank>CDC Emerging Variants</a>',
           '<a href="https://virological.org/t/spike-e484k-mutation-in-the-first-sars-cov-2-reinfection-case-confirmed-in-brazil-2020/584" target=_blank>Resende et al. 2021</a>',
@@ -144,7 +147,7 @@ define([
         'LoC name':'CAL.20C',
         'PANGO lineage':'<a href="https://cov-lineages.org/lineages/lineage_B.1.429.html" target=_blank>B.1.429</a>',
         'NextStrain lineage':'',
-        'Other synonyms VOC':'',
+        'Other synonyms':'',
         'Emergence location':'Southern California, USA',
         'Emergence date':'July 2020',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike':'S13I, W152C, L452R, D614G**',
@@ -158,6 +161,7 @@ define([
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_genome_consensus.fasta" target=_blank>CAL.20C_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_S%20protein_consensus.fasta" target=_blank>CAL.20C_S protein_consensus.fasta</a>',
         'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_all%20proteins_consensus.fasta" target=_blank>CAL.20C_all proteins_consensus.fasta</a>',
+        'SOP':'<a href="/patric/pdf/sequence_variants_sop_20210130.pdf" target=_blank>Sequence variations calculation descriptions</a>',
         'Relevant publications':[
           '<a href="https://en.wikipedia.org/wiki/Variants_of_SARS-CoV-2" target=_blank>Wikipedia CoV-2 Variants</a>',
           '<a href="https://www.medrxiv.org/content/10.1101/2021.01.18.21249786v1" target=_blank>Zhang et al. 2021</a>'
@@ -167,7 +171,7 @@ define([
         'LoC name':'B.1.375',
         'PANGO lineage':'B.1.375',
         'NextStrain lineage':'',
-        'Other synonyms VOC':'',
+        'Other synonyms':'',
         'Emergence location':'Massachusetts, USA',
         'Emergence date':'September 2020',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike':'H69-**, V70-**, D614G**',
@@ -181,6 +185,7 @@ define([
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_genome_consensus.fasta" target=_blank>B.1.375_North America_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_S%20protein_consensus.fasta" target=_blank>B.1.375_North America_S protein_consensus.fasta</a>',
         'Consensus all protein sequences':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_all%20proteins_consensus.fasta" target=_blank>B.1.375_North America_all proteins_consensus.fasta</a>',
+        'SOP':'<a href="/patric/pdf/sequence_variants_sop_20210130.pdf" target=_blank>Sequence variations calculation descriptions</a>',
         'Relevant publications':'<a href="https://virological.org/t/detection-of-non-b-1-1-7-spike-69-70-sequences-b-1-375-in-the-united-states/587" target=_blank>Moreno et al. 2021</a>'
       }
     },
