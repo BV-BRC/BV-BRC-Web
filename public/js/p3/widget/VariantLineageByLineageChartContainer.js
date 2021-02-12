@@ -84,7 +84,7 @@ define([
       this.addChild(this.filterPanel)
 
       xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
-        data: 'ne(country,All)&facet((field,lineage),(mincount,1))&json(nl,map)&limit(1)',
+        data: 'ne(country,All)&facet((field,lineage),(limit,-1),(mincount,1))&json(nl,map)&limit(1)',
         headers: {
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
