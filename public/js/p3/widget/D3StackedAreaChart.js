@@ -116,7 +116,7 @@ declare, lang, domConstruct, d3
         .enter()
         .append('path')
         .style('fill', function(d) {
-          var name = keyLabels[d.key-1];
+          var name = keyLabels[d.key];
           return color(name);
         })
         .attr('d', d3.area()
