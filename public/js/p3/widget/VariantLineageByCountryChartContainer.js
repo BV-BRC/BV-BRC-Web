@@ -97,8 +97,11 @@ define([
 
       this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_lineage_country_barchart`, {
         top_n: 18,
-        title: 'Lineage Prevalence',
-        width: 700
+        title: 'Sequence Prevalence by Lineage',
+        width: 700,
+        tooltip: function(d) {
+          return `Lineage: ${d.label}<br/>Sequence Prevalence: ${d.value}`
+        }
       });
 
       this.line_chart = new StackedAreaChart(this.lc_viewer.domNode, 'variant_lineage_country_linechart', {

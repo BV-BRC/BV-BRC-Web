@@ -103,7 +103,10 @@ define([
           top: 60,
           right: 50,
           bottom: 10,
-          left: 130
+          left: 80
+        },
+        tooltip: function(d) {
+          return `AA Variant: ${d.label}<br/>Sequence Prevalence: ${d.value}`
         }
       });
 
