@@ -159,6 +159,9 @@ define([
           right: 10,
           bottom: 10,
           left: 100
+        },
+        tooltip: function(d) {
+          return `Country: ${d.label}<br/>Count: ${d.value}`
         }
       })
       this.hbar_chart = new BarLineChart(this.byLineageChartNode, 'loc_by_month', {
@@ -169,6 +172,9 @@ define([
           right: 10,
           bottom: 50,
           left: 100
+        },
+        tooltip: function(d) {
+          return `Month: ${d.year}<br>Counts: ${d.bar_count}`
         }
       })
     },

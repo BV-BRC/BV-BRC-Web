@@ -16,7 +16,8 @@ declare, lang, domConstruct, d3
           right: 50,
           bottom: 10,
           left: 300
-        }
+        },
+        tooltip: null
       }
       this.config = lang.mixin({}, defaultConfig, kwArgs)
 
@@ -33,6 +34,15 @@ declare, lang, domConstruct, d3
           .attr('x', this.config.width / 2)
           .attr('text-anchor', 'middle')
           .html(kwArgs['title']);
+      }
+
+      // tooltip
+      if (d3.select('div.tooltip')[0]) {
+         this.tooltipLayer = d3.select('div.tooltip')
+      } else {
+        this.tooltipLayer = d3.select('body').append('div')
+          .attr('class', 'tooltip')
+          .style('opacity', 0);
       }
 
       this.barPadding = (this.config.height - (this.config.margin.bottom + this.config.margin.top)) / (this.config.top_n * 5);
@@ -76,6 +86,26 @@ declare, lang, domConstruct, d3
         .attr('y', d => y(d.rank) + 5)
         .attr('height', y(1) - y(0) - this.barPadding)
         .style('fill', '#3366cc')
+
+      // add tooltip when tooltip function is defined
+      if (this.config.tooltip) {
+        this.canvas.selectAll('rect.bar')
+          .on('mouseover', (d) => {
+            this.tooltipLayer.transition()
+              .duration(200)
+              .style('opacity', 0.95)
+
+            this.tooltipLayer
+              .html(this.config.tooltip(d))
+              .style('left', d3.event.pageX + 'px')
+              .style('top', d3.event.pageY + 'px')
+          })
+          .on('mouseout', () => {
+            this.tooltipLayer.transition()
+              .duration(500)
+              .style('opacity', 0)
+          })
+      }
 
       this.canvas.selectAll('text.value')
         .data(data, d => d.name)

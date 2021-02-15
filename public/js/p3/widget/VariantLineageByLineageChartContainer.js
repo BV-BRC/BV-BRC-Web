@@ -62,12 +62,18 @@ define([
           right: 50,
           bottom: 10,
           left: 130
+        },
+        tooltip: function(d) {
+          return `Country: ${d.label}<br/>Count: ${d.value}`
         }
       });
 
       this.line_chart = new D3BarLineChart(this.lc_viewer.domNode, 'variant_lineage_lineage_dualchart', {
         title: 'Count by Time',
         width: 800,
+        tooltip: function(d) {
+          return `Month: ${d.year}<br/>Counts: ${d.bar_count}<br/>Prevalence: ${d.line_count}`
+        },
         bar_axis_title: 'Counts (Bar)',
         line_axis_title: 'Prevalence (Line)'
       });

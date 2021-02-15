@@ -16,6 +16,7 @@ define([
           bottom: 50,
           left: 80
         },
+        tooltip: null,
         bar_axis_title: '',
         line_axis_title: ''
       }
@@ -34,6 +35,14 @@ define([
           .attr('x', this.config.width / 2)
           .attr('text-anchor', 'middle')
           .html(kwArgs['title'])
+      }
+      // tooltip
+      if (d3.select('div.tooltip')[0]) {
+        this.tooltipLayer = d3.select('div.tooltip')
+      } else {
+        this.tooltipLayer = d3.select('body').append('div')
+          .attr('class', 'tooltip')
+          .style('opacity', 0);
       }
       // y_bar axis label
       this.canvas.append('text')
@@ -104,6 +113,25 @@ define([
         .attr('y', d => y_bar(d.bar_count))
         .attr('height', d => y_bar(0) - y_bar(d.bar_count))
         .style('fill', '#3366cc')
+
+      if (this.config.tooltip) {
+        this.canvas.selectAll('rect.bar')
+          .on('mouseover', (d) => {
+            this.tooltipLayer.transition()
+              .duration(200)
+              .style('opacity', 0.95)
+
+            this.tooltipLayer
+              .html(this.config.tooltip(d))
+              .style('left', d3.event.pageX + 'px')
+              .style('top', d3.event.pageY + 'px')
+          })
+          .on('mouseout', () => {
+            this.tooltipLayer.transition()
+              .duration(500)
+              .style('opacity', 0)
+          })
+      }
 
       // line
       this.canvas
