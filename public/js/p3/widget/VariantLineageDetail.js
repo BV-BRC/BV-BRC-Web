@@ -1,10 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct', 'dojo/text!./templates/VariantLineageDetail.html',
-  'dijit/form/Select', 'dijit/_WidgetBase', 'dijit/_Templated'
-
+  'dojo/when', 'dojo/request', 'dojo/_base/lang',
+  'dijit/form/Select', 'dijit/_WidgetBase', 'dijit/_Templated',
+  './D3VerticalBarChart', './D3StackedAreaChart', './D3BarLineChart'
 ], function (
   declare, on, domConstruct, Template,
-  Select, WidgetBase, Templated
+  when, xhr, lang,
+  Select, WidgetBase, Templated,
+  VerticalBarChart, StackedAreaChart, BarLineChart
 ) {
   return declare([WidgetBase, Templated], {
     baseClass: 'VariantLineageDetail',
@@ -15,7 +18,78 @@ define([
     docsServiceURL: window.App.docsServiceURL,
     _setStateAttr: function (state) {
       this._set('state', state);
-      this.set('properties', state.hashParams.loc || 'B.1.1.7');
+      const loc = state.hashParams.loc || 'B.1.1.7'
+      this.set('properties', loc);
+      this.updateByCountryChart(loc);
+      this.updateByMonthChart(loc);
+    },
+    updateByCountryChart: function(loc) {
+      if (loc == '') return;
+
+      xhr.post(window.App.dataServiceURL + '/spike_lineage', {
+        data: `&eq(lineage_of_concern,%22${loc}%22)&ne(country,All)&eq(region,All)&eq(month,All)&select(country,lineage_count,lineage)&limit(25000)`,
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function(data) {
+        const byCountrySum = data.reduce((a, b) => {
+          if (a.hasOwnProperty(b.country)) {
+            a[b.country] += b.lineage_count;
+          } else {
+            a[b.country] = b.lineage_count;
+          }
+          return a;
+        }, {})
+        const vbar_chart_data = Object.entries(byCountrySum).map(([key, val]) => {
+          return {
+            label: key,
+            value: val
+          }
+        }).sort((a, b) => {
+          return b.value - a.value;
+        }).map((el, i) => {
+          el.rank = i;
+          return el;
+        })
+        // console.log(vbar_chart_data);
+        this.vbar_chart.render(vbar_chart_data);
+      }))
+    },
+    updateByMonthChart: function(loc) {
+      if (loc == '') return;
+
+      xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
+        data: `eq(lineage_of_concern,%22${loc}%22)&ne(lineage,D614G)&eq(region,All)&ne(month,All)&eq(month,*)&select(lineage,lineage_count,month)&limit(25000)`,
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function(data) {
+        // console.log(data)
+        const byMonthSum = data.reduce((a, b) => {
+          if (a.hasOwnProperty(b.month)) {
+            a[b.month] += b.lineage_count;
+          } else {
+            a[b.month] = b.lineage_count;
+          }
+          return a;
+        }, {})
+        const chart_data = Object.entries(byMonthSum).map(([key, val]) => {
+          return {
+            year: key/100,
+            bar_count: val
+          }
+        })
+        // console.log(chart_data)
+        this.hbar_chart.render(chart_data)
+      }))
     },
     _setPropertiesAttr: function(lineage_id) {
       domConstruct.empty(this.lineagePropertiesNode);
@@ -73,7 +147,30 @@ define([
         return;
       }
       this.inherited(arguments);
-      this._buildSelectBox()
+      this._buildSelectBox();
+      //
+      this.vbar_chart = new VerticalBarChart(this.byCountryHBarChartNode, 'loc_country', {
+        top_n: 10,
+        title: 'Variant Sequences by Country',
+        width: 600,
+        height: 400,
+        margin: {
+          top: 50,
+          right: 10,
+          bottom: 10,
+          left: 100
+        }
+      })
+      this.hbar_chart = new BarLineChart(this.byLineageChartNode, 'loc_by_month', {
+        title: 'Sequences by Month',
+        width: 600,
+        margin: {
+          top: 50,
+          right: 10,
+          bottom: 50,
+          left: 100
+        }
+      })
     },
     data: {
       'B.1.1.7': {
