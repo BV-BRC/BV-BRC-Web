@@ -119,7 +119,7 @@ define([
         }))
         var label_select_lineage = domConstruct.create('label', {
           style: 'margin-left: 10px;',
-          innerHTML: 'Please select a lineage: '
+          innerHTML: 'Please select a covariant: '
         });
         domConstruct.place(label_select_lineage, filterPanel.containerNode, 'last');
         domConstruct.place(select_lineage.domNode, filterPanel.containerNode, 'last');

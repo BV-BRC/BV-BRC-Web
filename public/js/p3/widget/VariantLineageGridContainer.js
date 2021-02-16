@@ -113,7 +113,7 @@ define([
       });
       var label_select_lineage = domConstruct.create('label', {
         style: 'margin-left: 10px;',
-        innerHTML: ' Lineage: '
+        innerHTML: ' Covariant: '
       });
       domConstruct.place(label_select_lineage, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_lineage.domNode, otherFilterPanel.containerNode, 'last');

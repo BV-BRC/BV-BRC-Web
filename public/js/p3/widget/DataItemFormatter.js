@@ -1530,7 +1530,7 @@ define([
         name: 'Lineage of Concern',
         text: 'lineage_of_concern'
       }, {
-        name: 'Lineage',
+        name: 'Covariant',
         text: 'lineage'
       }, {
         name: 'Sequence Features',

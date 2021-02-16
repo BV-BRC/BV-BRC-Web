@@ -70,7 +70,7 @@ define([
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer2',
-        title: 'By Lineage Chart',
+        title: 'By Variant Chart',
         apiServer: this.apiServer
       });
 
