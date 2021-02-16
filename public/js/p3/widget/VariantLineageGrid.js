@@ -22,7 +22,7 @@ define([
       // "Selection Checkboxes": selector({}),
       'Selection Checkboxes': selector({ unhidable: true }),
       pid: { label: 'id', field: 'id', hidden: true },
-      lineage: { label: 'Lineage', field: 'lineage' },
+      lineage: { label: 'Covariant', field: 'lineage' },
       lineage_of_concern: { label: 'LoC', field: 'lineage_of_concern' },
       sequence_features: { label: 'Sequence Features', field: 'sequence_features' },
       country: { label: 'Country', field: 'country', hidden: false },

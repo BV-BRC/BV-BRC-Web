@@ -72,7 +72,7 @@ define([
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer2',
-        title: 'By Lineage Chart',
+        title: 'By Covariant Chart',
         apiServer: this.apiServer
       });
 
