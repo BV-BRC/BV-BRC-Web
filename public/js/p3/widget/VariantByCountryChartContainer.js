@@ -97,7 +97,7 @@ define([
 
       this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_country_barchart`, {
         top_n: 18,
-        title: 'AA Variant Prevalence',
+        title: 'Variant Frequencies',
         width: 700,
         margin: {
           top: 60,
@@ -106,12 +106,12 @@ define([
           left: 80
         },
         tooltip: function(d) {
-          return `AA Variant: ${d.label}<br/>Sequence Prevalence: ${d.value}`
+          return `Variant: ${d.label}<br/>Frequency: ${d.value}`
         }
       });
 
       this.line_chart = new StackedAreaChart(this.lc_viewer.domNode, 'variant_country_linechart', {
-        title: 'Top 10 AA variant prevalence by month',
+        title: 'Variant Frequencies by Month',
         width: 800
       });
 
@@ -156,7 +156,7 @@ define([
         }))
         var label_select_country = domConstruct.create('label', {
           style: 'margin-left: 10px;',
-          innerHTML: 'Please select a country: '
+          innerHTML: 'Country: '
         });
         domConstruct.place(label_select_country, filterPanel.containerNode, 'last');
         domConstruct.place(select_country.domNode, filterPanel.containerNode, 'last');

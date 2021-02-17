@@ -55,7 +55,7 @@ define([
 
       this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_lineage_lineage_vbarchart`, {
         top_n: 20,
-        title: 'Variant Sequences by Country',
+        title: 'Covariant Sequences by Country',
         width: 700,
         margin: {
           top: 60,
@@ -69,13 +69,13 @@ define([
       });
 
       this.line_chart = new D3BarLineChart(this.lc_viewer.domNode, 'variant_lineage_lineage_dualchart', {
-        title: 'Count by Time',
+        title: 'Covariant Sequences by Month',
         width: 800,
         tooltip: function(d) {
-          return `Month: ${d.year}<br/>Counts: ${d.bar_count}<br/>Prevalence: ${d.line_count}`
+          return `Month: ${d.year}<br/>Covariant Sequences: ${d.bar_count}<br/>Frequency: ${d.line_count}`
         },
-        bar_axis_title: 'Counts (Bar)',
-        line_axis_title: 'Prevalence (Line)'
+        bar_axis_title: 'Covariant Sequences (Bar)',
+        line_axis_title: 'Frequency (Line)'
       });
 
       this.inherited(arguments);
@@ -119,7 +119,7 @@ define([
         }))
         var label_select_lineage = domConstruct.create('label', {
           style: 'margin-left: 10px;',
-          innerHTML: 'Please select a covariant: '
+          innerHTML: 'Covariant: '
         });
         domConstruct.place(label_select_lineage, filterPanel.containerNode, 'last');
         domConstruct.place(select_lineage.domNode, filterPanel.containerNode, 'last');

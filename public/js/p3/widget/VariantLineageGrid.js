@@ -28,9 +28,9 @@ define([
       country: { label: 'Country', field: 'country', hidden: false },
       region: { label: 'Region', field: 'region', hidden: false },
       month: { label: 'Month', field: 'month' },
-      total_isolates: { label: 'Total Isolates', field: 'total_isolates' },
-      lineage_count: { label: 'Lineage Count', field: 'lineage_count' },
-      prevalence: { label: 'Sequence Prevalence', field: 'prevalence' },
+      total_isolates: { label: 'Total Sequences', field: 'total_isolates' },
+      lineage_count: { label: 'Covariant Sequences', field: 'lineage_count' },
+      prevalence: { label: 'Frequency', field: 'prevalence' },
       growth_rate: { label: 'Growth Rate', field: 'growth_rate' }
     },
     constructor: function (options) {

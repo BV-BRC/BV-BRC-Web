@@ -62,7 +62,7 @@ define([
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer1',
-        title: 'By Country Chart',
+        title: 'Chart By Country',
         apiServer: this.apiServer
       });
 
@@ -70,7 +70,7 @@ define([
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer2',
-        title: 'By Variant Chart',
+        title: 'Chart By Variant',
         apiServer: this.apiServer
       });
 

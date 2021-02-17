@@ -69,13 +69,13 @@ define([
       });
 
       this.line_chart = new D3BarLineChart(this.lc_viewer.domNode, 'variant_lineage_dualchart', {
-        title: 'Count by Time',
+        title: 'Variant Sequences by Month',
         width: 800,
         tooltip: function(d) {
-          return `Month: ${d.year}<br/>Counts: ${d.bar_count}<br/>Prevalence: ${d.line_count}`
+          return `Month: ${d.year}<br/>Variant Sequences: ${d.bar_count}<br/>Frequency: ${d.line_count}`
         },
-        bar_axis_title: 'Counts (Bar)',
-        line_axis_title: 'Prevalence (Line)'
+        bar_axis_title: 'Variant Sequences (Bar)',
+        line_axis_title: 'Frequency (Line)'
       });
 
       this.inherited(arguments);
@@ -119,7 +119,7 @@ define([
         }))
         var label_select_variant = domConstruct.create('label', {
           style: 'margin-left: 10px;',
-          innerHTML: 'Please select a variant: '
+          innerHTML: 'Variant: '
         });
         domConstruct.place(label_select_variant, filterPanel.containerNode, 'last');
         domConstruct.place(select_variant.domNode, filterPanel.containerNode, 'last');

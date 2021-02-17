@@ -115,7 +115,7 @@ define([
       })
 
       this.lineage_prevalence = new VariantLineageContainer({
-        title: 'Covariant Frequencies',
+        title: 'Covariants',
         id: this.viewer.id + '_lineage_prevalence'
       });
 
@@ -125,7 +125,7 @@ define([
       // })
 
       this.variant_prevalence = new VariantContainer({
-        title: 'Variant Frequencies',
+        title: 'Variants',
         id: this.viewer.id + '_variant_prevalence'
       })
 
