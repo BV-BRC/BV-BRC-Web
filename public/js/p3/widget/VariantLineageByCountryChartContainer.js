@@ -190,7 +190,7 @@ define([
       const def = new Deferred();
 
       xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
-        data: state.search + '&ne(month,All)&facet((field,month),(mincount,1))&limit(1)&json(nl,map)',
+        data: state.search + '&ne(month,All)&eq(month,*)&facet((field,month),(mincount,1))&limit(1)&json(nl,map)',
         headers: {
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -200,10 +200,19 @@ define([
         handleAs: 'json'
       }).then(function(res1) {
         // console.log(res1)
-        const latest_month = Object.keys(res1.facet_counts.facet_fields.month).sort((a, b) => b - a)[0]
+        if (res1.response.numFound == 0) {
+          def.resolve({
+            'keyLabels': [],
+            'keyIndexes': [],
+            'rawData': []
+          })
+          return;
+        }
+
+        const latest_months = Object.keys(res1.facet_counts.facet_fields.month).sort((a, b) => b - a).slice(0,3).join(',')
 
         xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
-          data: state.search + `&ne(lineage,D614G)&eq(region,All)&eq(month,${latest_month})&sort(-prevalence)&select(lineage,prevalence)&limit(10)`,
+          data: state.search + `&ne(lineage,D614G)&eq(region,All)&in(month,(${latest_months}))&sort(-prevalence)&select(lineage,prevalence)&limit(100)`,
           headers: {
             accept: 'application/json',
             'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -212,10 +221,24 @@ define([
           },
           handleAs: 'json'
         }).then(function(res2) {
-          if (res2.length == 0) return;
+          if (res2.length == 0) {
+            def.resolve({
+              'keyLabels': [],
+              'keyIndexes': [],
+              'rawData': []
+            })
+
+            return;
+          }
           // console.log(res2)
-          const keyLabels = res2.map((el) => el.lineage);
-          const subq = '&in(lineage,(' + res2.map((el) => encodeURIComponent(`${el.lineage}`)).join(',') + '))'
+          const reduced = res2.reduce((a, b) => {
+            if (a.indexOf(b.lineage) < 0) {
+              a.push(b.lineage)
+            }
+            return a
+          },[])
+          const keyLabels = reduced.slice(0,10);
+          const subq = '&in(lineage,(' + keyLabels.map((el) => encodeURIComponent(`"${el}"`)).join(',') + '))'
 
           xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
             data: state.search + subq + '&ne(lineage,D614G)&eq(region,All)&ne(month,All)&eq(month,*)&select(lineage,prevalence,month)&limit(25000)',
