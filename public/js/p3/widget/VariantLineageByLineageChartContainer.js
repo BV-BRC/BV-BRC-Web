@@ -64,7 +64,7 @@ define([
           left: 130
         },
         tooltip: function(d) {
-          return `Country: ${d.label}<br/>Count: ${d.value}`
+          return `Country: ${d.label}<br/>Covariant Sequences: ${d.value}<br/>Frequency: ${d.prevalence}`
         }
       });
 
@@ -85,7 +85,7 @@ define([
 
       this.filterPanel = new ContentPane({
         region: 'top',
-        style: 'height: 20px'
+        style: 'height: 20px;text-align:center'
       })
       this.addChild(this.filterPanel)
 
@@ -132,7 +132,7 @@ define([
 
     processBarChartData: function (state) {
       return xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
-        data: state.search + '&ne(country,All)&eq(region,All)&eq(month,All)&select(country,lineage_count)&sort(-lineage_count)&limit(20)',
+        data: state.search + '&ne(country,All)&eq(region,All)&eq(month,All)&select(country,lineage_count,prevalence)&sort(-lineage_count)&limit(20)',
         headers: {
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',

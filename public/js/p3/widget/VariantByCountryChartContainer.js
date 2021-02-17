@@ -96,7 +96,7 @@ define([
       this.addChild(this.lc_viewer);
 
       this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_country_barchart`, {
-        top_n: 18,
+        top_n: 20,
         title: 'Variant Frequencies',
         width: 700,
         margin: {
@@ -122,7 +122,7 @@ define([
 
       this.filterPanel = new ContentPane({
         region: 'top',
-        style: 'height: 20px'
+        style: 'height: 20px;text-align:center'
       })
       this.addChild(this.filterPanel)
 
@@ -169,7 +169,7 @@ define([
 
     processBarChartData: function (state) {
       return xhr.post(window.App.dataServiceURL + '/spike_variant/', {
-        data: state.search + '&ne(aa_variant,D614G)&eq(region,All)&eq(month,All)&select(aa_variant,prevalence)&sort(-prevalence)&limit(18)',
+        data: state.search + '&ne(aa_variant,D614G)&eq(region,All)&eq(month,All)&select(aa_variant,prevalence)&sort(-prevalence)&limit(20)',
         headers: {
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -196,7 +196,7 @@ define([
       const def = new Deferred();
 
       xhr.post(window.App.dataServiceURL + '/spike_variant/', {
-        data: state.search + '&ne(month,All)&facet((field,month),(mincount,1))&limit(1)&json(nl,map)',
+        data: state.search + '&ne(month,All)&eq(month,*)&facet((field,month),(mincount,1))&limit(1)&json(nl,map)',
         headers: {
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -205,11 +205,18 @@ define([
         },
         handleAs: 'json'
       }).then(function(res1) {
-        // console.log(res1)
-        const latest_month = Object.keys(res1.facet_counts.facet_fields.month).sort((a, b) => b - a)[0]
+        if (res1.response.numFound == 0) {
+          def.resolve({
+            'keyLabels': [],
+            'keyIndexes': [],
+            'rawData': []
+          })
+          return;
+        }
+        const latest_months = Object.keys(res1.facet_counts.facet_fields.month).sort((a, b) => b - a).slice(0,3).join(',')
 
         xhr.post(window.App.dataServiceURL + '/spike_variant/', {
-          data: state.search + `&ne(aa_variant,D614G)&eq(region,All)&eq(month,${latest_month})&sort(-prevalence)&select(aa_variant,prevalence)&limit(10)`,
+          data: state.search + `&ne(aa_variant,D614G)&eq(region,All)&in(month,(${latest_months}))&sort(-prevalence)&select(aa_variant,prevalence)&limit(1000)`,
           headers: {
             accept: 'application/json',
             'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -218,10 +225,23 @@ define([
           },
           handleAs: 'json'
         }).then(function(res2) {
-          if (res2.length == 0) return;
+          if (res2.length == 0) {
+            def.resolve({
+              'keyLabels': [],
+              'keyIndexes': [],
+              'rawData': []
+            })
+            return;
+          }
           // console.log(res2)
-          const keyLabels = res2.map((el) => el.aa_variant);
-          const subq = '&in(aa_variant,(' + res2.map((el) => encodeURIComponent(`${el.aa_variant}`)).join(',') + '))'
+          const reduced = res2.reduce((a, b) => {
+            if (a.indexOf(b.aa_variant) < 0) {
+              a.push(b.aa_variant)
+            }
+            return a
+          },[])
+          const keyLabels = reduced.slice(0,10);
+          const subq = '&in(aa_variant,(' + keyLabels.map((el) => encodeURIComponent(`"${el}"`)).join(',') + '))'
 
           xhr.post(window.App.dataServiceURL + '/spike_variant/', {
             data: state.search + subq + '&ne(aa_variant,D614G)&eq(region,All)&ne(month,All)&eq(month,*)&select(aa_variant,prevalence,month)&limit(25000)',

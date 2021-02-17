@@ -33,7 +33,7 @@ define([
 
       // update line chart
       when(this.processTimeChartData(state), lang.hitch(this, function (data) {
-        console.log(data)
+        // console.log(data)
         this.line_chart.render(data)
       }))
     },
@@ -85,7 +85,7 @@ define([
 
       this.filterPanel = new ContentPane({
         region: 'top',
-        style: 'height: 20px'
+        style: 'height: 20px;text-align:center'
       })
       this.addChild(this.filterPanel)
 

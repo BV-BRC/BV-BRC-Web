@@ -100,8 +100,7 @@ define([
         title: 'Covariant Frequencies',
         width: 700,
         tooltip: function(d) {
-          // TODO: add total isolates, lineage_count
-          return `Covariant: ${d.label}<br/>Frequency: ${d.value}`
+          return `Covariant: ${d.label}<br/>Total Sequences: ${d.total_isolates}<br/>Covariant Sequences: ${d.lineage_count}<br/>Frequency: ${d.value}`
         }
       });
 
@@ -114,11 +113,9 @@ define([
       this._started = true;
     },
     _buildFilterPanel: function() {
-
-      // center align?
       this.filterPanel = new ContentPane({
         region: 'top',
-        style: 'height: 20px'
+        style: 'height: 20px;text-align:center'
       })
       this.addChild(this.filterPanel)
 
@@ -165,7 +162,7 @@ define([
 
     processBarChartData: function (state) {
       return xhr.post(window.App.dataServiceURL + '/spike_lineage/', {
-        data: state.search + '&ne(lineage,D614G)&eq(region,All)&eq(month,All)&select(lineage,prevalence)&sort(-prevalence)&limit(18)',
+        data: state.search + '&ne(lineage,D614G)&eq(region,All)&eq(month,All)&select(lineage,prevalence,lineage_count,total_isolates)&sort(-prevalence)&limit(20)',
         headers: {
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
