@@ -160,6 +160,7 @@ define([
           bottom: 10,
           left: 100
         },
+        x_axis_scale: 'log',
         tooltip: function(d) {
           return `Country: ${d.label}<br/>Count: ${d.value}`
         }

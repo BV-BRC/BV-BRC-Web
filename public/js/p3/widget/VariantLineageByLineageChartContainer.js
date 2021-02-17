@@ -63,6 +63,7 @@ define([
           bottom: 10,
           left: 130
         },
+        x_axis_scale: 'log',
         tooltip: function(d) {
           return `Country: ${d.label}<br/>Covariant Sequences: ${d.value}<br/>Frequency: ${d.prevalence}`
         }
