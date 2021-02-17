@@ -151,7 +151,7 @@ define([
       //
       this.vbar_chart = new VerticalBarChart(this.byCountryHBarChartNode, 'loc_country', {
         top_n: 10,
-        title: 'Variant Sequences by Country',
+        title: 'Sequences by Country',
         width: 600,
         height: 400,
         margin: {

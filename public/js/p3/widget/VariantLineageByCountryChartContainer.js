@@ -96,16 +96,17 @@ define([
       this.addChild(this.lc_viewer);
 
       this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_lineage_country_barchart`, {
-        top_n: 18,
-        title: 'Sequence Prevalence by Covariant',
+        top_n: 20,
+        title: 'Covariant Frequencies',
         width: 700,
         tooltip: function(d) {
-          return `Covariant: ${d.label}<br/>Sequence Prevalence: ${d.value}`
+          // TODO: add total isolates, lineage_count
+          return `Covariant: ${d.label}<br/>Frequency: ${d.value}`
         }
       });
 
       this.line_chart = new StackedAreaChart(this.lc_viewer.domNode, 'variant_lineage_country_linechart', {
-        title: 'Top 10 covariant frequencies by month',
+        title: 'Covariant Frequencies by Month',
         width: 800
       });
 
@@ -114,6 +115,7 @@ define([
     },
     _buildFilterPanel: function() {
 
+      // center align?
       this.filterPanel = new ContentPane({
         region: 'top',
         style: 'height: 20px'
@@ -150,7 +152,7 @@ define([
         }))
         var label_select_country = domConstruct.create('label', {
           style: 'margin-left: 10px;',
-          innerHTML: 'Please select a country: '
+          innerHTML: 'Country: '
         });
         domConstruct.place(label_select_country, filterPanel.containerNode, 'last');
         domConstruct.place(select_country.domNode, filterPanel.containerNode, 'last');
