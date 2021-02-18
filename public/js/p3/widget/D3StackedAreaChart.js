@@ -111,7 +111,7 @@ declare, lang, domConstruct, d3
 
       let color = d3.scaleOrdinal()
         .domain(keyLabels)
-        .range(['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395'])
+        .range(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'])
 
       this.canvas
         .selectAll('layers')

@@ -87,7 +87,7 @@ declare, lang, domConstruct, d3
         .attr('width', d => x(d.value) - x(x_base_val) - 1)
         .attr('y', d => y(d.rank) + 5)
         .attr('height', y(1) - y(0) - this.barPadding)
-        .style('fill', '#3366cc')
+        .style('fill', '#1f77b4')
 
       // add tooltip when tooltip function is defined
       if (this.config.tooltip) {
