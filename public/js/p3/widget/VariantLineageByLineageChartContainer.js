@@ -33,7 +33,7 @@ define([
 
       // update line chart
       when(this.processTimeChartData(state), lang.hitch(this, function (data) {
-        console.log(data)
+        // console.log(data)
         this.line_chart.render(data)
       }))
     },
@@ -63,6 +63,7 @@ define([
           bottom: 10,
           left: 130
         },
+        x_axis_scale: 'log',
         tooltip: function(d) {
           return `Country: ${d.label}<br/>Covariant Sequences: ${d.value}<br/>Frequency: ${d.prevalence}`
         }

@@ -112,7 +112,7 @@ define([
         .attr('width', x.bandwidth())
         .attr('y', d => y_bar(d.bar_count))
         .attr('height', d => y_bar(0) - y_bar(d.bar_count))
-        .style('fill', '#3366cc')
+        .style('fill', '#1f77b4')
 
       if (this.config.tooltip) {
         this.canvas.selectAll('rect.bar')
@@ -137,7 +137,7 @@ define([
       this.canvas
         .append('path')
         .attr('fill', 'none')
-        .attr('stroke', '#ff9900')
+        .attr('stroke', '#ff7f0e')
         .attr('stroke-miterlimit', 1)
         .attr('stroke-width', 3)
         .attr('d', d3.line()

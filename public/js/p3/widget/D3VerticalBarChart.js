@@ -17,6 +17,7 @@ declare, lang, domConstruct, d3
           bottom: 10,
           left: 300
         },
+        x_axis_scale: 'linear', // or log
         tooltip: null
       }
       this.config = lang.mixin({}, defaultConfig, kwArgs)
@@ -50,8 +51,9 @@ declare, lang, domConstruct, d3
     render: function(data) {
       if (data.length == 0) return;
 
-      let x = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.value)])
+      const x_base_val = (this.config.x_axis_scale == 'log') ? 1 : 0;
+      let x = ((this.config.x_axis_scale == 'log') ? d3.scaleLog(): d3.scaleLinear())
+        .domain([x_base_val, d3.max(data, d => d.value)])
         .range([this.config.margin.left, this.config.width - this.config.margin.right - 65]);
 
       let y = d3.scaleLinear()
@@ -60,7 +62,7 @@ declare, lang, domConstruct, d3
 
       let xAxis = d3.axisTop()
         .scale(x)
-        .ticks(this.config.width > 500 ? 5:2)
+        .ticks((this.config.x_axis_scale == 'log') ? 2 : (this.config.width > 500) ? 5:2)
         .tickSize(-(this.config.height-this.config.margin.top-this.config.margin.bottom))
         .tickFormat(d => d3.format(',')(d));
 
@@ -81,11 +83,11 @@ declare, lang, domConstruct, d3
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('x', x(0) + 1)
-        .attr('width', d => x(d.value) - x(0) - 1)
+        .attr('x', x(x_base_val) + 1)
+        .attr('width', d => x(d.value) - x(x_base_val) - 1)
         .attr('y', d => y(d.rank) + 5)
         .attr('height', y(1) - y(0) - this.barPadding)
-        .style('fill', '#3366cc')
+        .style('fill', '#1f77b4')
 
       // add tooltip when tooltip function is defined
       if (this.config.tooltip) {

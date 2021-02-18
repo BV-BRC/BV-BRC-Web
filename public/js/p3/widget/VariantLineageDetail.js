@@ -20,8 +20,8 @@ define([
       this._set('state', state);
       const loc = state.hashParams.loc || 'B.1.1.7'
       this.set('properties', loc);
-      this.updateByCountryChart(loc);
-      this.updateByMonthChart(loc);
+      // this.updateByCountryChart(loc);
+      // this.updateByMonthChart(loc);
     },
     updateByCountryChart: function(loc) {
       if (loc == '') return;
@@ -148,7 +148,7 @@ define([
       }
       this.inherited(arguments);
       this._buildSelectBox();
-      //
+      /*
       this.vbar_chart = new VerticalBarChart(this.byCountryHBarChartNode, 'loc_country', {
         top_n: 10,
         title: 'Sequences by Country',
@@ -160,6 +160,7 @@ define([
           bottom: 10,
           left: 100
         },
+        x_axis_scale: 'log',
         tooltip: function(d) {
           return `Country: ${d.label}<br/>Count: ${d.value}`
         }
@@ -177,6 +178,7 @@ define([
           return `Month: ${d.year}<br>Counts: ${d.bar_count}`
         }
       })
+      */
     },
     data: {
       'B.1.1.7': {
@@ -191,7 +193,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3: T183I, A890D, I1412T; nsp6: S106-, G107-, F108-; RNA-dependent RNA polymerase: P323L; helicase: K460R; ORF8: Q27stop',
         'Nucleotide substitutions vs Wuhan-Hu-1':'C241T, C913T, C3037T, C3267T, C5388A, C5986T, T6954C, T11288-, C11289-, T11290-, G11291-, G11292-, T11293-, T11294-, T11295-, T11296-, C14408T, C14676T, C15279T, T16176C, A17615G, T21765-, A21766-, C21767-, A21768-, T21769-, G21770-, T21991-, T21992-, A21993-, A23063T, A23271C, A23403G, A23604C, T23709C, G24506T, C24914G, T27972C, G28048T, G28111A, A28271-, G28280C, A28281T, T28282A, G28881A, G28882A, G28883C, C28977T',
         'Impact':'Increased transmissibility; S gene target failure (SGTF)',
-        'SF overlap':'TBD',
+        'SF overlap':'Transmembrane region, Helix, Coiled-coil region, Sequence variant, Turn, Region of interest, Mutagenesis site, Beta strand, Topological domain, Domain, Disulfide bond',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW430974&decorator=corona&context=1611876836946" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-P012/2020</a>',
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_genome_consensus.fasta" target=_blank>B.1.1.7_North America_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.1.7_North%20America_S%20protein_consensus.fasta" target=_blank>B.1.1.7_North America_S protein_consensus.fasta</a>',
@@ -214,7 +216,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike':'nsp2: T85I; nsp3: K837N, A1775V; 3C-like proteinase: K90R; nsp6: S106-, G107-, F108-; RNA-dependent RNA polymerase: P323L; helicase: T588I; ORF3a: Q57H; S171L; envelope protein: P71L; nucleocapsid phosphoprotein: T205I',
         'Nucleotide substitutions vs Wuhan-Hu-1':'G174T, C241T, C1059T, T3037C, G5230T, C8043T, A10323G, T11288-, C11289-, T11290-, G11291-, G11292-, T11293-, T11294-, T11295-, T11296-, C14408T, C17999T, A21801C, A22206G, C22281-, T22282-, T22283-, T22284-, A22285-, C22286-, T22287-, T22288-, G22289-, G22813T, G23012A, A23063T, A23403G, C23664T, G25563T, C25904T, C26456T, C28253T, C28887T',
         'Impact':'E484K loss of serum antibody neutralization',
-        'SF overlap':'TBD',
+        'SF overlap':'Transmembrane region, Sequence variant, Mutagenesis site, Region of interest, Helix, Beta strand, Topological domain, Domain, Disulfide bond',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW571126&decorator=corona&context=1613244976238" target=_blank>SARS-CoV-2/human/GHA/WACCBIP_nCoV_GS73/2021</a>',
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_genome_consensus_v2.fasta" target=_blank>B.1.351_genome_consensus_v2.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.351_S%20protein_consensus_v2.fasta" target=_blank>B.1.351_S protein_consensus_v2.fasta</a>',
@@ -239,7 +241,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike':'nsp3: S370L, K977Q; nsp4: S184N; 3C-like proteinase: A260V; nsp6: S106-, G107-, F108-; RNA-dependent RNA polymerase: P323L; helicase: E341D; ORF3a protein: S253P; ORF8 protein: E92K; nucleocapsid phosphoprotein: P80R, R203K, G204R',
         'Nucleotide substitutions vs Wuhan-Hu-1':'C241T, T733C, C2749T, C3037T, C3828T, A5648C, A6319G, A6613G, G9105A, C10833T, T11288-, C11289-, T11290-, G11291-, G11292-, T11293-, T11294-, T11295-, T11296-, C12778T, C13860T, C14408T, G17259T, C21614T, C21621A, C21638T, G21974T, G22132T, A22812C, G23012A, A23063T, C23380T, A23403G, C23525T, C24642T, G25088T, T26149C, G28167A, -28263A, -28264A, -28265C, -28266A, C28516G, A28881T, G28882C, G28885A, G28886A, G28887C, T29838A',
         'Impact':'Increased transmissibility',
-        'SF overlap':'TBD',
+        'SF overlap':'Transmembrane region, Coiled-coil region, Sequence variant, Mutagenesis site, Region of interest, Helix, Beta strand, Topological domain, Domain, Disulfide bond',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW520923&decorator=corona&context=1611876882126" target=_blank>SARS-CoV-2/human/USA/MN-MDH-2399/2021</a>',
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_genome_consensus.fasta" target=_blank>P.1_US_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/P.1_US_S%20protein_consensus.fasta" target=_blank>P.1_US_S protein_consensus.fasta</a>',
@@ -263,7 +265,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike':'nsp2: T85I; nsp9: I65V; RNA-dependent RNA polymerase: P323L; helicase: D260Y; ORF3a: Q57H; nucleocapsid phosphoprotein: T205I',
         'Nucleotide substitutions vs Wuhan-Hu-1':'C29362T, C28887T, A28272T, G27890T, C26681T, G25563T, T24349C, A23403G, T22917G, G22018T, G21600T, G17014T, C14408T, A12878G, C12100T, C8947T, C3037T, T2597C, C2395T, C1059T, C241T',
         'Impact':'Unknown - however L452R is within RBD and may result in loss of monoclonal antibody binding',
-        'SF overlap':'TBD',
+        'SF overlap':'Helix, Sequence variant, Mutagenesis site, Region of interest, Disulfide bond, Beta strand, Topological domain, Domain',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW485882&decorator=corona&context=1611876924806" target=_blank>SARS-CoV-2/human/USA/CA-LACPHL-AF00141/2021</a>',
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_genome_consensus.fasta" target=_blank>CAL.20C_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/CAL.20C_S%20protein_consensus.fasta" target=_blank>CAL.20C_S protein_consensus.fasta</a>',
@@ -286,7 +288,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike':'nsp2: T85I; nsp3: T1010A; RNA-dependent RNA polymerase: P323L; helicase: E341D; 2\'-O-ribose methyltransferase: A258V; ORF3a: Q57H; membrane glycoprotein: I48V; nucleocapsid phosphoprotein: T205I',
         'Nucleotide substitutions vs Wuhan-Hu-1':'C241T, C1059T, T1171C, C3037T, A5747G, C10789T, C14408T, G17259T, C21431T, T21765-, A21766-, C21767-, A21768-, T21769-, G21770-, A23403G, G24007A, G25563T, C25844T, A26664G, C28887T, A29863-, G29864-, A29865-, A29866-, T29867-, G29868-, A29869-, C29870-, A29871-, A29872-, A29873-, A29874-, A29875-, A29876-, A29877-, A29878-, A29886C',
         'Impact':'S gene target failure (SGTF)',
-        'SF overlap':'TBD',
+        'SF overlap':'Helix, Beta strand, Sequence variant, Mutagenesis site, Topological domain, Domain, Disulfide bond',
         'ViPR representative strain link':'<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MW430977&decorator=corona" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-P015/2020</a>',
         'Consensus genome sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_genome_consensus.fasta" target=_blank>B.1.375_North America_genome_consensus.fasta</a>',
         'Consensus Spike protein sequence':'<a href="ftp://ftp.bvbrc.org/BVBRC/SARS-CoV-2/Consensus_sequences/B.1.375_North%20America_S%20protein_consensus.fasta" target=_blank>B.1.375_North America_S protein_consensus.fasta</a>',

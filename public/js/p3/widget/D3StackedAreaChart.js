@@ -33,6 +33,15 @@ declare, lang, domConstruct, d3
           .attr('text-anchor', 'middle')
           .html(kwArgs['title']);
       }
+
+      // tooltip
+      if (d3.select('div.tooltip')[0]) {
+        this.tooltipLayer = d3.select('div.tooltip')
+      } else {
+        this.tooltipLayer = d3.select('body').append('div')
+          .attr('class', 'tooltip')
+          .style('opacity', 0);
+      }
     },
     render: function(data, keyLabels, keyIndexes) {
       /*
@@ -111,7 +120,7 @@ declare, lang, domConstruct, d3
 
       let color = d3.scaleOrdinal()
         .domain(keyLabels)
-        .range(['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395'])
+        .range(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'])
 
       this.canvas
         .selectAll('layers')
@@ -127,6 +136,42 @@ declare, lang, domConstruct, d3
           .y0(function(d) { return y(d[0]); })
           .y1(function(d) { return y(d[1]); })
         )
+
+      this.canvas
+        .on('mouseover', (d) => {
+          this.tooltipLayer.transition()
+            .duration(200)
+            .style('opacity', 0.95)
+
+          // invert
+          const xPos = d3.event.layerX
+          const xDomain = x.domain()
+          const xRange = x.range()
+          const rangePoint = d3.range(xRange[0], xRange[1], x.step())
+          const month = xDomain[d3.bisect(rangePoint, xPos)]
+
+          // retrieve values for corresponding month
+          const dataByMonth = sumstat.filter((el) => el.key == month)
+          if (dataByMonth.length == 0) return
+          const data = dataByMonth[0]['values']
+          const coord = [`<b>Month: ${month}</b>`,'<table>','<tr><th>Covariant</th><td>Freq</td></tr>'].concat(data.map((el) => {
+            return `<tr><th>${el.name}</th><td>${el.n}</td></tr>`
+          })).concat(['</table>']).join('')
+
+          const x0 = d3.event.pageX - d3.event.layerX + this.config.margin.left
+          const y0 = d3.event.pageY - d3.event.layerY + this.config.margin.top
+          // console.log(x0, y0, d3.event)
+
+          this.tooltipLayer
+            .html(coord)
+            .style('left', x0 + 'px' )
+            .style('top', y0 + 'px' )
+        })
+        .on('mouseout', () => {
+          this.tooltipLayer.transition()
+            .duration(500)
+            .style('opacity', 0)
+        })
 
       // legend
       size = 15, topMargin = this.config.margin.top + 20;
