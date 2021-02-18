@@ -33,7 +33,7 @@ define([
 
       // update line chart
       when(this.processTimeChartData(state), lang.hitch(this, function (data) {
-        console.log(data)
+        // console.log(data)
         this.line_chart.render(data)
       }))
     },
