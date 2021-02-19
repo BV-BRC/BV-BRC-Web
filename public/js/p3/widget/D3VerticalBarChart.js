@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/dom-construct', 'd3.v5/d3'
 ], function (
-declare, lang, domConstruct, d3
+  declare, lang, domConstruct, d3
 ) {
   return declare([], {
-    constructor: function(target, id, kwArgs) {
+    constructor: function (target, id, kwArgs) {
       this.node = domConstruct.place(`<div id=${id} class='v_bar_chart'></div>`, target, 'only');
 
       const defaultConfig = {
@@ -39,7 +39,7 @@ declare, lang, domConstruct, d3
 
       // tooltip
       if (d3.select('div.tooltip')[0]) {
-         this.tooltipLayer = d3.select('div.tooltip')
+        this.tooltipLayer = d3.select('div.tooltip')
       } else {
         this.tooltipLayer = d3.select('body').append('div')
           .attr('class', 'tooltip')
@@ -48,11 +48,11 @@ declare, lang, domConstruct, d3
 
       this.barPadding = (this.config.height - (this.config.margin.bottom + this.config.margin.top)) / (this.config.top_n * 5);
     },
-    render: function(data) {
+    render: function (data) {
       if (data.length == 0) return;
 
       const x_base_val = (this.config.x_axis_scale == 'log') ? 1 : 0;
-      let x = ((this.config.x_axis_scale == 'log') ? d3.scaleLog(): d3.scaleLinear())
+      let x = ((this.config.x_axis_scale == 'log') ? d3.scaleLog() : d3.scaleLinear())
         .domain([x_base_val, d3.max(data, d => d.value)])
         .range([this.config.margin.left, this.config.width - this.config.margin.right - 65]);
 
@@ -62,8 +62,8 @@ declare, lang, domConstruct, d3
 
       let xAxis = d3.axisTop()
         .scale(x)
-        .ticks((this.config.x_axis_scale == 'log') ? 2 : (this.config.width > 500) ? 5:2)
-        .tickSize(-(this.config.height-this.config.margin.top-this.config.margin.bottom))
+        .ticks((this.config.x_axis_scale == 'log') ? 2 : (this.config.width > 500) ? 5 : 2)
+        .tickSize(-(this.config.height - this.config.margin.top - this.config.margin.bottom))
         .tickFormat(d => d3.format(',')(d));
 
       this.canvas.selectAll('g.axis').remove();
@@ -130,4 +130,4 @@ declare, lang, domConstruct, d3
         .text(d => d.label)
     }
   })
-});
+})

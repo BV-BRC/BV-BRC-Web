@@ -40,7 +40,7 @@ define([
           vt.set('visible', true);
           this.viewer.selectChild(vt);
         } else {
-          console.log("No view-tab supplied in State Object");
+          console.log('No view-tab supplied in State Object');
         }
       }
 
@@ -66,21 +66,21 @@ define([
           break;
 
         case 'variant_prevalence':
-            this.state.search = 'keyword(*)'
-            activeTab.set('state', lang.mixin({}, this.state));
-            break;
+          this.state.search = 'keyword(*)'
+          activeTab.set('state', lang.mixin({}, this.state));
+          break;
 
         case 'jbrowse':
-            activeQueryState = lang.mixin(this.state, {
-              genome_id: '2697049.107626',
-              hashParams: {
-                view_tab: 'jbrowse',
-                loc: 'NC_045512%3A1..29903',
-                tracks: 'RefSeqGFF%2CActivesite%2CRegionofinterest%2CDomains%2CMutagenesisSite%2CVOCMarkers%2CHumanBCellEpitopes'
-              }
-            });
-            activeTab.set('state', activeQueryState);
-            break;
+          activeQueryState = lang.mixin(this.state, {
+            genome_id: '2697049.107626',
+            hashParams: {
+              view_tab: 'jbrowse',
+              loc: 'NC_045512%3A1..29903',
+              tracks: 'RefSeqGFF%2CActivesite%2CRegionofinterest%2CDomains%2CMutagenesisSite%2CVOCMarkers%2CHumanBCellEpitopes'
+            }
+          });
+          activeTab.set('state', activeQueryState);
+          break;
 
         default:
           if (activeQueryState) {
@@ -133,7 +133,7 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
-/*
+      /*
       this.structure = new VariantStructure({
         title: 'Protein Structure',
         id: this.viewer.id + '_structure'

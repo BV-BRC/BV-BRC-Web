@@ -64,11 +64,11 @@ define([
         layoutPriority: 7,
         splitter: true,
         className: 'BrowserHeader',
-        style:'height:85px'
+        style: 'height:85px'
       });
       this.getFilterPanel()
     },
-    getFilterPanel: function() {
+    getFilterPanel: function () {
       var self = this;
       var q = 'keyword(*)&facet((field,country),(field,region),(field,month)(field,sequence_features),(mincount,1))&json(nl,map)&limit(1)'
       xhr.post(window.App.dataServiceURL + '/spike_variant/', {
@@ -105,7 +105,7 @@ define([
       var select_sequence_features = new Select({
         name: 'selectSequenceFeatures',
         id: 'selectVoCSequenceFeatures',
-        options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['sequence_features'].map(function(c) { return {label: c, value: c}; })),
+        options: [{ label: '&nbsp;', value: '' }, { label: 'Any', value: '*' }].concat(filter_data['sequence_features'].map((c) => { return { label: c, value: c }; })),
         style: 'width: 100px; margin: 5px 0'
       });
       var label_select_sequence_features = domConstruct.create('label', {
@@ -119,7 +119,7 @@ define([
       var select_country = new Select({
         name: 'selectCountry',
         id: 'selectVoCCountry',
-        options: [{label: '&nbsp;', value:''}].concat(filter_data['country'].map(function(c) { return {label: c, value: c}; })),
+        options: [{ label: '&nbsp;', value: '' }].concat(filter_data['country'].map((c) => { return { label: c, value: c }; })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_country.attr('value', 'All')
@@ -138,7 +138,7 @@ define([
       var select_region = new Select({
         name: 'selectRegion',
         id: 'selectVoCRegion',
-        options: [{label: '&nbsp;', value:''}].concat(filter_data['region'].map(function(c) { return {label: c, value: c}; })),
+        options: [{ label: '&nbsp;', value: '' }].concat(filter_data['region'].map((c) => { return { label: c, value: c }; })),
         style: 'width: 100px; margin: 5px 0'
       });
       select_region.attr('value', 'All')
@@ -153,9 +153,9 @@ define([
       var select_month = new Select({
         name: 'selectMonth',
         id: 'selectVoCMonth',
-        options: [{label: '&nbsp;', value:''}].concat(filter_data['month'].map(function(c) {
-          let label = (c == 'All') ? c : `${c.substring(0,4)}-${c.substring(4,6)}`
-          return {label: label, value: c};
+        options: [{ label: '&nbsp;', value: '' }].concat(filter_data['month'].map((c) => {
+          let label = (c == 'All') ? c : `${c.substring(0, 4)}-${c.substring(4, 6)}`
+          return { label: label, value: c };
         })),
         style: 'width: 100px; margin: 5px 0'
       });
@@ -173,7 +173,7 @@ define([
       var select_total_isolates = new Select({
         name: 'selectTotalIsolates',
         id: 'selectVoCTotalIsolates',
-        options: [{ value: 0, label: '0'}, { value: 10, label: '10'}, { value: 100, label: '100' },
+        options: [{ value: 0, label: '0' }, { value: 10, label: '10' }, { value: 100, label: '100' },
           { value: 1000, label: '1000' }],
         style: 'width: 40px; margin: 5px 0'
       });
@@ -189,7 +189,7 @@ define([
       var select_lineage_count = new Select({
         name: 'selectLineageCount',
         id: 'selectVoCLineageCount',
-        options: [{ value: 0, label: '0'}, { value: 5, label: '5' },
+        options: [{ value: 0, label: '0' }, { value: 5, label: '5' },
           { value: 10, label: '10' }, { value: 50, label: '50' },
           { value: 100, label: '100' }, { value: 100, label: '500' },
           { value: 1000, label: '1000' }],
@@ -207,9 +207,9 @@ define([
       var select_prevalence = new Select({
         name: 'selectPrevalence',
         id: 'selectVoCPrevalence',
-        options: [{ value: 0, label: '0'},
+        options: [{ value: 0, label: '0' },
           { value: 0.001, label: '0.001' }, { value: 0.005, label: '0.005' },
-          { value: 0.01, label: '0.01' }, { value: 0.05, label: '0.05'},
+          { value: 0.01, label: '0.01' }, { value: 0.05, label: '0.05' },
           { value: 0.1, label: '0.1' }, { value: 0.5, label: '0.5' }],
         style: 'width: 40px; margin: 5px 0'
       });
@@ -225,7 +225,7 @@ define([
       var select_growth_rate = new Select({
         name: 'selectGrowthRate',
         id: 'selectVocGrowthRate',
-        options: [{ value: 0, label: '0'}, { value: 1, label: '1'}, { value: 2, label: '2' }, { value: 5, label: '5' },
+        options: [{ value: 0, label: '0' }, { value: 1, label: '1' }, { value: 2, label: '2' }, { value: 5, label: '5' },
           { value: 10, label: '10' }],
         style: 'width: 40px; margin: 5px 0'
       });
