@@ -31,9 +31,9 @@ define([
         this.store.set('state', state);
       }
 
-      when(this.processData(), lang.hitch(this, function (chartData){
+      when(this.processData(), lang.hitch(this, function (chartData) {
         if (chartData) {
-          this.barchart_r.setPeriod(parseInt(this.startMonth)/100, parseInt(this.endMonth)/100);
+          this.barchart_r.setPeriod(parseInt(this.startMonth) / 100, parseInt(this.endMonth) / 100);
           this.barchart_r.render(chartData)
         } else {
           console.log('pass drawing since no data')
@@ -64,7 +64,7 @@ define([
       this.inherited(arguments);
       this._started = true;
     },
-    _buildFilterPanelByLineage: function() {
+    _buildFilterPanelByLineage: function () {
       this.filterPanel = new ContentPane({
         region: 'top',
         style: 'height: 20px'
@@ -80,7 +80,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(lang.hitch(this, function(res) {
+      }).then(lang.hitch(this, function (res) {
 
         var list = Object.keys(res.facet_counts.facet_fields.lineage).sort();
 
@@ -88,11 +88,11 @@ define([
 
         var select_lineage = new Select({
           name: 'selectLineage',
-          options: [{label: '&nbsp;', value:''}].concat(list.map(function(c) { return {label: c, value: c}; })),
+          options: [{ label: '&nbsp;', value: '' }].concat(list.map((c) => { return { label: c, value: c }; })),
           style: 'width: 100px; margin: 5px 0'
         });
         // select_lineage.attr('value', 'D614G');
-        select_lineage.on('change', lang.hitch(this, function(value) {
+        select_lineage.on('change', lang.hitch(this, function (value) {
           if (value == '') return;
           this.set('state', lang.mixin(this.state, {
             search: 'eq(lineage,' + encodeURIComponent( `"${value}"` ) + ')'
@@ -106,7 +106,7 @@ define([
         domConstruct.place(select_lineage.domNode, filterPanel.containerNode, 'last');
       }))
     },
-    _buildFilterPanelByCountry: function() {
+    _buildFilterPanelByCountry: function () {
 
       this.filterPanel = new ContentPane({
         region: 'top',
@@ -123,7 +123,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(lang.hitch(this, function(res) {
+      }).then(lang.hitch(this, function (res) {
 
         var list = Object.keys(res.facet_counts.facet_fields.country).sort();
 
@@ -131,11 +131,11 @@ define([
 
         var select_country = new Select({
           name: 'selectCountry',
-          options: [{label: '&nbsp;', value:''}].concat(list.map(function(c) { return {label: c, value: c}; })),
+          options: [{ label: '&nbsp;', value: '' }].concat(list.map((c) => { return { label: c, value: c }; })),
           style: 'width: 100px; margin: 5px 0'
         });
         // select_country.attr('value', 'USA');
-        select_country.on('change', lang.hitch(this, function(value) {
+        select_country.on('change', lang.hitch(this, function (value) {
           if (value == '') return;
           this.set('state', lang.mixin(this.state, {
             search: 'eq(country,' + encodeURIComponent( `"${value}"` ) + ')'
@@ -165,10 +165,10 @@ define([
     },
 
     processData: function () {
-      return when(this.store.query({}), lang.hitch(this, function(data) {
+      return when(this.store.query({}), lang.hitch(this, function (data) {
 
         var startMonth, endMonth;
-        data.forEach(function(el) {
+        data.forEach(function (el) {
           if (!startMonth) {
             startMonth = el.month
           } else if (startMonth > el.month) {
@@ -184,7 +184,7 @@ define([
         this.endMonth = endMonth;
         var groupBy = this.state.groupBy;
 
-        return data.map(function(el) {
+        return data.map(function (el) {
           el.year = parseInt(el.month) / 100;
           el.value = el.prevalence;
           el.lastValue = el.prevalence;

@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/dom-construct', 'd3.v5/d3'
 ], function (
-declare, lang, domConstruct, d3
+  declare, lang, domConstruct, d3
 ) {
   return declare([], {
-    constructor: function(target, id, kwArgs) {
+    constructor: function (target, id, kwArgs) {
       this.node = domConstruct.place(`<div id=${id} class='sa_chart'></div>`, target, 'only');
 
       const defaultConfig = {
@@ -43,7 +43,7 @@ declare, lang, domConstruct, d3
           .style('opacity', 0);
       }
     },
-    render: function(data, keyLabels, keyIndexes) {
+    render: function (data, keyLabels, keyIndexes) {
       /*
         var keyLabels = ['S1', 'D3', 'H6']
         var keyIndexes = [0, 1, 2]
@@ -70,7 +70,7 @@ declare, lang, domConstruct, d3
 
       // group the data: one array for each value of the X axis.
       var sumstat = d3.nest()
-        .key(function(d) { return d.year; })
+        .key((d) => { return d.year; })
         .entries(data);
 
       var maxYvalue = sumstat.reduce((a, b) => {
@@ -82,10 +82,9 @@ declare, lang, domConstruct, d3
       // Stack the data: each group will be represented on top of each other
       var stackedData = d3.stack()
         .keys(keyIndexes)
-        .value(function(d, key){
+        .value((d, key) => {
           return d.values[key].n
-        })
-        (sumstat)
+        })(sumstat)
       // console.log('statckedData', stackedData)
 
       let x = d3.scalePoint()
@@ -103,11 +102,11 @@ declare, lang, domConstruct, d3
       this.canvas.append('g')
         .attr('transform', 'translate(0,' + (this.config.height - this.config.margin.bottom) + ')')
         .call(d3.axisBottom(x)
-        .tickFormat(d => d3.format('.2f')(d))
-        .ticks(sumstat.length))
+          .tickFormat(d => d3.format('.2f')(d))
+          .ticks(sumstat.length))
         .selectAll('text')
-          .attr('transform', 'rotate(-30)')
-          .attr('text-anchor', 'end')
+        .attr('transform', 'rotate(-30)')
+        .attr('text-anchor', 'end')
 
       // Add Y axis
       let y = d3.scaleLinear()
@@ -127,14 +126,14 @@ declare, lang, domConstruct, d3
         .data(stackedData)
         .enter()
         .append('path')
-        .style('fill', function(d) {
+        .style('fill', (d) => {
           var name = keyLabels[d.key];
           return color(name);
         })
         .attr('d', d3.area()
-          .x(function(d, i) { return x(d.data.key); })
-          .y0(function(d) { return y(d[0]); })
-          .y1(function(d) { return y(d[1]); })
+          .x((d, i) => { return x(d.data.key); })
+          .y0((d) => { return y(d[0]); })
+          .y1((d) => { return y(d[1]); })
         )
 
       this.canvas
@@ -154,7 +153,7 @@ declare, lang, domConstruct, d3
           const dataByMonth = sumstat.filter((el) => el.key == month)
           if (dataByMonth.length == 0) return
           const data = dataByMonth[0]['values']
-          const coord = [`<b>Month: ${month}</b>`,'<table>','<tr><th>Covariant</th><td>Freq</td></tr>'].concat(data.map((el) => {
+          const coord = [`<b>Month: ${month}</b>`, '<table>', '<tr><th>Covariant</th><td>Freq</td></tr>'].concat(data.map((el) => {
             return `<tr><th>${el.name}</th><td>${el.n}</td></tr>`
           })).concat(['</table>']).join('')
 
@@ -174,31 +173,32 @@ declare, lang, domConstruct, d3
         })
 
       // legend
-      size = 15, topMargin = this.config.margin.top + 20;
+      var size = 15;
+      var topMargin = this.config.margin.top + 20;
       this.canvas.selectAll('rect.legend')
         .data(keyLabels)
         .enter()
         .append('rect')
-          .attr('class', 'legend')
-          .attr('x', this.config.width - this.config.margin.right - 10)
-          .attr('y', function(d, i){ return topMargin + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
-          .attr('width', size)
-          .attr('height', size)
-          .style('fill', (d) => color(d))
+        .attr('class', 'legend')
+        .attr('x', this.config.width - this.config.margin.right - 10)
+        .attr('y', (d, i) => { return topMargin + i * (size + 5) }) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr('width', size)
+        .attr('height', size)
+        .style('fill', (d) => color(d))
 
       this.canvas.selectAll('text.legend')
         .data(keyLabels)
         .enter()
         .append('text')
-          .attr('class', 'legend')
-          .attr('x', this.config.width - this.config.margin.right - 10 + size + 2)
-          .attr('y', function(d,i){ return topMargin + i*(size+5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
-          .style('fill', function(d){ return color(d)})
-          .text((d) => d)
-          .attr('text-anchor', 'left')
-          .style('alignment-baseline', 'middle')
+        .attr('class', 'legend')
+        .attr('x', this.config.width - this.config.margin.right - 10 + size + 2)
+        .attr('y', (d, i) => { return topMargin + i * (size + 5) + (size / 2) }) // 100 is where the first dot appears. 25 is the distance between dots
+        .style('fill', (d) => { return color(d) })
+        .text((d) => d)
+        .attr('text-anchor', 'left')
+        .style('alignment-baseline', 'middle')
     },
-    hide: function() {
+    hide: function () {
       this.canvas.selectAll('g').remove();
       this.canvas.selectAll('path').remove();
       this.canvas.selectAll('rect').remove();
@@ -213,4 +213,4 @@ declare, lang, domConstruct, d3
         .html('We have not enough data to render this chart')
     }
   })
-});
+})

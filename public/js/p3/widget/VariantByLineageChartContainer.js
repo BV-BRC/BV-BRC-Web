@@ -25,7 +25,7 @@ define([
       }
 
       // update bar chart
-      when(this.processBarChartData(state), lang.hitch(this, function (data){
+      when(this.processBarChartData(state), lang.hitch(this, function (data) {
         if (data) {
           this.vbar_chart.render(data)
         }
@@ -53,7 +53,7 @@ define([
       this.addChild(this.bc_viewer);
       this.addChild(this.lc_viewer);
 
-      this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_lineage_vbarchart`, {
+      this.vbar_chart = new VBarChart(this.bc_viewer.domNode, 'variant_lineage_vbarchart', {
         top_n: 20,
         title: 'Variant Sequences by Country',
         width: 700,
@@ -64,7 +64,7 @@ define([
           left: 130
         },
         x_axis_scale: 'log',
-        tooltip: function(d) {
+        tooltip: function (d) {
           return `Country: ${d.label}<br/>Count: ${d.value}`
         }
       });
@@ -72,7 +72,7 @@ define([
       this.line_chart = new D3BarLineChart(this.lc_viewer.domNode, 'variant_lineage_dualchart', {
         title: 'Variant Sequences by Month',
         width: 800,
-        tooltip: function(d) {
+        tooltip: function (d) {
           return `Month: ${d.year}<br/>Variant Sequences: ${d.bar_count}<br/>Frequency: ${d.line_count}`
         },
         bar_axis_title: 'Variant Sequences (Bar)',
@@ -82,7 +82,7 @@ define([
       this.inherited(arguments);
       this._started = true;
     },
-    _buildFilterPanel: function() {
+    _buildFilterPanel: function () {
 
       this.filterPanel = new ContentPane({
         region: 'top',
@@ -99,7 +99,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(lang.hitch(this, function(res) {
+      }).then(lang.hitch(this, function (res) {
 
         var list = Object.keys(res.facet_counts.facet_fields.aa_variant).sort();
 
@@ -107,12 +107,12 @@ define([
 
         var select_variant = new Select({
           name: 'selectVariant',
-          options: [{label: '&nbsp;', value:''}].concat(list.map(function(c) { return {label: c, value: c}; })),
+          options: [{ label: '&nbsp;', value: '' }].concat(list.map((c) => { return { label: c, value: c }; })),
           style: 'width: 100px; margin: 5px 0'
         });
         select_variant.attr('value', 'D614G')
 
-        select_variant.on('change', lang.hitch(this, function(value) {
+        select_variant.on('change', lang.hitch(this, function (value) {
           if (value == '') return;
           this.set('state', lang.mixin(this.state, {
             search: 'eq(aa_variant,' + encodeURIComponent( `"${value}"` ) + ')'
@@ -141,9 +141,9 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(function(data) {
+      }).then((data) => {
 
-        return data.map(function(el, i) {
+        return data.map((el, i) => {
           el.label = el.country;
           el.value = el.lineage_count;
           el.rank = i;
@@ -167,12 +167,12 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(function(data) {
+      }).then((data) => {
 
-        return data.map(function(el) {
+        return data.map((el) => {
           el.bar_count = el.lineage_count;
           el.line_count = el.prevalence;
-          el.year = `${el.month.substring(0,4)}.${el.month.substring(4,6)}`;
+          el.year = `${el.month.substring(0, 4)}.${el.month.substring(4, 6)}`;
 
           delete el.month;
           delete el.lineage_count

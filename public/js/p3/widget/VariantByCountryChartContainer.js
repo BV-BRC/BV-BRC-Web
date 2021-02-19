@@ -25,7 +25,7 @@ define([
       }
 
       // update bar chart
-      when(this.processBarChartData(state), lang.hitch(this, function (data){
+      when(this.processBarChartData(state), lang.hitch(this, function (data) {
         if (data) {
           this.vbar_chart.render(data)
         }
@@ -54,11 +54,11 @@ define([
             })
             years.forEach((el) => {
               // impute for the missing data point.
-              rawData.push({name: key, n: 0, year: el})
+              rawData.push({ name: key, n: 0, year: el })
             })
           }
         })
-        rawData.sort((a,b) => {
+        rawData.sort((a, b) => {
           if (a.name === b.name) {
             if (a.year > b.year) {
               return 1
@@ -95,7 +95,7 @@ define([
       this.addChild(this.bc_viewer);
       this.addChild(this.lc_viewer);
 
-      this.vbar_chart = new VBarChart(this.bc_viewer.domNode, `variant_country_barchart`, {
+      this.vbar_chart = new VBarChart(this.bc_viewer.domNode, 'variant_country_barchart', {
         top_n: 20,
         title: 'Variant Frequencies',
         width: 700,
@@ -105,7 +105,7 @@ define([
           bottom: 10,
           left: 80
         },
-        tooltip: function(d) {
+        tooltip: function (d) {
           return `Variant: ${d.label}<br/>Frequency: ${d.value}`
         }
       });
@@ -118,7 +118,7 @@ define([
       this.inherited(arguments);
       this._started = true;
     },
-    _buildFilterPanel: function() {
+    _buildFilterPanel: function () {
 
       this.filterPanel = new ContentPane({
         region: 'top',
@@ -135,7 +135,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(lang.hitch(this, function(res) {
+      }).then(lang.hitch(this, function (res) {
 
         var list = Object.keys(res.facet_counts.facet_fields.country).sort();
 
@@ -143,12 +143,12 @@ define([
 
         var select_country = new Select({
           name: 'selectCountry',
-          options: [{label: '&nbsp;', value:''}].concat(list.map(function(c) { return {label: c, value: c}; })),
+          options: [{ label: '&nbsp;', value: '' }].concat(list.map((c) => { return { label: c, value: c }; })),
           style: 'width: 100px; margin: 5px 0'
         });
         select_country.attr('value', 'USA')
 
-        select_country.on('change', lang.hitch(this, function(value) {
+        select_country.on('change', lang.hitch(this, function (value) {
           if (value == '') return;
           this.set('state', lang.mixin(this.state, {
             search: 'eq(country,' + encodeURIComponent( `"${value}"` ) + ')'
@@ -177,9 +177,9 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(function(data) {
+      }).then((data) => {
 
-        return data.map(function(el, i) {
+        return data.map((el, i) => {
           el.label = el.aa_variant;
           el.value = el.prevalence;
           el.rank = i;
@@ -204,7 +204,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(function(res1) {
+      }).then((res1) => {
         if (res1.response.numFound == 0) {
           def.resolve({
             'keyLabels': [],
@@ -213,7 +213,7 @@ define([
           })
           return;
         }
-        const latest_months = Object.keys(res1.facet_counts.facet_fields.month).sort((a, b) => b - a).slice(0,3).join(',')
+        const latest_months = Object.keys(res1.facet_counts.facet_fields.month).sort((a, b) => b - a).slice(0, 3).join(',')
 
         xhr.post(window.App.dataServiceURL + '/spike_variant/', {
           data: state.search + `&ne(aa_variant,D614G)&eq(region,All)&in(month,(${latest_months}))&sort(-prevalence)&select(aa_variant,prevalence)&limit(1000)`,
@@ -224,7 +224,7 @@ define([
             Authorization: (window.App.authorizationToken || '')
           },
           handleAs: 'json'
-        }).then(function(res2) {
+        }).then((res2) => {
           if (res2.length == 0) {
             def.resolve({
               'keyLabels': [],
@@ -239,8 +239,8 @@ define([
               a.push(b.aa_variant)
             }
             return a
-          },[])
-          const keyLabels = reduced.slice(0,10);
+          }, [])
+          const keyLabels = reduced.slice(0, 10);
           const subq = '&in(aa_variant,(' + keyLabels.map((el) => encodeURIComponent(`"${el}"`)).join(',') + '))'
 
           xhr.post(window.App.dataServiceURL + '/spike_variant/', {
@@ -252,12 +252,12 @@ define([
               Authorization: (window.App.authorizationToken || '')
             },
             handleAs: 'json'
-          }).then(function(data) {
+          }).then((data) => {
             // console.log(data)
-            var rawData = data.map(function(el) {
+            var rawData = data.map((el) => {
               el.name = el.aa_variant;
               el.n = el.prevalence;
-              el.year = `${el.month.substring(0,4)}.${el.month.substring(4,6)}`;
+              el.year = `${el.month.substring(0, 4)}.${el.month.substring(4, 6)}`;
 
               delete el.aa_variant;
               delete el.month;

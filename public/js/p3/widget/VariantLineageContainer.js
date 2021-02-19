@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
-  './VariantLineageGridContainer', './VariantLineageByCountryChartContainer', './VariantLineageByLineageChartContainer',
+  './VariantLineageGridContainer', './VariantLineageByCountryChartContainer', './VariantLineageByLineageChartContainer'
 ], function (
   declare, lang, on, Topic,
   BorderContainer, StackContainer, TabController,
