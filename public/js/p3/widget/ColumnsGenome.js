@@ -23,6 +23,11 @@ define(['./formatter'], function (formatter) {
       label: 'Genome ID',
       field: 'genome_id'
     },
+    other_names: {
+      label: 'Other Names',
+      field: 'other_names',
+      hidden: true
+    },
     owner: {
       label: 'Owner',
       field: 'owner',
@@ -61,26 +66,32 @@ define(['./formatter'], function (formatter) {
       field: 'plasmids',
       hidden: true
     },
+    segments: {
+      label: 'Segments',
+      field: 'Segments',
+      hidden: true
+    },
     contigs: {
       label: 'Contigs',
       field: 'contigs'
-    },
-    patric_cds: {
-      label: 'PATRIC CDS',
-      field: 'patric_cds'
-    },
-    refseq_cds: {
-      label: 'RefSeq CDS',
-      field: 'refseq_cds',
-      hidden: true
     },
     isolation_country: {
       label: 'Isolation Country',
       field: 'isolation_country'
     },
+    season: {
+      label: 'Season',
+      field: 'season',
+      hidden: true
+    },
     host_name: {
       label: 'Host Name',
       field: 'host_name'
+    },
+    host_common_name: {
+      label: 'Host Common Name',
+      field: 'host_common_name',
+      hidden: true
     },
     disease: {
       label: 'Disease',
@@ -153,6 +164,11 @@ define(['./formatter'], function (formatter) {
       field: 'publication',
       hidden: true
     },
+    authors: {
+      label: 'Authors',
+      field: 'authors',
+      hidden: true
+    },
     bioproject_accession: {
       label: 'BioProject Accession',
       field: 'bioproject_accession',
@@ -171,11 +187,6 @@ define(['./formatter'], function (formatter) {
     genbank_accessions: {
       label: 'GenBank Accessions',
       field: 'genbank_accessions',
-      hidden: true
-    },
-    refseq_accessions: {
-      label: 'RefSeq Accessions',
-      field: 'refseq_accessions',
       hidden: true
     },
     sequencing_platform: {
@@ -198,11 +209,6 @@ define(['./formatter'], function (formatter) {
       field: 'gc_content',
       hidden: true
     },
-    isolation_site: {
-      label: 'Isolation Site',
-      field: 'isolation_site',
-      hidden: true
-    },
     isolation_source: {
       label: 'Isolation Source',
       field: 'isolation_source',
@@ -217,26 +223,6 @@ define(['./formatter'], function (formatter) {
     geographic_location: {
       label: 'Geographic Location',
       field: 'geographic_location',
-      hidden: true
-    },
-    latitude: {
-      label: 'Latitude',
-      field: 'latitude',
-      hidden: true
-    },
-    longitude: {
-      label: 'Longitude',
-      field: 'longitude',
-      hidden: true
-    },
-    altitude: {
-      label: 'Altitude',
-      field: 'altitude',
-      hidden: true
-    },
-    depth: {
-      label: 'Depth',
-      field: 'depth',
       hidden: true
     },
     other_environmental: {
@@ -260,32 +246,10 @@ define(['./formatter'], function (formatter) {
       field: 'host_health',
       hidden: true
     },
-    body_sample_site: {
-      label: 'Body Sample Site',
-      field: 'body_sample_site',
-      hidden: true
-    },
-    body_sample_subsite: {
-      label: 'Body Sample Subsite',
-      field: 'body_sample_subsite',
-      hidden: true
-    },
     other_clinical: {
       label: 'Other Clinical',
       field: 'other_clinical',
       hidden: true
-    },
-    antimicrobial_resistance: {
-      label: 'Antimicrobial Resistance',
-      field: 'antimicrobial_resistance',
-      hidden: true,
-      sortable: false
-    },
-    antimicrobial_resistance_evidence: {
-      label: 'Antimicrobial Resistance Evidence',
-      field: 'antimicrobial_resistance_evidence',
-      hidden: true,
-      sortable: false
     },
     gram_stain: {
       label: 'Gram Stain',
@@ -359,6 +323,11 @@ define(['./formatter'], function (formatter) {
     genome_quality: {
       label: 'Genome Quality',
       field: 'genome_quality',
+      hidden: true
+    },
+    mat_peptide: {
+      label: 'Mat Peptide',
+      field: 'mat_peptide',
       hidden: true
     },
     genome_quality_flags: {

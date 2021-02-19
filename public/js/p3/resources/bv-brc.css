@@ -45,7 +45,6 @@
 }
 #bv-brc-header-container {
   display: flex;
-  justify-content: space-between;
   /* max-width: 1220px; */
   margin: 0 auto;
 }
@@ -144,6 +143,44 @@
   background-color: var(--blue-light-bg);
   border-bottom: 4px solid var(--border-blue);
   padding: 15px 10px;
+}
+
+#bv-brc-home .bv-brc-info h3 {
+  margin: 0.5em 0em;
+}
+
+#bv-brc-home .bv-brc-info .browse {
+  margin-top: 20px;
+}
+
+#bv-brc-home .bv-brc-info .search .global-search {
+  margin-left: 16px;
+}
+
+#bv-brc-home .bv-brc-info .search .global-search .GSbody {
+  border: 2px solid var(--blue);
+  border-bottom: 4px solid var(--blue);
+}
+
+#bv-brc-home .bv-brc-info .search .global-search .gs-data-types-dropdown .dijitInputField {
+  font-size: 14px;
+  padding: 12px 4px;
+}
+
+#bv-brc-home .bv-brc-info .search .global-search .gs-input .dijitInputField {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 8px;
+}
+
+#bv-brc-home .bv-brc-info .search .global-search .gs-input .dijitPlaceHolder {
+  font-size: 14px;
+  padding: 12px 8px;
+}
+
+#bv-brc-home .bv-brc-info .search .global-search .gs-options-dropdown .dijitInputField {
+  font-size: 14px;
+  padding: 12px 4px;
 }
 
 #bv-brc-home .patric-info {
@@ -493,7 +530,7 @@
   padding-bottom: 20px;
 }
 
-/* Grid Tablet Layout */
+/* Tablet */
 @media (max-width: 991px) {
   #bv-brc-home #bv-brc-home-container {
     display: -webkit-box;
@@ -508,7 +545,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 365px 365px;
-    grid-template-rows: 40px 175px 660px 425px;
+    grid-template-rows: 40px 260px 480px 425px;
     grid-gap: 20px;
   }
   #bv-brc-home .home-banner {
@@ -535,11 +572,21 @@
     grid-column: 2 / 3;
     grid-row: 4 / 5;
   }
+  #bv-brc-home .btn {
+    padding: 0.4rem 1rem;
+    font-size: .8rem!important;
+  }
+  #bv-brc-home .patric-info-content .hp-img  {
+    display: none;
+  }
   #bv-brc-home .patric-info .patric-info-btn-links {
-    margin-top: 28px;
+    margin-top: -23px;
+  }
+  #bv-brc-home .ird-vipr-info-content .hp-img  {
+    display: none;
   }
   #bv-brc-home .ird-vipr-info .ird-vipr-info-btn-links {
-    margin-top: -4px;
+    margin-top: -10px;
   }
 }
 /* Grid Desktop Layout */
@@ -557,7 +604,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 40px 150px 240px 150px 150px;
+    grid-template-rows: 40px 260px 140px 150px 250px;
     grid-gap: 20px;
   }
   #bv-brc-home .home-banner {

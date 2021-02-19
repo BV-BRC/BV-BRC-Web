@@ -44,7 +44,10 @@
 * [Dev Enhancement] Allow devs to specify build container IDs in app submissions; related improvements. [7a4ff1f](https://github.com/PATRIC3/p3_web/commit/7a4ff1fd47f7da545322d5a1240756fcabae1f2f)
 
 * [Dev Enhancement] Navigate to default job result viewer if not implemented. [#994](https://github.com/PATRIC3/p3_web/pull/994)
+<<<<<<< HEAD
 
+=======
+>>>>>>> merge in latest p3_web changes (#24)
 
 ## 3.6.5 - June 5, 2020
 
