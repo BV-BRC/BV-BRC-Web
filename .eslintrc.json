@@ -19,9 +19,13 @@
     "Hotmap": true
   },
   "parserOptions": {
-    "ecmaVersion": 5
+    "ecmaVersion": 8
   },
   "rules": {
+    "semi": 0,
+    "no-else-return": 0,
+    "one-var-declaration-per-line": 0,
+    "comma-dangle": 0,
     "_comment_reactivate_later": ["block-scoped-var", "no-restricted-globals", "no-redeclare",
       "no-nested-ternary", "no-return-assign", "no-restricted-syntax", "no-multi-assign", "no-loop-func",
       "array-callback-return", "no-use-before-define", "no-template-curly-in-string", "no-new", "no-cond-assign",
@@ -48,7 +52,7 @@
     "no-unused-vars": ["error", { "vars": "all", "args": "none", "ignoreRestSiblings": false }],
     "no-plusplus": 0,
     "no-lonely-if": 0,
-    "no-prototype-builtins": 1,
+    "no-prototype-builtins": 0,
     "no-bitwise": ["error", { "allow": ["~"] }],
     "no-bitwise": 0,
     "radix": [1, "as-needed"],
