@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
-  './VariantGridContainer', './VariantChartContainer'
+  './VariantGridContainer', './VariantByCountryChartContainer', './VariantByLineageChartContainer'
 ], function (
   declare, lang, on, Topic,
   BorderContainer, StackContainer, TabController,
-  VariantGridContainer, VariantChartContainer
+  VariantGridContainer, VariantByCountryChartContainer, VariantByLineageChartContainer
 ) {
 
   return declare([BorderContainer], {
@@ -58,25 +58,19 @@ define([
         'class': 'TextTabButtons'
       });
 
-      var chartContainer1 = new VariantChartContainer({
+      var chartContainer1 = new VariantByCountryChartContainer({
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer1',
-        title: 'By Country Chart',
-        state: lang.mixin({}, {
-          groupBy: 'country'
-        }),
+        title: 'Chart By Country',
         apiServer: this.apiServer
       });
 
-      var chartContainer2 = new VariantChartContainer({
+      var chartContainer2 = new VariantByLineageChartContainer({
         region: 'leading',
         doLayout: false,
         id: this.id + '_chartContainer2',
-        title: 'By Lineage Chart',
-        state: lang.mixin({}, {
-          groupBy: 'lineage'
-        }),
+        title: 'Chart By Variant',
         apiServer: this.apiServer
       });
 

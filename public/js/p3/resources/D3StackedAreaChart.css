@@ -1,0 +1,20 @@
+.sa_chart text {
+  font-size: 14px;
+  font-family: Open Sans, sans-serif;
+}
+
+.sa_chart text.title {
+  font-size: 20px;
+  font-weight: 600;
+}
+.sa_chart text.legend {
+  font-size: 12px;
+}
+
+.sa_chart .tick text {
+  fill: #777;
+}
+
+.sa_chart path.domain{
+  display: none;
+}

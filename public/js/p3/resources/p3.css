@@ -27,6 +27,9 @@
 @import url("./help.css");
 @import url("webpage.css");
 @import url("./D3BarChartRace.css");
+@import url("./D3VerticalBarChart.css");
+@import url("./D3StackedAreaChart.css");
+@import url("./D3BarLineChart.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
 
 .icon-sort-alpha-asc {

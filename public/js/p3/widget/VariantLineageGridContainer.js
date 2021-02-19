@@ -104,6 +104,20 @@ define([
       });
       domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, 'last');
 
+      // lineage
+      var select_lineage = new Select({
+        name: 'selectLineage',
+        id: 'selectLineage',
+        options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['lineage'].map(function(c) { return {label: c, value: c}; })),
+        style: 'width: 100px; margin: 5px 0'
+      });
+      var label_select_lineage = domConstruct.create('label', {
+        style: 'margin-left: 10px;',
+        innerHTML: ' Covariant: '
+      });
+      domConstruct.place(label_select_lineage, otherFilterPanel.containerNode, 'last');
+      domConstruct.place(select_lineage.domNode, otherFilterPanel.containerNode, 'last');
+
       // lineage_of_concern
       var select_loc = new Select({
         name: 'selectLoC',
@@ -118,20 +132,7 @@ define([
       domConstruct.place(label_select_loc, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_loc.domNode, otherFilterPanel.containerNode, 'last');
 
-      // lineage
-      var select_lineage = new Select({
-        name: 'selectLineage',
-        id: 'selectLineage',
-        options: [{label: '&nbsp;', value: ''}, {label: 'Any', value: '*'}].concat(filter_data['lineage'].map(function(c) { return {label: c, value: c}; })),
-        style: 'width: 100px; margin: 5px 0'
-      });
-      var label_select_lineage = domConstruct.create('label', {
-        style: 'margin-left: 10px;',
-        innerHTML: ' Lineage: '
-      });
-      domConstruct.place(label_select_lineage, otherFilterPanel.containerNode, 'last');
-      domConstruct.place(select_lineage.domNode, otherFilterPanel.containerNode, 'last');
-
+      // sequence_Features
       var select_sequence_features = new Select({
         name: 'selectSequenceFeatures',
         id: 'selectSequenceFeatures',
@@ -209,7 +210,7 @@ define([
       select_total_isolates.attr('value', 10)
       var label_total_isolates = domConstruct.create('label', {
         style: 'margin-left: 10px;',
-        innerHTML: ' Total Isolates >= '
+        innerHTML: ' Total Sequences >= '
       });
       domConstruct.place(label_total_isolates, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_total_isolates.domNode, otherFilterPanel.containerNode, 'last');
@@ -227,7 +228,7 @@ define([
       select_lineage_count.attr('value', 10)
       var label_lineage_count = domConstruct.create('label', {
         style: 'margin-left: 10px;',
-        innerHTML: ' Lineage Count >= '
+        innerHTML: ' Covariant Sequences >= '
       });
       domConstruct.place(label_lineage_count, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_lineage_count.domNode, otherFilterPanel.containerNode, 'last');
@@ -245,7 +246,7 @@ define([
       select_prevalence.attr('value', 0.005)
       var label_prevalence = domConstruct.create('label', {
         style: 'margin-left: 10px;',
-        innerHTML: ' Prevalence >= '
+        innerHTML: ' Frequency >= '
       });
       domConstruct.place(label_prevalence, otherFilterPanel.containerNode, 'last');
       domConstruct.place(select_prevalence.domNode, otherFilterPanel.containerNode, 'last');

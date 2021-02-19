@@ -1498,7 +1498,7 @@ define([
         name: 'Lineage of Concern',
         text: 'lineage_of_concern'
       }, {
-        name: 'Lineage',
+        name: 'Covariant',
         text: 'lineage'
       }, {
         name: 'Sequence Features',
@@ -1513,13 +1513,13 @@ define([
         name: 'Month',
         text: 'month'
       }, {
-        name: 'Total Isolates',
+        name: 'Total Sequences',
         text: 'total_isolates'
       }, {
-        name: 'Lineage Count',
+        name: 'Covariant Sequences',
         text: 'lineage_count'
       }, {
-        name: 'Sequence Prevalence',
+        name: 'Frequency',
         text: 'prevalence'
       }, {
         name: 'Growth Rate',
@@ -1536,7 +1536,7 @@ define([
       options = options || {};
 
       var columns = [{
-        name: 'AA Variant',
+        name: 'Variant',
         text: 'aa_variant'
       }, {
         name: 'Sequence Features',
@@ -1551,13 +1551,13 @@ define([
         name: 'Month',
         text: 'month'
       }, {
-        name: 'Total Isolates',
+        name: 'Total Sequences',
         text: 'total_isolates'
       }, {
-        name: 'Lineage Count',
+        name: 'Variant Sequences',
         text: 'lineage_count'
       }, {
-        name: 'Sequence Prevalence',
+        name: 'Frequency',
         text: 'prevalence'
       }, {
         name: 'Growth Rate',
