@@ -465,7 +465,6 @@ define([
         popup.close(downloadTTSelectFile);
       }));
 
-      /* Genomes can't be viewed at BV-BRC for now
       this.browserHeader.addAction('ViewAnnotatedGenome', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -476,7 +475,6 @@ define([
         Topic.publish('/navigate', { href: '/view/Genome/' + gid });
 
       }, false);
-      */
 
       // XXX WIP
       // this.actionPanel.addAction('ViewAnnotatedGenome', 'fa icon-eye fa-2x', {
@@ -507,7 +505,6 @@ define([
         window.open(url, '_blank');
       }, false);
 
-      /* Genomes can't be viewed at BV-BRC for now
       this.browserHeader.addAction('ViewAnnotatedGenomeCDS', 'fa icon-genome-features-cds fa-2x', {
         label: 'CDS',
         multiple: false,
@@ -530,7 +527,6 @@ define([
         Topic.publish('/navigate', { href: '/view/Genome/' + gid + '#view_tab=browser' });
 
       }, false);
-      */
 
       this.browserHeader.addAction('Upload', 'fa icon-upload fa-2x', {
         label: 'UPLOAD',
@@ -1200,7 +1196,7 @@ define([
       /**
        * Handle unaccepted requests
        */
-      var types = this.itemDetailPanel.changeableTypes;
+      var types = WorkspaceManager.changeableTypes;
       var options = Object.keys(types).map(function (key) { return types[key]; });
       var validTypes = options.map(function (item) { return item.value; });
 
@@ -1388,12 +1384,6 @@ define([
                   break;
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
-                  break;
-                case 'ComprehensiveSARS2Analysis':
-                  d = 'p3/widget/viewer/ComprehensiveSARS2Analysis';
-                  break;
-                case 'SARS2Assembly':
-                  d = 'p3/widget/viewer/SARS2Assembly';
                   break;
                 default:
                   console.log('Using the default JobResult viewer. A viewer could not be found for id: ' + id);

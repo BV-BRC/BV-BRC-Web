@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 3.6.9 - Jan 19, 2021
+
+* [Minor] Disable Reconstruct Metabolic Model service UI. [#1008](https://github.com/PATRIC3/p3_web/pull/1008)
+* [Minor] Code refactoring. [#1007](https://github.com/PATRIC3/p3_web/pull/1007)
+
+
 ## 3.6.8 - Dec 8, 2020
 
 * [Feature] Table viewer for CSV/TSV files in workspaces.  Allows filtering, sorting, etc.  Detects genome ids, feature ids, and more. [#1004](https://github.com/PATRIC3/p3_web/pull/1004)

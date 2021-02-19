@@ -29,100 +29,16 @@ define([
       height: '520px',
       overflow: 'scroll'
     },
-    knownTypes: {
-      unspecified: {
-        label: 'Unspecified',
-        formats: ['*.*']
-      },
-      contigs: {
-        label: 'Contigs',
-        formats: ['.fa', '.fasta', '.fna'],
-        description: 'Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted.'
-      },
-      reads: {
-        label: 'Reads',
-        formats: ['.fq', '.fastq', '.fa', '.fasta', '.gz', '.bz2'],
-        description: 'Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted.'
-      },
-      diffexp_input_data: {
-        label: 'Diff. Expression Input Data',
-        formats: ['.csv', '.txt', '.xls', '.xlsx']
-      },
-      diffexp_input_metadata: {
-        label: 'Diff. Expression Input Metadata',
-        formats: ['.csv', '.txt', '.xls', '.xlsx']
-      },
-      feature_protein_fasta: {
-        label: 'Feature Protein FASTA',
-        formats: ['.fa', '.fasta', '.faa'],
-        description: 'Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted.'
-      },
-      txt: {
-        label: 'Plain Text',
-        formats: ['.txt'],
-        description: 'A plain text file.'
-      },
-      pdf: {
-        label: 'PDF',
-        formats: ['.pdf'],
-        description: 'A pdf file.'
-      },
-      xml: {
-        label: 'XML',
-        formats: ['.xml'],
-        description: 'An xml file.'
-      },
-      json: {
-        label: 'JSON',
-        formats: ['.json'],
-        description: 'A json file.'
-      },
-      csv: {
-        label: 'CSV',
-        formats: ['.csv'],
-        description: 'A CSV (comma separated values) file.'
-      },
-      tsv: {
-        label: 'TSV',
-        formats: ['.tsv'],
-        description: 'A TSV (tab separated values) file.'
-      },
-      jpg: {
-        label: 'JPEG Image',
-        formats: ['.jpg', '.jpeg'],
-        description: 'A JPEG image file.'
-      },
-      svg: {
-        label: 'SVG Image',
-        formats: ['.svg'],
-        description: 'A SVG image file.'
-      },
-      gif: {
-        label: 'GIF Image',
-        formats: ['.gif'],
-        description: 'A GIF image file.'
-      },
-      png: {
-        label: 'PNG Image',
-        formats: ['.png'],
-        description: 'A PNG image file.'
-      },
-      nwk: {
-        label: 'Newick',
-        formats: ['.nwk'],
-        description: 'Phylogenetic tree file.'
-      }
-    },
     _setPathAttr: function (val) {
       this.path = val;
       this.destinationPath.innerHTML = val;
     },
 
     onUploadTypeChanged: function (val) {
-      var formats = this.knownTypes[val].formats;
+      var formats = WorkspaceManager.knownUploadTypes[val].formats;
       this.formatListNode.innerHTML = formats.join(', ');
 
-      var description = this.knownTypes[val].description;
+      var description = WorkspaceManager.knownUploadTypes[val].description;
 
       if (!this.showAllFormats.get('value')) {
         domAttr.set(this.fileInput, 'accept', '*.*');
@@ -148,7 +64,7 @@ define([
         domAttr.set(this.fileInput, 'accept', '*.*');
       } else {
         // var type = this.uploadType.get('value');
-        var formats = this.knownTypes[this.uploadType.get('value')].formats;
+        var formats = WorkspaceManager.knownUploadTypes[this.uploadType.get('value')].formats;
         domAttr.set(this.fileInput, 'accept', formats.join(','));
       }
 
@@ -268,21 +184,21 @@ define([
       var state = this.get('state');
       this.createNewFileInput();
 
-      Object.keys(this.knownTypes).filter(function (t) {
+      Object.keys(WorkspaceManager.knownUploadTypes).filter(function (t) {
         return (!_self.types || (_self.types == '*') || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)));
       }).forEach(function (t) {
-        // console.log("* Add option: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
+        // console.log("* Add option: ", t, WorkspaceManager.knownUploadTypes[t], _self.uploadType, _self.uploadType.addOption);
         _self.uploadType.addOption({
           disabled: false,
-          label: _self.knownTypes[t].label,
+          label: WorkspaceManager.knownUploadTypes[t].label,
           value: t
         });
       });
 
       var type = this.uploadType.get('value');
-      if (type && this.knownTypes[type]) {
+      if (type && WorkspaceManager.knownUploadTypes[type]) {
         this.onUploadTypeChanged(type); /*
-        var description = this.knownTypes[type].description;
+        var description = WorkspaceManager.knownUploadTypes[type].description;
         if (description) {
           domClass.remove(this.typeDescriptionContainer, 'dijitHidden');
           this.typeDescriptionContainer.innerHTML = description;

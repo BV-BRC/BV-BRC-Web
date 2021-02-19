@@ -10,6 +10,7 @@
                 <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
               </div>
             </h3>
+            <p style="border: 2px solid #ffbc3e; padding: 4px;" class="alert-banner">PATRIC is deprecating the Model Reconstruction Service. Please visit the <a style="font-weight: bold" href="https://modelseed.org/" target="_blank">ModelSEED</a> website to build metabolic models and run flux balance analysis on public genomes in PATRIC. You can also analyze your private genomes by uploading your data in <a style="font-weight: bold;" href="https://modelseed.org/" target="_blank">ModelSEED</a>.</p><br>
       <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
@@ -23,7 +24,7 @@
         <div class="appRow">
           <div class="appField">
             <label>Genome</label><br>
-            <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
+            <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget" data-dojo-props="disabled:true"></div>
           </div>
         </div>
         <!--
@@ -75,16 +76,16 @@
         <div class="appRow">
           <div class="appField">
             <label>Media</label><br>
-            <div data-dojo-type="p3/widget/MediaSelector" name="media" style="width:100%" data-dojo-attach-point="mediaSelector"></div>
+            <div data-dojo-type="p3/widget/MediaSelector" name="media" style="width:100%" data-dojo-attach-point="mediaSelector" data-dojo-props="disabled:true"></div>
           </div>
         </div>
         <div class="appRow">
           <div class="appField">
             <label>Output Folder</label>
-            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Reconstruction Results',missingMessage:'Output Folder must be selected.'"
+            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Reconstruction Results',missingMessage:'Output Folder must be selected.',disabled:true"
               data-dojo-attach-event="onChange:onOutputPathChange"></div>
             <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-            <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+            <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name',disabled:true"></div>
           </div>
         </div>
 
@@ -125,8 +126,8 @@
       <div style="margin-top: 10px; text-align:center;">
         <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel
         </div>
-        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Reconstruct
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button" data-dojo-props="disabled:true">Reset</div>
+        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button" data-dojo-props="disabled:true">Reconstruct
         </div>
       </div>
     </div>
