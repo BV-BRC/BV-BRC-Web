@@ -51,9 +51,37 @@ define([
 
     },
 
+    addBacteriaTabs: function () {
+      this.viewer.addChild(this.phylogeny, 1);
+      this.viewer.addChild(this.amr, 4);
+      this.viewer.addChild(this.specialtyGenes, 7);
+      this.viewer.addChild(this.proteinFamilies, 8);
+      this.viewer.addChild(this.pathways, 9);
+      this.viewer.addChild(this.subsystems, 10);
+      this.viewer.addChild(this.transcriptomics, 11);
+      this.viewer.addChild(this.interactions, 12);
+    },
+
+    removeBacteriaTabs: function () {
+      this.viewer.removeChild(this.phylogeny);
+      this.viewer.removeChild(this.amr);
+      this.viewer.removeChild(this.specialtyGenes);
+      this.viewer.removeChild(this.proteinFamilies);
+      this.viewer.removeChild(this.pathways);
+      this.viewer.removeChild(this.subsystems);
+      this.viewer.removeChild(this.transcriptomics);
+      this.viewer.removeChild(this.interactions);
+    },
+
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
       // console.log("onSetTaxonomy: ", taxonomy);
       this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
+
+      if (this.taxonomy.lineage_names.includes('Bacteria')) {
+        this.addBacteriaTabs();
+      } else if (this.taxonomy.lineage_names.includes('Viruses')) {
+        this.removeBacteriaTabs();
+      }
 
       this.taxonomy = this.state.taxonomy = taxonomy;
       // this.set('state', lang.mixin({},this.state,{taxonomy:taxonomy}));
