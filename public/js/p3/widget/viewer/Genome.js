@@ -160,6 +160,17 @@ define([
       }));
     },
 
+    removeBacteriaTabs: function() {
+      this.viewer.removeChild(this.phylogeny);
+      this.viewer.removeChild(this.amr);
+      this.viewer.removeChild(this.specialtyGenes);
+      this.viewer.removeChild(this.proteinFamilies);
+      this.viewer.removeChild(this.pathways);
+      this.viewer.removeChild(this.subsystems);
+      this.viewer.removeChild(this.transcriptomics);
+      this.viewer.removeChild(this.interactions);
+    },
+
     _setGenomeAttr: function (genome) {
       this.state.genome = genome;
 
@@ -168,13 +179,16 @@ define([
 
       this._set('genome', genome);
 
-
       // check host genomes. remove the circular viewer tab if it's a host genome
       if (genome && genome.taxon_lineage_ids) {
         // console.log("this genome: ", genome);
         if (genome.taxon_lineage_ids.length > 1 && genome.taxon_lineage_ids[1] == '2759') {
           this.viewer.removeChild(this.circular);
         }
+      }
+
+      if(genome.taxon_lineage_names.includes('Viruses')) {
+        this.removeBacteriaTabs();
       }
 
       this.setActivePanelState();
