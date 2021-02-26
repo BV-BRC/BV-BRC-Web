@@ -118,11 +118,11 @@ define([
         let subq
 
         if (_self.state.groupBy == 'country') {
-          subq = '&in(aa_variant,(' + res.map(function(el) {
+          subq = '&in(aa_variant,(' + res.map((el) => {
             return encodeURIComponent('"' + el.aa_variant + '"')
           }).join(',') + '))'
         } else if (_self.state.groupBy == 'lineage') {
-          subq = '&in(country,(' + res.map(function(el) {
+          subq = '&in(country,(' + res.map((el) => {
             return encodeURIComponent('"' + el.country + '"')
           }).join(',') + '))'
         }
@@ -140,7 +140,6 @@ define([
         }), function (response) {
           _self.setData(response);
           _self._loaded = true;
-          return;
         });
       })
       return this._loadingDeferred;

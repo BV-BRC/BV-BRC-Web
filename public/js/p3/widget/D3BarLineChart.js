@@ -4,7 +4,7 @@ define([
   declare, lang, domConstruct, d3
 ) {
   return declare([], {
-    constructor: function(target, id, kwArgs) {
+    constructor: function (target, id, kwArgs) {
       this.node = domConstruct.place(`<div id=${id} class='bl_chart'></div>`, target, 'only');
 
       const defaultConfig = {
@@ -63,7 +63,7 @@ define([
         .style('text-anchor', 'middle')
         .text(this.config.line_axis_title)
     },
-    render: function(data) {
+    render: function (data) {
       if (data.length == 0) return;
 
       // cleanup
@@ -83,12 +83,12 @@ define([
           .tickFormat(d => d3.format('.2f')(d))
           .ticks(data.length))
         .selectAll('text')
-          .attr('transform', 'rotate(-30)')
-          .attr('text-anchor', 'end')
+        .attr('transform', 'rotate(-30)')
+        .attr('text-anchor', 'end')
 
       // Add Y axis - bar
       let y_bar = d3.scaleLinear()
-        .domain([0, d3.max(data, (d) => d.bar_count) ])
+        .domain([0, d3.max(data, (d) => d.bar_count)])
         .range([this.config.height - this.config.margin.bottom, this.config.margin.top]);
       this.canvas.append('g')
         .attr('transform', `translate(${this.config.margin.left},0)`)
@@ -96,8 +96,8 @@ define([
 
       // Add Y axis - line
       let y_line = d3.scaleLinear()
-      .domain([0, d3.max(data, (d) => d.line_count) ])
-      .range([this.config.height - this.config.margin.bottom, this.config.margin.top]);
+        .domain([0, d3.max(data, (d) => d.line_count)])
+        .range([this.config.height - this.config.margin.bottom, this.config.margin.top]);
       this.canvas.append('g')
         .attr('transform', `translate(${this.config.width - this.config.margin.right},0)`)
         .call(d3.axisRight(y_line));
@@ -141,9 +141,8 @@ define([
         .attr('stroke-miterlimit', 1)
         .attr('stroke-width', 3)
         .attr('d', d3.line()
-                     .x(d => x(d.year) + x.bandwidth() / 2)
-                     .y(d => y_line(d.line_count))
-                     (data)
+          .x(d => x(d.year) + x.bandwidth() / 2)
+          .y(d => y_line(d.line_count))(data)
         )
     }
   })

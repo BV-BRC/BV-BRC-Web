@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dojo/text!./templates/VariantLineageOverview.html',
-  'dijit/_WidgetBase', 'dijit/_Templated', './ExternalItemFormatter',
-
+  'dijit/_WidgetBase', 'dijit/_Templated', './ExternalItemFormatter'
 ], function (
   declare, domConstruct, Template,
   WidgetBase, Templated, ExternalItemFormatter

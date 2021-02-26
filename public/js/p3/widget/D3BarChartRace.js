@@ -1,14 +1,14 @@
 define([
   'dojo/_base/declare', 'dojo/dom-construct', 'd3.v5/d3'
-], function(
+], function (
   declare, domConstruct, d3
 ) {
   return declare([], {
     init: function (target, id) {
       // https://bl.ocks.org/jrzief/70f1f8a5d066a286da3a1e699823470f
-      this.node = domConstruct.place(`<div id=${id} class="bar_chart_r"></div>`, target, 'only');
+      this.node = domConstruct.place(`<div id=${id} class='bar_chart_r'></div>`, target, 'only');
       function colores(n) {
-        var palette = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+        var palette = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac'];
         return palette[n % palette.length];
       }
       this.config = {
@@ -27,25 +27,25 @@ define([
         tickDuration: 700,
         startYear: 2020.01,
         stopYear: 2021.01,
-        colorScheme: colores,
+        colorScheme: colores
       };
 
       this.canvas = d3.select(`#${id}`)
-                      .append('svg')
-                      .attr("width", this.config.width)
-                      .attr("height", this.config.height);
-      this.barPadding = (this.config.height - (this.config.margin.bottom + this.config.margin.top))/(this.config.top_n*5);
+        .append('svg')
+        .attr('width', this.config.width)
+        .attr('height', this.config.height);
+      this.barPadding = (this.config.height - (this.config.margin.bottom + this.config.margin.top)) / (this.config.top_n * 5);
 
-      this.halo = function(text, strokeWidth) {
-        text.select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
+      this.halo = function (text, strokeWidth) {
+        text.select(function () { return this.parentNode.insertBefore(this.cloneNode(true), this); })
           .style('fill', '#ffffff')
-          .style('stroke','#ffffff')
+          .style('stroke', '#ffffff')
           .style('stroke-width', strokeWidth)
           .style('stroke-linejoin', 'round')
           .style('opacity', 1);
       }
     },
-    setPeriod: function(start, end) {
+    setPeriod: function (start, end) {
       this.config.startYear = start;
       this.config.stopYear = end;
     },
@@ -53,34 +53,34 @@ define([
       let year = this.config.startYear;
       if (data.length == 0) return;
 
-      // console.log("rendering for ", this.config.startYear, this.config.stopYear)
+      // console.log('rendering for ', this.config.startYear, this.config.stopYear)
       data.forEach(d => {
-        d.value = +d.value,
-        d.lastValue = +d.lastValue,
-        d.value = isNaN(d.value) ? 0 : d.value,
+        d.value = +d.value;
+        d.lastValue = +d.lastValue;
+        d.value = isNaN(d.value) ? 0 : d.value;
         d.year = +d.year
       });
 
       // console.log(data);
 
       let yearSlice = data.filter(d => d.year == year && !isNaN(d.value))
-        .sort((a,b) => b.value - a.value)
+        .sort((a, b) => b.value - a.value)
         .slice(0, this.config.top_n);
 
-      yearSlice.forEach((d,i) => d.rank = i);
+      yearSlice.forEach((d, i) => d.rank = i);
 
       let x = d3.scaleLinear()
         .domain([0, d3.max(yearSlice, d => d.value)])
-        .range([this.config.margin.left, this.config.width-this.config.margin.right-65]);
+        .range([this.config.margin.left, this.config.width - this.config.margin.right - 65]);
 
       let y = d3.scaleLinear()
         .domain([this.config.top_n, 0])
-        .range([this.config.height-this.config.margin.bottom, this.config.margin.top]);
+        .range([this.config.height - this.config.margin.bottom, this.config.margin.top]);
 
       let xAxis = d3.axisTop()
         .scale(x)
-        .ticks(this.config.width > 500 ? 5:2)
-        .tickSize(-(this.config.height-this.config.margin.top-this.config.margin.bottom))
+        .ticks(this.config.width > 500 ? 5 : 2)
+        .tickSize(-(this.config.height - this.config.margin.top - this.config.margin.bottom))
         .tickFormat(d => d3.format(',')(d));
 
       // remove old
@@ -100,10 +100,10 @@ define([
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('x', x(0)+1)
-        .attr('width', d => x(d.value)-x(0)-1)
-        .attr('y', d => y(d.rank)+5)
-        .attr('height', y(1)-y(0)-this.barPadding)
+        .attr('x', x(0) + 1)
+        .attr('width', d => x(d.value) - x(0) - 1)
+        .attr('y', d => y(d.rank) + 5)
+        .attr('height', y(1) - y(0) - this.barPadding)
         .style('fill', (d, i) => this.config.colorScheme(i))
 
       this.canvas.selectAll('text.label')
@@ -112,7 +112,7 @@ define([
         .append('text')
         .attr('class', 'label')
         .attr('x', d => x(d.value) + this.config.valueOffset)
-        .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
+        .attr('y', d => y(d.rank) + 5 + ((y(1) - y(0)) / 2) + 1)
         .style('text-anchor', 'end')
         .text(d => d.value);
 
@@ -122,7 +122,7 @@ define([
         .append('text')
         .attr('class', 'valueLabel')
         .attr('x', d => x(d.value) + this.config.valueLableOffset)
-        .attr('y', d => y(d.rank) + 5 + ((y(1)-y(0))/2) + 1)
+        .attr('y', d => y(d.rank) + 5 + ((y(1) - y(0)) / 2) + 1)
         .text(d => d.name)
 
       let yearText = this.canvas.append('text')
@@ -136,12 +136,12 @@ define([
       var svg = this.canvas;
       let ticker = d3.interval(e => {
         yearSlice = data.filter(d => d.year == year && !isNaN(d.value))
-          .sort((a,b) => b.value - a.value)
+          .sort((a, b) => b.value - a.value)
           .slice(0, this.config.top_n);
 
-        yearSlice.forEach((d,i) => d.rank = i);
+        yearSlice.forEach((d, i) => d.rank = i);
 
-        //console.log('IntervalYear: ', yearSlice);
+        // console.log('IntervalYear: ', yearSlice);
 
         x.domain([0, d3.max(yearSlice, d => d.value)]);
 
@@ -154,67 +154,66 @@ define([
         let bars = svg.selectAll('.bar').data(yearSlice, d => d.name);
 
         bars
-        .enter()
-        .append('rect')
-        .attr('class', d => `bar ${d.name.replace(/\s/g,'_')}`)
-        .attr('x', x(0)+1)
-        .attr('width', d => x(d.value)-x(0)-1)
-        .attr('y', d => y(this.config.top_n+1)+5)
-        .attr('height', y(1)-y(0)-this.barPadding)
-        .style('fill', (d, i) => this.config.colorScheme(i))
-        .transition()
+          .enter()
+          .append('rect')
+          .attr('class', d => `bar ${d.name.replace(/\s/g, '_')}`)
+          .attr('x', x(0) + 1)
+          .attr('width', d => x(d.value) - x(0) - 1)
+          .attr('y', d => y(this.config.top_n + 1) + 5)
+          .attr('height', y(1) - y(0) - this.barPadding)
+          .style('fill', (d, i) => this.config.colorScheme(i))
+          .transition()
           .duration(this.config.tickDuration)
           .ease(d3.easeLinear)
-          .attr('y', d => y(d.rank)+5);
+          .attr('y', d => y(d.rank) + 5);
 
         bars
-        .transition()
+          .transition()
           .duration(this.config.tickDuration)
           .ease(d3.easeLinear)
-          .attr('width', d => x(d.value)-x(0)-1)
-          .attr('y', d => y(d.rank)+5);
+          .attr('width', d => x(d.value) - x(0) - 1)
+          .attr('y', d => y(d.rank) + 5);
 
         bars
-        .exit()
-        .transition()
+          .exit()
+          .transition()
           .duration(this.config.tickDuration)
           .ease(d3.easeLinear)
-          .attr('width', d => x(d.value)-x(0)-1)
-          .attr('y', d => y(this.config.top_n+1)+5)
+          .attr('width', d => x(d.value) - x(0) - 1)
+          .attr('y', d => y(this.config.top_n + 1) + 5)
           .remove();
 
         let labels = svg.selectAll('.label')
           .data(yearSlice, d => d.name);
 
         labels
-        .enter()
-        .append('text')
-        .attr('class', 'label')
-        .attr('x', d => x(d.value) + this.config.valueOffset)
-        .attr('y', d => y(this.config.top_n+1)+5+((y(1)-y(0))/2))
-        .style('text-anchor', 'end')
-        // .text(d => d.value)
-        .transition()
+          .enter()
+          .append('text')
+          .attr('class', 'label')
+          .attr('x', d => x(d.value) + this.config.valueOffset)
+          .attr('y', d => y(this.config.top_n + 1) + 5 + ((y(1) - y(0)) / 2))
+          .style('text-anchor', 'end')
+          .transition()
           .duration(this.config.tickDuration)
           .ease(d3.easeLinear)
-          .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
+          .attr('y', d => y(d.rank) + 5 + ((y(1) - y(0)) / 2) + 1);
 
         labels
           .transition()
           .duration(this.config.tickDuration)
-            .ease(d3.easeLinear)
-            .attr('x', d => x(d.value) + this.config.valueOffset)
-            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
-            .text(d => d3.format('.4f')(d.value))
+          .ease(d3.easeLinear)
+          .attr('x', d => x(d.value) + this.config.valueOffset)
+          .attr('y', d => y(d.rank) + 5 + ((y(1) - y(0)) / 2) + 1)
+          .text(d => d3.format('.4f')(d.value))
 
         labels
           .exit()
           .transition()
-            .duration(this.config.tickDuration)
-            .ease(d3.easeLinear)
-            .attr('x', d => x(d.value) + this.config.valueOffset)
-            .attr('y', d => y(this.config.top_n+1)+5)
-            .remove();
+          .duration(this.config.tickDuration)
+          .ease(d3.easeLinear)
+          .attr('x', d => x(d.value) + this.config.valueOffset)
+          .attr('y', d => y(this.config.top_n + 1) + 5)
+          .remove();
 
         let valueLabels = svg.selectAll('.valueLabel').data(yearSlice, d => d.name);
         valueLabels
@@ -222,28 +221,28 @@ define([
           .append('text')
           .attr('class', 'valueLabel')
           .attr('x', d => x(d.value) + this.config.valueLableOffset)
-          .attr('y', d => y(this.config.top_n+1)+5)
+          .attr('y', d => y(this.config.top_n + 1) + 5)
           .text(d => d.name)
           .transition()
-            .duration(this.config.tickDuration)
-            .ease(d3.easeLinear)
-            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1);
+          .duration(this.config.tickDuration)
+          .ease(d3.easeLinear)
+          .attr('y', d => y(d.rank) + 5 + ((y(1) - y(0)) / 2) + 1);
 
         valueLabels
           .transition()
-            .duration(this.config.tickDuration)
-            .ease(d3.easeLinear)
-            .attr('x', d => x(d.value) + this.config.valueLableOffset)
-            .attr('y', d => y(d.rank)+5+((y(1)-y(0))/2)+1)
+          .duration(this.config.tickDuration)
+          .ease(d3.easeLinear)
+          .attr('x', d => x(d.value) + this.config.valueLableOffset)
+          .attr('y', d => y(d.rank) + 5 + ((y(1) - y(0)) / 2) + 1)
 
         valueLabels
           .exit()
           .transition()
-            .duration(this.config.tickDuration)
-            .ease(d3.easeLinear)
-            .attr('x', d => x(d.value) + this.config.valueLableOffset)
-            .attr('y', d => y(this.config.top_n+1)+5)
-            .remove();
+          .duration(this.config.tickDuration)
+          .ease(d3.easeLinear)
+          .attr('x', d => x(d.value) + this.config.valueLableOffset)
+          .attr('y', d => y(this.config.top_n + 1) + 5)
+          .remove();
 
         yearText.html(year || '');
 
@@ -255,7 +254,7 @@ define([
         } else {
           year = d3.format('.2f')((+year) + 1 - 0.11);
         }
-        // console.log("draw year", year)
+        // console.log('draw year', year)
       }, this.config.tickPause);
 
     }

@@ -6,6 +6,7 @@ dump.rdb
 npm-debug.log
 package-lock.json
 public/js/release/build-report.txt
+public/js/release/
 .idea/
 .vscode/
 public/video/

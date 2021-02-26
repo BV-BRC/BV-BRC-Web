@@ -17,7 +17,7 @@ define([
       this._set('state', state);
       // this.set('properties', state.lineage_id || 'B.1.1.7');
     },
-    _setPropertiesAttr: function(lineage_id) {
+    _setPropertiesAttr: function (lineage_id) {
       domConstruct.empty(this.lineagePropertiesNode);
       var table = domConstruct.create('table', { 'class': 'p3basic striped' }, this.variantPropertiesNode);
       var tbody = domConstruct.create('tbody', {}, table);
@@ -26,9 +26,9 @@ define([
       Object.entries(this.data[lineage_id]).forEach(([key, value]) => {
         htr = domConstruct.create('tr', {}, tbody);
         domConstruct.create('th', { innerHTML: key, scope: 'row', style: 'width:25%;font-weight:bold' }, htr);
-        if (typeof(value) != 'string') {
+        if (typeof (value) != 'string') {
           var inner = ['<ol>'];
-          value.forEach(function(el) {
+          value.forEach(function (el) {
             inner.push(`<li>${el}</li>`);
           })
           inner.push('</ol>');
@@ -39,18 +39,17 @@ define([
         }
       })
     },
-    _buildSelectBox: function() {
+    _buildSelectBox: function () {
 
       var select_lineage = new Select({
         name: 'selectVoC',
         id: 'selectVoC',
-        options: [].map((el) => {return {'label': el, 'value': el}}),
+        options: [].map((el) => { return { 'label': el, 'value': el } }),
         style: 'width: 200px; margin: 5px 0'
       });
 
       var self = this;
-      select_lineage.on('change', function() {
-        var selected = this.get("value");
+      select_lineage.on('change', function (selected) {
         self.set('properties', selected);
       });
       var label_select_lineage = domConstruct.create('label', {
@@ -68,6 +67,6 @@ define([
       this._buildSelectBox()
     },
     data: {
-    },
+    }
   });
 });
