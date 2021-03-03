@@ -48,6 +48,7 @@ app.use(function (req, res, next) {
     shockServiceURL: config.get('shockServiceURL'), // for dashboard
     workspaceServiceURL: config.get('workspaceServiceURL'),
     appServiceURL: config.get('appServiceURL'),
+    appServiceConf: config.get('appServiceConf'),
     dataServiceURL: config.get('dataServiceURL'),
     homologyServiceURL: config.get('homologyServiceURL'),
     genomedistanceServiceURL: config.get('genomedistanceServiceURL'),
