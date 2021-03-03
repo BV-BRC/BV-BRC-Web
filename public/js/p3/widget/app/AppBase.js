@@ -7,7 +7,7 @@ define([
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
-  Template, FormMixin, WorkspaceObjectSelector, Topic, lang,
+  LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
 ) {
