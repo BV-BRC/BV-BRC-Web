@@ -18,15 +18,15 @@ define([
     templateString: Template,
     applicationName: 'FeatureTree',
     requireAuth: true,
-    applicationLabel: 'Feature Tree',
-    applicationDescription: 'The Feature Tree Service is being tested.',
+    applicationLabel: 'Gene Tree',
+    applicationDescription: 'The Gene Tree Service is being tested.',
     applicationHelp: 'user_guides/services/proteome_comparison_service.html',
     tutorialLink: 'tutorial/proteome_comparison/proteome_comparison.html',
     videoLink: '/videos/proteome_comparison_service.html',
-    pageTitle: 'Feature Tree',
+    pageTitle: 'Gene Tree',
     defaultPath: '',
-    startingRows: 1,
-    maxGenomes: 1,
+    startingRows: 3,
+    maxGenomes: 2,
 
     constructor: function () {
       this._selfSet = true;
@@ -200,6 +200,11 @@ define([
     },
 
     onAlphabetChanged: function () {
+      while (this.genomeTable.rows.length > 0) {
+        this.genomeTable.deleteRow(-1);
+      }
+      this.emptyTable(this.genomeTable, this.startingRows);
+
       this.protein_model.options = [];
       if (this.dna.checked) {
         var newOptions = [{value: "HKY85", label: "HKY85", selected: true, disabled: false},
@@ -210,6 +215,8 @@ define([
                           {value: "TN93", label: "TN93", selected: true, disabled: false},
                           {value: "GTR", label: "GTR", selected: true, disabled: false}];        
         this.protein_model.set("options", newOptions);
+        this.user_genomes_fasta.set("type", "aligned_dna_fasta");
+        this.user_genomes_featuregroup.set("type", ["feature_group", "feature_dna_fasta"]);
       }
       else {
         var newOptions = [{value: "DAYHOFF", label: "DAYHOFF", selected: true, disabled: false},
@@ -228,6 +235,8 @@ define([
                           {value: "HIVW", label: "HIVW", selected: false, disabled: false},
                           {value: "AB", label: "AB", selected: false, disabled: false}];
         this.protein_model.set("options", newOptions);
+        this.user_genomes_fasta.set("type", "aligned_protein_fasta");
+        this.user_genomes_featuregroup.set("type", ["feature_group", "feature_protein_fasta"]);
       }
       this.protein_model.reset();
     },
@@ -580,6 +589,8 @@ define([
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.recipe = values.recipe;
       seqcomp_values.protein_model = values.protein_model;
+      seqcomp_values.trim_threshold = values.trim_threshold;
+      seqcomp_values.gap_threshold = values.gap_threshold;
       seqcomp_values.sequence_source = this.sequenceSource;
 
       //seqcomp_values.genome_ids = genomeIds;

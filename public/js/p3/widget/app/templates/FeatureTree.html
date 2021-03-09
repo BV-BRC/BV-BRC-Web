@@ -29,7 +29,7 @@
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
-                        <label class="appBoxLabel">Feature Tree</label>
+                        <label class="appBoxLabel">Gene Tree</label>
                         <div name="comparison-genomes-selection" class="infobox iconbox infobutton dialoginfo">
                           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                         </div>
@@ -38,17 +38,23 @@
                       <div class="appsublabel">Choose fasta file or features for tree.</div>
                     </div>
                     <div class="appRow">
+                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna" name="alphabet" value="dna" checked data-dojo-attach-event="onChange:onAlphabetChanged"/>
+                      <label for="radio1" style="font-size:8pt">DNA</label>
+                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="protein" name="alphabet" value="protein" />
+                      <label for="radio2" style="font-size:8pt">Protein</label>
+                    </div>
+                    <div class="appRow">
                       <!-- <label>Select genome</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight="200" required="false" data-dojo-attach-point="comp_genome_id"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
                       <br> -->
                       <label>Select DNA or protein fasta file</label><br>
-                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_protein_fasta','aligned_dna_fasta'],multi:false,promptMessage:'Select or Upload DNA or protein fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_dna_fasta'],multi:false,promptMessage:'Select or Upload DNA or protein fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
                       </div>
                       <br>
                       <label>or select feature group</label><br>
-                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group','feature_dna_fasta'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i></div>
                       <br>
       <!--                 <label>And/or select genome group</label><br>
@@ -77,13 +83,39 @@
                         </div>
                       </div>
                     </div>
-                    <div class="appRow">
-                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna" name="alphabet" value="dna" checked data-dojo-attach-event="onChange:onAlphabetChanged"/>
-                      <label for="radio1" style="font-size:8pt">DNA</label>
-                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="protein" name="alphabet" value="protein" />
-                      <label for="radio2" style="font-size:8pt">Protein</label>
-                    </div>
                     <br>
+                    <div class="appRow">
+                      <label class="paramlabel">Trim Ends of Alignment Threshold</label><br>
+                      <select data-dojo-type="dijit/form/Select" name="trim_threshold" style="width:50px" data-dojo-attach-point="trim_threshold" required="true">
+                        <option value="0">0</option>
+                        <option value=".1">.1</option>
+                        <option value=".2">.2</option>
+                        <option value=".3">.3</option>
+                        <option value=".4">.4</option>
+                        <option value=".5">.5</option>
+                        <option value=".6">.6</option>
+                        <option value=".7">.7</option>
+                        <option value=".8">.8</option>
+                        <option value=".9">.9</option>
+                        <option value="1.0">1.0</option>
+                      </select>
+                    </div>
+                    <div class="appRow">
+                      <label class="paramlabel">Remove Gappy Sequences Threshold</label><br>
+                      <select data-dojo-type="dijit/form/Select" name="gap_threshold" style="width:50px" data-dojo-attach-point="gap_threshold" required="true">
+                        <option value="0">0</option>
+                        <option value=".1">.1</option>
+                        <option value=".2">.2</option>
+                        <option value=".3">.3</option>
+                        <option value=".4">.4</option>
+                        <option value=".5">.5</option>
+                        <option value=".6">.6</option>
+                        <option value=".7">.7</option>
+                        <option value=".8">.8</option>
+                        <option value=".9">.9</option>
+                        <option value="1.0">1.0</option>
+                      </select>
+                    </div>
                     <div class="appRow">
                       <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="recipeRAxML" name="recipe" value="RAxML" checked />
                       <label for="radio1" style="font-size:8pt">RAxML</label>
