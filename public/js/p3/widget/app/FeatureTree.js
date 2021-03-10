@@ -26,7 +26,7 @@ define([
     pageTitle: 'Gene Tree',
     defaultPath: '',
     startingRows: 3,
-    maxGenomes: 2,
+    maxGenomes: 6,
 
     constructor: function () {
       this._selfSet = true;
@@ -37,6 +37,7 @@ define([
       this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
       this.userGenomeList = [];
       this.numref = 0;
+      this.fastaNamesAndTypes = [];
     },
 
     startup: function () {
@@ -200,10 +201,12 @@ define([
     },
 
     onAlphabetChanged: function () {
+      // can't mix DNA and Protein file types, so clear the file table and the array of file/filetypes
       while (this.genomeTable.rows.length > 0) {
         this.genomeTable.deleteRow(-1);
       }
       this.emptyTable(this.genomeTable, this.startingRows);
+      this.fastaNamesAndTypes = [];
 
       this.protein_model.options = [];
       if (this.dna.checked) {
@@ -384,6 +387,12 @@ define([
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = "ws";
+
+        var path = lrec[this.fastaToAttachPt];
+        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+          var fileType = res.metadata.type;
+          this.fastaNamesAndTypes.push ({"filename" : path, "type" : fileType});
+        }))
       }
       // console.log(lrec);
     },
@@ -419,6 +428,13 @@ define([
         }));
         this.increaseGenome('feature_group', newGenomeIds);
         this.sequenceSource = "feature_group";
+
+        var path = lrec[this.featureGroupToAttachPt];
+        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+          var fileType = res.metadata.type;
+          this.fastaNamesAndTypes.push ({"filename" : path, "type" : fileType});
+        }))
+
       }
       // console.log(lrec);
     },
@@ -591,16 +607,17 @@ define([
       seqcomp_values.protein_model = values.protein_model;
       seqcomp_values.trim_threshold = values.trim_threshold;
       seqcomp_values.gap_threshold = values.gap_threshold;
-      seqcomp_values.sequence_source = this.sequenceSource;
+      //seqcomp_values.sequence_source = this.sequenceSource;
 
       //seqcomp_values.genome_ids = genomeIds;
-      if (userGenomes.length > 0) {
-        seqcomp_values.sequences = userGenomes[0];
-      }
+      //if (userGenomes.length > 0) {
+      //  seqcomp_values.sequences = userGenomes[0];
+      //}
 
-      if (featureGroups.length > 0) {
-        seqcomp_values.sequences = featureGroups[0];
-      }
+      //if (featureGroups.length > 0) {
+      //  seqcomp_values.sequences = featureGroups[0];
+     // }
+      seqcomp_values.sequences = this.fastaNamesAndTypes;
 
       /* if (refType == 'ref_genome_id') {
         refIndex = 1;
