@@ -1,4 +1,5 @@
-<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
@@ -7,17 +8,23 @@
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
         <div class="infobox iconbox tutorialButton tutorialInfo">
-          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+              title="click to open tutorial"></i></a>
         </div>
         <div class="infobox iconbox videoButton videoInfo">
-          <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
+          <a href="${docsServiceURL}${videoLink}" target="_blank"><i class="fa icon-play-circle fa-1x"
+              title="click to open the video tutorial"></i></a>
         </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>, and <a href="${docsServiceURL}${videoLink}" target="_blank" >Instructional Video</a>.</p>
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">${applicationLabel} Service User Guide</a>, <a href="${docsServiceURL}${tutorialLink}"
+          target="_blank">Tutorial</a>, and <a href="${docsServiceURL}${videoLink}" target="_blank">Instructional
+          Video</a>.</p>
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:20}," />
+        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes"
+          data-dojo-props="constraints:{min:1,max:256}," />
       </div>
       <table class="assemblyblocks">
         <tr>
@@ -31,103 +38,130 @@
                         <label class="appBoxLabel">Parameters</label>
                       </div>
                     </div>
-		              <div class="appRow">
-		              <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
-		                <label class="paramlabel">Aligner</label><br>
-		                <select data-dojo-type="dijit/form/Select" name="aligner" data-dojo-attach-point="aligner" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'An aligner must be chosen',trim:true,placeHolder:'MySubFolder'">
-		                  <option value="Muscle" selected="selected">Muscle</option>
-		                </select>
-		              </div>
-		              <div class="appRowSegment" style="text-align:left; width:20%">
-		                <label class="paramlabel">Variation</label><br>
-		                <select data-dojo-type="dijit/form/Select" name="variation" data-dojo-attach-point="variation" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Choose if doing variation analysis.',trim:true,placeHolder:'MySubFolder'">
-		                  <option value="True" selected="selected">True</option>
-		                  <option value="False">False</option>
-		                </select>
-		              </div>
-		              </div>
                     <div class="appRow">
-                      <label class="paramlabel">Output Folder</label><br>
-                      <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                      <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                        <label class="paramlabel">Aligner</label><br>
+                        <select data-dojo-type="dijit/form/Select" name="aligner" data-dojo-attach-point="aligner"
+                          style="width:100%" required="true"
+                          data-dojo-props="intermediateChanges:true,missingMessage:'An aligner must be chosen',trim:true,placeHolder:'MySubFolder'">
+                          <option value="Muscle" selected="selected">Muscle</option>
+                        </select>
+                      </div>
                     </div>
                     <div class="appRow">
-                      <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                      <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna"
+                        name="alphabet" value="dna" checked data-dojo-attach-event="onChange:onAlphabetChanged" />
+                      <label for="radio1" style="font-size:8pt">DNA</label>
+                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="protein"
+                        name="alphabet" value="protein" />
+                      <label for="radio2" style="font-size:8pt">Protein</label>
+                    </div>
+                    <div class="appRow">
+                      <label class="paramlabel">Output Folder</label><br>
+                      <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                        data-dojo-attach-point="output_path" required="true"
+                        data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
+                        data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                    </div>
+                    <div class="appRow">
+                      <label class="paramlabel">Output Name</label><span class="charError"
+                        style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                      <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                        data-dojo-attach-event="onChange:checkOutputName" name="output_file"
+                        data-dojo-attach-point="output_file" style="width:85%" required="true"
+                        data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                      </div>
                     </div>
                   </div>
                 </td>
               </tr>
-                <tr>
+              <tr>
                 <td>
+
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
-                        <label class="appBoxLabel">Text Input</label>
+                        <label class="appBoxLabel">Text Input</label><em style="color:red;"
+                          data-dojo-attach-point="input_validation_message"></em>
                       </div>
                     </div>
-            <textarea name="fasta_keyboard_input"
-                      style="width:96%; height:175px; margin-left:5px; font-family: monospace; font-size:12px"
-                      data-dojo-attach-point="fasta_keyboard_input"
-                      data-dojo-type="dijit/form/Textarea"
-                      data-dojo-props="rows:20, placeholder:'Enter fasta records of sequences to align.', intermediateChanges:false"
-                      data-dojo-attach-event="onChange:onChangeSequence"></textarea>
-            <div class="warning" data-dojo-attach-point="sequence_message"></div>
-            </div>
-            </tr>
-            </td>
-          </table>
+                    <textarea name="fasta_keyboard_input"
+                      style="width:96%; height:350px; margin-left:5px; font-family: monospace; font-size:12px; max-height:500px"
+                      data-dojo-attach-point="fasta_keyboard_input" data-dojo-type="dijit/form/Textarea"
+                      data-dojo-props="rows:20, placeholder:'Enter fasta records of sequences to align.', intermediateChanges:false, trim:true"
+                      data-dojo-attach-event="onChange:onChangeSequence, onBlur:validateFasta"></textarea>
+                    <div class="warning" data-dojo-attach-point="sequence_message"></div>
+                  </div>
+
+              </tr>
           </td>
-          <td>
-            <div class="appBox appShadow">
-              <div class="headerrow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">Comparison Sequences</label>
-                </div>
-                <br>
-                <div class="appsublabel">Add sequences.  Add up to 20 genomes to compare (use plus buttons to add).</div>
-              </div>
-              <div class="appRow">
-                <label>Select genome</label><br>
-                <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight="200" required="false" data-dojo-attach-point="comp_genome_id"></div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
-                <br>
-                <label>And/or select contigs fasta file</label><br>
-                <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_fasta" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload fasta file to your workspace for alignment.',missingMessage:'User file is optional.', placeHolder:'Optional'"></div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
-                </div>
-                <br>
-                <label>And/or select feature group</label><br>
-                <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i></div>
-                <br>
-                <label>And/or select genome group</label><br>
-                <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup" required="false" data-dojo-attach-point="user_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for alignment.',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
-                <br>
-              </div>
-              <div class="appRow">
-                <label> selected objects table</label>
-              </div>
-              <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
-                <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable" style="margin:0 0 0 10px; width:100%;">
-                  <tbody data-dojo-attach-point="genomeTableBody">
-                  </tbody>
-                </table>
-              </div>
+      </table>
+      </td>
+      <td>
+
+        <div class="appBox appShadow">
+          <div class="headerrow">
+            <div style="width:85%;display:inline-block;">
+              <label class="appBoxLabel">Comparison Sequences</label>
             </div>
-          </td>
-        </tr>
+            <br>
+            <div class="appsublabel">Add sequences (use plus buttons to add).</div>
+          </div>
+          <div class="appRow">
+            <label>Select DNA or protein fasta file</label><br>
+            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="user_genomes_fasta" required="false" data-dojo-attach-point="user_genomes_fasta"
+              data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta'],multi:false,promptMessage:'Select or Upload fasta file to your workspace for alignment.',missingMessage:'User file is optional.', placeHolder:'Optional'">
+            </div>
+            <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta"
+                class="fa icon-plus-circle fa-lg"></i>
+            </div>
+            <br>
+            <label>And/or select feature group</label><br>
+            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="user_genomes_featuregroup" required="false" data-dojo-attach-point="user_genomes_featuregroup"
+              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is optional.', placeHolder:'Optional'">
+            </div>
+            <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup"
+                class="fa icon-plus-circle fa-lg"></i></div>
+            <br>
+            <label>Or select an alignment file</label><br>
+            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="user_genomes_alignment" required="false" data-dojo-attach-point="user_genomes_alignment"
+              data-dojo-props="type:['aligned_protein_fasta', 'aligned_dna_fasta'],multi:false,promptMessage:'Select an alignment file from your workspace for analysis.',missingMessage:'Alignment file is optional.', placeHolder:'Optional'">
+            </div>
+            <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddAlignment"
+                class="fa icon-plus-circle fa-lg"></i></div>
+            <br>
+          </div>
+          <div class="appRow">
+            <label> Selected objects table</label>
+          </div>
+          <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
+            <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable"
+              style="margin:0 0 0 10px; width:100%;">
+              <tbody data-dojo-attach-point="genomeTableBody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </td>
+      </tr>
       </table>
     </div>
   </div>
   <div class="appSubmissionArea">
-    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+      style="margin-top:10px; text-align:center;">
       Aligning sequences
     </div>
-    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-      Error Submitting Job.  There need to be at least two sequences and no more than 20 genomes.
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+      style="margin-top:10px; text-align:center;">
+      Error Submitting Job. Check the input.
     </div>
-    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+      style="margin-top:10px; text-align:center;">
       Multiple Sequence Alignment should be finished shortly. Check workspace for results.
     </div>
     <div style="margin-top: 10px; text-align:center;">
