@@ -161,6 +161,10 @@ define([
           return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
         });
         this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; ' + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', { feature: feature });
+
+        if(taxon_lineage_names.includes('Viruses')) {
+          this.removeBacteriaTabs();
+        }
       }));
 
       var content = [];
@@ -209,6 +213,12 @@ define([
           this.set('feature', feature);
         }
       }
+    },
+
+    removeBacteriaTabs: function () {
+      this.viewer.removeChild(this.compareRegionViewer);
+      this.viewer.removeChild(this.transcriptomics);
+      this.viewer.removeChild(this.interactions);
     },
 
     _setFeatureAttr: function (feature) {

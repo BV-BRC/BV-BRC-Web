@@ -11,9 +11,7 @@ const defaults = {
   'sessionTTL': 2628000000,
   'workspaceServiceURL': 'https://p3.theseed.org/services/Workspace',
   'appServiceURL': 'https://p3.theseed.org/services/app_service',
-  appServiceConf: {
-    container_id: 'bvbrc-build-15'
-  },
+  appBaseURL: 'https://www.patricbrc.org',
   'homologyServiceURL': 'https://p3.theseed.org/services/homology_service',
   'genomedistanceServiceURL': 'https://p3.theseed.org/services/minhash_service',
   'compareregionServiceURL': 'https://p3.theseed.org/services/compare_regions',

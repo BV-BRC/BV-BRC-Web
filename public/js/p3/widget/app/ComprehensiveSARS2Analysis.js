@@ -162,11 +162,6 @@ define([
       // don't index genomes for now
       values.skip_indexing = true;
 
-      // container_id from config
-      if (window.App.appServiceConf && window.App.appServiceConf.container_id) {
-        values.container_id = window.App.appServiceConf.container_id;
-      }
-
       return values;
     },
 

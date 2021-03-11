@@ -398,7 +398,6 @@ define([
         td.innerHTML = "<div class='libraryrow'>" + this.makeFastaName(type, 'fasta') + '</div>';
         domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-
         if (this.addedGenomes < this.startingRows) {
           this.genomeTable.deleteRow(-1);
         }
