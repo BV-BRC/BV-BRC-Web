@@ -539,6 +539,13 @@ define([
       }];
 
       section.Location = [{
+        name: 'Sequence ID',
+        text: 'sequence_id',
+        link: function (obj) {
+          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
+        },
+        mini: true
+      }, {
         name: 'Accession',
         text: 'accession'
       }, {
@@ -560,6 +567,9 @@ define([
         name: 'Location',
         text: 'location',
         mini: true
+      }, {
+        name: 'Segments',
+        text: 'segments',
       }];
 
       section.Sequences = [{
@@ -590,6 +600,12 @@ define([
         name: 'Last Modified',
         text: 'date_modified',
         type: 'date'
+      }, {
+        name: 'Classifier Score',
+        text: 'classifier_score',
+      }, {
+        name: 'Classifier Round',
+        text: 'classifier_round',
       }];
 
       var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
@@ -850,10 +866,16 @@ define([
         text: 'taxon_id',
         link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
+        name: 'Taxonomy Name',
+        text: 'taxonomy_name',
+      }, {
         name: 'Rank',
         text: 'taxon_rank'
       }, {
-        name: 'Lineage',
+        name: 'Other Names',
+        text: 'other_names',
+      }, {
+        name: 'Lineage Names',
         text: 'lineage_names',
         link: function (obj) {
           var ids = obj.lineage_ids;
@@ -862,8 +884,23 @@ define([
           }).join(', ');
         }
       }, {
+        name: 'Lineage IDs',
+        text: 'lineage_ids',
+      }, {
         name: 'Genetic Code',
         text: 'genetic_code'
+      }, {
+        name: 'Parent ID',
+        text: 'parent_id',
+      }, {
+        name: 'Division',
+        text: 'division',
+      }, {
+        name: 'Description',
+        text: 'description',
+      }, {
+        name: 'Genomes',
+        text: 'genomes',
       }];
 
       var div = domConstruct.create('div');
@@ -1110,6 +1147,14 @@ define([
       }, {
         name: 'Release Date',
         text: 'release_date'
+      }, {
+        name: 'Insert Date',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Last Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');
