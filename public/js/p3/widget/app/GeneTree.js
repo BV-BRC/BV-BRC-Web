@@ -196,36 +196,80 @@ define([
 
       this.protein_model.options = [];
       if (this.dna.checked) {
-        var newOptions = [{value: "HKY85", label: "HKY85", selected: true, disabled: false},
-                          {value: "JC69", label: "JC69", selected: true, disabled: false},
-                          {value: "K80", label: "K80", selected: true, disabled: false},
-                          {value: "F81", label: "F81", selected: true, disabled: false},
-                          {value: "F84", label: "F84", selected: true, disabled: false},
-                          {value: "TN93", label: "TN93", selected: true, disabled: false},
-                          {value: "GTR", label: "GTR", selected: true, disabled: false}];        
-        this.protein_model.set("options", newOptions);
-        this.user_genomes_fasta.set("type", "aligned_dna_fasta");
-        this.user_genomes_featuregroup.set("type", ["feature_group", "feature_dna_fasta"]);
+        var newOptions = [{
+          value: 'HKY85', label: 'HKY85', selected: true, disabled: false
+        },
+        {
+          value: 'JC69', label: 'JC69', selected: true, disabled: false
+        },
+        {
+          value: 'K80', label: 'K80', selected: true, disabled: false
+        },
+        {
+          value: 'F81', label: 'F81', selected: true, disabled: false
+        },
+        {
+          value: 'F84', label: 'F84', selected: true, disabled: false
+        },
+        {
+          value: 'TN93', label: 'TN93', selected: true, disabled: false
+        },
+        {
+          value: 'GTR', label: 'GTR', selected: true, disabled: false
+        }];
+        this.protein_model.set('options', newOptions);
+        this.user_genomes_fasta.set('type', 'aligned_dna_fasta');
+        this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_dna_fasta']);
       }
       else {
-        var newOptions = [{value: "DAYHOFF", label: "DAYHOFF", selected: true, disabled: false},
-                          {value: "DCMUT", label: "DCMUT", selected: false, disabled: false},
-                          {value: "JTT", label: "JTT", selected: false, disabled: false},
-                          {value: "MTREV", label: "MTREV", selected: false, disabled: false},
-                          {value: "WAG", label: "WAG", selected: false, disabled: false},
-                          {value: "RTREV", label: "RTREV", selected: false, disabled: false},
-                          {value: "CPREV", label: "CPREV", selected: false, disabled: false},
-                          {value: "VT", label: "VT", selected: false, disabled: false},
-                          {value: "BLOSUM62", label: "BLOSUM62", selected: false, disabled: false},
-                          {value: "MTMAM", label: "MTMAM", selected: false, disabled: false},
-                          {value: "LG", label: "LG", selected: false, disabled: false},
-                          {value: "MTART", label: "MTART", selected: false, disabled: false},
-                          {value: "HIVB", label: "HIVB", selected: false, disabled: false},
-                          {value: "HIVW", label: "HIVW", selected: false, disabled: false},
-                          {value: "AB", label: "AB", selected: false, disabled: false}];
-        this.protein_model.set("options", newOptions);
-        this.user_genomes_fasta.set("type", "aligned_protein_fasta");
-        this.user_genomes_featuregroup.set("type", ["feature_group", "feature_protein_fasta"]);
+        var newOptions = [{
+          value: 'DAYHOFF', label: 'DAYHOFF', selected: true, disabled: false
+        },
+        {
+          value: 'DCMUT', label: 'DCMUT', selected: false, disabled: false
+        },
+        {
+          value: 'JTT', label: 'JTT', selected: false, disabled: false
+        },
+        {
+          value: 'MTREV', label: 'MTREV', selected: false, disabled: false
+        },
+        {
+          value: 'WAG', label: 'WAG', selected: false, disabled: false
+        },
+        {
+          value: 'RTREV', label: 'RTREV', selected: false, disabled: false
+        },
+        {
+          value: 'CPREV', label: 'CPREV', selected: false, disabled: false
+        },
+        {
+          value: 'VT', label: 'VT', selected: false, disabled: false
+        },
+        {
+          value: 'BLOSUM62', label: 'BLOSUM62', selected: false, disabled: false
+        },
+        {
+          value: 'MTMAM', label: 'MTMAM', selected: false, disabled: false
+        },
+        {
+          value: 'LG', label: 'LG', selected: false, disabled: false
+        },
+        {
+          value: 'MTART', label: 'MTART', selected: false, disabled: false
+        },
+        {
+          value: 'HIVB', label: 'HIVB', selected: false, disabled: false
+        },
+        {
+          value: 'HIVW', label: 'HIVW', selected: false, disabled: false
+        },
+        {
+          value: 'AB', label: 'AB', selected: false, disabled: false
+        }];
+        this.protein_model.set('options', newOptions);
+        this.user_genomes_fasta.set('type', 'aligned_protein_fasta');
+        this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_protein_fasta']);
       }
       this.protein_model.reset();
     },
@@ -372,12 +416,12 @@ define([
           handle.remove();
         }));
         this.increaseGenome('fasta', newGenomeIds);
-        this.sequenceSource = "ws";
+        this.sequenceSource = 'ws';
 
         var path = lrec[this.fastaToAttachPt];
         when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
           var fileType = res.metadata.type;
-          this.fastaNamesAndTypes.push ({"filename" : path, "type" : fileType});
+          this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
         }))
       }
       // console.log(lrec);
@@ -413,12 +457,12 @@ define([
           handle.remove();
         }));
         this.increaseGenome('feature_group', newGenomeIds);
-        this.sequenceSource = "feature_group";
+        this.sequenceSource = 'feature_group';
 
         var path = lrec[this.featureGroupToAttachPt];
         when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
           var fileType = res.metadata.type;
-          this.fastaNamesAndTypes.push ({"filename" : path, "type" : fileType});
+          this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
         }))
 
       }
@@ -490,55 +534,40 @@ define([
       evt.stopPropagation();
       if (this.validate()) {
         var values = this.getValues();
-        // console.log("user_genomes ", values["user_genomes"]);
-        // console.log("user_feature_groups ", values["user_feature_groups"]);
-        // console.log("genome_ids ", values["genome_ids"]);
-        // console.log("reference_genome_index ", values["reference_genome_index"]);
-        var numUserGenome = 0;
 
-        if (values.user_genomes) {
-          numUserGenome += values.user_genomes.length;
-        }
-        if (values.user_feature_groups) {
-          numUserGenome += values.user_feature_groups.length;
-        }
-        if (values.genome_ids) {
-          numUserGenome += values.genome_ids.length;
-        }
+        // if (numUserGenome > 1 && values.reference_genome_index > 0) {
+        domClass.add(this.domNode, 'Working');
+        domClass.remove(this.domNode, 'Error');
+        domClass.remove(this.domNode, 'Submitted');
 
-        //if (numUserGenome > 1 && values.reference_genome_index > 0) {
-          domClass.add(this.domNode, 'Working');
-          domClass.remove(this.domNode, 'Error');
-          domClass.remove(this.domNode, 'Submitted');
-
-          if (window.App.noJobSubmission) {
-            var dlg = new Dialog({
-              title: 'Job Submission Params: ',
-              content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
-            });
-            dlg.startup();
-            dlg.show();
-            return;
-          }
-          this.submitButton.set('disabled', true);
-          window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
-            // console.log("Job Submission Results: ", results);
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Submitted');
-            _self.submitButton.set('disabled', false);
-            registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
-              obj.reset();
-            });
-          }, function (err) {
-            // console.log("Error:", err)
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Error');
-            _self.errorMessage.innerHTML = err;
+        if (window.App.noJobSubmission) {
+          var dlg = new Dialog({
+            title: 'Job Submission Params: ',
+            content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
           });
-        //} else {
-          domClass.add(this.domNode, 'Error');
-          // console.log("Form is incomplete");
-        //}
+          dlg.startup();
+          dlg.show();
+          return;
+        }
+        this.submitButton.set('disabled', true);
+        window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
+          // console.log("Job Submission Results: ", results);
+          domClass.remove(_self.domNode, 'Working');
+          domClass.add(_self.domNode, 'Submitted');
+          _self.submitButton.set('disabled', false);
+          registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
+            obj.reset();
+          });
+        }, function (err) {
+          // console.log("Error:", err)
+          domClass.remove(_self.domNode, 'Working');
+          domClass.add(_self.domNode, 'Error');
+          _self.errorMessage.innerHTML = err;
+        });
+        // } else {
+        domClass.add(this.domNode, 'Error');
+        // console.log("Form is incomplete");
+        // }
 
       } else {
         domClass.add(this.domNode, 'Error');
@@ -553,21 +582,6 @@ define([
       var genomeIds = [];
       var userGenomes = [];
       var featureGroups = [];
-      var refType = '';
-      var refIndex = 0;
-
-      if (values.ref_genome_id) {
-        refType = 'ref_genome_id';
-        genomeIds.push(values.ref_genome_id);
-      }
-      else if (values.ref_user_genomes_fasta) {
-        refType = 'ref_user_genomes_fasta';
-        userGenomes.push(values.ref_user_genomes_fasta);
-      }
-      else if (values.ref_user_genomes_featuregroup) {
-        refType = 'ref_user_genomes_featuregroup';
-        featureGroups.push(values.ref_user_genomes_featuregroup);
-      }
 
       this.userGenomeList.forEach(lang.hitch(this, function (id) {
         genomeIds.push(id);
