@@ -528,11 +528,8 @@ define([
       }));
     },
 
-    onSubmit: function (evt) {
-      var _self = this;
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (this.validate()) {
+    validate: function () {
+      if (this.inherited(arguments)) {
         var values = this.getValues();
         var feature_groups_count = 0;
         var fasta_files_count = 0;
@@ -543,37 +540,10 @@ define([
           fasta_files_count = values.fasta_files.length;
         }
         if (this.validateFasta() && (feature_groups_count >= 1 || fasta_files_count >= 1 || values.fasta_keyboard_input)) {
-          domClass.add(this.domNode, 'Working');
-          domClass.remove(this.domNode, 'Error');
-          domClass.remove(this.domNode, 'Submitted');
-          if (window.App.noJobSubmission) {
-            var dlg = new Dialog({
-              title: 'Job Submission Params: ',
-              content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
-            });
-            dlg.startup();
-            dlg.show();
-            return;
-          }
-          this.submitButton.set('disabled', true);
-          window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Submitted');
-            _self.submitButton.set('disabled', false);
-            registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
-              obj.reset();
-            });
-          }, function (err) {
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Error');
-            _self.errorMessage.innerHTML = err;
-          });
-        } else {
-          domClass.add(this.domNode, 'Error');
+          return true;
         }
-      } else {
-        domClass.add(this.domNode, 'Error');
       }
+      return false;
     },
 
     getValues: function () {
