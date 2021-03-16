@@ -21,11 +21,12 @@ define([
     applicationLabel: 'Multiple Sequence Alignment',
     applicationDescription: 'The multiple sequence alignment service with variation analysis can be used with feature groups, fasta files, and aligned fasta files.  User input is possible.',
     applicationHelp: 'user_guides/services/',
-    tutorialLink: 'tutorial/proteome_comparison/',
+    tutorialLink: 'tutorial/multiple_sequence_alignment/',
     videoLink: '/videos/',
     pageTitle: 'Multiple Sequence Alignment',
+    appBaseURL: 'MSA',
     defaultPath: '',
-    startingRows: 5,
+    startingRows: 14,
     maxGenomes: 256,
     textInput: false,
 
@@ -526,6 +527,16 @@ define([
           this.increaseGenome('genome_group', newGenomeIds);
         }
       }));
+    },
+
+    onReset: function (evt) {
+      this.inherited(arguments);
+      for (var i = 0; i < this.addedGenomes; i++) {
+        this.genomeTable.deleteRow(0);
+      }
+      this.emptyTable(this.genomeTable, this.addedGenomes);
+      this.addedGenomes = 0;
+      this.numgenomes.set('value', Number(this.addedGenomes));
     },
 
     validate: function () {
