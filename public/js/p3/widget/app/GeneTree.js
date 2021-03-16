@@ -16,13 +16,13 @@ define([
   return declare([AppBase], {
     baseClass: 'App Assembly',
     templateString: Template,
-    applicationName: 'FeatureTree',
+    applicationName: 'GeneTree',
     requireAuth: true,
     applicationLabel: 'Gene Tree',
     applicationDescription: 'The Gene Tree Service is being tested.',
-    applicationHelp: 'user_guides/services/proteome_comparison_service.html',
-    tutorialLink: 'tutorial/proteome_comparison/proteome_comparison.html',
-    videoLink: '/videos/proteome_comparison_service.html',
+    applicationHelp: 'user_guides/services/gene_tree_service.html',
+    tutorialLink: 'tutorial/proteome_comparison/gene_tree.html',
+    videoLink: '/videos/gene_tree_service.html',
     pageTitle: 'Gene Tree',
     defaultPath: '',
     startingRows: 3,
@@ -56,20 +56,6 @@ define([
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
-/*       this.advrow.turnedOn = (this.advrow.style.display != 'none');
-      on(this.advanced, 'click', lang.hitch(this, function () {
-        this.advrow.turnedOn = (this.advrow.style.display != 'none');
-        if (!this.advrow.turnedOn) {
-          this.advrow.turnedOn = true;
-          this.advrow.style.display = 'block';
-          this.advicon.className = 'fa icon-caret-left fa-1';
-        }
-        else {
-          this.advrow.turnedOn = false;
-          this.advrow.style.display = 'none';
-          this.advicon.className = 'fa icon-caret-down fa-1';
-        }
-      })); */
       this._started = true;
     },
 
@@ -599,48 +585,12 @@ define([
         }
       });
 
-      // console.log("compGenomeList = " + compGenomeList);
-      // console.log("ref genome = " + values["ref_genome_id"]);
-
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.recipe = values.recipe;
       seqcomp_values.protein_model = values.protein_model;
       seqcomp_values.trim_threshold = values.trim_threshold;
       seqcomp_values.gap_threshold = values.gap_threshold;
-      //seqcomp_values.sequence_source = this.sequenceSource;
-
-      //seqcomp_values.genome_ids = genomeIds;
-      //if (userGenomes.length > 0) {
-      //  seqcomp_values.sequences = userGenomes[0];
-      //}
-
-      //if (featureGroups.length > 0) {
-      //  seqcomp_values.sequences = featureGroups[0];
-     // }
       seqcomp_values.sequences = this.fastaNamesAndTypes;
-
-      /* if (refType == 'ref_genome_id') {
-        refIndex = 1;
-      }
-      else if (refType == 'ref_user_genomes_fasta') {
-        refIndex = genomeIds.length + 1;
-      }
-      else if (refType == 'ref_user_genomes_featuregroup') {
-        refIndex = genomeIds.length + userGenomes.length + 1;
-      }
-
-      seqcomp_values.reference_genome_index = refIndex; */
-
-     /*  if (values.min_seq_cov) {
-        seqcomp_values.min_seq_cov = values.min_seq_cov / 100;
-      }
-      if (values.max_e_val) {
-        seqcomp_values.max_e_val = values.max_e_val;
-      }
-      if (values.min_ident) {
-        seqcomp_values.min_ident = values.min_ident / 100;
-      } */
-
       seqcomp_values.output_path = values.output_path;
       seqcomp_values.output_file = values.output_file;
 
