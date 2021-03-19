@@ -261,7 +261,10 @@ define([
         }
 
         this.submitButton.set('disabled', true);
-        window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
+        var start_params = {
+          'base_url': window.App.appBaseURL
+        }
+        window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function (results) {
           console.log('Job Submission Results: ', results);
 
           if (window.gtag) {

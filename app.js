@@ -47,6 +47,7 @@ app.use(function (req, res, next) {
     probModelSeedServiceURL: config.get('probModelSeedServiceURL'), // for dashboard
     shockServiceURL: config.get('shockServiceURL'), // for dashboard
     workspaceServiceURL: config.get('workspaceServiceURL'),
+    appBaseURL: config.get('appBaseURL'),
     appServiceURL: config.get('appServiceURL'),
     dataServiceURL: config.get('dataServiceURL'),
     homologyServiceURL: config.get('homologyServiceURL'),
