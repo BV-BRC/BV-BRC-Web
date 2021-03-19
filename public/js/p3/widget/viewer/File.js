@@ -26,10 +26,10 @@ define([
         this.set('filepath', val);
       } else {
         this.filepath =
-        'path' in val.metadata ?
-          val.metadata.path +
-          ((val.metadata.path.charAt(val.metadata.path.length - 1) == '/') ? '' : '/')
-          + val.metadata.name : '/';
+          'path' in val.metadata ?
+            val.metadata.path +
+            ((val.metadata.path.charAt(val.metadata.path.length - 1) == '/') ? '' : '/')
+            + val.metadata.name : '/';
 
         this.file = val;
         this.refresh();
@@ -93,7 +93,7 @@ define([
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
 
-        if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
+        if (!WS.forbiddenDownloadTypes.includes(fileMeta.type)) {
           content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
         }
 
@@ -142,7 +142,7 @@ define([
               case 'diffexp_expression':
               case 'diffexp_mapping':
               case 'diffexp_sample':
-                childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null), null, 2)  + '</pre>';
+                childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null), null, 2) + '</pre>';
                 break;
               case 'pdf':
                 childContent = '<iframe src="http://docs.google.com/gview?url=' + this.url + '&embedded=true" style="width:100%; height:100%;" frameborder="0"></iframe>';
