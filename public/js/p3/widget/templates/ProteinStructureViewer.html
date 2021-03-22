@@ -1,0 +1,44 @@
+<div>
+    <style type="text/css">
+        h3.control-header { color: white; margin-bottom: 5px; }
+    </style>
+
+    <div data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region:'top'"
+         data-dojo-attach-point="accessionTitle"
+         class="breadcrumb"
+         style="height: 10%"
+    >
+    </div>
+
+    <div data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region: 'left'"
+         data-dojo-attach-point="controlsContainer"
+         style="width: 25%; border: 2px solid red;"
+         >
+        <!-- accession select -->
+        <div class="section">
+            <h3 class="close section-title control-header">Select Protein</h3>
+            <div data-dojo-attach-point="select"></div>
+        </div>
+        <!-- display controls -->
+        <div class="section">
+            <h3 class="close section-title control-header">Display Options</h3>
+            <div data-dojo-attach-point="displayControls"></div>
+        </div>
+        <!-- highlighters -->
+        <div class="section">
+            <h3 class="close section-title control-header">Highlight</h3>
+            <div data-dojo-attach-point="highlighters"></div>
+        </div>
+    </div>
+
+    <div data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region: 'center'"
+         data-dojo-attach-point="contentDisplay"
+         style="width: 70%; border: 2px solid blue;"
+    >
+
+    </div>
+
+</div>

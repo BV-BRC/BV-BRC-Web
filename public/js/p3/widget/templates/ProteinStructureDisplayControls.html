@@ -1,0 +1,46 @@
+<div style="border: 2px solid blue;">
+    <div>
+        <span data-dojo-attach-point="displayTypeIcon"></span>
+        <span>Change Display Type</span>
+        <div data-dojo-attach-point="displayTypeSelector"></div>
+    </div>
+    <div>
+        <div data-dojo-attach-point="displayEffect"></div>
+    </div>
+    <div>
+        <div>
+            <label>Zoom Level</label>
+        </div>
+        <div>
+        <div data-dojo-attach-point="displayZoomSlider"
+             data-dojo-type="dijit/form/HorizontalSlider"
+             data-dojo-props="value:4, discreteValues:6, intermediateChanges:false, showButtons:false"
+             style="width: 75%"
+        >
+            <ol data-dojo-type="dijit/form/HorizontalRuleLabels" container="topDecoration"
+                style="height:1.5em;font-size:75%;">
+                <li>50%</li>
+                <li>100%</li>
+                <li>150%</li>
+                <li>200%</li>
+                <li>400%</li>
+                <li>Custom</li>
+            </ol>
+            <div data-dojo-type="dijit/form/HorizontalRule" container="bottomDecoration"
+                 count=6 style="height:5px;"></div>
+            </div>
+        </div>
+        <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'right'">
+            <div data-dojo-type="dijit/form/NumberTextBox"
+                 data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
+                 data-dojo-attach-point="displayZoomCustom"
+                 style="width: 4em;"
+            ></div>
+        </div>
+    </div>
+    <div>
+        <div class="column-sub">
+            <div data-dojo-attach-point="commandEntryIcon"></div>
+        </div>
+    </div>
+</div>
