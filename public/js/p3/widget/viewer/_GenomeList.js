@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/_base/lang', 'dojo/request',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/topic',
   '../GenomeOverview',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer',
+  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer',
   '../ActionBar', '../ContainerActionBar', '../PathwaysContainer', '../ProteinFamiliesContainer',
   '../DiseaseContainer', '../PublicationGridContainer', '../CircularViewerContainer',
   '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
@@ -12,7 +12,7 @@ define([
   declare, TabViewerBase, on, lang, xhr,
   domClass, ContentPane, domConstruct, Topic,
   GenomeOverview,
-  FeatureGridContainer, SpecialtyGeneGridContainer,
+  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer,
   ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
   DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
   TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
@@ -334,6 +334,11 @@ define([
         id: this.viewer.id + '_features',
         disabled: false
       });
+      this.structures = new ProteinStructureGridContainer({
+        title: 'Structures',
+        id: this.viewer.id + '_structures',
+        disabled: false
+      });
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
         id: this.viewer.id + '_specialtyGenes',
@@ -373,6 +378,7 @@ define([
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);

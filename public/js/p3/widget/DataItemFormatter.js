@@ -1076,6 +1076,83 @@ define([
       return div;
     },
 
+    structure_data: function (item, options) {
+      options = options || {};
+      var columns = [{
+        name: 'PDB ID',
+        text: 'pdb_id'
+      }, {
+        name: 'Title',
+        text: 'title',
+      }, {
+        name: 'Organism Name',
+        text: 'organism_name',
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id'
+      }, {
+        name: 'Taxon Lineage IDs',
+        text: 'taxon_lineage_ids'
+      }, {
+        name: 'Taxon Lineage Names',
+        text: 'taxon_lineage_names'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id'
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Alignments',
+        text: 'alignments'
+      }, {
+        name: 'Method',
+        text: 'method',
+      }, {
+        name: 'Resolution',
+        text: 'resolution',
+      }, {
+        name: 'PMID',
+        text: 'pmid',
+      }, {
+        name: 'Institution',
+        text: 'Institution',
+      }, {
+        name: 'Authors',
+        text: 'authors'
+      }, {
+        name: 'Release Date',
+        text: 'release_date',
+        type: 'date'
+      }, {
+        name: 'Text',
+        text: 'text',
+      }, {
+        name: 'Version',
+        text: '_version_'
+      }, {
+        name: 'Date Inserted',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     sequence_data: function (item, options) {
       options = options || {};
 
