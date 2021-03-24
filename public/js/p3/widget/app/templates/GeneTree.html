@@ -48,12 +48,12 @@
                       <div style="width:85%;display:inline-block;" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight="200" required="false" data-dojo-attach-point="comp_genome_id"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
                       <br> -->
-                      <label>Select DNA or protein fasta file</label><br>
+                      <label>DNA/protein aligned fasta</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_dna_fasta'],multi:false,promptMessage:'Select or Upload DNA or protein fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
                       </div>
                       <br>
-                      <label>or select feature group</label><br>
+                      <label>feature group or unaligned feature fasta</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group','feature_dna_fasta'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i></div>
                       <br>
@@ -125,7 +125,7 @@
                     </div> -->
                     <div class="appRow">
                       <label class="paramlabel">Model</label><br>
-                      <select data-dojo-type="dijit/form/Select" name="protein_model" style="width:50px" data-dojo-attach-point="protein_model" required="true">
+                      <select data-dojo-type="dijit/form/Select" name="substitution_model" style="width:50px" data-dojo-attach-point="substitution_model" required="true">
                         <option value="HYK85">HKY85</option>
                         <option value="JC69">JC69</option>
                         <option value="K80">K80</option>
