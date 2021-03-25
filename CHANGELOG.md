@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 3.6.10 - Mar 19, 2021
+* [Enhancement] Add One Codex option to the SARS-CoV-2 Genome Assembly and Annotation service
+* [Enhancement] Send base_url for all App service submission
+
+
 ## 3.6.9 - Jan 19, 2021
 
 * [Minor] Disable Reconstruct Metabolic Model service UI. [#1008](https://github.com/PATRIC3/p3_web/pull/1008)
