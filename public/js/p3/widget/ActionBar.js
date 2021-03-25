@@ -30,7 +30,7 @@ define([
     _setSelectionAttr: function (sel) {
 
       this.selection = sel;
-
+      var job_result = false;
       var valid;
       var selectionTypes = {};
       sel.filter(function (x) {
@@ -42,6 +42,7 @@ define([
           return;
         }
         if (type == 'job_result') {
+          job_result = true;
           if (s.autoMeta && s.autoMeta.app) {
             if (typeof s.autoMeta.app == 'string') {
               type = s.autoMeta.app;
@@ -60,8 +61,8 @@ define([
         valid = Object.keys(this._actions).filter(function (an) {
           return this._actions[an] && this._actions[an].options &&
             (this._actions[an].options.multiple &&
-            ((this._actions[an].options.ignoreDataType || !multiTypedSelection ||
-            (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent);
+              ((this._actions[an].options.ignoreDataType || !multiTypedSelection ||
+                (multiTypedSelection && this._actions[an].options.allowMultiTypes))) || this._actions[an].options.persistent);
         }, this);
 
         // console.log("multiselect valid: ", valid)
@@ -113,24 +114,24 @@ define([
         // if public or not owner, hide ability for upload, create folder, delete, share, etc
         else if (sel[0] && (
           'isPublic' in sel[0] ||
-            ['r', 'n'].indexOf(sel[0].user_permission) !== -1 ||
-            (sel[0].global_permission == 'r' && window.App.user.id != sel[0].owner_id) ) &&
+          ['r', 'n'].indexOf(sel[0].user_permission) !== -1 ||
+          (sel[0].global_permission == 'r' && window.App.user.id != sel[0].owner_id)) &&
           ['Upload', 'CreateFolder', 'Delete', 'ShareFolder', 'Move', 'Rename', 'EditType'].indexOf(an) !== -1) {
           return false;
         }
         else if (sel[0] && sel[0].source && sel[0].source !== 'PATRIC_VF' && an === 'ViewSpgeneEvidence') {
           return false;
         }
-        else if (act.options.min && (sel.length < act.options.min )) {
+        else if (act.options.min && (sel.length < act.options.min)) {
           return false;
         }
-        else if (act.options.max && (sel.length > act.options.max )) {
+        else if (act.options.max && (sel.length > act.options.max)) {
           return false;
         }
 
         // if this is a tsv or csv table, hide copy folder, move, rename, delete, edit type buttons
         if (this.currentContainerType == 'csvFeature' &&
-            (act.options.label == 'DELETE' || act.options.label == 'MOVE' || act.options.label == 'RENAME' || act.options.label == 'EDIT TYPE' ||
+          (act.options.label == 'DELETE' || act.options.label == 'MOVE' || act.options.label == 'RENAME' || act.options.label == 'EDIT TYPE' ||
             (act.options.label == 'COPY' && act.options.validContainerTypes != 'csvFeature'))) {
           return false;
         }
@@ -143,6 +144,17 @@ define([
           }, this)) {
             return false;
           }
+        }
+
+        // If we have a forbiddenType do not allow downloads.
+        var forbiddenTypes = act.options.forbiddenTypes || null;
+        if (forbiddenTypes) {
+          if (job_result) {
+            return false;
+          }
+          return types.every(function (t) {
+            return (!forbiddenTypes.includes(t))
+          });
         }
 
         return validTypes.some(function (t) {
