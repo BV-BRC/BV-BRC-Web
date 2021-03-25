@@ -4,7 +4,7 @@ define([
   './TabViewerBase', 'dijit/Dialog',
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
+  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwaysContainer', '../SubSystemsContainer', '../TranscriptomicsContainer', '../InteractionContainer',
   '../../util/PathJoin'
 ], function (
@@ -13,7 +13,7 @@ define([
   TabViewerBase, Dialog,
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
-  FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, SubSystemsContainer, TranscriptomicsContainer, InteractionsContainer,
   PathJoin
 ) {
@@ -291,6 +291,11 @@ define([
         id: this.viewer.id + '_features'
       });
 
+      this.structures = new ProteinStructureGridContainer({
+        title: 'Structures',
+        id: this.viewer.id + '_structures'
+      });
+
       this.browser = new GenomeBrowser({
         title: 'Genome Browser',
         id: this.viewer.id + '_browser',
@@ -346,6 +351,7 @@ define([
       this.viewer.addChild(this.circular);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
