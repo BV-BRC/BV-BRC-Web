@@ -194,7 +194,7 @@ define([
       this.emptyTable(this.genomeTable, this.startingRows);
       this.fastaNamesAndTypes = [];
 
-      this.protein_model.options = [];
+      this.substitution_model.options = [];
       if (this.dna.checked) {
         var newOptions = [{
           value: 'HKY85', label: 'HKY85', selected: true, disabled: false
@@ -217,7 +217,7 @@ define([
         {
           value: 'GTR', label: 'GTR', selected: true, disabled: false
         }];
-        this.protein_model.set('options', newOptions);
+        this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_dna_fasta');
         this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_dna_fasta']);
       }
@@ -267,11 +267,11 @@ define([
         {
           value: 'AB', label: 'AB', selected: false, disabled: false
         }];
-        this.protein_model.set('options', newOptions);
+        this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_protein_fasta');
         this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_protein_fasta']);
       }
-      this.protein_model.reset();
+      this.substitution_model.reset();
     },
 
     makeGenomeName: function () {
@@ -553,7 +553,7 @@ define([
 
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.recipe = values.recipe;
-      seqcomp_values.protein_model = values.protein_model;
+      seqcomp_values.substitution_model = values.substitution_model;
       seqcomp_values.trim_threshold = values.trim_threshold;
       seqcomp_values.gap_threshold = values.gap_threshold;
       seqcomp_values.sequences = this.fastaNamesAndTypes;

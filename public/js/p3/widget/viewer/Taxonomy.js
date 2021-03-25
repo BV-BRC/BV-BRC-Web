@@ -54,12 +54,12 @@ define([
     addBacteriaTabs: function () {
       this.viewer.addChild(this.phylogeny, 1);
       this.viewer.addChild(this.amr, 4);
-      this.viewer.addChild(this.specialtyGenes, 7);
-      this.viewer.addChild(this.proteinFamilies, 8);
-      this.viewer.addChild(this.pathways, 9);
-      this.viewer.addChild(this.subsystems, 10);
-      this.viewer.addChild(this.transcriptomics, 11);
-      this.viewer.addChild(this.interactions, 12);
+      this.viewer.addChild(this.specialtyGenes, 8);
+      this.viewer.addChild(this.proteinFamilies, 9);
+      this.viewer.addChild(this.pathways, 10);
+      this.viewer.addChild(this.subsystems, 11);
+      this.viewer.addChild(this.transcriptomics, 12);
+      this.viewer.addChild(this.interactions, 13);
     },
 
     removeBacteriaTabs: function () {
@@ -280,6 +280,13 @@ define([
             }));
           }
           break;
+
+        case 'structures':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
+          }));
+          break;
+
         default:
           var activeQueryState;
           var prop = 'genome_id';
