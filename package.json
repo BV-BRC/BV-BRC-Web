@@ -30,7 +30,7 @@
     "flag-icon-css": "^2.8.0",
     "formidable": "^1.1.1",
     "http-proxy": "^1.15.2",
-    "jbrowse": "github:GMOD/jbrowse#faf2258d98a9611a219fd138759fbf15101d0905",
+    "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
     "jquery": "^3.3.1",
     "morgan": "^1.9.1",
     "multibigwig": "github:BV-BRC/multibigwig#master",
