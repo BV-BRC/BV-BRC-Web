@@ -108,9 +108,8 @@ define([
             Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
             // clear = true;
             break;
-          case 'protein_structure':
+          case 'protein_structures':
             Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
-            // clear = true;
             break;
           case 'transcriptomics_experiments':
             Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
@@ -168,7 +167,7 @@ define([
         case 'genomes':
           Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
           break;
-        case 'protein_structure':
+        case 'protein_structures':
           Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
           break;
         case 'transcriptomics_experiments':

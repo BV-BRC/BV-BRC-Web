@@ -18,11 +18,12 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_structure', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
       genome_sequence: 'Genomic Sequences',
+      protein_structure: 'Protein Structures',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
       transcriptomics_experiment: 'Transcriptomics Experiments',
@@ -86,6 +87,9 @@ define([
         }
         return ['/view/SequenceList/?', this.state.search].join('');
 
+      },
+      protein_structure: function (docs, total) {
+        return ['/view/ProteinStructureList/?', this.state.search].join('');
       },
       taxonomy: function (docs, total) {
         if (total == 1) {
@@ -234,6 +238,21 @@ define([
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.accession + ' | ' + doc.description +  '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatprotein_structure: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer structureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinStructureList/?', q, '">Protein Structures</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='#'>" + doc.pdb_id + ' | ' + doc.title + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.organism_name + '</div>');
         out.push('</div>');
       });
       out.push('</div>');
