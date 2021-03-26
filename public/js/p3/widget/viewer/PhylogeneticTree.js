@@ -227,6 +227,7 @@ define([
         return true;
       }, function (err) {
         console.error('Error Retreiving Genomes: ', err);
+        _self.viewer.processTreeData(treeDat, idType);
         return false;
       });
       return true;
