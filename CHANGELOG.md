@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 3.6.11 - Mar 26, 2021
+* [Enhancement] Installed JBrowse plugin (MultiBigWig)
+
+
 ## 3.6.10 - Mar 19, 2021
 * [Enhancement] Add One Codex option to the SARS-CoV-2 Genome Assembly and Annotation service
 * [Enhancement] Send base_url for all App service submission

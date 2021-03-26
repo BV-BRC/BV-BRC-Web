@@ -29,9 +29,6 @@
 [submodule "public/js/msa"]
 	path = public/js/msa
 	url = https://github.com/aswarren/msa.git
-[submodule "public/js/jbrowse"]
-	path = public/js/jbrowse.repo
-	url = https://github.com/GMOD/jbrowse.git
 [submodule "public/js/FileSaver"]
 	path = public/js/FileSaver
 	url = https://github.com/dkasenberg/FileSaver.js.git
