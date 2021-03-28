@@ -1,42 +1,38 @@
 <div style="border: 2px solid blue;">
-    <div>
+    <style type="text/css">
+        div.control-section {
+            margin: 15px 5px;
+            padding: 2px;
+        }
+    </style>
+    <div class="control-section">
         <span data-dojo-attach-point="displayTypeIcon"></span>
         <span>Change Display Type</span>
         <div data-dojo-attach-point="displayTypeSelector"></div>
     </div>
-    <div>
-        <div data-dojo-attach-point="displayEffect"></div>
+    <div class="control-section">
+        <div data-dojo-attach-point="displayEffect"
+             data-dojo-type="p3/widget/ProteinStructureEffect"
+        ></div>
     </div>
-    <div>
-        <div>
-            <label>Zoom Level</label>
-        </div>
-        <div>
-        <div data-dojo-attach-point="displayZoomSlider"
-             data-dojo-type="dijit/form/HorizontalSlider"
-             data-dojo-props="value:4, discreteValues:6, intermediateChanges:false, showButtons:false"
-             style="width: 75%"
+    <div class="control-section">
+        <label>Zoom Level</label>
+        <select data-dojo-attach-point="displayZoom"
+                data-dojo-type="dijit/form/Select"
+                style="width:50%"
         >
-            <ol data-dojo-type="dijit/form/HorizontalRuleLabels" container="topDecoration"
-                style="height:1.5em;font-size:75%;">
-                <li>50%</li>
-                <li>100%</li>
-                <li>150%</li>
-                <li>200%</li>
-                <li>400%</li>
-                <li>Custom</li>
-            </ol>
-            <div data-dojo-type="dijit/form/HorizontalRule" container="bottomDecoration"
-                 count=6 style="height:5px;"></div>
-            </div>
-        </div>
-        <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'right'">
-            <div data-dojo-type="dijit/form/NumberTextBox"
-                 data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
-                 data-dojo-attach-point="displayZoomCustom"
-                 style="width: 4em;"
-            ></div>
-        </div>
+            <option value="50">50%</option>
+            <option value="100">100%</option>
+            <option value="150">150%</option>
+            <option value="200">200%</option>
+            <option value="400">400%</option>
+            <option value="custom">Custom</option>
+        </select>
+        <span data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
+              data-dojo-attach-point="displayZoomCustom"
+              style="width: 4em; visibility: hidden"
+        ></span>
     </div>
     <div>
         <div class="column-sub">

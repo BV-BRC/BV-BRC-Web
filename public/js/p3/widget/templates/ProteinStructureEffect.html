@@ -1,0 +1,25 @@
+<div data-dojo-attach-point="containerNode">
+    <div>
+        <button data-dojo-type="dijit/form/ToggleButton"
+                data-dojo-attach-point="spinButton">Spin</button>
+    </div>
+    <div>
+        <button data-dojo-type="dijit/form/ToggleButton"
+                data-dojo-attach-point="rockButton">Rock</button>
+        <label>Angle: </label>
+        <span data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-props="smallDelta: 10, constraints: { min:0, max:180, places:0 },"
+              data-dojo-attach-point="rockAngle"
+              style="width: 4em;"></span>
+        <label>Speed: </label>
+        <span data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-props="constraints: { min:1, max:100, places:0 },"
+              data-dojo-attach-point="rockSpeed"
+              style="width: 4em;"></span>
+        <label>Pause: </label>
+        <span data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-props="constraints: { min:0, max:10, places:1 },"
+              data-dojo-attach-point="rockPause"
+              style="width: 4em;"></span>
+    </div>
+</div>

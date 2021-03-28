@@ -30,21 +30,6 @@ define([
     templateString: templateString,
     buildRendering: function () {
       this.inherited(arguments);
-      /*
-      // zoom level
-      this.displayZoom = new HorizontalSlider({
-        id: this.id + '_zoomSlider',
-        value: 2,
-        discreteValues: 6,
-        intermediateChanges: false,
-        showButtons: false
-      }, this.displayZoomSlider);
-      var sliderLabels = new HorizontalRuleLabels({
-        id: this.id + '_zoomLabel',
-        labels: ['Custom', '50%', '100%', '150%', '200%', '400%'],
-        container: 'topDecoration',
-      }, this.displayZoom);
-       */
     },
     postCreate: function () {
       this.inherited(arguments);
@@ -66,8 +51,6 @@ define([
         connectId: [this.displayTypeIcon],
         label: 'Hi, this is a tooltip',
       });
-
-      console.log('this.displayZoomSlider is' + this.displayZoomSlider);
 
 
       if (this.displayType) {
