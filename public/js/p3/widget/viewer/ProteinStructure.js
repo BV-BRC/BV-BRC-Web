@@ -56,11 +56,7 @@ function (
         id: this.id + '_structure'
       });
 
-
-      var appletHTML = this.jsmol.getViewerHTML();
-
-      domConstruct.place(appletHTML, this.contentDisplay.containerNode);
-
+      domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
 
       this.proteinSelect = new ProteinSelect({
         id: this.id + '_select',

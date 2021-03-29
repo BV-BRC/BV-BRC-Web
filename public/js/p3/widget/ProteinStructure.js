@@ -38,6 +38,7 @@ define([
       readyFunction: function (applet) {
         console.log('JSMOL readyFunction for applet is ' + applet);
       },
+      zIndexBase: 1000,
     },
     constructor: function (opts) {
       console.log('ProteinStructure.constructor');
