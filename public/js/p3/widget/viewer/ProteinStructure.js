@@ -77,6 +77,10 @@ function (
 
       this.displayControl.watch('displayType', lang.hitch(this, this.onDisplayTypeChange));
       this.proteinSelect.watch('accession', lang.hitch(this, this.onAccessionChange));
+      this.displayControl.watch('zoomLevel', lang.hitch(this, function () {
+        console.log('zoom is now ' + this.displayControl.zoomLevel);
+        this.jsmol.runScript('zoom ' + this.displayControl.zoomLevel + ';');
+      }))
       console.log('finished ' + this.id + '.postCreate');
 
       // TODO this is temporary

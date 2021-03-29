@@ -28,7 +28,7 @@ define([
   return declare( [ContentPane, Templated, WidgetsInTemplateMixin], {
     baseClass: 'ProteinStructureDisplayControl',
     displayType: null,
-    zoomLevel: null,
+    zoomLevel: 50,
     displayTypeStore: null,
     templateString: templateString,
     buildRendering: function () {
@@ -82,7 +82,7 @@ define([
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         } else {
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'hidden');
-          this.zoomLevel = zoomLevel;
+          this.set('zoomLevel', zoomLevel);
         }
         customVisibility = domStyle.get(this.displayZoomCustomContainer, 'visibility');
         console.log('custom zoom visibility is now ' + customVisibility);
@@ -91,7 +91,7 @@ define([
       this.displayZoomCustom.on('change', lang.hitch(this, function () {
         var zoomLevel = this.displayZoomCustom.get('value');
         console.log('custom zoom level is ' + zoomLevel);
-        this.zoomLevel = zoomLevel;
+        this.set('zoomLevel',zoomLevel);
       }));
     },
     onDisplayTypeChange: function (attr, oldValue, newValue) {
