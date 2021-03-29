@@ -1,6 +1,7 @@
 define([
   'dojo/_base/declare',
   'dojo/dom-construct',
+  'dojo/dom-style',
   'dijit/layout/ContentPane',
   'dijit/Tooltip',
   'dijit/form/Select',
@@ -13,6 +14,7 @@ define([
 ], function (
   declare,
   domConstruct,
+  domStyle,
   ContentPane,
   ToolTip,
   Select,
@@ -26,6 +28,7 @@ define([
   return declare( [ContentPane, Templated, WidgetsInTemplateMixin], {
     baseClass: 'ProteinStructureDisplayControl',
     displayType: null,
+    zoomLevel: null,
     displayTypeStore: null,
     templateString: templateString,
     buildRendering: function () {
@@ -34,8 +37,6 @@ define([
     postCreate: function () {
       this.inherited(arguments);
       console.log(this.id + '.postCreate displayType is ' + this.displayType);
-      //domConstruct.place(this.displayType.domNode, this.displayTypeSelector);
-      //domConstruct.place(this.displayZoom.domNode, this.displayZoomSlider);
       this.select = new Select({
         id: this.id + '_displayTypeSelect',
         name:'displaytype',
@@ -71,6 +72,27 @@ define([
       this.watch('displayType', lang.hitch(this, this.onDisplayTypeChange));
       console.log('displayType is ' + this.displayType);
       console.log('selected is ' + this.select.get('value'));
+
+      this.displayZoom.on('change', lang.hitch(this, function () {
+        var zoomLevel = this.displayZoom.get('value');
+        console.log('zoom level is ' + zoomLevel);
+        var customVisibility = domStyle.get(this.displayZoomCustomContainer, 'visibility');
+        console.log('custom zoom visibility is currently ' + customVisibility);
+        if ( zoomLevel == 'custom' ) {
+          domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
+        } else {
+          domStyle.set(this.displayZoomCustomContainer, 'visibility', 'hidden');
+          this.zoomLevel = zoomLevel;
+        }
+        customVisibility = domStyle.get(this.displayZoomCustomContainer, 'visibility');
+        console.log('custom zoom visibility is now ' + customVisibility);
+      }));
+
+      this.displayZoomCustom.on('change', lang.hitch(this, function () {
+        var zoomLevel = this.displayZoomCustom.get('value');
+        console.log('custom zoom level is ' + zoomLevel);
+        this.zoomLevel = zoomLevel;
+      }));
     },
     onDisplayTypeChange: function (attr, oldValue, newValue) {
       console.log(this.id + '.displayType went from ' + oldValue + ' to ' + newValue);

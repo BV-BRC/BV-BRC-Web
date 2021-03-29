@@ -19,8 +19,7 @@
         <label>Zoom Level</label>
         <select data-dojo-attach-point="displayZoom"
                 data-dojo-type="dijit/form/Select"
-                style="width:50%"
-        >
+                style="width:50%">
             <option value="50">50%</option>
             <option value="100">100%</option>
             <option value="150">150%</option>
@@ -28,11 +27,12 @@
             <option value="400">400%</option>
             <option value="custom">Custom</option>
         </select>
-        <span data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
-              data-dojo-attach-point="displayZoomCustom"
-              style="width: 4em; visibility: hidden"
-        ></span>
+        <span data-dojo-attach-point="displayZoomCustomContainer" style="visibility: hidden;">
+            <span data-dojo-type="dijit/form/NumberTextBox"
+                  data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
+                  data-dojo-attach-point="displayZoomCustom"
+                  style="width: 4em;"></span> %
+        </span>
     </div>
     <div>
         <div class="column-sub">
