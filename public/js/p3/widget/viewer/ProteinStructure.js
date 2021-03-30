@@ -62,7 +62,7 @@ function (
         id: this.id + '_select',
         proteinStore: this.proteinStore,
         accession: accession,
-        region: 'left',
+        style: 'width: 50px;'
       });
       domConstruct.place(this.proteinSelect.domNode, this.select);
 
@@ -83,6 +83,14 @@ function (
       }))
       console.log('finished ' + this.id + '.postCreate');
 
+      this.commandRun.on('click', lang.hitch(this, function() {
+        var scriptText = this.commandEntry.get('value');
+        console.log('script to run is ' + scriptText);
+        this.jsmol.runScript(scriptText);
+      }));
+      this.commandClear.on('click', lang.hitch(this, function() {
+        this.commandEntry.set('value','');
+      }))
       // TODO this is temporary
       ready(lang.hitch(this, function () {
         var accession = this.proteinSelect.get('accession');

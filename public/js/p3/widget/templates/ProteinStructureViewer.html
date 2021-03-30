@@ -19,7 +19,24 @@
         <!-- accession select -->
         <div class="section">
             <h3 class="close section-title control-header">Select Protein</h3>
-            <div data-dojo-attach-point="select"></div>
+            <div style="position: relative; height: 40px;">
+                <span style="float: left;" data-dojo-attach-point="select"></span>
+                <span data-dojo-type="dijit/form/DropDownButton" style="float:right;">
+                    <img src="/public/icon_source/lightbulb-o.svg"
+                         style="height:25px; width: 25px;"
+                         title="show JMol command entry" />
+                    <div data-dojo-type="dijit/TooltipDialog"
+                         style="height: 500px;">
+                        <input data-dojo-type="dijit/form/Textarea"
+                               data-dojo-attach-point="commandEntry"
+                               style="width: 400px;"/>
+                        <button data-dojo-type="dijit/form/Button"
+                        data-dojo-attach-point="commandRun">Run</button>
+                        <button data-dojo-type="dijit/form/Button"
+                                data-dojo-attach-point="commandClear">Clear</button>
+                    </div>
+                </span>
+            </div>
         </div>
         <!-- display controls -->
         <div class="section">

@@ -24,6 +24,7 @@ define([
         name:'proteinId',
         store: this.proteinStore,
         maxHeight: -1,
+        style: 'width: 8em; font-size: large;',
         title: 'Change Displayed Protein'
       });
       this.addChild(this.select);
