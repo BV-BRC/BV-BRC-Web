@@ -15,14 +15,15 @@ define([
   return declare([WidgetBase], {
     id: 'defaultId',
     className: 'ProteinStructure',
-    // protein accession
+    // protein accession information
     accession: {},
     // ordered list of highlighters
     highlighters: [],
-    // view type, eg ball-and-stick, line, etc
+    // view type information, eg ball-and-stick, line with s
     displayType: {},
     // rock or spin with parameters
     effectType: {},
+    zoomLevel: 100,
     // JSMol makes a global Jmol object
     jmol: Jmol,
     jmolInfo: {
@@ -32,8 +33,7 @@ define([
       j2sPath: '/js/jsmol/j2s',
       deferApplet: false,
       src: '',
-      //coverTitle: 'Loading accession ...',
-      // this seems to be necessary to make the applet not defer loading
+      // this seems to be necessary to make the applet not defer loading until clicked
       coverImage: '/patric/images/bv-brc/ird-vipr-logo.png',
       readyFunction: function (applet) {
         console.log('JSMOL readyFunction for applet is ' + applet);
@@ -77,6 +77,7 @@ define([
     },
     updateDisplay: function () {
       console.log('updating displayType ' + this.displayType.id);
+      this.runScript('set zoomLarge FALSE; zoom ' + this.zoomLevel + ';');
       if (this.displayType.script) {
         this.runScript(this.displayType.script.join(' '));
       }
@@ -99,12 +100,14 @@ define([
       }
       return jmolCommand;
     },
+    // TODO this assumes loading from PDB
     loadAccession: function (accession) {
       this.runScript('load async "=' + accession + '"');
     },
     animFrameCallback: function (appletId, frameIndex, fileNumber, frameNumber) {
       console.log('JSMOL animFrameCallback called with frameIndex=' + frameIndex);
     },
+    // TODO use this to notify other controls that the file is loaded. Pub/Sub?
     loadStructCallback: function (appletId, filePath, fileName, title, errorMessage, errorCode, frame, lastFrame) {
       console.log('JSMOL loadStructCallback ' + filePath + ' ' + (errorCode == 3 ? 'success' : 'failed'));
     }

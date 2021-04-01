@@ -44,14 +44,30 @@ function (
     postCreate: function () {
       console.log('starting ' + this.id + '.postCreate');
       var accession = '6VXX';
+      var displayType = 'cartoon';
+      var zoomLevel = '100';
+
+      if (this.state.hashParams) {
+        if (this.state.hashParams.accession) {
+          accession = this.state.hashParams.accession;
+        }
+        if (this.state.hashParams.displayType) {
+          displayType = this.state.hashParams.displayType;
+        }
+        if (this.state.hashParams.zoomLevel) {
+          zoomLevel = this.state.hashParams.zoomLevel;
+        }
+      }
+
 
       this.proteinStore =  new ItemFileReadStore({
-        url:'/public/js/p3/resources/jsmol/SARS-CoV-2.json'
+        url: '/public/js/p3/resources/jsmol/SARS-CoV-2.json'
       });
       this.displayTypeStore = new ItemFileReadStore({
-        url:'/public/js/p3/resources/jsmol/display-types.json'
+        url: '/public/js/p3/resources/jsmol/display-types.json'
       });
 
+      // this is a container with the generated html from JMol
       this.jsmol = new ProteinStructureDisplay({
         id: this.id + '_structure'
       });
@@ -69,8 +85,9 @@ function (
       this.displayControl = new ProteinStructureDisplayControl({
         id: this.id + '_displayControl',
         displayTypeStore: this.displayTypeStore,
-        displayType: 'cartoon',
-        region: 'left',
+        displayType: displayType,
+        zoomLevel: zoomLevel,
+        region: 'left'
       });
 
       domConstruct.place(this.displayControl.domNode, this.displayControls);
@@ -80,18 +97,19 @@ function (
       this.displayControl.watch('zoomLevel', lang.hitch(this, function () {
         console.log('zoom is now ' + this.displayControl.zoomLevel);
         this.jsmol.runScript('zoom ' + this.displayControl.zoomLevel + ';');
-      }))
+      }));
       console.log('finished ' + this.id + '.postCreate');
 
-      this.commandRun.on('click', lang.hitch(this, function() {
+      this.commandRun.on('click', lang.hitch(this, function () {
         var scriptText = this.commandEntry.get('value');
         console.log('script to run is ' + scriptText);
         this.jsmol.runScript(scriptText);
       }));
-      this.commandClear.on('click', lang.hitch(this, function() {
-        this.commandEntry.set('value','');
-      }))
-      // TODO this is temporary
+      this.commandClear.on('click', lang.hitch(this, function () {
+        this.commandEntry.set('value', '');
+      }));
+
+      // TODO this is temporary until hooking up JMol ready function
       ready(lang.hitch(this, function () {
         var accession = this.proteinSelect.get('accession');
         this.updateAccessionInfo(accession);

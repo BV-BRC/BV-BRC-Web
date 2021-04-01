@@ -73,6 +73,17 @@ define([
       console.log('displayType is ' + this.displayType);
       console.log('selected is ' + this.select.get('value'));
 
+      console.log('this.displayZoom.options is' + this.displayZoom.options);
+      // check if zoomLevel is in normal options, otherwise change to custom and set custom value
+      var zoomOptions = this.displayZoom.options.filter(o => o.value == this.zoomLevel);
+      if (zoomOptions.length == 1) {
+        this.displayZoom.set('value', this.zoomLevel);
+      } else {
+        this.displayZoom.set('value', 'custom');
+        domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
+        this.displayZoomCustom.set('value', this.zoomLevel);
+      }
+
       this.displayZoom.on('change', lang.hitch(this, function () {
         var zoomLevel = this.displayZoom.get('value');
         console.log('zoom level is ' + zoomLevel);
@@ -91,7 +102,7 @@ define([
       this.displayZoomCustom.on('change', lang.hitch(this, function () {
         var zoomLevel = this.displayZoomCustom.get('value');
         console.log('custom zoom level is ' + zoomLevel);
-        this.set('zoomLevel',zoomLevel);
+        this.set('zoomLevel', zoomLevel);
       }));
     },
     onDisplayTypeChange: function (attr, oldValue, newValue) {
