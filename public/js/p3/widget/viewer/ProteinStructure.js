@@ -93,11 +93,13 @@ function (
       domConstruct.place(this.displayControl.domNode, this.displayControls);
 
       this.displayControl.watch('displayType', lang.hitch(this, this.onDisplayTypeChange));
-      this.proteinSelect.watch('accession', lang.hitch(this, this.onAccessionChange));
+      this.displayControl.watch('effect', lang.hitch(this, this.onEffectChange));
       this.displayControl.watch('zoomLevel', lang.hitch(this, function () {
         console.log('zoom is now ' + this.displayControl.zoomLevel);
-        this.jsmol.runScript('zoom ' + this.displayControl.zoomLevel + ';');
+        this.jsmol.set('zoomLevel', this.displayControl.zoomLevel);
       }));
+
+      this.proteinSelect.watch('accession', lang.hitch(this, this.onAccessionChange));
       console.log('finished ' + this.id + '.postCreate');
 
       this.commandRun.on('click', lang.hitch(this, function () {
@@ -137,6 +139,10 @@ function (
           this.jsmol.set('displayType', displayType);
         });
       }
+    },
+    onEffectChange: function (attr, oldValue, newValue) {
+      console.log('effect changed to ' + newValue);
+      this.jsmol.set('effect', newValue);
     },
     updateAccessionInfo: function (accession) {
       console.log('running ' + this.id + '.updateAccessionInfo');

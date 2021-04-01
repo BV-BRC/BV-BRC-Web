@@ -31,6 +31,7 @@ define([
     zoomLevel: 50,
     displayTypeStore: null,
     templateString: templateString,
+    effect: null,
     buildRendering: function () {
       this.inherited(arguments);
     },
@@ -104,6 +105,12 @@ define([
         console.log('custom zoom level is ' + zoomLevel);
         this.set('zoomLevel', zoomLevel);
       }));
+
+      this.displayEffect.watch('effect', lang.hitch(this, function (attr, oldValue, newValue) {
+        console.log('effect has changed to: ' + newValue);
+        this.set('effect', newValue);
+      }));
+
     },
     onDisplayTypeChange: function (attr, oldValue, newValue) {
       console.log(this.id + '.displayType went from ' + oldValue + ' to ' + newValue);

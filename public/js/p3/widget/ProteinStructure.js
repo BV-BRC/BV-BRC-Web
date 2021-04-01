@@ -2,7 +2,6 @@ define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   'jsmol/JSmol.min',
-//  'jsmol/js/JSmol.full',
   'dijit/_WidgetBase',
   'dojo/_base/kernel'
 ], function (
@@ -22,7 +21,7 @@ define([
     // view type information, eg ball-and-stick, line with s
     displayType: {},
     // rock or spin with parameters
-    effectType: {},
+    effect: {},
     zoomLevel: 100,
     // JSMol makes a global Jmol object
     jmol: Jmol,
@@ -67,6 +66,8 @@ define([
     postCreate: function () {
       this.watch('accession', lang.hitch(this, this.onAccessionChange));
       this.watch('displayType', lang.hitch(this, this.updateDisplay));
+      this.watch('effect', lang.hitch(this, this.setEffect));
+      this.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
     },
     onAccessionChange: function (attr, oldValue, newValue) {
       if (oldValue.id != newValue.id) {
@@ -77,7 +78,10 @@ define([
     },
     updateDisplay: function () {
       console.log('updating displayType ' + this.displayType.id);
-      this.runScript('set zoomLarge FALSE; zoom ' + this.zoomLevel + ';');
+      var zoomLevel = this.get('zoomLevel');
+      if (zoomLevel) {
+        this.runScript('set zoomLarge FALSE; zoom ' + zoomLevel + ';');
+      }
       if (this.displayType.script) {
         this.runScript(this.displayType.script.join(' '));
       }
@@ -110,6 +114,20 @@ define([
     // TODO use this to notify other controls that the file is loaded. Pub/Sub?
     loadStructCallback: function (appletId, filePath, fileName, title, errorMessage, errorCode, frame, lastFrame) {
       console.log('JSMOL loadStructCallback ' + filePath + ' ' + (errorCode == 3 ? 'success' : 'failed'));
+    },
+    setEffect: function (attr, oldValue, newValue) {
+      var script = '';
+      if (oldValue && oldValue.stopScript) {
+        script += oldValue.stopScript;
+      }
+      if (newValue && newValue.startScript) {
+        script += newValue.startScript;
+      }
+      console.log('setting effect via script: ' + script);
+      this.runScript(script);
+    },
+    setZoomLevel: function (attr, oldValue, newValue) {
+      this.runScript('zoom ' + newValue + ';');
     }
   });
 });

@@ -19,6 +19,7 @@ define([
     {
       id:'proteinStructureEffect',
       templateString: templateString,
+      effect: null,
       postCreate: function () {
         console.log('calling ' + this.id + '.postCreate');
         this.spinButton.on('change', lang.hitch(this, function () {
@@ -27,8 +28,10 @@ define([
             if (this.rockButton.get('checked')) {
               this.rockButton.set('checked', false);
             }
+            this.set('effect', { id: 'spin', startScript: 'spin on;', stopScript: 'spin off;' });
             console.log('would add spin');
           } else {
+            this.set('effect', {});
             console.log('would remove spin');
           }
         }));
@@ -39,7 +42,9 @@ define([
               this.spinButton.set('checked', false);
             }
             console.log('would add rock');
+            this.set('effect', { id: 'rock', startScript: '', stopScript: '' });
           } else {
+            this.set('effect', {});
             console.log('would remove rock');
           }
         }));
