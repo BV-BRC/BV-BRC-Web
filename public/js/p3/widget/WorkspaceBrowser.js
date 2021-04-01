@@ -95,10 +95,8 @@ define([
         domClass.toggle(icon, 'icon-chevron-circle-right');
         domClass.toggle(icon, 'icon-chevron-circle-left');
 
-        if (domClass.contains(icon, 'icon-chevron-circle-left'))
-        { domAttr.set(text, 'textContent', 'SHOW'); }
-        else
-        { domAttr.set(text, 'textContent', 'HIDE'); }
+        if (domClass.contains(icon, 'icon-chevron-circle-left')) { domAttr.set(text, 'textContent', 'SHOW'); }
+        else { domAttr.set(text, 'textContent', 'HIDE'); }
       });
 
       this.actionPanel.addAction('UserGuide', 'fa icon-info-circle fa-2x', {
@@ -292,16 +290,16 @@ define([
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
         multiple: false,
-        validTypes: WorkspaceManager.downloadTypes,
+        forbiddenTypes: WorkspaceManager.forbiddenDownloadTypes,
         tooltip: 'Download'
       }, function (selection) {
         WorkspaceManager.downloadFile(selection[0].path);
       }, false);
 
       var dfc = '<div>Download Table As...</div>' +
-          '<div class="wsActionTooltip" rel="text/tsv">Text</div>' +
-          '<div class="wsActionTooltip" rel="text/csv">CSV</div>' +
-          '<div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+        '<div class="wsActionTooltip" rel="text/tsv">Text</div>' +
+        '<div class="wsActionTooltip" rel="text/csv">CSV</div>' +
+        '<div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
       var downloadTT = new TooltipDialog({
         content: dfc,
         onMouseLeave: function () {
@@ -377,9 +375,9 @@ define([
       }, false);
 
       var dtsfc = '<div>Download Job Results:</div>' +
-          '<div class="wsActionTooltip" rel="circos.svg">SVG Image</div>' +
-          '<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table (txt)</div>' +
-          '<div class="wsActionTooltip" rel="genome_comparison.xls">Genome Comparison Table (xls)</div>';
+        '<div class="wsActionTooltip" rel="circos.svg">SVG Image</div>' +
+        '<div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table (txt)</div>' +
+        '<div class="wsActionTooltip" rel="genome_comparison.xls">Genome Comparison Table (xls)</div>';
       var downloadTTSelectFile = new TooltipDialog({
         content: dtsfc,
         onMouseLeave: function () {
@@ -566,10 +564,8 @@ define([
         domClass.toggle(icon, 'icon-eye-slash');
         domClass.toggle(icon, 'icon-eye');
 
-        if (window.App.showHiddenFiles)
-        { domAttr.set(text, 'textContent', 'HIDE HIDDEN'); }
-        else
-        { domAttr.set(text, 'textContent', 'SHOW HIDDEN'); }
+        if (window.App.showHiddenFiles) { domAttr.set(text, 'textContent', 'HIDE HIDDEN'); }
+        else { domAttr.set(text, 'textContent', 'SHOW HIDDEN'); }
 
         Topic.publish('/refreshWorkspace');
       }, false);
@@ -620,6 +616,20 @@ define([
           idType = 'genome_name';
         }
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
+      }, false);
+
+      this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
+        label: 'MSA',
+        multiple: false,
+        validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
+        tooltip: 'View aligned fasta'
+      }, function (selection) {
+        var path = this.selection[0].path; // .get('selection.path');
+        var alignType = 'protein';
+        if (this.selection[0].type.includes('dna')) {
+          alignType = 'dna';
+        }
+        Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -1083,8 +1093,7 @@ define([
 
           if (p[0] == 'global_permission') return;
 
-          if (newUsers.indexOf(user) == -1)
-          { newPerms.push({ user: user, permission: 'n' }); }
+          if (newUsers.indexOf(user) == -1) { newPerms.push({ user: user, permission: 'n' }); }
         });
 
         Topic.publish('/Notification', {
@@ -1157,7 +1166,7 @@ define([
             var prom;
             var newName = nameInput.get('value');
             if (path.split('/').length <= 3) {
-              prom =  WorkspaceManager.renameWorkspace(path, newName);
+              prom = WorkspaceManager.renameWorkspace(path, newName);
             } else {
               prom = WorkspaceManager.rename(path, nameInput.get('value'), isJob);
             }
@@ -1243,20 +1252,20 @@ define([
       // open form in dialog
       var paths = selection.map(function (obj) { return obj.path; });
       var dlg = new Confirmation({
-        title: 'Change '  + (paths.length > 1 ? paths.length + ' Object Types' : ' Object Type' ),
+        title: 'Change ' + (paths.length > 1 ? paths.length + ' Object Types' : ' Object Type'),
         okLabel: 'Save',
         content: form,
         style: { width: '300px' },
         onConfirm: function (evt) {
           var newType = typeSelector.attr('value');
           var newObjs = selection.map(function (obj) {
-            return Object.assign(obj, { type: newType } );
+            return Object.assign(obj, { type: newType });
           });
 
           Topic.publish('/Notification', {
             message: "<span class='default'>Changing " +
-              (paths.length > 1 ?  paths.length + ' types...' : ' type...') +
-            '</span>'
+              (paths.length > 1 ? paths.length + ' types...' : ' type...') +
+              '</span>'
           });
 
           WorkspaceManager.updateMetadata(newObjs)
