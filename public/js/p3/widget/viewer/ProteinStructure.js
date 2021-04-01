@@ -6,7 +6,9 @@ define([
   '../ProteinStructure',
   '../ProteinStructureSelect',
   '../ProteinStructureDisplayControl',
+  '../ProteinStructureHighlight',
   'dojo/data/ItemFileReadStore',
+  'dojo/store/DataStore',
   './Base',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
@@ -21,7 +23,9 @@ function (
   ProteinStructureDisplay,
   ProteinSelect,
   ProteinStructureDisplayControl,
+  Highlight,
   ItemFileReadStore,
+  DataStore,
   Base,
   Templated,
   WidgetsInTmeplateMixin,
@@ -66,9 +70,14 @@ function (
       this.displayTypeStore = new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
+      this.epitopes = new DataStore({
+        store: new ItemFileReadStore({
+          url: '/public/js/p3/resources/jsmol/sars2-epitopes.json'
+        })
+      });
 
       this.jsmol = new ProteinStructureDisplay({
-        id: this.id + '_structure',
+        id: this.id + '_structure'
       });
 
       domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
@@ -108,6 +117,31 @@ function (
       }));
       this.commandClear.on('click', lang.hitch(this, function () {
         this.commandEntry.set('value', '');
+      }));
+
+      this.epitopeHighlight = new Highlight({
+        id: this.id + '_epitopes',
+        title: 'Epitopes',
+        store: this.epitopes,
+        color: '#ffff00'
+      });
+      domConstruct.place(this.epitopeHighlight.domNode, this.highlighters, 'last');
+
+      this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+        console.log('old positions ' + oldValue + ' new positions ' + newValue);
+        // TEMP
+        const script = [];
+        console.log('previous highlight: ' + oldValue.size, ' new highlight: ' + newValue.size);
+        const displayType = this.jsmol.get('displayType');
+        for ( let [pos, color] of oldValue) {
+          script.push('select ' + pos + ';');
+          script.push(displayType.colorMode);
+        }
+        for (let [pos, color] of newValue) {
+          script.push('select ' + pos + ';');
+          script.push('color ' + color + ';');
+        }
+        this.jsmol.runScript(script.join(''));
       }));
 
       // TODO this is temporary until hooking up JMol ready function

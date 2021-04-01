@@ -120,18 +120,22 @@ define([
     },
     updateDisplayTypeInfo: function (displayType) {
       this.displayTypeStore.get(displayType).then(record => {
-        domConstruct.empty(this.displayTypeIcon);
-        domConstruct.create('img',
-          {
-            src: '/public/js/p3/resources/jsmol/' + record.icon,
-            style: 'width:25px;height:25px',
-          }, this.displayTypeIcon, 'last');
-        if (!(record.description == null || record.description == '')) {
-          var helpURL = '/public/js/p3/resources/jsmol/' + record.description;
-          console.log('updating description to ' + helpURL);
-          request.get(helpURL).then(lang.hitch(this, function (data) {
-            this.displayTypeDescription.set('label', '<div style="max-width: 500px;">' + data + '</div>');
-          }));
+        if (record) {
+          domConstruct.empty(this.displayTypeIcon);
+          domConstruct.create('img',
+            {
+              src: '/public/js/p3/resources/jsmol/' + record.icon,
+              style: 'width:25px;height:25px',
+            }, this.displayTypeIcon, 'last');
+          if (!(record.description == null || record.description == '')) {
+            var helpURL = '/public/js/p3/resources/jsmol/' + record.description;
+            console.log('updating description to ' + helpURL);
+            request.get(helpURL).then(lang.hitch(this, function (data) {
+              this.displayTypeDescription.set('label', '<div style="max-width: 500px;">' + data + '</div>');
+            }));
+          }
+        } else {
+          console.log('no record found for' + displayType);
         }
       });
     }
