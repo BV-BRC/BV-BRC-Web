@@ -1,9 +1,12 @@
+define.amd.jQuery = true
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/text!./templates/VariantLineagePhlyogenyTreeViewer.html', 'dijit/_TemplatedMixin',
+  'dojo/request',
   'archaeopteryx/archaeopteryx-dependencies/d3.v3.min', 'archaeopteryx/archaeopteryx-dependencies/sax', 'jquery/dist/jquery', 'archaeopteryx/archaeopteryx-dependencies/jquery-ui',
   'phyloxml/phyloxml', 'archaeopteryx/archaeopteryx-js/forester', 'archaeopteryx/archaeopteryx-js/archaeopteryx'
 ], function (
   declare, WidgetBase, Template, Templated,
+  xhr,
   d3, sax, jquery, jquery_ui,
   phyloxml, forester, archaeopteryx
 ) {
@@ -19,9 +22,9 @@ define([
         return;
       }
       this.inherited(arguments);
-      this.load();
+      this.pre_build_options();
     },
-    load: function () {
+    pre_build_options: function () {
       var options = {};
       options.alignPhylogram = false; // We should launch with "regular" phylogram.
       options.defaultFont = ['Arial', 'Helvetica', 'Times'];
@@ -207,12 +210,20 @@ define([
         property_values: ['B.1.1.7', 'B.1.1.28', 'B.1.351', 'B.1.375', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'P.1', 'P.2']
       };
 
-      // var loc = 'http://www.phyloxml.org/archaeopteryx-js/phyloxml_trees/VIPR_SARS2_29400_09999_ni_3_PANGO_lineages_MAFFT_05_tree_1_fme_p2dvvm.xml';
-      // var loc = 'http://localhost:3000/public/js/p3/widget/templates/Archaeopteryx/VIPR_SARS2_29400_09999_ni_3_PANGO_lineages_MAFFT_05_tree_1_fme_p2dvvm.xml';
-      var loc = '/public/js/p3/widget/templates/Archaeopteryx/VIPR_SARS2_29400_09999_ni_3_PANGO_lineages_MAFFT_05_tree_1_fme_p2dvvm.xml';
-      jQuery.get(loc,
-        function (data) {
-          var tree = null;
+      this.options = options;
+      this.settings = settings;
+      this.nodeVisualizations = nodeVisualizations;
+      this.specialVisualizations = specialVisualizations;
+    },
+    _setStateAttr: function () {
+      var options = this.options;
+      var settings = this.settings;
+      var nodeVisualizations = this.nodeVisualizations;
+      var specialVisualizations = this.specialVisualizations;
+
+      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/VIPR_SARS2_29400_09999_ni_3_PANGO_lineages_MAFFT_05_tree_1_fme_p2dvvm.xml')
+        .then((data) => {
+          var tree;
           try {
             tree = window.archaeopteryx.parsePhyloXML(data);
           }
@@ -227,10 +238,7 @@ define([
               alert('error while launching archaeopteryx: ' + e);
             }
           }
-        }, 'text')
-        .fail(function () {
-          alert('error: failed to read tree(s) from "' + loc + '"');
-        });
+        })
     }
   });
 });
