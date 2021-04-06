@@ -32,7 +32,6 @@
     "http-proxy": "^1.15.2",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
     "jquery": "^3.3.1",
-    "jquery-ui": "^1.12.1",
     "morgan": "^1.9.1",
     "MultiBigWig": "github:BV-BRC/multibigwig#master",
     "nconf": "^0.7.1",
@@ -44,9 +43,7 @@
     "pug": "^2.0.0-rc.3",
     "request": "^2.87.0",
     "rql": "^0.3.3",
-    "sax-1.2.4": "npm:sax@^1.2.4",
     "serve-favicon": "^2.5.0",
-    "stackblur": "^1.0.0",
     "swfobject-amd": "~2.3.1",
     "webcola": "^3.3.6"
   },
