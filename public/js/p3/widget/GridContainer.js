@@ -595,6 +595,34 @@ define([
           Topic.publish('/navigate', { href: '/view/Genome/' + sel.genome_id });
         },
         false
+      ], [
+        'ViewStructureItem',
+        'MultiButton fa icon-selection-Sequence fa-2x',
+        {
+          label: 'STRUCTURE',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to Structure View. Press and Hold for more options.',
+          ignoreDataType: true,
+          validContainerTypes: ['structure_data'],
+          pressAndHold: function (selection, button, opts, evt) {
+            console.log('PressAndHold');
+            console.log('Selection: ', selection, selection[0]);
+            popup.open({
+              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/ProteinStructure/' + selection[0].pdb_id }),
+              around: button,
+              orient: ['below']
+            });
+
+          }
+        },
+        function (selection) {
+          var sel = selection[0];
+          // console.log("sel: ", sel)
+          // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+          Topic.publish('/navigate', { href: '/view/ProteinStructure/' + sel.pdb_id });
+        },
+        false
       ],
 
       [
