@@ -4,6 +4,7 @@ define([
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantDetail', '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
+  '../VariantLineagePhlyogenyTreeViewer',
   '../../util/QueryToEnglish'
 ], function (
   declare, lang,
@@ -11,6 +12,7 @@ define([
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
   VariantDetailView, VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
+  VariantLineagePhlyogenyTreeViewer,
   QueryToEnglish
 ) {
 
@@ -144,6 +146,12 @@ define([
         id: this.viewer.id + '_phlyogeny'
       })
 */
+
+      this.VariantLineagePhlyogenyTreeViewer = new VariantLineagePhlyogenyTreeViewer({
+        title: 'Phylogenetic Tree',
+        id: this.viewer.id + '_VariantLineagePhlyogenyTreeViewer'
+      })
+
       this.resources = new VariantResources({
         title: 'Resources',
         id: this.viewer.id + '_resources'
@@ -156,7 +164,7 @@ define([
       this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
       // this.viewer.addChild(this.structure);
-      // this.viewer.addChild(this.phlyogeny);
+      this.viewer.addChild(this.VariantLineagePhlyogenyTreeViewer);
       this.viewer.addChild(this.resources);
     }
   });
