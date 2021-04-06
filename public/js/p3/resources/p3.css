@@ -31,6 +31,7 @@
 @import url("./D3StackedAreaChart.css");
 @import url("./D3BarLineChart.css");
 @import url("../../cytoscape-context-menus/cytoscape-context-menus.css");
+@import url("../../archaeopteryx/archaeopteryx-dependencies/jquery-ui.css");
 
 .icon-sort-alpha-asc {
   margin-left: 0;
