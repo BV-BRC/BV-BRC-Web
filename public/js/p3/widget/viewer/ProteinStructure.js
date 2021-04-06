@@ -174,7 +174,7 @@ function (
       }
     },
     onEffectChange: function (attr, oldValue, newValue) {
-      console.log('effect changed to ' + newValue);
+      console.log('effect changed from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
       this.jsmol.set('effect', newValue);
     },
     updateAccessionInfo: function (accession) {
