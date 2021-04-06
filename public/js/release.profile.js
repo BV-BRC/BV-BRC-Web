@@ -45,6 +45,9 @@ var profile = {
     { name: 'cytoscape-context-menus', location:'./cytoscape-context-menus' },
     { name: 'cytoscape-cola', location:'./cytoscape-cola' },
     { name: 'cytoscape-dagre', location:'./cytoscape-dagre' },
+    { name: 'archaeopteryx', location: './archaeopteryx' },
+    { name: 'jquery', location: './jquery' },
+    { name: 'phyloxml', location: './phyloxml' },
     { name: 'heatmap', location:'./heatmap' }
   ],
   layers: {
