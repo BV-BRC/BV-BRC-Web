@@ -5,7 +5,7 @@ define([
   'dijit/layout/ContentPane',
   'dijit/Tooltip',
   'dijit/form/Select',
-  'dojo/data/ItemFileReadStore',
+  'dojo/data/ObjectStore',
   'dojo/_base/lang',
   'dojo/request',
   'dojo/text!./templates/ProteinStructureDisplayControls.html',
@@ -18,7 +18,7 @@ define([
   ContentPane,
   ToolTip,
   Select,
-  ItemFileReadStore,
+  ObjectStore,
   lang,
   request,
   templateString,
@@ -27,24 +27,28 @@ define([
 ) {
   return declare( [ContentPane, Templated, WidgetsInTemplateMixin], {
     baseClass: 'ProteinStructureDisplayControl',
-    displayType: null,
-    zoomLevel: 50,
-    displayTypeStore: null,
+    displayType: '',
+    displayTypeInfo: {},
+    zoomLevel: 100,
+    effect: {},
     templateString: templateString,
-    effect: null,
+    displayTypeStore: null,
     buildRendering: function () {
       this.inherited(arguments);
     },
     postCreate: function () {
       this.inherited(arguments);
-      console.log(this.id + '.postCreate displayType is ' + this.displayType);
+
+      console.log(this.id + '.postCreate displayTypeInfo is ' + JSON.stringify(this.get('displayTypeInfo')));
+
       this.select = new Select({
         id: this.id + '_displayTypeSelect',
         name:'displaytype',
-        store:this.displayTypeStore,
+        store: this.displayTypeStore,
         style: 'width: 95%',
         maxHeight: -1,
         title: 'Change Display Type',
+        value: this.get('displayType')
       });
       domConstruct.place(this.select.domNode, this.displayTypeSelector);
 
@@ -54,27 +58,20 @@ define([
         label: 'Hi, this is a tooltip',
       });
 
-
-      if (this.displayType) {
-        this.select.set('value', this.displayType);
+      if (this.get('displayType') && this.get('displayTypeInfo')) {
+        let displayTypeInfo = this.get('displayTypeInfo');
+        console.log('DisplayControl setting displayType to ' + displayTypeInfo.id);
+        this.select.set('value', displayTypeInfo.id);
+        this.updateDisplayTypeInfo(this.get('displayTypeInfo'));
       }
+      this.watch('displayTypeInfo', lang.hitch(this, this.onDisplayTypeChange));
 
       this.select.on('change', lang.hitch(this, function () {
-        var value = this.select.get('value');
-        console.log('displayType is now ' + value);
-        this.set('displayType', value);
+        var displayTypeId = this.select.get('value');
+        console.log('DisplayControl displayType is now ' + displayTypeId);
+        this.set('displayType', displayTypeId);
       }));
 
-      if (this.displayType) {
-        this.set('displayType', this.displayType);
-        this.updateDisplayTypeInfo(this.displayType);
-      }
-
-      this.watch('displayType', lang.hitch(this, this.onDisplayTypeChange));
-      console.log('displayType is ' + this.displayType);
-      console.log('selected is ' + this.select.get('value'));
-
-      console.log('this.displayZoom.options is' + this.displayZoom.options);
       // check if zoomLevel is in normal options, otherwise change to custom and set custom value
       var zoomOptions = this.displayZoom.options.filter(o => o.value == this.zoomLevel);
       if (zoomOptions.length == 1) {
@@ -86,58 +83,57 @@ define([
       }
 
       this.displayZoom.on('change', lang.hitch(this, function () {
-        var zoomLevel = this.displayZoom.get('value');
-        console.log('zoom level is ' + zoomLevel);
-        var customVisibility = domStyle.get(this.displayZoomCustomContainer, 'visibility');
-        console.log('custom zoom visibility is currently ' + customVisibility);
+        var zoomLevel = this.displayZoom.get('value') || 100;
+        console.log('DisplayControl zoom level is ' + zoomLevel);
         if ( zoomLevel == 'custom' ) {
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         } else {
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'hidden');
           this.set('zoomLevel', zoomLevel);
         }
-        customVisibility = domStyle.get(this.displayZoomCustomContainer, 'visibility');
-        console.log('custom zoom visibility is now ' + customVisibility);
       }));
 
       this.displayZoomCustom.on('change', lang.hitch(this, function () {
         var zoomLevel = this.displayZoomCustom.get('value');
-        console.log('custom zoom level is ' + zoomLevel);
+        console.log('DisplayControl custom zoom level is ' + zoomLevel);
         this.set('zoomLevel', zoomLevel);
       }));
 
       this.displayEffect.watch('effect', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('effect has changed to: ' + newValue);
+        console.log('DisplayControl effect has changed to: ' + newValue);
         this.set('effect', newValue);
       }));
-
     },
     onDisplayTypeChange: function (attr, oldValue, newValue) {
-      console.log(this.id + '.displayType went from ' + oldValue + ' to ' + newValue);
-      if (oldValue != newValue) {
-        this.updateDisplayTypeInfo(newValue);
-      }
+      console.log(this.id + '.displayType went from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
+      this.updateDisplayTypeInfo(newValue);
     },
     updateDisplayTypeInfo: function (displayType) {
-      this.displayTypeStore.get(displayType).then(record => {
-        if (record) {
-          domConstruct.empty(this.displayTypeIcon);
+      if (displayType) {
+        this.set('displayType', displayType.id);
+        // update display select if it's changed
+        if (this.select.get('value') != displayType.id) {
+          this.select.set('value', displayType.id);
+        }
+        // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
+        domConstruct.empty(this.displayTypeIcon);
+        if (displayType.icon) {
+          console.log('creating icon ' + displayType.icon);
           domConstruct.create('img',
             {
-              src: '/public/js/p3/resources/jsmol/' + record.icon,
+              src: '/public/js/p3/resources/jsmol/' + displayType.icon,
               style: 'width:25px;height:25px',
             }, this.displayTypeIcon, 'last');
-          if (!(record.description == null || record.description == '')) {
-            var helpURL = '/public/js/p3/resources/jsmol/' + record.description;
-            console.log('updating description to ' + helpURL);
-            request.get(helpURL).then(lang.hitch(this, function (data) {
-              this.displayTypeDescription.set('label', '<div style="max-width: 500px;">' + data + '</div>');
-            }));
-          }
-        } else {
-          console.log('no record found for' + displayType);
         }
-      });
+        if (!(displayType.description == null || displayType.description == '')) {
+          var helpURL = '/public/js/p3/resources/jsmol/' + displayType.description;
+          console.log('updating description to ' + helpURL);
+          request.get(helpURL).then(lang.hitch(this, function (data) {
+            console.log('setting displayType description text');
+            this.displayTypeDescription.set('label', '<div style="max-width: 500px;">' + data + '</div>');
+          }));
+        }
+      }
     }
   });
 });

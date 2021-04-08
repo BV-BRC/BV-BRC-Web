@@ -1,28 +1,27 @@
+/**
+ * Used for interacting with a JMol javascript viewer.
+ *
+ * use getViewerHTML() to get the viewer display
+ */
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   'jsmol/JSmol.min',
   'dijit/_WidgetBase',
-  'dojo/_base/kernel'
+  'dojo/_base/kernel',
+  './ProteinStructureState',
 ], function (
   declare,
   lang,
   JSMol,
   WidgetBase,
-  kernel
+  kernel,
+  ProteinStructureState
 ) {
   return declare([WidgetBase], {
     id: 'defaultId',
     className: 'ProteinStructure',
-    // protein accession information
-    accession: {},
-    // ordered list of highlighters
-    highlighters: [],
-    // view type information, eg ball-and-stick, line with s
-    displayType: {},
-    // rock or spin with parameters
-    effect: {},
-    zoomLevel: 100,
+    viewState: new ProteinStructureState({}),
     // JSMol makes a global Jmol object
     jmol: Jmol,
     jmolInfo: {
@@ -44,17 +43,30 @@ define([
       opts = opts || {};
       lang.mixin(this, opts);
       console.log('ProteinStructure.constructor id=' + this.id);
+      // don't create HTML for the viewer
       this.jmol.setDocument(0);
+
+      // JMOL callbacks are function names rather than the functions themselves
+      // TODO it may be possible to set the evaluation scope for these callback names
       var animFrameCallbackName = this.id + '_animFrameCallback';
       var loadStructCallbackName = this.id + '_loadStructCallback';
-      console.log('loadStructCallback is ' + loadStructCallbackName);
       kernel.global[animFrameCallbackName] = lang.hitch(this, this.animFrameCallback);
       kernel.global[loadStructCallbackName] = lang.hitch(this, this.loadStructCallback);
       this.jmolInfo.animFrameCallback = animFrameCallbackName;
       this.jmolInfo.loadStructCallback = loadStructCallbackName;
 
       this.jsmol = this.jmol.getApplet(this.id + '_jsmolDisplay', this.jmolInfo);
-      console.log('global is ' + kernel.global);
+      this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
+        console.log('JMOL updating viewState from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
+        newValue.watch('accession', lang.hitch(this, this.onAccessionChange));
+        newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
+        newValue.watch('effect', lang.hitch(this, this.setEffect));
+        newValue.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
+        newValue.watch('highlights', lang.hitch(this, this.handleHighlight));
+        if (oldValue.get('accession', {}).id != newValue.get('accession', {}).id) {
+          this.updateAccession(newValue.get('accession'));
+        }
+      }));
     },
     getViewerHTML: function () {
       return this.jmol.getAppletHtml(this.jsmol);
@@ -64,38 +76,51 @@ define([
       this.jmol.script(this.jsmol, script);
     },
     postCreate: function () {
-      this.watch('accession', lang.hitch(this, this.onAccessionChange));
-      this.watch('displayType', lang.hitch(this, this.updateDisplay));
-      this.watch('effect', lang.hitch(this, this.setEffect));
-      this.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
+    },
+    updateAccession: function (accessionInfo) {
+      this.highlighters = [];
+      this.loadAccession(accessionInfo.id);
+      this.updateDisplay();
     },
     onAccessionChange: function (attr, oldValue, newValue) {
-      if (oldValue.id != newValue.id) {
-        this.highlighters = [];
-        this.loadAccession(newValue.id);
-        this.updateDisplay();
+      console.log('JMOL accession changed to ' + JSON.stringify(newValue));
+      if (newValue && newValue.id &&  (oldValue.id != newValue.id)) {
+        this.updateAccession(newValue);
       }
     },
     updateDisplay: function () {
-      console.log('updating displayType ' + this.displayType.id);
-      var zoomLevel = this.get('zoomLevel');
+      let displayType = this.viewState.get('displayType');
+      console.log('JMOL updating displayType to ' + displayType.id);
+      var zoomLevel = this.viewState.get('zoomLevel');
       if (zoomLevel) {
         this.runScript('set zoomLarge FALSE; zoom ' + zoomLevel + ';');
       }
-      if (this.displayType.script) {
-        this.runScript(this.displayType.script.join(' '));
+      if (displayType.script) {
+        console.log('JMOL displayType.script ' + JSON.stringify(displayType.script));
+        this.runScript(displayType.script);
       }
-      if (this.effect && this.effect.startScript) {
-        this.runScript(this.effect.startScript);
+      const highlights = this.get('viewState').get('highlights');
+      this.handleHighlight('highlights', highlights, highlights);
+      let effect = this.viewState.get('effect');
+      if (effect && effect.startScript) {
+        this.runScript(effect.startScript);
       }
     },
-    handleHighlighters: function () {
-      // the old code did:
-      // stop rocking
-      // dehighlight
-      // update view
-      // highlight
-      // start rocking
+    // TODO block changes until script is run
+    handleHighlight: function (attr, oldValue, newValue) {
+      console.log('old positions ' + oldValue + ' new positions ' + newValue);
+      const script = [];
+      console.log('previous highlight: ' + oldValue.size, ' new highlight: ' + newValue.size);
+      const displayType = this.get('viewState', {}).get('displayType');
+      for ( let [pos, color] of oldValue) {
+        script.push('select ' + pos + ';');
+        script.push(displayType.colorMode);
+      }
+      for (let [pos, color] of newValue) {
+        script.push('select ' + pos + ';');
+        script.push('color ' + color + ';');
+      }
+      this.runScript(script.join(''));
     },
     highlightItemToJmol: function (item) {
       var jmolCommand = [

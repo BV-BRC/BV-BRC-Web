@@ -43,12 +43,12 @@ define([
       this.addChild(this.selection);
 
       this.selection.on('select', lang.hitch(this, function (evt) {
-        console.log(this.title + ' highlight value is ' + evt.selected);
         const newPositions = new Map(this.positions);
         for (let row of evt.rows) {
           newPositions.set(row.data.coords, '[' + this.color.replace('#', 'x') + ']');
           domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', this.color);
         }
+        console.log('highlight positions %s', JSON.stringify(newPositions));
         this.set('positions', newPositions);
       }));
       this.selection.on('deselect', lang.hitch(this, function (evt) {
@@ -57,6 +57,7 @@ define([
           newPositions.delete(row.data.coords);
           domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', 'inherit');
         }
+        console.log('highlight positions %s', JSON.stringify(newPositions));
         this.set('positions', newPositions);
       }));
       this.highlightColorPalette.on('change', lang.hitch(this, function (color) {

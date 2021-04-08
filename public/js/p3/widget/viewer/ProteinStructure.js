@@ -3,10 +3,12 @@ define([
   'dojo/_base/lang',
   'dojo/dom-construct',
   'dojo/ready',
+  '../ProteinStructureState',
   '../ProteinStructure',
   '../ProteinStructureSelect',
   '../ProteinStructureDisplayControl',
   '../ProteinStructureHighlight',
+  '../ProteinStructureState',
   'dojo/data/ItemFileReadStore',
   'dojo/store/DataStore',
   './Base',
@@ -20,10 +22,12 @@ function (
   lang,
   domConstruct,
   ready,
+  ProteinStructureState,
   ProteinStructureDisplay,
   ProteinSelect,
   ProteinStructureDisplayControl,
   Highlight,
+  ProteinStructureState,
   ItemFileReadStore,
   DataStore,
   Base,
@@ -37,6 +41,7 @@ function (
     className: 'ProteinStructureViewer',
     templateString: templateString,
     jsmol: null,
+    viewState: new ProteinStructureState({}),
     state: {},
     onSetState: function (attr, oldValue, newValue) {
       console.log(this.id + '.state changed from ' + oldValue + ' to ' + newValue);
@@ -47,67 +52,51 @@ function (
     },
     postCreate: function () {
       console.log('starting ' + this.id + '.postCreate');
-      var accession = '6VXX';
-      var displayType = 'cartoon';
-      var zoomLevel = '100';
 
-      if (this.state.hashParams) {
-        if (this.state.hashParams.accession) {
-          accession = this.state.hashParams.accession;
-        }
-        if (this.state.hashParams.displayType) {
-          displayType = this.state.hashParams.displayType;
-        }
-        if (this.state.hashParams.zoomLevel) {
-          zoomLevel = this.state.hashParams.zoomLevel;
-        }
-      }
-
-
-      this.proteinStore =  new ItemFileReadStore({
+      this.proteinStore =   new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/SARS-CoV-2.json'
       });
       this.displayTypeStore = new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
       this.epitopes = new DataStore({
+        idProperty: 'id',
         store: new ItemFileReadStore({
           url: '/public/js/p3/resources/jsmol/sars2-epitopes.json'
         })
       });
 
       this.jsmol = new ProteinStructureDisplay({
-        id: this.id + '_structure'
+        id: this.id + '_structure',
       });
 
       domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
 
-      this.proteinSelect = new ProteinSelect({
-        id: this.id + '_select',
-        proteinStore: this.proteinStore,
-        accession: accession,
-        style: 'width: 50px;'
-      });
-      domConstruct.place(this.proteinSelect.domNode, this.select);
-
       this.displayControl = new ProteinStructureDisplayControl({
         id: this.id + '_displayControl',
         displayTypeStore: this.displayTypeStore,
-        displayType: displayType,
-        zoomLevel: zoomLevel,
         region: 'left'
       });
 
+      this.displayControl.watch('displayType', lang.hitch(this, function (attr, oldValue, newValue) {
+        console.log('control displayType changed from ' + oldValue + ' to ' + newValue);
+        this.displayTypeStore.fetchItemByIdentity({
+          identity: newValue,
+          onItem: lang.hitch(this, (record) => {
+            var displayType = {
+              id: this.displayTypeStore.getValue(record, 'id'),
+              label: this.displayTypeStore.getValue(record, 'label'),
+              icon: this.displayTypeStore.getValue(record, 'icon'),
+              description: this.displayTypeStore.getValue(record, 'description'),
+              colorMode: this.displayTypeStore.getValue(record, 'colorMode'),
+              script: this.displayTypeStore.getValue(record, 'script'),
+            };
+            this.get('viewState').set('displayType', displayType);
+          })
+        });
+      }));
       domConstruct.place(this.displayControl.domNode, this.displayControls);
 
-      this.displayControl.watch('displayType', lang.hitch(this, this.onDisplayTypeChange));
-      this.displayControl.watch('effect', lang.hitch(this, this.onEffectChange));
-      this.displayControl.watch('zoomLevel', lang.hitch(this, function () {
-        console.log('zoom is now ' + this.displayControl.zoomLevel);
-        this.jsmol.set('zoomLevel', this.displayControl.zoomLevel);
-      }));
-
-      this.proteinSelect.watch('accession', lang.hitch(this, this.onAccessionChange));
       console.log('finished ' + this.id + '.postCreate');
 
       this.commandRun.on('click', lang.hitch(this, function () {
@@ -128,63 +117,106 @@ function (
       domConstruct.place(this.epitopeHighlight.domNode, this.highlighters, 'last');
 
       this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('old positions ' + oldValue + ' new positions ' + newValue);
-        // TEMP
-        const script = [];
-        console.log('previous highlight: ' + oldValue.size, ' new highlight: ' + newValue.size);
-        const displayType = this.jsmol.get('displayType');
-        for ( let [pos, color] of oldValue) {
-          script.push('select ' + pos + ';');
-          script.push(displayType.colorMode);
-        }
-        for (let [pos, color] of newValue) {
-          script.push('select ' + pos + ';');
-          script.push('color ' + color + ';');
-        }
-        this.jsmol.runScript(script.join(''));
+        console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+        console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+        this.get('viewState').set('highlights', new Map(newValue));
       }));
 
-      // TODO this is temporary until hooking up JMol ready function
-      ready(lang.hitch(this, function () {
-        var accession = this.proteinSelect.get('accession');
-        this.updateAccessionInfo(accession);
-        console.log('running ready ' + this.id);
-        console.log('In ready accession is ' + accession);
-        if (accession) {
-          this.proteinStore.get(accession).then(accessionInfo => this.jsmol.set('accession', accessionInfo));
-        }
-        var displayType = this.displayControl.get('displayType');
-        console.log('In ready displayType is ' + displayType);
-        if (displayType) {
-          this.displayTypeStore.get(displayType).then(displayTypeInfo => this.jsmol.set('displayType', displayTypeInfo));
-        }
+      this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
+        this.onViewStateChange(newValue);
+      }));
+
+      this.getInitialViewState().then(lang.hitch(this, function (viewData) {
+        var viewState = new ProteinStructureState({});
+        console.log('viewData for initialViewState is ' + JSON.stringify(viewData));
+        viewState.set('displayType', viewData[0]);
+        viewState.set('accession', viewData[1]);
+        viewState.set('zoomLevel', viewData[2]);
+        viewState.set('highlights', new Map());
+        console.log('initial viewstate is ' + JSON.stringify(viewState));
+        this.set('viewState', viewState);
       }));
 
     },
-    onAccessionChange: function (attr, oldValue, newValue) {
-      console.log('accession went from ' + oldValue + ' to new value ' + newValue);
-      this.updateAccessionInfo(newValue);
+    onViewStateChange: function (viewState) {
+      console.log('updating viewState for child objects to ' + JSON.stringify(viewState));
+      viewState.watch('accession', lang.hitch(this, function (attr, oldValue, newValue) {
+        console.log(this.id + '.accession has changed from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
+        this.updateAccessionInfo(newValue);
+      }));
+      viewState.watch('displayType', lang.hitch(this, function(attr, oldValue, newValue) {
+        this.displayControl.set('displayTypeInfo', viewState.get('displayType'));
+      }));
+
+      this.displayControl.set('displayTypeInfo', viewState.get('displayType'));
+      this.displayControl.set('zoomLevel', viewState.get('zoomLevel'));
+      this.jsmol.set('viewState', viewState);
+      this.updateAccessionInfo(viewState.get('accession'));
     },
-    onDisplayTypeChange: function (attr, oldValue, newValue) {
-      console.log('displayType changed from ' + oldValue + ' to ' + newValue);
-      if (oldValue != newValue) {
-        this.displayTypeStore.get(newValue).then(displayType => {
-          this.jsmol.set('displayType', displayType);
-        });
-      }
+    updateAccessionInfo: function (accessionInfo) {
+      console.log('running ' + this.id + '.updateAccessionInfo with ' + JSON.stringify(accessionInfo) );
+      domConstruct.empty(this.accessionTitle.containerNode);
+      domConstruct.place('<span class="searchField" style="font-size: large;">' + accessionInfo.label + '</span>', this.accessionTitle.containerNode);
+      domConstruct.place('<div>' + accessionInfo.description + '</div>', this.accessionTitle.containerNode);
     },
-    onEffectChange: function (attr, oldValue, newValue) {
-      console.log('effect changed from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
-      this.jsmol.set('effect', newValue);
-    },
-    updateAccessionInfo: function (accession) {
-      console.log('running ' + this.id + '.updateAccessionInfo');
-      this.proteinStore.get(accession).then(accessionInfo => {
-        domConstruct.empty(this.accessionTitle.containerNode);
-        domConstruct.place('<span class="searchField" style="font-size: large;">' + accessionInfo.label + '</span>', this.accessionTitle.containerNode);
-        domConstruct.place('<div>' + accessionInfo.description + '</div>', this.accessionTitle.containerNode);
-        this.jsmol.set('accession', accessionInfo);
-      });
+    viewDefaults: new Map([
+      ['accession', '6VXX'],
+      ['displayType', 'cartoon'],
+      ['zoomLevel', 100]
+    ]),
+    /**
+    Get the initial view state using hash parameters or defaults as necessary
+     */
+    getInitialViewState: function () {
+      const hashParams = (this.state && this.state.hashParams) || {};
+      var dataPromises = [];
+      let val = hashParams.displayType || this.viewDefaults.displayType;
+      console.log('get viewState.displayType record for ' + val);
+      dataPromises.push(new Promise(
+        (resolve, reject) => {
+          this.displayTypeStore.fetchItemByIdentity({
+            identity: val,
+            onItem: lang.hitch(this, (record) => {
+              var displayType = {
+                id: this.displayTypeStore.getValue(record, 'id'),
+                label: this.displayTypeStore.getValue(record, 'label'),
+                icon: this.displayTypeStore.getValue(record, 'icon'),
+                description: this.displayTypeStore.getValue(record, 'description'),
+                colorMode: this.displayTypeStore.getValue(record, 'colorMode'),
+                script: this.displayTypeStore.getValue(record, 'script'),
+              };
+              console.log('DisplayType fetched was ' + JSON.stringify(displayType));
+              resolve(displayType);
+            }),
+            onError: error=>reject(error)
+          });
+        })
+      );
+      val = hashParams.accession || this.viewDefaults.accession;
+      console.log('get viewState.accession record for ' + val);
+      dataPromises.push(new Promise(
+        (resolve, reject) => {
+          this.proteinStore.fetchItemByIdentity({
+            identity: val,
+            onItem: lang.hitch(this, (item) => {
+              var accessionInfo = {
+                id: this.proteinStore.getValue(item, 'id'),
+                label: this.proteinStore.getValue(item, 'label'),
+                description: this.proteinStore.getValue(item, 'description')
+              };
+              console.log('Accession fetched was ' + JSON.stringify(accessionInfo));
+              resolve(accessionInfo);
+            }),
+            onError: error=>reject(error)
+          });
+        })
+      );
+
+      val = hashParams.zoomLevel || this.viewDefaults.zoomLevel || 100;
+      console.log('get viewState.zoomLevel for ' + val);
+      dataPromises.push(Promise.resolve(val));
+
+      return Promise.all(dataPromises);
     }
   });
 });
