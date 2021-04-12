@@ -78,6 +78,12 @@ function (
         region: 'left'
       });
 
+      this.displayControl.watch('effect', lang.hitch(this, function (attr, oldValue, newValue) {
+        this.get('viewState').set('effect', newValue);
+      }));
+      this.displayControl.watch('zoomLevel', lang.hitch(this, function (attr, oldValue, newValue) {
+        this.get('viewState').set('zoomLevel', newValue);
+      }));
       this.displayControl.watch('displayType', lang.hitch(this, function (attr, oldValue, newValue) {
         console.log('control displayType changed from ' + oldValue + ' to ' + newValue);
         this.displayTypeStore.fetchItemByIdentity({

@@ -76,7 +76,7 @@ define([
             this.set('effect', { id: 'rock', startScript: this.getRockScript(angle, speed, pause), stopScript: 'quit;' });
           } else if ( !this.spinButton.get('checked')) {
             this.set('effect', {});
-            console.log('would all rock');
+            console.log('would remove rock');
           }
         }));
       },

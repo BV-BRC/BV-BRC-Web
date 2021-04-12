@@ -62,7 +62,11 @@ define([
         newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('effect', lang.hitch(this, this.setEffect));
         newValue.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
-        newValue.watch('highlights', lang.hitch(this, this.handleHighlight));
+        newValue.watch('highlights', lang.hitch(this, function(attr, oldValue, newValue) {
+          this.stopEffect();
+          this.handleHighlight(attr, oldValue, newValue);
+          this.startEffect();
+        }));
         if (oldValue.get('accession', {}).id != newValue.get('accession', {}).id) {
           this.updateAccession(newValue.get('accession'));
         }
@@ -91,6 +95,7 @@ define([
     updateDisplay: function () {
       let displayType = this.viewState.get('displayType');
       console.log('JMOL updating displayType to ' + displayType.id);
+      this.stopEffect();
       var zoomLevel = this.viewState.get('zoomLevel');
       if (zoomLevel) {
         this.runScript('set zoomLarge FALSE; zoom ' + zoomLevel + ';');
@@ -101,8 +106,17 @@ define([
       }
       const highlights = this.get('viewState').get('highlights');
       this.handleHighlight('highlights', highlights, highlights);
-      let effect = this.viewState.get('effect');
-      if (effect && effect.startScript) {
+      this.startEffect();
+    },
+    stopEffect: function () {
+      const effect = this.viewState.get('effect', {});
+      if (effect.stopScript) {
+        this.runScript(effect.stopScript);
+      }
+    },
+    startEffect: function () {
+      const effect = this.viewState.get('effect', {});
+      if (effect.startScript) {
         this.runScript(effect.startScript);
       }
     },
@@ -155,7 +169,10 @@ define([
       this.runScript(script);
     },
     setZoomLevel: function (attr, oldValue, newValue) {
+      console.log('zoomLevel changed from %s to %s', oldValue, newValue);
+      this.stopEffect();
       this.runScript('zoom ' + newValue + ';');
+      this.startEffect();
     }
   });
 });
