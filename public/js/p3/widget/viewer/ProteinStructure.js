@@ -174,7 +174,7 @@ function (
     getInitialViewState: function () {
       const hashParams = (this.state && this.state.hashParams) || {};
       var dataPromises = [];
-      let val = hashParams.displayType || this.viewDefaults.displayType;
+      let val = hashParams.displayType || this.viewDefaults.get('displayType');
       console.log('get viewState.displayType record for ' + val);
       dataPromises.push(new Promise(
         (resolve, reject) => {
@@ -196,7 +196,7 @@ function (
           });
         })
       );
-      val = hashParams.accession || this.viewDefaults.accession;
+      val = hashParams.accession || this.viewDefaults.get('accession');
       console.log('get viewState.accession record for ' + val);
       dataPromises.push(new Promise(
         (resolve, reject) => {
@@ -216,7 +216,7 @@ function (
         })
       );
 
-      val = hashParams.zoomLevel || this.viewDefaults.zoomLevel || 100;
+      val = hashParams.zoomLevel || this.viewDefaults.get('zoomLevel') || 100;
       console.log('get viewState.zoomLevel for ' + val);
       dataPromises.push(Promise.resolve(val));
 
