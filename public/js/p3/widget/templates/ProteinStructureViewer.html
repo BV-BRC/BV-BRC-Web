@@ -1,8 +1,4 @@
 <div>
-    <style type="text/css">
-        h3.control-header { color: white; margin-bottom: 5px; }
-    </style>
-
     <div data-dojo-type="dijit/layout/ContentPane"
          data-dojo-props="region:'top'"
          data-dojo-attach-point="accessionTitle"
@@ -18,7 +14,7 @@
          >
         <!-- display controls -->
         <div class="section">
-            <h3 class="close section-title control-header">Display Options</h3>
+            <h3 class="close section-title"><span class="wrap">Display Options</span></h3>
             <span data-dojo-type="dijit/form/DropDownButton" style="float:right;">
                     <img src="/public/icon_source/lightbulb-o.svg"
                          style="height:25px; width: 25px;"
@@ -39,7 +35,7 @@
         </div>
         <!-- highlighters -->
         <div class="section">
-            <h3 class="close section-title control-header">Highlight</h3>
+            <h3 class="close section-title control-header"><span class="wrap">Highlight</span></h3>
             <div data-dojo-attach-point="highlighters"></div>
         </div>
     </div>
