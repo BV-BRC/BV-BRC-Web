@@ -23,6 +23,7 @@ define([
     className: 'ProteinStructure',
     viewState: new ProteinStructureState({}),
     // JSMol makes a global Jmol object
+    // eslint-disable-next-line no-undef
     jmol: Jmol,
     jmolInfo: {
       use: 'HTML5',
@@ -79,8 +80,6 @@ define([
       console.log('running script: "' + script + '"');
       this.jmol.script(this.jsmol, script);
     },
-    postCreate: function () {
-    },
     updateAccession: function (accessionInfo) {
       this.highlighters = [];
       this.loadAccession(accessionInfo.id);
@@ -124,8 +123,10 @@ define([
     handleHighlight: function (attr, oldValue, newValue) {
       console.log('old positions ' + oldValue + ' new positions ' + newValue);
       const script = [];
-      console.log('previous highlight: ' + oldValue.size, ' new highlight: ' + newValue.size);
+      console.log('previous highlight size: ' + oldValue.size, ' new highlight size: ' + newValue.size);
       const displayType = this.get('viewState', {}).get('displayType');
+      // dehighlight all positions using default value from displayType
+      // eslint-disable-next-line no-unused-vars
       for ( let [pos, color] of oldValue) {
         script.push('select ' + pos + ';');
         script.push(displayType.colorMode);

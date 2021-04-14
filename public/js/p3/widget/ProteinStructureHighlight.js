@@ -23,6 +23,7 @@ define([
     title: '',
     color: '',
     positions: new Map(),
+    updatingPositions: false,
     mode: '',
     store: null,
     templateString: templateString,
@@ -42,15 +43,32 @@ define([
       });
       this.addChild(this.selection);
 
+      this.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+        if ( !this.updatingPositions ) {
+          console.log('setting %s.positions from outside', this.id);
+          this.updatingPositions = true;
+          this.selection.clearSelection();
+          for (let id of newValue) {
+            this.selection.select(id);
+          }
+          console.log('%s.positions changed to %s', this.id, JSON.stringify(newValue));
+          this.updatingPositions = false;
+        }
+      }));
+
       this.selection.on('select', lang.hitch(this, function (evt) {
         const newPositions = new Map(this.positions);
         for (let row of evt.rows) {
           newPositions.set(row.data.coords, '[' + this.color.replace('#', 'x') + ']');
           domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', this.color);
         }
-        console.log('highlight positions %s', JSON.stringify(newPositions));
-        this.set('positions', newPositions);
+        if ( !this.updatingPositions) {
+          this.updatingPositions = true;
+          this.set('positions', newPositions);
+          this.updatingPositions = false;
+        }
       }));
+
       this.selection.on('deselect', lang.hitch(this, function (evt) {
         const newPositions = new Map(this.positions);
         for (let row of evt.rows) {
@@ -58,7 +76,11 @@ define([
           domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', 'inherit');
         }
         console.log('highlight positions %s', JSON.stringify(newPositions));
-        this.set('positions', newPositions);
+        if ( !this.updatingPositions) {
+          this.updatingPositions = true;
+          this.set('positions', newPositions);
+          this.updatingPositions = false;
+        }
       }));
       this.highlightColorPalette.on('change', lang.hitch(this, function (color) {
         console.log('new color is ' + color);
