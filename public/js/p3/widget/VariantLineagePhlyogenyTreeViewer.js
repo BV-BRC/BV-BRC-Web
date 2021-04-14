@@ -2,13 +2,9 @@ define.amd.jQuery = true
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/text!./templates/VariantLineagePhlyogenyTreeViewer.html', 'dijit/_TemplatedMixin',
   'dojo/request',
-  'archaeopteryx/archaeopteryx-dependencies/d3.v3.min', 'archaeopteryx/archaeopteryx-dependencies/sax', 'jquery/dist/jquery', 'archaeopteryx/archaeopteryx-dependencies/jquery-ui',
-  'phyloxml/phyloxml', 'archaeopteryx/archaeopteryx-js/forester', 'archaeopteryx/archaeopteryx-js/archaeopteryx'
 ], function (
   declare, WidgetBase, Template, Templated,
-  xhr,
-  d3, sax, jquery, jquery_ui,
-  phyloxml, forester, archaeopteryx
+  xhr
 ) {
   return declare([WidgetBase, Templated], {
     baseClass: 'VariantLineagePhlyogenyTreeViewer',
@@ -17,6 +13,7 @@ define([
     apiServiceUrl: window.App.dataAPI,
     constructor: function () {
     },
+    isloaded: false,
     startup: function () {
       if (this._started) {
         return;
@@ -216,6 +213,12 @@ define([
       this.specialVisualizations = specialVisualizations;
     },
     _setStateAttr: function () {
+      if (!this.isloaded) {
+        this.load_once();
+        this.isloaded = true;
+      }
+    },
+    load_once: function () {
       var options = this.options;
       var settings = this.settings;
       var nodeVisualizations = this.nodeVisualizations;

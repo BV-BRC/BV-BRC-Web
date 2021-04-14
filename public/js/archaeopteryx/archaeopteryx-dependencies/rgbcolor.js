@@ -1,3 +1,4 @@
+(function rgbcolor() {
 /**
  * A class to parse color values
  * @author Stoyan Stefanov <sstoo@gmail.com>
@@ -286,3 +287,10 @@ function RGBColor(color_string)
 
 }
 
+    if (typeof module !== 'undefined' && module.exports && !global.xmldocAssumeBrowser)
+        module.exports.RGBColor = RGBColor;
+    else if (typeof window !== "undefined")
+        window.RGBColor = RGBColor;
+    else
+        this.RGBColor = RGBColor;
+})();
