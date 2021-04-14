@@ -6,7 +6,7 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'jsmol/JSmol.min',
+  'jsmol/JSmol.min.nojq',
   'dijit/_WidgetBase',
   'dojo/_base/kernel',
   './ProteinStructureState',
