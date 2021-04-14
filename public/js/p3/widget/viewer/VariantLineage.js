@@ -140,16 +140,10 @@ define([
         title: 'Protein Structure',
         id: this.viewer.id + '_structure'
       })
-
-      this.phlyogeny = new VariantStructure({
-        title: 'Phlyogeny',
-        id: this.viewer.id + '_phlyogeny'
-      })
 */
-
-      this.VariantLineagePhlyogenyTreeViewer = new VariantLineagePhlyogenyTreeViewer({
+      this.phlyogeny = new VariantLineagePhlyogenyTreeViewer({
         title: 'Phylogenetic Tree',
-        id: this.viewer.id + '_VariantLineagePhlyogenyTreeViewer'
+        id: this.viewer.id + '_phlyogeny'
       })
 
       this.resources = new VariantResources({
@@ -164,7 +158,7 @@ define([
       this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
       // this.viewer.addChild(this.structure);
-      this.viewer.addChild(this.VariantLineagePhlyogenyTreeViewer);
+      this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
     }
   });
