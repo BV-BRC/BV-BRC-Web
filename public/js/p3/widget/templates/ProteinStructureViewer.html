@@ -1,0 +1,51 @@
+<div>
+    <div data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region:'top'"
+         data-dojo-attach-point="accessionTitle"
+         class="breadcrumb"
+         style="height: 8%"
+    >
+    </div>
+
+    <div data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region: 'left'"
+         data-dojo-attach-point="controlsContainer"
+         style="width: 25%;"
+         >
+        <!-- display controls -->
+        <div class="section">
+            <h3 class="close section-title"><span class="wrap">Display Options</span></h3>
+            <span data-dojo-type="dijit/form/DropDownButton" style="float:right;">
+                    <img src="/public/icon_source/lightbulb-o.svg"
+                         style="height:25px; width: 25px;"
+                         title="Show JMol command entry" />
+                    <div data-dojo-type="dijit/TooltipDialog"
+                         style="height: 500px;">
+                        <input data-dojo-type="dijit/form/Textarea"
+                               data-dojo-attach-point="commandEntry"
+                               style="width: 400px;"/>
+                        <button data-dojo-type="dijit/form/Button"
+                                data-dojo-attach-point="commandRun">Run</button>
+                        <button data-dojo-type="dijit/form/Button"
+                                data-dojo-attach-point="commandClear">Clear</button>
+                    </div>
+                </span>
+
+            <div data-dojo-attach-point="displayControls"></div>
+        </div>
+        <!-- highlighters -->
+        <div class="section">
+            <h3 class="close section-title control-header"><span class="wrap">Highlight</span></h3>
+            <div data-dojo-attach-point="highlighters"></div>
+        </div>
+    </div>
+
+    <div data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region: 'center'"
+         data-dojo-attach-point="contentDisplay"
+         style="width: 70%;"
+    >
+
+    </div>
+
+</div>
