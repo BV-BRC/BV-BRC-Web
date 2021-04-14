@@ -85,6 +85,9 @@ define([
       if (this.displayType.script) {
         this.runScript(this.displayType.script.join(' '));
       }
+      if (this.effect && this.effect.startScript) {
+        this.runScript(this.effect.startScript);
+      }
     },
     handleHighlighters: function () {
       // the old code did:

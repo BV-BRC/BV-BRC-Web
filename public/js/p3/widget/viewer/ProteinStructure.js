@@ -67,9 +67,8 @@ function (
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
 
-      // this is a container with the generated html from JMol
       this.jsmol = new ProteinStructureDisplay({
-        id: this.id + '_structure'
+        id: this.id + '_structure',
       });
 
       domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
