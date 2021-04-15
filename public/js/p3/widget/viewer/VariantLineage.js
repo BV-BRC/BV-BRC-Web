@@ -4,6 +4,7 @@ define([
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantDetail', '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
+  './ProteinStructure',
   '../../util/QueryToEnglish'
 ], function (
   declare, lang,
@@ -11,6 +12,7 @@ define([
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
   VariantDetailView, VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
+  VariantProteinStructure,
   QueryToEnglish
 ) {
 
@@ -133,6 +135,11 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
+      this.structure = new VariantProteinStructure({
+        title: 'Protein Structure',
+        id: this.viewer.id + '_structure'
+      })
+
       /*
       this.structure = new VariantStructure({
         title: 'Protein Structure',
@@ -155,7 +162,7 @@ define([
       // this.viewer.addChild(this.variant);
       this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
-      // this.viewer.addChild(this.structure);
+      this.viewer.addChild(this.structure);
       // this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
     }
