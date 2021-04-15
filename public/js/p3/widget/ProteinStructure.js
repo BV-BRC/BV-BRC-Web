@@ -23,6 +23,7 @@ define([
     className: 'ProteinStructure',
     viewState: new ProteinStructureState({}),
     // JSMol makes a global Jmol object
+    // eslint-disable-next-line no-undef
     jmol: Jmol,
     jmolInfo: {
       use: 'HTML5',
@@ -62,7 +63,7 @@ define([
         newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('effect', lang.hitch(this, this.setEffect));
         newValue.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
-        newValue.watch('highlights', lang.hitch(this, function(attr, oldValue, newValue) {
+        newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
           this.stopEffect();
           this.handleHighlight(attr, oldValue, newValue);
           this.startEffect();
@@ -78,8 +79,6 @@ define([
     runScript: function (script) {
       console.log('running script: "' + script + '"');
       this.jmol.script(this.jsmol, script);
-    },
-    postCreate: function () {
     },
     updateAccession: function (accessionInfo) {
       this.highlighters = [];
@@ -124,8 +123,10 @@ define([
     handleHighlight: function (attr, oldValue, newValue) {
       console.log('old positions ' + oldValue + ' new positions ' + newValue);
       const script = [];
-      console.log('previous highlight: ' + oldValue.size, ' new highlight: ' + newValue.size);
+      console.log('previous highlight size: ' + oldValue.size, ' new highlight size: ' + newValue.size);
       const displayType = this.get('viewState', {}).get('displayType');
+      // dehighlight all positions using default value from displayType
+      // eslint-disable-next-line no-unused-vars
       for ( let [pos, color] of oldValue) {
         script.push('select ' + pos + ';');
         script.push(displayType.colorMode);
