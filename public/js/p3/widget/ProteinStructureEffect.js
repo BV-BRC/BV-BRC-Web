@@ -21,7 +21,8 @@ define([
     {
       id: 'proteinStructureEffect',
       templateString: templateString,
-      effect: null,
+      // TODO setting this does not currently change the effect controls
+      effect: {},
       defaults: {
         rockSpeed: 10,
         rockAngle: 12,
