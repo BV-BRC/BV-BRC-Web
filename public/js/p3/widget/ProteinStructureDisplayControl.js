@@ -110,7 +110,9 @@ define([
     },
     updateDisplayTypeInfo: function (displayType) {
       if (displayType) {
-        this.set('displayType', displayType.id);
+        if (displayType.id != this.get('displayType')) {
+          this.set('displayType', displayType.id);
+        }
         // update display select if it's changed
         if (this.select.get('value') != displayType.id) {
           this.select.set('value', displayType.id);
@@ -125,7 +127,7 @@ define([
               style: 'width:25px;height:25px',
             }, this.displayTypeIcon, 'last');
         }
-        if (!(displayType.description == null || displayType.description == '')) {
+        if (displayType.description) {
           var helpURL = '/public/js/p3/resources/jsmol/' + displayType.description;
           console.log('updating description to ' + helpURL);
           request.get(helpURL).then(lang.hitch(this, function (data) {

@@ -98,7 +98,10 @@ function (
       }));
       this.displayControl.watch('displayType', lang.hitch(this, function (attr, oldValue, newValue) {
         console.log('control displayType changed from ' + oldValue + ' to ' + newValue);
-        this.getDisplayTypeInfo(newValue).then(record => this.get('viewState').set('displayType', record));
+        this.getDisplayTypeInfo(newValue).then(record => {
+          this.get('viewState').set('displayType', record);
+          this.displayControl.set('displayTypeInfo', record);
+        });
       }));
       domConstruct.place(this.displayControl.domNode, this.displayControls);
 
