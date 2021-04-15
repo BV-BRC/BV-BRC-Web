@@ -19,7 +19,7 @@ define([
 ) {
   return declare([ContentPane, Templated, WidgetsInTemplateMixin],
     {
-      id:'proteinStructureEffect',
+      id: 'proteinStructureEffect',
       templateString: templateString,
       effect: null,
       defaults: {
@@ -91,10 +91,10 @@ define([
         }
         return value;
       },
-      getRockScript: function(angle, speed, pause) {
+      getRockScript: function (angle, speed, pause) {
         const step_delay = (1 / 50);
         const step_size = (step_delay * speed);
-        var stepnum = Math.floor( angle * 50/speed);
+        var stepnum = Math.floor( angle * 50 / speed);
         return string.substitute(this.rockTemplate, {
           stepnum: stepnum,
           delay: pause,

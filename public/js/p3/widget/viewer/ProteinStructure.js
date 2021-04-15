@@ -5,7 +5,7 @@ define([
   'dojo/ready',
   '../ProteinStructureState',
   '../ProteinStructure',
-    '../ProteinStructureDisplayControl',
+  '../ProteinStructureDisplayControl',
   '../ProteinStructureHighlight',
   '../ProteinStructureState',
   'dojo/data/ItemFileReadStore',
@@ -148,7 +148,7 @@ function (
         console.log(this.id + '.accession has changed from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
         this.updateAccessionInfo(newValue);
       }));
-      viewState.watch('displayType', lang.hitch(this, function(attr, oldValue, newValue) {
+      viewState.watch('displayType', lang.hitch(this, function (attr, oldValue, newValue) {
         this.displayControl.set('displayTypeInfo', viewState.get('displayType'));
       }));
 

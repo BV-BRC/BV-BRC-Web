@@ -62,7 +62,7 @@ define([
         newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('effect', lang.hitch(this, this.setEffect));
         newValue.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
-        newValue.watch('highlights', lang.hitch(this, function(attr, oldValue, newValue) {
+        newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
           this.stopEffect();
           this.handleHighlight(attr, oldValue, newValue);
           this.startEffect();

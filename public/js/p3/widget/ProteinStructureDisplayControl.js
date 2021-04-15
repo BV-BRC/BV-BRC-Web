@@ -43,7 +43,7 @@ define([
 
       this.select = new Select({
         id: this.id + '_displayTypeSelect',
-        name:'displaytype',
+        name: 'displaytype',
         store: this.displayTypeStore,
         style: 'width: 95%',
         maxHeight: -1,
