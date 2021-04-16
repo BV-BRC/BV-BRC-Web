@@ -30,10 +30,10 @@
              class="proteinStructure-action"/>
         <div data-dojo-type="dijit/TooltipDialog"
              style="width: 20em;">
-            <label>Zoom Level</label>
+            <p>Zoom Level</p>
             <select data-dojo-attach-point="displayZoom"
                     data-dojo-type="dijit/form/Select"
-                    style="display: block; width:50%;">
+                    style="display: inline-block; width:50%;">
                 <option value="50">50%</option>
                 <option value="100">100%</option>
                 <option value="150">150%</option>
@@ -57,49 +57,75 @@
              class="proteinStructure-action"/>
     </button>
 
-    <div data-dojo-type="dijit/form/DropDownButton">
-        <img src="/public/icon_source/square-o.svg"
-             title="Rock"
-             class="proteinStructure-action"/>
-        <div data-dojo-type="dijit/TooltipDialog">
-            <button data-dojo-type="dijit/form/ToggleButton"
-                    data-dojo-attach-point="rockButton">Rock</button>
-            <label>Angle: </label>
-            <span id="rockAngle"
-                  data-dojo-type="dijit/form/NumberTextBox"
-                  data-dojo-props="smallDelta: 1, constraints: { min:10, max:60, places:0 },
+    <div style="border:1px solid grey; display: inline-block; border-radius: 5px; padding: 0px;">
+        <button data-dojo-type="dijit/form/ToggleButton"
+                data-dojo-attach-point="rockButton">
+            <img src="/public/icon_source/square-o.svg"
+                 title="Rock"
+                 class="proteinStructure-action"/>
+        </button>
+        <div data-dojo-type="dijit/form/DropDownButton"
+             title="Rock Options">
+            <img src="/public/icon_source/cog.svg" style="height: 15px; width: 15px;" />
+            <div data-dojo-type="dijit/TooltipDialog">
+                <label>Rock Options</label>
+                <table>
+                    <tr>
+                        <td>
+                            <label>Angle: </label>
+                        </td>
+                        <td>
+                        <span id="rockAngle"
+                              data-dojo-type="dijit/form/NumberTextBox"
+                              data-dojo-props="smallDelta: 1, constraints: { min:10, max:60, places:0 },
               promptMessage: 'Rotate structure between plus and minus this angle (10-60 degrees)',
               invalidMessage: 'Angle should be a whole number between 10 and 60',
               rangeMessage: 'Angle should be a whole number between 10 and 60'"
-                  data-dojo-attach-point="rockAngle"
-                  style="width: 4em;"></span>
-            <div data-dojo-type="dijit/Tooltip"
-                 data-dojo-props="connectId: 'rockAngle', position: ['after']">
-                Rotate structure between plus <and></and> minus this angle (10-60 degrees)</div>
-            <label>Speed: </label>
-            <span id="rockSpeed"
-                  data-dojo-type="dijit/form/NumberTextBox"
-                  data-dojo-props="constraints: { min:5, max:45, places:0 },
+                              data-dojo-attach-point="rockAngle"
+                              style="width: 4em;"></span>
+                        <div data-dojo-type="dijit/Tooltip"
+                             data-dojo-props="connectId: 'rockAngle', position: ['after']">
+                    Rotate structure between plus and minus this angle (10-60 degrees)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Speed: </label>
+                        </td>
+                        <td>
+                            <span id="rockSpeed"
+                                  data-dojo-type="dijit/form/NumberTextBox"
+                                  data-dojo-props="constraints: { min:5, max:45, places:0 },
               promptMessage: 'Rotation speed between 5 and 45',
               invalidMessage: 'Rotation should be a whole number between 5 and 45',
               rangeMessage: 'Rotation should be a whole number between 5 and 45'"
-                  data-dojo-attach-point="rockSpeed"
-                  style="width: 4em;"></span>
-            <div data-dojo-type="dijit/Tooltip"
-                 data-dojo-props="connectId: 'rockSpeed', position: ['after']">Rotation speed between 5 and 45</div>
-            <label>Pause: </label>
-            <span id="rockPause"
-                  data-dojo-type="dijit/form/NumberTextBox"
-                  data-dojo-props="constraints: { min:0, max:3, places:1 },
+                                  data-dojo-attach-point="rockSpeed"
+                                  style="width:4em;"></span>
+                            <div data-dojo-type="dijit/Tooltip"
+                                 data-dojo-props="connectId: 'rockSpeed', position: ['after']">Rotation speed between 5 and 45</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Pause: </label>
+                        </td>
+                        <td>
+                            <span id="rockPause"
+                                  data-dojo-type="dijit/form/NumberTextBox"
+                                  data-dojo-props="constraints: { min:0, max:3, places:1 },
               promptMessage:'Number of seconds (0.0-3.0) to pause before reversing rocking direction',
               rangeMessage: 'Pause should be a number of seconds between 0.0 and 3.0',
               invalidMessage: 'Pause should be a number between 0.0 and 3.0',
               "
-                  data-dojo-attach-point="rockPause"
-                  style="width: 4em;"></span>
-            <div data-dojo-type="dijit/Tooltip"
-                 data-dojo-props="connectId: 'rockPause', position: ['after']">
-                Number of seconds (1.0 - 3.0) to pause before reversing rocking direction
+                                  data-dojo-attach-point="rockPause"
+                                  style="width: 4em;"></span>
+                            <div data-dojo-type="dijit/Tooltip"
+                                 data-dojo-props="connectId: 'rockPause', position: ['after']">
+                                Number of seconds (1.0 - 3.0) to pause before reversing rocking direction
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
