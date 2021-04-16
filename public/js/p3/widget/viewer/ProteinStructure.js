@@ -5,7 +5,6 @@ define([
   'dojo/ready',
   '../ProteinStructureState',
   '../ProteinStructure',
-  '../ProteinStructureSelect',
   '../ProteinStructureDisplayControl',
   '../ProteinStructureHighlight',
   'dojo/data/ItemFileReadStore',
@@ -23,7 +22,6 @@ function (
   ready,
   ProteinStructureState,
   ProteinStructureDisplay,
-  ProteinSelect,
   ProteinStructureDisplayControl,
   Highlight,
   ItemFileReadStore,
@@ -64,14 +62,16 @@ function (
 
       domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
 
-      this.proteinSelector = new ProteinSelect({
-        id: this.id + '_proteinSelector',
-        proteinStore: this.proteinStore
+      this.displayControl = new ProteinStructureDisplayControl({
+        id: this.id + '_displayControl',
+        displayTypeStore: this.displayTypeStore,
+        proteinStore: this.proteinStore,
+        region: 'left'
       });
-      this.proteinSelector.startup();
-      this.proteinSelector.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
+
+      this.displayControl.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
         if (oldValue != newValue) {
-          console.log('%s.accessionId changed from %s to %s', this.proteinSelector.id, oldValue, newValue);
+          console.log('%s.accessionId changed from %s to %s', this.displayControl.id, oldValue, newValue);
           // if the accession changes we keep all view state values but highlights
           this.getAccessionInfo(newValue).then(record => {
             var newState = new ProteinStructureState({});
@@ -82,14 +82,10 @@ function (
           });
         }
       }));
-      domConstruct.place(this.proteinSelector.domNode, this.proteinSelectionContainer);
 
-      this.displayControl = new ProteinStructureDisplayControl({
-        id: this.id + '_displayControl',
-        displayTypeStore: this.displayTypeStore,
-        region: 'left'
-      });
-
+      this.displayControl.watch('scriptText', lang.hitch(this, function (attr, oldValue, newValue) {
+        this.jsmol.runScript(newValue);
+      }));
       this.displayControl.watch('effect', lang.hitch(this, function (attr, oldValue, newValue) {
         this.get('viewState').set('effect', newValue);
       }));
@@ -107,17 +103,6 @@ function (
 
       console.log('finished ' + this.id + '.postCreate');
 
-      // TODO we should figure out how to handle or at least display errors
-      // when running code
-      this.commandRun.on('click', lang.hitch(this, function () {
-        var scriptText = this.commandEntry.get('value');
-        console.log('script to run is ' + scriptText);
-        this.jsmol.runScript(scriptText);
-      }));
-      this.commandClear.on('click', lang.hitch(this, function () {
-        this.commandEntry.set('value', '');
-      }));
-
       // TODO highlighters need to be dependent on proteins and whats available in the database
       this.epitopeHighlight = new Highlight({
         id: this.id + '_epitopes',
@@ -125,7 +110,7 @@ function (
         store: this.epitopes,
         color: '#ffff00'
       });
-      domConstruct.place(this.epitopeHighlight.domNode, this.highlighters, 'last');
+      this.highlighters.addChild(this.epitopeHighlight);
 
       // TODO highlighting will have to be extended to support more than one group of highlighting
       this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
@@ -154,9 +139,9 @@ function (
       this.updateFromViewState(viewState);
     },
     updateFromViewState: function (viewState) {
-      this.proteinSelector.set('accessionId', viewState.get('accession').id);
       this.displayControl.set('displayTypeInfo', viewState.get('displayType'));
       this.displayControl.set('zoomLevel', viewState.get('zoomLevel'));
+      this.displayControl.set('accessionId', viewState.get('accession').id);
       this.epitopeHighlight.set('positions', viewState.get('highlights'));
       this.jsmol.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
