@@ -125,13 +125,11 @@ define([
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (experiment) {
-        console.log('experiment result ', experiment);
         this.overview = this.createOverviewPanel(this.state);
 
         this.viewer.addChild(this.overview);
 
         this.set('experiment', experiment);
-        // console.log('Experiment : ', experiment);
         this.state.experiment = experiment;
         this.setActivePanelState();
 
