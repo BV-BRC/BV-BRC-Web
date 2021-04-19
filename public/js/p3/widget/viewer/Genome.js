@@ -112,6 +112,13 @@ define([
             search: 'or(eq(genome_id_a,' + this.genome_id + '),eq(genome_id_b,' + this.genome_id + '))'
           }));
           break;
+
+        case 'structures':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
+          }));
+          break;
+
         default:
           if (activeQueryState) {
             // console.log("Using Default ActiveQueryState: ", activeQueryState);
