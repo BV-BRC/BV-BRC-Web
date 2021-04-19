@@ -3,7 +3,7 @@ define([
   'dojo/request',
   './TabViewerBase',
   '../FeatureOverview', '../GenomeBrowser', '../CompareRegionContainer',
-  '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer',
+  '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer',
   '../../util/PathJoin'
 
 ], function (
@@ -11,7 +11,7 @@ define([
   xhr,
   TabViewerBase,
   FeatureOverview, GenomeBrowser, CompareRegionContainer,
-  GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer,
+  GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer,
   PathJoin
 ) {
 
@@ -275,12 +275,18 @@ define([
         id: this.viewer.id + '_interactions'
       });
 
+      this.structures = new ProteinStructureGridContainer({
+        title: 'Structures',
+        id: this.viewer.id + '_structures'
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomeBrowser);
       this.viewer.addChild(this.compareRegionViewer);
       this.viewer.addChild(this.transcriptomics);
       // this.viewer.addChild(this.correlatedGenes);
       this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.structures);
     }
   });
 });

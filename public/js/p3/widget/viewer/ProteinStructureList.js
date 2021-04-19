@@ -15,7 +15,7 @@ define([
     query: null,
     defaultTab: 'structures',
     perspectiveLabel: 'Protein Structure List View',
-    perspectiveIconClass: 'icon-selection-SequenceList',
+    perspectiveIconClass: 'icon-selection-Sequence',
     totalFeatures: 0,
     warningContent: 'Your query returned too many results for detailed analysis.',
     _setQueryAttr: function (query) {
