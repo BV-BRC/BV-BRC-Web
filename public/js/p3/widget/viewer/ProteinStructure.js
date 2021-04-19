@@ -115,7 +115,7 @@ define([
 
       this.inherited(arguments);
 
-      // this.totalCountNode.innerHTML = " (1 Experiment) ";
+      this.totalCountNode.innerHTML = "";
 
       xhr.get(PathJoin(this.apiServiceUrl, 'protein_structure', this.eid), {
         headers: {
@@ -135,7 +135,7 @@ define([
         this.state.experiment = experiment;
         this.setActivePanelState();
 
-        var node = domConstruct.create('div', { style: 'width: 90%' }, this.overview.containerNode);
+        var node = domConstruct.create('div', { style: 'width: 95%' }, this.overview.containerNode);
         domConstruct.place(DataItemFormatter(experiment, 'structure_data', {}), node, 'first');
       }));
     }
