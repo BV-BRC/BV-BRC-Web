@@ -251,7 +251,7 @@ define([
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='#'>" + doc.pdb_id + ' | ' + doc.title + '</a></div>');
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/ProteinStructure/" + doc.pdb_id + "'>" + doc.pdb_id + ' | ' + doc.title + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.organism_name + '</div>');
         out.push('</div>');
       });
