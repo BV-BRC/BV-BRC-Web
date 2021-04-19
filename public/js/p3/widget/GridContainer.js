@@ -611,7 +611,7 @@ define([
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/ProteinStructure/' + selection[0].pdb_id }),
               around: button,
-              orient: ['below']
+              orient: ['below'],
             });
 
           }
@@ -620,7 +620,7 @@ define([
           var sel = selection[0];
           // console.log("sel: ", sel)
           // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-          Topic.publish('/navigate', { href: '/view/ProteinStructure/' + sel.pdb_id });
+          Topic.publish('/navigate', { href: '/view/ProteinStructure/' + sel.pdb_id, target: 'blank' });
         },
         false
       ],
