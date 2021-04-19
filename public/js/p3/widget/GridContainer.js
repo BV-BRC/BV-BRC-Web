@@ -609,7 +609,7 @@ define([
             console.log('PressAndHold');
             console.log('Selection: ', selection, selection[0]);
             popup.open({
-              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/ProteinStructure/' + selection[0].pdb_id }),
+              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Structure/' + selection[0].pdb_id }),
               around: button,
               orient: ['below'],
             });
@@ -620,7 +620,7 @@ define([
           var sel = selection[0];
           // console.log("sel: ", sel)
           // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-          Topic.publish('/navigate', { href: '/view/ProteinStructure/' + sel.pdb_id, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/Structure/' + sel.pdb_id, target: 'blank' });
         },
         false
       ],
