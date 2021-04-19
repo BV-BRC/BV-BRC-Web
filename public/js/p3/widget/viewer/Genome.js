@@ -115,7 +115,7 @@ define([
 
         case 'structures':
           activeTab.set('state', lang.mixin({}, this.state, {
-            search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
+            search: 'eq(genome_id,' + this.state.genome.genome_id + ')'
           }));
           break;
 
