@@ -1097,6 +1097,9 @@ define([
         name: 'Taxon Lineage Names',
         text: 'taxon_lineage_names'
       }, {
+        name: 'Genome ID',
+        text: 'genome_id'
+      }, {
         name: 'PATRIC ID',
         text: 'patric_id'
       }, {
