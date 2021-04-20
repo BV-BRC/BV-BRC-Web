@@ -12,6 +12,8 @@ define([
   'dojo/text!./templates/ProteinStructureDisplayControls.html',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
+  'dgrid/List',
+  '../util/dataStoreHelpers'
 ], function (
   declare,
   domConstruct,
@@ -25,7 +27,9 @@ define([
   request,
   templateString,
   Templated,
-  WidgetsInTemplateMixin
+  WidgetsInTemplateMixin,
+  List,
+  dataStoreHelper
 ) {
   return declare( [ContentPane, Templated, WidgetsInTemplateMixin], {
     baseClass: 'ProteinStructureDisplayControl',
@@ -65,16 +69,26 @@ define([
 
       domConstruct.place(this.proteinSelect.domNode, this.proteinSelectionContainer);
 
-      this.select = new Select({
-        id: this.id + '_displayTypeSelect',
-        name: 'displaytype',
-        store: this.displayTypeStore,
-        style: 'width: 95%',
-        maxHeight: -1,
-        title: 'Change Display Type',
-        value: this.get('displayType')
+      this.displayTypeStore.fetch({
+        query: { id: '*' },
+        // eslint-disable-next-line no-unused-vars
+        onComplete: lang.hitch(this, function (items, request) {
+          var displayTypes = [];
+          for (let item of items) {
+            displayTypes.push(dataStoreHelper.storeItemToRecord(this.displayTypeStore, item));
+          }
+          console.log('%s found %s displayTypes', this.id, displayTypes.length);
+          this.displayTypeSelector.renderArray(displayTypes);
+        })
       });
-      domConstruct.place(this.select.domNode, this.displayTypeSelector);
+
+      this.displayTypeSelector.on('dgrid-select', lang.hitch(this, function (evt) {
+        var displayTypeId = null;
+        for (let row of evt.rows) {
+          displayTypeId =  row.data.id;
+        }
+        this.set('displayType', displayTypeId);
+      }));
 
       this.displayTypeDescription = new ToolTip({
         id: this.id + '_typeDescription',
@@ -85,16 +99,9 @@ define([
       if (this.get('displayType') && this.get('displayTypeInfo')) {
         let displayTypeInfo = this.get('displayTypeInfo');
         console.log('DisplayControl setting displayType to ' + displayTypeInfo.id);
-        this.select.set('value', displayTypeInfo.id);
         this.updateDisplayTypeInfo(this.get('displayTypeInfo'));
       }
       this.watch('displayTypeInfo', lang.hitch(this, this.onDisplayTypeChange));
-
-      this.select.on('change', lang.hitch(this, function () {
-        var displayTypeId = this.select.get('value');
-        console.log('DisplayControl displayType is now ' + displayTypeId);
-        this.set('displayType', displayTypeId);
-      }));
 
       // check if zoomLevel is in normal options, otherwise change to custom and set custom value
       var zoomOptions = this.displayZoom.options.filter(o => o.value == this.zoomLevel);
@@ -225,10 +232,6 @@ define([
       if (displayType) {
         if (displayType.id != this.get('displayType')) {
           this.set('displayType', displayType.id);
-        }
-        // update display select if it's changed
-        if (this.select.get('value') != displayType.id) {
-          this.select.set('value', displayType.id);
         }
         // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
         domConstruct.empty(this.displayTypeIcon);

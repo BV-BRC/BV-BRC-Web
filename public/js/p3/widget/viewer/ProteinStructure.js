@@ -13,7 +13,7 @@ define([
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
   'dojo/text!../templates/ProteinStructureViewer.html',
-
+  '../../util/dataStoreHelpers'
 ],
 function (
   declare,
@@ -29,7 +29,8 @@ function (
   Base,
   Templated,
   WidgetsInTmeplateMixin,
-  templateString
+  templateString,
+  dataStoreHelpers
 )
 {
   return declare([Base, Templated, WidgetsInTmeplateMixin], {
@@ -180,46 +181,13 @@ function (
     return a Promise with the information for displayType.
      */
     getDisplayTypeInfo: function (displayTypeId) {
-      return new Promise(
-        (resolve, reject) => {
-          this.displayTypeStore.fetchItemByIdentity({
-            identity: displayTypeId,
-            onItem: lang.hitch(this, (record) => {
-              var displayType = {
-                id: this.displayTypeStore.getValue(record, 'id'),
-                label: this.displayTypeStore.getValue(record, 'label'),
-                icon: this.displayTypeStore.getValue(record, 'icon'),
-                description: this.displayTypeStore.getValue(record, 'description'),
-                colorMode: this.displayTypeStore.getValue(record, 'colorMode'),
-                script: this.displayTypeStore.getValue(record, 'script'),
-              };
-              console.log('DisplayType fetched was ' + JSON.stringify(displayType));
-              resolve(displayType);
-            }),
-            onError: error=>reject(error)
-          });
-        });
+      return dataStoreHelpers.itemByIdToPromise(this.displayTypeStore, displayTypeId);
     },
     /*
     Return a Promise for the protein accession information
      */
     getAccessionInfo: function (accessionId) {
-      return new Promise(
-        (resolve, reject) => {
-          this.proteinStore.fetchItemByIdentity({
-            identity: accessionId,
-            onItem: lang.hitch(this, (item) => {
-              var accessionInfo = {
-                id: this.proteinStore.getValue(item, 'id'),
-                label: this.proteinStore.getValue(item, 'label'),
-                description: this.proteinStore.getValue(item, 'description')
-              };
-              console.log('Accession fetched was ' + JSON.stringify(accessionInfo));
-              resolve(accessionInfo);
-            }),
-            onError: error=>reject(error)
-          });
-        });
+      return dataStoreHelpers.itemByIdToPromise(this.proteinStore, accessionId);
     }
   });
 });
