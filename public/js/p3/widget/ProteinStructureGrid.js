@@ -24,7 +24,7 @@ define([
       pdb_id: { label: 'PDB ID', field: 'pdb_id', hidden: false },
       title: { label: 'Title', field: 'title', hidden: false },
       organism_name: { label: 'Organism Name', field: 'organism_name', hidden: false },
-      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
+      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: false },
       taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
       taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
       patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
