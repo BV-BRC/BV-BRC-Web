@@ -1080,7 +1080,8 @@ define([
       options = options || {};
       var columns = [{
         name: 'PDB ID',
-        text: 'pdb_id'
+        text: 'pdb_id',
+        link: 'https://www.rcsb.org/structure/'
       }, {
         name: 'Title',
         text: 'title',
@@ -1089,7 +1090,8 @@ define([
         text: 'organism_name',
       }, {
         name: 'Taxon ID',
-        text: 'taxon_id'
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
       }, {
         name: 'Taxon Lineage IDs',
         text: 'taxon_lineage_ids'
@@ -1098,16 +1100,24 @@ define([
         text: 'taxon_lineage_names'
       }, {
         name: 'Genome ID',
-        text: 'genome_id'
+        text: 'genome_id',
+        link: '/view/Genome/'
       }, {
         name: 'Feature ID',
         text: 'feature_id'
       }, {
         name: 'PATRIC ID',
-        text: 'patric_id'
+        text: 'patric_id',
+        link: '/view/Feature/'
       }, {
         name: 'UniProtKB Accession',
-        text: 'uniprotkb_accession'
+        text: 'uniprotkb_accession',
+        link: function (obj) {
+          var ids = obj.uniprotkb_accession;
+          return obj.uniprotkb_accession.map(function (d, idx) {
+            return lang.replace('<a href="https://www.uniprot.org/uniprot/{0}">{1}</a>', [ids[idx], d]);
+          }).join(', ');
+        }
       }, {
         name: 'Gene',
         text: 'gene'
