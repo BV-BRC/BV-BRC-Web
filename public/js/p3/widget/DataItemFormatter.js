@@ -1100,6 +1100,9 @@ define([
         name: 'Genome ID',
         text: 'genome_id'
       }, {
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
         name: 'PATRIC ID',
         text: 'patric_id'
       }, {

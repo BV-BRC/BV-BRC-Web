@@ -28,6 +28,7 @@ define([
       taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
       taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
       genome_id: { label: 'Genome ID', field: 'genome_id', hidden: false },
+      feature_id: { label: 'Feature ID', field: 'feature_id', hidden: false },
       patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
       uniprotkb_accession: { label: 'UniProtKB Accession', field: 'uniprotkb_accession', hidden: false },
       gene: { label: 'Gene', field: 'gene', hidden: false },
