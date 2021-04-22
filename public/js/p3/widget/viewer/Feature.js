@@ -276,7 +276,7 @@ define([
       });
 
       this.structures = new ProteinStructureGridContainer({
-        title: 'Structures',
+        title: 'Protein Structures',
         id: this.viewer.id + '_structures'
       });
 
