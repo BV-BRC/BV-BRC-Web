@@ -427,7 +427,7 @@ define([
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data'],
+          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data'],
           pressAndHold: function (selection, button, opts, evt) {
             console.log('PressAndHold');
             console.log('Selection: ', selection, selection[0]);
@@ -576,7 +576,7 @@ define([
           multiple: false,
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data'],
+          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data'],
           pressAndHold: function (selection, button, opts, evt) {
             console.log('PressAndHold');
             console.log('Selection: ', selection, selection[0]);
