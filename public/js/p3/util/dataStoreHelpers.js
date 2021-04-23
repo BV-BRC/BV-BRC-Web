@@ -42,7 +42,7 @@ define([
      * @param query
      * @returns {Promise<unknown>}
      */
-    fetchAllToPromise: function(store, query) {
+    fetchAllToPromise: function (store, query) {
       return new Promise(
         (resolve, reject) => {
           store.fetch({
