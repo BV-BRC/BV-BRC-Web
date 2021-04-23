@@ -9,11 +9,11 @@ define([
   'dojo/data/ObjectStore',
   'dojo/_base/lang',
   'dojo/request',
-  'dojo/text!./templates/ProteinStructureDisplayControls.html',
+  'dojo/text!../templates/proteinStructure/ProteinStructureDisplayControls.html',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
   'dgrid/List',
-  '../util/dataStoreHelpers'
+  '../../util/dataStoreHelpers'
 ], function (
   declare,
   domConstruct,

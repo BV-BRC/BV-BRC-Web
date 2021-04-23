@@ -3,7 +3,7 @@ define([
   'dojo/_base/lang',
   'dojo/dom-construct',
   'dojo/dom-style',
-  'dojo/text!../templates/ProteinStructureHighlight.html',
+  'dojo/text!../templates/proteinStructure/ProteinStructureHighlight.html',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
   'dijit/layout/ContentPane',

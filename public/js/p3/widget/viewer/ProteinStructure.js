@@ -3,9 +3,9 @@ define([
   'dojo/_base/lang',
   'dojo/dom-construct',
   'dojo/ready',
-  '../ProteinStructureState',
-  '../ProteinStructure',
-  '../ProteinStructureDisplayControl',
+  '../proteinStructure/ProteinStructureState',
+  '../proteinStructure/ProteinStructure',
+  '../proteinStructure/ProteinStructureDisplayControl',
   '../proteinStructure/EpitopeHighlights',
   '../proteinStructure/LigandHighlights',
   '../proteinStructure/StructureHighlight',
@@ -14,7 +14,7 @@ define([
   './Base',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
-  'dojo/text!../templates/ProteinStructureViewer.html',
+  'dojo/text!../templates/proteinStructure/ProteinStructureViewer.html',
   '../../util/dataStoreHelpers'
 ],
 function (
