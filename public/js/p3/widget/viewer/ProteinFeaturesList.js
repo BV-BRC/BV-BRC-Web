@@ -11,7 +11,7 @@ define([
   return declare([TabViewerBase], {
     baseClass: 'ProteinFeaturesList',
     disabled: false,
-    containerType: 'protein_feature',
+    containerType: 'proteinFeatures_data',
     query: null,
     defaultTab: 'proteinFeatures',
     perspectiveLabel: 'Protein Features List View',
