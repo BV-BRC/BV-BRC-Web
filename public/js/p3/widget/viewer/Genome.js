@@ -119,6 +119,12 @@ define([
           }));
           break;
 
+        case 'proteinFeatures':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(genome_id,' + this.state.genome.genome_id + ')'
+          }));
+          break;
+
         default:
           if (activeQueryState) {
             // console.log("Using Default ActiveQueryState: ", activeQueryState);
