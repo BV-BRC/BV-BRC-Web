@@ -1169,6 +1169,115 @@ define([
       return div;
     },
 
+    proteinFeature_data: function (item, options) {
+      options = options || {};
+      var columns = [{
+        name: 'ID',
+        text: 'id'
+      }, {
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag'
+      }, {
+        name: 'AA Sequence MD5',
+        text: 'aa_sequence_md5'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Interpro ID',
+        text: 'interpro_id'
+      }, {
+        name: 'Interpro Description',
+        text: 'interpro_description'
+      }, {
+        name: 'Feature Type',
+        text: 'feature_type'
+      }, {
+        name: 'Source',
+        text: 'source',
+      }, {
+        name: 'Source ID',
+        text: 'source_id',
+      }, {
+        name: 'Description',
+        text: 'description',
+      }, {
+        name: 'Classification',
+        text: 'classification',
+      }, {
+        name: 'Score',
+        text: 'score'
+      }, {
+        name: 'E Value',
+        text: 'e_value'
+      }, {
+        name: 'Evidence',
+        text: 'evidence'
+      }, {
+        name: 'Publication',
+        text: 'publication'
+      }, {
+        name: 'Start',
+        text: 'start'
+      }, {
+        name: 'End',
+        text: 'end'
+      }, {
+        name: 'Segments',
+        text: 'segments'
+      }, {
+        name: 'Length',
+        text: 'length'
+      }, {
+        name: 'Sequence',
+        text: 'sequence'
+      }, {
+        name: 'Comments',
+        text: 'comments'
+      }, {
+        name: 'Text',
+        text: 'text',
+      }, {
+        name: 'Version',
+        text: '_version_'
+      }, {
+        name: 'Date Inserted',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     sequence_data: function (item, options) {
       options = options || {};
 
