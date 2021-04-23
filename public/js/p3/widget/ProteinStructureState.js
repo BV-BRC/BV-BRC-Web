@@ -37,8 +37,9 @@ define( [
     /**
      * highlights to apply
      * highlight objects attributes:
-     *   pos: position as a string
-     *   color: highlight color
+     *   highlighterName to Map of
+     *     pos: position as a string
+     *     color: highlight color
      */
     highlights: new Map()
   });

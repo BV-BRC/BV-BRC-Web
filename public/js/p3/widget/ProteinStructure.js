@@ -126,26 +126,27 @@ define([
       console.log('previous highlight size: ' + oldValue.size, ' new highlight size: ' + newValue.size);
       const displayType = this.get('viewState', {}).get('displayType');
       // dehighlight all positions using default value from displayType
-      // eslint-disable-next-line no-unused-vars
-      for ( let [pos, color] of oldValue) {
-        script.push('select ' + pos + ';');
-        script.push(displayType.colorMode);
+      /* eslint-disable-next-line no-unused-vars */
+      for (let [highlightName, highlightPositions] of oldValue) {
+        /* eslint-disable-next-line no-unused-vars */
+        for (let [pos, color] of highlightPositions) {
+          script.push('select ' + pos + ';');
+          script.push(displayType.colorMode);
+        }
       }
-      for (let [pos, color] of newValue) {
-        script.push('select ' + pos + ';');
-        script.push('color ' + color + ';');
+      /* eslint-disable-next-line no-unused-vars */
+      for (let [highlightName, highlightPositions] of newValue) {
+        for (let [pos, color] of highlightPositions) {
+          script.push('select ' + pos + ';');
+          script.push('color ' + this.colorToJmolColor(color) + ';');
+        }
       }
-      this.runScript(script.join(''));
+      if (script.length > 0) {
+        this.runScript(script.join(''));
+      }
     },
-    highlightItemToJmol: function (item) {
-      var jmolCommand = [
-        'select ' + item.position,
-        'color ' + item.color
-      ];
-      if (item.mode) {
-        jmolCommand.append(item.mode);
-      }
-      return jmolCommand;
+    colorToJmolColor: function (hexColor) {
+      return '[' + hexColor.replace('#', 'x') + ']';
     },
     // TODO this assumes loading from PDB
     loadAccession: function (accession) {

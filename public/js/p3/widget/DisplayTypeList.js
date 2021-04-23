@@ -27,6 +27,7 @@ define([
         }, rowDiv, 'last');
       domConstruct.create('span',
         {
+          style: 'margin-left: 5px;',
           innerHTML: string.escape(value.label)
         }, rowDiv, 'last');
       return rowDiv;
