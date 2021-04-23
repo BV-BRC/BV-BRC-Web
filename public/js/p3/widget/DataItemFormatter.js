@@ -1169,7 +1169,7 @@ define([
       return div;
     },
 
-    proteinFeature_data: function (item, options) {
+    proteinFeatures_data: function (item, options) {
       options = options || {};
       var columns = [{
         name: 'ID',
@@ -1272,7 +1272,7 @@ define([
       }];
 
       var div = domConstruct.create('div');
-      displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayHeader(div, item.genome_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
       displayDetail(item, columns, div, options);
 
       return div;
