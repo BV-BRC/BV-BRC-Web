@@ -18,10 +18,12 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_structure', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
+      genome_sequence: 'Genomic Sequences',
+      protein_structure: 'Protein Structures',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
       transcriptomics_experiment: 'Transcriptomics Experiments',
@@ -78,6 +80,16 @@ define([
         }
         return ['/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score'].join('');
 
+      },
+      genome_sequence: function (docs, total) {
+        if (total == 1) {
+          return ['/view/Sequence/', docs[0].feature_id, '#view_tab=overview'].join('');
+        }
+        return ['/view/SequenceList/?', this.state.search].join('');
+
+      },
+      protein_structure: function (docs, total) {
+        return ['/view/ProteinStructureList/?', this.state.search].join('');
       },
       taxonomy: function (docs, total) {
         if (total == 1) {
@@ -218,6 +230,35 @@ define([
       return out.join('');
     },
 
+    formatgenome_sequence: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer sequenceResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SequenceList/?', q, '">Genomic Sequences</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.accession + ' | ' + doc.description +  '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatprotein_structure: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer structureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinStructureList/?', q, '">Protein Structures</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/ProteinStructure/" + doc.pdb_id + "'>" + doc.pdb_id + ' | ' + doc.title + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.organism_name + '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
 
     formatsp_gene: function (docs, total) {
       var out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SpecialtyGeneList/?', this.state.search, '#view_tab=specialtyGenes&filter=false', '">Specialty Genes&nbsp;(', total, ')</div> </a>'];
@@ -230,7 +271,7 @@ define([
 
         out.push("<div class='resultInfo'>" + doc.genome_name +  '</div>');
 
-        out.push("<div class='resultInfo'>" + doc.property + ' | ' + doc.source);
+        out.push("<div class='resultInfo'>" + doc.propert + ' | ' + doc.source);
 
         if (doc.evidence) {
           out.push('&nbsp;|&nbsp;' + doc.evidence);

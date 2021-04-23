@@ -100,9 +100,16 @@ define([
             Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
             // clear = true;
             break;
+          case 'genome_sequences':
+            Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
+            // clear = true;
+            break;
           case 'genomes':
             Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
             // clear = true;
+            break;
+          case 'protein_structures':
+            Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
             break;
           case 'transcriptomics_experiments':
             Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
@@ -154,8 +161,14 @@ define([
         case 'genome_features':
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
           break;
+        case 'genome_sequences':
+          Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
+          break;
         case 'genomes':
           Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
+          break;
+        case 'protein_structures':
+          Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
           break;
         case 'transcriptomics_experiments':
           Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });

@@ -1,4 +1,71 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
+    <% var services = [
+        {name: "Acinetobacter", href: "/view/Taxonomy/469#view_tab=overview"},
+        {name: "Bacillus", href: "/view/Taxonomy/1386#view_tab=overview"},
+        {name: "Bartonella", href: "/view/Taxonomy/773#view_tab=overview"},
+        {name: "Borreliella", href: "/view/Taxonomy/64895#view_tab=overview"},
+        {name: "Brucella", href: "/view/Taxonomy/234#view_tab=overview"},
+        {name: "Burkholderia", href: "/view/Taxonomy/32008#view_tab=overview"},
+        {name: "Campylobacter", href: "/view/Taxonomy/194#view_tab=overview"},
+        {name: "Chlamydia", href: "/view/Taxonomy/810#view_tab=overview"},
+        {name: "Clostridium", href: "/view/Taxonomy/1485#view_tab=overview"},
+        {name: "Coxiella", href: "/view/Taxonomy/776#view_tab=overview"},
+        {name: "Ehrlichia", href: "/view/Taxonomy/943#view_tab=overview"},
+        {name: "Escherichia", href: "/view/Taxonomy/561#view_tab=overview"},
+        {name: "Francisella", href: "/view/Taxonomy/262#view_tab=overview"},
+        {name: "Helicobacter", href: "/view/Taxonomy/209#view_tab=overview"},
+        {name: "Listeria", href: "/view/Taxonomy/1637#view_tab=overview"},
+        {name: "Mycobacterium", href: "/view/Taxonomy/1763#view_tab=overview"},
+        {name: "Pseudomonas", href: "/view/Taxonomy/286#view_tab=overview"},
+        {name: "Rickettsia", href: "/view/Taxonomy/780#view_tab=overview"},
+        {name: "Salmonella", href: "/view/Taxonomy/590#view_tab=overview"},
+        {name: "Shigella", href: "/view/Taxonomy/620#view_tab=overview"},
+        {name: "Staphylococcus", href: "/view/Taxonomy/1279#view_tab=overview"},
+        {name: "Streptococcus", href: "/view/Taxonomy/1301#view_tab=overview"},
+        {name: "Vibrio", href: "/view/Taxonomy/662#view_tab=overview"},
+        {name: "Yersinia", href: "/view/Taxonomy/629#view_tab=overview"}
+    ]
+
+    var virus = [
+        {name: "Adenoviridae", href: "/view/Taxonomy/10508#view_tab=overview"},
+        {name: "Asfarviridae", href: "/view/Taxonomy/137992#view_tab=overview"},
+        {name: "Bunyavirales", href: "/view/Taxonomy/1980410#view_tab=overview"},
+        {name: "Caliciviridae", href: "/view/Taxonomy/11974#view_tab=overview"},
+        {name: "Coronaviridae", href: "/view/Taxonomy/11118#view_tab=overview"},
+        {name: "Filoviridae", href: "/view/Taxonomy/11266#view_tab=overview"},
+        {name: "Flaviviridae", href: "/view/Taxonomy/11050#view_tab=overview"},
+        {name: "Hepadnaviridae", href: "/view/Taxonomy/10404#view_tab=overview"},
+        {name: "Hepeviridae", href: "/view/Taxonomy/291484#view_tab=overview"},
+        {name: "Herpesviridae", href: "/view/Taxonomy/10292#view_tab=overview"},
+        {name: "Orthomyxoviridae", href: "/view/Taxonomy/11308#view_tab=overview"},
+        {name: "Paramyxoviridae", href: "/view/Taxonomy/11158#view_tab=overview"},
+        {name: "Paravoviridae", href: "/view/Taxonomy/10780#view_tab=overview"},
+        {name: "Picornaviridae", href: "/view/Taxonomy/12058#view_tab=overview"},
+        {name: "Pneumoviridae", href: "/view/Taxonomy/11244#view_tab=overview"},
+        {name: "Polyomaviridae", href: "/view/Taxonomy/151341#view_tab=overview"},
+        {name: "Poxviridae", href: "/view/Taxonomy/10240#view_tab=overview"},
+        {name: "Reoviridae", href: "/view/Taxonomy/10880#view_tab=overview"},
+        {name: "Rhabdoviridae", href: "/view/Taxonomy/11270#view_tab=overview"},
+        {name: "Togaviridae", href: "/view/Taxonomy/11018#view_tab=overview"},
+    ]
+
+    var featured_virus = [
+        {name: "Dengue virus", href: "/view/Taxonomy/12637#view_tab=overview"},
+        {name: "Lassa mammarenavirus", href: "/view/Taxonomy/11620#view_tab=overview"},
+        {name: "Ebolavirus", href: "/view/Taxonomy/186536#view_tab=overview"},
+        {name: "Enterovirus", href: "/view/Taxonomy/12059#view_tab=overview"},
+        {name: "Zika virus", href: "/view/Taxonomy/64320#view_tab=overview"},
+        {name: "Hepatitis C virus", href: "/view/Taxonomy/63746#view_tab=overview"},
+        {name: "SARS-CoV-2", href: "/view/Taxonomy/2697049#view_tab=overview"},
+    ]
+
+
+    var servicesMiddle = Math.round(services.length / 2);
+    var virusMiddle = Math.round(virus.length / 2);
+    var featuredVirusMiddle = Math.round(featured_virus.length / 2);
+    var isProd = request.applicationOptions.appLabel == "";
+    %>
+
     <div id="bv-brc-header" class="P3Header" role="heading" aria-level="1">
 
         <div id="bv-brc-header-container">
@@ -9,50 +76,249 @@
                 </a>
             </div>
 
-            <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                <span style="font-size: 0.9em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
-
-                <div data-dojo-type="p3/widget/TooltipDialog">
-                    <div>
-                        <div style="vertical-align: top;width:175px;display:inline-block">
-                            <div class="HideWithAuth">
-                                Please <a class="loginLink">sign in</a> to view your workspaces.
-                            </div>
-                            <div class="ShowWithAuth">
-                                <div><i class="fa icon-caret-down fa-1x noHoverIcon"
-                                        style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                            class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
-                                <div id="YourWorkspaces"></div>
-                                <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
+            <div style="vertical-align: top; min-width: 435px; flex: 1">
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>ORGANISMS</span>
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div style="vertical-align: top;width:225px;display:inline-block;margin-right: 5px;">
+                            <div class="menuHeader">Bacterial Pathogens</div>
+                            <div class="menuItems">
+                                <% for (var i = 0; i < servicesMiddle;i++){ %>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <% if (services[servicesMiddle + i]) { %>
+                                        <a class="navigationLink" title="<%- services[servicesMiddle + i].name %> overview"
+                                           href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
+                                        <% } %>
+                                    </span>
+                                </div>
+                                <% } %>
+                                <br>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Taxonomy/10239" title="Overview page for all Phage genomes">All Phages</a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                                            title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
+                                </div>
                             </div>
                         </div>
-                        <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                            <div>
-                                <a class="navigationLink" href="/job/">My Jobs</a>
+
+                        <div style="vertical-align: top;width:300px;display:inline-block;margin-right: 5px;">
+                            <div class="menuHeader">Viral Families</div>
+
+                            <div class="menuItems">
+                                <% for (var i = 0; i < virusMiddle;i++){ %>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <% if (virus[virusMiddle + i]) { %>
+                                        <a class="navigationLink" title="<%- virus[virusMiddle + i].name %> overview"
+                                           href="<%- virus[virusMiddle + i].href %>"><%- virus[virusMiddle + i].name %></a>
+                                        <% } %>
+                                    </span>
+                                </div>
+                                <% } %>
                             </div>
-                            <!-- <div>
-                                <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
-                            </div> -->
+
+                            <div class="menuHeader">Featured Viral Families</div>
+
+                            <div class="menuItems">
+                                <% for (var i = 0; i < featuredVirusMiddle;i++){ %>
+                                <div>
+                                    <span class="menuItem half">
+                                        <a class="navigationLink" href="<%- featured_virus[i].href %>" title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
+                                    </span>
+                                    <span class="menuItem half">
+                                        <% if (featured_virus[featuredVirusMiddle + i]) { %>
+                                        <a class="navigationLink" title="<%- featured_virus[featuredVirusMiddle + i].name %> overview"
+                                           href="<%- featured_virus[featuredVirusMiddle + i].href %>"><%- featured_virus[featuredVirusMiddle + i].name %></a>
+                                        <% } %>
+                                    </span>
+                                </div>
+                                <% } %>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>DATA</span>
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div>
+                            <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
+                                <div class="menuHeader">Data Types</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance (AMR)</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a></div>
+                                </div>
+                                <div class="menuHeader">Download Data</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLinkOut" href="ftp://ftp.patricbrc.org/"
+                                            target="_blank" rel="noopener">FTP Server</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="vertical-align:top;width:200px;display: inline-block">
+                                <div class="menuHeader">Specialty Data Collections</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_collaborations.html">PATRIC Collaborations</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_dbps.html">PATRIC DBPS</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_clinical_proteomics.html">NIAID Clinical Proteomics</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_genome_sequencing.html">NIAID Genome Sequencing</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_structural_genomics.html">NIAID Structural Genomics</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_systems_biology.html">NIAID Systems Biology</a></div>
+                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_functional_genomics.html">NIAID Functional Genomics</a></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span style="font-size: 1em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
+
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div>
+                            <div style="vertical-align: top;width:175px;display:inline-block">
+                                <div class="HideWithAuth">
+                                    Please <a class="loginLink">sign in</a> to view your workspaces.
+                                </div>
+                                <div class="ShowWithAuth">
+                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
+                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
+                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
+                                    <div id="YourWorkspaces"></div>
+                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
+                                </div>
+                            </div>
+                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
+                                <div>
+                                    <a class="navigationLink" href="/job/">My Jobs</a>
+                                </div>
+                                <div>
+                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>SERVICES</span>
+
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div>
+                            <div style="vertical-align: top;width: 180px;margin-right:5px;display:inline-block">
+                                <div class="menuHeader">Genomics</div>
+                                <div class="menuItems">
+                                    <a class="navigationLink" href="/app/Assembly2">Assembly</a>
+                                    <div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
+                                    <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis</a></div>
+                                    <div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>
+                                    <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder</a>
+                                    </div>
+                                    <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
+                                    <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis</a></div>
+                                    <div><a class="navigationLink" href="/app/PhylogeneticTree">Phylogenetic Tree</a></div>
+                                    <div><a class="navigationLink" href="/app/GenomeAlignment">Genome Alignment</a></div>
+                                </div>
+                                <p></p>
+                                <div class="menuHeader">Metagenomics</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
+                                    <div><a class="navigationLink" href="/app/TaxonomicClassification">Taxonomic Classification</a></div>
+                                    <div><a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a></div>
+                                </div>
+                            </div>
+                            <div style="vertical-align:top;width:180px;display:inline-block">
+                              <div class="menuHeader">Transcriptomics</div>
+                              <div class="menuItems">
+                                  <div><a class="navigationLink" href="/app/Expression">Expression Import</a>
+                                  </div>
+                                  <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+                              </div>
+                                <div class="menuHeader">Protein Tools</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLink" href="/app/ProteinFamily">Protein Family
+                                            Sorter</a></div>
+                                    <div><a class="navigationLink" href="/app/SeqComparison">Proteome
+                                            Comparison</a></div>
+                                </div>
+                                <p></p>
+                                <div class="menuHeader">Metabolomics</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLink" href="/app/ComparativePathway">Comparative
+                                            Pathway</a></div>
+                                    <div><a class="navigationLink" href="/app/Reconstruct">Model
+                                            Reconstruction</a></div>
+                                </div>
+                                <div class="menuHeader">Data</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
+                                    <div><a class="navigationLink" href="/app/FastqUtil">Fastq Utilities</a></div>
+                                </div>
+                            </div>
+                            <div style="vertical-align:top;width:180px;display:inline-block">
+                                <div class="menuHeader">Viral Services</div>
+                                <div class="menuItems">
+                                    <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Assembly and Annotation</a></div>
+                                    <div><a class="navigationLink" href="/app/MSA">Multiple Sequence Alignment</a></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="empty-header-space"></div>
-
-            <div class="nav-links">
-                <a href="/about">About</a>
-                <a href="/contact">Contact</a>
-                <a href="/team">Team</a>
-                <a href="/announcements">Announcements</a>
-                <a href="/publications">Publications</a>
-                <a href="/citation">Citation</a>
-                <a href="/related-resources">Related Resources</a>
+            <div id="p3header-search" style="padding: 6px 10px 2px 2px; width: 120px; flex-grow: 0.85">
+                <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden"
+                       data-dojo-type="p3/widget/GlobalSearch"/>
             </div>
 
+            <!-- <div class="navbar-flex-space" style="flex-grow: 0.85;"></div> -->
+
             <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 3px 10px 0 0;">
-                <!-- <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div> -->
+                <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
                 <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Sign In</div>
+            </div>
+
+            <div>
+                <div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton"
+                     data-dojo-props="iconClass:'icon-bars fa-2x'">
+                    <span></span>
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div><a class="TopMenuLink" href="/about">About BV-BRC</a></div>
+                        <div><a class="TopMenuLink" href="/contact">Contact Us</a></div>
+                        <div><a class="TopMenuLink" href="/team">Our Team</a></div>
+                        <div><a class="TopMenuLink" href="/announcements">Announcements</a></div>
+                        <div><a class="TopMenuLink" href="/outreach">Outreach</a></div>
+                        <hr>
+                        <div><a class="TopMenuLink" href="/publications">Publications</a></div>
+                        <div><a class="TopMenuLink" href="/citation">Citation</a></div>
+                        <div><a class="TopMenuLink" href="/related-resources">Related Resources</a></div>
+                        <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/BV-BRC" target="_blank" rel="noopener">BV-BRC GitHub</a></div>
+                    </div>
+                </div>
             </div>
 
             <div class="showOnLoad ShowWithAuth dijitHidden">
@@ -74,4 +340,4 @@
         </div>
 
     </div>
-</div>
+  </div>
