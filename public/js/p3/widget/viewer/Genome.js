@@ -4,7 +4,7 @@ define([
   './TabViewerBase', 'dijit/Dialog',
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
+  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
   '../PathwaysContainer', '../SubSystemsContainer', '../TranscriptomicsContainer', '../InteractionContainer',
   '../../util/PathJoin'
 ], function (
@@ -13,7 +13,7 @@ define([
   TabViewerBase, Dialog,
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
-  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, SubSystemsContainer, TranscriptomicsContainer, InteractionsContainer,
   PathJoin
 ) {
@@ -322,6 +322,11 @@ define([
         state: lang.mixin({}, this.state, { search: (this.genome_id ? '?eq(genome_id,' + this.genome_id + ')' : '?ne(genome_id,*)' ) })
       });
 
+      this.proteinFeatures = new ProteinFeaturesGridContainer({
+        title: 'Protein Features',
+        id: this.viewer.id + '_proteinFeatures'
+      });
+
       this.pathways = new PathwaysContainer({
         apiServer: this.apiServiceUrl,
         title: 'Pathways',
@@ -360,6 +365,7 @@ define([
       this.viewer.addChild(this.features);
       this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
+      this.viewer.addChild(this.proteinFeatures);
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
