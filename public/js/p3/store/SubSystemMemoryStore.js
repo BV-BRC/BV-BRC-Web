@@ -110,7 +110,7 @@ define([
 
     queryTypes: {
 
-      subsystems: '&group((field,subsystem_id),(format,simple),(ngroups,true),(limit,1),(facet,true))' +
+      subsystems: '&select(superclass,class,subclass,subsystem_name,active,subsystem_id)&group((field,subsystem_id),(format,simple),(limit,1),(facet,true))' +
         '&json(facet,' + encodeURIComponent(JSON.stringify({
         stat: {
           field: {
@@ -125,7 +125,7 @@ define([
         }
       })) + ')',
 
-      genes: '&group((field,subsystem_id),(format,simple),(ngroups,false),(limit,25000),(facet,false))'
+      genes: '&select(superclass,class,subclass,subsystem_name,role_id,role_name,active,patric_id,gene,refseq_locus_tag,alt_locus_tag,product,genome_id,genome_name,taxon_id,subsystem_id)&group((field,subsystem_id),(format,simple),(limit,25000),(facet,false))'
 
 
     },
