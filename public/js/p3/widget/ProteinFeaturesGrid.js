@@ -33,7 +33,7 @@ define([
       product: { label: 'Product', field: 'product', hidden: false },
       interpro_id: { label: 'Interpro ID', field: 'interpro_id', hidden: true },
       interpro_description: { label: 'Interpro Description', field: 'interpro_description', hidden: true },
-      feature_type: { label: 'Feature Type', field: 'feature_type', hidden: false },
+      feature_type: { label: 'Feature Type', field: 'feature_type', hidden: true },
       source: { label: 'Source', field: 'source', hidden: false },
       source_id: { label: 'Source ID', field: 'source_id', hidden: false },
       description: { label: 'Description', field: 'description', hidden: false },
