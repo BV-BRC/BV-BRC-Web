@@ -1,14 +1,14 @@
 define([
-  'dojo/_base/declare', './GridContainer',
-  './SequenceGrid', 'dijit/popup',
+  'dojo/_base/declare', './GridContainer', 'dojo/on',
+  './ProteinFeaturesGrid', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
-  'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct',
-  'dojo/topic'
+  'dojo/_base/lang', 'dojo/dom-construct'
+
 ], function (
-  declare, GridContainer,
-  Grid, popup,
+  declare, GridContainer, on,
+  ProteinFeaturesGrid, popup, Topic,
   TooltipDialog, FacetFilterPanel,
-  lang, on, domConstruct, Topic
+  lang, domConstruct
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -20,14 +20,20 @@ define([
   });
 
   return declare([GridContainer], {
-    containerType: 'sequence_data',
-    tutorialLink: 'user_guides/organisms_taxon/sequences.html',
-    facetFields: ['chromosome', 'plasmid', 'segment'],
+    gridCtor: ProteinFeaturesGrid,
+    containerType: 'proteinFeatures_data',
+    tutorialLink: '',
+    facetFields: ['feature_type', 'source', 'evidence'],
+    filter: '',
     maxGenomeCount: 10000,
-    dataModel: 'genome_sequence',
-    primaryKey: 'sequence_id',
+    dataModel: 'protein_feature',
+    primaryKey: 'id',
     maxDownloadSize: 25000,
-    tooltip: 'The "Sequences" tab contains a list of genomic sequences (e.g. chromosomes, plasmids, contigs) for genomes associated with the current view',
+    defaultFilter: '',
+    tooltip: '',
+    getFilterPanel: function (opts) {
+
+    },
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',
@@ -96,31 +102,6 @@ define([
         true,
         'left'
       ]
-    ]),
-    selectionActions: GridContainer.prototype.selectionActions.concat([
-      [
-        'GenomeBrowser',
-        'fa icon-genome-browser fa-2x',
-        {
-          label: 'Browser',
-          multiple: false,
-          validTypes: ['*'],
-          validContainerTypes: ['sequence_data'],
-          tooltip: 'View in Genome Browser'
-        },
-        function (selection) {
-
-          var target = selection[0];
-
-          var hash = lang.replace('#view_tab=browser&loc={0}:{1}..{2}&tracks=refseqs,PATRICGenes,RefSeqGenes', [target.accession, 0, 10000]);
-
-          Topic.publish('/navigate', {
-            href: '/view/Genome/' + target.genome_id + hash
-          });
-        },
-        false
-      ]
-    ]),
-    gridCtor: Grid
+    ])
   });
 });

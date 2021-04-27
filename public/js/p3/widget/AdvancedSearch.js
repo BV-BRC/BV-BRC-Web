@@ -18,11 +18,12 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_structure', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
       genome_sequence: 'Genomic Sequences',
+      protein_feature: 'Protein Features',
       protein_structure: 'Protein Structures',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
@@ -72,31 +73,35 @@ define([
           return ['/view/Genome/', docs[0].genome_id, '#view_tab=overview'].join('');
         }
         return ['/view/GenomeList/?', this.state.search, '#view_tab=genomes'].join('');
-
       },
+
       genome_feature: function (docs, total) {
         if (total == 1) {
           return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
         return ['/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score'].join('');
-
       },
+
       genome_sequence: function (docs, total) {
         if (total == 1) {
           return ['/view/Sequence/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
         return ['/view/SequenceList/?', this.state.search].join('');
-
       },
+
+      protein_feature: function (docs, total) {
+        return ['/view/ProteinFeaturesList/?', this.state.search].join('');
+      },
+
       protein_structure: function (docs, total) {
         return ['/view/ProteinStructureList/?', this.state.search].join('');
       },
+
       taxonomy: function (docs, total) {
         if (total == 1) {
           return ['/view/Taxonomy/', docs[0].taxon_id, '#view_tab=overview'].join('');
         }
         return ['/view/TaxonList/?', this.state.search, '#view_tab=taxons'].join('');
-
       },
 
       sp_gene: function (docs, total) {
@@ -104,21 +109,20 @@ define([
           return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
         return ['/view/SpecialtyGeneList/?', this.state.search, '#view_tab=specialtyGenes'].join('');
-
       },
+
       transcriptomics_experiment: function (docs, total) {
         if (total == 1) {
           return ['/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview'].join('');
         }
         return ['/view/TranscriptomicsExperimentList/?', this.state.search, '#view_tab=experiments'].join('');
-
       },
+
       antibiotics: function (docs, total) {
         if (total == 1) {
           return ['/view/Antibiotic/', docs[0].eid].join('');
         }
         return ['/view/AntibioticList/?', this.state.search].join('');
-
       }
     },
 
@@ -238,6 +242,22 @@ define([
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.accession + ' | ' + doc.description +  '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatprotein_feature: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinFeaturesList/?', q, '">Protein Features</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead' style='color: #09456f;'>" + doc.source + ' | ' + doc.description + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.genome_name + '</div>');
+        out.push("<div class='resultInfo'>" + doc.patric_id + ' | ' + doc.refseq_locus_tag + '</div>');
         out.push('</div>');
       });
       out.push('</div>');

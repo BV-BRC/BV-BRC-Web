@@ -365,7 +365,7 @@ define([
           tooltip: 'Download Selection',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data']
         },
         function (selection, container) {
 
@@ -398,7 +398,7 @@ define([
           tooltip: 'Copy Selection to Clipboard.',
           tooltipDialog: copySelectionTT,
           max: 5000,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data']
         },
         function (selection, container) {
           this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set('selection', selection);
@@ -427,7 +427,7 @@ define([
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data'],
+          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data'],
           pressAndHold: function (selection, button, opts, evt) {
             console.log('PressAndHold');
             console.log('Selection: ', selection, selection[0]);
@@ -576,7 +576,7 @@ define([
           multiple: false,
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data'],
+          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data'],
           pressAndHold: function (selection, button, opts, evt) {
             console.log('PressAndHold');
             console.log('Selection: ', selection, selection[0]);

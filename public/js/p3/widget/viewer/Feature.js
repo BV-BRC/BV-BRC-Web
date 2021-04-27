@@ -3,7 +3,7 @@ define([
   'dojo/request',
   './TabViewerBase',
   '../FeatureOverview', '../GenomeBrowser', '../CompareRegionContainer',
-  '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer',
+  '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
   '../../util/PathJoin'
 
 ], function (
@@ -11,7 +11,7 @@ define([
   xhr,
   TabViewerBase,
   FeatureOverview, GenomeBrowser, CompareRegionContainer,
-  GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer,
+  GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
   PathJoin
 ) {
 
@@ -280,6 +280,11 @@ define([
         id: this.viewer.id + '_structures'
       });
 
+      this.proteinFeatures = new ProteinFeaturesGridContainer({
+        title: 'Protein Features',
+        id: this.viewer.id + '_proteinFeatures'
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomeBrowser);
       this.viewer.addChild(this.compareRegionViewer);
@@ -287,6 +292,7 @@ define([
       // this.viewer.addChild(this.correlatedGenes);
       this.viewer.addChild(this.interactions);
       this.viewer.addChild(this.structures);
+      this.viewer.addChild(this.proteinFeatures)
     }
   });
 });
