@@ -485,6 +485,12 @@ define([
         text: 'gene_id',
         link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
       }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'PDB Accession',
+        text: 'pdb_accession'
+      }, {
         name: 'gi',
         text: 'gi'
       }, {
