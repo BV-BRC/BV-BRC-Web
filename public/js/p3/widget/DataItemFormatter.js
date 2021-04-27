@@ -1282,18 +1282,17 @@ define([
       options = options || {};
 
       var columns = [{
-        name: 'Genome Name',
-        text: 'genome_name',
-        mini: true
-      }, {
         name: 'Genome ID',
         text: 'genome_id',
         link: '/view/Genome/'
       }, {
-        name: 'Accession',
-        text: 'accession',
-        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+        name: 'Genome Name',
+        text: 'genome_name',
         mini: true
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
         name: 'Sequence ID',
         text: 'sequence_id',
@@ -1302,16 +1301,13 @@ define([
         },
         mini: true
       }, {
-        name: 'Length',
-        text: 'length',
-        mini: true
+        name: 'GI',
+        text: 'gi',
       }, {
-        name: 'GC Content',
-        text: 'gc_content',
+        name: 'Accession',
+        text: 'accession',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
         mini: true
-      }, {
-        name: 'Sequence MD5',
-        text: 'sequence_md5'
       }, {
         name: 'Sequence Type',
         text: 'sequence_type'
@@ -1337,18 +1333,26 @@ define([
         name: 'Segment',
         text: 'segment'
       }, {
-        name: 'GI',
-        text: 'gi'
+        name: 'GC Content',
+        text: 'gc_content',
+        mini: true
       }, {
-        name: 'Taxon ID',
-        text: 'taxon_id',
-        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+        name: 'Length',
+        text: 'length',
+        mini: true
+      }, {
+        name: 'Sequence MD5',
+        text: 'sequence_md5'
+      }, {
+        name: 'Sequence',
+        text: 'sequence'
+      }, {
+        name: 'Release Date',
+        text: 'release_date',
+        type: 'date'
       }, {
         name: 'Version',
         text: 'version'
-      }, {
-        name: 'Release Date',
-        text: 'release_date'
       }, {
         name: 'Insert Date',
         text: 'date_inserted',
