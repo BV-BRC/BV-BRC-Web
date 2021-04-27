@@ -100,7 +100,7 @@ define([
         currentContainerWidget: this,
         _setQueryAttr: function (query) {
           var p = _self.typeMap[_self.type];
-          query = query + '&limit(25000)&group((field,' + p + '),(format,simple),(ngroups,true),(limit,1),(facet,true))';
+          query = query + '&limit(1)&select(pathway_id)&group((field,' + p + '),(format,simple),(limit,1),(facet,true))';
           this._set('query', query);
           this.getFacets(query).then(lang.hitch(this, function (facets) {
             if (!facets) {
