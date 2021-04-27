@@ -257,3 +257,11 @@
     background: #f5f5f5;
     padding: 15px;
 }
+
+/* Protein Features Grid */
+.patric .dgrid-cell.field-product {
+    width: 15%;
+}
+.patric .dgrid-cell.field-description {
+    width: 20%;
+}
