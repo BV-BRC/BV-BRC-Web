@@ -55,11 +55,11 @@ define([
       this.viewer.addChild(this.phylogeny, 1);
       this.viewer.addChild(this.amr, 4);
       this.viewer.addChild(this.specialtyGenes, 8);
-      this.viewer.addChild(this.proteinFamilies, 9);
-      this.viewer.addChild(this.pathways, 10);
-      this.viewer.addChild(this.subsystems, 11);
-      this.viewer.addChild(this.transcriptomics, 12);
-      this.viewer.addChild(this.interactions, 13);
+      this.viewer.addChild(this.proteinFamilies, 10);
+      this.viewer.addChild(this.pathways, 11);
+      this.viewer.addChild(this.subsystems, 12);
+      this.viewer.addChild(this.transcriptomics, 13);
+      this.viewer.addChild(this.interactions, 14);
     },
 
     removeBacteriaTabs: function () {
