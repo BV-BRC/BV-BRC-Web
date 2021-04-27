@@ -22,7 +22,7 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
       pdb_id: { label: 'PDB ID', field: 'pdb_id', hidden: false },
-      title: { label: 'Title', field: 'title', hidden: true },
+      title: { label: 'Title', field: 'title', hidden: false },
 
       organism_name: { label: 'Organism Name', field: 'organism_name', hidden: false },
       taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
