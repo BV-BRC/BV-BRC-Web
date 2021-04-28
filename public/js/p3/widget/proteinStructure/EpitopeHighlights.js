@@ -35,8 +35,10 @@ define([
           console.log('setting %s.positions from outside', this.id);
           this.updatingPositions = true;
           this.selection.clearSelection();
-          for (let id of newValue) {
-            this.selection.select(id);
+          if (newValue) {
+            for (let id of newValue) {
+              this.selection.select(id);
+            }
           }
           console.log('%s.positions changed to %s', this.id, JSON.stringify(newValue));
           this.updatingPositions = false;
