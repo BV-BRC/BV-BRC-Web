@@ -165,7 +165,7 @@ function (
       this.displayControl.set('displayTypeInfo', viewState.get('displayType'));
       this.displayControl.set('zoomLevel', viewState.get('zoomLevel'));
       this.displayControl.set('accessionId', viewState.get('accession').id);
-      this.epitopeHighlight.set('positions', viewState.get('highlights'));
+      this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
       this.jsmol.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
     },
