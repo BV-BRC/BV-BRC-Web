@@ -33,6 +33,14 @@ define([
           }
           this.set('positions', positions);
         }));
+
+        this.watch('color', lang.hitch(this, function (attr, oldValue, newValue) {
+          let positions = new Map(this.positions);
+          for (let key of positions.keys()) {
+            positions.set(key, newValue);
+          }
+          this.set('positions', positions);
+        }));
       }
     });
 });
