@@ -44,7 +44,7 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
-      console.log(this.id + '.postCreate displayTypeInfo is ' + JSON.stringify(this.get('displayTypeInfo')));
+      // console.log(this.id + '.postCreate displayTypeInfo is ' + JSON.stringify(this.get('displayTypeInfo')));
 
       this.proteinSelect = new Select({
         id: this.id + '_proteinSelect',
@@ -60,7 +60,7 @@ define([
         this.proteinSelect.set('value', this.get('accessionId'));
       }
       this.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('%s.accessionId changed to %s', this.id, newValue);
+        // console.log('%s.accessionId changed to %s', this.id, newValue);
         this.proteinSelect.set('value', newValue);
       }));
       this.proteinSelect.on('change', lang.hitch(this, function () {
@@ -77,7 +77,7 @@ define([
           for (let item of items) {
             displayTypes.push(dataStoreHelper.storeItemToRecord(this.displayTypeStore, item));
           }
-          console.log('%s found %s displayTypes', this.id, displayTypes.length);
+          // console.log('%s found %s displayTypes', this.id, displayTypes.length);
           this.displayTypeSelector.renderArray(displayTypes);
         })
       });
@@ -97,8 +97,8 @@ define([
       });
 
       if (this.get('displayType') && this.get('displayTypeInfo')) {
-        let displayTypeInfo = this.get('displayTypeInfo');
-        console.log('DisplayControl setting displayType to ' + displayTypeInfo.id);
+        // let displayTypeInfo = this.get('displayTypeInfo');
+        // console.log('DisplayControl setting displayType to ' + displayTypeInfo.id);
         this.updateDisplayTypeInfo(this.get('displayTypeInfo'));
       }
       this.watch('displayTypeInfo', lang.hitch(this, this.onDisplayTypeChange));
@@ -115,7 +115,7 @@ define([
 
       this.displayZoom.on('change', lang.hitch(this, function () {
         var zoomLevel = this.displayZoom.get('value') || 100;
-        console.log('DisplayControl zoom level is ' + zoomLevel);
+        // console.log('DisplayControl zoom level is ' + zoomLevel);
         if ( zoomLevel == 'custom' ) {
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         } else {
@@ -126,7 +126,7 @@ define([
 
       this.displayZoomCustom.on('change', lang.hitch(this, function () {
         var zoomLevel = this.displayZoomCustom.get('value');
-        console.log('DisplayControl custom zoom level is ' + zoomLevel);
+        // console.log('DisplayControl custom zoom level is ' + zoomLevel);
         this.set('zoomLevel', zoomLevel);
       }));
 
@@ -137,10 +137,10 @@ define([
             this.rockButton.set('checked', false);
           }
           this.set('effect', { id: 'spin', startScript: 'spin on;', stopScript: 'spin off;' });
-          console.log('would add spin');
+          // console.log('would add spin');
         } else if ( !this.rockButton.get('checked')) {
           this.set('effect', {});
-          console.log('would remove spin');
+          // console.log('would remove spin');
         }
       }));
       this.rockButton.on('change', lang.hitch(this, function () {
@@ -149,14 +149,14 @@ define([
           if (this.spinButton.get('checked')) {
             this.spinButton.set('checked', false);
           }
-          console.log('would add rock');
+          // console.log('would add rock');
           var speed = this.getOrSetDefault('rockSpeed');
           var angle = this.getOrSetDefault('rockAngle');
           var pause = this.getOrSetDefault('rockPause');
           this.set('effect', { id: 'rock', startScript: this.getRockScript(angle, speed, pause), stopScript: 'quit;' });
         } else if ( !this.spinButton.get('checked')) {
           this.set('effect', {});
-          console.log('would remove rock');
+          // console.log('would remove rock');
         }
       }));
 
@@ -164,7 +164,7 @@ define([
       // when running code
       this.commandRun.on('click', lang.hitch(this, function () {
         var scriptText = this.commandEntry.get('value');
-        console.log('script to run is ' + scriptText);
+        // console.log('script to run is ' + scriptText);
         this.set('scriptText', scriptText);
       }));
       this.commandClear.on('click', lang.hitch(this, function () {
@@ -175,7 +175,7 @@ define([
     getOrSetDefault: function (attrName) {
       var formField = this[attrName];
       var value = formField.get('value');
-      console.log(attrName + ' value=' + value + ' valid=' + formField.isValid());
+      // console.log(attrName + ' value=' + value + ' valid=' + formField.isValid());
       // this doesn't handle valid 0 value
       if ( !( formField.isValid() && value)) {
         value = this.effectDefaults[attrName];
@@ -199,7 +199,7 @@ define([
       });
     },
     onDisplayTypeChange: function (attr, oldValue, newValue) {
-      console.log(this.id + '.displayType went from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
+      // console.log(this.id + '.displayType went from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
       this.updateDisplayTypeInfo(newValue);
     },
     effectDefaults: {
@@ -233,10 +233,10 @@ define([
         if (displayType.id != this.get('displayType')) {
           this.set('displayType', displayType.id);
         }
-        // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
+        // // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
         domConstruct.empty(this.displayTypeIcon);
         if (displayType.icon) {
-          console.log('creating icon ' + displayType.icon);
+          // console.log('creating icon ' + displayType.icon);
           domConstruct.create('img',
             {
               src: '/public/js/p3/resources/jsmol/' + displayType.icon,
@@ -245,9 +245,9 @@ define([
         }
         if (displayType.description) {
           var helpURL = '/public/js/p3/resources/jsmol/' + displayType.description;
-          console.log('updating description to ' + helpURL);
+          // console.log('updating description to ' + helpURL);
           request.get(helpURL).then(lang.hitch(this, function (data) {
-            console.log('setting displayType description text');
+            // console.log('setting displayType description text');
             this.displayTypeDescription.set('label', '<div style="max-width: 500px;">' + data + '</div>');
           }));
         }

@@ -32,7 +32,7 @@ define([
 
       this.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
         if ( !this.updatingPositions ) {
-          console.log('setting %s.positions from outside', this.id);
+          // console.log('setting %s.positions from outside', this.id);
           this.updatingPositions = true;
           this.selection.clearSelection();
           if (newValue) {
@@ -40,7 +40,7 @@ define([
               this.selection.select(id);
             }
           }
-          console.log('%s.positions changed to %s', this.id, JSON.stringify(newValue));
+          // console.log('%s.positions changed to %s', this.id, JSON.stringify(newValue));
           this.updatingPositions = false;
         }
       }));
@@ -64,7 +64,7 @@ define([
           newPositions.delete(row.data.coords);
           domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', 'inherit');
         }
-        console.log('highlight positions %s', JSON.stringify(newPositions));
+        // console.log('highlight positions %s', JSON.stringify(newPositions));
         if ( !this.updatingPositions) {
           this.updatingPositions = true;
           this.set('positions', newPositions);

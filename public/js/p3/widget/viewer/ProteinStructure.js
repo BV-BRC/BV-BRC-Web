@@ -45,7 +45,7 @@ function (
     viewState: new ProteinStructureState({}),
     state: {},
     postCreate: function () {
-      console.log('starting ' + this.id + '.postCreate');
+      // console.log('starting ' + this.id + '.postCreate');
 
       this.proteinStore =   new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/SARS-CoV-2.json'
@@ -76,7 +76,7 @@ function (
 
       this.displayControl.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
         if (oldValue != newValue) {
-          console.log('%s.accessionId changed from %s to %s', this.displayControl.id, oldValue, newValue);
+          // console.log('%s.accessionId changed from %s to %s', this.displayControl.id, oldValue, newValue);
           // if the accession changes we keep all view state values but highlights
           this.getAccessionInfo(newValue).then(record => {
             var newState = new ProteinStructureState({});
@@ -98,7 +98,7 @@ function (
         this.get('viewState').set('zoomLevel', newValue);
       }));
       this.displayControl.watch('displayType', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('control displayType changed from ' + oldValue + ' to ' + newValue);
+        // console.log('control displayType changed from ' + oldValue + ' to ' + newValue);
         this.getDisplayTypeInfo(newValue).then(record => {
           this.get('viewState').set('displayType', record);
           this.displayControl.set('displayTypeInfo', record);
@@ -106,7 +106,7 @@ function (
       }));
       domConstruct.place(this.displayControl.domNode, this.displayControls);
 
-      console.log('finished ' + this.id + '.postCreate');
+      // console.log('finished ' + this.id + '.postCreate');
 
       this.ligandHighlight = new LigandHighlights({
         id: this.id + '_ligands',
@@ -131,13 +131,12 @@ function (
       this.highlighters.addChild(this.epitopeHighlight);
 
       this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-        console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+        // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+        // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
         let highlights = new Map(this.viewState.get('highlights'));
         highlights.set('epitopes', new Map(newValue));
         this.get('viewState').set('highlights', highlights);
       }));
-
 
       this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
         this.onViewStateChange(newValue);
@@ -145,7 +144,7 @@ function (
 
       this.getInitialViewState().then(lang.hitch(this, function (viewData) {
         var viewState = new ProteinStructureState({});
-        console.log('viewData for initialViewState is ' + JSON.stringify(viewData));
+        // console.log('viewData for initialViewState is ' + JSON.stringify(viewData));
         viewState.set('displayType', viewData[0]);
         viewState.set('accession', viewData[1]);
         viewState.set('zoomLevel', viewData[2]);
@@ -153,12 +152,12 @@ function (
         highlights.set('ligands', new Map());
         highlights.set('epitopes', new Map());
         viewState.set('highlights', highlights);
-        console.log('initial viewstate is ' + JSON.stringify(viewState));
+        // console.log('initial viewstate is ' + JSON.stringify(viewState));
         this.set('viewState', viewState);
       }));
     },
     onViewStateChange: function (viewState) {
-      console.log('updating viewState for child objects to ' + JSON.stringify(viewState));
+      // console.log('updating viewState for child objects to ' + JSON.stringify(viewState));
       this.updateFromViewState(viewState);
     },
     updateFromViewState: function (viewState) {
@@ -170,7 +169,7 @@ function (
       this.updateAccessionInfo(viewState.get('accession'));
     },
     updateAccessionInfo: function (accessionInfo) {
-      console.log('running ' + this.id + '.updateAccessionInfo with ' + JSON.stringify(accessionInfo) );
+      // console.log('running ' + this.id + '.updateAccessionInfo with ' + JSON.stringify(accessionInfo) );
       domConstruct.empty(this.accessionTitle.containerNode);
       domConstruct.place('<span class="searchField" style="font-size: large;">' + accessionInfo.label + '</span>', this.accessionTitle.containerNode);
       domConstruct.place('<div>' + accessionInfo.description + '</div>', this.accessionTitle.containerNode);
@@ -187,14 +186,14 @@ function (
       const hashParams = (this.state && this.state.hashParams) || {};
       var dataPromises = [];
       let val = hashParams.displayType || this.viewDefaults.get('displayType');
-      console.log('get viewState.displayType record for ' + val);
+      // console.log('get viewState.displayType record for ' + val);
       dataPromises.push(this.getDisplayTypeInfo(val));
       val = hashParams.accession || this.viewDefaults.get('accession');
-      console.log('get viewState.accession record for ' + val);
+      // console.log('get viewState.accession record for ' + val);
       dataPromises.push(this.getAccessionInfo(val));
 
       val = hashParams.zoomLevel || this.viewDefaults.get('zoomLevel') || 100;
-      console.log('get viewState.zoomLevel for ' + val);
+      // console.log('get viewState.zoomLevel for ' + val);
       dataPromises.push(Promise.resolve(val));
 
       return Promise.all(dataPromises);
