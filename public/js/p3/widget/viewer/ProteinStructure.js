@@ -121,8 +121,8 @@ function (
         this.get('viewState').set('highlights', highlights);
       }));
 
-      this.structureHighlighter = new StructureHighlights({});
-      this.highlighters.addChild(this.structureHighlighter);
+      // this.structureHighlighter = new StructureHighlights({});
+      // this.highlighters.addChild(this.structureHighlighter);
 
       this.featureHighlights = new SARS2FeatureHighlights({
       });
