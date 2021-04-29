@@ -9,6 +9,7 @@ define([
   '../proteinStructure/EpitopeHighlights',
   '../proteinStructure/LigandHighlights',
   '../proteinStructure/StructureHighlight',
+  '../proteinStructure/SARS2FeatureHighlights',
   'dojo/data/ItemFileReadStore',
   'dojo/store/DataStore',
   './Base',
@@ -28,6 +29,7 @@ function (
   EpitopeHighlights,
   LigandHighlights,
   StructureHighlights,
+  SARS2FeatureHighlights,
   ItemFileReadStore,
   DataStore,
   Base,
@@ -122,7 +124,18 @@ function (
       this.structureHighlighter = new StructureHighlights({});
       this.highlighters.addChild(this.structureHighlighter);
 
-      // TODO highlighters need to be dependent on proteins and whats available in the database
+      this.featureHighlights = new SARS2FeatureHighlights({
+      });
+      this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+        console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+        console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+        let highlights = new Map(this.viewState.get('highlights'));
+        highlights.set('features', new Map(newValue));
+        this.get('viewState').set('highlights', highlights);
+      }));
+      this.highlighters.addChild(this.featureHighlights);
+
+      // TODO highlighters need to be dependent on proteins and what's available in the database
       this.epitopeHighlight = new EpitopeHighlights({
         id: this.id + '_epitopes',
         store: this.epitopes,
@@ -148,9 +161,11 @@ function (
         viewState.set('displayType', viewData[0]);
         viewState.set('accession', viewData[1]);
         viewState.set('zoomLevel', viewData[2]);
-        let highlights = new Map();
-        highlights.set('ligands', new Map());
-        highlights.set('epitopes', new Map());
+        let highlights = new Map([
+          ['ligands', new Map()],
+          ['epitopes', new Map()],
+          ['features', new Map()]
+        ]);
         viewState.set('highlights', highlights);
         // console.log('initial viewstate is ' + JSON.stringify(viewState));
         this.set('viewState', viewState);
@@ -165,6 +180,7 @@ function (
       this.displayControl.set('zoomLevel', viewState.get('zoomLevel'));
       this.displayControl.set('accessionId', viewState.get('accession').id);
       this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
+      this.featureHighlights.set('accessionId', viewState.get('accession').id);
       this.jsmol.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
     },
