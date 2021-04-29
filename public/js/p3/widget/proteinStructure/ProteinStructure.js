@@ -64,9 +64,7 @@ define([
         newValue.watch('effect', lang.hitch(this, this.setEffect));
         newValue.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
-          this.stopEffect();
-          this.handleHighlight(attr, oldValue, newValue);
-          this.startEffect();
+          this.updateDisplay();
         }));
         if (oldValue.get('accession', {}).id != newValue.get('accession', {}).id) {
           this.updateAccession(newValue.get('accession'));
@@ -123,17 +121,6 @@ define([
     handleHighlight: function (attr, oldValue, newValue) {
       // console.log('old positions ' + oldValue + ' new positions ' + newValue);
       const script = [];
-      console.log('previous highlight size: ' + oldValue.size, ' new highlight size: ' + newValue.size);
-      const displayType = this.get('viewState', {}).get('displayType');
-      // dehighlight all positions using default value from displayType
-      /* eslint-disable-next-line no-unused-vars */
-      for (let [highlightName, highlightPositions] of oldValue) {
-        /* eslint-disable-next-line no-unused-vars */
-        for (let [pos, color] of highlightPositions) {
-          script.push('select ' + pos + ';');
-          script.push(displayType.colorMode);
-        }
-      }
       /* eslint-disable-next-line no-unused-vars */
       for (let [highlightName, highlightPositions] of newValue) {
         for (let [pos, color] of highlightPositions) {
