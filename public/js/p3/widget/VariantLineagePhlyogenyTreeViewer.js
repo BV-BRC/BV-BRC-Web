@@ -224,7 +224,7 @@ define([
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
 
-      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/VIPR_SARS2_29400_09999_ni_3_PANGO_lineages_MAFFT_05_tree_1_fme_p2dvvm.xml')
+      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_4_14_21_29400_09999_pango_3_MAFFT_05_GTR_fastme_fme_mp_pdvxvm.xml')
         .then((data) => {
           var tree;
           try {
