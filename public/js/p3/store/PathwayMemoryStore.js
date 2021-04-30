@@ -110,9 +110,9 @@ define([
     },
 
     queryTypes: {
-      pathway: '&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))',
-      ecnumber: '&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))',
-      genes: '&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))'
+      pathway: '&select(pathway_id,pathway_name,pathway_class,annotation)&group((field,pathway_id),(format,simple),(limit,1),(facet,true))',
+      ecnumber: '&select(pathway_id,pathway_name,pathway_class,annotation,ec_number,ec_description)&group((field,ec_number),(format,simple),(limit,1),(facet,true))',
+      genes: '&select(feature_id,genome_name,accession,patric_id,refseq_locus_tag,alt_locus_tag,gene,product,annotation,pathway_id,pathway_name,ec_number,ec_description)&group((field,feature_id),(format,simple),(limit,1),(facet,true))'
     },
 
     buildQuery: function () {
