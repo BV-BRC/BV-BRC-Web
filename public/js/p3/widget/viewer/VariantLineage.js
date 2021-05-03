@@ -5,6 +5,7 @@ define([
   '../VariantDetail', '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
   '../VariantLineagePhlyogenyTreeViewer',
+  './ProteinStructure',
   '../../util/QueryToEnglish'
 ], function (
   declare, lang,
@@ -13,6 +14,7 @@ define([
   VariantDetailView, VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
   VariantLineagePhlyogenyTreeViewer,
+  VariantProteinStructure,
   QueryToEnglish
 ) {
 
@@ -162,7 +164,7 @@ define([
       this.viewer.addChild(this.variant);
       this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
-      // this.viewer.addChild(this.structure);
+      this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
     }
