@@ -6,7 +6,7 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'jsmol/JSmol.min.nojq',
+  'jsmol/JSmol.min',
   'dijit/_WidgetBase',
   'dojo/_base/kernel',
   './ProteinStructureState',
@@ -34,13 +34,13 @@ define([
       src: '',
       // this seems to be necessary to make the applet not defer loading until clicked
       coverImage: '/patric/images/bv-brc/ird-vipr-logo.png',
-      readyFunction: function (applet) {
-        console.log('JSMOL readyFunction for applet is ' + applet);
-      },
+      readyFunction: lang.hitch(this, function (applet) {
+        // console.log('JMOL readyFunction called for applet  ' + applet._id);
+      }),
       zIndexBase: 1000,
     },
     constructor: function (opts) {
-      console.log('ProteinStructure.constructor');
+      // console.log('ProteinStructure.constructor');
       opts = opts || {};
       lang.mixin(this, opts);
       console.log('ProteinStructure.constructor id=' + this.id);
@@ -58,15 +58,13 @@ define([
 
       this.jsmol = this.jmol.getApplet(this.id + '_jsmolDisplay', this.jmolInfo);
       this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('JMOL updating viewState from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
+        // console.log('JMOL updating viewState from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
         newValue.watch('accession', lang.hitch(this, this.onAccessionChange));
         newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('effect', lang.hitch(this, this.setEffect));
         newValue.watch('zoomLevel', lang.hitch(this, this.setZoomLevel));
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
-          this.stopEffect();
-          this.handleHighlight(attr, oldValue, newValue);
-          this.startEffect();
+          this.updateDisplay();
         }));
         if (oldValue.get('accession', {}).id != newValue.get('accession', {}).id) {
           this.updateAccession(newValue.get('accession'));
@@ -77,7 +75,7 @@ define([
       return this.jmol.getAppletHtml(this.jsmol);
     },
     runScript: function (script) {
-      console.log('running script: "' + script + '"');
+      // console.log('JMOL running script: "' + script + '"');
       this.jmol.script(this.jsmol, script);
     },
     updateAccession: function (accessionInfo) {
@@ -86,21 +84,21 @@ define([
       this.updateDisplay();
     },
     onAccessionChange: function (attr, oldValue, newValue) {
-      console.log('JMOL accession changed to ' + JSON.stringify(newValue));
+      // console.log('JMOL accession changed to ' + JSON.stringify(newValue));
       if (newValue && newValue.id &&  (oldValue.id != newValue.id)) {
         this.updateAccession(newValue);
       }
     },
     updateDisplay: function () {
       let displayType = this.viewState.get('displayType');
-      console.log('JMOL updating displayType to ' + displayType.id);
+      // console.log('JMOL updating displayType to ' + displayType.id);
       this.stopEffect();
       var zoomLevel = this.viewState.get('zoomLevel');
       if (zoomLevel) {
         this.runScript('set zoomLarge FALSE; zoom ' + zoomLevel + ';');
       }
       if (displayType.script) {
-        console.log('JMOL displayType.script ' + JSON.stringify(displayType.script));
+        // console.log('JMOL displayType.script ' + JSON.stringify(displayType.script));
         this.runScript(displayType.script);
       }
       const highlights = this.get('viewState').get('highlights');
@@ -121,42 +119,34 @@ define([
     },
     // TODO block changes until script is run
     handleHighlight: function (attr, oldValue, newValue) {
-      console.log('old positions ' + oldValue + ' new positions ' + newValue);
+      // console.log('old positions ' + oldValue + ' new positions ' + newValue);
       const script = [];
-      console.log('previous highlight size: ' + oldValue.size, ' new highlight size: ' + newValue.size);
-      const displayType = this.get('viewState', {}).get('displayType');
-      // dehighlight all positions using default value from displayType
-      // eslint-disable-next-line no-unused-vars
-      for ( let [pos, color] of oldValue) {
-        script.push('select ' + pos + ';');
-        script.push(displayType.colorMode);
+      /* eslint-disable-next-line no-unused-vars */
+      for (let [highlightName, highlightPositions] of newValue) {
+        for (let [pos, color] of highlightPositions) {
+          script.push('select ' + pos + ';');
+          script.push('color ' + this.colorToJmolColor(color) + ';');
+        }
       }
-      for (let [pos, color] of newValue) {
-        script.push('select ' + pos + ';');
-        script.push('color ' + color + ';');
+      if (script.length > 0) {
+        this.runScript(script.join(''));
       }
-      this.runScript(script.join(''));
     },
-    highlightItemToJmol: function (item) {
-      var jmolCommand = [
-        'select ' + item.position,
-        'color ' + item.color
-      ];
-      if (item.mode) {
-        jmolCommand.append(item.mode);
-      }
-      return jmolCommand;
+    colorToJmolColor: function (hexColor) {
+      return '[' + hexColor.replace('#', 'x') + ']';
     },
     // TODO this assumes loading from PDB
     loadAccession: function (accession) {
-      this.runScript('load async "=' + accession + '"');
+      if (accession) {
+        this.runScript('load async "=' + accession + '"');
+      }
     },
     animFrameCallback: function (appletId, frameIndex, fileNumber, frameNumber) {
-      console.log('JSMOL animFrameCallback called with frameIndex=' + frameIndex);
+      // console.log('JMOL animFrameCallback called with frameIndex=' + frameIndex);
     },
     // TODO use this to notify other controls that the file is loaded. Pub/Sub?
     loadStructCallback: function (appletId, filePath, fileName, title, errorMessage, errorCode, frame, lastFrame) {
-      console.log('JSMOL loadStructCallback ' + filePath + ' ' + (errorCode == 3 ? 'success' : 'failed'));
+      // console.log('JMOL loadStructCallback ' + filePath + ' ' + (errorCode == 3 ? 'success' : 'failed'));
     },
     setEffect: function (attr, oldValue, newValue) {
       var script = '';
@@ -166,11 +156,11 @@ define([
       if (newValue && newValue.startScript) {
         script += newValue.startScript;
       }
-      console.log('setting effect via script: ' + script);
+      // console.log('JMOL setting effect via script: ' + script);
       this.runScript(script);
     },
     setZoomLevel: function (attr, oldValue, newValue) {
-      console.log('zoomLevel changed from %s to %s', oldValue, newValue);
+      // console.log('JMOL zoomLevel changed from %s to %s', oldValue, newValue);
       this.stopEffect();
       this.runScript('zoom ' + newValue + ';');
       this.startEffect();

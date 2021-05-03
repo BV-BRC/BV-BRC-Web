@@ -1,0 +1,153 @@
+<div data-dojo-type="dijit/Toolbar">
+    <style type="text/css">
+        .proteinStructure-action {
+            height: 20px;
+            weight: 20px;
+        }
+    </style>
+    <span data-dojo-type="dijit/form/DropDownButton">
+        <label>Protein Structure</label>
+        <div data-dojo-type="dijit/TooltipDialog">
+            <div data-dojo-attach-point="proteinSelectionContainer"></div>
+        </div>
+    </span>
+
+
+    <span data-dojo-type="dijit/form/DropDownButton">
+        <div>
+            <span data-dojo-attach-point="displayTypeIcon">Loading...</span>
+            Display Type
+        </div>
+        <div data-dojo-type="dijit/TooltipDialog">
+            <div data-dojo-type="p3/widget/proteinStructure/DisplayTypeList"
+                 data-dojo-attach-point="displayTypeSelector"
+            style="width: 40em;">
+            </div>
+        </div>
+    </span>
+
+    <span data-dojo-type="dijit/form/DropDownButton">
+        <img src="/public/icon_source/search.svg"
+             title="Zoom Level"
+             class="proteinStructure-action"/>
+        <div data-dojo-type="dijit/TooltipDialog"
+             style="width: 20em;">
+            <p>Zoom Level</p>
+            <select data-dojo-attach-point="displayZoom"
+                    data-dojo-type="dijit/form/Select"
+                    style="display: inline-block; width:50%;">
+                <option value="50">50%</option>
+                <option value="100">100%</option>
+                <option value="150">150%</option>
+                <option value="200">200%</option>
+                <option value="400">400%</option>
+                <option value="custom">Custom</option>
+            </select>
+            <span data-dojo-attach-point="displayZoomCustomContainer" style="visibility: hidden;">
+                <span data-dojo-type="dijit/form/NumberTextBox"
+                      data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
+                      data-dojo-attach-point="displayZoomCustom"
+                      style="width: 4em;"></span> %
+            </span>
+        </div>
+    </span>
+
+    <button data-dojo-type="dijit/form/ToggleButton"
+            data-dojo-attach-point="spinButton">
+        <img src="/public/icon_source/repeat.svg"
+             title="Spin"
+             class="proteinStructure-action"/>
+    </button>
+
+    <div style="border:1px solid grey; display: inline-block; border-radius: 5px; padding: 0px;">
+        <button data-dojo-type="dijit/form/ToggleButton"
+                data-dojo-attach-point="rockButton">
+            <img src="/public/icon_source/rock.svg"
+                 title="Rock"
+                 class="proteinStructure-action"/>
+        </button>
+        <div data-dojo-type="dijit/form/DropDownButton"
+             title="Rock Options">
+            <img src="/public/icon_source/cog.svg" class="proteinStructure-action" />
+            <div data-dojo-type="dijit/TooltipDialog">
+                <label>Rock Options</label>
+                <table>
+                    <tr>
+                        <td>
+                            <label>Angle: </label>
+                        </td>
+                        <td>
+                        <span id="rockAngle"
+                              data-dojo-type="dijit/form/NumberTextBox"
+                              data-dojo-props="smallDelta: 1, constraints: { min:10, max:60, places:0 },
+              promptMessage: 'Rotate structure between plus and minus this angle (10-60 degrees)',
+              invalidMessage: 'Angle should be a whole number between 10 and 60',
+              rangeMessage: 'Angle should be a whole number between 10 and 60'"
+                              data-dojo-attach-point="rockAngle"
+                              style="width: 4em;"></span>
+                        <div data-dojo-type="dijit/Tooltip"
+                             data-dojo-props="connectId: 'rockAngle', position: ['after']">
+                    Rotate structure between plus and minus this angle (10-60 degrees)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Speed: </label>
+                        </td>
+                        <td>
+                            <span id="rockSpeed"
+                                  data-dojo-type="dijit/form/NumberTextBox"
+                                  data-dojo-props="constraints: { min:5, max:45, places:0 },
+              promptMessage: 'Rotation speed between 5 and 45',
+              invalidMessage: 'Rotation should be a whole number between 5 and 45',
+              rangeMessage: 'Rotation should be a whole number between 5 and 45'"
+                                  data-dojo-attach-point="rockSpeed"
+                                  style="width:4em;"></span>
+                            <div data-dojo-type="dijit/Tooltip"
+                                 data-dojo-props="connectId: 'rockSpeed', position: ['after']">Rotation speed between 5 and 45</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Pause: </label>
+                        </td>
+                        <td>
+                            <span id="rockPause"
+                                  data-dojo-type="dijit/form/NumberTextBox"
+                                  data-dojo-props="constraints: { min:0, max:3, places:1 },
+              promptMessage:'Number of seconds (0.0-3.0) to pause before reversing rocking direction',
+              rangeMessage: 'Pause should be a number of seconds between 0.0 and 3.0',
+              invalidMessage: 'Pause should be a number between 0.0 and 3.0',
+              "
+                                  data-dojo-attach-point="rockPause"
+                                  style="width: 4em;"></span>
+                            <div data-dojo-type="dijit/Tooltip"
+                                 data-dojo-props="connectId: 'rockPause', position: ['after']">
+                                Number of seconds (1.0 - 3.0) to pause before reversing rocking direction
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <span data-dojo-type="dijit/form/DropDownButton">
+        <img src="/public/icon_source/lightbulb-o.svg"
+             class="proteinStructure-action"
+             title="Show JMol command entry" />
+        <div data-dojo-type="dijit/TooltipDialog"
+             style="height: 500px;">
+            <input data-dojo-type="dijit/form/Textarea"
+                   data-dojo-attach-point="commandEntry"
+                   style="width: 400px;"/>
+            <button data-dojo-type="dijit/form/Button"
+                    data-dojo-attach-point="commandRun">Run</button>
+            <button data-dojo-type="dijit/form/Button"
+                    data-dojo-attach-point="commandClear">Clear</button>
+        </div>
+    </span>
+
+
+
+</div>
