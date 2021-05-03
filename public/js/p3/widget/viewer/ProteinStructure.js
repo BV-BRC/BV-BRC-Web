@@ -127,8 +127,8 @@ function (
       this.featureHighlights = new SARS2FeatureHighlights({
       });
       this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-        console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-        console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+        // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+        // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
         let highlights = new Map(this.viewState.get('highlights'));
         highlights.set('features', new Map(newValue));
         this.get('viewState').set('highlights', highlights);
