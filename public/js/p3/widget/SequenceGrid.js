@@ -38,7 +38,6 @@ define([
       gc_content: { label: 'GC Content %', field: 'gc_content', hidden: false },
       length: { label: 'Length (bp)', field: 'length', hidden: false },
       sequence_md5: { label: 'Sequence MD5', field: 'sequence_md5', hidden: true },
-      sequence: { label: 'Sequence', field: 'sequence', hidden: true },
       release_date: { label: 'Release Date', field: 'release_date', hidden: true },
       version: { label: 'Version', field: 'version', hidden: true },
       date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
