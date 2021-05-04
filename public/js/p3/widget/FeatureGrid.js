@@ -97,8 +97,8 @@ define([
       // console.log(query.match(/CDS/), query.match(/eq\(genome_id/))
       // show or hide columns based on CDS vs Non-CDS feature type
       if (query.match(/CDS/)) {
-        _self.toggleColumnHiddenState('plfam', false);
-        _self.toggleColumnHiddenState('pgfam', false);
+        _self.toggleColumnHiddenState('plfam_id', false);
+        _self.toggleColumnHiddenState('pgfam_id', false);
 
         _self.toggleColumnHiddenState('feature_type', true);
         _self.toggleColumnHiddenState('start', true);
@@ -108,8 +108,8 @@ define([
         _self.toggleColumnHiddenState('refseq_locus_tag', true);
         _self.toggleColumnHiddenState('gene', true);
 
-        _self.toggleColumnHiddenState('plfam', true);
-        _self.toggleColumnHiddenState('pgfam', true);
+        _self.toggleColumnHiddenState('plfam_id', true);
+        _self.toggleColumnHiddenState('pgfam_id', true);
 
         _self.toggleColumnHiddenState('feature_type', false);
         _self.toggleColumnHiddenState('start', false);
@@ -119,8 +119,8 @@ define([
         _self.toggleColumnHiddenState('classifier_score', false);
         _self.toggleColumnHiddenState('classifier_round', false);
       } else {
-        _self.toggleColumnHiddenState('plfam', true);
-        _self.toggleColumnHiddenState('pgfam', true);
+        _self.toggleColumnHiddenState('plfam_id', true);
+        _self.toggleColumnHiddenState('pgfam_id', true);
 
         _self.toggleColumnHiddenState('feature_type', false);
         _self.toggleColumnHiddenState('start', false);
