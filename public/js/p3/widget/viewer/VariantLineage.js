@@ -4,7 +4,6 @@ define([
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantDetail', '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
-  './ProteinStructure',
   '../../util/QueryToEnglish'
 ], function (
   declare, lang,
@@ -12,7 +11,6 @@ define([
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
   VariantDetailView, VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
-  VariantProteinStructure,
   QueryToEnglish
 ) {
 
@@ -135,7 +133,7 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
-      this.structure = new VariantProteinStructure({
+      this.structure = new VariantStructure({
         title: 'Protein Structure',
         id: this.viewer.id + '_structure'
       })
