@@ -75,8 +75,17 @@ define([
     getViewerHTML: function () {
       return this.jmol.getAppletHtml(this.jsmol);
     },
+    /**
+     * Execute a user script. We have to stop effects because rock is blocking
+     * @param script
+     */
+    executeScript: function (script) {
+      console.log('JMOL running script: "' + script + '"');
+      this.stopEffect();
+      this.runScript(script);
+      this.startEffect();
+    },
     runScript: function (script) {
-      // console.log('JMOL running script: "' + script + '"');
       this.jmol.script(this.jsmol, script);
     },
     updateAccession: function (accessionInfo) {

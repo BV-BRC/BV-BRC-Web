@@ -91,7 +91,7 @@ function (
       }));
 
       this.displayControl.watch('scriptText', lang.hitch(this, function (attr, oldValue, newValue) {
-        this.jsmol.runScript(newValue);
+        this.jsmol.executeScript(newValue);
       }));
       this.displayControl.watch('effect', lang.hitch(this, function (attr, oldValue, newValue) {
         this.get('viewState').set('effect', newValue);
