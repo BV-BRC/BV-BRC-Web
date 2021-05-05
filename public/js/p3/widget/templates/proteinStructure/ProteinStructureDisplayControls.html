@@ -8,7 +8,11 @@
     <span data-dojo-type="dijit/form/DropDownButton">
         <label>Protein Structure</label>
         <div data-dojo-type="dijit/TooltipDialog">
-            <div data-dojo-attach-point="proteinSelectionContainer"></div>
+            <div data-dojo-attach-point="proteinSelect"
+                 data-dojo-type="p3/widget/proteinStructure/SelectList"
+                 data-dojo-props="className: 'dgrid-autoheight'"
+            >
+            </div>
         </div>
     </span>
 
@@ -21,6 +25,7 @@
         <div data-dojo-type="dijit/TooltipDialog">
             <div data-dojo-type="p3/widget/proteinStructure/DisplayTypeList"
                  data-dojo-attach-point="displayTypeSelector"
+                 data-dojo-props="className: 'dgrid-autoheight'"
             style="width: 40em;">
             </div>
         </div>
@@ -33,16 +38,11 @@
         <div data-dojo-type="dijit/TooltipDialog"
              style="width: 20em;">
             <p>Zoom Level</p>
-            <select data-dojo-attach-point="displayZoom"
-                    data-dojo-type="dijit/form/Select"
+            <div data-dojo-attach-point="displayZoom"
+                    data-dojo-type="p3/widget/proteinStructure/SelectList"
+                    data-dojo-props="className: 'dgrid-autoheight'"
                     style="display: inline-block; width:50%;">
-                <option value="50">50%</option>
-                <option value="100">100%</option>
-                <option value="150">150%</option>
-                <option value="200">200%</option>
-                <option value="400">400%</option>
-                <option value="custom">Custom</option>
-            </select>
+            </div>
             <span data-dojo-attach-point="displayZoomCustomContainer" style="visibility: hidden;">
                 <span data-dojo-type="dijit/form/NumberTextBox"
                       data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
