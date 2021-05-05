@@ -4,14 +4,16 @@ define([
   'dojo/dom-construct',
   'dojo/dom-style',
   './HighlightBase',
-  '../EpitopeGrid'
+  '../EpitopeGrid',
+  'p3/util/colorHelpers',
 ], function (
   declare,
   lang,
   domConstruct,
   domStyle,
   HighlightBase,
-  EpitopeGrid
+  EpitopeGrid,
+  colorHelpers
 ) {
   return declare([HighlightBase], {
     title: 'Epitopes',
@@ -19,8 +21,14 @@ define([
     store: null,
     selection: null,
     multiple: true,
+    textColor: colorHelpers.WHITE,
     postCreate: function () {
       this.inherited(arguments);
+      this.watch('color', lang.hitch(this, function (attr, oldValue, newValue) {
+        this.set('textColor', colorHelpers.contrastingTextColor(newValue));
+      }));
+      this.textColor = colorHelpers.contrastingTextColor(this.color);
+
       this.selection = new EpitopeGrid({
         id: this.id + '_select',
         name: 'highlight_color',
@@ -49,7 +57,8 @@ define([
         const newPositions = new Map(this.positions);
         for (let row of evt.rows) {
           newPositions.set(row.data.coords, this.color);
-          domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', this.color);
+          domStyle.set(evt.grid.row(row.id).element, 'background-color', this.color);
+          domStyle.set(evt.grid.row(row.id).element, 'color', this.textColor);
         }
         if ( !this.updatingPositions) {
           this.updatingPositions = true;
@@ -62,7 +71,8 @@ define([
         const newPositions = new Map(this.positions);
         for (let row of evt.rows) {
           newPositions.delete(row.data.coords);
-          domStyle.set(evt.grid.cell(row.id, 'checkbox').element, 'background-color', 'inherit');
+          domStyle.set(evt.grid.row(row.id).element, 'background-color', 'inherit');
+          domStyle.set(evt.grid.row(row.id).element, 'color', 'inherit');
         }
         // console.log('highlight positions %s', JSON.stringify(newPositions));
         if ( !this.updatingPositions) {
