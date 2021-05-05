@@ -31,6 +31,7 @@ define([
       width: '100%',
       j2sPath: '/js/jsmol/j2s',
       deferApplet: false,
+      disableJ2SLoadMonitor: true,
       src: '',
       // this seems to be necessary to make the applet not defer loading until clicked
       coverImage: '/patric/images/bv-brc/ird-vipr-logo.png',
