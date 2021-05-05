@@ -74,14 +74,12 @@
         </div>
         <div class="appRow">
           <label class="paramlabel">Annotation Recipe</label><br>
-          <select data-dojo-type="dijit/form/Select" name="recipe"
-            data-dojo-attach-point="recipe"
-            data-dojo-props="intermediateChanges:true"
-            style="width:300px" required="true">
-            <option value="default">Bacteria/Archaea</option>
-            <option value="viral">Viruses</option>
-            <option value="phage">Bacteriophages</option>
-          </select>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="default" name="recipe" value="default"/>
+          <label for="radio1" style="font-size:8pt">Bacteria/Archaea</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="viral" name="recipe" value="viral" />
+          <label for="radio2" style="font-size:8pt">Viruses</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="phage" name="recipe" value="phage" />
+          <label for="radio3" style="font-size:8pt">Bacteriophages</label>
         </div>
       </div>
     </div>
