@@ -4,25 +4,36 @@ define([
   'dojo/dom-construct',
   'dojo/dom-style',
   './HighlightBase',
-  'dgrid/List',
+  'dgrid/Grid',
   'dgrid/Selection',
+  '../GridSelector',
   'p3/util/colorHelpers',
-  'dojo/_base/Color'
 ], function (
   declare,
   lang,
   domConstruct,
   domStyle,
   HighlightBase,
-  List,
+  Grid,
   Selection,
+  selector,
   colorHelpers,
 ) {
   return declare( [HighlightBase], {
     accessionId: '',
     title: 'Features',
     positions: new Map(),
-    FeatureList: declare([List, Selection]),
+    FeatureList: declare([Grid, Selection], {
+      columns: [
+        selector({ unhidable: true }),
+        { label: 'Name'}
+      ],
+      selectionMode: 'multiple',
+      //primaryKey: 'name',
+      store: null,
+      showHeader: false,
+      showFooter: false,
+    }),
     features: null,
     color: '#0000ff',
     textColor: colorHelpers.WHITE,
@@ -118,10 +129,7 @@ define([
       if (this.features) {
         this.removeChild(this.features);
       }
-      this.features = new this.FeatureList({
-        selectionMode: 'multiple',
-        selector: 'checkbox',
-      });
+      this.features = new this.FeatureList({});
       this.features.renderArray(options);
       this.addChild(this.features);
       this.features.on('dgrid-select', lang.hitch(this, function (evt) {
