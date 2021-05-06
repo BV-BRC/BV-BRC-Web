@@ -39,17 +39,25 @@
         <div data-dojo-type="dijit/TooltipDialog"
              style="width: 20em;">
             <p>Zoom Level</p>
+            <table>
+                <tr>
+                    <td style="vertical-align: top;">
             <div data-dojo-attach-point="displayZoom"
                     data-dojo-type="p3/widget/proteinStructure/SelectList"
                     data-dojo-props="className: 'dgrid-autoheight'"
-                    style="display: inline-block; width:50%;">
+                    style="display: inline-block;">
             </div>
+                    </td>
+                    <td style="vertical-align: top;">
             <span data-dojo-attach-point="displayZoomCustomContainer" style="visibility: hidden;">
                 <span data-dojo-type="dijit/form/NumberTextBox"
                       data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
                       data-dojo-attach-point="displayZoomCustom"
                       style="width: 4em;"></span> %
             </span>
+                    </td>
+                </tr>
+            </table>
         </div>
     </span>
 

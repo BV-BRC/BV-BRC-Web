@@ -44,12 +44,12 @@ define([
     displayTypeStore: null,
     proteinStore: null,
     zoomLevels: new Map( [
+      ['Custom', 'custom'],
       ['50%', '50'],
       ['100%', '100'],
       ['150%', '150'],
       ['200%', '200'],
-      ['400%', '400'],
-      ['Custom', 'custom']
+      ['400%', '400']
     ]),
     postCreate: function () {
       this.inherited(arguments);
