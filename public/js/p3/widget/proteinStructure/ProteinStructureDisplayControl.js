@@ -56,7 +56,7 @@ define([
 
       // console.log(this.id + '.postCreate displayTypeInfo is ' + JSON.stringify(this.get('displayTypeInfo')));
 
-      this.proteinSelect.renderArray(['6VXX', '6MOJ', '6VYB', '6W41']);
+      this.proteinSelect.renderArray(['6VXX', '6M0J', '6VYB', '6W41']);
 
 
       if (this.get('accessionId')) {
