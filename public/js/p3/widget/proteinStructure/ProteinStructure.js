@@ -80,12 +80,12 @@ define([
      * @param script
      */
     executeScript: function (script) {
-      console.log('JMOL running script: "' + script + '"');
       this.stopEffect();
       this.runScript(script);
       this.startEffect();
     },
     runScript: function (script) {
+      // console.log('JMOL running script: "' + script + '"');
       this.jmol.script(this.jsmol, script);
     },
     updateAccession: function (accessionInfo) {
