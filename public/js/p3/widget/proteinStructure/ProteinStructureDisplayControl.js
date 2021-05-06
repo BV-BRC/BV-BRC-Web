@@ -61,10 +61,12 @@ define([
 
       if (this.get('accessionId')) {
         this.proteinSelect.setSelected(this.get('accessionId'));
+        this.proteinSelectionLabel.innerHTML = this.get('accessionId');
       }
       this.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
         // console.log('%s.accessionId changed to %s', this.id, newValue);
         this.proteinSelect.setSelected(newValue);
+        this.proteinSelectionLabel.innerHTML = this.get('accessionId');
       }));
       this.proteinSelect.on('dgrid-select', lang.hitch(this, function (evt) {
         let accessionId = evt.rows[0].data;
