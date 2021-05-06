@@ -23,10 +23,11 @@ define([
     primaryKey: 'id',
     deselectOnRefresh: true,
     selectionMode: 'multiple',
+    showFooter: false,
     columns: {
-      'checkbox': selector({ unhidable: true }),
-      'id': { label: 'IEDB ID', field: 'id' },
-      'name': { label: 'SEQ', field: 'name' }
+      checkbox: selector({ unhidable: true }),
+      id: { label: 'IEDB ID', field: 'id' },
+      name: { label: 'SEQ', field: 'name' }
     },
     store: null,
     startup: function () {

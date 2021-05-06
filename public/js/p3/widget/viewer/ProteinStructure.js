@@ -55,12 +55,6 @@ function (
       this.displayTypeStore = new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
-      this.epitopes = new DataStore({
-        idProperty: 'id',
-        store: new ItemFileReadStore({
-          url: '/public/js/p3/resources/jsmol/sars2-epitopes.json'
-        })
-      });
 
       // the JMol viewer object
       this.jsmol = new ProteinStructureDisplay({
@@ -138,7 +132,6 @@ function (
       // TODO highlighters need to be dependent on proteins and what's available in the database
       this.epitopeHighlight = new EpitopeHighlights({
         id: this.id + '_epitopes',
-        store: this.epitopes,
         color: '#ffff00'
       });
       this.highlighters.addChild(this.epitopeHighlight);
@@ -181,6 +174,7 @@ function (
       this.displayControl.set('accessionId', viewState.get('accession').id);
       this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
       this.featureHighlights.set('accessionId', viewState.get('accession').id);
+      this.epitopeHighlight.set('accessionId', viewState.get('accession').id);
       this.jsmol.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
     },
