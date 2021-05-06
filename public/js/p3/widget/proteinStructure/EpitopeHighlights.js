@@ -21,7 +21,7 @@ define([
 ) {
   return declare([HighlightBase], {
     title: 'Epitopes',
-    accessionId:'',
+    accessionId: '',
     updatingPositions: false,
     epitopeData: {},
     store: null,

@@ -26,10 +26,9 @@ define([
     FeatureList: declare([Grid, Selection], {
       columns: [
         selector({ unhidable: true }),
-        { label: 'Name'}
+        { label: 'Name' }
       ],
       selectionMode: 'multiple',
-      //primaryKey: 'name',
       store: null,
       showHeader: false,
       showFooter: false,

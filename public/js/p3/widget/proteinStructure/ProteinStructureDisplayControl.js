@@ -112,13 +112,14 @@ define([
       // check if zoomLevel is in normal options, otherwise change to custom and set custom value
       this.displayZoom.renderArray(Array.from(this.zoomLevels.keys()));
       let zoomSet = false;
-      for (let [zoomKey,zoomValue] of this.zoomLevels ) {
+      /* eslint-disable-next-line no-unused-vars */
+      for (let [zoomKey, zoomValue] of this.zoomLevels ) {
         if (zoomValue == this.zoomLevel) {
           this.displayZoom.setSelected(this.zoomLevel);
-          zoomSet=true;
+          zoomSet = true;
         }
       }
-      if (! zoomSet) {
+      if ( !zoomSet) {
         this.displayZoom.setSelected('Custom');
         domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         this.displayZoomCustom.set('value', this.zoomLevel);
@@ -195,9 +196,10 @@ define([
       return value;
     },
     getRockScript: function (angle, speed, pause) {
-      const step_delay = (1 / 50);
+      const frames = 50;
+      const step_delay = (1 / frames);
       const step_size = (step_delay * speed);
-      var stepnum = Math.floor( angle * 50 / speed);
+      var stepnum = Math.floor( angle * frames / speed);
       return string.substitute(this.rockTemplate, {
         stepnum: stepnum,
         delay: pause,
@@ -244,7 +246,7 @@ define([
         if (displayType.id != this.get('displayType')) {
           this.set('displayType', displayType.id);
         }
-        // // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
+        // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
         domConstruct.empty(this.displayTypeIcon);
         if (displayType.icon) {
           // console.log('creating icon ' + displayType.icon);
