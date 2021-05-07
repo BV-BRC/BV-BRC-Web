@@ -13,6 +13,7 @@ define([
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
   'dgrid/List',
+  'dgrid/Selection',
   '../../util/dataStoreHelpers'
 ], function (
   declare,
@@ -29,6 +30,7 @@ define([
   Templated,
   WidgetsInTemplateMixin,
   List,
+  Selection,
   dataStoreHelper
 ) {
   return declare( [ContentPane, Templated, WidgetsInTemplateMixin], {
@@ -41,33 +43,37 @@ define([
     templateString: templateString,
     displayTypeStore: null,
     proteinStore: null,
+    zoomLevels: new Map( [
+      ['Custom', 'custom'],
+      ['50%', '50'],
+      ['100%', '100'],
+      ['150%', '150'],
+      ['200%', '200'],
+      ['400%', '400']
+    ]),
     postCreate: function () {
       this.inherited(arguments);
 
       // console.log(this.id + '.postCreate displayTypeInfo is ' + JSON.stringify(this.get('displayTypeInfo')));
 
-      this.proteinSelect = new Select({
-        id: this.id + '_proteinSelect',
-        name: 'proteinId',
-        store: this.proteinStore,
-        maxHeight: -1,
-        style: 'width: 8em;',
-        title: 'Change Displayed Protein'
-      });
-      this.proteinSelect.startup();
+      this.proteinSelect.renderArray(['6VXX', '6M0J', '6VYB', '6W41']);
+
 
       if (this.get('accessionId')) {
-        this.proteinSelect.set('value', this.get('accessionId'));
+        this.proteinSelect.setSelected(this.get('accessionId'));
+        this.proteinSelectionLabel.innerHTML = this.get('accessionId');
       }
       this.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
         // console.log('%s.accessionId changed to %s', this.id, newValue);
-        this.proteinSelect.set('value', newValue);
+        this.proteinSelect.setSelected(newValue);
+        this.proteinSelectionLabel.innerHTML = this.get('accessionId');
       }));
-      this.proteinSelect.on('change', lang.hitch(this, function () {
-        this.set('accessionId', this.proteinSelect.get('value'));
+      this.proteinSelect.on('dgrid-select', lang.hitch(this, function (evt) {
+        let accessionId = evt.rows[0].data;
+        this.set('accessionId', accessionId);
       }));
 
-      domConstruct.place(this.proteinSelect.domNode, this.proteinSelectionContainer);
+      // domConstruct.place(this.proteinSelect.domNode, this.proteinSelectionContainer);
 
       this.displayTypeStore.fetch({
         query: { id: '*' },
@@ -104,23 +110,30 @@ define([
       this.watch('displayTypeInfo', lang.hitch(this, this.onDisplayTypeChange));
 
       // check if zoomLevel is in normal options, otherwise change to custom and set custom value
-      var zoomOptions = this.displayZoom.options.filter(o => o.value == this.zoomLevel);
-      if (zoomOptions.length == 1) {
-        this.displayZoom.set('value', this.zoomLevel);
-      } else {
-        this.displayZoom.set('value', 'custom');
+      this.displayZoom.renderArray(Array.from(this.zoomLevels.keys()));
+      let zoomSet = false;
+      /* eslint-disable-next-line no-unused-vars */
+      for (let [zoomKey, zoomValue] of this.zoomLevels ) {
+        if (zoomValue == this.zoomLevel) {
+          this.displayZoom.setSelected(this.zoomLevel);
+          zoomSet = true;
+        }
+      }
+      if ( !zoomSet) {
+        this.displayZoom.setSelected('Custom');
+
         domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         this.displayZoomCustom.set('value', this.zoomLevel);
       }
 
-      this.displayZoom.on('change', lang.hitch(this, function () {
-        var zoomLevel = this.displayZoom.get('value') || 100;
+      this.displayZoom.on('dgrid-select', lang.hitch(this, function (evt) {
+        var zoomLevel = evt.rows[0].data;
         // console.log('DisplayControl zoom level is ' + zoomLevel);
-        if ( zoomLevel == 'custom' ) {
+        if ( zoomLevel == 'Custom' ) {
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         } else {
           domStyle.set(this.displayZoomCustomContainer, 'visibility', 'hidden');
-          this.set('zoomLevel', zoomLevel);
+          this.set('zoomLevel', this.zoomLevels.get(zoomLevel));
         }
       }));
 
@@ -184,9 +197,11 @@ define([
       return value;
     },
     getRockScript: function (angle, speed, pause) {
-      const step_delay = (1 / 50);
+      const frames = 50;
+      const step_delay = (1 / frames);
       const step_size = (step_delay * speed);
-      var stepnum = Math.floor( angle * 50 / speed);
+      var stepnum = Math.floor( angle * frames / speed);
+
       return string.substitute(this.rockTemplate, {
         stepnum: stepnum,
         delay: pause,
@@ -203,7 +218,7 @@ define([
       this.updateDisplayTypeInfo(newValue);
     },
     effectDefaults: {
-      rockSpeed: 10,
+      rockSpeed: 30,
       rockAngle: 12,
       rockPause: 0.0
     },
@@ -233,7 +248,7 @@ define([
         if (displayType.id != this.get('displayType')) {
           this.set('displayType', displayType.id);
         }
-        // // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
+
         domConstruct.empty(this.displayTypeIcon);
         if (displayType.icon) {
           // console.log('creating icon ' + displayType.icon);
