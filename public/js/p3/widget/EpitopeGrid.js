@@ -25,7 +25,7 @@ define([
     selectionMode: 'multiple',
     showFooter: false,
     columns: {
-      checkbox: selector({ unhidable: true }),
+      checkbox: selector({ selectorType: 'checkbox', unhidable: true, width: 400 }),
       id: { label: 'IEDB ID', field: 'id' },
       name: { label: 'SEQ', field: 'name' }
     },
