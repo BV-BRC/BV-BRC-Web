@@ -28,7 +28,7 @@ define([
     FeatureList: declare([Grid], {
       columns: {
         checkbox: selector({ unhidable: true, selectorType: 'checkbox', width: 400 }),
-        name: { label: 'Name' }
+        name: { label: 'Name', className: 'proteinStructure-hl-cell' }
       },
       selectionMode: 'multiple',
       store: null,
