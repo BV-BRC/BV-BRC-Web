@@ -26,7 +26,7 @@ define([
     showFooter: false,
     fullSelectAll: false,
     columns: {
-      checkbox: selector({ selectorType: 'checkbox', unhidable: true, width: 400 }),
+      checkbox: selector({ selectorType: 'checkbox', unhidable: true, width: 25 }),
       id: { label: 'IEDB ID', field: 'id' },
       name: { label: 'SEQ', field: 'name', className: 'proteinStructure-hl-cell' }
     },
