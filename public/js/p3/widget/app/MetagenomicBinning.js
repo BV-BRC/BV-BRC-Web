@@ -119,21 +119,21 @@ define([
           values.srr_ids = srrAccessions;
         }
         delete values.contigs;       // contigs file is not needed
-        //values.input_type = 'reads'; // set input_type to be 'reads'
+        // values.input_type = 'reads'; // set input_type to be 'reads'
 
       } // startWithRead
 
-      if (values.organism == "bacteria") {
+      if (values.organism == 'bacteria') {
         values.perform_bacterial_annotation = true;
       }
-      else if (values.organism == "viral") {
+      else if (values.organism == 'viral') {
         values.perform_viral_annotation = true;
       }
-      else if (values.organism == "both") {
+      else if (values.organism == 'both') {
         values.perform_bacterial_annotation = true;
         values.perform_viral_annotation = true;
       }
-      delete values["organism"];
+      delete values['organism'];
 
       return values;
     },
@@ -265,11 +265,11 @@ define([
     // counter is a widget for requirements checking
     increaseRows: function (targetTable, counter, counterWidget) {
       counter.counter += 1;
-      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "paired") {
+      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
         this.metaspades.set('disabled', false);
         this.metaspades.set('checked', true);
       }
-      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "srr_accession") {
+      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'srr_accession') {
         this.metaspades.set('disabled', true);
         this.auto.set('checked', true);
       }
@@ -284,11 +284,11 @@ define([
 
     decreaseRows: function (targetTable, counter, counterWidget) {
       counter.counter -= 1;
-      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "paired") {
+      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
         this.metaspades.set('disabled', false);
         this.metaspades.set('checked', true);
       }
-      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "srr_accession") {
+      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'srr_accession') {
         this.metaspades.set('disabled', true);
         this.auto.set('checked', true);
       }
