@@ -265,10 +265,18 @@ define([
     // counter is a widget for requirements checking
     increaseRows: function (targetTable, counter, counterWidget) {
       counter.counter += 1;
-     if (counter.counter > 1) {
-       this.megahit.set('checked', true);
-       this.metaspades.set('disabled', true);       
-     }
+      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "paired") {
+        this.metaspades.set('disabled', false);
+        this.metaspades.set('checked', true);
+      }
+      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "srr_accession") {
+        this.metaspades.set('disabled', true);
+        this.auto.set('checked', true);
+      }
+      else {
+        this.metaspades.set('disabled', true);
+        this.megahit.set('checked', true);
+      }
       if (typeof counterWidget !== 'undefined') {
         counterWidget.set('value', Number(counter.counter));
       }
@@ -276,8 +284,17 @@ define([
 
     decreaseRows: function (targetTable, counter, counterWidget) {
       counter.counter -= 1;
-      if (counter.counter <= 1) {
-        this.metaspades.set('disabled', false);       
+      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "paired") {
+        this.metaspades.set('disabled', false);
+        this.metaspades.set('checked', true);
+      }
+      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == "srr_accession") {
+        this.metaspades.set('disabled', true);
+        this.auto.set('checked', true);
+      }
+      else {
+        this.metaspades.set('disabled', true);
+        this.megahit.set('checked', true);
       }
       if (typeof counterWidget !== 'undefined') {
         counterWidget.set('value', Number(counter.counter));
@@ -416,56 +433,6 @@ define([
       this.code_four ? this.genetic_code.set('value', '4') : this.genetic_code.set('value', '11');
     },
 
-/*     onTaxIDChange: function (val) {
-      this._autoNameSet = true;
-      var tax_id = this.tax_idWidget.get('item').taxon_id;
-      // var tax_obj=this.tax_idWidget.get("item");
-      if (tax_id) {
-        var name_promise = this.scientific_nameWidget.store.get(tax_id);
-        name_promise.then(lang.hitch(this, function (tax_obj) {
-          if (tax_obj) {
-            this.scientific_nameWidget.set('item', tax_obj);
-            this.scientific_nameWidget.validate();
-            this.changeCode(this.tax_idWidget.get('item'));
-          }
-        }));
-      }
-      this._autoTaxSet = false;
-    }, */
-
-/*     updateOutputName: function () {
-      var charError = document.getElementsByClassName('charError')[0];
-      charError.innerHTML = '&nbsp;';
-      var current_output_name = [];
-      var sci_item = this.scientific_nameWidget.get('item');
-      var label_value = this.myLabelWidget.get('value');
-      if (label_value.indexOf('/') !== -1 || label_value.indexOf('\\') !== -1) {
-        return charError.innerHTML = 'slashes are not allowed';
-      }
-      if (sci_item && sci_item.lineage_names.length > 0) {
-        current_output_name.push(sci_item.lineage_names.slice(-1)[0].replace(/\(|\)|\||\/|:/g, ''));
-      }
-      if (label_value.length > 0) {
-        current_output_name.push(label_value);
-      }
-      if (current_output_name.length > 0) {
-        this.output_nameWidget.set('value', current_output_name.join(' '));
-      }
-      this.checkParameterRequiredFields();
-    },
-
-    onSuggestNameChange: function (val) {
-      this._autoTaxSet = true;
-      var tax_id = this.scientific_nameWidget.get('value');
-      if (tax_id) {
-        this.tax_idWidget.set('displayedValue', tax_id);
-        this.tax_idWidget.set('value', tax_id);
-        this.changeCode(this.scientific_nameWidget.get('item'));
-        this.updateOutputName();
-      }
-      this._autoNameSet = false;
-    }, */
-
     onOutputPathChange: function (val) {
       this.inherited(arguments);
       this.checkParameterRequiredFields();
@@ -484,17 +451,6 @@ define([
       this.checkParameterRequiredFields();
     },
 
-/*     onRecipeChange: function () {
-      if (this.recipe.value == 'canu') {
-        this.genome_size_block.style.display = 'block';
-        this.checkParameterRequiredFields();
-      }
-      else {
-        this.genome_size_block.style.display = 'none';
-        this.checkParameterRequiredFields();
-      }
-    }, */
-
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
@@ -503,6 +459,8 @@ define([
         this.contigsFile.reset();
         this.contigsFile.set('required', false);
         this.checkParameterRequiredFields();
+        this.auto.set('disabled', false);
+        this.megahit.set('disabled', false);
       }
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
@@ -510,6 +468,10 @@ define([
         this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
+        this.auto.set('checked', true);
+        this.auto.set('disabled', true);
+        this.megahit.set('disabled', true);
+        this.metaspades.set('disabled', true);
       }
     }
   });
