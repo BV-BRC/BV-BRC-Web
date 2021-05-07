@@ -24,6 +24,7 @@ define([
     deselectOnRefresh: true,
     selectionMode: 'multiple',
     showFooter: false,
+    fullSelectAll: false,
     columns: {
       checkbox: selector({ selectorType: 'checkbox', unhidable: true, width: 400 }),
       id: { label: 'IEDB ID', field: 'id' },

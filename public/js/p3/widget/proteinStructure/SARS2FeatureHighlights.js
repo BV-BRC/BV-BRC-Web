@@ -33,6 +33,7 @@ define([
       selectionMode: 'multiple',
       store: null,
       showFooter: false,
+      fullSelectAll: false,
     }),
     features: null,
     color: '#0000ff',
