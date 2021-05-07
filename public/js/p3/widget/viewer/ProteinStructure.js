@@ -174,6 +174,7 @@ function (
       this.displayControl.set('accessionId', viewState.get('accession').id);
       this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
       this.featureHighlights.set('accessionId', viewState.get('accession').id);
+      this.epitopeHighlight.set('accessionId', viewState.get('accession').id);
       this.jsmol.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
     },
