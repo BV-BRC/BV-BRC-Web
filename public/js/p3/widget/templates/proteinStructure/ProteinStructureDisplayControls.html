@@ -1,19 +1,25 @@
 <div data-dojo-type="dijit/Toolbar">
     <style type="text/css">
         .proteinStructure-action {
-            height: 20px;
-            weight: 20px;
+            height: 15px;
+            width: 15px;
         }
     </style>
-    <span data-dojo-type="dijit/form/DropDownButton">
-        <label>Protein Structure</label>
+    <span data-dojo-type="dijit/form/DropDownButton"
+          title="Select Protein Structure">
+        <label data-dojo-attach-point="proteinSelectionLabel">Protein Structure</label>
         <div data-dojo-type="dijit/TooltipDialog">
-            <div data-dojo-attach-point="proteinSelectionContainer"></div>
+            <div data-dojo-attach-point="proteinSelect"
+                 data-dojo-type="p3/widget/proteinStructure/SelectList"
+                 data-dojo-props="className: 'dgrid-autoheight'"
+            >
+            </div>
         </div>
     </span>
 
 
-    <span data-dojo-type="dijit/form/DropDownButton">
+    <span data-dojo-type="dijit/form/DropDownButton"
+          title="Select Display Type">
         <div>
             <span data-dojo-attach-point="displayTypeIcon">Loading...</span>
             Display Type
@@ -21,56 +27,60 @@
         <div data-dojo-type="dijit/TooltipDialog">
             <div data-dojo-type="p3/widget/proteinStructure/DisplayTypeList"
                  data-dojo-attach-point="displayTypeSelector"
+                 data-dojo-props="className: 'dgrid-autoheight'"
             style="width: 40em;">
             </div>
         </div>
     </span>
 
-    <span data-dojo-type="dijit/form/DropDownButton">
-        <img src="/public/icon_source/search.svg"
-             title="Zoom Level"
-             class="proteinStructure-action"/>
+    <span data-dojo-type="dijit/form/DropDownButton"
+          title="Zoom Level">
+        <span class="icon-zoom-in proteinStructure-action"></span>
         <div data-dojo-type="dijit/TooltipDialog"
              style="width: 20em;">
             <p>Zoom Level</p>
-            <select data-dojo-attach-point="displayZoom"
-                    data-dojo-type="dijit/form/Select"
-                    style="display: inline-block; width:50%;">
-                <option value="50">50%</option>
-                <option value="100">100%</option>
-                <option value="150">150%</option>
-                <option value="200">200%</option>
-                <option value="400">400%</option>
-                <option value="custom">Custom</option>
-            </select>
+            <table>
+                <tr>
+                    <td style="vertical-align: top;">
+            <div data-dojo-attach-point="displayZoom"
+                    data-dojo-type="p3/widget/proteinStructure/SelectList"
+                    data-dojo-props="className: 'dgrid-autoheight'"
+                    style="display: inline-block;">
+            </div>
+                    </td>
+                    <td style="vertical-align: top;">
+
             <span data-dojo-attach-point="displayZoomCustomContainer" style="visibility: hidden;">
                 <span data-dojo-type="dijit/form/NumberTextBox"
                       data-dojo-props="smallDelta: 10, constraints: { min:10, max:1000, places:0 },"
                       data-dojo-attach-point="displayZoomCustom"
                       style="width: 4em;"></span> %
             </span>
+
+                    </td>
+                </tr>
+            </table>
         </div>
     </span>
 
     <button data-dojo-type="dijit/form/ToggleButton"
-            data-dojo-attach-point="spinButton">
-        <img src="/public/icon_source/repeat.svg"
-             title="Spin"
-             class="proteinStructure-action"/>
+
+            data-dojo-attach-point="spinButton"
+            title="Spin">
+        <span class="icon-repeat"></span>
     </button>
 
     <div style="border:1px solid grey; display: inline-block; border-radius: 5px; padding: 0px;">
         <button data-dojo-type="dijit/form/ToggleButton"
-                data-dojo-attach-point="rockButton">
-            <img src="/public/icon_source/rock.svg"
-                 title="Rock"
-                 class="proteinStructure-action"/>
+                data-dojo-attach-point="rockButton"
+                title="Rock">
+            <span class="icon-refresh"></span>
         </button>
         <div data-dojo-type="dijit/form/DropDownButton"
              title="Rock Options">
-            <img src="/public/icon_source/cog.svg" class="proteinStructure-action" />
+            <span class="icon-cogs2 proteinStructure-action"></span>
             <div data-dojo-type="dijit/TooltipDialog">
-                <label>Rock Options</label>
+                <span>Rock Options</span>
                 <table>
                     <tr>
                         <td>
@@ -133,9 +143,8 @@
     </div>
 
     <span data-dojo-type="dijit/form/DropDownButton">
-        <img src="/public/icon_source/lightbulb-o.svg"
-             class="proteinStructure-action"
-             title="Show JMol command entry" />
+        <span class="proteinStructure-action icon-terminal"
+             title="Show JMol command entry" ></span>
         <div data-dojo-type="dijit/TooltipDialog"
              style="height: 500px;">
             <input data-dojo-type="dijit/form/Textarea"
