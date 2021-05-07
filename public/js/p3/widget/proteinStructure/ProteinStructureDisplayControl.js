@@ -121,6 +121,7 @@ define([
       }
       if ( !zoomSet) {
         this.displayZoom.setSelected('Custom');
+
         domStyle.set(this.displayZoomCustomContainer, 'visibility', 'visible');
         this.displayZoomCustom.set('value', this.zoomLevel);
       }
@@ -200,6 +201,7 @@ define([
       const step_delay = (1 / frames);
       const step_size = (step_delay * speed);
       var stepnum = Math.floor( angle * frames / speed);
+
       return string.substitute(this.rockTemplate, {
         stepnum: stepnum,
         delay: pause,
@@ -246,7 +248,7 @@ define([
         if (displayType.id != this.get('displayType')) {
           this.set('displayType', displayType.id);
         }
-        // console.log('DisplayControl updated to ' + JSON.stringify(displayType));
+
         domConstruct.empty(this.displayTypeIcon);
         if (displayType.icon) {
           // console.log('creating icon ' + displayType.icon);

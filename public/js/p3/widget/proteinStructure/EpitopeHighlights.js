@@ -40,11 +40,11 @@ define([
       }));
       this.textColor = colorHelpers.contrastingTextColor(this.color);
 
-
       this.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
         if ( !this.updatingPositions ) {
           // console.log('setting %s.positions from outside', this.id);
           this.updatingPositions = true;
+
           if (this.selection) {
             this.selection.clearSelection();
           }
@@ -57,7 +57,6 @@ define([
           this.updatingPositions = false;
         }
       }));
-
     },
     selectEpitope: function (evt) {
       const newPositions = new Map(this.positions);

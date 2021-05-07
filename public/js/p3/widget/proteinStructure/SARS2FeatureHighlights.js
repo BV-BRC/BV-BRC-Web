@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   'dojo/dom-construct',
   'dojo/dom-style',
+
   'dojo/store/Memory',
   './HighlightBase',
   '../PageGrid',
@@ -39,6 +40,7 @@ define([
     color: '#0000ff',
     textColor: colorHelpers.WHITE,
     data: JSON.parse(featureDataString),
+
     postCreate: function () {
       this.inherited(arguments);
       this.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
