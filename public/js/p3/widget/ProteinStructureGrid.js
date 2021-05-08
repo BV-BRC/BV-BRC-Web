@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './PageGrid', './formatter', '../store/SequenceJsonRest', './GridSelector'
+  './PageGrid', './formatter', '../store/ProteinStructureJsonRest', './GridSelector'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct,
@@ -16,32 +16,36 @@ define([
     apiToken: window.App.authorizationToken,
     apiServer: window.App.dataAPI,
     store: store,
-    dataModel: 'genome_sequence',
-    primaryKey: 'sequence_id',
+    dataModel: 'protein_structure',
+    primaryKey: 'pdb_id',
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: false },
-      genome_name: { label: 'Genome Name', field: 'genome_name', hidden: false },
+      pdb_id: { label: 'PDB ID', field: 'pdb_id', hidden: false },
+      title: { label: 'Title', field: 'title', hidden: false },
+
+      organism_name: { label: 'Organism Name', field: 'organism_name', hidden: false },
       taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
-      sequence_id: { label: 'Sequence ID', field: 'sequence_id', hidden: true },
-      accession: { label: 'Accession', field: 'accession', hidden: false },
-      gi: { label: 'GI', field: 'gi', hidden: true },
-      sequence_type: { label: 'Sequence Type', field: 'sequence_type', hidden: false },
-      sequence_status: { label: 'Sequence Status', field: 'sequence_status', hidden: true },
-      mol_type: { label: 'Mol Type', field: 'mol_type', hidden: false },
-      topology: { label: 'Topology', field: 'topology', hidden: true },
-      description: { label: 'Description', field: 'description', hidden: false },
-      chromosome: { label: 'Chromosome', field: 'chromosome', hidden: true },
-      plasmid: { label: 'Plasmid', field: 'plasmid', hidden: true },
-      segment: { label: 'Segment', field: 'segment', hidden: true},
-      gc_content: { label: 'GC Content %', field: 'gc_content', hidden: false },
-      length: { label: 'Length (bp)', field: 'length', hidden: false },
+      taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
+      taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
+
+      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
+      patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
+      uniprotkb_accession: { label: 'UniProtKB Accession', field: 'uniprotkb_accession', hidden: false },
+      gene: { label: 'Gene', field: 'gene', hidden: false },
+      product: { label: 'Product', field: 'product', hidden: false },
       sequence_md5: { label: 'Sequence MD5', field: 'sequence_md5', hidden: true },
-      release_date: { label: 'Release Date', field: 'release_date', hidden: true },
-      version: { label: 'Version', field: 'version', hidden: true },
-      date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
-      date_modified: { label: 'Date Modified', field: 'date_modified', hidden: true }
+      sequence: { label: 'Sequence', field: 'sequence', hidden: true },
+
+
+      alignments: { label: 'Alignments', field: 'alignments', hidden: true },
+
+      method: { label: 'Method', field: 'method', hidden: false },
+      resolution: { label: 'Resolution', field: 'resolution', hidden: true },
+      pmid: { label: 'PMID', field: 'pmid', hidden: true },
+      institution: { label: 'Institution', field: 'institution', hidden: true },
+      authors: { label: 'Authors', field: 'authors', hidden: true },
+      release_date: { label: 'Release Date', field: 'release_date', hidden: false },
     },
     startup: function () {
       var _self = this;

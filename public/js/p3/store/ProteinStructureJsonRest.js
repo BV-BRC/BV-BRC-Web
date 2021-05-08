@@ -6,10 +6,10 @@ define([
   Store
 ) {
   return declare([Store], {
-    dataModel: 'genome_sequence',
-    idProperty: 'sequence_id',
-    facetFields: ['chromosome', 'plasmid', 'segment'],
-    defaultFieldList: ['genome_id', 'genome_name', 'taxon_id', 'sequence_id', 'accession', 'gi', 'sequence_type', 'sequence_status', 'mol_type', 'topology', 'description', 'chromosome', 'plasmid', 'segment', 'gc_content', 'length', 'sequence_md5', 'release_date', 'version', 'date_inserted', 'date_modified', 'public', 'owner'],
+    dataModel: 'protein_structure',
+    idProperty: 'pdb_id',
+    facetFields: [],
+    defaultFieldList: ['pdb_id', 'title', 'organism_name', 'taxon_id', 'taxon_lineage_ids', 'taxon_lineage_names', 'genome_id', 'feature_id', 'patric_id', 'uniprotkb_accession', 'gene', 'product', 'alignments', 'method', 'resolution', 'pmid', 'institution', 'authors', 'release_date', 'text', '_version_', 'date_inserted', 'date_modified'],
 
     query: function (query, opts) {
       // we have to make the default query exclude the actual sequences themselves or it is way too slow

@@ -485,6 +485,12 @@ define([
         text: 'gene_id',
         link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
       }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'PDB Accession',
+        text: 'pdb_accession'
+      }, {
         name: 'gi',
         text: 'gi'
       }, {
@@ -539,6 +545,13 @@ define([
       }];
 
       section.Location = [{
+        name: 'Sequence ID',
+        text: 'sequence_id',
+        link: function (obj) {
+          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
+        },
+        mini: true
+      }, {
         name: 'Accession',
         text: 'accession'
       }, {
@@ -560,6 +573,9 @@ define([
         name: 'Location',
         text: 'location',
         mini: true
+      }, {
+        name: 'Segments',
+        text: 'segments',
       }];
 
       section.Sequences = [{
@@ -590,6 +606,12 @@ define([
         name: 'Last Modified',
         text: 'date_modified',
         type: 'date'
+      }, {
+        name: 'Classifier Score',
+        text: 'classifier_score',
+      }, {
+        name: 'Classifier Round',
+        text: 'classifier_round',
       }];
 
       var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
@@ -850,10 +872,16 @@ define([
         text: 'taxon_id',
         link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
+        name: 'Taxonomy Name',
+        text: 'taxonomy_name',
+      }, {
         name: 'Rank',
         text: 'taxon_rank'
       }, {
-        name: 'Lineage',
+        name: 'Other Names',
+        text: 'other_names',
+      }, {
+        name: 'Lineage Names',
         text: 'lineage_names',
         link: function (obj) {
           var ids = obj.lineage_ids;
@@ -862,8 +890,23 @@ define([
           }).join(', ');
         }
       }, {
+        name: 'Lineage IDs',
+        text: 'lineage_ids',
+      }, {
         name: 'Genetic Code',
         text: 'genetic_code'
+      }, {
+        name: 'Parent ID',
+        text: 'parent_id',
+      }, {
+        name: 'Division',
+        text: 'division',
+      }, {
+        name: 'Description',
+        text: 'description',
+      }, {
+        name: 'Genomes',
+        text: 'genomes',
       }];
 
       var div = domConstruct.create('div');
@@ -1039,22 +1082,223 @@ define([
       return div;
     },
 
-    sequence_data: function (item, options) {
+    structure_data: function (item, options) {
       options = options || {};
-
       var columns = [{
-        name: 'Genome Name',
-        text: 'genome_name',
-        mini: true
+        name: 'PDB ID',
+        text: 'pdb_id',
+        link: 'https://www.rcsb.org/structure/'
+      }, {
+        name: 'Title',
+        text: 'title',
+      }, {
+        name: 'Organism Name',
+        text: 'organism_name',
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Taxon Lineage IDs',
+        text: 'taxon_lineage_ids'
+      }, {
+        name: 'Taxon Lineage Names',
+        text: 'taxon_lineage_names'
       }, {
         name: 'Genome ID',
         text: 'genome_id',
         link: '/view/Genome/'
       }, {
-        name: 'Accession',
-        text: 'accession',
-        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession',
+        link: function (obj) {
+          var ids = obj.uniprotkb_accession;
+          return obj.uniprotkb_accession.map(function (d, idx) {
+            return lang.replace('<a href="https://www.uniprot.org/uniprot/{0}">{1}</a>', [ids[idx], d]);
+          }).join(', ');
+        }
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Alignments',
+        text: 'alignments'
+      }, {
+        name: 'Method',
+        text: 'method',
+      }, {
+        name: 'Resolution',
+        text: 'resolution',
+      }, {
+        name: 'PMID',
+        text: 'pmid',
+      }, {
+        name: 'Institution',
+        text: 'Institution',
+      }, {
+        name: 'Authors',
+        text: 'authors'
+      }, {
+        name: 'Release Date',
+        text: 'release_date',
+        type: 'date'
+      }, {
+        name: 'Text',
+        text: 'text',
+      }, {
+        name: 'Version',
+        text: '_version_'
+      }, {
+        name: 'Date Inserted',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    proteinFeatures_data: function (item, options) {
+      options = options || {};
+      var columns = [{
+        name: 'ID',
+        text: 'id'
+      }, {
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag'
+      }, {
+        name: 'AA Sequence MD5',
+        text: 'aa_sequence_md5'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Interpro ID',
+        text: 'interpro_id'
+      }, {
+        name: 'Interpro Description',
+        text: 'interpro_description'
+      }, {
+        name: 'Feature Type',
+        text: 'feature_type'
+      }, {
+        name: 'Source',
+        text: 'source',
+      }, {
+        name: 'Source ID',
+        text: 'source_id',
+      }, {
+        name: 'Description',
+        text: 'description',
+      }, {
+        name: 'Classification',
+        text: 'classification',
+      }, {
+        name: 'Score',
+        text: 'score'
+      }, {
+        name: 'E Value',
+        text: 'e_value'
+      }, {
+        name: 'Evidence',
+        text: 'evidence'
+      }, {
+        name: 'Publication',
+        text: 'publication'
+      }, {
+        name: 'Start',
+        text: 'start'
+      }, {
+        name: 'End',
+        text: 'end'
+      }, {
+        name: 'Segments',
+        text: 'segments'
+      }, {
+        name: 'Length',
+        text: 'length'
+      }, {
+        name: 'Sequence',
+        text: 'sequence'
+      }, {
+        name: 'Comments',
+        text: 'comments'
+      }, {
+        name: 'Text',
+        text: 'text',
+      }, {
+        name: 'Version',
+        text: '_version_'
+      }, {
+        name: 'Date Inserted',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.genome_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    sequence_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
         mini: true
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
         name: 'Sequence ID',
         text: 'sequence_id',
@@ -1063,16 +1307,13 @@ define([
         },
         mini: true
       }, {
-        name: 'Length',
-        text: 'length',
-        mini: true
+        name: 'GI',
+        text: 'gi',
       }, {
-        name: 'GC Content',
-        text: 'gc_content',
+        name: 'Accession',
+        text: 'accession',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
         mini: true
-      }, {
-        name: 'Sequence MD5',
-        text: 'sequence_md5'
       }, {
         name: 'Sequence Type',
         text: 'sequence_type'
@@ -1098,18 +1339,34 @@ define([
         name: 'Segment',
         text: 'segment'
       }, {
-        name: 'GI',
-        text: 'gi'
+        name: 'GC Content',
+        text: 'gc_content',
+        mini: true
       }, {
-        name: 'Taxon ID',
-        text: 'taxon_id',
-        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+        name: 'Length',
+        text: 'length',
+        mini: true
+      }, {
+        name: 'Sequence MD5',
+        text: 'sequence_md5'
+      }, {
+        name: 'Sequence',
+        text: 'sequence'
+      }, {
+        name: 'Release Date',
+        text: 'release_date',
+        type: 'date'
       }, {
         name: 'Version',
         text: 'version'
       }, {
-        name: 'Release Date',
-        text: 'release_date'
+        name: 'Insert Date',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Last Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');
