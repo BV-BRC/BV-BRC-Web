@@ -29,9 +29,6 @@
 [submodule "public/js/msa"]
 	path = public/js/msa
 	url = https://github.com/aswarren/msa.git
-[submodule "public/js/jbrowse"]
-	path = public/js/jbrowse.repo
-	url = https://github.com/GMOD/jbrowse.git
 [submodule "public/js/FileSaver"]
 	path = public/js/FileSaver
 	url = https://github.com/dkasenberg/FileSaver.js.git
@@ -68,3 +65,7 @@
 [submodule "public/js/heatmap"]
 	path = public/js/heatmap
 	url = https://github.com/nconrad/heatmap
+[submodule "public/js/archaeopteryx/archaeopteryx-js"]
+	path = public/js/archaeopteryx/archaeopteryx-js
+	url = https://github.com/cmzmasek/archaeopteryx-js.git
+

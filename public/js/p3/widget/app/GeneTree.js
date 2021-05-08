@@ -194,7 +194,10 @@ define([
       this.emptyTable(this.genomeTable, this.startingRows);
       this.fastaNamesAndTypes = [];
 
-      this.substitution_model.options = [];
+
+      this.protein_model.options = [];
+   
+
       if (this.dna.checked) {
         var newOptions = [{
           value: 'HKY85', label: 'HKY85', selected: true, disabled: false
@@ -217,7 +220,9 @@ define([
         {
           value: 'GTR', label: 'GTR', selected: true, disabled: false
         }];
-        this.substitution_model.set('options', newOptions);
+
+        this.protein_model.set('options', newOptions);
+
         this.user_genomes_fasta.set('type', 'aligned_dna_fasta');
         this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_dna_fasta']);
       }
@@ -267,11 +272,13 @@ define([
         {
           value: 'AB', label: 'AB', selected: false, disabled: false
         }];
-        this.substitution_model.set('options', newOptions);
+
+        this.protein_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_protein_fasta');
         this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_protein_fasta']);
       }
-      this.substitution_model.reset();
+      this.protein_model.reset();
+
     },
 
     makeGenomeName: function () {
@@ -527,6 +534,55 @@ define([
       // console.log(lrec);
     },
 
+
+    onSubmit: function (evt) {
+      var _self = this;
+
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (this.validate()) {
+        var values = this.getValues();
+
+        // if (numUserGenome > 1 && values.reference_genome_index > 0) {
+        domClass.add(this.domNode, 'Working');
+        domClass.remove(this.domNode, 'Error');
+        domClass.remove(this.domNode, 'Submitted');
+
+        if (window.App.noJobSubmission) {
+          var dlg = new Dialog({
+            title: 'Job Submission Params: ',
+            content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
+          });
+          dlg.startup();
+          dlg.show();
+          return;
+        }
+        this.submitButton.set('disabled', true);
+        window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
+          // console.log("Job Submission Results: ", results);
+          domClass.remove(_self.domNode, 'Working');
+          domClass.add(_self.domNode, 'Submitted');
+          _self.submitButton.set('disabled', false);
+          registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
+            obj.reset();
+          });
+        }, function (err) {
+          // console.log("Error:", err)
+          domClass.remove(_self.domNode, 'Working');
+          domClass.add(_self.domNode, 'Error');
+          _self.errorMessage.innerHTML = err;
+        });
+        // } else {
+        domClass.add(this.domNode, 'Error');
+        // console.log("Form is incomplete");
+        // }
+
+      } else {
+        domClass.add(this.domNode, 'Error');
+        // console.log("Form is incomplete");
+      }
+    },
+
     getValues: function () {
       var seqcomp_values = {};
       var values = this.inherited(arguments);
@@ -553,7 +609,9 @@ define([
 
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.recipe = values.recipe;
-      seqcomp_values.substitution_model = values.substitution_model;
+
+      seqcomp_values.protein_model = values.protein_model;
+
       seqcomp_values.trim_threshold = values.trim_threshold;
       seqcomp_values.gap_threshold = values.gap_threshold;
       seqcomp_values.sequences = this.fastaNamesAndTypes;
