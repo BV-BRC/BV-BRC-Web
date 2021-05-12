@@ -78,7 +78,7 @@ define([
             hashParams: {
               view_tab: 'jbrowse',
               loc: 'NC_045512%3A1..29903',
-              tracks: 'RefSeqGFF%2CActivesite%2CRegionofinterest%2CDomains%2CMutagenesisSite%2CVOCMarkers%2CHumanBCellEpitopes'
+              tracks: 'RefSeqGFF%2CActivesite%2CRegionofinterest%2CDomains%2CMutagenesisSite%2CVOCMarkers%2CHumanBCellEpitopes%2CClasses1to4AbEscape'
             }
           });
           activeTab.set('state', activeQueryState);
