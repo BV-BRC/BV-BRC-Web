@@ -43,7 +43,10 @@ define([
     constructor: function (opts) {
       // console.log('ProteinStructure.constructor');
       opts = opts || {};
+      let jmolInfo = lang.mixin(this.jmolInfo, opts.jmolInfo || {});
       lang.mixin(this, opts);
+      this.jmolInfo = jmolInfo;
+
       console.log('ProteinStructure.constructor id=' + this.id);
       // don't create HTML for the viewer
       this.jmol.setDocument(0);
