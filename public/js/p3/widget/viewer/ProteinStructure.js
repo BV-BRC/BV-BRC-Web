@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   'dojo/dom-construct',
   'dojo/ready',
+  'dojo/sniff',
   '../proteinStructure/ProteinStructureState',
   '../proteinStructure/ProteinStructure',
   '../proteinStructure/ProteinStructureDisplayControl',
@@ -23,6 +24,7 @@ function (
   lang,
   domConstruct,
   ready,
+  has,
   ProteinStructureState,
   ProteinStructureDisplay,
   ProteinStructureDisplayControl,
@@ -56,9 +58,15 @@ function (
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
 
+      // Opera and especially Safari suffer from performance issues with JMol with larger view sizes.
+      let viewerSize = ( has('safari') || has('opera') ) ? '500' : '100%';
       // the JMol viewer object
       this.jsmol = new ProteinStructureDisplay({
         id: this.id + '_structure',
+        jmolInfo: {
+          height: viewerSize,
+          width: viewerSize,
+        }
       });
 
       domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
