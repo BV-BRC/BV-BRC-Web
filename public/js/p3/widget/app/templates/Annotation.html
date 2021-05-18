@@ -34,9 +34,9 @@
         </div>
         <div class="appRow">
           <label class="paramlabel">Annotation Recipe</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="default" name="recipe" value="default"/>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="default" name="recipe" value="default" data-dojo-attach-event="onChange:onRecipeChange" />
           <label for="radio1" style="font-size:8pt">Bacteria/Archaea</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="viral" name="recipe" value="viral" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="viral" name="recipe" value="viral" data-dojo-attach-event="onChange:onRecipeChange" />
           <label for="radio2" style="font-size:8pt">Viruses</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="phage" name="recipe" value="phage" />
           <label for="radio3" style="font-size:8pt">Bacteriophages</label>
