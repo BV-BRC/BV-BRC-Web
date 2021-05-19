@@ -67,15 +67,14 @@ define([
 
     onRecipeChange: function (val) {
       if (this.viral.checked) {
-        this.scientific_nameWidget.set ("placeHolder", "e.g. Bat coronavirus");
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
       }
       else if (this.default.checked) {
-        this.scientific_nameWidget.set("placeHolder", "e.g. Bacillus Cereus");
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bacillus Cereus');
       }
       else if (this.phage.checked) {
-        this.scientific_nameWidget.set("placeHolder", "e.g. Bacteriophage sp.");
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
       }
-      
     },
 
     updateOutputName: function () {
