@@ -130,6 +130,11 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
+      this.structure = new VariantStructure({
+        title: 'Protein Structure',
+        id: this.viewer.id + '_structure'
+      })
+
       /*
       this.structure = new VariantStructure({
         title: 'Protein Structure',
@@ -151,7 +156,7 @@ define([
       this.viewer.addChild(this.lineage_prevalence);
       this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
-      // this.viewer.addChild(this.structure);
+      this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
     }
