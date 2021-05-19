@@ -171,6 +171,15 @@ function (
         // console.log('initial viewstate is ' + JSON.stringify(viewState));
         this.set('viewState', viewState);
       }));
+      if ( has('safari') ) {
+        domConstruct.create('div',
+          {
+            innerHTML: 'Note: The JMol interactive 3D protein viewer is best viewed using the Chrome browser (<a href="https://www.google.com/chrome/">download</a>). For help see the <a href="https://wiki.jmol.org/index.php/JSMol">JSMol Wiki</a>.',
+          },
+          this.contentDisplay.containerNode,
+          'first'
+        );
+      }
     },
     onViewStateChange: function (viewState) {
       // console.log('updating viewState for child objects to ' + JSON.stringify(viewState));
