@@ -2,18 +2,16 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase',
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
-  '../VariantDetail', '../VariantContainer',
+  '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
-  '../VariantLineagePhlyogenyTreeViewer',
-  '../../util/QueryToEnglish'
+  '../VariantLineagePhlyogenyTreeViewer'
 ], function (
   declare, lang,
   TabViewerBase,
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
-  VariantDetailView, VariantContainer,
+  VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
-  VariantLineagePhlyogenyTreeViewer,
-  QueryToEnglish
+  VariantLineagePhlyogenyTreeViewer
 ) {
 
   return declare([TabViewerBase], {
@@ -78,7 +76,7 @@ define([
             hashParams: {
               view_tab: 'jbrowse',
               loc: 'NC_045512%3A1..29903',
-              tracks: 'RefSeqGFF%2CActivesite%2CRegionofinterest%2CDomains%2CMutagenesisSite%2CVOCMarkers%2CHumanBCellEpitopes'
+              tracks: 'RefSeqGFF%2CActivesite%2CRegionofinterest%2CDomains%2CMutagenesisSite%2CVOCMarkers%2CHumanBCellEpitopes%2CClasses1to4AbEscape'
             }
           });
           activeTab.set('state', activeQueryState);
@@ -112,7 +110,7 @@ define([
       });
 
       this.lineage = new VariantLineageDetailView({
-        title: 'Lineages of Concern',
+        title: 'Lineages of Concern/Interest',
         id: this.viewer.id + '_lineage'
       })
 
@@ -120,11 +118,6 @@ define([
         title: 'Covariants',
         id: this.viewer.id + '_lineage_prevalence'
       });
-
-      // this.variant = new VariantDetailView({
-      //   title: 'Variants of Concern',
-      //   id: this.viewer.id + '_variant'
-      // })
 
       this.variant_prevalence = new VariantContainer({
         title: 'Variants',
@@ -135,12 +128,12 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
-      /*
+
       this.structure = new VariantStructure({
         title: 'Protein Structure',
         id: this.viewer.id + '_structure'
       })
-*/
+
       this.phlyogeny = new VariantLineagePhlyogenyTreeViewer({
         title: 'Phylogenetic Tree',
         id: this.viewer.id + '_phlyogeny'
@@ -154,10 +147,9 @@ define([
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.lineage);
       this.viewer.addChild(this.lineage_prevalence);
-      // this.viewer.addChild(this.variant);
       this.viewer.addChild(this.variant_prevalence);
       this.viewer.addChild(this.jbrowse);
-      // this.viewer.addChild(this.structure);
+      this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
     }

@@ -1,0 +1,26 @@
+{
+    "identifier": "id",
+    "label":"id",
+    "items": [
+        {
+            "id":"6M0J",
+            "label": "6M0J",
+            "description":"CRYSTAL STRUCTURE OF SARS-COV-2 SPIKE RECEPTOR-BINDING DOMAIN BOUND WITH ACE2"
+        },
+        {
+            "id":"6VXX",
+            "label":"6VXX",
+            "description":"STRUCTURE OF THE SARS-COV-2 SPIKE GLYCOPROTEIN (CLOSED STATE)"
+        },
+        {
+            "id":"6VYB",
+            "label":"6VYB",
+            "description":"SARS-COV-2 SPIKE ECTODOMAIN STRUCTURE (OPEN STATE)"
+        },
+        {
+            "id":"6W41",
+            "label":"6W41",
+            "description":"CRYSTAL STRUCTURE OF SARS-COV-2 RECEPTOR BINDING DOMAIN IN COMPLEX WITH HUMAN ANTIBODY CR3022"
+        }
+    ]
+}
