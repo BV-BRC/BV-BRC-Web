@@ -14,7 +14,7 @@ define([
     applicationName: 'GenomeAnnotation',
     requireAuth: true,
     applicationLabel: 'Genome Annotation',
-    applicationDescription: 'The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features. The service accepts FASTA files and an annotation recipe based on taxonomy.',
+    applicationDescription: 'The Genome Annotation Service provides annotation of genomic featuers using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses.  The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.',
     applicationHelp: 'user_guides/services/genome_annotation_service.html',
     tutorialLink: 'tutorial/genome_annotation/annotation.html',
     videoLink: 'videos/genome_annotation_service.html',
@@ -67,7 +67,7 @@ define([
 
     onRecipeChange: function (val) {
       if (this.viral.checked) {
-        this.scientific_nameWidget.set ("placeHolder", "e.g. Human papillomavirus type 85");
+        this.scientific_nameWidget.set ("placeHolder", "e.g. Bat coronavirus");
       }
       else if (this.default.checked) {
         this.scientific_nameWidget.set("placeHolder", "e.g. Bacillus Cereus");
