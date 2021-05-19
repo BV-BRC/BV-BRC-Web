@@ -36,7 +36,7 @@
       <table data-dojo-attach-point="readTable" style="width:100%">
         <tr>
           <td>
-            <div id="pairedBox" class="appBox appShadow">
+            <div id="pairedBox" class="appBox appShadow" style="height:230px; width:330px">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">Input File</label>
@@ -82,7 +82,7 @@
             </div>
           </td>
           <td>
-            <div class="appBox appShadow" style="height:213px; width:330px">
+            <div class="appBox appShadow" style="height:230px; width:330px">
               <div class="headerrow">
                 <label class="appBoxLabel">Selected libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
@@ -128,11 +128,11 @@
 
         <div class="appRow">
           <label class="paramlabel">Assembly Strategy</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="metaspades" id = "metaspades" name="recipe" value="metaspades" disabled />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="metaspades" id = "metaspades" name="assembler" value="metaspades" disabled />
           <label for="radio1" style="font-size:8pt">MetaSPAdes</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="megahit" id = "megahit" name="recipe" value="megahit" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="megahit" id = "megahit" name="assembler" value="megahit" />
           <label for="radio2" style="font-size:8pt">MEGAHIT</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="auto" id = "auto" name="recipe" value="auto" checked />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="auto" id = "auto" name="assembler" value="auto" checked />
           <label for="radio3" style="font-size:8pt">Auto</label>
         </div>
 
