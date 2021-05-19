@@ -4,16 +4,14 @@ define([
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
-  '../VariantLineagePhlyogenyTreeViewer',
-  '../../util/QueryToEnglish'
+  '../VariantLineagePhlyogenyTreeViewer'
 ], function (
   declare, lang,
   TabViewerBase,
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
   VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
-  VariantLineagePhlyogenyTreeViewer,
-  QueryToEnglish
+  VariantLineagePhlyogenyTreeViewer
 ) {
 
   return declare([TabViewerBase], {
@@ -130,17 +128,12 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
+
       this.structure = new VariantStructure({
         title: 'Protein Structure',
         id: this.viewer.id + '_structure'
       })
 
-      /*
-      this.structure = new VariantStructure({
-        title: 'Protein Structure',
-        id: this.viewer.id + '_structure'
-      })
-*/
       this.phlyogeny = new VariantLineagePhlyogenyTreeViewer({
         title: 'Phylogenetic Tree',
         id: this.viewer.id + '_phlyogeny'
