@@ -44,7 +44,9 @@ var profile = {
     { name: 'cytoscape-panzoom', location:'./cytoscape-panzoom' },
     { name: 'cytoscape-context-menus', location:'./cytoscape-context-menus' },
     { name: 'cytoscape-cola', location:'./cytoscape-cola' },
-    { name: 'cytoscape-dagre', location:'./cytoscape-dagre' }
+    { name: 'cytoscape-dagre', location:'./cytoscape-dagre' },
+    { name: 'jsmol', location:'./jsmol' },
+    { name: 'heatmap', location:'./heatmap' }
   ],
   layers: {
     'p3/layer/core': {
