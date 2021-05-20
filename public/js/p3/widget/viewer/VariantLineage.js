@@ -4,6 +4,8 @@ define([
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
+  '../VariantLineagePhlyogenyTreeViewer', '../VariantHelp',
+  '../../util/QueryToEnglish',
   '../VariantLineagePhlyogenyTreeViewer'
 ], function (
   declare, lang,
@@ -11,6 +13,8 @@ define([
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
   VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
+  VariantLineagePhlyogenyTreeViewer, VariantHelp,
+  QueryToEnglish,
   VariantLineagePhlyogenyTreeViewer
 ) {
 
@@ -144,6 +148,11 @@ define([
         id: this.viewer.id + '_resources'
       });
 
+      this.help = new VariantHelp({
+        title: 'Help',
+        id: this.viewer.id + '_help'
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.lineage);
       this.viewer.addChild(this.lineage_prevalence);
@@ -152,6 +161,7 @@ define([
       this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
+      this.viewer.addChild(this.help);
     }
   });
 });
