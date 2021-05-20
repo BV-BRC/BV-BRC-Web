@@ -32,7 +32,7 @@ define([
       lineage_count: { label: 'Covariant Sequences', field: 'lineage_count' },
       prevalence: { label: 'Frequency', field: 'prevalence' },
       growth_rate: { label: 'Growth Rate', field: 'growth_rate' },
-      date_modified: { label: 'Date Modified', field: 'date_modified' }
+      date_modified: { label: 'Date Modified', field: 'date_modified', formatter: formatter.dateOnly }
     },
     constructor: function (options) {
       if (options && options.apiServer) {
