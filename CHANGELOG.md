@@ -1,6 +1,14 @@
 
 # Changelog
 
+
+## 3.6.13 - May 19, 2021
+* [Feature] Add Structure tab and 3D Structure Viewer (jsmol)
+* [Feature] Add Lineage of Interest
+* [Enhancement] Phylogenetic Tree update (iteration 2)
+* [Minor] other updates
+
+
 ## 3.6.12 - Apr 16, 2021
 * [Feature] Add Archaeopteryx Phylogenetic Tree Viewer
 
