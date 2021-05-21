@@ -4,16 +4,18 @@ define([
   '../VariantLineageOverview', '../VariantLineageDetail', '../VariantLineageContainer',
   '../VariantContainer',
   '../GenomeBrowser', '../VariantStructureContainer', '../VariantResources',
-  '../VariantLineagePhlyogenyTreeViewer',
-  '../../util/QueryToEnglish'
+  '../VariantLineagePhlyogenyTreeViewer', '../VariantHelp',
+  '../../util/QueryToEnglish',
+  '../VariantLineagePhlyogenyTreeViewer'
 ], function (
   declare, lang,
   TabViewerBase,
   VariantLineageOverview, VariantLineageDetailView, VariantLineageContainer,
   VariantContainer,
   VariantJBContainer, VariantStructure, VariantResources,
-  VariantLineagePhlyogenyTreeViewer,
-  QueryToEnglish
+  VariantLineagePhlyogenyTreeViewer, VariantHelp,
+  QueryToEnglish,
+  VariantLineagePhlyogenyTreeViewer
 ) {
 
   return declare([TabViewerBase], {
@@ -130,17 +132,12 @@ define([
         title: 'Genome Browser',
         id: this.viewer.id + '_jbrowse'
       })
+
       this.structure = new VariantStructure({
         title: 'Protein Structure',
         id: this.viewer.id + '_structure'
       })
 
-      /*
-      this.structure = new VariantStructure({
-        title: 'Protein Structure',
-        id: this.viewer.id + '_structure'
-      })
-*/
       this.phlyogeny = new VariantLineagePhlyogenyTreeViewer({
         title: 'Phylogenetic Tree',
         id: this.viewer.id + '_phlyogeny'
@@ -151,6 +148,11 @@ define([
         id: this.viewer.id + '_resources'
       });
 
+      this.help = new VariantHelp({
+        title: 'Help',
+        id: this.viewer.id + '_help'
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.lineage);
       this.viewer.addChild(this.lineage_prevalence);
@@ -159,6 +161,7 @@ define([
       this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phlyogeny);
       this.viewer.addChild(this.resources);
+      this.viewer.addChild(this.help);
     }
   });
 });

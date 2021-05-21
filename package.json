@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.6.12",
+  "version": "3.6.13",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -52,6 +52,7 @@
     "eslint": "^4.9.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.2.0",
+    "forever": "^3.0.4",
     "gulp-replace": "^0.6.1",
     "intern": "^4.0.0-rc.1",
     "minimatch": "^3.0.2",
