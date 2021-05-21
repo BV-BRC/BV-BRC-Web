@@ -1284,6 +1284,126 @@ define([
       return div;
     },
 
+    surveillance_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'ID',
+        text: 'id'
+      }, {
+        name: 'Collection',
+        text: 'collection'
+      }, {
+        name: 'Collector Name',
+        text: 'collector_name'
+      }, {
+        name: 'Collector Institution',
+        text: 'collector_institution'
+      }, {
+        name: 'Collection Date',
+        text: 'collection_date'
+      }, {
+        name: 'Receipt Date',
+        text: 'receipt_date'
+      }, {
+        name: 'Rationale',
+        text: 'rationale'
+      }, {
+        name: 'City',
+        text: 'city'
+      }, {
+        name: 'State',
+        text: 'state'
+      }, {
+        name: 'Country',
+        text: 'country'
+      }, {
+        name: 'Latitude',
+        text: 'latitude'
+      }, {
+        name: 'Longitude',
+        text: 'longitude'
+      }, {
+        name: 'Host Identifier',
+        text: 'host_identifier'
+      }, {
+        name: 'Common Name',
+        text: 'common_name'
+      }, {
+        name: 'Scientific Name',
+        text: 'scientific_name'
+      }, {
+        name: 'Order',
+        text: 'order'
+      }, {
+        name: 'Family',
+        text: 'family'
+      }, {
+        name: 'Age Class',
+        text: 'age_class'
+      }, {
+        name: 'Age',
+        text: 'age'
+      }, {
+        name: 'Sex',
+        text: 'sex'
+      }, {
+        name: 'Health',
+        text: 'health'
+      }, {
+        name: 'Temperature',
+        text: 'temperature'
+      }, {
+        name: 'Fever',
+        text: 'fever'
+      }, {
+        name: 'Symptoms',
+        text: 'symptoms'
+      }, {
+        name: 'Diagnosis',
+        text: 'diagnosis'
+      }, {
+        name: 'Behavior',
+        text: 'behavior'
+      }, {
+        name: 'Post Visit Medications',
+        text: 'post_visit_medications'
+      }, {
+        name: 'Sample ID',
+        text: 'sample_id'
+      }, {
+        name: 'Sample Accession',
+        text: 'sample_accession'
+      }, {
+        name: 'Sample Source',
+        text: 'sample_source'
+      }, {
+        name: 'Test Type',
+        text: 'test_type'
+      }, {
+        name: 'Test Results',
+        text: 'test_results'
+      }, {
+        name: 'Positive Flu',
+        text: 'positive_flu'
+      }, {
+        name: 'Serotype',
+        text: 'serotype'
+      }, {
+        name: 'Sero Positive Definition',
+        text: 'sero_positive_definition'
+      }, {
+        name: 'Virus Type',
+        text: 'virus_type'
+      }, {
+        name: 'Virus Subtype',
+        text: 'virus_subtype'
+      }, {
+        name: 'Virus Strain',
+        text: 'virus_strain'
+      }]
+    },
+
     sequence_data: function (item, options) {
       options = options || {};
 
