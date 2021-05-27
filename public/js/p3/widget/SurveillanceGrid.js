@@ -67,6 +67,7 @@ define([
       // Host Attributes
       host_species: { label: 'Host Species', field: 'host_species', hidden: false },
       host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
+      host_group: { label: 'Host Group', field: 'host_group', hidden: false },
       host_identifier: { label: 'Host Identifier', field: 'host_identifier', hidden: false },
       host_id_type: { label: 'Host ID Type', field: 'host_id_type', hidden: true },
       host_capture_status: { label: 'Host Capture Status', field: 'host_capture_status', hidden: true },

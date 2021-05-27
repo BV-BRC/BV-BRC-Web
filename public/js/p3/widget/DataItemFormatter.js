@@ -1390,6 +1390,9 @@ define([
         name: 'Host Common Name',
         text: 'host_common_name'
       }, {
+        name: 'Host Group',
+        text: 'host_group'
+      }, {
         name: 'Host Identifier',
         text: 'host_identifier'
       }, {
