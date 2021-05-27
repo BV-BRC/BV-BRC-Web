@@ -82,6 +82,10 @@ define([
       } else if (this.taxonomy.lineage_names.includes('Viruses')) {
         this.removeBacteriaTabs();
       }
+      console.log(this.taxonomy.lineage_names);
+      if (this.taxonomy.lineage_names.includes('Influenza A virus')) {
+        this.viewer.addChild(this.surveillance);
+      }
 
       this.taxonomy = this.state.taxonomy = taxonomy;
       // this.set('state', lang.mixin({},this.state,{taxonomy:taxonomy}));
@@ -282,6 +286,7 @@ define([
           break;
 
         case 'structures':
+        case 'surveillance':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
           }));

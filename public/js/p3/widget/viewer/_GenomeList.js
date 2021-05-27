@@ -6,7 +6,7 @@ define([
   '../ActionBar', '../ContainerActionBar', '../PathwaysContainer', '../ProteinFamiliesContainer',
   '../DiseaseContainer', '../PublicationGridContainer', '../CircularViewerContainer',
   '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
-  '../AMRPanelGridContainer', '../SubSystemsContainer',
+  '../AMRPanelGridContainer', '../SubSystemsContainer', '../SurveillanceGridContainer',
   '../SequenceGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
@@ -16,7 +16,7 @@ define([
   ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
   DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
   TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-  AMRPanelGridContainer, SubSystemsContainer,
+  AMRPanelGridContainer, SubSystemsContainer, SurveillanceGridContainer,
   SequenceGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
@@ -378,6 +378,12 @@ define([
         state: this.state
       });
 
+      this.surveillance = new SurveillanceGridContainer({
+        title: 'Surveillance',
+        id: this.viewer.id + '_surveillance',
+        state: this.state
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.amr);
@@ -391,6 +397,7 @@ define([
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.transcriptomics);
       this.viewer.addChild(this.interactions);
+      // this.viewer.addChild(this.surveillance);
 
       if (localStorage) {
         var gs = localStorage.getItem(this.showQuickstartKey);
