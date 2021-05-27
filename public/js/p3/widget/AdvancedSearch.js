@@ -18,13 +18,14 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'surveillance', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
       genome_sequence: 'Genomic Sequences',
       protein_feature: 'Protein Features',
       protein_structure: 'Protein Structures',
+      surveillance: 'Surveillance',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
       transcriptomics_experiment: 'Transcriptomics Experiments',
@@ -95,6 +96,10 @@ define([
 
       protein_structure: function (docs, total) {
         return ['/view/ProteinStructureList/?', this.state.search].join('');
+      },
+
+      surveillance: function (docs, total) {
+        return ['/view/SurveillanceList/?', this.state.search].join('');
       },
 
       taxonomy: function (docs, total) {
@@ -273,6 +278,21 @@ define([
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/ProteinStructure/" + doc.pdb_id + "'>" + doc.pdb_id + ' | ' + doc.title + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.organism_name + '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatsurveillance: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer surveillanceResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SurveillanceList/?', q, '">Surveillance</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Surveillance/" + doc.sample_identifier + "'>" + doc.sample_identifier + ' | ' + doc.host_identifier + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.host_common_name + ' | ' + doc.collection_country + ' | ' + doc.collection_year + '</div>');
         out.push('</div>');
       });
       out.push('</div>');
