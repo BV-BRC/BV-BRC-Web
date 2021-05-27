@@ -23,7 +23,7 @@ define([
     gridCtor: SurveillanceGrid,
     containerType: 'surveillance_data',
     tutorialLink: '',
-    facetFields: ['coutry', 'common_name', 'virus_type'],
+    facetFields: ['collection_year', 'collection_country', 'host_species', 'host_common_name', 'host_gender', 'host_age', 'type', 'subtype'],
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'surveillance',
