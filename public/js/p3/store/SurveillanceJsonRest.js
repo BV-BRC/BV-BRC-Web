@@ -8,7 +8,7 @@ define([
   return declare([Store], {
     autoFacet: false,
     idProperty: 'id',
-    facetFields: ['coutry', 'common_name', 'virus_type'],
+    facetFields: [],
     dataModel: 'surveillance'
   });
 });
