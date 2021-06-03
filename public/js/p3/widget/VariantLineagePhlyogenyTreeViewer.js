@@ -43,6 +43,8 @@ define([
       options.visualizationsLegendYpos = 30;
       options.initialNodeFillColorVisualization = 'PANGO Lineage of Concern';
       options.initialLabelColorVisualization = null;
+      options.showLineage = false;
+      options.showMutations = false;
 
       var settings = {};
       settings.border = '1px solid #909090';
@@ -81,6 +83,8 @@ define([
         target: 'vipr:PANGO_Lineage_of_Concern',
         pass: ['B.1.1.7', 'B.1.1.28', 'B.1.351', 'B.1.375', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'P.1', 'P.2']
       };
+      settings.showLineageButton = true;
+      settings.showMutationsButton = true
 
       var decorator = 'vipr:';
 
@@ -224,7 +228,7 @@ define([
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
 
-      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_4_14_21_29400_09999_pango_3_MAFFT_05_GTR_fastme_fme_mp_pdvxvm.xml')
+      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_5_19_21_29400_09999_pango_3_a_MAFFT_05_GTR_fme_pdvxvm.xml')
         .then((data) => {
           var tree;
           try {
