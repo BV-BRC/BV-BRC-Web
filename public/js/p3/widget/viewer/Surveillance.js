@@ -117,7 +117,7 @@ define([
 
       this.totalCountNode.innerHTML = "";
 
-      xhr.get(PathJoin(this.apiServiceUrl, 'surveillance', this.sample_identifier), {
+      xhr.get(PathJoin(this.apiServiceUrl, 'surveillance', this.id), {
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,

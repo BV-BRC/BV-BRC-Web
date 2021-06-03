@@ -311,7 +311,7 @@ define([
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Surveillance/" + doc.sample_identifier + "'>" + doc.sample_identifier + ' | ' + doc.host_identifier + '</a></div>');
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Serology/" + doc.sample_identifier + "'>" + doc.sample_identifier + ' | ' + doc.host_identifier + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.host_common_name + ' | ' + doc.collection_country + ' | ' + doc.collection_year + '</div>');
         out.push('</div>');
       });
