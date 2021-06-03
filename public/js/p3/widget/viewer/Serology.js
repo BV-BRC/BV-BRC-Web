@@ -36,7 +36,7 @@ define([
       if (!experiment) {
         return;
       }
-      this.queryNode.innerHTML = experiment.title;
+      this.queryNode.innerHTML = experiment.sample_identifier + ' | ' + experiment.host_common_name + ' | ' + experiment.collection_country;
     },
 
     onSetState: function (attr, oldVal, state) {
@@ -117,14 +117,15 @@ define([
 
       this.totalCountNode.innerHTML = "";
 
-      xhr.get(PathJoin(this.apiServiceUrl, 'serology', this.id), {
+      xhr.get(PathJoin(this.apiServiceUrl, 'serology', `?eq(sample_identifier,${this.eid})`), {
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json'
-      }).then(lang.hitch(this, function (experiment) {
+      }).then(lang.hitch(this, function (experiments) {
+        var experiment = experiments[0];
         this.overview = this.createOverviewPanel(this.state);
 
         this.viewer.addChild(this.overview);
