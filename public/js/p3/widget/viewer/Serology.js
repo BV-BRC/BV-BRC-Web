@@ -8,15 +8,15 @@ define([
   Grid, formatter, PathJoin, xhr, lang, DataItemFormatter
 ) {
   return declare([TabViewerBase], {
-    baseClass: 'Surveillance',
+    baseClass: 'Serology',
     disabled: false,
-    containerType: 'surveillance_data',
+    containerType: 'serology_data',
     query: null,
     experiment: null,
     eid: null,
     pdb: null,
     apiServiceUrl: window.App.dataAPI,
-    perspectiveLabel: 'Surveillance View',
+    perspectiveLabel: 'Serology View',
     perspectiveIconClass: 'icon-selection-Sequence',
     defaultTab: 'Overview',
 
@@ -117,7 +117,7 @@ define([
 
       this.totalCountNode.innerHTML = "";
 
-      xhr.get(PathJoin(this.apiServiceUrl, 'surveillance', `?eq(sample_identifier,${this.eid})`), {
+      xhr.get(PathJoin(this.apiServiceUrl, 'serology', `?eq(sample_identifier,${this.eid})`), {
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
@@ -135,7 +135,7 @@ define([
         this.setActivePanelState();
 
         var node = domConstruct.create('div', { style: 'width: 95%' }, this.overview.containerNode);
-        domConstruct.place(DataItemFormatter(experiment, 'surveillance_data', {}), node, 'first');
+        domConstruct.place(DataItemFormatter(experiment, 'serology_data', {}), node, 'first');
       }));
     }
   });
