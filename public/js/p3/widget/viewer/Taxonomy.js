@@ -287,6 +287,7 @@ define([
 
         case 'structures':
         case 'surveillance':
+        case 'serology':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
           }));
