@@ -117,6 +117,9 @@ define([
           case 'surveillance':
             Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
             break;
+          case 'serology':
+            Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
+            break;
           case 'transcriptomics_experiments':
             Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
             // clear = true;
@@ -181,6 +184,9 @@ define([
           break;
         case 'surveillance':
           Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
+          break;
+        case 'serology':
+          Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
           break;
         case 'transcriptomics_experiments':
           Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });

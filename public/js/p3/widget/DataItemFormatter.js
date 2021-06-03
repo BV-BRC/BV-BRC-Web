@@ -1575,6 +1575,81 @@ define([
       return div;
     },
 
+    serology_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Project Identifier',
+        text: 'project_identifier'
+      }, {
+        name: 'Contributing Institution',
+        text: 'contributing_institution'
+      }, {
+        name: 'Sample Identifier',
+        text: 'sample_identifier'
+      }, {
+        name: 'Host Identifier',
+        text: 'host_identifier'
+      }, {
+        name: 'Host Type',
+        text: 'host_type'
+      }, {
+        name: 'Host Species',
+        text: 'host_species'
+      }, {
+        name: 'Host Common Name',
+        text: 'host_common_name'
+      }, {
+        name: 'Host Sex',
+        text: 'host_sex'
+      }, {
+        name: 'Host Age',
+        text: 'host_age'
+      }, {
+        name: 'Host Age Group',
+        text: 'host_age_group'
+      }, {
+        name: 'Host Health',
+        text: 'host_health'
+      }, {
+        name: 'Collection Country',
+        text: 'collection_country'
+      }, {
+        name: 'Collection State',
+        text: 'collection_state'
+      }, {
+        name: 'Collection City',
+        text: 'collection_city'
+      }, {
+        name: 'Collection Date',
+        text: 'collection_date'
+      }, {
+        name: 'Collection Year',
+        text: 'collection_year'
+      }, {
+        name: 'Test Type',
+        text: 'test_type'
+      }, {
+        name: 'Test Result',
+        text: 'test_result'
+      }, {
+        name: 'Test Interpretation',
+        text: 'test_interpretation'
+      }, {
+        name: 'Serotype',
+        text: 'serotype'
+      }, {
+        name: 'Comments',
+        text: 'comments'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.sample_identifier, 'fa icon-contigs fa-2x', '/view/Serology/' + item.sample_identifier, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     sequence_data: function (item, options) {
       options = options || {};
 
