@@ -20,7 +20,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Genome Assembly (new)',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
-    applicationHelp: 'user_guides/services/genome_assembly_service2.html',
+    applicationHelp: 'user_guides/services/genome_assembly_service.html',
     tutorialLink: 'tutorial/genome_assembly/assembly2.html',
     videoLink: 'videos/genome_assembly_service.html',
     libraryData: null,

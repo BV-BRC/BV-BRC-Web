@@ -24,25 +24,27 @@ define([
     pre_build_options: function () {
       var options = {};
       options.alignPhylogram = false; // We should launch with "regular" phylogram.
+      options.branchDataFontSize = 9;
       options.defaultFont = ['Arial', 'Helvetica', 'Times'];
-      options.minBranchLengthValueToShow = 0.001;
+      options.initialNodeFillColorVisualization = 'PANGO Lineage of Concern';
+      options.minBranchLengthValueToShow = 0.000001;
       options.minConfidenceValueToShow = 50;
       options.phylogram = true; // We should launch with "regular" phylogram.
-      // options.searchAinitialValue = '#';
-      options.showBranchVisualizations = true; // For MSA residue visualization.
-      options.showConfidenceValues = true;
+      options.showConfidenceValues = false;
       options.showExternalLabels = true;
       options.showNodeName = true;
+      options.showLineage = false;  // NEW as of 1.8.7b1
+      options.showMutations = false; // NEW as of 1.8.7b1
       options.showNodeVisualizations = true;
       options.showSequence = false; // Do not show "Sequence" upon launch.
       options.showSequenceAccession = true; // If user turns on "Sequence" display, accession will be shown.
       options.searchProperties = true;
+      options.searchIsPartial = false;
+      options.showBranchEvents = false;
       options.showVisualizationsLegend = true;
       options.visualizationsLegendOrientation = 'vertical';
       options.visualizationsLegendXpos = 160;
       options.visualizationsLegendYpos = 30;
-      options.initialNodeFillColorVisualization = 'PANGO Lineage of Concern';
-      options.initialLabelColorVisualization = null;
 
       var settings = {};
       settings.border = '1px solid #909090';
@@ -51,35 +53,28 @@ define([
       // settings.displayHeight = 700;
       // settings.displayWidth = 1200;
       settings.enableAccessToDatabases = true;
-      settings.enableBranchVisualizations = true; // For MSA residue visualization.
-      settings.enableCollapseByFeature = true;
+      settings.enableCollapseByFeature = false;
       settings.enableDownloads = true;
-      settings.enableMsaResidueVisualizations = true; // For MSA residue visualization.
       settings.enableNodeVisualizations = true;
       settings.enableDynamicSizing = true;
       settings.enableSpecialVisualizations2 = true;
       settings.enableSpecialVisualizations3 = true;
       settings.enableSpecialVisualizations4 = true;
       settings.nhExportWriteConfidences = true;
-      // settings.readSimpleCharacteristics = true; // To be deprecated!
       settings.searchFieldWidth = '50px';
       settings.collapseLabelWidth = '36px';
       settings.textFieldHeight = '16px';
+      settings.showLineageButton = true;  // NEW as of 1.8.7b1
+      settings.showMutationsButton = true; // NEW as of 1.8.7b1
       settings.showShortenNodeNamesButton = false;
       settings.showDynahideButton = false;
       settings.showSearchPropertiesButton = true;
       settings.dynamicallyAddNodeVisualizations = true;
       settings.propertiesToIgnoreForNodeVisualization = ['AccessionNumber', 'Mutation'];
-      settings.valuesToIgnoreForNodeVisualization = {
-        'vipr:Year': ['1111'],
-        'ird:Year': ['1111'],
-        'vipr:Country': ['-N/A-'],
-        'ird:Country': ['-N/A-']
-      };
       settings.filterValues = {
         source: 'vipr:PANGO_Lineage',
         target: 'vipr:PANGO_Lineage_of_Concern',
-        pass: ['B.1.1.7', 'B.1.1.28', 'B.1.351', 'B.1.375', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'P.1', 'P.2']
+        pass: ['A.23.1', 'A.27', 'B.1.1.318', 'B.1.1.519', 'B.1.1.7', 'B.1.351', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'B.1.526.1', 'B.1.526.2', 'B.1.617.1', 'B.1.617.2', 'C.37', 'P.1', 'P.2', 'P.3', 'R.1']
       };
 
       var decorator = 'vipr:';
@@ -171,7 +166,7 @@ define([
         cladeRef: decorator + 'PANGO_Lineage_of_Concern',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category10',
+        colors: 'category20',
         sizes: null
       };
 
@@ -204,7 +199,7 @@ define([
         property_datatype: 'xsd:string',
         property_applies_to: 'node',
         color: '#FF0000',
-        property_values: ['B.1.1.7', 'B.1.1.28', 'B.1.351', 'B.1.375', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'P.1', 'P.2']
+        property_values: ['A.23.1', 'A.27', 'B.1.1.318', 'B.1.1.519', 'B.1.1.7', 'B.1.351', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'B.1.526.1', 'B.1.526.2', 'B.1.617.1', 'B.1.617.2', 'C.37', 'P.1', 'P.2', 'P.3', 'R.1']
       };
 
       this.options = options;
@@ -224,7 +219,7 @@ define([
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
 
-      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_4_14_21_29400_09999_pango_3_MAFFT_05_GTR_fastme_fme_mp_pdvxvm.xml')
+      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_5_19_21_29400_09999_pango_3_a_MAFFT_05_GTR_fme_pdvxvm.xml')
         .then((data) => {
           var tree;
           try {
