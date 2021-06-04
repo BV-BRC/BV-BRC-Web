@@ -33,8 +33,8 @@ define([
       options.showConfidenceValues = false;
       options.showExternalLabels = true;
       options.showNodeName = true;
-      options.showLineage = false;  //NEW as of 1.8.7b1
-      options.showMutations = false; //NEW as of 1.8.7b1
+      options.showLineage = false;  // NEW as of 1.8.7b1
+      options.showMutations = false; // NEW as of 1.8.7b1
       options.showNodeVisualizations = true;
       options.showSequence = false; // Do not show "Sequence" upon launch.
       options.showSequenceAccession = true; // If user turns on "Sequence" display, accession will be shown.
@@ -53,7 +53,7 @@ define([
       // settings.displayHeight = 700;
       // settings.displayWidth = 1200;
       settings.enableAccessToDatabases = true;
-      settings.enableCollapseByFeature = true;
+      settings.enableCollapseByFeature = false;
       settings.enableDownloads = true;
       settings.enableNodeVisualizations = true;
       settings.enableDynamicSizing = true;
@@ -64,8 +64,8 @@ define([
       settings.searchFieldWidth = '50px';
       settings.collapseLabelWidth = '36px';
       settings.textFieldHeight = '16px';
-      settings.showLineageButton = true;  //NEW as of 1.8.7b1
-      settings.showMutationsButton = true; //NEW as of 1.8.7b1
+      settings.showLineageButton = true;  // NEW as of 1.8.7b1
+      settings.showMutationsButton = true; // NEW as of 1.8.7b1
       settings.showShortenNodeNamesButton = false;
       settings.showDynahideButton = false;
       settings.showSearchPropertiesButton = true;
