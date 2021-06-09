@@ -3,12 +3,16 @@ define([
   'dojo/dom-construct', 'dojo/dom-geometry', 'dojo/dom-style', 'dojo/dom-class',
   'dijit/form/TextBox', './FacetFilter', 'dojo/request', 'dojo/on',
   'rql/parser', './FilteredValueButton', 'dojo/query', 'dojo/_base/Deferred',
+  'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
+  'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/focus', '../util/PathJoin'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
   Textbox, FacetFilter, xhr, on,
   RQLParser, FilteredValueButton, Query, Deferred,
+  ObjectStore, Memory, CheckedMultiSelect,
+  DropDownButton, DropDownMenu,
   focusUtil, PathJoin
 ) {
 
@@ -75,6 +79,14 @@ define([
 
     return parsed;
 
+  }
+
+  function setDifference(setA, setB) {
+    let _diff = new Set(setA)
+    for (let elem of setB) {
+      _diff.delete(elem)
+    }
+    return _diff
   }
 
   return declare([ContainerActionBar], {
@@ -344,13 +356,24 @@ define([
         }, setAnchor, true, this.rightButtons);
       }
 
+      // control menu bar
+      this.fullViewControlNode = domConstruct.create('div', {
+        'class': 'FullFilterControl',
+        style: {
+          background: '#bbb',
+          display: 'flex',
+          'justify-content': 'flex-end',
+        }
+      }, this.domNode)
+      this.buildAddFilters();
+
       this.fullViewContentNode = this.fullViewNode = domConstruct.create('div', {
         'class': 'FullFilterView',
         style: {
           'white-space': 'nowrap',
           'vertical-align': 'top',
           margin: '0px',
-          'margin-top': '5px',
+          // 'margin-top': '5px',
           background: '#333',
           padding: '0px',
           'overflow-y': 'hidden',
@@ -669,12 +692,77 @@ define([
         return;
       }
 
-      // removed the sorting here to allow us to specify the order on the categories appear on the filter panel. This is particular important for the Genome List page
-      // fields.sort().forEach(lang.hitch(this, function(f){
-      fields.forEach(lang.hitch(this, function (f) {
-        // console.log("Field: ",f)
-        this.addCategory(f);
+      // filter when hidden attr is true
+      fields.filter((el) => {
+        return !el.facet_hidden
+      }).forEach(lang.hitch(this, function (el) {
+        this.addCategory(el.field || el);
       }));
+    },
+    buildAddFilters: function () {
+      const fields = this.facetFields.map((ff) => {
+        return { id: ff.field, label: ff.field.replace(/_/g, ' '), value: ff.field }
+      })
+      const m_store = new Memory({
+        data: fields
+      })
+      const os = new ObjectStore({ objectStore: m_store });
+      const selectBox = new CheckedMultiSelect({
+        style: 'height: 400px',
+        multiple: true,
+        sortByLabel: false,
+        store: os
+      })
+      // pre-populate existing facets
+      const pre_selected = this.facetFields.filter((ff) => !ff.facet_hidden).map((ff) => ff.field)
+      selectBox.set('value', pre_selected)
+
+      on(selectBox, 'click', lang.hitch(this, function () {
+        const all_selected = selectBox.get('value')
+        const set_selected = new Set(all_selected)
+        const all_exists = this.facetFields.filter(ff => !ff.facet_hidden).map(ff => ff.field)
+        const set_exists = new Set(all_exists)
+        const set_added = setDifference(set_selected, set_exists)
+        const set_removed = setDifference(set_exists, set_selected)
+
+        set_added.forEach((ff) => {
+          const idx = os.objectStore.index[ff]
+          this.facetFields[idx].facet_hidden = false
+          if (this._ffWidgets[ff]) {
+            this._ffWidgets[ff].toggleHidden()
+          } else {
+            this.addNewCategory(ff)
+          }
+        })
+        set_removed.forEach((ff) => {
+          const idx = os.objectStore.index[ff]
+          this.facetFields[idx].facet_hidden = true
+          this.removeCategory(ff)
+        })
+      }))
+
+      // or activate dropdown
+      const menu = new DropDownMenu({
+        class: 'facetColumnSelector',
+        style: 'display: none'
+      })
+      menu.addChild(selectBox)
+      const button = new DropDownButton({
+        iconClass: 'fa icon-gear fa-1x',
+        label: '',
+        dropDown: menu
+      })
+
+      domConstruct.place(button.domNode, this.fullViewControlNode, 'last');
+    },
+    addNewCategory: function (field) {
+      this.addCategory(field)
+      this._updateFilteredCounts(field, undefined, [])
+    },
+    removeCategory: function (category) {
+      if (this._ffWidgets[category]) {
+        this._ffWidgets[category].setHidden()
+      }
     },
     addCategory: function (name, values) {
       // console.log("Add Category: ", name, values)
@@ -743,7 +831,7 @@ define([
       var facetFields = facetFields || this.facetFields;
 
       var f = '&facet(' + facetFields.map(function (field) {
-        return '(field,' + field + ')';
+        return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
       }).join(',') + ',(mincount,1))';
       var q = query; // || "?keyword(*)"
       // console.log(idx, " dataModel: ", this.dataModel)

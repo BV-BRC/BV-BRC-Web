@@ -11,7 +11,7 @@ define([
 ) {
 
   return declare([WidgetBase, Templated], {
-    templateString: '<div class="${baseClass}"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
+    templateString: '<div class="${baseClass}"><div class="facetHeader"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><!--<i data-dojo-attach-point="searchNode" class="fa icon-search2 fa-1x facetCategorySearchBtn"></i>--></div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
     baseClass: 'FacetFilter',
     category: 'NAME',
     data: null,
@@ -194,6 +194,14 @@ define([
       this._refreshFilter();
     },
 
+    toggleHidden: function () {
+      domClass.toggle(this.domNode, 'dijitHidden');
+    },
+    setHidden: function () {
+      if (!domClass.contains(this.domNode, 'dijitHidden')) {
+        domClass.add(this.domNode, 'dijitHidden')
+      }
+    },
     clearSelection: function () {
       // console.log("CLEAR SELECTION")
       this.set('data', this.data, []);
