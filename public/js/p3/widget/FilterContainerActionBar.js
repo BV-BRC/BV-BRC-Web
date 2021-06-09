@@ -696,7 +696,7 @@ define([
       fields.filter((el) => {
         return !el.facet_hidden
       }).forEach(lang.hitch(this, function (el) {
-        this.addCategory(el.field || el);
+        this.addCategory(el.field || el, null, el.type || 'str');
       }));
     },
     buildAddFilters: function () {
@@ -731,7 +731,7 @@ define([
           if (this._ffWidgets[ff]) {
             this._ffWidgets[ff].toggleHidden()
           } else {
-            this.addNewCategory(ff)
+            this.addNewCategory(ff, this.facetFields[idx].type)
           }
         })
         set_removed.forEach((ff) => {
@@ -755,8 +755,8 @@ define([
 
       domConstruct.place(button.domNode, this.fullViewControlNode, 'last');
     },
-    addNewCategory: function (field) {
-      this.addCategory(field)
+    addNewCategory: function (field, type) {
+      this.addCategory(field, null, type)
       this._updateFilteredCounts(field, undefined, [])
     },
     removeCategory: function (category) {
@@ -764,7 +764,7 @@ define([
         this._ffWidgets[category].setHidden()
       }
     },
-    addCategory: function (name, values) {
+    addCategory: function (name, values, type) {
       // console.log("Add Category: ", name, values)
       var cs = [];
       if (this.selected) {
@@ -776,7 +776,9 @@ define([
         }, this);
       }
 
-      var f = this._ffWidgets[name] = new FacetFilter({ category: name, data: values || undefined, selected: cs });
+      var f = this._ffWidgets[name] = new FacetFilter({
+        category: name, data: values || undefined, selected: cs, type: type
+      });
       domConstruct.place(f.domNode, this.fullViewContentNode, 'last');
     },
 

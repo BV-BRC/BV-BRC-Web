@@ -1,21 +1,23 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/Deferred', 'dijit/_Templated',
-  'dojo/dom-class', 'dojo/dom-construct', 'dijit/_WidgetBase',
+  'dojo/dom-class', 'dojo/dom-construct', 'dijit/_WidgetBase', 'dijit/form/TextBox',
   'dojo/_base/xhr', 'dojo/_base/lang', 'dojo/dom-attr', 'dojo/query',
   'dojo/dom-geometry', 'dojo/dom-style', 'dojo/when'
 ], function (
   declare, on, Deferred, Templated,
-  domClass, domConstruct, WidgetBase,
+  domClass, domConstruct, WidgetBase, TextBox,
   xhr, lang, domAttr, Query,
   domGeometry, domStyle, when
 ) {
 
   return declare([WidgetBase, Templated], {
-    templateString: '<div class="${baseClass}"><div class="facetHeader"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><!--<i data-dojo-attach-point="searchNode" class="fa icon-search2 fa-1x facetCategorySearchBtn"></i>--></div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
+    templateString: '<div class="${baseClass}"><div class="facetHeader"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><i data-dojo-attach-point="searchBtn" class="fa icon-search2 fa-1x facetCategorySearchBtn"></i></div><div class="facetSearch dijitHidden" data-dojo-attach-point="searchNode"></div><div class="dataList" data-dojo-attach-point="containerNode"></div></div>',
     baseClass: 'FacetFilter',
     category: 'NAME',
     data: null,
+    originalData: null,
     selected: null,
+    type: 'str', // default
 
     constructor: function () {
       this._selected = {};
@@ -202,18 +204,111 @@ define([
         domClass.add(this.domNode, 'dijitHidden')
       }
     },
+
+    toggleSearch: function () {
+      domClass.toggle(this.searchNode, 'dijitHidden')
+
+      if (!domClass.contains(this.searchNode, 'dijitHidden')) {
+        if (this.facetSearchBox !== undefined) {
+          this.facetSearchBox.focus()
+        } else if (this.facetRangeMin !== undefined) {
+          this.facetRangeMin.focus()
+        }
+      }
+    },
+
     clearSelection: function () {
       // console.log("CLEAR SELECTION")
       this.set('data', this.data, []);
       domClass.remove(this.categoryNode, 'selected');
     },
+    filterByRange: function () {
+      if (this.originalData === null) {
+        this.originalData = this.data
+      }
 
+      const lowerBound = parseInt(this.facetRangeMin.get('value'))
+      const upperBound = parseInt(this.facetRangeMax.get('value'))
+
+      let filtered;
+      if (!isNaN(lowerBound) && !isNaN(upperBound)) {
+        filtered = this.originalData.filter((val) => (parseInt(val.value) >= lowerBound && parseInt(val.value) <= upperBound));
+      } else if (!isNaN(lowerBound) && isNaN(upperBound)) {
+        filtered = this.originalData.filter((val) => (parseInt(val.value) >= lowerBound))
+      } else if (isNaN(lowerBound) && !isNaN(upperBound)) {
+        filtered = this.originalData.filter((val) => (parseInt(val.value) <= upperBound))
+      } else {
+        return
+      }
+
+      if (filtered && filtered.length > 0) {
+        this.set('data', filtered)
+      }
+    },
+    filterByKeyword: function () {
+      if (this.originalData === null) {
+        this.originalData = this.data
+      }
+
+      let keyword = this.facetSearchBox.get('value')
+      if (keyword !== '') {
+        keyword = keyword.toLowerCase()
+        let filtered = this.originalData.filter((val) => (val.value.toLowerCase().includes(keyword)))
+        if (filtered.length > 0) {
+          this.set('data', filtered)
+        }
+      }
+    },
+    createFacetFilters: function () {
+      if (this.type === 'numeric') {
+        // min max range
+        this.facetRangeMin = new TextBox({
+          placeholder: 'min',
+          style: {
+            width: '40px'
+          }
+        })
+        this.facetRangeMax = new TextBox({
+          placeholder: 'max',
+          style: {
+            width: '40px'
+          }
+        })
+        on(this.facetRangeMin, 'keyup', lang.hitch(this, 'filterByRange'))
+        on(this.facetRangeMax, 'keyup', lang.hitch(this, 'filterByRange'))
+
+        domConstruct.place(this.facetRangeMin.domNode, this.searchNode, 'last');
+        domConstruct.place('<span> to </span>', this.searchNode, 'last');
+        domConstruct.place(this.facetRangeMax.domNode, this.searchNode, 'last');
+      } else if (this.type === 'str') {
+        this.facetSearchBox = new TextBox({
+          style: {
+            width: '100%'
+          },
+          placeholder: `filter ${this.category}`
+        });
+        on(this.facetSearchBox, 'keyup', lang.hitch(this, 'filterByKeyword'))
+        domConstruct.place(this.facetSearchBox.domNode, this.searchNode, 'last');
+      }
+    },
+    // resetFacetFilters: function () {
+    //   if (this.facetSearchBox !== undefined) {
+    //     this.facetSearchBox.reset()
+    //     console.log('reset Facet Filters - search box')
+    //   } else if (this.facetRangeMin !== undefined) {
+    //     this.facetRangeMin.reset()
+    //     this.facetRangeMax.reset()
+    //     console.log('reset Facet Filters - range box')
+    //   }
+    // },
     postCreate: function () {
       this.inherited(arguments);
       on(this.domNode, '.FacetValue:click', lang.hitch(this, 'toggleItem'));
       if (this.categoryNode && this.category) {
         this.categoryNode.innerHTML = this.category.replace(/_/g, ' ');
       }
+      on(this.searchBtn, 'click', lang.hitch(this, 'toggleSearch'));
+      this.createFacetFilters()
       if (!this.data) {
         this.data = new Deferred();
       }
