@@ -9,6 +9,7 @@
 	color: #ccc;
 	margin-top: 4px;
 	margin-left: 4px;
+	margin-right: 4px;
 	display: inline-block;
 	overflow: hidden;
 	padding: 0;
@@ -31,13 +32,23 @@
 	margin-right: 8px;
 }
 
+.facetHeader {
+	display: flex;
+	border-bottom: 1px solid #fff;
+}
+
 .FacetFilter .facetCategory {
 	color: #fff;;
 	font-weight: 900;
 	text-align: left;
-	border-bottom: 1px solid #fff;
 	padding: 4px;
+	margin-right: auto;
 	text-transform: capitalize;
+}
+
+.FacetFilter .facetCategorySearchBtn {
+	color: #fff;
+	margin: 6px 2px 0 3px;
 }
 
 .facetCategory {
