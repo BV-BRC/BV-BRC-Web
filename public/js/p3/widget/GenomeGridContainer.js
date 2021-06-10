@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './GenomeGrid', 'dijit/popup', 'dojo/_base/lang',
+  './GenomeGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/_base/lang',
   'dijit/TooltipDialog', './FacetFilterPanel', 'dojo/topic',
   'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  GenomeGrid, popup, lang,
+  GenomeGrid, AdvancedSearchFields, popup, lang,
   TooltipDialog, FacetFilterPanel, Topic,
   domConstruct
 ) {
@@ -25,7 +25,7 @@ define([
     containerType: 'genome_data',
     tutorialLink: 'user_guides/organisms_taxon/genome_table.html',
     // facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_year"],
-    facetFields: ['public', 'genome_status', 'reference_genome', 'antimicrobial_resistance', 'isolation_country', 'host_name', 'collection_year', 'genome_quality'],
+    facetFields: AdvancedSearchFields['genome'].filter((ff) => ff.facet),
     getFilterPanel: function (opts) {
 
     },

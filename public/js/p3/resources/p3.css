@@ -5,6 +5,7 @@
 
 @import url("../../dojox/widget/Toaster/Toaster.css");
 @import url("../../dojox/widget/Dialog/Dialog.css");
+@import url("../../dojox/form/resources/CheckedMultiSelect.css");
 @import url("./jbrowse/genome.css");
 @import url("Header.css");
 @import url("Carousel.css");
@@ -1340,4 +1341,21 @@ body footer.main-footer ul.left {
 
 .SystemStatus i.fail {
     color: #bd0000;
+}
+
+
+/**
+ * CheckedMultiSelect
+ */
+.facetColumnSelector .dojoxCheckedMultiSelect .dojoxCheckedMultiSelectWrapper {
+    height: 100%;
+    border: 0;
+    background: none;
+    padding: 4px;
+}
+.facetColumnSelector .dojoxMultiSelectItem {
+    padding: 2px;
+}
+.facetColumnSelector .dojoxMultiSelectItemLabel {
+    text-transform: capitalize;
 }
