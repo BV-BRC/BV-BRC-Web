@@ -701,7 +701,8 @@ define([
     },
     buildAddFilters: function () {
       const fields = this.facetFields.map((ff) => {
-        return { id: ff.field, label: ff.field.replace(/_/g, ' '), value: ff.field }
+        const field = ff.field || ff;
+        return { id: field, label: field.replace(/_/g, ' '), value: field }
       })
       const m_store = new Memory({
         data: fields
