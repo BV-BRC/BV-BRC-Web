@@ -403,8 +403,8 @@ define([
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.transcriptomics);
       this.viewer.addChild(this.interactions);
-      this.viewer.addChild(this.surveillance);
-      this.viewer.addChild(this.serology);
+      // this.viewer.addChild(this.surveillance);
+      // this.viewer.addChild(this.serology);
 
       if (localStorage) {
         var gs = localStorage.getItem(this.showQuickstartKey);
