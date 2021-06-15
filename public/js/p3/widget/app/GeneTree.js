@@ -223,49 +223,25 @@ define([
       }
       else {
         var newOptions = [{
-          value: 'DAYHOFF', label: 'DAYHOFF', selected: true, disabled: false
-        },
-        {
-          value: 'DCMUT', label: 'DCMUT', selected: false, disabled: false
-        },
-        {
-          value: 'JTT', label: 'JTT', selected: false, disabled: false
-        },
-        {
-          value: 'MTREV', label: 'MTREV', selected: false, disabled: false
+          value: 'LG', label: 'LG', selected: false, disabled: false
         },
         {
           value: 'WAG', label: 'WAG', selected: false, disabled: false
         },
         {
-          value: 'RTREV', label: 'RTREV', selected: false, disabled: false
+          value: 'JTT', label: 'JTT', selected: false, disabled: false
         },
         {
-          value: 'CPREV', label: 'CPREV', selected: false, disabled: false
+          value: 'Blosum62', label: 'Blosum62', selected: false, disabled: false
         },
         {
-          value: 'VT', label: 'VT', selected: false, disabled: false
+          value: 'Dayhoff', label: 'Dayhoff', selected: true, disabled: false
         },
         {
-          value: 'BLOSUM62', label: 'BLOSUM62', selected: false, disabled: false
+          value: 'HIVw', label: 'HIVw', selected: false, disabled: false
         },
         {
-          value: 'MTMAM', label: 'MTMAM', selected: false, disabled: false
-        },
-        {
-          value: 'LG', label: 'LG', selected: false, disabled: false
-        },
-        {
-          value: 'MTART', label: 'MTART', selected: false, disabled: false
-        },
-        {
-          value: 'HIVB', label: 'HIVB', selected: false, disabled: false
-        },
-        {
-          value: 'HIVW', label: 'HIVW', selected: false, disabled: false
-        },
-        {
-          value: 'AB', label: 'AB', selected: false, disabled: false
+          value: 'HIVb', label: 'HIVb', selected: false, disabled: false
         }];
         this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_protein_fasta');
