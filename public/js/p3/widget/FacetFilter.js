@@ -238,7 +238,8 @@ define([
       } else if (isNaN(lowerBound) && !isNaN(upperBound)) {
         filtered = this.originalData.filter((val) => (parseInt(val.value) <= upperBound))
       } else {
-        return
+        // both NaN: reset filter
+        filtered = this.originalData
       }
 
       if (filtered && filtered.length > 0) {
@@ -257,6 +258,8 @@ define([
         if (filtered.length > 0) {
           this.set('data', filtered)
         }
+      } else {
+        this.set('data', this.originalData)
       }
     },
     createFacetFilters: function () {
