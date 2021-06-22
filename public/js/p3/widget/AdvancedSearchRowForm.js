@@ -14,6 +14,11 @@ define([
 
   return declare([WidgetBase, Templated], {
     templateString: widgetTemplateString,
+    hideFirstLogicalOp: false,
+    logicalOpOptions: [
+      { label: 'Equal', value: 'EQ' },
+      { label: 'Not', value: 'NOT' },
+    ],
     columnOptions: [],
     columnTypes: {},
     isFirst: false,
@@ -25,13 +30,8 @@ define([
 
       this.opSelector = Select({
         style: 'width: 54px',
-        // class: (this.isFirst ? 'dijitHidden' : ''),
-        options: [
-          // { label: 'AND', value: 'AND' },
-          // { label: 'OR', value: 'OR' },
-          { label: 'Equal', value: 'EQ' },
-          { label: 'Not', value: 'NOT' },
-        ]
+        class: (this.hideFirstLogicalOp && this.isFirst ? 'dijitHidden' : ''),
+        options: this.logicalOpOptions
       })
       domConstruct.place(this.opSelector.domNode, this.opNode, 'last')
 
@@ -58,10 +58,10 @@ define([
 
       // range Node, hide by default
       this.fieldRangeFrom = TextBox({
-        style: 'width: 115px'
+        style: 'width: 112px;'
       })
       this.fieldRangeTo = TextBox({
-        style: 'width: 115px'
+        style: 'width: 113px'
       })
       domConstruct.place(this.fieldRangeFrom.domNode, this.rangeNode, 'first')
       domConstruct.place('<span> TO </span>', this.rangeNode, 'last')
