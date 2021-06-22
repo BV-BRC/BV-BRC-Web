@@ -361,15 +361,11 @@ define([
       }
 
       // control menu bar
-      this.fullViewControlNode = domConstruct.create('div', {
-        'class': 'FullFilterControl',
+      this.filterWidget = domConstruct.create('div', {
         style: {
-          background: '#bbb',
           display: 'flex',
-          'justify-content': 'flex-end',
         }
       }, this.domNode)
-      this.buildAddFilters();
 
       this.fullViewContentNode = this.fullViewNode = domConstruct.create('div', {
         'class': 'FullFilterView',
@@ -383,7 +379,16 @@ define([
           'overflow-y': 'hidden',
           'overflow-x': 'auto'
         }
-      }, this.domNode);
+      }, this.filterWidget);
+
+      this.fullViewControlNode = domConstruct.create('div', {
+        'class': 'FullFilterControl',
+        style: {
+          width: '20px',
+          background: '#333'
+        }
+      }, this.filterWidget)
+      this.buildAddFilters();
 
       // this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
       on(this.fullViewNode, 'mousewheel', function (event) {
@@ -762,7 +767,7 @@ define([
       })
       menu.addChild(selectBox)
       const button = new DropDownButton({
-        iconClass: 'fa icon-gear fa-1x',
+        iconClass: 'fa icon-gear fa-lg',
         label: '',
         dropDown: menu
       })
