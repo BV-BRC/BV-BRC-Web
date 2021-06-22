@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/MetaCATS.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
-  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea',
+  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/ValidationTextBox', 'dijit/form/Textarea',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, on,
   domClass,
   Template, AppBase, domConstruct, registry,
-  Deferred, aspect, lang, domReady, NumberTextBox, Textarea,
+  Deferred, aspect, lang, domReady, NumberTextBox, ValidationTextBox, Textarea,
   query, dom, popup, Tooltip, Dialog, TooltipDialog,
   children, WorkspaceManager, Memory, Standby, when
 ) {
@@ -114,6 +114,16 @@ define([
       return (success);
     },
 
+    validate: function () {
+      if (this.inherited(arguments)) {
+        var p_value = parseFloat(this['p_value'].value);
+        if (p_value && (p_value <= 1 && p_value > 0)) {
+          return true;
+        }
+        return false;
+      }
+      return false;
+    },
 
     getValues: function () {
       var values = this.inherited(arguments);
@@ -121,6 +131,7 @@ define([
       if (this['alignment_file'].searchBox.onChange.target.item) {
         alignment_type = this['alignment_file'].searchBox.onChange.target.item.type;
       }
+      values.p_value = parseFloat(this['p_value'].value);
       values.alignment_type = alignment_type;
       return values;
     }
