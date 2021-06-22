@@ -827,6 +827,7 @@ define([
       // TODO: implement this and trigger when context has changed
     },
     buildFilterQueryFromAdvancedSearch: function () {
+      this._filter = {}
       Object.keys(this._Searches).map((idx) => {
         const col = this._Searches[idx]
         const condition = col.getValues()
