@@ -5,6 +5,7 @@ define([
   'rql/parser', './FilteredValueButton', 'dojo/query', 'dojo/_base/Deferred',
   'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
+  'dijit/Dialog', 'dijit/form/Button', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin'
 ], function (
   declare, ContainerActionBar, lang,
@@ -13,6 +14,7 @@ define([
   RQLParser, FilteredValueButton, Query, Deferred,
   ObjectStore, Memory, CheckedMultiSelect,
   DropDownButton, DropDownMenu,
+  Dialog, Button, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin
 ) {
 
@@ -106,6 +108,8 @@ define([
       this._ffWidgets = {};
       this._ffValueButtons = {};
       this._filter = {};
+      this._Searches = {};
+      this._SearchesIdx = 0;
       this.minimized = true;
     },
     _setStateAttr: function (state) {
@@ -357,15 +361,11 @@ define([
       }
 
       // control menu bar
-      this.fullViewControlNode = domConstruct.create('div', {
-        'class': 'FullFilterControl',
+      this.filterWidget = domConstruct.create('div', {
         style: {
-          background: '#bbb',
           display: 'flex',
-          'justify-content': 'flex-end',
         }
       }, this.domNode)
-      this.buildAddFilters();
 
       this.fullViewContentNode = this.fullViewNode = domConstruct.create('div', {
         'class': 'FullFilterView',
@@ -379,7 +379,16 @@ define([
           'overflow-y': 'hidden',
           'overflow-x': 'auto'
         }
-      }, this.domNode);
+      }, this.filterWidget);
+
+      this.fullViewControlNode = domConstruct.create('div', {
+        'class': 'FullFilterControl',
+        style: {
+          width: '20px',
+          background: '#333'
+        }
+      }, this.filterWidget)
+      this.buildAddFilters();
 
       // this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
       on(this.fullViewNode, 'mousewheel', function (event) {
@@ -555,6 +564,15 @@ define([
 
       }));
 
+      // advanced search
+      this.buildAdvancedSearchPanel()
+      this.addAction('AdvSearch', 'fa icon-rocket fa-2x', {
+        style: { 'font-size': '.5em' },
+        label: 'ADV Search',
+        tooltip: ''
+      }, lang.hitch(this, () => {
+        this.AdvancedSearchDialog.show()
+      }), true, this.containerNode);
     },
 
     _setFilterAttr: function (filter) {
@@ -749,12 +767,100 @@ define([
       })
       menu.addChild(selectBox)
       const button = new DropDownButton({
-        iconClass: 'fa icon-gear fa-1x',
+        iconClass: 'fa icon-gear fa-lg',
         label: '',
         dropDown: menu
       })
 
       domConstruct.place(button.domNode, this.fullViewControlNode, 'last');
+    },
+
+    createAdvancedSearchRow: function (_evt, isFirst = false) {
+      const _row = AdvancedSearchRowForm({
+        columnOptions: this.fieldSelectOptions,
+        columnTypes: this.fieldTypes,
+        isFirst: isFirst,
+        index: this._SearchesIdx
+      })
+      domConstruct.place(_row.domNode, this.AdvancedSearchPanel, 'last')
+
+      on(_row, 'remove', (evt) => {
+        this._Searches[evt.idx].destroyRecursive()
+      })
+      on(_row, 'create', lang.hitch(this, 'createAdvancedSearchRow'))
+      this._Searches[this._SearchesIdx] = _row
+      this._SearchesIdx++;
+    },
+    buildAdvancedSearchPanel: function () {
+      this.AdvancedSearchPanel = domConstruct.create('div', {
+        'class': 'FormPanel'
+      })
+
+      const searchableFields = this.facetFields.filter((ff) => ff.search)
+      this.fieldSelectOptions = searchableFields.map((ff) => {
+        const field = ff.field || ff;
+        return { label: field.replace(/_/g, ' '), value: field }
+      })
+      this.fieldTypes = {}
+      searchableFields.forEach((ff) => {
+        this.fieldTypes[ff.field] = ff.type
+      })
+
+      // initial
+      this.createAdvancedSearchRow(null, true)
+
+      this.AdvancedSearchDialog = Dialog({
+        style: 'width: 500px, height: 700px',
+        content: this.AdvancedSearchPanel
+      })
+
+      const AdvSearchBtn = Button({
+        label: 'Search',
+        onClick: lang.hitch(this, 'buildFilterQueryFromAdvancedSearch')
+      })
+      domStyle.set(this.AdvancedSearchDialog.containerNode, {
+        'text-align': 'center'
+      })
+      domConstruct.place(AdvSearchBtn.domNode, this.AdvancedSearchDialog.containerNode, 'last');
+    },
+    resetAdvancedSearchPanel: function () {
+      // TODO: implement this and trigger when context has changed
+    },
+    buildFilterQueryFromAdvancedSearch: function () {
+      this._filter = {}
+      Object.keys(this._Searches).map((idx) => {
+        const col = this._Searches[idx]
+        const condition = col.getValues()
+        let q;
+        if (condition.type === 'str') {
+          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
+        } else {
+          // numeric
+          const lowerBound = parseInt(condition.from)
+          const upperBound = parseInt(condition.to)
+
+          if (!isNaN(lowerBound) && !isNaN(upperBound)) {
+            q = `between(${condition.column},${lowerBound},${upperBound})`;
+          } else if (!isNaN(lowerBound) && isNaN(upperBound)) {
+            q = `gt(${condition.column},${lowerBound})`
+          } else if (isNaN(lowerBound) && !isNaN(upperBound)) {
+            q = `lt(${condition.column},${upperBound})`
+          } else {
+            // both NaN, skip
+            return
+          }
+          if (condition.op === 'NOT') {
+            q = `not(${q})`
+          }
+        }
+        if (this._filter.hasOwnProperty(condition.column)) {
+          this._filter[condition.column].push(q)
+        } else {
+          this._filter[condition.column] = [q]
+        }
+      })
+      on.emit(this.domNode, 'UpdateFilterCategory', {})
+      this.AdvancedSearchDialog.hide()
     },
     addNewCategory: function (field, type) {
       this.addCategory(field, null, type)

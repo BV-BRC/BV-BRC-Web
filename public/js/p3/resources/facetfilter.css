@@ -148,3 +148,19 @@
 .minFilterView {
 	min-height: 43px;
 }
+
+.FullFilterControl .dijitIcon {
+	color: #fff;
+}
+
+.FullFilterControl .dijitDropDownButton span.dijitButtonNode {
+	border: 0px;
+	background-color: #333;
+	padding: 0
+}
+
+.FullFilterControl .dijitDropDownButton span.dijitButtonText,
+.FullFilterControl .dijitDropDownButton span.dijitArrowButtonInner,
+.FullFilterControl .dijitDropDownButton span.dijitArrowButtonChar {
+	display: none
+}
