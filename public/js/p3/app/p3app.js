@@ -306,6 +306,25 @@ define([
         _self.navigate(newState);
       });
 
+      Router.register('/searches(/.*)', function (params, path) {
+        var parts = path.split('/');
+        parts.shift();
+        var type = parts.shift();
+        var viewerParams;
+        if (parts.length > 0) {
+          viewerParams = parts.join('/');
+        } else {
+          viewerParams = '';
+        }
+
+        var newState = populateState(params);
+        newState.widgetClass = 'p3/widget/search/' + type;
+        newState.value = viewerParams;
+        newState.set = 'params';
+        newState.requireAuth = false;
+
+        _self.navigate(newState);
+      });
 
       Router.register('/app(/.*)', function (params, path) {
         // console.log("view URL Callback", arguments);

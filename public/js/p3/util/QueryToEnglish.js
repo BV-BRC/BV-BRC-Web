@@ -1,8 +1,6 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
   'rql/parser'
 ], function (
-  declare, lang,
   RQLParser
 ) {
 
@@ -15,17 +13,11 @@ define([
     }
 
     function walk(term) {
-      // console.log("Walk: ", term.name, " Args: ", term.args);
-      // console.log("term: ", term);
+      // console.log(`Walk: ${term.name}, Args: ${term.args}`);
       switch (term.name) {
         case 'and':
         case 'or':
-          // var out = term.args.map(function(t){
-          //   return walk(t);
-          // }).join('<span class="searchOperator"> ' + term.name.toUpperCase() + " </span>");
-
           var v = term.args;
-          // console.log("V: ",v)
           if (!(v instanceof Array)) {
             v = [v];
           }
@@ -42,7 +34,6 @@ define([
           } else {
             out = out + vals.slice(0, numTerms).join('<span class="searchOperator"> ' + term.name.toUpperCase() + ' </span>') + ' ... ' + (vals.length - numTerms) + ' more terms ...';
           }
-          // console.log("out: ", out);
           break;
         case 'in':
           var f = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
@@ -81,6 +72,15 @@ define([
           break;
         case 'not':
           out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
+          break;
+        case 'between':
+          out = `<span class="searchField">${term.args[0]}</span> is between ${term.args[1]} and ${term.args[2]}`
+          break;
+        case 'lt':
+          out = `<span class="searchField">${term.args[0]}</span> &lt;= ${term.args[1]}`
+          break;
+        case 'gt':
+          out = `<span class="searchField">${term.args[0]}</span> &gt;= ${term.args[1]}`
           break;
         case 'GenomeGroup':
           var groupParts = decodeURIComponent(term.args[0]).split('/');
