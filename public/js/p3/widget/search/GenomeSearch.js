@@ -19,7 +19,7 @@ define([
     resultUrlBase: '/view/GenomeList/?',
     resultUrlHash: '#view_tab=genomes',
     buildQuery: function () {
-      const queryArr = []
+      let queryArr = []
 
       const hostNameValue = this.hostNameNode.get('value')
       if (hostNameValue !== '') {
@@ -56,7 +56,7 @@ define([
 
       const advancedQueryArr = this._buildAdvancedQuery()
       if (advancedQueryArr.length > 0) {
-        queryArr.concat(advancedQueryArr)
+        queryArr = queryArr.concat(advancedQueryArr)
       }
 
       return queryArr.join('&')

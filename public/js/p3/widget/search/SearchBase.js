@@ -67,11 +67,7 @@ define([
         const condition = col.getValues()
         let q;
 
-        if (condition.value === '') {
-          return
-        }
-
-        if (condition.type === 'str') {
+        if (condition.type === 'str' && condition.value !== '') {
           q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
         } else if (condition.type === 'numeric') {
           // numeric
