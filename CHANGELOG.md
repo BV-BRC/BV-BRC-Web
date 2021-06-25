@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 3.6.15 - June 25, 2021
+* [Minor] promote B.1.617.2 to VoC
+
+
 ## 3.6.14 - June 4, 2021
 * [Enhancement] Phylogenetic Tree update (iteration 3) & archeaopteryx viewer
 
