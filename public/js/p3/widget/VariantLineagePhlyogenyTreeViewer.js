@@ -219,7 +219,7 @@ define([
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
 
-      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_5_19_21_29400_09999_pango_3_a_MAFFT_05_GTR_fme_pdvxvm.xml')
+      xhr.get('/public/js/p3/widget/templates/Archaeopteryx/SARS2_IT4_29400_09999_cdh_pango_3_MAFFT_05_GTR_fme_pdvxvm.xml')
         .then((data) => {
           var tree;
           try {
