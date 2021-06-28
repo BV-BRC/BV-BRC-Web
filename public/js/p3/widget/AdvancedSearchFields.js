@@ -28,14 +28,89 @@ define([], function () {
       },
       // more facets for example, hidden by default
       {
+        field: 'species', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'strain', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'serovar', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'biovar', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathovar', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'mlst', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'sequencing_centers', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'cds', type: 'numeric', facet: true, facet_hidden: true, search: false
-      }
+        field: 'sequencing_status', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequencing_platform', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequencing_depth', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'assembly_method', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'chromosomes', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'plasmids', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'segments', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'contigs', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_length', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'isolation_source', type: 'str', facet: true, facet_hidden: true, search: false
+      },
+      {
+        field: 'geographic_location', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_age', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_health', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'gram_strain', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'cell_shape', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'motility', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'sporulation', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'salinity', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'oxygen_requirement', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'habitat', type: 'str', facet: true, facet_hidden: true, search: true
+      },
     ]
   }
 })
