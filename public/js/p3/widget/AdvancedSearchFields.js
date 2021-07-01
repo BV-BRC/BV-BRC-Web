@@ -79,7 +79,13 @@ define([], function () {
         field: 'isolation_source', type: 'str', facet: true, facet_hidden: true, search: false
       },
       {
+        field: 'geographic_group', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'geographic_location', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_common_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true
@@ -89,6 +95,15 @@ define([], function () {
       },
       {
         field: 'host_health', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_group', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'lab_host', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'passage', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'gram_strain', type: 'str', facet: true, facet_hidden: true, search: true
