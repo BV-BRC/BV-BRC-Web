@@ -1287,367 +1287,419 @@ define([
     surveillance_data: function (item, options) {
       options = options || {};
 
-      var columns = [{
-        name: 'Project Identifier',
-        text: 'project_identifier'
-      }, {
-        name: 'Contributing Institution',
-        text: 'contributing_institution'
-      }, {
-        name: 'Sample Identifier',
-        text: 'sample_identifier'
-      }, {
-        name: 'Sample Accession',
-        text: 'sample_accession'
-      }, {
-        name: 'Sample Material',
-        text: 'sample_material'
-      }, {
-        name: 'Sample Transport Medium',
-        text: 'sample_transport_medium'
-      }, {
-        name: 'Sample Receipt Date',
-        text: 'sample_receipt_date'
-      }, {
-        name: 'Submission Date',
-        text: 'submission_date'
-      }, {
-        name: 'Last Update Date',
-        text: 'last_update_date'
-      }, {
-        name: 'Longitudinal Study',
-        text: 'longitudinal_study'
-      }, {
-        name: 'Embargo End Date',
-        text: 'embargo_end_date'
-      }, {
-        name: 'Collector Name',
-        text: 'collector_name'
-      }, {
-        name: 'Collector Institution',
-        text: 'collector_institution'
-      }, {
-        name: 'Contact Email Address',
-        text: 'contact_email_address'
-      }, {
-        name: 'Collection Date',
-        text: 'collection_date'
-      }, {
-        name: 'Collection Year',
-        text: 'collection_year'
-      }, {
-        name: 'Collection Season',
-        text: 'collection_season'
-      }, {
-        name: 'Days Elapsed to Sample Collection',
-        text: 'days_elapsed_to_sample_collection'
-      }, {
-        name: 'Collection Country',
-        text: 'collection_country'
-      }, {
-        name: 'Collection State Province',
-        text: 'collection_state_province'
-      }, {
-        name: 'Collection City',
-        text: 'collection_city'
-      }, {
-        name: 'Collection POI',
-        text: 'collection_poi'
-      }, {
-        name: 'Collection Latitude',
-        text: 'collection_latitude'
-      }, {
-        name: 'Collection Longitude',
-        text: 'collection_longitude'
-      }, {
-        name: 'Pathogen Test Type',
-        text: 'pathogen_test_type'
-      }, {
-        name: 'Pathogen Test Result',
-        text: 'pathogen_test_Result'
-      }, {
-        name: 'Pathogen Test Interpretation',
-        text: 'pathogen_test_interpretation'
-      }, {
-        name: 'Sequence Accession',
-        text: 'sequence_accession'
-      }, {
-        name: 'Species',
-        text: 'species'
-      }, {
-        name: 'Type',
-        text: 'type'
-      }, {
-        name: 'Subtype',
-        text: 'subtype'
-      }, {
-        name: 'Strain',
-        text: 'strain'
-      }, {
-        name: 'Host Species',
-        text: 'host_species'
-      }, {
-        name: 'Host Common Name',
-        text: 'host_common_name'
-      }, {
-        name: 'Host Group',
-        text: 'host_group'
-      }, {
-        name: 'Host Identifier',
-        text: 'host_identifier'
-      }, {
-        name: 'Host ID Type',
-        text: 'host_id_type'
-      }, {
-        name: 'Host Capture Status',
-        text: 'host_capture_status'
-      }, {
-        name: 'Host Health',
-        text: 'host_health'
-      }, {
-        name: 'Host Natural State',
-        text: 'host_natural_state'
-      }, {
-        name: 'Host Habitat',
-        text: 'host_habitat'
-      }, {
-        name: 'Host Sex',
-        text: 'host_sex'
-      }, {
-        name: 'Host Age',
-        text: 'host_age'
-      }, {
-        name: 'Exposure',
-        text: 'exposure'
-      }, {
-        name: 'Duration of Exposure',
-        text: 'duration_of_exposure'
-      }, {
-        name: 'Exposure Type',
-        text: 'exposure_type'
-      }, {
-        name: 'Use of Personal Protective Equipment',
-        text: 'use_of_personal_protective_equipment'
-      }, {
-        name: 'Primary Living Situation',
-        text: 'primary_living_situation'
-      }, {
-        name: 'Nursing Home Residence',
-        text: 'nursing_home_residence'
-      }, {
-        name: 'Daycare Attendance',
-        text: 'daycare_attendance'
-      }, {
-        name: 'Travel History',
-        text: 'travel_history'
-      }, {
-        name: 'Profession',
-        text: 'profession'
-      }, {
-        name: 'Education',
-        text: 'educaction'
-      }, {
-        name: 'Pregnancy',
-        text: 'pregnancy'
-      }, {
-        name: 'Trimester of Pregnancy',
-        text: 'trimester_of_pregnancy'
-      }, {
-        name: 'Breastfeeding',
-        text: 'breastfeeding'
-      }, {
-        name: 'Hospitalized',
-        text: 'hospitalized'
-      }, {
-        name: 'Hospitalization Duration',
-        text: 'hospitalization_duration'
-      }, {
-        name: 'Intensive Care Unit',
-        text: 'intensive_care_unit'
-      }, {
-        name: 'Chest Imaging Interpretation',
-        text: 'chest_imaging_interpretation'
-      }, {
-        name: 'Ventilation',
-        text: 'ventilation'
-      }, {
-        name: 'Oxygen Saturation',
-        text: 'oxygen_saturation'
-      }, {
-        name: 'Ecmo',
-        text: 'ecmo'
-      }, {
-        name: 'Dialysis',
-        text: 'dialysis'
-      }, {
-        name: 'Disease Status',
-        text: 'disease_status'
-      }, {
-        name: 'Days Elapsed to Disease Status',
-        text: 'days_elapsed_to_disease_status'
-      }, {
-        name: 'Disease Severity',
-        text: 'disease_severity'
-      }, {
-        name: 'Tobacco Use',
-        text: 'tobacco_use'
-      }, {
-        name: 'Packs Per Day For How Many Years',
-        text: 'packs_per_day_for_how_many_years'
-      }, {
-        name: 'Chronic Conditions',
-        text: 'chronic_conditions'
-      }, {
-        name: 'Maintenance Medications',
-        text: 'maintenance_medications'
-      }, {
-        name: 'Types of Allergies',
-        text: 'types_of_allergies'
-      }, {
-        name: 'Influenza Like Illness Over The Past Year',
-        text: 'influenza_like_illness_over_the_past_year'
-      }, {
-        name: 'Infections Within Five Years',
-        text: 'infections_within_five_years'
-      }, {
-        name: 'Human Leukocyte Antigens',
-        text: 'human_leukocyte_antigens'
-      }, {
-        name: 'Treatment',
-        text: 'treatment'
-      }, {
-        name: 'Initiation of Treatment',
-        text: 'initiation_of_treatment'
-      }, {
-        name: 'Duration of Treatment',
-        text: 'duration_of_treatment'
-      }, {
-        name: 'Treatment Dosage',
-        text: 'treatment_dosage'
-      }, {
-        name: 'Vaccination_Type',
-        text: 'vaccination_type'
-      }, {
-        name: 'Days Elapsed to Vaccination',
-        text: 'days_elapsed_to_vaccination'
-      }, {
-        name: 'Source of Vaccine Information',
-        text: 'source_of_vaccine_information'
-      }, {
-        name: 'Vaccine Lot Number',
-        text: 'vaccine_lot_number'
-      }, {
-        name: 'Vaccine Manufacturer',
-        text: 'vaccine_manufacturer'
-      }, {
-        name: 'Vaccine Dosage',
-        text: 'vaccine_dosage'
-      }, {
-        name: 'Other Vaccinations',
-        text: 'other_vaccinations'
-      }, {
-        name: 'Symptoms',
-        text: 'symptoms'
-      }, {
-        name: 'Onset Hours',
-        text: 'onset_hours'
-      }, {
-        name: 'Sudden Onset',
-        text: 'sudden_onset'
-      }, {
-        name: 'Diagnosis',
-        text: 'diagnosis'
-      }, {
-        name: 'Pre Visit Medications',
-        text: 'pre_visit_medications'
-      }, {
-        name: 'Post Visit Medications',
-        text: 'post_visit_medications'
-      }, {
-        name: 'Comments',
-        text: 'comments'
-      }];
+      var metadataSurveillanceID = this.surveillance_meta_table_names();
+      var metadataSurveillanceValue = this.surveillance_meta_spec();
 
       var div = domConstruct.create('div');
-      displayHeader(div, item.sample_identifier, 'fa icon-contigs fa-2x', '/view/Surveillance/' + item.sample_identifier, options);
-      displayDetail(item, columns, div, options);
+      var label = item.sample_identifier;
+      displayHeader(div, label, 'fa icon-contigs fa-2x', '/view/Surveillance/' + item.sample_identifier, options);
+
+      displayDetailBySections(item, metadataSurveillanceID, metadataSurveillanceValue, div, options);
 
       return div;
     },
+    surveillance_meta_table_names: function () {
+      return ['Sample Info', 'Sample Collection', 'Sample Tests', 'Host Info', 'Environmental Exposure', 'Clinical Data', 'Symptoms/Diagnosis', 'Treatment', 'Vaccination', 'Other'];
+    },
+    surveillance_meta_spec: function () {
+      var spec = {
+        'Sample Info': [{
+          name: 'Project Identifier',
+          text: 'project_identifier'
+        }, {
+          name: 'Contributing Institution',
+          text: 'contributing_institution'
+        }, {
+          name: 'Sample Identifier',
+          text: 'sample_identifier'
+        }, {
+          name: 'Sample Accession',
+          text: 'sample_accession'
+        }, {
+          name: 'Sample Material',
+          text: 'sample_material'
+        }, {
+          name: 'Sample Transport Medium',
+          text: 'sample_transport_medium'
+        }, {
+          name: 'Sample Receipt Date',
+          text: 'sample_receipt_date'
+        }, {
+          name: 'Submission Date',
+          text: 'submission_date'
+        }, {
+          name: 'Last Update Date',
+          text: 'last_update_date'
+        }, {
+          name: 'Longitudinal Study',
+          text: 'longitudinal_study'
+        }, {
+          name: 'Embargo End Date',
+          text: 'embargo_end_date'
+        }],
+
+        'Sample Collection': [{
+          name: 'Collector Name',
+          text: 'collector_name'
+        }, {
+          name: 'Collector Institution',
+          text: 'collector_institution'
+        }, {
+          name: 'Contact Email Address',
+          text: 'contact_email_address'
+        }, {
+          name: 'Collection Date',
+          text: 'collection_date'
+        }, {
+          name: 'Collection Year',
+          text: 'collection_year'
+        }, {
+          name: 'Collection Season',
+          text: 'collection_season'
+        }, {
+          name: 'Days Elapsed to Sample Collection',
+          text: 'days_elapsed_to_sample_collection'
+        }, {
+          name: 'Collection Country',
+          text: 'collection_country'
+        }, {
+          name: 'Collection State Province',
+          text: 'collection_state_province'
+        }, {
+          name: 'Collection City',
+          text: 'collection_city'
+        }, {
+          name: 'Collection POI',
+          text: 'collection_poi'
+        }, {
+          name: 'Collection Latitude',
+          text: 'collection_latitude'
+        }, {
+          name: 'Collection Longitude',
+          text: 'collection_longitude'
+        }],
+
+        'Sample Tests': [{
+          name: 'Pathogen Test Type',
+          text: 'pathogen_test_type'
+        }, {
+          name: 'Pathogen Test Result',
+          text: 'pathogen_test_Result'
+        }, {
+          name: 'Pathogen Test Interpretation',
+          text: 'pathogen_test_interpretation'
+        }, {
+          name: 'Species',
+          text: 'species'
+        }, {
+          name: 'Type',
+          text: 'type'
+        }, {
+          name: 'Subtype',
+          text: 'subtype'
+        }, {
+          name: 'Strain',
+          text: 'strain'
+        }, {
+          name: 'Sequence Accession',
+          text: 'sequence_accession'
+        }],
+
+        'Host Info': [{
+          name: 'Host Species',
+          text: 'host_species'
+        }, {
+          name: 'Host Common Name',
+          text: 'host_common_name'
+        }, {
+          name: 'Host Group',
+          text: 'host_group'
+        }, {
+          name: 'Host Identifier',
+          text: 'host_identifier'
+        }, {
+          name: 'Host ID Type',
+          text: 'host_id_type'
+        }, {
+          name: 'Host Capture Status',
+          text: 'host_capture_status'
+        }, {
+          name: 'Host Health',
+          text: 'host_health'
+        }, {
+          name: 'Host Natural State',
+          text: 'host_natural_state'
+        }, {
+          name: 'Host Habitat',
+          text: 'host_habitat'
+        }, {
+          name: 'Host Sex',
+          text: 'host_sex'
+        }, {
+          name: 'Host Age',
+          text: 'host_age'
+        }],
+
+        'Environmental Exposure': [{
+          name: 'Exposure',
+          text: 'exposure'
+        }, {
+          name: 'Duration of Exposure',
+          text: 'duration_of_exposure'
+        }, {
+          name: 'Exposure Type',
+          text: 'exposure_type'
+        }, {
+          name: 'Use of Personal Protective Equipment',
+          text: 'use_of_personal_protective_equipment'
+        }, {
+          name: 'Primary Living Situation',
+          text: 'primary_living_situation'
+        }, {
+          name: 'Nursing Home Residence',
+          text: 'nursing_home_residence'
+        }, {
+          name: 'Daycare Attendance',
+          text: 'daycare_attendance'
+        }, {
+          name: 'Travel History',
+          text: 'travel_history'
+        }, {
+          name: 'Profession',
+          text: 'profession'
+        }, {
+          name: 'Education',
+          text: 'educaction'
+        }],
+
+        'Clinical Data': [{
+          name: 'Pregnancy',
+          text: 'pregnancy'
+        }, {
+          name: 'Trimester of Pregnancy',
+          text: 'trimester_of_pregnancy'
+        }, {
+          name: 'Breastfeeding',
+          text: 'breastfeeding'
+        }, {
+          name: 'Hospitalized',
+          text: 'hospitalized'
+        }, {
+          name: 'Hospitalization Duration',
+          text: 'hospitalization_duration'
+        }, {
+          name: 'Intensive Care Unit',
+          text: 'intensive_care_unit'
+        }, {
+          name: 'Chest Imaging Interpretation',
+          text: 'chest_imaging_interpretation'
+        }, {
+          name: 'Ventilation',
+          text: 'ventilation'
+        }, {
+          name: 'Oxygen Saturation',
+          text: 'oxygen_saturation'
+        }, {
+          name: 'Ecmo',
+          text: 'ecmo'
+        }, {
+          name: 'Dialysis',
+          text: 'dialysis'
+        }, {
+          name: 'Disease Status',
+          text: 'disease_status'
+        }, {
+          name: 'Days Elapsed to Disease Status',
+          text: 'days_elapsed_to_disease_status'
+        }, {
+          name: 'Disease Severity',
+          text: 'disease_severity'
+        }, {
+          name: 'Tobacco Use',
+          text: 'tobacco_use'
+        }, {
+          name: 'Packs Per Day For How Many Years',
+          text: 'packs_per_day_for_how_many_years'
+        }, {
+          name: 'Chronic Conditions',
+          text: 'chronic_conditions'
+        }, {
+          name: 'Maintenance Medications',
+          text: 'maintenance_medications'
+        }, {
+          name: 'Types of Allergies',
+          text: 'types_of_allergies'
+        }, {
+          name: 'Influenza Like Illness Over The Past Year',
+          text: 'influenza_like_illness_over_the_past_year'
+        }, {
+          name: 'Infections Within Five Years',
+          text: 'infections_within_five_years'
+        }, {
+          name: 'Human Leukocyte Antigens',
+          text: 'human_leukocyte_antigens'
+        }],
+
+        'Symptoms/Diagnosis': [{
+          name: 'Symptoms',
+          text: 'symptoms'
+        }, {
+          name: 'Onset Hours',
+          text: 'onset_hours'
+        }, {
+          name: 'Sudden Onset',
+          text: 'sudden_onset'
+        }, {
+          name: 'Diagnosis',
+          text: 'diagnosis'
+        }, {
+          name: 'Pre Visit Medications',
+          text: 'pre_visit_medications'
+        }, {
+          name: 'Post Visit Medications',
+          text: 'post_visit_medications'
+        }],
+
+        'Treatment': [{
+          name: 'Treatment',
+          text: 'treatment'
+        }, {
+          name: 'Initiation of Treatment',
+          text: 'initiation_of_treatment'
+        }, {
+          name: 'Duration of Treatment',
+          text: 'duration_of_treatment'
+        }, {
+          name: 'Treatment Dosage',
+          text: 'treatment_dosage'
+        }],
+
+        'Vaccination': [{
+          name: 'Vaccination_Type',
+          text: 'vaccination_type'
+        }, {
+          name: 'Days Elapsed to Vaccination',
+          text: 'days_elapsed_to_vaccination'
+        }, {
+          name: 'Source of Vaccine Information',
+          text: 'source_of_vaccine_information'
+        }, {
+          name: 'Vaccine Lot Number',
+          text: 'vaccine_lot_number'
+        }, {
+          name: 'Vaccine Manufacturer',
+          text: 'vaccine_manufacturer'
+        }, {
+          name: 'Vaccine Dosage',
+          text: 'vaccine_dosage'
+        }, {
+          name: 'Other Vaccinations',
+          text: 'other_vaccinations'
+        }],
+
+        'Other': [{
+          name: 'Additional Metadata',
+          text: 'additional_metadata'
+        }, {
+          name: 'Comments',
+          text: 'comments'
+        }]
+      }
+
+      return spec;
+    },
 
     serology_data: function (item, options) {
-      options = options || {};
-
-      var columns = [{
-        name: 'Project Identifier',
-        text: 'project_identifier'
-      }, {
-        name: 'Contributing Institution',
-        text: 'contributing_institution'
-      }, {
-        name: 'Sample Identifier',
-        text: 'sample_identifier'
-      }, {
-        name: 'Host Identifier',
-        text: 'host_identifier'
-      }, {
-        name: 'Host Type',
-        text: 'host_type'
-      }, {
-        name: 'Host Species',
-        text: 'host_species'
-      }, {
-        name: 'Host Common Name',
-        text: 'host_common_name'
-      }, {
-        name: 'Host Sex',
-        text: 'host_sex'
-      }, {
-        name: 'Host Age',
-        text: 'host_age'
-      }, {
-        name: 'Host Age Group',
-        text: 'host_age_group'
-      }, {
-        name: 'Host Health',
-        text: 'host_health'
-      }, {
-        name: 'Collection Country',
-        text: 'collection_country'
-      }, {
-        name: 'Collection State',
-        text: 'collection_state'
-      }, {
-        name: 'Collection City',
-        text: 'collection_city'
-      }, {
-        name: 'Collection Date',
-        text: 'collection_date'
-      }, {
-        name: 'Collection Year',
-        text: 'collection_year'
-      }, {
-        name: 'Test Type',
-        text: 'test_type'
-      }, {
-        name: 'Test Result',
-        text: 'test_result'
-      }, {
-        name: 'Test Interpretation',
-        text: 'test_interpretation'
-      }, {
-        name: 'Serotype',
-        text: 'serotype'
-      }, {
-        name: 'Comments',
-        text: 'comments'
-      }];
+      var metadataSerologyID = this.serology_meta_table_names();
+      var metadataSerologyValue = this.serology_meta_spec();
 
       var div = domConstruct.create('div');
-      displayHeader(div, item.sample_identifier, 'fa icon-contigs fa-2x', '/view/Serology/' + item.sample_identifier, options);
-      displayDetail(item, columns, div, options);
+      var label = item.sample_identifier;
+      displayHeader(div, label, 'fa icon-contigs fa-2x', '/view/Serology/' + item.sample_identifier, options);
+      displayDetailBySections(item, metadataSerologyID, metadataSerologyValue, div, options);
 
       return div;
+    },
+    serology_meta_table_names: function () {
+      return ['Sample Info', 'Host Info', 'Sample Collection', 'Sample Tests', 'Other'];
+    },
+    serology_meta_spec: function () {
+      var spec = {
+        'Sample Info': [{
+          name: 'Project Identifier',
+          text: 'project_identifier'
+        }, {
+          name: 'Contributing Institution',
+          text: 'contributing_institution'
+        }, {
+          name: 'Sample Identifier',
+          text: 'sample_identifier'
+        }],
+
+        'Host Info': [{
+          name: 'Host Identifier',
+          text: 'host_identifier'
+        }, {
+          name: 'Host Type',
+          text: 'host_type'
+        }, {
+          name: 'Host Species',
+          text: 'host_species'
+        }, {
+          name: 'Host Common Name',
+          text: 'host_common_name'
+        }, {
+          name: 'Host Sex',
+          text: 'host_sex'
+        }, {
+          name: 'Host Age',
+          text: 'host_age'
+        }, {
+          name: 'Host Age Group',
+          text: 'host_age_group'
+        }, {
+          name: 'Host Health',
+          text: 'host_health'
+        }],
+
+        'Sample Collection': [{
+          name: 'Collection Country',
+          text: 'collection_country'
+        }, {
+          name: 'Collection State',
+          text: 'collection_state'
+        }, {
+          name: 'Collection City',
+          text: 'collection_city'
+        }, {
+          name: 'Collection Date',
+          text: 'collection_date'
+        }, {
+          name: 'Collection Year',
+          text: 'collection_year'
+        }],
+
+        'Sample Tests': [{
+          name: 'Test Type',
+          text: 'test_type'
+        }, {
+          name: 'Test Result',
+          text: 'test_result'
+        }, {
+          name: 'Test Interpretation',
+          text: 'test_interpretation'
+        }, {
+          name: 'Serotype',
+          text: 'serotype'
+        }],
+
+        'Other': [{
+          name: 'Comments',
+          text: 'comments'
+        }]
+      };
+
+      return spec;
     },
 
     sequence_data: function (item, options) {

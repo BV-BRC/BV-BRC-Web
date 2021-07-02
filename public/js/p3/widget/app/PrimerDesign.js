@@ -127,8 +127,8 @@ define([
             }
         }
         //output
-        json_payload["output_path".toUpperCase()] = curr_vars["output_path"];
-        json_payload["output_file".toUpperCase()] = curr_vars["output_file"];
+        json_payload["output_path"] = curr_vars["output_path"];
+        json_payload["output_file"] = curr_vars["output_file"];
         return json_payload;
     },
 
