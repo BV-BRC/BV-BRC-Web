@@ -1,0 +1,114 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>${applicationLabel}
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+              title="click to open tutorial"></i></a>
+        </div>
+        <div class="infobox iconbox videoButton videoInfo">
+          <a href="${docsServiceURL}${videoLink}" target="_blank"><i class="fa icon-play-circle fa-1x"
+              title="click to open the video tutorial"></i></a>
+        </div>
+      </h3>
+      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">${applicationLabel} Service User Guide</a>, <a href="${docsServiceURL}${tutorialLink}"
+          target="_blank">Tutorial</a>, and <a href="${docsServiceURL}${videoLink}" target="_blank">Instructional
+          Video</a>.</p>
+    </div>
+    <div class="formFieldsContainer">
+      <div style="display: none;">
+      </div>
+      <table class="assemblyblocks">
+        <tr>
+          <td style="width:50%">
+            <table>
+              <tr>
+                <td>
+                  <div class="appBox appShadow">
+                    <div class="headerrow">
+                      <div style="width:85%;display:inline-block;">
+                        <label class="appBoxLabel">Parameters</label>
+                      </div>
+                    </div>
+                    <div class="appRow">
+                      <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                        <label>Alignment file</label><br>
+                        <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                          name="alignment_file" required="true" data-dojo-attach-point="alignment_file"
+                          data-dojo-props="type:['aligned_protein_fasta', 'aligned_dna_fasta'],multi:false,promptMessage:'Select an alignment file from your workspace for analysis.',missingMessage:'Add an alignment file.', placeHolder:'Required'">
+                        </div>
+                      </div>
+                      <div class="appRow">
+                        <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                          <label>Group file</label><br>
+                          <div style="width:85%;display:inline-block;"
+                            data-dojo-type="p3/widget/WorkspaceObjectSelector" name="group_file" required="true"
+                            data-dojo-attach-point="group_file"
+                            data-dojo-props="type:['tsv'],multi:false,promptMessage:'Select a metadata file from your workspace for analysis.',missingMessage:'Add a metadata group file.', placeHolder:'Required'">
+                          </div>
+                        </div>
+                        <div class="appRow">
+                          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                            <label>P-value</label><br>
+                            <div style="width:85%;display:inline-block;" data-dojo-type="dijit/form/NumberTextBox"
+                              name="p_value" required="true" data-dojo-attach-point="p_value" value="0.05"
+                              data-dojo-props="regExp:'0?\.[0-9]+',invalidMessage:'Enter a p-value between 0 and 1.',intermediateChanges:true,missingMessage:'Provide p-value',trim:true,placeHolder:'p-value'">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="appRow">
+                          <label class="paramlabel">Output Folder</label><br>
+                          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                            data-dojo-attach-point="output_path" required="true"
+                            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
+                            data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                        </div>
+                        <div class="appRow">
+                          <label class="paramlabel">Output Name</label><span class="charError"
+                            style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                            data-dojo-attach-event="onChange:checkOutputName" name="output_file"
+                            data-dojo-attach-point="output_file" style="width:85%" required="true"
+                            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                          </div>
+                        </div>
+                      </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+              </tr>
+          </td>
+      </table>
+      </td>
+      <td>
+      </td>
+      </tr>
+      </table>
+    </div>
+  </div>
+  <div class="appSubmissionArea">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+      style="margin-top:10px; text-align:center;">
+      Calculating results.
+    </div>
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+      style="margin-top:10px; text-align:center;">
+      Error Submitting Job. Check the input.
+    </div>
+    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+      style="margin-top:10px; text-align:center;">
+      Check workspace for results.
+    </div>
+    <div style="margin-top: 10px; text-align:center;">
+      <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+      <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+    </div>
+  </div>
+</form>
