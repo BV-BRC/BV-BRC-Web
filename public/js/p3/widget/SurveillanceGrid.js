@@ -22,10 +22,7 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
 
-      // Primary Key
-      id: { label: 'ID', field: 'id', hidden: true },
-
-      // Sample Attributes
+      // Sample Info
       project_identifier: { label: 'Project Identifier', field: 'project_identifier', hidden: true },
       contributing_institution: { label: 'Contributing Institution', field: 'contributing_institution', hidden: true },
       sample_identifier: { label: 'Sample Identifier', field: 'sample_identifier', hidden: false },
@@ -38,7 +35,7 @@ define([
       longitudinal_study: { label: 'Longitudinal Study', field: 'longitudinal_study', hidden: true },
       embargo_end_date: { label: 'Embargo End Date', field: 'embargo_end_date', hidden: true },
 
-      // Sample Collection Attributes
+      // Sample Collection
       collector_name: { label: 'Collector Name', field: 'collector_name', hidden: true },
       collector_institution: { label: 'Collector Institution', field: 'collector_institution', hidden: false },
       contact_email_address: { label: 'Contact Email Address', field: 'contact_email_address', hidden: true },
@@ -57,25 +54,26 @@ define([
       pathogen_test_type: { label: 'Pathogen Test Type', field: 'pathogen_test_type', hidden: false },
       pathogen_test_result: { label: 'Pathogen Test Result', field: 'pathogen_test_result', hidden: false },
       pathogen_test_interpretation: { label: 'Pathogen Test Interpretation', field: 'pathogen_test_interpretation', hidden: true },
-      sample_accession: { label: 'Sample Accession', field: 'sample_accession', hidden: true },
       species: { label: 'Species', field: 'species', hidden: true },
       type: { label: 'Type', field: 'Type', hidden: false },
       subtype: { label: 'Subtype', field: 'subtype', hidden: false},
       strain: { label: 'Strain', field: 'strain', hidden: false },
+      sequence_accession: { label: 'Sequence Accession', field: 'sequence_accession', hidden: true },
 
-
-      // Host Attributes
-      host_species: { label: 'Host Species', field: 'host_species', hidden: false },
-      host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
-      host_group: { label: 'Host Group', field: 'host_group', hidden: false },
+      // Host Info
       host_identifier: { label: 'Host Identifier', field: 'host_identifier', hidden: false },
       host_id_type: { label: 'Host ID Type', field: 'host_id_type', hidden: true },
-      host_capture_status: { label: 'Host Capture Status', field: 'host_capture_status', hidden: true },
-      host_health: { label: 'Host Health', field: 'host_health', hidden: false },
-      host_natural_state: { label: 'Host Natural State', field: 'host_natural_state', hidden: true },
-      host_habitat: { label: 'Host Habitat', field: 'host_habitat', hidden: true },
+      host_species: { label: 'Host Species', field: 'host_species', hidden: false },
+      host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
+      host_group: { label: 'Host Group', field: 'host_group', hidden: true },
       host_sex: { label: 'Host Sex', field: 'host_sex', hidden: true },
       host_age: { label: 'Host Age', field: 'host_age', hidden: false },
+      host_height: { label: 'Host Height', field: 'host_height', hidden: true },
+      host_weight: { label: 'Host Weight', field: 'host_weight', hidden: true },
+      host_habitat: { label: 'Host Habitat', field: 'host_habitat', hidden: true },
+      host_natural_state: { label: 'Host Natural State', field: 'host_natural_state', hidden: true },
+      host_capture_status: { label: 'Host Capture Status', field: 'host_capture_status', hidden: true },
+      host_health: { label: 'Host Health', field: 'host_health', hidden: false },
 
       // Environmental Exposure
       exposure: { label: 'Exposure', field: 'exposure', hidden: true },
@@ -116,12 +114,19 @@ define([
       infections_within_five_years: { label: 'Infections Within Five Years', field: 'infections_within_five_years', hidden: true },
       human_leukocyte_antigens: { label: 'Human Leukocyte Antigens', field: 'human_leukocyte_antigens', hidden: true },
 
+      // Symptoms/Diagnosis
+      symptoms: { label: 'Symptoms', field: 'symptoms', hidden: true },
+      onset_hours: { label: 'Onset Hours', field: 'onset_hours', hidden: true },
+      sudden_onset: { label: 'Sudden Onset', field: 'sudden_onset', hidden: true },
+      diagnosis: { label: 'Diagnosis', field: 'diagnosis', hidden: true },
+      pre_visit_medications: { label: 'Pre Visit Medication', field: 'pre_visit_medication', hidden: true },
+      post_visit_medications: { label: 'Post Visit Medication', field: 'post_visit_medication', hidden: true },
+
       // Treatment
       treatment: { label: 'Treatment', field: 'treatment', hidden: true },
       initiation_of_treatment: { label: 'Initiation of Treatment', field: 'initiation_of_treatment', hidden: true },
       duration_of_treatment: { label: 'Duration of Treatment', field: 'duration_of_treatment', hidden: true },
       treatment_dosage: { label: 'Treatment Dosage', field: 'treatment_dosage', hidden: true },
-
 
       // Vaccination
       vaccination_type: { label: 'Vaccination Type', field: 'vaccination_type', hidden: true },
@@ -132,15 +137,8 @@ define([
       vaccine_dosage: { label: 'Vaccine Dosage', field: 'vaccine_dosage', hidden: true },
       other_vaccinations: { label: 'Other Vaccinations', field: 'other_vaccinations', hidden: true },
 
-      // Subject's Symptoms/Diagnosis/Treatment
-      symptoms: { label: 'Symptoms', field: 'symptoms', hidden: true },
-      onset_hours: { label: 'Onset Hours', field: 'onset_hours', hidden: true },
-      sudden_onset: { label: 'Sudden Onset', field: 'sudden_onset', hidden: true },
-      diagnosis: { label: 'Diagnosis', field: 'diagnosis', hidden: true },
-      pre_visit_medications: { label: 'Pre Visit Medication', field: 'pre_visit_medication', hidden: true },
-      post_visit_medications: { label: 'Post Visit Medication', field: 'post_visit_medication', hidden: true },
-
-      // Additional Metadata
+      // Other
+      additional_metadata: { label: 'Additional Metadata', field: 'additional_metadata', hidden: true},
       comments: { label: 'Comments', field: 'comments', hidden: true },
 
     },
