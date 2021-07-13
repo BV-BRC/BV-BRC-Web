@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './ProteinStructureGrid', 'dijit/popup', 'dojo/topic',
+  './ProteinStructureGrid',  './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  ProteinStructureGrid, popup, Topic,
+  ProteinStructureGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
@@ -23,7 +23,8 @@ define([
     gridCtor: ProteinStructureGrid,
     containerType: 'structure_data',
     tutorialLink: '',
-    facetFields: ['taxon_lineage_names','gene','method'],
+    // facetFields: ['taxon_lineage_names','gene','method'],
+    facetFields: AdvancedSearchFields['protein_structure'].filter((ff) => ff.facet),
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'protein_structure',

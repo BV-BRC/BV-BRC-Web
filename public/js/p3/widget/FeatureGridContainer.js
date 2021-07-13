@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './FeatureGrid', 'dijit/popup', 'dojo/topic',
+  './FeatureGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  FeatureGrid, popup, Topic,
+  FeatureGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
@@ -23,7 +23,8 @@ define([
     gridCtor: FeatureGrid,
     containerType: 'feature_data',
     tutorialLink: 'user_guides/organisms_taxon/features.html',
-    facetFields: ['public', 'annotation', 'feature_type'],
+    // facetFields: ['public', 'annotation', 'feature_type'],
+    facetFields: AdvancedSearchFields['genomic_feature'].filter((ff) => ff.facet),
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'genome_feature',

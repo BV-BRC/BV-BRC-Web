@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './SerologyGrid', 'dijit/popup', 'dojo/topic',
+  './SerologyGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  SerologyGrid, popup, Topic,
+  SerologyGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
@@ -23,7 +23,8 @@ define([
     gridCtor: SerologyGrid,
     containerType: 'serology_data',
     tutorialLink: '',
-    facetFields: ['host_type', 'host_species', 'host_common_name', 'collection_country', 'collection_year', 'test_type', 'test_result', 'serotype'],
+    // facetFields: ['host_type', 'host_species', 'host_common_name', 'collection_country', 'collection_year', 'test_type', 'test_result', 'serotype'],
+    facetFields: AdvancedSearchFields['serology'].filter((ff) => ff.facet),
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'serology',

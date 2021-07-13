@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './SurveillanceGrid', 'dijit/popup', 'dojo/topic',
+  './SurveillanceGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  SurveillanceGrid, popup, Topic,
+  SurveillanceGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
@@ -23,7 +23,8 @@ define([
     gridCtor: SurveillanceGrid,
     containerType: 'surveillance_data',
     tutorialLink: '',
-    facetFields: ['collection_country', 'collection_year', 'host_group', 'host_species', 'host_common_name', 'pathogen_test_type', 'pathogen_test_result', 'type', 'subtype'],
+    // facetFields: ['collection_country', 'collection_year', 'host_group', 'host_species', 'host_common_name', 'pathogen_test_type', 'pathogen_test_result', 'type', 'subtype'],
+    facetFields: AdvancedSearchFields['surveillance'].filter((ff) => ff.facet),
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'surveillance',

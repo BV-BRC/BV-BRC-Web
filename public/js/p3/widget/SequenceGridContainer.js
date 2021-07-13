@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './SequenceGrid', 'dijit/popup',
+  './SequenceGrid', './AdvancedSearchFields', 'dijit/popup',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct',
   'dojo/topic'
 ], function (
   declare, GridContainer,
-  Grid, popup,
+  Grid, AdvancedSearchFields, popup,
   TooltipDialog, FacetFilterPanel,
   lang, on, domConstruct, Topic
 ) {
@@ -22,7 +22,8 @@ define([
   return declare([GridContainer], {
     containerType: 'sequence_data',
     tutorialLink: 'user_guides/organisms_taxon/sequences.html',
-    facetFields: ['chromosome', 'plasmid', 'segment'],
+    // facetFields: ['chromosome', 'plasmid', 'segment'],
+    facetFields: AdvancedSearchFields['genomic_sequence'].filter((ff) => ff.facet),
     maxGenomeCount: 10000,
     dataModel: 'genome_sequence',
     primaryKey: 'sequence_id',

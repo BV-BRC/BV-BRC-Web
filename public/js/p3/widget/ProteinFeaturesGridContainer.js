@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './ProteinFeaturesGrid', 'dijit/popup', 'dojo/topic',
+  './ProteinFeaturesGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  ProteinFeaturesGrid, popup, Topic,
+  ProteinFeaturesGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
@@ -23,7 +23,8 @@ define([
     gridCtor: ProteinFeaturesGrid,
     containerType: 'proteinFeatures_data',
     tutorialLink: '',
-    facetFields: ['feature_type', 'source', 'evidence'],
+    // facetFields: ['feature_type', 'source', 'evidence'],
+    facetFields: AdvancedSearchFields['protein_feature'].filter((ff) => ff.facet),
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'protein_feature',
