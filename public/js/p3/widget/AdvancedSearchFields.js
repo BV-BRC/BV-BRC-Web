@@ -127,6 +127,98 @@ define([], function () {
         field: 'habitat', type: 'str', facet: true, facet_hidden: true, search: true
       },
     ],
+    'genomic_feature': [
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'accession', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'annotation', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'feature_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'patric_id', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'brc_id', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'protein_id', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'gene_id', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'uniprotkb_accession', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'pdb_accesion', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'start', type: 'int', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'end', type: 'int', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'strand', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'na_length', type: 'int', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'aa_length', type: 'int', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'na_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'aa_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'plfam', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'pgfam', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'sog_id', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'go', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'property', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'notes', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'date_inserted', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+    ],
     'protein_feature': [
       {
         field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
