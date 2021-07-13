@@ -604,7 +604,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 40px 260px 140px 150px 250px;
+    grid-template-rows: 75px 260px 140px 150px 250px;
     grid-gap: 20px;
   }
   #bv-brc-home .home-banner {
