@@ -6,7 +6,7 @@ define([
 
 ], function (
   declare, GridContainer, on,
-  SerologyGrid, AdvancedSearchFields popup, Topic,
+  SerologyGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
