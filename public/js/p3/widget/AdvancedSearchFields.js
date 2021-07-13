@@ -126,6 +126,89 @@ define([], function () {
       {
         field: 'habitat', type: 'str', facet: true, facet_hidden: true, search: true
       },
+    ],
+    'protein_feature': [
+      {
+        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'patric_id', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'aa_sequence_md5', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'feature_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'source', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'source_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'description', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'classification', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'score', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'e_value', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'evidence', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'publication', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'start', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'end', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'segments', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'length', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'sequence', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'comments', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'date_inserted', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'public', type: 'str', facet: false, facet_hidden: true, search: false
+      },
     ]
   }
 })
