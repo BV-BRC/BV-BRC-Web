@@ -358,8 +358,78 @@ define([], function () {
         field: 'date_inserted', type: 'numeric', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'public', type: 'str', facet: false, facet_hidden: true, search: false
+        field: 'public', type: 'str', facet: false, facet_hidden: true, search: true
       },
-    ]
+    ],
+    'protein_structure': [
+      {
+        field: 'pdb_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'title', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'organism_name', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_names', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'patric_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'uniprotkb_accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence_md5', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'alignments', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'method', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'resolution', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'pmid', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'institution', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'authors', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'release_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
+    'surveillance': [
+      {
+        field: 'project_identifier', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
   }
 })
