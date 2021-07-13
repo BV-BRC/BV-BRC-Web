@@ -716,5 +716,70 @@ define([], function () {
         field: 'comments', type: 'str', facet: false, facet_hidden: true, search: true
       },
     ],
+    'serology': [
+      {
+        field: 'project_indentifier', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'contributing_institution', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sample_identifier', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_indentifier', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_species', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_common_names', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_sex', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_age', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_age_group', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_health', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_country', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'collection_state', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'collection_city', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_year', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'test_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'test_result', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'test_interpretation', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'serotype', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'comments', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+    ],
   }
 })
