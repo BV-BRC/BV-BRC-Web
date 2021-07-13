@@ -219,6 +219,65 @@ define([], function () {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
+    'genomic_sequence': [
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence_id', type: 'string', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'accession', type: 'string', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gi', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'sequence_status', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'mol_type', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'topology', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'description', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'chromosome', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'plasmid', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'segment', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'gc_content', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'length', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'release_date', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'date_inserted', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'public', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+    ],
     'protein_feature': [
       {
         field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
