@@ -430,6 +430,291 @@ define([], function () {
       {
         field: 'project_identifier', type: 'str', facet: false, facet_hidden: true, search: true
       },
+      {
+        field: 'contributing_institution', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'sample_identifier', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sample_accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sample_material', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sample_transport_medium', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sample_receipt_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'last_update_date', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'longitudinal_study', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'embargo_end_date', type: 'numeric', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collector_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collector_institution', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'contact_email_address', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_year', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'collection_season', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'days_elapsed_to_sample_collection', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_country', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'collector_state_province', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_city', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_poi', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_latitude', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'collection_longitude', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'pathogen_test_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'pathogen_test_result', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'pathogen_test_interpretation', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'species', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'type', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subtype', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'strain', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence_accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_indentifier', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_id_type', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_species', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_sex', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_age', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_height', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_weight', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_habitat', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_natural_state', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_capture_status', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_health', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'exposure', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'duration_of_exposure', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'exposure_type', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'use_of_personal_protective_equipment', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'primary_living_situtation', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'nursing_home_residence', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'daycare_attendance', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'travel_history', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'profession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'education', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pregnancy', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'trimester_of_pregnancy', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'breastfeeding', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'hospitalized', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'hospitalization_duration', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'intensive_care_unit', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'chest_imaging_interpretation', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'ventilation', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'oxygen_saturation', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'ecmo', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'dialysis', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'disease_status', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'days_elapsed_to_disease_status', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'disease_severity', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'alcohol_or_other_drug_dependence', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'tobacco_use', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'packs_per_day_for_how_many_years', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'chronic_conditions', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'maintenance_medications', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'types_of_allergies', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'influenza_like_illiness_over_the_past_year', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'infections_within_five_years', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'human_leukocyte_antigens', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'symptoms', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'onset_hours', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sudden_onset', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'diagnosis', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'pre_visit_medications', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'post_visit_medications', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'treatment', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'initiation_of_treament', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'duration_of_treatment', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'treatment_dosage', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'vaccination_type', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'days_elapsed_to_vaccination', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'source_of_vaccine_information', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'vaccine_lot_number', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'vaccine_manufacturer', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'vaccine_dosage', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'other_vaccinations', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'additional_metadata', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'comments', type: 'str', facet: false, facet_hidden: true, search: true
+      },
     ],
   }
 })
