@@ -196,31 +196,21 @@
                 </div>
 
                 <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                    <span style="font-size: 1em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
+                    <span>SEARCHES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>
-                            <div style="vertical-align: top;width:175px;display:inline-block">
-                                <div class="HideWithAuth">
-                                    Please <a class="loginLink">sign in</a> to view your workspaces.
-                                </div>
-                                <div class="ShowWithAuth">
-                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
-                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
-                                    <div id="YourWorkspaces"></div>
-                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
-                                </div>
-                            </div>
-                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                                <div>
-                                    <a class="navigationLink" href="/job/">My Jobs</a>
-                                </div>
-                                <div>
-                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="menuHeader">Advanced Search</div>
+                        <div><a class="navigationLink" href="/searches/GenomeSearch">Genomes</a></div>
+                        <div><a class="navigationLink" href="/searches/GenomicFeatureSearch">Genomic Features</a></div>
+                        <div><a class="navigationLink" href="/searches/GenomicSequenceSearch">Genomic Sequences</a></div>
+                        <div><a class="navigationLink" href="/searches/SpecialtyGeneSearch">Specialty Genes</a></div>
+                        <div><a class="navigationLink" href="/searches/ProteinFeatureSearch">Protein Features</a></div>
+                        <div><a class="navigationLink" href="/searches/ProteinStructureSearch">Protein Structures</a></div>
+                        <div><a class="navigationLink" href="/searches/SurveillanceSearch">Surveillance</a></div>
+                        <div><a class="navigationLink" href="/searches/SerologySearch">Serology</a></div>
+                        <div><a class="navigationLink" href="/searches/TaxaSearch">Taxa</a></div>
+                        <div><a class="navigationLink" href="/searches/TranscriptomicExperimentSearch">Transcriptomics Experiments</a></div>
+                        <div><a class="navigationLink" href="/searches/AntibioticSearch">Antibiotics</a></div>
                     </div>
                 </div>
 
@@ -290,6 +280,53 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span style="font-size: 1em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
+
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div>
+                            <div style="vertical-align: top;width:175px;display:inline-block">
+                                <div class="HideWithAuth">
+                                    Please <a class="loginLink">sign in</a> to view your workspaces.
+                                </div>
+                                <div class="ShowWithAuth">
+                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
+                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
+                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
+                                    <div id="YourWorkspaces"></div>
+                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
+                                </div>
+                            </div>
+                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
+                                <div>
+                                    <a class="navigationLink" href="/job/">My Jobs</a>
+                                </div>
+                                <div>
+                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>HELP</span>
+
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div><a class="DialogButton" rel="quickstart:">Quickstart Video</a></div>
+                        <div><a class="navigationLinkOut" href="https://alpha.bv-brc.org/docs/user_guides/index.html">User Guides</a></div>
+                        <div><a class="navigationLinkOut" href="#">Tutorials</a></div>
+                        <div><a class="navigationLinkOut" href="#">Common Tasks</a></div>
+                        <div><a class="navigationLinkOut" href="#">CLI Tutorial</a></div>
+                        <div><a class="navigationLinkOut" href="#">Webinars</a></div>
+                        <div><a class="navigationLinkOut" href="#">Instructional Videos</a></div>
+                        <div><a class="navigationLinkOut" href="#">Workshops</a></div>
+                        <hr>
+                        <div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
+                        <div><a class="navigationLinkOut" href="#">Contact Us</a></div>
                     </div>
                 </div>
             </div>
