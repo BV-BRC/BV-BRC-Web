@@ -18,12 +18,12 @@ define([
     templateString: Template,
     applicationName: 'MSA',
     requireAuth: true,
-    applicationLabel: 'Multiple Sequence Alignment',
-    applicationDescription: 'The multiple sequence alignment service with variation analysis can be used with feature groups, fasta files, and aligned fasta files.  User input is possible.',
+    applicationLabel: 'Multiple Sequence Alignment and SNP/Variation Analysis',
+    applicationDescription: 'The multiple sequence alignment service with variation and SNP analysis can be used with feature groups, fasta files, aligned fasta files, and user input fasta records. If a single alignment file is given, then only the variation analysis is run. If multiple inputs are given, the program concatenates all sequence records and aligns them. If a mixture of protein and nucleotides are given, then nucleotides are converted to proteins.',
     applicationHelp: 'user_guides/services/',
     tutorialLink: 'tutorial/multiple_sequence_alignment/',
     videoLink: '/videos/',
-    pageTitle: 'Multiple Sequence Alignment',
+    pageTitle: 'Multiple Sequence Alignment and SNP/Variation Analysis',
     appBaseURL: 'MSA',
     defaultPath: '',
     startingRows: 14,
@@ -232,6 +232,7 @@ define([
 
     validateFasta: function () {
       var records = this.fasta_keyboard_input.value.trim().toUpperCase();
+      records = records.replace(/^\s*[\r\n]/gm, '');
       var arr = records.split('\n');
       if (arr.length == 0 || arr[0] == '') {
         this.input_validation_message.innerHTML = '';
@@ -393,6 +394,9 @@ define([
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var type = lrec.user_genomes_fasta.type;
         var newGenomeIds = [lrec[this.fastaToAttachPt]];
+        if (!newGenomeIds[0].file) {
+          return;
+        }
         var tr = this.genomeTable.insertRow(0);
         var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
@@ -423,6 +427,9 @@ define([
       var chkPassed = this.ingestAttachPoints(this.featureGroupToAttachPt, lrec);
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var newGenomeIds = [lrec[this.featureGroupToAttachPt]];
+        if (!newGenomeIds[0].file) {
+          return;
+        }
         var tr = this.genomeTable.insertRow(0);
         var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
@@ -453,6 +460,9 @@ define([
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var type = lrec.user_genomes_alignment.type;
         var newGenomeIds = [lrec[this.alignmentToAttachPt]];
+        if (!newGenomeIds[0].file) {
+          return;
+        }
         var tr = this.genomeTable.insertRow(0);
         var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
@@ -588,6 +598,7 @@ define([
       seqcomp_values.output_path = values.output_path;
       seqcomp_values.output_file = values.output_file;
       seqcomp_values.fasta_keyboard_input = values.fasta_keyboard_input;
+      seqcomp_values.fasta_keyboard_input = seqcomp_values.fasta_keyboard_input.replace(/^\s*[\r\n]/gm, '');
       seqcomp_values.alphabet = values.alphabet;
       return seqcomp_values;
     }
