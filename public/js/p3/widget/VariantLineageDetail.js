@@ -118,11 +118,8 @@ define([
       var select_lineage = new Select({
         name: 'selectLoC',
         id: 'selectLoC',
-        options: ['Lineage of Concern', 'B.1.1.7', 'B.1.351', 'B.1.427', 'B.1.429', 'B.1.617.2', 'P.1',
-          'Lineage of Interest',
-          /* 'A.23.1', 'A.27', 'B.1.1.318', 'B.1.1.519', */ 'B.1.525', 'B.1.526',
-          'B.1.526.1', /* 'B.1.526.2', */ 'B.1.617.1', 'B.1.617.3',
-          /* 'C.37', */ 'P.2'/* , 'P.3', 'R.1' */].map((el) => { return { 'label': el, 'value': el } }),
+        options: ['Lineage of Concern', 'B.1.1.7', 'B.1.351', 'B.1.617.2', 'AY.1', 'AY.2', 'P.1',
+          'Lineage of Interest', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3', 'P.2'].map((el) => { return { 'label': el, 'value': el } }),
         style: 'width: 200px; margin: 5px 0'
       });
       this.select_lineage = select_lineage;
@@ -522,6 +519,36 @@ define([
           '<a href="https://www.medrxiv.org/content/10.1101/2021.03.16.21253248v1.full-text" target=_blank>Household transmission of SARS-CoV-2 R.1 lineage with spike E484K mutation in Japan</a>',
           '<a href="https://www.cdc.gov/mmwr/volumes/70/wr/mm7017e2.htm" target=_blank>CDC</a>'
         ]
+      },
+      'AY.1': {
+        'VoC name': 'AY.1',
+        'PANGO lineage': '<a href="" target=_blank></a>',
+        'NextStrain lineage': '',
+        'WHO name': 'Delta',
+        'Other synonyms': '',
+        'Emergence location': '',
+        'Emergence date': '',
+        'Amino acid substitutions vs Wuhan-Hu-1: Spike': '',
+        'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': '',
+        'Impact': '',
+        'NCBI representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/MZ315637" target=_blank>SARS-CoV-2/human/USA/CA-CDC-STM-000072456/2021</a>',
+        'GISAID representative strain': '',
+        'Relevant publications': []
+      },
+      'AY.2': {
+        'VoC name': 'AY.1',
+        'PANGO lineage': '<a href="" target=_blank></a>',
+        'NextStrain lineage': '-',
+        'WHO name': 'Delta',
+        'Other synonyms': '',
+        'Emergence location': '',
+        'Emergence date': '',
+        'Amino acid substitutions vs Wuhan-Hu-1: Spike': '',
+        'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': '',
+        'Impact': '',
+        'NCBI representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/MZ436591" target=_blank>SARS-CoV-2/human/USA/LSUH000677E2S1/2021</a>',
+        'GISAID representative strain': '',
+        'Relevant publications': []
       }
     }
   });
