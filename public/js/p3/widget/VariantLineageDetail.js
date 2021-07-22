@@ -186,7 +186,7 @@ define([
     },
     data: {
       'B.1.1.7': {
-        'LoC name': 'B.1.1.7',
+        'VoC name': 'B.1.1.7',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_B.1.1.7.html" target=_blank>B.1.1.7</a>',
         'NextStrain lineage': '20I(Alpha, V1)',
         'WHO name': 'Alpha',
@@ -205,7 +205,7 @@ define([
         ]
       },
       'B.1.351': {
-        'LoC name': 'B.1.351',
+        'VoC name': 'B.1.351',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_B.1.351.html" target=_blank>B.1.351</a>',
         'NextStrain lineage': '20H(Beta, V2)',
         'WHO name': 'Beta',
@@ -265,7 +265,7 @@ define([
       },
       'P.1': {
         'LoC name': 'P.1',
-        'PANGO lineage': '<a href="https://cov-lineages.org/lineages/lineage_B.1.1.28.html" target=_blank>B.1.1.28.1</a>',
+        'PANGO lineage': '<a href="https://cov-lineages.org/lineages/lineage_B.1.1.28.html" target=_blank>P.1</a>',
         'NextStrain lineage': '20J(Gamma, V3)',
         'WHO name': 'Gamma',
         'Other synonyms': '20J/501Y.V3, VOC-20JAN02, B.1.1.248, Brazilian variant',
