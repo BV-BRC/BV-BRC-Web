@@ -547,7 +547,7 @@ define([
         'Relevant publications': []
       },
       'AY.2': {
-        'VoC name': 'AY.1',
+        'VoC name': 'AY.2',
         'PANGO lineage': '<a href="" target=_blank>AY.2</a>',
         'NextStrain lineage': '21A(Delta)',
         'WHO name': 'Delta',
