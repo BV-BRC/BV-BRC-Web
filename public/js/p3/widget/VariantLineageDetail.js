@@ -541,10 +541,15 @@ define([
         'Emergence date': 'April 2021',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19R, W258L, K417N, L452R, T478K, D614G, P681R, D950N',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3:A488S, P1228L, P1469S; nsp4:V167L, T492I; nsp6:T77A; nsp12:P323L, G671S; nsp13:P77L; nsp14:A394V ; ORF3a:S26L; M:I82T; ORF7a:V82A, T120I; ORF7b:T40I; ORF8:D119-, F120-; N:D63G, R203M, G215C, D377Y',
-        'Impact': '',
+        'Impact': 'Increased transmissibility; may have reduced neutralization by some monoclonal & polyclonal antibodies',
         'ViPR representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/MZ315637" target=_blank>SARS-CoV-2/human/USA/CA-CDC-STM-000072456/2021</a>',
         'GISAID representative strain': '',
-        'Relevant publications': []
+        'Relevant publications': [
+          '<a href="https://khub.net/documents/135939561/405676950/Increased+Household+Transmission+of+COVID-19+Cases+-+national+case+study.pdf/7f7764fb-ecb0-da31-77b3-b1a8ef7be9aa" target=_blank>Increased household transmission of COVID-19 cases associated with SARS-CoV-2 Variant of Concern B.1.617.2: a national case- control study</a>',
+          '<a href="https://www.fda.gov/media/145802/" target=_blank>Fact Sheet For Health Care Providers Emergency Use Authorization (Eua) Of Bamlanivimab And Etesevimab 05142021</a>',
+          '<a href="https://www.fda.gov/media/145611/" target=_blank>Regeneron EUA HCP Fact Sheet 06032021</a>',
+          '<a href="https://doi.org/10.1101/2021.03.07.21252647" target=_blank>Transmission, infectivity, and antibody neutralization of an emerging SARS-CoV-2 variant in California carrying a L452R spike protein mutation</a>',
+        ]
       },
       'AY.2': {
         'VoC name': 'AY.2',
@@ -556,10 +561,15 @@ define([
         'Emergence date': 'March 2021',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19R, V70F, F157-, R158-, A222V, K417N, L452R, T478K, D614G, P681R, D950N',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3:A328T, P822L; nsp4:A446V; nsp6:V149A, T181I; nsp12:P323L, G671S; nsp13:P77L, T367I; ORF3a:S26L; M:I82T; ORF7a:V82A, T120I; ORF8:D119-, F120-; N:D63G, R203M, D377Y',
-        'Impact': '',
+        'Impact': 'Increased transmissibility; may have reduced neutralization by some monoclonal & polyclonal antibodies',
         'ViPR representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/MZ436591" target=_blank>SARS-CoV-2/human/USA/LSUH000677E2S1/2021</a>',
         'GISAID representative strain': '',
-        'Relevant publications': []
+        'Relevant publications': [
+          '<a href="https://khub.net/documents/135939561/405676950/Increased+Household+Transmission+of+COVID-19+Cases+-+national+case+study.pdf/7f7764fb-ecb0-da31-77b3-b1a8ef7be9aa" target=_blank>Increased household transmission of COVID-19 cases associated with SARS-CoV-2 Variant of Concern B.1.617.2: a national case- control study</a>',
+          '<a href="https://www.fda.gov/media/145802/" target=_blank>Fact Sheet For Health Care Providers Emergency Use Authorization (Eua) Of Bamlanivimab And Etesevimab 05142021</a>',
+          '<a href="https://www.fda.gov/media/145611/" target=_blank>Regeneron EUA HCP Fact Sheet 06032021</a>',
+          '<a href="https://doi.org/10.1101/2021.03.07.21252647" target=_blank>Transmission, infectivity, and antibody neutralization of an emerging SARS-CoV-2 variant in California carrying a L452R spike protein mutation</a>',
+        ]
       }
     }
   });
