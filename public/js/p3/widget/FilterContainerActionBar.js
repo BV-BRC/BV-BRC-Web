@@ -796,7 +796,7 @@ define([
         'class': 'FormPanel'
       })
 
-      const searchableFields = this.facetFields.filter((ff) => ff.search)
+      const searchableFields = this.advancedSearchFields || this.facetFields.filter((ff) => ff.search)
       this.fieldSelectOptions = searchableFields.map((ff) => {
         const field = ff.field || ff;
         return { label: field.replace(/_/g, ' '), value: field }
