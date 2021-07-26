@@ -106,6 +106,7 @@ define([
     hashParams: null,
     design: 'headline',
     facetFields: [],
+    advancedSearchFields: [],
     enableFilterPanel: true,
     defaultFilter: '',
     store: null,
@@ -1549,6 +1550,7 @@ define([
         className: 'BrowserHeader',
         dataModel: this.dataModel,
         facetFields: this.facetFields,
+        advancedSearchFields: this.advancedSearchFields,
         state: lang.mixin({}, this.state),
         enableAnchorButton: this.enableAnchorButton,
         currentContainerWidget: this

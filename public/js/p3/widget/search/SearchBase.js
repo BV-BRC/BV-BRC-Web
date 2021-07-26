@@ -95,7 +95,7 @@ define([
           q = `or(${q})`
         }
         return q
-      }).filter(cond => cond !== '')
+      }).filter(cond => cond !== '' && cond !== undefined)
     },
     onSubmit: function (evt) {
       evt.preventDefault();

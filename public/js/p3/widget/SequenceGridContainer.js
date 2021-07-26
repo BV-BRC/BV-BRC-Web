@@ -22,8 +22,8 @@ define([
   return declare([GridContainer], {
     containerType: 'sequence_data',
     tutorialLink: 'user_guides/organisms_taxon/sequences.html',
-    // facetFields: ['chromosome', 'plasmid', 'segment'],
-    facetFields: AdvancedSearchFields['genomic_sequence'].filter((ff) => ff.facet),
+    facetFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.search),
     maxGenomeCount: 10000,
     dataModel: 'genome_sequence',
     primaryKey: 'sequence_id',
