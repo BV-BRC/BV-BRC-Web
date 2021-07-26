@@ -299,11 +299,13 @@ define([
         default:
           var activeQueryState;
           var prop = 'genome_id';
-          if (active == 'transcriptomics') {
+          if (active === 'transcriptomics') {
             prop = 'genome_ids';
+          } else if (active === 'interactions') {
+            prop = 'genome_id_a';
           }
           activeQueryState = lang.mixin({}, this.state, {
-            search: `eq(${prop},*)&genome((taxon_lineage_ids,${this.state.taxon_id}))`,
+            search: `eq(${prop},*)&genome(${(prop !== 'genome_id') ? `(to,${prop})` : ''}(eq,taxon_lineage_ids,${this.state.taxon_id}))`,
             hashParams: lang.mixin({}, this.state.hashParams)
           });
 
