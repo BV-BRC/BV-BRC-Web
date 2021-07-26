@@ -249,7 +249,7 @@ define([], function () {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
-    'genomic_feature': [
+    'genome_feature': [
       {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: false, search: true
       },
@@ -341,7 +341,7 @@ define([], function () {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
-    'genomic_sequence': [
+    'genome_sequence': [
       {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
