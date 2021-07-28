@@ -618,6 +618,20 @@ define([
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
+      this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
+        label: 'MSA',
+        multiple: false,
+        validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
+        tooltip: 'View aligned fasta'
+      }, function (selection) {
+        var path = this.selection[0].path; // .get('selection.path');
+        var alignType = 'protein';
+        if (this.selection[0].type.includes('dna')) {
+          alignType = 'dna';
+        }
+        Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
+      }, false);
+
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,

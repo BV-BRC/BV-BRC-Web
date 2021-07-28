@@ -1,46 +1,21 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/request', 'dojo/when', 'dojo/_base/Deferred',
-  'dijit/layout/BorderContainer'
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/dom-construct',
+  'dojo/text!./templates/VariantLineageStructure.html',
+  'dijit/_WidgetBase', 'dijit/_Templated'
 ], function (
-  declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
-  BorderContainer
+  declare, lang, domConstruct,
+  templateString,
+  WidgetBase, Templated
 ) {
 
-  return declare([BorderContainer], {
-    id: 'VariantStructureContainer',
-    gutters: false,
-    state: null,
-    tgState: null,
-    tooltip: '',
-    apiServer: window.App.dataServiceURL,
-    constructor: function () {
-    },
-    onSetState: function (attr, oldVal, state) {
-      if (!state) {
+  return declare([WidgetBase, Templated], {
+    baseClass: 'VariantStructure',
+    templateString: templateString,
+    startup: function () {
+      if (this._started) {
         return;
       }
-
-      this._set('state', state);
-    },
-
-    visible: false,
-    _setVisibleAttr: function (visible) {
-      this.visible = visible;
-
-      if (this.visible && !this._firstView) {
-        this.onFirstView();
-      }
-    },
-
-    onFirstView: function () {
-      if (this._firstView) {
-        return;
-      }
-      domConstruct.place('<span>Will be implemented soon</span>', this.containerNode, 'last');
-
-      this.watch('state', lang.hitch(this, 'onSetState'));
-      this.inherited(arguments);
-      this._firstView = true;
+      this.inherited(arguments)
     }
   });
 });
