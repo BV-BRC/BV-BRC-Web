@@ -52,11 +52,25 @@ define([
         _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activateWorkspacePath;
         _self.output_path.set('value', _self.defaultPath);
         //TODO: add other startup functionality
+        on(this.advanced, 'click', lang.hitch(this, function () {
+            this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
+        }));
     },
 
     //validate inputs
     validation: function() {
 
+    },
+
+    toggleAdvanced: function (flag) {
+        if (flag) {
+          this.advancedOptions.style.display = 'block';
+          this.advancedOptionIcon.className = 'fa icon-caret-left fa-1';
+        }
+        else {
+          this.advancedOptions.style.display = 'none';
+          this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
+        }
     },
 
     //create a json object and return it
@@ -68,11 +82,9 @@ define([
         var curr_vars = this.inherited(arguments); //the form values with everything (including empty fields)
         var json_payload = {};
         //Sequence input
-        /*
         if (this.startWithWorkspace.checked == true) {
             json_payload["input_workspace_fasta".toUpperCase()] = curr_vars["sequence_workspace"];
         }
-        */
         if (this.startWithInput.checked == true) {
             json_payload["sequence_template".toUpperCase()] = this.getSequenceForSubmission(curr_vars["sequence_template"]);
             json_payload["sequence_id".toUpperCase()] = curr_vars["input_sequence_identifier"];
@@ -144,6 +156,9 @@ define([
             this.fasta_workspace_table.style.display = 'none';
             this.fasta_input_table.style.display = 'table';
             this.patric_sequence_identifier.style.display = 'none';
+            //this.sequence_template["rows"] = 8;
+            //TODO: solve this problem
+            //alert(Object.getOwnPropertyNames(this.sequence_template));
         }
         if (this.startWithIdentifier.checked == true) {
             this.fasta_workspace_table.style.display = 'none';
