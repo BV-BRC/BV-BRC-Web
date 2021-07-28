@@ -1,0 +1,15 @@
+<div data-dojo-attach-point="containerNode">
+    <style type="text/css">
+        .proteinStructure-hl-cell { overflow-x: auto; }
+    </style>
+    Highlight ${title}
+    <div data-dojo-type="dijit/form/DropDownButton">
+        <div data-dojo-attach-point="highlightColor"
+             style="height: 15px; width: 15px;" ></div>
+        <div data-dojo-type="dijit/TooltipDialog">
+            <div data-dojo-type="dijit/ColorPalette"
+                 data-dojo-attach-point="highlightColorPalette" >
+            </div>
+        </div>
+    </div>
+</div>

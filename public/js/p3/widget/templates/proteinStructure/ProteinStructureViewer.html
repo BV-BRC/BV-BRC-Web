@@ -1,0 +1,43 @@
+<div data-dojo-type="dijit/layout/BorderContainer">
+
+    <!-- left side controls -->
+    <div data-dojo-type="dijit/layout/BorderContainer"
+         data-dojo-props="region: 'left'"
+         style="width: 25%">
+
+        <!-- protein information goes here -->
+        <div data-dojo-type="dijit/layout/ContentPane"
+             data-dojo-props="region: 'top'"
+             data-dojo-attach-point="accessionTitle"
+             style="height: 10%"
+        >
+        </div>
+
+        <!-- highlightable controls go here -->
+        <div data-dojo-type="dijit/layout/AccordionContainer"
+             data-dojo-props="region: 'center'"
+             data-dojo-attach-point="highlighters">
+        </div>
+
+    </div>
+
+    <!-- center view port -->
+    <div data-dojo-type="dijit/layout/BorderContainer"
+         data-dojo-props="region: 'center'"
+         style="width: 70%;">
+
+        <!-- display type, effects zoom, etc go here -->
+        <div data-dojo-attach-point="actionBar"
+             data-dojo-type="dijit/layout/ContentPane"
+             data-dojo-props="region: 'top'">
+            <div data-dojo-attach-point="displayControls"></div>
+
+        </div>
+
+        <div data-dojo-type="dijit/layout/ContentPane"
+             data-dojo-props="region: 'center'"
+             data-dojo-attach-point="contentDisplay">
+        </div>
+    </div>
+
+</div>
