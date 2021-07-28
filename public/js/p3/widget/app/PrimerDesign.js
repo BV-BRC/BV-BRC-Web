@@ -176,7 +176,22 @@ define([
 
     //checks for the occurence of multiple fastas records
     hasSingleFastaSequence: function (sequence) {
-        return sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; }).length <= 1;
+        //return sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; }).length <= 1;
+        var header_count = 0;
+        var split_seq = sequence.toLowerCase().split("\n");
+        for (var index in split_seq) {
+            var line = split_seq[index];
+            if ((line.charAt(0) === ">")){
+                var tmp_line = this.removeNucleotides(line.toLowerCase());
+                if (tmp_line.length > 1) {
+                    header_count+=1;
+                }
+                if (header_count > 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
     },
 
     //removes bad portions of a sequence? Stolen from BLAST.js
@@ -187,18 +202,44 @@ define([
     },
 
     //Gets the header from the fasta record or returns null if not present
+    //assumes the first line is the fasta record
     getFastaHeader: function(sequence) {
-        if (sequence.includes(">")) {
-            var header = sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; });
-            return String(header).replace(">","");
+        if (sequence.charAt(0) === ">") {
+            var split_seq = sequence.split("\n");
+            if (this.removeNucleotides(split_seq[0]).length > 1) {
+                return String(split_seq[0]).replace(">","");
+            }
+            //var header = sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; });
+            //return String(header).replace(">","");
         }
         return null;
+    },
+
+    hasFastaHeader: function(sequence) {
+        if (sequence.charAt(0) === ">") {
+            var split_seq = sequence.split("\n");
+            if (this.removeNucleotides(split_seq[0]).length > 1) {
+                return true;
+            }
+        }
+        return false;
+    },
+
+    //Gets the sequence from the fasta record
+    getSequence: function(sequence) {
+        var split_seq = sequence.split('\n');
+        if (this.hasFastaHeader(sequence)) {
+            return split_seq.slice(1,split_seq.length).join("\n");
+        }
+        else {
+            return sequence;
+        }
     },
 
     //Gets the sequence for payload submission
     getSequenceForSubmission: function(sequence) {
         var split_seq = sequence.split('\n');
-        if (sequence.includes(">")) {
+        if (this.hasFastaHeader(sequence)) {
             return split_seq.slice(1,split_seq.length).join("");
         }
         else {
@@ -206,15 +247,14 @@ define([
         }
     },
 
-    //Gets the sequence from the fasta record
-    getSequence: function(sequence) {
-        var split_seq = sequence.split('\n');
-        if (sequence.includes(">")) {
-            return split_seq.slice(1,split_seq.length).join("\n");
+    //remove nucleotide characters from the input string
+    //used to test whether the line with ">" in it is a header or a sequence
+    removeNucleotides: function(val) {
+        var nucleotide_list = ["a","c","t","g","n"]; //add more valid nucleotides as necessary
+        for (var nuc in nucleotide_list) {
+            val = val.replace(nuc,"");
         }
-        else {
-            return sequence;
-        }
+        return val;
     },
 
     //Message to display when selecting a workspace file
