@@ -83,7 +83,7 @@ define([
         var json_payload = {};
         //Sequence input
         if (this.startWithWorkspace.checked == true) {
-            json_payload["input_workspace_fasta".toUpperCase()] = curr_vars["sequence_workspace"];
+            json_payload["sequence_workspace_fasta".toUpperCase()] = curr_vars["sequence_workspace"];
         }
         if (this.startWithInput.checked == true) {
             json_payload["sequence_template".toUpperCase()] = this.getSequenceForSubmission(curr_vars["sequence_template"]);
