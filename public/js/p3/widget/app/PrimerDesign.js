@@ -160,11 +160,13 @@ define([
             //TODO: solve this problem
             //alert(Object.getOwnPropertyNames(this.sequence_template));
         }
+        /*
         if (this.startWithIdentifier.checked == true) {
             this.fasta_workspace_table.style.display = 'none';
             this.fasta_input_table.style.display = 'none';
             this.patric_sequence_identifier.style.display = 'table';
         }
+        */
     },
 
     //When a user pastes a fasta sequence into the input fasta section

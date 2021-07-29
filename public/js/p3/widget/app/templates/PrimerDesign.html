@@ -30,16 +30,16 @@
                             </div>
                             <!-- Input sequences: workspace, user input, and sequence identifier -->
                             <div class="appRow">
-                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithWorkspace" checked/>
-                                <label for="radio1">Workspace FASTA</label>
-                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithInput" data-dojo-attach-event="onChange:onStartWithChange"/>
+                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithInput" data-dojo-attach-event="onChange:onStartWithChange" checked/>
                                 <label for="radio2">Paste Sequence</label>
+                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithWorkspace"/>
+                                <label for="radio1">Workspace FASTA</label>
                                 <!--
                                 <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithIdentifier" data-dojo-attach-event="onChange:onStartWithChange"/>
                                 <label for="radio3">BVBRC ID</label>
                                 -->
                             </div>
-                            <table data-dojo-attach-point="fasta_workspace_table" style="width:100%; display:table">
+                            <table data-dojo-attach-point="fasta_workspace_table" style="width:100%; display:none">
                                 <tr name="workspace_input_row">
                                     <td colspan="0">
                                         <div class="appRow">
@@ -51,7 +51,7 @@
                                     </td>
                                 </tr>
                             </table>
-                            <table data-dojo-attach-point="fasta_input_table" style="width:100%; display:none">
+                            <table data-dojo-attach-point="fasta_input_table" style="width:100%; display:table">
                                 <tr>
                                     <td colspan="0">
                                         <div class="appRow">
@@ -86,10 +86,10 @@
                                         <div class="appRow">
                                             <label class="paramlabel">Sequence Identifier</label><br>
                                             <textarea name="sequence_id"
-                                                    style="width:80%; height:50px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                    style="width:80%; height:50px; margin-left:10px; font-family: monospace; font-size:12px;"
                                                     data-dojo-attach-point="sequence_id"
-                                                    data-dojo-type="dijit/form/Textarea"
-                                                    data-dojo-props="rows:4, placeholder:'TODO', intermediateChanges:true"></textarea>
+                                                    data-dojo-type="dijit/form/SimpleTextarea"
+                                                    data-dojo-props="rows:8, placeholder:'TODO', intermediateChanges:true"></textarea>
                                         </div>
                                     </td>
                                 </tr>
