@@ -228,6 +228,7 @@ define([
         this.addedGenomes = this.addedGenomes - 1;
         this.numgenomes.set('value', Number(this.addedGenomes));
       }
+      this.defaultToDNA();
     },
 
     validateFasta: function () {
@@ -246,8 +247,8 @@ define([
         if (arr[i][0] == '>') {
           continue;
         }
-        if (!(/^[ACDEFGHIKLMNPQRSTUVWY\s]+$/i.test(arr[i]))) {
-          this.input_validation_message.innerHTML = ' The fasta records must have amino acid or nucleotide letters.';
+        if (!(/^[ACDEFGHIKLMNPQRSTUVWY\-\n]+$/i.test(arr[i]))) {
+          this.input_validation_message.innerHTML = ' The fasta records must have amino acid or nucleotide letters. Check line: ' + (i + 1);
           return false;
         }
       }
@@ -257,13 +258,11 @@ define([
 
     onAlphabetChanged: function () {
       var existing_types = this.getExistingTypes();
-      // if (existing_types.length > 0) {
       for (var i = 0; i < existing_types.length; i++) {
         if (existing_types[i].includes('protein')) {
           this.protein.set('checked', true);
         }
       }
-      // }
     },
 
     makeGenomeName: function () {
@@ -343,6 +342,13 @@ define([
       } else {
         this.addedGenomes = this.addedGenomes - 1;
         this.numgenomes.set('value', Number(this.addedGenomes));
+      }
+      this.defaultToDNA();
+    },
+
+    defaultToDNA: function () {
+      if (this.numgenomes.value <= 0 && this.fasta_keyboard_input.value.length <= 0) {
+        this.dna.set('checked', true);
       }
     },
 
@@ -427,7 +433,7 @@ define([
       var chkPassed = this.ingestAttachPoints(this.featureGroupToAttachPt, lrec);
       if (chkPassed && this.addedGenomes < this.maxGenomes) {
         var newGenomeIds = [lrec[this.featureGroupToAttachPt]];
-        if (!newGenomeIds[0].file) {
+        if (!newGenomeIds[0]) {
           return;
         }
         var tr = this.genomeTable.insertRow(0);
@@ -547,6 +553,7 @@ define([
       this.emptyTable(this.genomeTable, this.addedGenomes);
       this.addedGenomes = 0;
       this.numgenomes.set('value', Number(this.addedGenomes));
+      this.defaultToDNA();
     },
 
     validate: function () {
