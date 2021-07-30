@@ -51,7 +51,7 @@ define([
         var _self = this;
         _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activateWorkspacePath;
         _self.output_path.set('value', _self.defaultPath);
-        //TODO: add other startup functionality
+        //add other startup functionality
         on(this.advanced, 'click', lang.hitch(this, function () {
             this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
         }));
@@ -156,9 +156,6 @@ define([
             this.fasta_workspace_table.style.display = 'none';
             this.fasta_input_table.style.display = 'table';
             this.patric_sequence_identifier.style.display = 'none';
-            //this.sequence_template["rows"] = 8;
-            //TODO: solve this problem
-            //alert(Object.getOwnPropertyNames(this.sequence_template));
         }
         /*
         if (this.startWithIdentifier.checked == true) {
