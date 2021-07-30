@@ -584,7 +584,7 @@ define([
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['PhylogeneticTree', 'CodonTree'],
+        validTypes: ['PhylogeneticTree', 'CodonTree', 'GeneTree'],
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
@@ -608,7 +608,9 @@ define([
         validTypes: ['nwk'],
         tooltip: 'View Tree'
       }, function (selection) {
-        var path = selection.map(function (obj) { return obj.path; });
+        var path = selection.map(function (obj) { return obj.path;
+                    console.log('ViewNwkXml obj', obj);    
+         });
         var labelSearch = 'true';
         var idType = 'genome_id';
         if (encodePath(path[0]).includes('WithGenomeNames.')) {
@@ -618,6 +620,25 @@ define([
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
+      this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW2',
+        multiple: false,
+        validTypes: ['nwk', 'phyloxml'],
+        tooltip: 'View Archaeopteryx Tree'
+      }, function (selection) {
+        var path = selection.map(function (obj) { return obj.path;
+                console.log('ViewNwkXml obj', obj);
+		 });
+        var fileType = selection.map(function (obj) { return obj.type; });
+        var labelSearch = 'true';
+        var idType = 'genome_id';
+        if (encodePath(path[0]).includes('WithGenomeNames.')) {
+          labelSearch = 'false';
+          idType = 'genome_name';
+        }
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) +'&fileType=' + fileType});
+      }, false);
+      
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         multiple: false,
