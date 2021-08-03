@@ -2,10 +2,14 @@ define([
   'dojo/_base/declare',
   './SearchBase',
   'dojo/text!./templates/GenomicFeatureSearch.html',
+  './PathogenGroups',
+  './HostGroups',
 ], function (
   declare,
   SearchBase,
   template,
+  pathogenGroupStore,
+  hostGroupStore,
 ) {
 
   function sanitizeInput(str) {
@@ -18,15 +22,37 @@ define([
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features&filter=false',
+    postCreate: function () {
+      this.inherited(arguments)
+
+      this.pathogenGroupNode.store = pathogenGroupStore
+      this.hostGroupNode.store = hostGroupStore
+    },
     buildQuery: function () {
       let queryArr = []
-      let genomeQuery
+      let genomeQuery = ''
 
       // genome metadata
       let genomeQueryArr = []
+
+      const pathogenGroupValue = this.pathogenGroupNode.get('value')
+      if (pathogenGroupValue !== '') {
+        genomeQueryArr.push(`(eq,taxon_lineage_ids,${sanitizeInput(pathogenGroupValue)})`)
+      }
+
+      const taxonNameValue = this.taxonNameNode.get('value')
+      if (taxonNameValue !== '') {
+        genomeQueryArr.push(`(eq,taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
+      }
+
+      const hostGroupValue = this.hostGroupNode.get('value')
+      if (hostGroupValue !== '') {
+        genomeQueryArr.push(`(eq,host_group,${sanitizeInput(hostGroupValue)})`)
+      }
+
       const hostNameValue = this.hostNameNode.get('value')
       if (hostNameValue !== '') {
-        genomeQueryArr.push(`(eq,host_name,${sanitizeInput(hostNameValue)})`)
+        genomeQueryArr.push(`(eq,host_common_name,${sanitizeInput(hostNameValue)})`)
       }
 
       const geographicGroupValue = this.geographicGroupNode.get('value')
@@ -50,6 +76,16 @@ define([
       } else if (!isNaN(collectionYearToValue)) {
         // lt
         genomeQueryArr.push(`(lt,collection_year,${collectionYearToValue})`)
+      }
+
+      const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))
+      const genomeLengthToValue = parseInt(this.genomeLengthToNode.get('value'))
+      if (!isNaN(genomeLengthFromValue) && !isNaN(genomeLengthToValue)) {
+        genomeQueryArr.push(`(betweeen,genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
+      } else if (!isNaN(genomeLengthFromValue)) {
+        genomeQueryArr.push(`(gt,genome_length,${genomeLengthFromValue})`)
+      } else if (!isNaN(genomeLengthToValue)) {
+        genomeQueryArr.push(`(lt,genome_length,${genomeLengthToValue})`)
       }
 
       if (genomeQueryArr.length > 0) {
