@@ -9,12 +9,34 @@
     <div style="width:550px;margin:auto" class="formFieldsContainer">
       <div class="appBox appShadow">
         <div class="headerrow">
-          <label class="appBoxLabel">Host</label>
+          <label class="appBoxLabel">Pathogen Group</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <!-- <label>Host</label><br> -->
-            <!-- <div data-dojo-type="p3/widget/InputFieldValueSelector" data-dojo-props="dataType:'genome',searchAttr:'host_name'" name="host_name"></div> -->
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Taxon Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="p3/widget/TaxonNameSelector" required="false" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Host Group</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-attach-point="hostGroupNode" name="host_group" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Host Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Homo sapiens'" data-dojo-attach-point="hostNameNode" name="host_name" style="width: 500px"></div>
           </div>
         </div>
@@ -43,6 +65,17 @@
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'YYYY'" data-dojo-attach-point="collectionYearFromNode" name="collection_year_from" style="width:80px"></div>
             <label>To</label>
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'YYYY'" data-dojo-attach-point="collectionYearToNode" name="collection_year_to" style="width:80px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Genome Length</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <label>From</label>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="genomeLengthFromNode" name="genome_length_from" style="width:80px"></div>
+            <label>To</label>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
           </div>
         </div>
       </div>

@@ -2,10 +2,14 @@ define([
   'dojo/_base/declare',
   './SearchBase',
   'dojo/text!./templates/GenomeSearch.html',
+  './PathogenGroups',
+  './HostGroups'
 ], function (
   declare,
   SearchBase,
   template,
+  pathogenGroupStore,
+  hostGroupStore
 ) {
 
   function sanitizeInput(str) {
@@ -18,12 +22,38 @@ define([
     dataKey: 'genome',
     resultUrlBase: '/view/GenomeList/?',
     resultUrlHash: '#view_tab=genomes',
+    postCreate: function () {
+      this.inherited(arguments)
+
+      this.pathogenGroupNode.store = pathogenGroupStore
+      this.hostGroupNode.store = hostGroupStore
+    },
     buildQuery: function () {
       let queryArr = []
 
+      const keywordValue = this.keywordNode.get('value')
+      if (keywordValue !== '') {
+        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+      }
+
+      const pathogenGroupValue = this.pathogenGroupNode.get('value')
+      if (pathogenGroupValue !== '') {
+        queryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(pathogenGroupValue)})`)
+      }
+
+      const taxonNameValue = this.taxonNameNode.get('value')
+      if (taxonNameValue !== '') {
+        queryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
+      }
+
+      const hostGroupValue = this.hostGroupNode.get('value')
+      if (hostGroupValue !== '') {
+        queryArr.push(`eq(host_group,${sanitizeInput(hostGroupValue)})`)
+      }
+
       const hostNameValue = this.hostNameNode.get('value')
       if (hostNameValue !== '') {
-        queryArr.push(`eq(host_name,${sanitizeInput(hostNameValue)})`)
+        queryArr.push(`eq(host_common_name,${sanitizeInput(hostNameValue)})`)
       }
 
       const isolationCountryValue = this.isolationCountryNode.get('value')
