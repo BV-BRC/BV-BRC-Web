@@ -1,0 +1,117 @@
+<div>
+
+  <div class="column-sub">
+    <div class="section">
+      <h3 class="section-title close" title=""><span class="wrap">Data Summary</span></h3>
+      <div data-dojo-attach-point="virusDataSummaryNode">
+        Loading Virus Data Summary...
+      </div>
+    </div>
+  </div>
+
+  <div class="column-prime">
+    <div class="section">
+      <h3 class="section-title close" title="Virus families."><span class="wrap">Virus Families</span></h3>
+      <div>&nbsp;</div>
+      <div class="virus-families">
+        <div class="virus-family-section">
+          <div class="virus-type">
+            <span style="font-size: 1em; font-weight: bold;">Single-Stranded Positive-Sense RNA</span>
+            <div class="viruses">
+              <div><a href="/view/Taxonomy/11974#view_tab=overview">Caliciviridae</a></div>
+              <div><a href="/view/Taxonomy/11118#view_tab=overview">Coronaviridae</a></div>
+              <div><a href="/view/Taxonomy/11050#view_tab=overview">Flaviviridae</a></div>
+              <div><a href="/view/Taxonomy/291484#view_tab=overview">Hepeviridae</a></div>
+              <div><a href="/view/Taxonomy/12058#view_tab=overview">Picornaviridae</a></div>
+              <div><a href="/view/Taxonomy/11018#view_tab=overview">Togaviridae</a></div>
+            </div>
+          </div>
+          <div>&nbsp;</div>
+          <div class="virus-type">
+            <span style="font-size: 1em; font-weight: bold;">Double-Stranded RNA</span>
+            <div class="viruses">
+              <div><a href="/view/Taxonomy/10880#view_tab=overview">Reoviridae</a></div>
+            </div>
+          </div>
+          <div>&nbsp;</div>
+        </div>
+
+        <div class="virus-family-section">
+          <div class="virus-type">
+            <span style="font-size: 1em; font-weight: bold;">Single-Stranded Negative-Sense RNA</span>
+            <div class="viruses">
+              <div><a href="/view/Taxonomy/1980410#view_tab=overview">Bunyavirales</a></div>
+              <div><a href="/view/Taxonomy/11266#view_tab=overview">Filoviridae</a></div>
+              <div><a href="/view/Taxonomy/11158#view_tab=overview">Paramyxoviridae</a></div>
+              <div><a href="/view/Taxonomy/11244#view_tab=overview">Pneumoviridae</a></div>
+              <div><a href="/view/Taxonomy/11270#view_tab=overview">Rhabdoviridae</a></div>
+            </div>
+          </div>
+          <div>&nbsp;</div>
+          <div class="virus-type">
+            <span style="font-size: 1em; font-weight: bold;">Double-Stranded DNA</span>
+            <div class="viruses">
+              <div><a href="/view/Taxonomy/291484#view_tab=overview">Herpesviridae</a></div>
+              <div><a href="/view/Taxonomy/10240#view_tab=overview">Poxviridae</a></div>
+            </div>
+          </div>
+          <div>&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="featured-virus-families">
+        <div class="featured-virus-family-section">
+          <span style="font-size: 1em; font-weight: bold;">Featured Viruses</span>
+          <div class="featured-viruses">
+            <div><a href="/view/Taxonomy/12637#view_tab=overview">Dengue virus</a></div>
+            <div><a href="/view/Taxonomy/186536#view_tab=overview">Ebolavirus</a></div>
+            <div><a href="/view/Taxonomy/12059#view_tab=overview">Enterovirus</a></div>
+            <div><a href="/view/Taxonomy/63746#view_tab=overview">Hepatitis C virus</a></div>
+            <div><a href="/view/Taxonomy/11620#view_tab=overview">Lassa Virus</a></div>
+            <div><a href="/view/Taxonomy/2697049#view_tab=overview">SARS-CoV-2</a></div>
+            <div><a href="/view/Taxonomy/64320#view_tab=overview">Zika Virus</a></div>
+          </div>
+          <div>&nbsp;</div>
+        </div>
+      </div>
+
+      <style>
+        .virus-families {
+          display: flex;
+          flex-direction: row;
+        }
+        .virus-family-section {
+          margin-right: 100px;
+        }
+        .featured-viruses {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+        }
+      </style>
+
+    </div>
+    <div class="section">
+      <h3 class="section-title close" title="Summary of viruses by key metadata attributes."><span class="wrap">Viruses by Metadata</span></h3>
+      <div class="gmSummaryWidget" data-dojo-attach-point="vmSummaryWidget"
+        data-dojo-type="p3/widget/VirusMetaSummary">
+      </div>
+    </div>
+  </div>
+
+  <div class="column-opt">
+    <div class="section">
+      <h3 class="close section-title"><span class="wrap">News &amp; Announcements</span></h3>
+      <div id="virus-announcements">
+        <ul id="slides"></ul>
+        <div id="dot-navigation"></div>
+      </div>
+    </div>
+    <div class="section">
+      <h3 class="close section-title"><span class="wrap">Twitter</span></h3>
+      <a class="twitter-timeline" data-lang="en" data-height="410" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter List by BVBRC_DB</a>
+      <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+  </div>
+
+</div>
