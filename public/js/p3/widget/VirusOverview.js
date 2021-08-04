@@ -66,26 +66,8 @@ define([
     },
 
     createSummary: function (genome) {
-      domConstruct.empty(this.taxonomySummaryNode);
-      domConstruct.place(DataItemFormatter(genome, 'taxonomy_data', {}), this.taxonomySummaryNode, 'first');
-      if (this.searchName != genome.taxon_name) {
-        this.searchName = this.genome.taxon_name;
-        domConstruct.empty(this.pubmedSummaryNode);
-        domConstruct.place(ExternalItemFormatter(genome, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
-      }
-    },
-
-    createExternalLinks: function (genome) {
-      domConstruct.empty(this.externalLinkNode);
-
-      // BEI Resources
-      var linkBEI = 'https://www.beiresources.org/Catalog.aspx?f_instockflag=In+Stock%23~%23Temporarily+Out+of+Stock&q=' + genome.taxon_name;
-      var string = domConstruct.create('a', {
-        href: linkBEI,
-        innerHTML: 'BEI Resources',
-        target: '_blank'
-      }, this.externalLinkNode);
-      domConstruct.place('<br>', string, 'after');
+      domConstruct.empty(this.virusDataSummaryNode);
+      domConstruct.place(DataItemFormatter(genome, 'virus_data', {}), this.virusDataSummaryNode, 'first');
     },
 
     getWikiDescription: function (genome) {
@@ -111,10 +93,6 @@ define([
           console.log('response: ', response);
         });
       }
-    },
-
-    onClickUserGuide: function () {
-      window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
     },
 
     startup: function () {

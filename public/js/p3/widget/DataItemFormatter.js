@@ -440,6 +440,51 @@ define([
       return div;
     },
 
+    virus_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Families',
+        text: '',
+      }, {
+        name: 'Genera',
+        text: '',
+      }, {
+        name: 'Species',
+        text: '',
+      }, {
+        name: 'Strains (GenBank)',
+        text: '',
+      }, {
+        name: 'Sequences (GenBank)',
+        text: ''
+      }, {
+        name: 'Proteins (GenBank and UniProt)',
+        text: ''
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: '',
+      }, {
+        name: 'Experimentally Determined Epitopes (IEDB)',
+        text: '',
+      }, {
+        name: 'Genomes with Clinical Metadata (NIAID GSCID, manual curation)',
+        text: '',
+      }, {
+        name: 'Gene',
+        text: ''
+      }, {
+        name: 'Host Factor Experiments (NIAID Systems Biology, ViPR DBPs)',
+        text: ''
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, 'Viruses', 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     feature_data: function (item, options) {
       options = options || {};
 
