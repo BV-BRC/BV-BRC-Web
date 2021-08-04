@@ -5,7 +5,7 @@ define([
   'dijit/_WidgetBase', 'dijit/layout/ContentPane',
   'dojox/charting/Chart2D', 'dojox/charting/action2d/MoveSlice', 'dojox/charting/plot2d/Pie',
   'dojox/charting/action2d/Tooltip', 'dojo/fx/easing',
-  '../util/PathJoin', './SummaryWidget', './PATRICTheme'
+  '../util/PathJoin', './SummaryWidget', './PATRICTheme',
 ], function (
   declare, lang,
   on, All, when, domClass, domConstruct, xhr,
@@ -13,13 +13,13 @@ define([
   WidgetBase, ContentPane,
   Chart2D, MoveSlice, Pie,
   ChartTooltip, easing,
-  PathJoin, SummaryWidget, Theme
+  PathJoin, SummaryWidget, Theme,
 ) {
 
   var categoryName = {
-    host_name: 'Host Name',
-    reference_genome: 'Reference Genome',
-    isolation_country: 'Isolation Country'
+    family: 'Virus Family',
+    host_group: 'Host Group',
+    isolation_country: 'Isolation Country',
   };
 
   return declare([SummaryWidget], {
@@ -48,7 +48,7 @@ define([
       var defMetadata = when(xhr.post(url, {
         handleAs: 'json',
         headers: this.headers,
-        data: this.query + '&facet((field,host_name),(field,isolation_country),(mincount,1))' + this.baseQuery
+        data: this.query + '&facet((field,family),(field,host_group),(field,isolation_country),(mincount,1))' + this.baseQuery
       }), function (response) {
         return response.facet_counts.facet_fields;
       });
@@ -152,11 +152,27 @@ define([
       };
 
       if (!this.host_chart) {
-        var cpHostNode = domConstruct.create('div', { 'class': 'pie-chart-widget host_name' });
-        domConstruct.place(cpHostNode, this.chartNode, 'last');
+        var cpVirusFamily = domConstruct.create('div', { 'class': 'pie-chart-widget family' });
+        domConstruct.place(cpVirusFamily, this.chartNode, 'last');
+        this.virus_family_chart = new Chart2D(cpVirusFamily, {
+          title: 'Virus Family',
+          titleFontColor: '#424242',
+          titleFont: 'normal normal bold 12pt Tahoma',
+          titlePos: 'top'
+        })
+          .setTheme(Theme)
+          .addPlot('default', {
+            type: this.DonutChart,
+            radius: 70,
+            labelStyle: 'columns'
+          });
+        // new MoveSlice(this.virus_family_chart, "default");
+        this.virus_family_chart.connectToPlot('default', onClickEventHandler);
 
+        var cpHostNode = domConstruct.create('div', { 'class': 'pie-chart-widget host_group' });
+        domConstruct.place(cpHostNode, this.chartNode, 'last');
         this.host_chart = new Chart2D(cpHostNode, {
-          title: 'Host Name',
+          title: 'Host',
           titleGap: 30,
           titleFontColor: '#424242',
           titleFont: 'normal normal bold 12pt Tahoma',
@@ -190,7 +206,11 @@ define([
 
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
-            case 'host_name':
+            case 'family':
+              this.virus_family_chart.addSeries(key, this.data[key]);
+              this.virus_family_chart.render();
+              break;
+            case 'host_group':
               this.host_chart.addSeries(key, this.data[key]);
               this.host_chart.render();
               break;
@@ -207,7 +227,11 @@ define([
 
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
-            case 'host_name':
+            case 'family':
+              this.virus_family_chart.addSeries(key, this.data[key]);
+              this.virus_family_chart.render();
+              break;
+            case 'host_group':
               this.host_chart.updateSeries(key, this.data[key]);
               this.host_chart.render();
               break;
