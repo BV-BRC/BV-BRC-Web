@@ -118,8 +118,8 @@ define([
       var select_lineage = new Select({
         name: 'selectLoC',
         id: 'selectLoC',
-        options: ['Lineage of Concern', 'B.1.1.7', 'B.1.351', 'B.1.617.2', 'AY.1', 'AY.2', 'P.1',
-          'Lineage of Interest', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3', 'P.2'].map((el) => { return { 'label': el, 'value': el } }),
+        options: ['Lineage of Concern', 'B.1.1.7', 'B.1.351', 'B.1.617.2', 'AY.1', 'AY.2', 'AY.3', 'AY.3.1', 'P.1',
+          'Lineage of Interest', 'B.1.427', 'B.1.429', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3'].map((el) => { return { 'label': el, 'value': el } }),
         style: 'width: 200px; margin: 5px 0'
       });
       this.select_lineage = select_lineage;
