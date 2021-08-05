@@ -5,7 +5,7 @@
             <div class="nav-logo">
                 <a class="nav-logo-link" href="/">
                     <!-- <img class="bv-brc-logo" src="/patric/images/bv-brc/patric-logo.png" alt="BV-BRC Logo" style="height: 32px;"/> -->
-                    <span>BV-BRC <i style="color: #ffffff; font-size: 12px;">BETA</i></span>
+                    <span>BV-BRC <i style="color: #ffffff; font-size: 12px;"><%- request.applicationOptions.appLabel || " " %></i></span>
                 </a>
             </div>
 
@@ -74,4 +74,6 @@
         </div>
 
     </div>
+
+    <!-- <div class="msg-box-below-topnav"><strong>Welcome to BV-BRC Beta website. This site is used to seek early community feedback for the BV-BRC resource, which is still under development. Please note that the data and functionality on this site may change frequently and without notice.</strong></div> -->
 </div>
