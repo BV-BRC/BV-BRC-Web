@@ -69,6 +69,10 @@ define([
       }
       this.inherited(arguments);
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
+      this.containerActionBar = new ContainerActionBar({
+        baseClass: 'WSContainerActionBar',
+        region: 'top'
+      });
       this.selectionActionBar = new ActionBar({
         region: 'right',
         layoutPriority: 4,
@@ -83,18 +87,53 @@ define([
         layoutPriority: 1,
         containerWidget: this
       });
-      this.addChild(this.selectionActionBar);
-      this.addChild(this.containerPane);
-      // this.addChild(this.itemDetailPanel);
-      this.itemDetailPanel.startup();
+      //this.addChild(this.selectionActionBar);
+      //this.addChild(this.containerPane);
+      //this.itemDetailPanel.startup();
       this.treeDiv = domConstruct.create('div', {class: 'size archaeopteryxClass', id: this.id + 'tree-container' }, this.containerPane.domNode);
  	  this.treeDiv1 = domConstruct.create('div', {id: 'phylogram1' }, this.treeDiv);
   	  this.treeDiv2 = domConstruct.create('div', {id: 'controls0' }, this.treeDiv);
  	  this.treeDiv3 = domConstruct.create('div', {id: 'controls1' }, this.treeDiv);
 
+      //this.addChild(this.containerActionBar);
+      this.addChild(this.selectionActionBar);
+      this.addChild(this.containerPane);
+      // this.addChild(this.itemDetailPanel);
+      this.itemDetailPanel.startup();
+      this.setupActions();
+
       this.watch('state', lang.hitch(this, 'onSetState'));
+      this.watch('taxon_id', lang.hitch(this, 'onSetTaxonId'));
       this.watch('newickxml', lang.hitch(this, 'processTree'));
       this.watch('selection', lang.hitch(this, 'onSelection'));
+    },
+
+    noData: function () {
+      domClass.add(this.typeButton.domNode, 'dijitHidden');
+      this.treeDiv.innerHTML = 'There is no tree currently available';
+    },
+
+    onSelection: function () {
+
+      var cur = this.selection.map(lang.hitch(this, function (selected) {
+        return { genome_id: selected.id };
+      }));
+
+      this.selectionActionBar.set('selection', cur);
+
+      if (cur.length == 1) {
+        request.get(PathJoin(this.apiServer, 'genome', cur[0].genome_id), {
+          headers: {
+            accept: 'application/json'
+          },
+          handleAs: 'json'
+        }).then(lang.hitch(this, function (record) {
+          this.itemDetailPanel.set('selection', [record]);
+        }));
+      }
+      else {
+        this.itemDetailPanel.set('selection', cur);
+      }
     },
     
     onSetState: function (attr, oldVal, state) {
@@ -103,7 +142,29 @@ define([
       if (!state) {
         return;
       }
+
+      if (state.taxon_id) {
+        this.set('taxon_id', state.taxon_id);
+      } else if (state.genome) {
+        this.set('taxon_id', state.genome.taxon_id);
+      } else if (state.taxonomy) {
+        this.set('taxon_id', state.taxonomy.taxon_id);
+      }
     },
+
+    onSetTaxonId: function (attr, oldVal, taxonId) {
+      request.get(PathJoin(this.apiServer, 'taxonomy', taxonId), {
+        headers: { accept: 'application/newick+json' },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (treeDat) {
+        // console.log("Set Newick");
+        this.processTreeData(treeDat);
+      }), lang.hitch(this, function (err) {
+        this.noData();
+        console.log('Error Retreiving newick for Taxon: ', err);
+      }));
+    },
+    
     processTreeData: function (treeDat, idType, fileType) {
       console.log('treeDat', treeDat);
       console.log('idType', idType);
@@ -170,21 +231,82 @@ define([
 		var settings = {};
 		settings.border = '1px solid #909090';
 		settings.controls0Top = 10;
+		settings.controls1Top = 10;
+		settings.enableAccessToDatabases = true;
 		settings.controlsBackgroundColor = '#e0e0e0';
 		settings.controlsFont = ['Arial', 'Helvetica', 'Times'];
 		settings.controlsFontColor = '#505050';
 		settings.controlsFontSize = 8;
 		settings.enableDownloads = true;
-		settings.enableBranchVisualizations = false;
+		settings.enableBranchVisualizations = true;
 		settings.enableCollapseByBranchLenghts = false;
 		settings.enableCollapseByFeature = false;
-		settings.enableNodeVisualizations = false;
+		settings.enableNodeVisualizations = true;
 		settings.nhExportWriteConfidences = true;
 		settings.rootOffset = 180;
 
 		var nodeVisualizations = {};
 		var specialVisualizations = {};		
+		
+		var decorator = '';
+
+      nodeVisualizations['host_name'] = {
+        label: 'host_name',
+        description: 'host_name',
+        field: null,
+        cladeRef: decorator + 'host_name',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category10',
+        sizes: null
+      };
       
+      nodeVisualizations['species'] = {
+        label: 'species',
+        description: 'species',
+        field: null,
+        cladeRef: decorator + 'species',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category10',
+        sizes: null
+      };
+
+      nodeVisualizations['genome_id'] = {
+        label: 'genome_id',
+        description: 'genome_id',
+        field: null,
+        cladeRef: decorator + 'genome_id',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };
+
+      nodeVisualizations['geographic_location'] = {
+        label: 'geographic_location',
+        description: 'geographic_location',
+        field: null,
+        cladeRef: decorator + 'geographic_location',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        colorsAlt: ['#000000', '#00FF00'],
+        sizes: [10, 40]
+      };
+
+      nodeVisualizations['collection_date'] = {
+        label: 'collection_date',
+        description: 'collection_date',
+        field: null,
+        cladeRef: decorator + 'collection_date',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };
+      
+            
       if (!this.newickxml) {
         console.log('No Newick or xml File To Render');
         return;
@@ -206,12 +328,61 @@ define([
 	  }
 	  if (mytree) {
 		try {
+		  forester.midpointRoot(mytree);
 		  window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, specialVisualizations);
 		}
 		catch (e) {
 		  alert('error while launching archaeopteryx: ' + e);
 		}
 	  }         
-    }
+    },
+    
+     selectionActions: [
+      [
+        'UserGuide',
+        'fa icon-info-circle fa-2x',
+        {
+          label: 'GUIDE',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Open User Guide in a new Tab'
+        },
+        function (selection, container) {
+          // console.log('USER GUIDE action', container);
+          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+        },
+        true
+      ]
+
+    ],
+
+    setupActions: function () {
+      if (this.containerActionBar && this.containerActions) {
+        this.containerActions.forEach(function (a) {
+        console.log("setupActions a", a);
+        console.log("containerActions", this.containerActions)
+          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+        }, this);
+      }
+      this.selectionActions.forEach(function (a) {
+        console.log("selectionActions a", a);
+        console.log("selectionActions", this.selectionActions)
+
+        var cont = false;
+        if (this.state && this.state.href.includes('WithGenomeNames.') && a[0] == 'IDSelection') {
+          cont = true;
+        }
+        if (this.state && this.state.href.includes('WithGenomeNames.') && (a[0] == 'ViewGenomeItemFromGenome' || a[0] == 'ViewGenomeItems' || a[0] == 'AddGroup')) {
+          a[2].disabled = true;
+          this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, undefined), false, a[5]);
+          cont = true;
+        } else if (a[0] == 'ViewGenomeItemFromGenome' || a[0] == 'ViewGenomeItems' || a[0] == 'AddGroup') {
+          a[2].disabled = false;
+        }
+        if (!cont) {
+          this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+        }
+      }, this);
+    }   
   });
 });

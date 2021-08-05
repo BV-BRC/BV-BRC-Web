@@ -584,7 +584,7 @@ define([
       this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['PhylogeneticTree', 'CodonTree', 'GeneTree'],
+        validTypes: ['PhylogeneticTree', 'CodonTree'],
         tooltip: 'View Tree'
       }, function (selection) {
         var expPath = this.get('path');
@@ -598,26 +598,38 @@ define([
         validTypes: ['ComprehensiveGenomeAnalysis'],
         tooltip: 'View Full Genome Report'
       }, function (selection) {
-        var path = self.actionPanel.currentContainerWidget.getReportPath();
+        console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
+        console.log('self.browserHeader', self.browserHeader);
+       var path = self.actionPanel.currentContainerWidget.getReportPath();
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
+         
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
+        //validContainerTypes: ['CodonTree', 'PhylogeneticTree'],
         validTypes: ['nwk'],
         tooltip: 'View Tree'
-      }, function (selection) {
+      }, function (selection, container) {
         var path = selection.map(function (obj) { return obj.path;
-                    console.log('ViewNwkXml obj', obj);    
+                    console.log('ViewNwk obj', obj);    
          });
         var labelSearch = 'true';
         var idType = 'genome_id';
-        if (encodePath(path[0]).includes('WithGenomeNames.')) {
-          labelSearch = 'false';
-          idType = 'genome_name';
-        }
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
+        var labelType = 'genome_name';
+        if (container._resultType == 'GeneTree') {
+        	idType = 'patric_id';
+          	labelSearch = 'true';
+          	labelType = 'feature_name';
+	        Topic.publish('/navigate', { href: '/view/PhylogeneticTreeGene/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
+        } else {
+        	if (encodePath(path[0]).includes('WithGenomeNames.')) {
+          		labelSearch = 'false';
+          		idType = 'genome_name';
+        	}
+        	Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
+		}
       }, false);
 
       this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
@@ -625,18 +637,25 @@ define([
         multiple: false,
         validTypes: ['nwk', 'phyloxml'],
         tooltip: 'View Archaeopteryx Tree'
-      }, function (selection) {
-        var path = selection.map(function (obj) { return obj.path;
-                console.log('ViewNwkXml obj', obj);
-		 });
+      }, function (selection, container) {
+        var path = selection.map(function (obj) { return obj.path;          
+        			console.log('ViewNwkXml obj', obj);
+		});
         var fileType = selection.map(function (obj) { return obj.type; });
         var labelSearch = 'true';
         var idType = 'genome_id';
+        var labelType = 'genome_name';
+        console.log('container', container);
+        console.log('self.browserHeader', self.browserHeader);
+        if (container._resultType == 'GeneTree') {
+        	idType = 'feature_id';
+        	labelType = 'feature_name';
+        } 
         if (encodePath(path[0]).includes('WithGenomeNames.')) {
           labelSearch = 'false';
           idType = 'genome_name';
         }
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) +'&fileType=' + fileType});
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) +'&fileType=' + fileType});
       }, false);
       
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
@@ -1367,6 +1386,9 @@ define([
         }
         var panelCtor;
         var params = { path: this.path, region: 'center' };
+
+console.log("in WorkspaceBrowser obj.autoMeta", obj.autoMeta);
+console.log("in WorkspaceBrowser browserHeader", this.browserHeader);
 
         switch (obj.type) {
           case 'folder':
