@@ -39,6 +39,7 @@ define([
     }
   });
 
+
   return declare([BorderContainer], {
     baseClass: 'Phylogeny',
     type: 'rectangular',
@@ -153,7 +154,7 @@ define([
     onSelection: function () {
 
       var cur = this.selection.map(lang.hitch(this, function (selected) {
-      	console.log("onSelection selected", selected);
+      	// console.log("onSelection selected", selected);
        return { patric_id: selected.id };
       }));
     
@@ -168,9 +169,9 @@ define([
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (record) {
-       	console.log("onSelection selected record", record);
+       	// console.log("onSelection selected record", record);
        
-          this.itemDetailPanel.set('selection', [record]);
+          this.itemDetailPanel.set('selection', [record[0]]);
         }));
       }
       else {
@@ -185,8 +186,7 @@ define([
         return;
       }
     },
-
-
+    
     processTreeData: function (treeDat, idType) {
       if (!treeDat.tree) {
         console.log('No newick+json in Request Response');
@@ -272,7 +272,7 @@ define([
     onFirstView: function () {
       this.updateTree();
     },
-
+    
     selectionActions: [
       [
         'ToggleItemDetail',
@@ -359,8 +359,9 @@ define([
             orient: ['below']
           });
         },
-        true
-      ], [
+        false
+      ],
+      [
         'ViewFeatureItem',
         'MultiButton fa icon-selection-Feature fa-2x',
         {
@@ -383,6 +384,9 @@ define([
         },
         function (selection) {
           var sel = selection[0];
+          // console.log("ViewFeatureItem", selection[0]);
+          // console.log("selection: ", selection);
+          // console.log("Nav to: ", "/view/Genome/" + selection.patric_id);
           Topic.publish('/navigate', {
             href: '/view/Feature/' + encodeURIComponent(sel.patric_id) + '#view_tab=overview',
             target: 'blank'
@@ -435,24 +439,61 @@ define([
           ignoreDataType: true,
           multiple: true,
           validTypes: ['*'],
-          disabled: false,
+          requireAuth: true,
+          max: 10000,
           tooltip: 'Add selection to a new or existing group',
-          validContainerTypes: ['*']
+          validContainerTypes: ['feature_data']
         },
         function (selection, containerWidget) {
-          // console.log("Add Items to Group", selection);
+          console.log("Add Items to Group", selection);
           var dlg = new Dialog({ title: 'Add selected items to group' });
           var type = 'feature_group';
 
-          if (!type) {
-            console.error('Missing type for AddGroup');
+          if (!containerWidget) {
+            console.log("Container Widget not setup for addGroup");
             return;
           }
+          
+          console.log("addGroup selection",selection);
+
+      var updateSelection = selection;
+      
+      var query = 'in(' + 'patric_id' + ',(' + selection.map(function (x) {
+              return encodeURIComponent(x.patric_id);
+            }).join(',') + '))';
+            
+      // var url = PathJoin(window.App.dataAPI, 'genome_feature', '?' + (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)');
+      // console.log("in addGroup URL: ", url);
+
+      request.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
+        headers: {
+          accept: 'application/solr+json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json',
+        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+        data: (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)'
+
+      }).then(function (res) {
+        if (res && res.response && res.response.docs) {
+          var features = res.response.docs;
+          features.forEach(function (feature) {
+				updateSelection.map(lang.hitch(this, function (selected) {
+      				selected.feature_id = feature.feature_id;
+      			}))})
+      	 // console.log("Res: updateSelection:", updateSelection);
+        }},         
+        function (err) {
+        	console.error('Error Retreiving Features: ', err);
+      	});
+     
           var stg = new SelectionToGroup({
             selection: selection,
             type: type,
-            idType: 'patric_id',
-            path: null // set by type
+            inputType: containerWidget.containerType,
+            path: containerWidget.get('path')
           });
           on(dlg.domNode, 'dialogAction', function (evt) {
             dlg.hide();
@@ -466,7 +507,8 @@ define([
           dlg.show();
         },
         false
-      ], [
+      ],
+      [
         'Snapshot',
         'fa icon-download fa-2x',
         {
@@ -505,10 +547,8 @@ define([
         }, this);
       }
       this.selectionActions.forEach(function (a) {
-      console.log('action array a', a);
-      console.log('this.state', this.state);
-	      console.log('action array a[0]', a[0]);
-	      console.log('action array a[2]', a[2]);
+	    //  console.log('action array a', a);
+    	//  console.log('this.state', this.state);
 
         var cont = false;
         if (this.state && a[0] == 'IDSelection') {
@@ -516,11 +556,9 @@ define([
         }
         if (this.state && (a[0] == 'ViewFeatureItem' || a[0] == 'ViewFeatureItems' || a[0] == 'AddGroup')) {
           a[2].disabled = false;
-          this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, undefined), false, a[5]);
+          this.selectionActionBar.addAction(a[0], a[1], a[2], a[3], a[4], a[5]);
           cont = true;
-        } else if (a[0] == 'ViewFeatureItem' || a[0] == 'ViewFeatureItems' || a[0] == 'AddGroup') {
-          a[2].disabled = true;
-        }
+        } 
         if (!cont) {
           this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
         }
