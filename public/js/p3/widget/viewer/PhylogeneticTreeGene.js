@@ -29,31 +29,7 @@ define([
       }
 
       this.viewer.set('visible', true);
-
-      this.buildHeaderContent(state);
       window.document.title = 'Phylogenetic Tree';
-    },
-
-    buildHeaderContent: function (state) {
-
-      // be strict to single public experiment to display further header info.
-      /* var check = state.search.match(/^eq\(eid,\((.*)\)\)/);
-      if(check && !isNaN(check[1])){
-        var eid = check[1];
-        var self = this;
-        // console.log("found eid", eid);
-        return when(request.get(PathJoin(this.apiServiceUrl, "transcriptomics_experiment", eid), {
-          headers: {
-            'Accept': "application/json",
-            'Content-Type': "application/rqlquery+x-www-form-urlencoded"
-          },
-          handleAs: "json"
-        }), function(exp){
-
-          self.queryNode.innerHTML = "<b>" + exp.title + "</b>";
-          self.totalCountNode.innerHTML = " ( " + exp.samples + " Comparisons )";
-        });
-      } */
     },
 
     postCreate: function () {
@@ -78,18 +54,6 @@ define([
         region: 'top'
       });
 
-      /* var headerContent = domConstruct.create("div", {"class": "PerspectiveHeader"});
-      domConstruct.place(headerContent, this.viewerHeader.containerNode, "last");
-      domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass}, headerContent);
-      domConstruct.create("div", {
-        "class": "PerspectiveType",
-        innerHTML: this.perspectiveLabel
-      }, headerContent);
-      this.queryNode = domConstruct.create("span", {"class": "PerspectiveQuery"}, headerContent);
-
-      this.totalCountNode = domConstruct.create("span", {
-        "class": "PerspectiveTotalCount"
-      }, headerContent); */
       this.addChild(this.viewerHeader);
       this.addChild(this.viewer);
       this.inherited(arguments);
