@@ -101,8 +101,7 @@ define([
       var idType = this.state.search.match(/idType=..+?(?=&|$)/);
       var labelType = this.state.search.match(/labelType=..+?(?=&|$)/);
       var fileType = this.state.search.match(/fileType=..+?(?=&|$)/);
-      console.log("fileType", fileType);
-
+      // console.log('fileType', fileType);
 
       if (idType && !isNaN(idType.index)) {
         idType = idType[0].split('=')[1];
@@ -117,8 +116,7 @@ define([
         fileType = fileType[0].split('=')[1];
       }
       else { fileType = 'phyloxml'; }
-      
-      
+
       var labelSearch = this.state.search.match(/labelSearch=.*/);
       if (labelSearch && !isNaN(labelSearch.index)) {
         labelSearch = labelSearch[0].split('=')[1].split('&')[0];

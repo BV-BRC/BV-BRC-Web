@@ -140,7 +140,7 @@ define([
     },
 
     prepareTree: function (treeDat, idType, labelType, labelSearch) {
-    console.log("in prepareTree, idType, labelType, labelSearch", idType, labelType, labelSearch);
+      // console.log('in prepareTree, idType, labelType, labelSearch', idType, labelType, labelSearch);
       if (labelSearch) {
         this.findLabels(treeDat, idType, labelType);
       }
@@ -160,10 +160,10 @@ define([
         }
       });
 
-    var query = 'in(' + idType + ',(' + toQuery.join(',') + '))';
-      
-    var url = PathJoin(this.apiServiceUrl, 'genome_feature', '?' + (query) + '&select(' + idType + ',feature_id)&limit(' + this.maxFeaturesPerList + 1 + ')');
-    console.log("in findLabels URL: ", url);
+      var query = 'in(' + idType + ',(' + toQuery.join(',') + '))';
+
+      var url = PathJoin(this.apiServiceUrl, 'genome_feature', '?' + (query) + '&select(' + idType + ',feature_id)&limit(' + this.maxFeaturesPerList + 1 + ')');
+      // console.log('in findLabels URL: ', url);
 
       xhr.post(PathJoin(this.apiServiceUrl, 'genome_feature'), {
         headers: {
@@ -177,7 +177,7 @@ define([
         data: (query) + '&select(' + idType + ',feature_id)&limit(' + this.maxFeaturesPerList + 1 + ')'
 
       }).then(function (res) {
-        console.log("findLabels, Get FeatureList Res: ", res);
+        // console.log('findLabels, Get FeatureList Res: ', res);
         if (res && res.response && res.response.docs) {
           var features = res.response.docs;
           treeDat.labels = {};

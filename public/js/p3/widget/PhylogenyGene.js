@@ -155,22 +155,22 @@ define([
 
       var cur = this.selection.map(lang.hitch(this, function (selected) {
       	// console.log("onSelection selected", selected);
-       return { patric_id: selected.id };
+        return { patric_id: selected.id };
       }));
-    
-      console.log("onSelection cur", cur);
+
+      // console.log('onSelection cur', cur);
 
       this.selectionActionBar.set('selection', cur);
 
       if (cur.length == 1) {
-        request.get(PathJoin(this.apiServer, 'genome_feature', '?'+ encodeURIComponent(cur[0].patric_id)), {
+        request.get(PathJoin(this.apiServer, 'genome_feature', '?' + encodeURIComponent(cur[0].patric_id)), {
           headers: {
             accept: 'application/json'
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (record) {
        	// console.log("onSelection selected record", record);
-       
+
           this.itemDetailPanel.set('selection', [record[0]]);
         }));
       }
@@ -185,8 +185,16 @@ define([
       if (!state) {
         return;
       }
+
+      if (state.taxon_id) {
+        this.set('taxon_id', state.taxon_id);
+      } else if (state.genome) {
+        this.set('taxon_id', state.genome.taxon_id);
+      } else if (state.taxonomy) {
+        this.set('taxon_id', state.taxonomy.taxon_id);
+      }
     },
-    
+
     processTreeData: function (treeDat, idType) {
       if (!treeDat.tree) {
         console.log('No newick+json in Request Response');
@@ -272,7 +280,7 @@ define([
     onFirstView: function () {
       this.updateTree();
     },
-    
+
     selectionActions: [
       [
         'ToggleItemDetail',
@@ -284,7 +292,7 @@ define([
           tooltip: 'Toggle Details Pane'
         },
         function (selection, container, button) {
-          console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+          console.log('Toggle Item Detail Panel', this.itemDetailPanel.id, this.itemDetailPanel);
 
           var children = this.getChildren();
           // console.log("Children: ", children);
@@ -349,7 +357,7 @@ define([
           ignoreDataType: true
         },
         function (selection) {
-          console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+          console.log('Toggle Item Detail Panel', this.itemDetailPanel.id, this.itemDetailPanel);
 
           idMenu.selection = selection;
           // console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
@@ -445,50 +453,50 @@ define([
           validContainerTypes: ['feature_data']
         },
         function (selection, containerWidget) {
-          console.log("Add Items to Group", selection);
+          console.log('Add Items to Group', selection);
           var dlg = new Dialog({ title: 'Add selected items to group' });
           var type = 'feature_group';
 
           if (!containerWidget) {
-            console.log("Container Widget not setup for addGroup");
+            console.log('Container Widget not setup for addGroup');
             return;
           }
-          
-          console.log("addGroup selection",selection);
 
-      var updateSelection = selection;
-      
-      var query = 'in(' + 'patric_id' + ',(' + selection.map(function (x) {
-              return encodeURIComponent(x.patric_id);
-            }).join(',') + '))';
-            
-      // var url = PathJoin(window.App.dataAPI, 'genome_feature', '?' + (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)');
-      // console.log("in addGroup URL: ", url);
+          // console.log('addGroup selection', selection);
 
-      request.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
-        headers: {
-          accept: 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        handleAs: 'json',
-        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-        data: (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)'
+          var updateSelection = selection;
 
-      }).then(function (res) {
-        if (res && res.response && res.response.docs) {
-          var features = res.response.docs;
-          features.forEach(function (feature) {
-				updateSelection.map(lang.hitch(this, function (selected) {
+          var query = 'in(' + 'patric_id' + ',(' + selection.map(function (x) {
+            return encodeURIComponent(x.patric_id);
+          }).join(',') + '))';
+
+          // var url = PathJoin(window.App.dataAPI, 'genome_feature', '?' + (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)');
+          // console.log("in addGroup URL: ", url);
+
+          request.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
+            headers: {
+              accept: 'application/solr+json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            },
+            handleAs: 'json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            data: (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)'
+
+          }).then(function (res) {
+            if (res && res.response && res.response.docs) {
+              var features = res.response.docs;
+              features.forEach(function (feature) {
+                updateSelection.map(lang.hitch(this, function (selected) {
       				selected.feature_id = feature.feature_id;
-      			}))})
-      	 // console.log("Res: updateSelection:", updateSelection);
-        }},         
-        function (err) {
+      			})) })
+      	 	// console.log("Res: updateSelection:", updateSelection);
+            } },
+          function (err) {
         	console.error('Error Retreiving Features: ', err);
       	});
-     
+
           var stg = new SelectionToGroup({
             selection: selection,
             type: type,
@@ -558,7 +566,7 @@ define([
           a[2].disabled = false;
           this.selectionActionBar.addAction(a[0], a[1], a[2], a[3], a[4], a[5]);
           cont = true;
-        } 
+        }
         if (!cont) {
           this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
         }
