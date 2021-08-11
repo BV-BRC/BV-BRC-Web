@@ -45,6 +45,10 @@ define([
       when(storeBuilder('genome', 'isolation_country'), lang.hitch(this, function (store) {
         this.isolationCountryNode.store = store
       }))
+
+      when(storeBuilder('genome_feature', 'feature_type'), lang.hitch(this, function (store) {
+        this.featureTypeNode.store = store
+      }))
     },
     buildQuery: function () {
       let queryArr = []
