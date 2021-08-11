@@ -248,7 +248,7 @@ define([
       var nodeVisualizations = {};
       var specialVisualizations = {};
 
-      var decorator = '';
+      var decorator = 'BVBRC:';
 
       nodeVisualizations['host_name'] = {
         label: 'host_name',
@@ -283,6 +283,28 @@ define([
         sizes: null
       };
 
+      nodeVisualizations['patric_id'] = {
+        label: 'patric_id',
+        description: 'patric_id',
+        field: null,
+        cladeRef: decorator + 'patric_id',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };
+      
+      nodeVisualizations['product'] = {
+        label: 'product',
+        description: 'product',
+        field: null,
+        cladeRef: decorator + 'product',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };      
+      
       nodeVisualizations['geographic_location'] = {
         label: 'geographic_location',
         description: 'geographic_location',
@@ -306,6 +328,51 @@ define([
         sizes: null
       };
 
+      nodeVisualizations['year'] = {
+        label: 'year',
+        description: 'year',
+        field: null,
+        cladeRef: decorator + 'year',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };      
+
+
+      nodeVisualizations['geography'] = {
+        label: 'geography',
+        description: 'geography',
+        field: null,
+        cladeRef: decorator + 'geography',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };      
+
+
+      nodeVisualizations['host'] = {
+        label: 'host',
+        description: 'host',
+        field: null,
+        cladeRef: decorator + 'host',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };      
+
+      nodeVisualizations['taxon'] = {
+        label: 'taxon',
+        description: 'taxon',
+        field: null,
+        cladeRef: decorator + 'taxon',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };      
 
       if (!this.newickxml) {
         console.log('No Newick or xml File To Render');
