@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic',
   'dijit/layout/StackContainer', 'dijit/layout/TabController',
   'dijit/layout/ContentPane', 'dojox/widget/Standby',
-  './Base', '../BlastResultGridContainer', '../../store/BlastResultMemoryStore',
+  './Base', '../HomologyResultGridContainer', '../../store/HomologyResultMemoryStore',
   '../GridSelector'
 ], function (
   declare, lang, Topic,
   TabContainer, StackController,
   ContentPane, Standby,
-  ViewerBase, GridContainer, BlastResultMemoryStore,
+  ViewerBase, GridContainer, HomologyResultMemoryStore,
   selector
 ) {
 
@@ -78,7 +78,7 @@ define([
       this.addChild(tabController);
       this.addChild(this.tabContainer);
 
-      var gfStore = new BlastResultMemoryStore({
+      var gfStore = new HomologyResultMemoryStore({
         type: 'genome_feature',
         idProperty: 'feature_id',
         topicId: this.topicId,
@@ -86,7 +86,7 @@ define([
           sort: [{ attribute: 'pident', descending: true }]
         }
       });
-      var gsStore = new BlastResultMemoryStore({
+      var gsStore = new HomologyResultMemoryStore({
         type: 'genome_sequence',
         idProperty: 'sequence_id',
         topicId: this.topicId,
@@ -94,7 +94,7 @@ define([
           sort: [{ attribute: 'pident', descending: true }]
         }
       });
-      var sgStore = new BlastResultMemoryStore({
+      var sgStore = new HomologyResultMemoryStore({
         type: 'specialty_genes',
         idProperty: 'source_id',
         topicId: this.topicId,

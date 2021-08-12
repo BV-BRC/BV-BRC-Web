@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
   './AppBase',
-  'dojo/text!./templates/BLAST.html', 'dijit/form/Form',
-  '../viewer/Blast', '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
+  'dojo/text!./templates/Homology.html', 'dijit/form/Form',
+  '../viewer/Homology', '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
 ], function (
   declare, lang, Deferred,
   on, query, domClass, domConstruct, domStyle, Topic,
   AppBase,
   Template, FormMixin,
-  BlastResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector
+  HomologyResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector
 ) {
 
   var NA = 'nucleotide',
@@ -54,20 +54,21 @@ define([
   ];
 
   var DatabaseDefs = [
-    { value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)' },
-    { value: 'ref.ffn', label: 'Reference and representative genomes - features (ffn)' },
-    { value: 'ref.faa', label: 'Reference and representative genomes - proteins (faa)' },
-    { value: 'ref.frn', label: 'Reference and representative genomes - RNAs (frn)' },
-    { value: '16sRNA.frn', label: 'PATRIC 16s RNA Genes (frn)' },
-    { value: 'transcriptomics.ffn', label: 'Features with transcriptomic data (ffn)' },
-    { value: 'transcriptomics.faa', label: 'Proteins with transcriptomic data(faa)' },
-    { value: 'plasmid.fna', label: 'Plasmids - contigs (fna)' },
-    { value: 'plasmid.ffn', label: 'Plasmids - features (ffn)' },
-    { value: 'plasmid.faa', label: 'Plasmids - proteins (faa)' },
-    { value: 'phage.fna', label: 'Phages - contigs (fna)' },
-    { value: 'phage.ffn', label: 'Phages - features (ffn)' },
-    { value: 'phage.faa', label: 'Phages - proteins (faa)' },
-    { value: 'spgenes.faa', label: 'Proteins with specialty gene reference (faa)' },
+    { value: 'BacteriaArchaea.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
+    //{ value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
+    { value: 'ref.ffn', label: 'Reference and representative genomes - features (ffn)', db_type: 'ffn', db_source:"precomputed_database"},
+    { value: 'ref.faa', label: 'Reference and representative genomes - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
+    { value: 'ref.frn', label: 'Reference and representative genomes - RNAs (frn)', db_type: 'frn', db_source:"precomputed_database" },
+    { value: '16sRNA.frn', label: 'PATRIC 16s RNA Genes (frn)', db_type: 'frn', db_source:"precomputed_database" },
+    { value: 'transcriptomics.ffn', label: 'Features with transcriptomic data (ffn)', db_type: 'ffn', db_source:"precomputed_database" },
+    { value: 'transcriptomics.faa', label: 'Proteins with transcriptomic data(faa)', db_type: 'faa', db_source:"precomputed_database" },
+    { value: 'plasmid.fna', label: 'Plasmids - contigs (fna)', db_type: 'fna', db_source:"precomputed_database" },
+    { value: 'plasmid.ffn', label: 'Plasmids - features (ffn)', db_type: 'ffn', db_source:"precomputed_database" },
+    { value: 'plasmid.faa', label: 'Plasmids - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
+    { value: 'phage.fna', label: 'Phages - contigs (fna)', db_type: 'fna', db_source:"precomputed_database" },
+    { value: 'phage.ffn', label: 'Phages - features (ffn)', db_type: 'ffn', db_source:"precomputed_database" },
+    { value: 'phage.faa', label: 'Phages - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
+    { value: 'spgenes.faa', label: 'Proteins with specialty gene reference (faa)', db_type: 'faa', db_source:"precomputed_database" },
     { value: 'selGenome', label: 'Search within selected genome' },
     { value: 'selGroup', label: 'Search within selected genome group' },
     { value: 'selTaxon', label: 'Search within a taxon' }
@@ -82,6 +83,7 @@ define([
     baseClass: 'BLAST',
     templateString: Template,
     applicationHelp: 'user_guides/services/blast.html',
+    applicationName:"Homology",
     tutorialLink: 'tutorial/blast/blast.html',
     addedGenomes: 0,
     maxGenomes: 20,
@@ -90,6 +92,11 @@ define([
     result_store: null,
     result_grid: null,
     defaultPath: '',
+    sequence_type: null,
+    input_source: null,
+    db_source: null,
+    db_type: null,
+    db_precomputed_database: null,
     constructor: function () {
       this.genomeToAttachPt = ['genome_id'];
     },
@@ -117,7 +124,7 @@ define([
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
 
-      this.result = new BlastResultContainer({
+      this.result = new HomologyResultContainer({
         id: this.id + '_blastResult',
         style: 'min-height: 700px; visibility:hidden;'
       });
@@ -162,7 +169,11 @@ define([
     },
 
     hasSingleFastaSequence: function (sequence) {
-      return sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; }).length <= 1;
+      return this.numFastaSequence(sequence) <= 1;
+    },
+
+    numFastaSequence: function(sequence){
+      return sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; }).length;
     },
 
     isNucleotideFastaSequence: function (sequence) {
@@ -198,9 +209,26 @@ define([
       var useDatabase = !(['selGenome', 'selGroup', 'selTaxon'].indexOf(database) > -1);
       var program = this.program.get('value');
       var evalue = this.evalue.get('value');
+      var output_file = this.output_file.get('value');
+      var output_path = this.output_path.get('value');
       var max_hits = parseInt(this.max_hits.get('value'));
       var def = new Deferred();
       var resultType;
+      var input_type=null;
+
+      //temporary until new input types
+      _self.input_source="fasta_data";
+
+      switch(_self.sequence_type){
+          case NA:
+            input_type = "dna";
+            break;
+          case AA:
+            input_type = "aa";
+            break;
+          default:
+            break;
+      }
 
       if (useDatabase) {
         if (!sequence) {
@@ -285,8 +313,29 @@ define([
             break;
         }
       }
+      var db_obj = DatabaseDefs.find(obj => {
+        return obj.value === database;
+      });
+      //this should probably move up into the if/else block above
+      if(db_obj){
+        this.db_source = db_obj.db_source;
+        this.db_type = db_obj.db_type;
+        this.db_precomputed_database = db_obj.db_source;
+      }
 
-      //
+      //prepare submission values
+      var submit_values = {"input_type":input_type,"input_source":_self.input_source,"db_type":_self.db_type,
+      "db_source":_self.db_source, "output_file":output_file, "output_path": output_path};
+      if (sequence){
+          if (this.numFastaSequence(sequence) == 0){
+              sequence = ">fasta_record1\n"+sequence;
+          }
+          submit_values["input_fasta_data"]=sequence;
+      }
+      if (_self.db_precomputed_database){
+          submit_values["db_precomputed_database"]=database.split(".")[0];
+      }
+
       _self.result.loadingMask.show();
       query('.blast_result .GridContainer').style('visibility', 'visible');
       domClass.add(query('.service_form')[0], 'hidden');
@@ -294,15 +343,18 @@ define([
       domClass.add(query('.service_error')[0], 'hidden');
       query('.reSubmitBtn').style('visibility', 'visible');
 
-      def.promise.then(function (q) {
-        // log GA
-        if (window.gtag) {
-          gtag('event', 'BLAST', { event_category: 'Services', method: q.method });
+        if (this.validate()) {
+            var start_params = {
+            'base_url': window.App.appBaseURL
+            }
+           //var values = this.getValues();
+           //set job hook before submission
+            _self.setJobHook(function() {
+                //the state set here shows up again in the HomologyMemoryStore onSetState
+                _self.result.set('state', { query: q, resultType: resultType, resultPath: output_file });
+            });
+            _self.doSubmit(submit_values, start_params);
         }
-
-        _self.result.set('state', { query: q, resultType: resultType });
-      });
-
     },
 
     resubmit: function () {
@@ -449,12 +501,14 @@ define([
     },
 
     onChangeSequence: function (val) {
+      _self = this;
+      allowSingle=false;
       // console.log("onChangeSequence: [", val, "]");
       if (!val) {
         this.sequence_message.innerHTML = 'Please provide query sequence.';
         return;
       }
-      if (!this.hasSingleFastaSequence(val)) {
+      if (!this.hasSingleFastaSequence(val) && allowSingle) {
         this.sequence_message.innerHTML = 'PATRIC BLAST accepts only one sequence at a time. Please provide only one sequence.';
         return;
       }
@@ -468,10 +522,10 @@ define([
       }
       this.program.set('disabled', false);
 
-      var sequence_type = this.isNucleotideFastaSequence(val) ? NA : AA;
+      this.sequence_type = this.isNucleotideFastaSequence(val) ? NA : AA;
       this.program.removeOption(ProgramDefs);
       this.program.addOption(ProgramDefs.filter(function (p) {
-        return p.validQuery.indexOf(sequence_type) > -1;
+        return p.validQuery.indexOf(_self.sequence_type) > -1;
       }));
       this.program.loadAndOpenDropDown();
     },

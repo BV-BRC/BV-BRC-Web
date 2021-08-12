@@ -36,7 +36,7 @@ define([
 
       delete this._loadingDeferred;
       this._loaded = false;
-      this.loadData();
+      this.loadWorkspaceData();
       this.set('refresh');
     },
 
@@ -47,7 +47,7 @@ define([
       }
 
       var results;
-      var qr = QueryResults(when(this.loadData(), lang.hitch(this, function () {
+      var qr = QueryResults(when(this.loadWorkspaceData(), lang.hitch(this, function () { //based on this loadData evaluate whether it should be loadWorkspace called here that returns deferred
         results = this.query(query, opts);
         qr.total = when(results, function (results) {
           return results.total || results.length;
@@ -222,6 +222,155 @@ define([
 
       return this._loadingDeferred;
     },
+
+
+      loadWorkspaceData:function(){
+        if (this._loadingDeferred) {
+            return this._loadingDeferred;
+        }
+
+        // console.warn("loadData", this.type, this.state);
+
+        if (!this.state) {
+            // console.log("No state, use empty data set for initial store");
+
+            // this is done as a deferred instead of returning an empty array
+            // in order to make it happen on the next tick.  Otherwise it
+            // in the query() function above, the callback happens before qr exists
+            var def = new Deferred();
+            setTimeout(lang.hitch(this, function () {
+            this.setData([]);
+            this._loaded = true;
+            // def.resolve(true);
+            }), 0);
+            return def.promise;
+        }
+        paths=[this.state.resultPath];
+        WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false).then(lang.hitch(this, function (paths) {
+            var filtered = paths.filter(function (f) {
+            // console.log("Filtering f: ", f);
+            // if(f instanceof Array){
+            //   var path = f[0];
+            // }else{
+            //   path = f;
+            // }
+            if ('path' in f && f.path.match('.json')) {
+                return true;
+            }
+            return false;
+            }).map(function (f) {
+            return f.path;
+            });
+            filtered.sort();
+
+            // console.log("Experiment Sub Paths: ", paths);
+
+            WorkspaceManager.getObjects(filtered).then(lang.hitch(this, function (objs) {
+                objs.forEach(function (obj) {
+                    if (typeof obj.data == 'string') {
+                    obj.data = JSON.parse(obj.data);
+                    }
+                });
+                res = objs[0];
+                if ((res.result[0][0].report.results.search.hits).length == 0) {
+                this.setData([]);
+                this._loaded = true;
+                Topic.publish('BLAST_UI', 'showNoResultMessage');
+                Topic.publish(this.topicId, 'hideLoadingMask');
+                return;
+                }
+
+                // console.log(res);
+                var resultIds = Object.keys(res.result[1]);
+                var query = { rows: 25000 };
+                if (this.type == 'genome_sequence') {
+                resultIds = resultIds.map(function (d) {
+                    return d.replace('accn|', '');
+                }).filter(function (d) {
+                    return d !== '';
+                });
+                query.q = 'accession:(' + resultIds.join(' OR ') + ')';
+                query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,description';
+                } else if (this.type == 'genome_feature') {
+                // resultIdField = "patric_id";
+
+                var patric_ids = [];
+                var refseq_locus_tags = [];
+                resultIds.forEach(function (id) {
+                    if (id.indexOf('gi|') > -1) {
+                    refseq_locus_tags.push(id.split('|')[2]);
+                    } else {
+                    patric_ids.push(id);
+                    }
+                });
+
+                query.q = (patric_ids.length > 0) ? 'patric_id:(' + patric_ids.join(' OR ') + ')' : {};
+                (refseq_locus_tags.length > 0 && patric_ids.length > 0) ? query.q += ' OR ' : {};
+                (refseq_locus_tags.length > 0) ? query.q += '(refseq_locus_tag:(' + refseq_locus_tags.join(' OR ') + ') AND annotation:RefSeq)' : {};
+                query.fl = 'feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,taxon_id,accession,start,end,strand,location,na_length,na_sequence_md5,aa_length,aa_sequence_md5';
+                } else if (this.type == 'specialty_genes') {
+
+                var data = this.formatJSONResult(res);
+
+                return when('', lang.hitch(this, function () {
+                    this.setData(data);
+                    this._loaded = true;
+
+                    Topic.publish(this.topicId, 'hideLoadingMask');
+                }));
+                }
+
+                return when(request.post(window.App.dataAPI + this.type + '/', {
+                handleAs: 'json',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+                    'X-Requested-With': null,
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                data: query
+                }), lang.hitch(this, function (keys) {
+
+                var keyMap = {};
+                keys.forEach(function (f) {
+                    if (this.type == 'genome_sequence') {
+                    keyMap[f.accession] = f;
+                    } else {
+                    if (f.annotation == 'RefSeq') {
+                        keyMap[f.refseq_locus_tag] = f;
+                    } else {
+                        keyMap[f.patric_id] = f;
+                    }
+                    }
+                }, this);
+
+                res.result[3] = keyMap;
+
+                // console.log(JSON.stringify(res));
+                var data = this.formatJSONResult(res);
+                // console.log(data);
+                // this.updateResult(data, resultIdType);
+                this.setData(data);
+                this._loaded = true;
+
+                Topic.publish(this.topicId, 'hideLoadingMask');
+                }));
+            }),function (err) {
+                this.setData([]);
+                this._loaded = true;
+                Topic.publish('BLAST_UI', 'showErrorMessage', err);
+                Topic.publish(this.topicId, 'hideLoadingMask');
+            });
+        }),function (err) {
+        this.setData([]);
+        this._loaded = true;
+        Topic.publish('BLAST_UI', 'showErrorMessage', err);
+        Topic.publish(this.topicId, 'hideLoadingMask');
+      });
+
+      return this._loadingDeferred;
+      }, 
+
 
     formatEvalue: function (evalue) {
       if (evalue.toString().includes('e')) {

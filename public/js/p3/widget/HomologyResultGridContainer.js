@@ -3,13 +3,13 @@ define([
   'dojo/on', 'dojo/topic',
   'dijit/popup', 'dijit/TooltipDialog',
   './ContainerActionBar', 'FileSaver',
-  './GridContainer', './BlastResultGrid', './PerspectiveToolTip'
+  './GridContainer', './HomologyResultGrid', './PerspectiveToolTip'
 ], function (
   declare, lang,
   on, Topic,
   popup, TooltipDialog,
   ContainerActionBar, saveAs,
-  GridContainer, BlastResultGrid, PerspectiveToolTipDialog
+  GridContainer, HomologyResultGrid, PerspectiveToolTipDialog
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
@@ -48,7 +48,7 @@ define([
   }));
 
   return declare([GridContainer], {
-    gridCtor: BlastResultGrid,
+    gridCtor: HomologyResultGrid,
     containerType: '',
     visible: true,
     store: null,
