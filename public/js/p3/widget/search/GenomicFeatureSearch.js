@@ -24,7 +24,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Genomic Feature Search',
+    searchAppName: 'Gene/Protein Search',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features&filter=false',
@@ -44,6 +44,10 @@ define([
 
       when(storeBuilder('genome', 'isolation_country'), lang.hitch(this, function (store) {
         this.isolationCountryNode.store = store
+      }))
+
+      when(storeBuilder('genome_feature', 'feature_type'), lang.hitch(this, function (store) {
+        this.featureTypeNode.store = store
       }))
     },
     buildQuery: function () {
