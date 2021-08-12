@@ -14,8 +14,6 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     status: null
   };
 
-  self.targetJob = null;
-  self.targetJobCallback = null;
 
   // state of status (used to detect changes)
   var StatusSummary = { init: null };
@@ -101,10 +99,6 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     });
   }
 
-  function setJobHook(jobID, callback){
-    self.targetJob = jobID;
-    self.targetJobCallback = callback;
-  }
 
   function PollJobs() {
     // leaving this here since instantiation order is unpredictable
@@ -181,6 +175,12 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
     getStore: function () {
       return _DataStore;
+    },
+    targetJob: null,
+    targetJobCallback: null,
+    setJobHook: function(jobID, callback){
+      self.targetJob = jobID;
+      self.targetJobCallback = callback;
     },
 
     killJob: function (id) {
