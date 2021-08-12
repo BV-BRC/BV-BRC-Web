@@ -23,73 +23,186 @@
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
+        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes"
+          data-dojo-props="constraints:{min:0,max:10}," />
       </div>
       <table class="assemblyblocks">
         <tr>
-          <td style="width:50%">
-            <table>
-              <tr>
-                <td>
-                  <div class="appBox appShadow">
-                    <div class="headerrow">
-                      <div style="width:85%;display:inline-block;">
-                        <label class="appBoxLabel">Parameters</label>
+          <!-- <td style="width:50%"> -->
+          <table>
+            <tr>
+              <td>
+                <div class="appBox appShadow">
+                  <div class="headerrow">
+                    <div style="width:85%;display:inline-block;">
+                      <label class="appBoxLabel">Parameters</label>
+                    </div>
+                  </div>
+                  <div class="appRow">
+                    <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                      <label>P-value</label><br>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="dijit/form/NumberTextBox"
+                        name="p_value" required="true" data-dojo-attach-point="p_value" value="0.05"
+                        data-dojo-props="regExp:'^0?\.[0-9]+$',invalidMessage:'Enter a p-value between 0 and 1.',intermediateChanges:true,missingMessage:'Provide p-value',trim:true,placeHolder:'p-value'">
                       </div>
                     </div>
+                  </div>
+                  <div class="appRow">
+                    <label class="paramlabel">Output Folder</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                      data-dojo-attach-point="output_path" required="true"
+                      data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
+                      data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                  </div>
+                  <div class="appRow">
+                    <label class="paramlabel">Output Name</label><span class="charError"
+                      style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                    <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                      data-dojo-attach-event="onChange:checkOutputName" name="output_file"
+                      data-dojo-attach-point="output_file" style="width:85%" required="true"
+                      data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+
+                <div class="appBox appShadow">
+                  <div class="headerrow">
+                    <div style="width:85%;display:inline-block;">
+                      <label class="appBoxLabel">Input</label>
+                    </div>
                     <div class="appRow">
-                      <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
-                        <label>Alignment file</label><br>
-                        <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                          name="alignment_file" required="true" data-dojo-attach-point="alignment_file"
-                          data-dojo-props="type:['aligned_protein_fasta', 'aligned_dna_fasta'],multi:false,promptMessage:'Select an alignment file from your workspace for analysis.',missingMessage:'Add an alignment file.', placeHolder:'Required'">
-                        </div>
-                      </div>
-                      <div class="appRow">
-                        <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
-                          <label>Group file</label><br>
-                          <div style="width:85%;display:inline-block;"
-                            data-dojo-type="p3/widget/WorkspaceObjectSelector" name="group_file" required="true"
-                            data-dojo-attach-point="group_file"
-                            data-dojo-props="type:['tsv'],multi:false,promptMessage:'Select a metadata file from your workspace for analysis.',missingMessage:'Add a metadata group file.', placeHolder:'Required'">
-                          </div>
-                        </div>
-                        <div class="appRow">
-                          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
-                            <label>P-value</label><br>
-                            <div style="width:85%;display:inline-block;" data-dojo-type="dijit/form/NumberTextBox"
-                              name="p_value" required="true" data-dojo-attach-point="p_value" value="0.05"
-                              data-dojo-props="regExp:'0?\.[0-9]+',invalidMessage:'Enter a p-value between 0 and 1.',intermediateChanges:true,missingMessage:'Provide p-value',trim:true,placeHolder:'p-value'">
+                      <input type="radio" id="radio1" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_groups" data-dojo-attach-event="onChange:onInputTypeChange"
+                        checked />
+                      <label for="radio1">Feature groups</label>
+                      <input type="radio" id="radio2" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_files" data-dojo-attach-event="onChange:onInputTypeChange" />
+                      <label for="radio2">Alignment file</label>
+                      <input type="radio" id="radio3" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_auto" data-dojo-attach-event="onChange:onInputTypeChange" />
+                      <label for="radio3">Auto grouping</label>
+                    </div>
+
+                    <table data-dojo-attach-point="feature_groups_table" style="width:100%; display:none">
+                      <tr name="feature_groups_input_row">
+                        <td colspan="0">
+                          <div class="appRow">
+                            <label>Select feature group</label><br>
+                            <div style="width:85%;display:inline-block;"
+                              data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup"
+                              required="false" data-dojo-attach-point="user_genomes_featuregroup"
+                              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.', placeHolder:'Optional'">
+                            </div>
+                            <div style="width:10%;display:inline-block;"><i
+                                data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i>
+                            </div>
+                            <br>
+                            <div class="appRow">
+                              <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna"
+                                name="alphabet" value="dna" />
+                              <label for="radio1" style="font-size:8pt">DNA</label>
+                              <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="protein" name="alphabet" value="protein" checked />
+                              <label for="radio2" style="font-size:8pt">Protein</label>
                             </div>
                           </div>
-                        </div>
-                        <div class="appRow">
-                          <label class="paramlabel">Output Folder</label><br>
-                          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                            data-dojo-attach-point="output_path" required="true"
-                            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
-                            data-dojo-attach-event="onChange:onOutputPathChange"></div>
-                        </div>
-                        <div class="appRow">
-                          <label class="paramlabel">Output Name</label><span class="charError"
-                            style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
-                            data-dojo-attach-event="onChange:checkOutputName" name="output_file"
-                            data-dojo-attach-point="output_file" style="width:85%" required="true"
-                            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                          <div class="appRow">
+                            <label> Selected groups table</label>
                           </div>
-                        </div>
-                      </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-              </tr>
+                          <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
+                            <table class="librarytable" frame="box" data-dojo-attach-point="groupsTable"
+                              style="margin:0 0 0 10px; width:100%;">
+                              <tbody data-dojo-attach-point="groupsTableBody">
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table data-dojo-attach-point="alignment_files_table" style="width:100%; display:none">
+                      <tr name="alignment_files_input_row">
+                        <td colspan="0">
+                          <div class="appRow">
+                            <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                              <label>Alignment file</label><br>
+                              <div style="width:85%;display:inline-block;"
+                                data-dojo-type="p3/widget/WorkspaceObjectSelector" name="alignment_file"
+                                id="alignment_file" required="false" data-dojo-attach-point="alignment_file"
+                                data-dojo-attach-event="onChange:validate"
+                                data-dojo-props="type:['aligned_protein_fasta', 'aligned_dna_fasta'],multi:false,promptMessage:'Select an alignment file from your workspace for analysis.',missingMessage:'Add an alignment file.'">
+                              </div>
+                            </div>
+                            <div class="appRow">
+                              <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                                <label>Group file</label><br>
+                                <div style="width:85%;display:inline-block;"
+                                  data-dojo-type="p3/widget/WorkspaceObjectSelector" name="group_file" id="group_file"
+                                  required="false" data-dojo-attach-point="group_file"
+                                  data-dojo-attach-event="onChange:validate"
+                                  data-dojo-props="type:['tsv'],multi:false,promptMessage:'Select a metadata file from your workspace for analysis.',missingMessage:'Add a metadata group file.'">
+                                </div>
+                              </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table data-dojo-attach-point="auto_grouping_table" style="width:100%; display:none">
+                      <tr name="auto_grouping_input_row">
+                        <td colspan="0">
+                          <div class="appRow">
+                            <label>Select feature group</label><br>
+                            <div style="width:85%;display:inline-block;"
+                              data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup"
+                              required="false" data-dojo-attach-point="user_genomes_featuregroup"
+                              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.', placeHolder:'Optional'">
+                            </div>
+                            <div style="width:10%;display:inline-block;"><i data-dojo-attach-event=""
+                                class="fa icon-plus-circle fa-lg"></i>
+                            </div>
+                            <br>
+                            <div class="appRow">
+                              <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna"
+                                name="alphabet" value="dna" />
+                              <label for="radio1" style="font-size:8pt">DNA</label>
+                              <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="protein" name="alphabet" value="protein" checked />
+                              <label for="radio2" style="font-size:8pt">Protein</label>
+                            </div>
+
+                            <div class="appRow">
+                              <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+                                <label class="paramlabel">Metadata group</label><br>
+                                <select data-dojo-type="dijit/form/Select" name="aligner"
+                                  data-dojo-attach-point="aligner" style="width:100%" required="false"
+                                  data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:'MySubFolder'">
+                                  <option value="Host Name" selected="selected">Host Name</option>
+                                  <option value="Geographic Location">Geographic Location</option>
+                                  <option value="Isolation Country">Isolation Country</option>
+                                  <option value="Species">Species</option>
+                                  <option value="Genus">Genus</option>
+                                  <option value="Year">Year</option>
+                                </select>
+                              </div>
+                            </div>
+
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+            </tr>
+            <!-- </td> -->
+          </table>
           </td>
-      </table>
-      </td>
-      <td>
-      </td>
-      </tr>
+          </td>
+          <td>
+          </td>
+        </tr>
       </table>
     </div>
   </div>
