@@ -3,13 +3,15 @@ define([
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin', 'dojox/xml/parser',
-  'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom'
+  'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom',
+  '../../JobManager'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
-  Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
+  Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom,
+  JobManager
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
@@ -23,6 +25,8 @@ define([
     showCancel: false,
     activeWorkspace: '',
     activeWorkspacePath: '',
+    lookAheadJob: false,
+    postJobCallback: null,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -186,6 +190,11 @@ define([
       this._started = true;
     },
 
+    setJobHook: function(callback){
+        this.lookAheadJob = true;
+        this.postJobCallback = callback;
+    },
+
     onReset: function (evt) {
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
@@ -233,18 +242,8 @@ define([
 
     },
 
-    onSubmit: function (evt) {
-      var _self = this;
-
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (this.validate()) {
-        var values = this.getValues();
-
-        domClass.add(this.domNode, 'Working');
-        domClass.remove(this.domNode, 'Error');
-        domClass.remove(this.domNode, 'Submitted');
-
+    doSubmit: function(values, start_params){
+        _self = this;
         // tack on container build ID if specified in debugging panel
         if (window.App.containerBuildID) {
           values.container_id = window.App.containerBuildID;
@@ -259,12 +258,32 @@ define([
           dlg.show();
           return;
         }
+        return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function(results){
+          if(_self.lookAheadJob){
+              JobManager.setJobHook(results[0].id, _self.postJobCallback);
+          }
+                return results;
+        });
+    },
+
+    onSubmit: function (evt) {
+      var _self = this;
+
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (this.validate()) {
+        var values = this.getValues();
+
+        domClass.add(this.domNode, 'Working');
+        domClass.remove(this.domNode, 'Error');
+        domClass.remove(this.domNode, 'Submitted');
+
 
         this.submitButton.set('disabled', true);
         var start_params = {
           'base_url': window.App.appBaseURL
         }
-        window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function (results) {
+        _self.doSubmit(values, start_params).then(function (results) {
           console.log('Job Submission Results: ', results);
 
           if (window.gtag) {

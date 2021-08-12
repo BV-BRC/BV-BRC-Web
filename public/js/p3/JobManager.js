@@ -7,12 +7,15 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
   var self = this;
   var TIME_OUT = 5000; // in ms
-
+  var job_callbacks={}; // key job id to callback function
   // state model of filters applied to jobs
   self.filters = {
     app: 'all',
     status: null
   };
+
+  self.targetJob = null;
+  self.targetJobCallback = null;
 
   // state of status (used to detect changes)
   var StatusSummary = { init: null };
@@ -37,13 +40,14 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
       // perform any callback action before filtering
       if (cb) cb();
+      
 
       if (self.filters.app || self.filters.status) {
         Topic.publish('/Jobs', { status: 'filtered', jobs: _DataStore.data });
         Topic.publish('/JobFilter', self.filters);
         return;
       }
-
+      //check job ids as finished and remove them from callback list and call the callback
       Topic.publish('/Jobs', { status: 'updated', jobs: _DataStore.data });
     });
   }
@@ -69,6 +73,18 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
           completed !== StatusSummary.completed ||
           failed !== StatusSummary.failed) {
         change = true;
+        if (self.targetJob && self.targetJobCallback){
+            //NEED TO FIND FINISHED JOBS
+            var prom2 = window.App.api.service('AppService.query_tasks', [self.targetJob]);
+            prom2.then(function (res) {
+                var status = res[0];
+                finished_jobs=[];
+                if (self.targetJob == finished_jobs){
+                    self.targetJob=null;
+                    self.targetJobCallback();
+                }
+            });
+        }
       }
 
       StatusSummary = {
@@ -83,6 +99,11 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
       return change; // bool
     });
+  }
+
+  function setJobHook(jobID, callback){
+    self.targetJob = jobID;
+    self.targetJobCallback = callback;
   }
 
   function PollJobs() {
