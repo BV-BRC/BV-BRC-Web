@@ -87,13 +87,10 @@ define([
         layoutPriority: 1,
         containerWidget: this
       });
-      // this.addChild(this.selectionActionBar);
-      // this.addChild(this.containerPane);
-      // this.itemDetailPanel.startup();
       this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container' }, this.containerPane.domNode);
  	  this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
   	  this.treeDiv2 = domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
- 	  this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
+ 	  // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
       // this.addChild(this.containerActionBar);
       this.addChild(this.selectionActionBar);
@@ -248,131 +245,8 @@ define([
       var nodeVisualizations = {};
       var specialVisualizations = {};
 
-      var decorator = 'BVBRC:';
-
-      nodeVisualizations['host_name'] = {
-        label: 'host_name',
-        description: 'host_name',
-        field: null,
-        cladeRef: decorator + 'host_name',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category10',
-        sizes: null
-      };
-
-      nodeVisualizations['species'] = {
-        label: 'species',
-        description: 'species',
-        field: null,
-        cladeRef: decorator + 'species',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category10',
-        sizes: null
-      };
-
-      nodeVisualizations['genome_id'] = {
-        label: 'genome_id',
-        description: 'genome_id',
-        field: null,
-        cladeRef: decorator + 'genome_id',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['patric_id'] = {
-        label: 'patric_id',
-        description: 'patric_id',
-        field: null,
-        cladeRef: decorator + 'patric_id',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-      
-      nodeVisualizations['product'] = {
-        label: 'product',
-        description: 'product',
-        field: null,
-        cladeRef: decorator + 'product',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };      
-      
-      nodeVisualizations['geographic_location'] = {
-        label: 'geographic_location',
-        description: 'geographic_location',
-        field: null,
-        cladeRef: decorator + 'geographic_location',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        colorsAlt: ['#000000', '#00FF00'],
-        sizes: [10, 40]
-      };
-
-      nodeVisualizations['collection_date'] = {
-        label: 'collection_date',
-        description: 'collection_date',
-        field: null,
-        cladeRef: decorator + 'collection_date',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['year'] = {
-        label: 'year',
-        description: 'year',
-        field: null,
-        cladeRef: decorator + 'year',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };      
-
-
-      nodeVisualizations['geography'] = {
-        label: 'geography',
-        description: 'geography',
-        field: null,
-        cladeRef: decorator + 'geography',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };      
-
-
-      nodeVisualizations['host'] = {
-        label: 'host',
-        description: 'host',
-        field: null,
-        cladeRef: decorator + 'host',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };      
-
-      nodeVisualizations['taxon'] = {
-        label: 'taxon',
-        description: 'taxon',
-        field: null,
-        cladeRef: decorator + 'taxon',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };      
+      var decorator = '';
+      var property_name = '';
 
       if (!this.newickxml) {
         console.log('No Newick or xml File To Render');
@@ -383,6 +257,38 @@ define([
         // console.log('this.fileType', this.fileType);
 	  	if (this.fileType == 'phyloxml') {
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
+
+          var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
+          console.log('mytree collectPropertyRefs refs_set: ', refs_set);
+
+          if (refs_set.size > 0) {
+		 	  this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv); // show control1 panel if there are node properties
+			  refs_set.forEach(function (a) {
+              // console.log('refs_set a', a);
+
+              var property_line = a.split(':');
+              // console.log('property_line', property_line);
+
+              if (property_line.length == 1) {
+                property_name = property_line[0];
+              }
+              else if (property_line.length > 1) {
+                decorator = property_line[0];
+                property_name = property_line[1];
+              }
+              nodeVisualizations[property_name] =  {
+                label: property_name,
+                description: property_name,
+                field: null,
+                cladeRef: a,
+                regex: false,
+                shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+                colors: 'category50',
+                sizes: null
+              };
+			  });
+			  // console.log('mytree nodeVisualizations: ', nodeVisualizations);
+          }
 	  	}
 	  	else {
 	  		mytree = window.archaeopteryx.parseNewHampshire(this.newickxml, true, false);
@@ -396,6 +302,7 @@ define([
 	  if (mytree) {
         try {
 		  forester.midpointRoot(mytree);
+		  console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
 		  window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, specialVisualizations);
         }
         catch (e) {
