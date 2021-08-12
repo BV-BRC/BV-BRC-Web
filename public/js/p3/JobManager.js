@@ -71,13 +71,13 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
           completed !== StatusSummary.completed ||
           failed !== StatusSummary.failed) {
         change = true;
+
         if (self.targetJob && self.targetJobCallback){
             //NEED TO FIND FINISHED JOBS
-            var prom2 = window.App.api.service('AppService.query_tasks', [self.targetJob]);
+            var prom2 = window.App.api.service('AppService.query_tasks', [[self.targetJob]]);
             prom2.then(function (res) {
-                var status = res[0];
-                finished_jobs=[];
-                if (self.targetJob == finished_jobs){
+                var status = res[0][self.targetJob].status;
+                if (status != "queued" && status != "in-progress"){
                     self.targetJob=null;
                     self.targetJobCallback();
                 }
