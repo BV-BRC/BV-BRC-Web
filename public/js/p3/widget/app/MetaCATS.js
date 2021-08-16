@@ -157,10 +157,18 @@ define([
       var values = this.inherited(arguments);
       values.p_value = parseFloat(this['p_value'].value);
       delete values.user_genomes_featuregroup;
+      delete values.auto_feature_group;
+      values.alphabet = 'na';
       if (this.input_groups.checked == true) {
         values.input_type = 'groups';
         delete values.alignment_file;
         delete values.group_file;
+        delete values.metadata_group;
+        delete values.auto_alphabet;
+        if (values.group_alphabet == 'protein') {
+          values.alphabet = 'aa';
+        }
+        delete values.group_alphabet;
         var compGenomeList = query('.genomedata');
         var userGroups = [];
         compGenomeList.forEach(function (item) {
@@ -171,11 +179,28 @@ define([
         values.groups = userGroups;
       } else if (this.input_files.checked == true) {
         values.input_type = 'files';
+        delete values.group_alphabet;
+        delete values.auto_alphabet;
+        delete values.metadata_group;
         var alignment_type = null;
         if (this['alignment_file'].searchBox.onChange.target.item) {
           alignment_type = this['alignment_file'].searchBox.onChange.target.item.type;
         }
-        values.alignment_type = alignment_type;
+        if (alignment_type.includes('protein')) {
+          values.alphabet = 'aa';
+        }
+        delete values.group_alphabet;
+      } else if (this.input_auto.checked == true) {
+        values.input_type = 'auto';
+        delete values.alignment_file;
+        delete values.group_file;
+        delete values.group_alphabet;
+        if (values.auto_alphabet == 'protein') {
+          values.alphabet = 'aa';
+        }
+        delete values.auto_alphabet;
+      } else {
+        console.log('Incorrect input.');
       }
       return values;
     },

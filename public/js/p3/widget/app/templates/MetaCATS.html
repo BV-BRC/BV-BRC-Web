@@ -102,12 +102,12 @@
                             </div>
                             <br>
                             <div class="appRow">
-                              <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna"
-                                name="alphabet" value="dna" />
-                              <label for="radio1" style="font-size:8pt">DNA</label>
-                              <input type="radio" data-dojo-type="dijit/form/RadioButton"
-                                data-dojo-attach-point="protein" name="alphabet" value="protein" checked />
-                              <label for="radio2" style="font-size:8pt">Protein</label>
+                              <input type="radio" id="radio4" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="dna" name="group_alphabet" value="dna" />
+                              <label for="radio4" style="font-size:8pt">DNA</label>
+                              <input type="radio" id="radio5" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="protein" name="group_alphabet" value="protein" checked />
+                              <label for="radio5" style="font-size:8pt">Protein</label>
                             </div>
                           </div>
                           <div class="appRow">
@@ -157,8 +157,8 @@
                           <div class="appRow">
                             <label>Select feature group</label><br>
                             <div style="width:85%;display:inline-block;"
-                              data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup"
-                              required="false" data-dojo-attach-point="user_genomes_featuregroup"
+                              data-dojo-type="p3/widget/WorkspaceObjectSelector" name="auto_feature_group"
+                              required="false" data-dojo-attach-point="auto_feature_group"
                               data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.', placeHolder:'Optional'">
                             </div>
                             <div style="width:10%;display:inline-block;"><i data-dojo-attach-event=""
@@ -166,19 +166,19 @@
                             </div>
                             <br>
                             <div class="appRow">
-                              <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna"
-                                name="alphabet" value="dna" />
-                              <label for="radio1" style="font-size:8pt">DNA</label>
-                              <input type="radio" data-dojo-type="dijit/form/RadioButton"
-                                data-dojo-attach-point="protein" name="alphabet" value="protein" checked />
-                              <label for="radio2" style="font-size:8pt">Protein</label>
+                              <input type="radio" id="radio6" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="auto_dna" name="auto_alphabet" value="dna" />
+                              <label for="radio6" style="font-size:8pt">DNA</label>
+                              <input type="radio" id="radio7" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="auto_protein" name="auto_alphabet" value="protein" checked />
+                              <label for="radio7" style="font-size:8pt">Protein</label>
                             </div>
 
                             <div class="appRow">
                               <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
                                 <label class="paramlabel">Metadata group</label><br>
-                                <select data-dojo-type="dijit/form/Select" name="aligner"
-                                  data-dojo-attach-point="aligner" style="width:100%" required="false"
+                                <select data-dojo-type="dijit/form/Select" name="metadata_group"
+                                  data-dojo-attach-point="metadata_group" style="width:100%" required="false"
                                   data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:'MySubFolder'">
                                   <option value="Host Name" selected="selected">Host Name</option>
                                   <option value="Geographic Location">Geographic Location</option>
