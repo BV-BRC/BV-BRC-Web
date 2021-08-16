@@ -369,7 +369,12 @@ define([
       domClass.remove(query('.service_error')[0], 'hidden');
       domClass.remove(query('.service_message')[0], 'hidden');
       query('.service_error h3')[0].innerHTML = 'We were not able to complete your BLAST request. Please let us know with detail message below.';
-      query('.service_message')[0].innerHTML = err.response.data.error.message;
+      if (typeof err === 'string'){
+        query('.service_message')[0].innerHTML = err;
+      }
+      else{
+          query('.service_message')[0].innerHTML = err.response.data.error.message;
+      }
 
       query('.blast_result .GridContainer').style('visibility', 'hidden');
     },
