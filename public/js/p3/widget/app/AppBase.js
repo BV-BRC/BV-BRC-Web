@@ -25,8 +25,9 @@ define([
     showCancel: false,
     activeWorkspace: '',
     activeWorkspacePath: '',
-    lookAheadJob: false,
-    postJobCallback: null,
+    lookaheadJob: false,
+    lookaheadCallback: null,
+    lookaheadError: null,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -190,9 +191,12 @@ define([
       this._started = true;
     },
 
-    setJobHook: function(callback){
-        this.lookAheadJob = true;
-        this.postJobCallback = callback;
+    setJobHook: function(callback, error_callback){
+        this.lookaheadJob = true;
+        this.lookaheadCallback = callback;
+        if(error_callback){
+            this.lookaheadError = error_callback;
+        }
     },
 
     onReset: function (evt) {
@@ -259,10 +263,16 @@ define([
           return;
         }
         return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function(results){
-          if(_self.lookAheadJob){
-              JobManager.setJobHook(results[0].id, _self.postJobCallback);
+          if(_self.lookaheadJob){
+              JobManager.setJobHook(results[0].id, _self.lookaheadCallback, _self.lookaheadError);
           }
                 return results;
+        }, function(error){
+          //if there is an error submitting the job and there is a lookahead error function, call it.
+          if(_self.lookaheadJob && _self.lookaheadError){
+            _self.lookaheadError();
+          }
+          return error;
         });
     },
 
