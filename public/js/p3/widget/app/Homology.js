@@ -352,6 +352,8 @@ define([
             _self.setJobHook(function() {
                 //the state set here shows up again in the HomologyMemoryStore onSetState
                 _self.result.set('state', { query: q, resultType: resultType, resultPath: output_file });
+            }, function(error){
+                Topic.publish('BLAST_UI', 'showErrorMessage', error);
             });
             _self.doSubmit(submit_values, start_params);
         }
