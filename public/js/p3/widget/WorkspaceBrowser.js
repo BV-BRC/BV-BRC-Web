@@ -611,7 +611,7 @@ define([
         validTypes: ['nwk'],
         tooltip: 'View Tree'
       }, function (selection, container) {
-      	console.log('ViewNwk container', container);
+        console.log('ViewNwk container', container);
         var path = selection.map(function (obj) { return obj.path;
           // console.log('ViewNwk obj', obj);
         });
@@ -619,17 +619,17 @@ define([
         var idType = 'genome_id';
         var labelType = 'genome_name';
         if (container._resultType == 'CodonTree' || container._resultType == 'PhylogeneticTree') { // handle Genome Tree
-        	if (encodePath(path[0]).includes('WithGenomeNames.')) {
-          		labelSearch = 'false';
-          		idType = 'genome_name';
-        	}
-        	Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
+          if (encodePath(path[0]).includes('WithGenomeNames.')) {
+            labelSearch = 'false';
+            idType = 'genome_name';
+          }
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
         }
         else { // handle Gene Tree
-		    idType = 'patric_id';
-          	labelSearch = 'true';
-          	labelType = 'feature_name';
-	        Topic.publish('/navigate', { href: '/view/PhylogeneticTreeGene/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
+          idType = 'patric_id';
+          labelSearch = 'true';
+          labelType = 'feature_name';
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTreeGene/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
         }
       }, false);
 
@@ -640,7 +640,7 @@ define([
         tooltip: 'View Archaeopteryx Tree'
       }, function (selection, container) {
         var path = selection.map(function (obj) { return obj.path;
-        			// console.log('ViewNwkXml obj', obj);
+        // console.log('ViewNwkXml obj', obj);
         });
         var fileType = selection.map(function (obj) { return obj.type; });
         var labelSearch = 'true';
@@ -649,8 +649,8 @@ define([
         console.log('container', container);
         console.log('self.browserHeader', self.browserHeader);
         if (container._resultType !== 'CodonTree' && container._resultType !== 'PhylogeneticTree') {
-        	idType = 'patric_id';
-        	labelType = 'feature_name';
+          idType = 'patric_id';
+          labelType = 'feature_name';
         }
         if (encodePath(path[0]).includes('WithGenomeNames.')) {
           labelSearch = 'false';

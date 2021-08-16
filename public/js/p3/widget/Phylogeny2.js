@@ -88,9 +88,9 @@ define([
         containerWidget: this
       });
       this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container' }, this.containerPane.domNode);
- 	  this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
-  	  this.treeDiv2 = domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
- 	  // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
+      this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
+      this.treeDiv2 = domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
+      // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
       // this.addChild(this.containerActionBar);
       this.addChild(this.selectionActionBar);
@@ -245,7 +245,6 @@ define([
       var nodeVisualizations = {};
       var specialVisualizations = {};
 
-      var decorator = '';
       var property_name = '';
 
       if (!this.newickxml) {
@@ -253,17 +252,17 @@ define([
         return;
       }
       var mytree;
-	  try {
+      try {
         // console.log('this.fileType', this.fileType);
-	  	if (this.fileType == 'phyloxml') {
+        if (this.fileType == 'phyloxml') {
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
 
           var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
           console.log('mytree collectPropertyRefs refs_set: ', refs_set);
 
           if (refs_set.size > 0) {
-		 	  this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv); // show control1 panel if there are node properties
-			  refs_set.forEach(function (a) {
+            this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv); // show control1 panel if there are node properties
+            refs_set.forEach(function (a) {
               // console.log('refs_set a', a);
 
               var property_line = a.split(':');
@@ -273,7 +272,6 @@ define([
                 property_name = property_line[0];
               }
               else if (property_line.length > 1) {
-                decorator = property_line[0];
                 property_name = property_line[1];
               }
               nodeVisualizations[property_name] =  {
@@ -286,29 +284,29 @@ define([
                 colors: 'category50',
                 sizes: null
               };
-			  });
-			  // console.log('mytree nodeVisualizations: ', nodeVisualizations);
+            });
+            // console.log('mytree nodeVisualizations: ', nodeVisualizations);
           }
-	  	}
-	  	else {
-	  		mytree = window.archaeopteryx.parseNewHampshire(this.newickxml, true, false);
-	  	}
+        }
+        else {
+          mytree = window.archaeopteryx.parseNewHampshire(this.newickxml, true, false);
+        }
         console.log('in try tree this.newickxml', this.newickxml);
         console.log('mytree', mytree);
-	  }
-	  catch (e) {
+      }
+      catch (e) {
         alert('error while parsing tree: ' + e);
-	  }
-	  if (mytree) {
+      }
+      if (mytree) {
         try {
-		  forester.midpointRoot(mytree);
-		  console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
-		  window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, specialVisualizations);
+          forester.midpointRoot(mytree);
+          console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
+          window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, specialVisualizations);
         }
         catch (e) {
-		  alert('error while launching archaeopteryx: ' + e);
+          alert('error while launching archaeopteryx: ' + e);
         }
-	  }
+      }
     },
 
     selectionActions: [

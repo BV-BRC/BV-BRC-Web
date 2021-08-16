@@ -154,7 +154,7 @@ define([
     onSelection: function () {
 
       var cur = this.selection.map(lang.hitch(this, function (selected) {
-      	// console.log("onSelection selected", selected);
+        // console.log("onSelection selected", selected);
         return { patric_id: selected.id };
       }));
 
@@ -169,7 +169,7 @@ define([
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (record) {
-       	// console.log("onSelection selected record", record);
+        // console.log("onSelection selected record", record);
 
           this.itemDetailPanel.set('selection', [record[0]]);
         }));
@@ -466,7 +466,7 @@ define([
 
           var updateSelection = selection;
 
-          var query = 'in(' + 'patric_id' + ',(' + selection.map(function (x) {
+          var query = 'in(patric_id,(' + selection.map(function (x) {
             return encodeURIComponent(x.patric_id);
           }).join(',') + '))';
 
@@ -482,20 +482,20 @@ define([
             },
             handleAs: 'json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-            data: (query) + '&select(' + 'patric_id' + ',feature_id)&limit(1000)'
+            data: (query) + '&select(patric_id,feature_id)&limit(1000)'
 
           }).then(function (res) {
             if (res && res.response && res.response.docs) {
               var features = res.response.docs;
               features.forEach(function (feature) {
                 updateSelection.map(lang.hitch(this, function (selected) {
-      				selected.feature_id = feature.feature_id;
-      			})) })
-      	 	// console.log("Res: updateSelection:", updateSelection);
+                  selected.feature_id = feature.feature_id;
+                })) })
+            // console.log("Res: updateSelection:", updateSelection);
             } },
           function (err) {
-        	console.error('Error Retreiving Features: ', err);
-      	});
+            console.error('Error Retreiving Features: ', err);
+          });
 
           var stg = new SelectionToGroup({
             selection: selection,
@@ -555,8 +555,8 @@ define([
         }, this);
       }
       this.selectionActions.forEach(function (a) {
-	    //  console.log('action array a', a);
-    	//  console.log('this.state', this.state);
+        //  console.log('action array a', a);
+        //  console.log('this.state', this.state);
 
         var cont = false;
         if (this.state && a[0] == 'IDSelection') {
