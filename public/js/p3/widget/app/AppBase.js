@@ -269,8 +269,9 @@ define([
                 return results;
         }, function(error){
           //if there is an error submitting the job and there is a lookahead error function, call it.
+          //will also be called if JobManager gets back a failed.
           if(_self.lookaheadJob && _self.lookaheadError){
-            _self.lookaheadError();
+            _self.lookaheadError("Job submission not accepted. Please try again or report this error.");
           }
           return error;
         });

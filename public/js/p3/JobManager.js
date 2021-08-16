@@ -80,7 +80,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
                 if (status == "failed"){
                     self.targetJob = null;
                     if (self.targetErrorCallback){
-                        self.targetErrorCallback();
+                        self.targetErrorCallback(`Job failed to finish. Please check ${res[0][self.targetJob].outputpath}/${res[0][self.targetJob].output_file} for details`);
                     }
                 }
                 else if (self.targetJobCallback && status != "queued" && status != "in-progress"){
