@@ -72,12 +72,18 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
           failed !== StatusSummary.failed) {
         change = true;
 
-        if (self.targetJob && self.targetJobCallback){
+        if (self.targetJob){
             //NEED TO FIND FINISHED JOBS
             var prom2 = window.App.api.service('AppService.query_tasks', [[self.targetJob]]);
             prom2.then(function (res) {
                 var status = res[0][self.targetJob].status;
-                if (status != "queued" && status != "in-progress"){
+                if (status == "failed"){
+                    self.targetJob = null;
+                    if (self.targetErrorCallback){
+                        self.targetErrorCallback();
+                    }
+                }
+                else if (self.targetJobCallback && status != "queued" && status != "in-progress"){
                     self.targetJob=null;
                     self.targetJobCallback();
                 }
@@ -178,9 +184,11 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     },
     targetJob: null,
     targetJobCallback: null,
-    setJobHook: function(jobID, callback){
+    targetErrorCallback: null,
+    setJobHook: function(jobID, callback, error_callback){
       self.targetJob = jobID;
       self.targetJobCallback = callback;
+      self.targetErrorCallback = error_callback;
     },
 
     killJob: function (id) {
