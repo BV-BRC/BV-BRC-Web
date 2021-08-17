@@ -41,7 +41,7 @@ define([
       }, this);
 
       // widgets called by taxon_id
-      sumWidgets = ['rgSummaryWidget', 'gmSummaryWidget'];
+      sumWidgets = ['rgSummaryWidget', 'bmSummaryWidget'];
       // sumWidgets = [];
 
       var taxonQuery = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
