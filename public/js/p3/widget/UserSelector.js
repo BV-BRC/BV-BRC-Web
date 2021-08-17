@@ -116,6 +116,7 @@ define([
 
     getSelected: function () {
       var username = this.attr('value');
+      console.log("THIS NEED WORK...@patricbrc.org is not right")
       return username.length ?  username + '@patricbrc.org' : null;
     },
 

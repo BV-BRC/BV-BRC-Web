@@ -64,7 +64,7 @@ define([
         values.url = window.location.href;
 
         if (window.App.user && window.App.user.id) {
-          values.userId = window.App.user.id.replace('@patricbrc.org', '');
+          values.userId = window.App.user.id.replace('@' + localStorage.getItem("realm"), '');
         }
 
         var formData = new FormData();
