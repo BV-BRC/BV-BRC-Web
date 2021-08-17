@@ -1,17 +1,11 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
-  'dojo/dom-class',
-  'dojo/text!./templates/MetaCATS.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
-  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/ValidationTextBox', 'dijit/form/Textarea',
-  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
+  'dojo/_base/declare', 'dojo/on',
+  'dojo/text!./templates/MetaCATS.html', './AppBase', 'dojo/dom-construct', 'dojo/_base/lang',
+  'dojo/query', '../../WorkspaceManager'
 ], function (
-  declare, WidgetBase, on,
-  domClass,
-  Template, AppBase, domConstruct, registry,
-  Deferred, aspect, lang, domReady, NumberTextBox, ValidationTextBox, Textarea,
-  query, dom, popup, Tooltip, Dialog, TooltipDialog,
-  children, WorkspaceManager, Memory, Standby, when
+  declare, on,
+  Template, AppBase, domConstruct, lang,
+  query, WorkspaceManager
 ) {
   return declare([AppBase], {
     baseClass: 'AppBase',
@@ -50,6 +44,33 @@ define([
       this.emptyTable(this.groupsTable, this.startingRows);
       this.numgenomes.startup();
       this.onInputTypeChange();
+
+      this.result = new MetaCATSAutoGrid({
+        id: this.id + '_blastResult',
+        style: 'min-height: 300px;'
+      });
+      this.result.placeAt(query('.auto_groups')[0]);
+      this.result.startup();
+
+      Topic.subscribe('BLAST_UI', lang.hitch(this, function () {
+        // console.log("BLAST_UI:", arguments);
+        var key = arguments[0],
+          value = arguments[1];
+
+        switch (key) {
+          case 'showErrorMessage':
+            this.showErrorMessage(value);
+            this.hideResultGridContainer();
+            break;
+          case 'showNoResultMessage':
+            this.showNoResultMessage();
+            this.hideResultGridContainer();
+            break;
+          default:
+            break;
+        }
+      }));
+
       this._started = true;
     },
 
