@@ -3,6 +3,9 @@ define([], function () {
   return {
     'genome': [
       {
+        field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
@@ -42,7 +45,7 @@ define([], function () {
         field: 'species', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'genome_status', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'genome_status', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'completion_date', type: 'str', facet: false, facet_hidden: true, search: true
@@ -99,13 +102,13 @@ define([], function () {
         field: 'sequencing_centers', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'sequencing_platform', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'sequencing_platform', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'sequencing_depth', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'assembly_method', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'assembly_method', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'chromosomes', type: 'numeric', facet: false, facet_hidden: true, search: true
@@ -177,13 +180,13 @@ define([], function () {
         field: 'geographic_location', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true
@@ -244,9 +247,6 @@ define([], function () {
       },
       {
         field: 'date_inserted', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
     'genome_feature': [
