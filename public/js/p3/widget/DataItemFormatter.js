@@ -440,46 +440,73 @@ define([
       return div;
     },
 
+    bacteria_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Genomes / Segments',
+        text: 'count'
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      }];
+
+      var div = domConstruct.create('div');
+      // displayHeader(div, item.taxon_name, 'fa icon-taxonomy fa-2x', '/view/Taxonomy/' + item.taxon_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     virus_data: function (item, options) {
       options = options || {};
 
       var columns = [{
         name: 'Families',
-        text: '',
+        text: 'unique_family'
       }, {
         name: 'Genera',
-        text: '',
+        text: 'unique_genus'
       }, {
         name: 'Species',
-        text: '',
+        text: 'unique_species'
       }, {
-        name: 'Strains (GenBank)',
-        text: '',
+        name: 'Strains',
+        text: 'unique_strain'
       }, {
-        name: 'Sequences (GenBank)',
-        text: ''
+        name: 'Genomes / Segments',
+        text: 'count'
       }, {
-        name: 'Proteins (GenBank and UniProt)',
-        text: ''
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
       }, {
         name: '3D Protein Structures (PDB)',
-        text: '',
-      }, {
-        name: 'Experimentally Determined Epitopes (IEDB)',
-        text: '',
-      }, {
-        name: 'Genomes with Clinical Metadata (NIAID GSCID, manual curation)',
-        text: '',
-      }, {
-        name: 'Gene',
-        text: ''
-      }, {
-        name: 'Host Factor Experiments (NIAID Systems Biology, ViPR DBPs)',
-        text: ''
+        text: 'PDB'
       }];
 
       var div = domConstruct.create('div');
-      displayHeader(div, 'Viruses', 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      // displayHeader(div, item.taxon_name, 'fa icon-taxonomy fa-2x', '/view/Taxonomy/' + item.taxon_id, options);
       displayDetail(item, columns, div, options);
 
       return div;
