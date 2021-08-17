@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
-  'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/VirusOverview.html',
+  'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/BacteriaOverview.html',
   'dojo/request', 'dojo/_base/lang', 'dojo/when',
   'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', './GenomeFeatureSummary', './DataItemFormatter', './ExternalItemFormatter'
 
@@ -41,7 +41,7 @@ define([
       }, this);
 
       // widgets called by taxon_id
-      sumWidgets = ['rgSummaryWidget', 'vmSummaryWidget'];
+      sumWidgets = ['rgSummaryWidget', 'bmSummaryWidget'];
       // sumWidgets = [];
 
       var taxonQuery = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
@@ -71,7 +71,7 @@ define([
 
     createSummary: function (data) {
       domConstruct.empty(this.taxonomySummaryNode);
-      domConstruct.place(DataItemFormatter(data, 'virus_data', {}), this.taxonomySummaryNode, 'first');
+      domConstruct.place(DataItemFormatter(data, 'bacteria_data', {}), this.taxonomySummaryNode, 'first');
     },
 
     startup: function () {
