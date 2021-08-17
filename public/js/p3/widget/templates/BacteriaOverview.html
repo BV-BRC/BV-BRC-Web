@@ -1,18 +1,22 @@
 <div>
-
   <div class="column-left">
     <div class="section">
       <h3 class="section-title close" title="Bacteria Data Summary"><span class="wrap">Bacteria Data Summary</span></h3>
-      <div data-dojo-attach-point="taxonomySummaryNode">
-        Loading Taxonomy Summary...
+      <div class="data-summary" data-dojo-attach-point="taxonomySummaryNode" style="padding-top: 10px;">
+        Loading Bacteria Data Summary...
       </div>
+      <style>
+        .data-summary .DataItemProperty {
+          width: 60%;
+        }
+      </style>
     </div>
   </div>
 
   <div class="column-mid">
     <div class="section">
       <h3 class="section-title close" title="Bacteria families."><span class="wrap">Bacteria Families</span></h3>
-      <div class="bacteria-section">
+      <div class="bacteria-section" style="padding-top: 10px;">
         <div class="bacteria-families">
           <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/469#view_tab=overview">Acinetobacter</a></div>
           <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1386#view_tab=overview">Bacillus</a></div>
@@ -88,10 +92,9 @@
   </div>
 
   <div class="column-right">
-
     <div class="section">
       <h3 class="close section-title"><span class="wrap">News &amp; Announcements</span></h3>
-      <div id="bacteria-announcements">
+      <div id="bacteria-announcements" style="padding-top: 10px;">
         <ul id="slides"></ul>
         <div id="dot-navigation"></div>
       </div>
@@ -101,7 +104,5 @@
       <h3 class="close section-title"><span class="wrap">Twitter</span></h3>
       <a class="twitter-timeline" data-lang="en" data-height="400" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
     </div>
-
   </div>
-
 </div>

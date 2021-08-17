@@ -1,18 +1,22 @@
 <div>
-
   <div class="column-left">
     <div class="section">
       <h3 class="section-title close" title="Virus Data Summary"><span class="wrap">Virus Data Summary</span></h3>
-      <div data-dojo-attach-point="taxonomySummaryNode">
-        Loading Taxonomy Summary...
+      <div class="data-summary" data-dojo-attach-point="taxonomySummaryNode" style="padding-top: 10px;">
+        Loading Virus Data Summary...
       </div>
+      <style>
+        .data-summary .DataItemProperty {
+          width: 60%;
+        }
+      </style>
     </div>
   </div>
 
   <div class="column-mid">
     <div class="section">
       <h3 class="section-title close" title="Virus families."><span class="wrap">Virus Families</span></h3>
-      <div class="virus-section">
+      <div class="virus-section" style="padding-top: 10px;">
         <div class="virus-families">
           <span style="font-size: 1em; font-weight: bold;">Single-Stranded Positive-Sense RNA</span>
           <div class="virus"><img src="/patric/images/bv-brc/viruses/caliciviridae.jpg" /><a href="/view/Taxonomy/11974#view_tab=overview">Caliciviridae</a></div>
@@ -92,7 +96,7 @@
   <div class="column-right">
     <div class="section">
       <h3 class="close section-title"><span class="wrap">News &amp; Announcements</span></h3>
-      <div id="virus-announcements">
+      <div id="virus-announcements" style="padding-top: 10px;">
         <ul id="slides"></ul>
         <div id="dot-navigation"></div>
       </div>
@@ -102,5 +106,4 @@
       <a class="twitter-timeline" data-lang="en" data-height="400" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
     </div>
   </div>
-
 </div>
