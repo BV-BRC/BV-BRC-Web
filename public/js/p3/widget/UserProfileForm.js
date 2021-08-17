@@ -237,6 +237,18 @@ define([
         // usernamehdr.parentNode.removeChild(usernamehdr);
       } else {
         this.auth = false;
+        if (window.location.search){
+          var o={};
+          var fields = ["email","username","first_name","last_name","middle_name","affiliation","organization","organisms","interests"];
+          var queryObj = new URLSearchParams(window.location.search)
+          fields.forEach(function(f){
+              var v = queryObj.get(f);
+              if (v){
+                o[f]=v;
+              }
+          })
+          this.setValues(o)
+        }
         document.getElementsByClassName('upSubmit')[0].style.display = 'none';
         document.getElementsByClassName('newSubmit')[0].style.display = 'block';
         var changepwsection = document.getElementsByClassName('changepwsection')[0];

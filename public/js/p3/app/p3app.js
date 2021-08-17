@@ -163,14 +163,14 @@ define([
         _self.navigate(newState);
       });
 
-      Router.register('/register', function (params, oldPath, newPath, state) {
+      Router.register('/register(.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
         var newState = populateState(params);
-
+        // console.log("newState /register", params)
         /* istanbul ignore next */
-        var path = params.params[0] || '/';
+        // var path = params.params[0] || '/';
         newState.widgetClass = 'p3/widget/UserProfileForm';
-        newState.value = path;
+        newState.value = "/register"
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'BVBRC Registration';
