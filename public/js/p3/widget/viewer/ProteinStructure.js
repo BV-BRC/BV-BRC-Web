@@ -45,7 +45,7 @@ function (
     id: 'proteinStructureViewer',
     className: 'ProteinStructureViewer',
     templateString: templateString,
-    jsmol: null,
+    molstar: null,
     viewState: new ProteinStructureState({}),
     state: {},
     postCreate: function () {
@@ -58,18 +58,10 @@ function (
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
 
-      // Opera and especially Safari suffer from performance issues with JMol with larger view sizes.
-      let viewerSize = ( has('safari') || has('opera') ) ? '500' : '100%';
-      // the JMol viewer object
-      this.jsmol = new ProteinStructureDisplay({
-        id: this.id + '_structure',
-        jmolInfo: {
-          height: viewerSize,
-          width: viewerSize,
-        }
+      // Mol* viewer object
+      this.molstar = new ProteinStructureDisplay({
+        id: this.id + '_structure'
       });
-
-      domConstruct.place(this.jsmol.getViewerHTML(), this.contentDisplay.containerNode);
 
       this.displayControl = new ProteinStructureDisplayControl({
         id: this.id + '_displayControl',
@@ -84,31 +76,11 @@ function (
           // if the accession changes we keep all view state values but highlights
           this.getAccessionInfo(newValue).then(record => {
             var newState = new ProteinStructureState({});
-            newState.set('displayType', this.viewState.get('displayType'));
-            newState.set('effect', this.viewState.get('effect'));
             newState.set('accession', record);
             this.set('viewState', newState);
           });
         }
       }));
-
-      this.displayControl.watch('scriptText', lang.hitch(this, function (attr, oldValue, newValue) {
-        this.jsmol.executeScript(newValue);
-      }));
-      this.displayControl.watch('effect', lang.hitch(this, function (attr, oldValue, newValue) {
-        this.get('viewState').set('effect', newValue);
-      }));
-      this.displayControl.watch('zoomLevel', lang.hitch(this, function (attr, oldValue, newValue) {
-        this.get('viewState').set('zoomLevel', newValue);
-      }));
-      this.displayControl.watch('displayType', lang.hitch(this, function (attr, oldValue, newValue) {
-        // console.log('control displayType changed from ' + oldValue + ' to ' + newValue);
-        this.getDisplayTypeInfo(newValue).then(record => {
-          this.get('viewState').set('displayType', record);
-          this.displayControl.set('displayTypeInfo', record);
-        });
-      }));
-      domConstruct.place(this.displayControl.domNode, this.displayControls);
 
       // console.log('finished ' + this.id + '.postCreate');
 
@@ -186,13 +158,11 @@ function (
       this.updateFromViewState(viewState);
     },
     updateFromViewState: function (viewState) {
-      this.displayControl.set('displayTypeInfo', viewState.get('displayType'));
-      this.displayControl.set('zoomLevel', viewState.get('zoomLevel'));
       this.displayControl.set('accessionId', viewState.get('accession').id);
       this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
       this.featureHighlights.set('accessionId', viewState.get('accession').id);
       this.epitopeHighlight.set('accessionId', viewState.get('accession').id);
-      this.jsmol.set('viewState', viewState);
+      this.molstar.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
     },
     updateAccessionInfo: function (accessionInfo) {
