@@ -2,7 +2,7 @@ const nconf = require('nconf');
 const path = require('path');
 
 const defaults = {
-  'http_port': 3001,
+  'http_port': 3000,
   'application_id': 'patric3',
   'p3_clientId': 'patric3',
   'p3_clientSecret': 'patric3',

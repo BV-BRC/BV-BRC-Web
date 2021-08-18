@@ -75,17 +75,104 @@
                       <label class="appBoxLabel">Input</label>
                     </div>
                     <div class="appRow">
-                      <input type="radio" id="radio1" data-dojo-type="dijit/form/RadioButton"
-                        data-dojo-attach-point="input_groups" data-dojo-attach-event="onChange:onInputTypeChange"
+                      <input type="radio" id="radio3" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_auto" data-dojo-attach-event="onChange:onInputTypeChange"
                         checked />
+                      <label for="radio3">Auto grouping</label>
+                      <input type="radio" id="radio1" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_groups" data-dojo-attach-event="onChange:onInputTypeChange" />
                       <label for="radio1">Feature groups</label>
                       <input type="radio" id="radio2" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_files" data-dojo-attach-event="onChange:onInputTypeChange" />
                       <label for="radio2">Alignment file</label>
-                      <input type="radio" id="radio3" data-dojo-type="dijit/form/RadioButton"
-                        data-dojo-attach-point="input_auto" data-dojo-attach-event="onChange:onInputTypeChange" />
-                      <label for="radio3">Auto grouping</label>
                     </div>
+
+                    <table data-dojo-attach-point="auto_grouping_table" style="width:100%; display:none">
+                      <tr name="auto_grouping_input_row">
+                        <td colspan="0">
+
+                          <div class="appRow">
+                            <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:25%">
+                              <label class="paramlabel">Metadata</label><br>
+                              <select data-dojo-type="dijit/form/Select" name="metadata_group"
+                                data-dojo-attach-point="metadata_group" style="width:100%" required="false"
+                                data-dojo-attach-event="onChange:controlYear"
+                                data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:'MySubFolder'">
+                                <option value="host_name" selected="selected">Host Name</option>
+                                <option value="geographic_location">Geographic Location</option>
+                                <option value="isolation_country">Isolation Country</option>
+                                <option value="species">Species</option>
+                                <option value="genus">Genus</option>
+                                <option value="collection_year">Collection Year</option>
+                              </select>
+                            </div>
+
+                            <div class="appRowSegment" style="margin-left: 2px; text-align:left; width:73%">
+                              <div class="year_range_div" style="visibility:hidden">
+                                <label class="paramlabel">Year Ranges</label><br>
+                                <div style="width:96%;display:inline-block"
+                                  data-dojo-type="dijit/form/ValidationTextBox" name="year_ranges"
+                                  data-dojo-attach-point="year_ranges"
+                                  data-dojo-props="regExp:'[\\s\-\,0-9]*', invalidMessage:'Invalid year range.', placeholder:'1998,1999-2005,2006'">
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="appRow">
+                            <label>Select feature group</label><br>
+                            <div style="width:85%;display:inline-block;"
+                              data-dojo-type="p3/widget/WorkspaceObjectSelector" name="auto_feature_group"
+                              required="false" data-dojo-attach-point="auto_feature_group"
+                              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.'">
+                            </div>
+                            <div class="auto_feature_button" style="width:10%;display:inline-block;"><i
+                                data-dojo-attach-event="click:onAddAutoGroup" class="fa icon-plus-circle fa-lg"></i>
+                            </div>
+                            <br>
+                            <div class="appRow">
+                              <input type="radio" id="radio6" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="auto_dna" name="auto_alphabet" value="dna" />
+                              <label for="radio6" style="font-size:8pt">DNA</label>
+                              <input type="radio" id="radio7" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="auto_protein" name="auto_alphabet" value="protein" checked />
+                              <label for="radio7" style="font-size:8pt">Protein</label>
+                            </div>
+
+                            <div class="appRow">
+                              <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:100%">
+                                <label class="paramlabel">Group names</label><br>
+                                <div data-dojo-type="dojo/store/Memory" data-dojo-attach-point="name_store"
+                                  name="name_store" data-dojo-id="name_store"></div>
+                                <div data-dojo-type="dijit/form/ComboBox"
+                                  data-dojo-props="store:name_store, searchAttr:'id'" name="name_list"
+                                  data-dojo-attach-point="name_list">
+                                </div>
+                                <div data-dojo-attach-point="updateName" data-dojo-type="dijit/form/Button"
+                                  data-dojo-attach-event="click:updateGroup">
+                                  Change group</div>
+                              </div>
+                            </div>
+
+                            <div class="appRow">
+                              <div data-dojo-attach-point="deleteRows" data-dojo-type="dijit/form/Button"
+                                data-dojo-attach-event="click:deleteAutoRows">
+                                Delete Rows</div>
+                            </div>
+
+                            <div class="appRow">
+                              <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:100%">
+                                <label>Groups Grid</label><br>
+                                <div style="width:95%;display:inline-block;" name="grid" data-dojo-attach-point="grid"
+                                  data-dojo-type="p3/widget/MetaCATSGrid">
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
 
                     <table data-dojo-attach-point="feature_groups_table" style="width:100%; display:none">
                       <tr name="feature_groups_input_row">
@@ -95,7 +182,7 @@
                             <div style="width:85%;display:inline-block;"
                               data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_featuregroup"
                               required="false" data-dojo-attach-point="user_genomes_featuregroup"
-                              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.', placeHolder:'Optional'">
+                              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.'">
                             </div>
                             <div style="width:10%;display:inline-block;"><i
                                 data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i>
@@ -151,53 +238,7 @@
                       </tr>
                     </table>
 
-                    <table data-dojo-attach-point="auto_grouping_table" style="width:100%; display:none">
-                      <tr name="auto_grouping_input_row">
-                        <td colspan="0">
-                          <div class="appRow">
-                            <label>Select feature group</label><br>
-                            <div style="width:85%;display:inline-block;"
-                              data-dojo-type="p3/widget/WorkspaceObjectSelector" name="auto_feature_group"
-                              required="false" data-dojo-attach-point="auto_feature_group"
-                              data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.', placeHolder:'Optional'">
-                            </div>
-                            <div style="width:10%;display:inline-block;"><i data-dojo-attach-event=""
-                                class="fa icon-plus-circle fa-lg"></i>
-                            </div>
-                            <br>
-                            <div class="appRow">
-                              <input type="radio" id="radio6" data-dojo-type="dijit/form/RadioButton"
-                                data-dojo-attach-point="auto_dna" name="auto_alphabet" value="dna" />
-                              <label for="radio6" style="font-size:8pt">DNA</label>
-                              <input type="radio" id="radio7" data-dojo-type="dijit/form/RadioButton"
-                                data-dojo-attach-point="auto_protein" name="auto_alphabet" value="protein" checked />
-                              <label for="radio7" style="font-size:8pt">Protein</label>
-                            </div>
 
-                            <div class="appRow">
-                              <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
-                                <label class="paramlabel">Metadata group</label><br>
-                                <select data-dojo-type="dijit/form/Select" name="metadata_group"
-                                  data-dojo-attach-point="metadata_group" style="width:100%" required="false"
-                                  data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:'MySubFolder'">
-                                  <option value="Host Name" selected="selected">Host Name</option>
-                                  <option value="Geographic Location">Geographic Location</option>
-                                  <option value="Isolation Country">Isolation Country</option>
-                                  <option value="Species">Species</option>
-                                  <option value="Genus">Genus</option>
-                                  <option value="Year">Year</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div class="appRow">
-                              <div class="auto_groups"></div>
-                            </div>
-
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
 
             </tr>
             <!-- </td> -->
