@@ -5,7 +5,7 @@
       "name": "Beta strand"
     },
     {
-      "coords": "336-361,379-432,391-525,480-488",
+      "coords": "336,361,379,432,391,525,480,488",
       "name": "Disulfide bond"
     },
     {
@@ -100,7 +100,7 @@
     },
     {
       "coords": "685-686,815-816",
-      "name": "Site"
+      "name": "Cleavage site"
     },
     {
       "coords": "13-685",
@@ -190,7 +190,7 @@
     },
     {
       "coords": "685-686,815-816",
-      "name": "Site"
+      "name": "Cleavage site"
     },
     {
       "coords": "13-685",
