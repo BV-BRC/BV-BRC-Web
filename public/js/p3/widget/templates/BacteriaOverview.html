@@ -1,0 +1,108 @@
+<div>
+  <div class="column-left">
+    <div class="section">
+      <h3 class="section-title close" title="Bacteria Data Summary"><span class="wrap">Bacteria Data Summary</span></h3>
+      <div class="data-summary" data-dojo-attach-point="taxonomySummaryNode" style="padding-top: 10px;">
+        Loading Bacteria Data Summary...
+      </div>
+      <style>
+        .data-summary .DataItemProperty {
+          width: 60%;
+        }
+      </style>
+    </div>
+  </div>
+
+  <div class="column-mid">
+    <div class="section">
+      <h3 class="section-title close" title="Bacteria families."><span class="wrap">Bacteria Families</span></h3>
+      <div class="bacteria-section" style="padding-top: 10px;">
+        <div class="bacteria-families">
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/469#view_tab=overview">Acinetobacter</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1386#view_tab=overview">Bacillus</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/773#view_tab=overview">Bartonella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/64895#view_tab=overview">Borreliella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/234#view_tab=overview">Brucella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/32008#view_tab=overview">Burkholderia</a></div>
+        </div>
+
+        <div class="bacteria-families">
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/194#view_tab=overview">Campylobacter</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/810#view_tab=overview">Chlamydia</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1485#view_tab=overview">Clostridium</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/776#view_tab=overview">Coxiella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/943#view_tab=overview">Ehrlichia</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/561#view_tab=overview">Escherichia</a></div>
+        </div>
+
+        <div class="bacteria-families">
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/262#view_tab=overview">Francisella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/209#view_tab=overview">Helicobacter</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1637#view_tab=overview">Listeria</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1763#view_tab=overview">Mycobacterium</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/286#view_tab=overview">Pseudomonas</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/780#view_tab=overview">Rickettsia</a></div>
+        </div>
+
+        <div class="bacteria-families">
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/590#view_tab=overview">Salmonella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/620#view_tab=overview">Shigella</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1279#view_tab=overview">Staphylococcus</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/1301#view_tab=overview">Streptococcus</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/662#view_tab=overview">Vibrio</a></div>
+          <div class="bacteria"><img src="/patric/images/bv-brc/bacteria/sample.jpg" /><a href="/view/Taxonomy/629#view_tab=overview">Yersinia</a></div>
+        </div>
+      </div>
+
+      <style>
+        .bacteria-section {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+        }
+        .bacteria-families {
+          display: flex;
+          flex-direction: column;
+        }
+        .bacteria-families .bacteria {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          flex-grow: 1;
+          padding: 5px 0px;
+        }
+        .bacteria-families .bacteria img {
+          width: 50px;
+          height: 50px;
+        }
+        .bacteria-families .bacteria a {
+          font-size: 1em;
+          font-weight: bold;
+          font-style: italic;
+        }
+      </style>
+
+    </div>
+    <div class="section">
+      <h3 class="section-title close" title="Summary of bacteria by key metadata attributes."><span class="wrap">Bacteria by Metadata</span></h3>
+      <div class="gmSummaryWidget" data-dojo-attach-point="bmSummaryWidget"
+        data-dojo-type="p3/widget/BacteriaMetaSummary">
+      </div>
+    </div>
+  </div>
+
+  <div class="column-right">
+    <div class="section">
+      <h3 class="close section-title"><span class="wrap">News &amp; Announcements</span></h3>
+      <div id="bacteria-announcements" style="padding-top: 10px;">
+        <ul id="slides"></ul>
+        <div id="dot-navigation"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3 class="close section-title"><span class="wrap">Twitter</span></h3>
+      <a class="twitter-timeline" data-lang="en" data-height="400" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
+    </div>
+  </div>
+</div>

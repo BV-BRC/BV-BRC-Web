@@ -85,16 +85,17 @@ define([
       loadingMask.startup();
       loadingMask.show();
 
-      var path = '/genome_feature/?eq(patric_id,' + encodeURIComponent(fid) + ')';
-      DataAPI.get(path).then(function (data) {
-        loadingMask.hide();
-        var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
-        if (!window.featureDialog) {
-          window.featureDialog = new Dialog({ title: 'Feature Summary' });
-        }
-        window.featureDialog.set('content', content);
-        window.featureDialog.show();
-      });
+      DataAPI.queryGenomeFeatures(`eq(patric_id,${encodeURIComponent(fid)})`)
+        .then(r => {return r.items})
+        .then(function(data) {
+          loadingMask.hide();
+          var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
+          if (!window.featureDialog) {
+            window.featureDialog = new Dialog({ title: 'Feature Summary' });
+          }
+          window.featureDialog.set('content', content);
+          window.featureDialog.show();
+        });
     },
 
     featureSelect: [
@@ -118,9 +119,9 @@ define([
       genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
 
       var proms = genomeIDs.map(function (id) {
-        var path = '/genome_feature/?eq(genome_id,' + id + ')' +
-          '&select(' + self.featureSelect.join(',') + ')&eq(annotation,PATRIC)&ne(feature_type,source)&limit(25000)';
-        return DataAPI.get(path);
+        var query = 'eq(genome_id,' + id + ')' +
+          '&select(' + self.featureSelect.join(',') + ')&eq(annotation,PATRIC)&ne(feature_type,source)';
+        return DataAPI.queryGenomeFeatures(query,{limit: 25000}).then(r => {return r.items});
       });
 
       return all(proms);
@@ -136,9 +137,9 @@ define([
       genomeIDs = Array.isArray(genomeIDs) ? genomeIDs : [genomeIDs];
 
       var proms = genomeIDs.map(function (id) {
-        var path = '/genome_sequence/?eq(genome_id,' + id + ')' +
-            '&select(' + self.contigSelect.join(',') + ')&sort(-length,+sequence_id)&limit(25000)';
-        return DataAPI.get(path);
+        var query = 'eq(genome_id,' + id + ')' +
+            '&select(' + self.contigSelect.join(',') + ')&sort(-length,+sequence_id)';
+        return DataAPI.queryGenomeSequences(query,{limit:25000}).then(r => {return r.items});
       });
 
       return all(proms);
@@ -150,17 +151,18 @@ define([
      * @param {*} ext mauve extension (to be removed)
      */
     getGenomeLabels: function (genomeIDs, ext) {
-      var path = '/genome/?in(genome_id,(' + genomeIDs.join(',') + '))' +
-          '&select(genome_id,genome_name)';
+      var query = 'in(genome_id,(' + genomeIDs.join(',') + '))';
+          // '&select(genome_id,genome_name)';
+      return DataAPI.queryGenomes(query,{select:["genome_id","genome_name"]})
+        .then(r => {return r.items})
+        .then(function (data) {
+          var mapping = {};
+          data.forEach(function (org) {
+            mapping[org.genome_id  + '.' + ext] = org.genome_name;
+          });
 
-      return DataAPI.get(path).then(function (data) {
-        var mapping = {};
-        data.forEach(function (org) {
-          mapping[org.genome_id  + '.' + ext] = org.genome_name;
+          return mapping;
         });
-
-        return mapping;
-      });
     },
 
     /**

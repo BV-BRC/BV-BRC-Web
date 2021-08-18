@@ -1,13 +1,19 @@
 define([
   'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/GenomicFeatureSearch.html',
+  './FacetStoreBuilder',
   './PathogenGroups',
   './HostGroups',
 ], function (
   declare,
+  lang,
+  when,
   SearchBase,
   template,
+  storeBuilder,
   pathogenGroupStore,
   hostGroupStore,
 ) {
@@ -18,7 +24,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Genomic Feature Search',
+    searchAppName: 'Gene/Protein Search',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features&filter=false',
@@ -27,6 +33,22 @@ define([
 
       this.pathogenGroupNode.store = pathogenGroupStore
       this.hostGroupNode.store = hostGroupStore
+
+      when(storeBuilder('genome', 'host_common_name'), lang.hitch(this, function (store) {
+        this.hostNameNode.store = store
+      }))
+
+      when(storeBuilder('genome', 'geographic_group'), lang.hitch(this, function (store) {
+        this.geographicGroupNode.store = store
+      }))
+
+      when(storeBuilder('genome', 'isolation_country'), lang.hitch(this, function (store) {
+        this.isolationCountryNode.store = store
+      }))
+
+      when(storeBuilder('genome_feature', 'feature_type'), lang.hitch(this, function (store) {
+        this.featureTypeNode.store = store
+      }))
     },
     buildQuery: function () {
       let queryArr = []

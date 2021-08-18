@@ -1,18 +1,18 @@
 define([
   'dojo/_base/declare', 'dojo/_base/Deferred', 'dojo/request', 'dojo/_base/lang', 'dojo/topic',
   './_GenomeList', '../Phylogeny', '../../util/PathJoin',
-  '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish'
+  '../TaxonomyTreeGridContainer', '../VirusOverview', '../../util/QueryToEnglish'
 ], function (
   declare, Deferred, xhr, lang, Topic,
   GenomeList, Phylogeny, PathJoin,
-  TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish
+  TaxonomyTreeGrid, VirusOverview, QueryToEnglish
 ) {
   return declare([GenomeList], {
     params: null,
     taxon_id: '',
     apiServiceUrl: window.App.dataAPI,
     taxonomy: null,
-    perspectiveLabel: 'Taxon View',
+    perspectiveLabel: 'Virus View',
     perspectiveIconClass: 'icon-selection-Taxonomy',
     postCreate: function () {
       this.inherited(arguments);
@@ -54,7 +54,6 @@ define([
     addBacteriaTabs: function () {
       this.viewer.addChild(this.phylogeny, 1);
       this.viewer.addChild(this.amr, 4);
-      this.viewer.addChild(this.sequences, 5)
       this.viewer.addChild(this.specialtyGenes, 8);
       this.viewer.addChild(this.proteinFamilies, 10);
       this.viewer.addChild(this.pathways, 11);
@@ -66,7 +65,6 @@ define([
     removeBacteriaTabs: function () {
       this.viewer.removeChild(this.phylogeny);
       this.viewer.removeChild(this.amr);
-      this.viewer.removeChild(this.sequences);
       this.viewer.removeChild(this.specialtyGenes);
       this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
@@ -454,7 +452,7 @@ define([
     },
 
     createOverviewPanel: function () {
-      return new TaxonomyOverview({
+      return new VirusOverview({
         title: 'Overview',
         id: this.viewer.id + '_overview'
       });

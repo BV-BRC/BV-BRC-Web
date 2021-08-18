@@ -438,7 +438,9 @@
 
 }
 
-#bv-brc-home .announcements {
+#bv-brc-home .announcements,
+#bacteria-announcements,
+#viruses-announcements {
   background: var(--white-bg);
   padding: 15px 10px;
   border-bottom: 4px solid var(--green);
@@ -448,14 +450,18 @@
   margin-top: 5px;
 }
 
-#bv-brc-home .announcements #slides {
+#bv-brc-home .announcements #slides,
+#bacteria-announcements #slides,
+#viruses-announcements #slides {
   position: relative;
   padding: 0px;
   margin: 0px;
   list-style-type: none;
 }
 
-#bv-brc-home .announcements #slides .slide {
+#bv-brc-home .announcements #slides .slide,
+#bacteria-announcements #slides .slide,
+#viruses-announcements #slides .slide {
   position: absolute;
   left: 0px;
   top: 0px;
@@ -468,7 +474,9 @@
   transition: opacity 1s;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-title {
+#bv-brc-home .announcements #slides .slide .feed-title,
+#bacteria-announcements #slides .slide .feed-title,
+#viruses-announcements #slides .slide .feed-title {
   font-family: "Roboto", Arial, Helvetica, sans-serif;
   font-size: 11pt;
   font-weight: 400;
@@ -478,27 +486,37 @@
   margin: 0px;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-description {
+#bv-brc-home .announcements #slides .slide .feed-description,
+#bacteria-announcements #slides .slide .feed-description,
+#viruses-announcements #slides .slide .feed-description {
   font-family: "Roboto Slab", Arial, Helvetica, sans-serif;
   font-size: 10pt !important;
   padding: 5px 0px;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-description a {
+#bv-brc-home .announcements #slides .slide .feed-description a,
+#bacteria-announcements #slides .slide .feed-description a,
+#viruses-announcements #slides .slide .feed-description a {
   text-decoration: underline;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-img {
+#bv-brc-home .announcements #slides .slide .feed-img,
+#bacteria-announcements #slides .slide .feed-img,
+#viruses-announcements #slides .slide .feed-img {
   width: 100%;
   max-height: 170px!important;
 }
 
-#bv-brc-home .announcements #slides .current-slide {
+#bv-brc-home .announcements #slides .current-slide,
+#bacteria-announcements #slides.current-slide,
+#viruses-announcements #slides.current-slide {
   opacity: 1;
   visibility: visible;
 }
 
-#bv-brc-home .announcements #dot-navigation {
+#bv-brc-home .announcements #dot-navigation,
+#bacteria-announcements #dot-navigation,
+#viruses-announcements #dot-navigation {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -509,7 +527,9 @@
           justify-content: center;
 }
 
-#bv-brc-home .announcements #dot-navigation .dot {
+#bv-brc-home .announcements #dot-navigation .dot,
+#bacteria-announcements #dot-navigation .dot,
+#viruses-announcements #dot-navigation .dot {
   height: 20px;
   width: 20px;
   background: var(--main-bg);
@@ -520,7 +540,9 @@
   cursor: pointer;
 }
 
-#bv-brc-home .announcements #dot-navigation .current-dot {
+#bv-brc-home .announcements #dot-navigation .current-dot,
+#bacteria-announcements #dot-navigation .current-dot,
+#viruses-announcements #dot-navigation .current-dot {
   background: var(--blue);
   border: 2px solid var(--green);
 }
@@ -754,4 +776,43 @@
 
 .sars-mid-news ul {
   font-weight: 300;
+}
+
+@media screen and (max-width: 768px){
+  .column-mid,
+  .column-left,
+  .column-right {
+      min-width: 768px;
+  }
+}
+@media screen and (min-width: 1024px){
+  .column-mid {
+      width: 66.666%;
+      float: right;
+  }
+  .column-left,
+  .column-right {
+      width: 33.333%;
+      float: left;
+  }
+}
+@media screen and (min-width: 1200px){
+  .column-mid {
+      width: 52.99%;
+      float: left;
+  }
+  .column-left {
+      width: 24.99%;
+      float: left;
+  }
+  .column-right {
+      width: 21.99%;
+      float: right;
+  }
+}
+
+.column-mid .section,
+.column-left .section,
+.column-right .section{
+  padding: 0 5px;
 }
