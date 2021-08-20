@@ -78,9 +78,10 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
             prom2.then(function (res) {
                 var status = res[0][self.targetJob].status;
                 if (status == "failed"){
+                    var currentJob = self.targetJob;
                     self.targetJob = null;
                     if (self.targetErrorCallback){
-                        self.targetErrorCallback(`Job failed to finish. Please check ${res[0][self.targetJob].parameters.outputpath}/${res[0][self.targetJob].parameters.output_file} for details`);
+                        self.targetErrorCallback(`Job failed to finish. Please check ${res[0][currentJob].parameters.output_path}/${res[0][currentJob].parameters.output_file} for details`);
                     }
                 }
                 else if (self.targetJobCallback && status != "queued" && status != "in-progress"){

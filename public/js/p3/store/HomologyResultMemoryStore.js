@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/Stateful', 'dojo/when', 'dojo/topic',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager'
 ], function (
   declare, lang, Deferred,
   request, Stateful, when, Topic,
-  Memory, QueryResults
+  Memory, QueryResults, WorkspaceManager
 ) {
 
   return declare([Memory, Stateful], {
