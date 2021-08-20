@@ -25,14 +25,23 @@
 .RegistrationButton,
 .LoginButton {
     font-size: .95em;
+    padding:4px;
+    margin:4px;
+    color: #222;
+    border: 1px solid #222;
+    align-self: center;
+    align-items: center;
+
 }
 
+.LoginButton,
 .patric.claro .authLinks .dijitButtonNode,
 .patric.claro .authLinks .dijitButtonNode {
     background: #f7ffba none;
 
 }
 
+.loginButton:hover,
 .patric.claro .P3Header .dijitButtonHover .dijitButtonNode {
     background-color: #E8FFBA;
 
