@@ -170,7 +170,7 @@ define([
         /* istanbul ignore next */
         // var path = params.params[0] || '/';
         newState.widgetClass = 'p3/widget/UserProfileForm';
-        newState.value = "/register"
+        newState.value = '/register'
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'BVBRC Registration';
@@ -397,7 +397,7 @@ define([
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
-          n.innerHTML = this.user.id.replace('@' + localStorage.getItem("realm"), '');
+          n.innerHTML = this.user.id.replace('@' + localStorage.getItem('realm'), '');
         }
       }
 
@@ -576,10 +576,10 @@ define([
         localStorage.setItem('auth', JSON.stringify(data));
         localStorage.setItem('tokenstring', token);
         // localStorage.setItem('tokenid', data.tokenid);
-        var parts = data.un.split("@")
-        var userid = data.un.replace("@" + parts[1], '');
+        var parts = data.un.split('@')
+        var userid = data.un.replace('@' + parts[1], '');
         localStorage.setItem('userid', userid);
-        localStorage.setItem("realm",parts[1])
+        localStorage.setItem('realm', parts[1])
         var userServiceURL = window.App.userServiceURL;
         userServiceURL.replace(/\/+$/, '');
         xhr.get(userServiceURL + '/user/' + userid, {
@@ -591,14 +591,14 @@ define([
           .then(
             function (user) {
               var userObj = JSON.parse(user);
-              userObj.id += "@" + localStorage.getItem("realm");
+              userObj.id += '@' + localStorage.getItem('realm');
               user = JSON.stringify(userObj);
               localStorage.removeItem('userProfile');
               localStorage.setItem('userProfile', user);
-              console.log("window.location.path: ", window.location.pathname)
-              if (window.location.pathname==="/login"){
-                window.location = "/"
-              }else{
+              console.log('window.location.path: ', window.location.pathname)
+              if (window.location.pathname === '/login') {
+                window.location = '/'
+              } else {
                 window.location.reload();
               }
             },
@@ -655,7 +655,7 @@ define([
           function (user) {
             var userObj = JSON.parse(user);
             // console.log(userObj);
-            userObj.id += '@' + localStorage.getItem("realm");
+            userObj.id += '@' + localStorage.getItem('realm');
             // console.log(userObj);
             user = JSON.stringify(userObj);
             localStorage.removeItem('userProfile');
