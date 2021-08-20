@@ -375,6 +375,7 @@ define([
           this.dataAPI = this.dataAPI + '/';
         }
         DataAPI.init(this.dataAPI, this.authorizationToken || '');
+        this.api.client = DataAPI;
         this.api.data = RPC(this.dataAPI, this.authorizationToken);
       }
 
