@@ -24,14 +24,13 @@
 
 .RegistrationButton,
 .LoginButton {
-    font-size: .95em;
-    padding:4px;
-    margin:4px;
-    color: #222;
-    border: 1px solid #222;
+    padding: 2px 8px 4px 8px;
+    margin: 4px;
+    color: #000;
+    border: 1px solid #759dc0;
+    border-radius: 4px;
     align-self: center;
     align-items: center;
-
 }
 
 .LoginButton,
