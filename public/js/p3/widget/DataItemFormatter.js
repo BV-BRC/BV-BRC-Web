@@ -2303,6 +2303,10 @@ define([
       }, {
         name: 'Growth Rate',
         text: 'growth_rate'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');
@@ -2341,6 +2345,10 @@ define([
       }, {
         name: 'Growth Rate',
         text: 'growth_rate'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');

@@ -11,7 +11,7 @@ If you're contributing for the first time, configure your local git
 3. confgure `upstream` remote for later sync.
 
 ```shell
-git remote add upstream https://github.com/PATRIC3/p3_web
+git remote add upstream https://github.com/BV-BRC/website.git
 ```
 
 4. whenever you need to sync your local
@@ -28,19 +28,17 @@ For more detail, [read here](https://help.github.com/articles/syncing-a-fork/).
 
 ## Guidelines
 
-1. Do not use ECMAScript 6 (ECMAScript 2015) features, otherwise dojo builder will fail.
-2. Please build before you submit pull request, but do not include `public/js/release/` directory. Building code will reveal build error in advance, but we need to merge all the codes and make a final build before the release. The release files in PR makes confusion. We will remove this directory in near future,  once CI system is ready.
-3. Please lint your code. Keeping code convention highlights meaningful code changes and makes it easy to track and review. You can use IDE of your choice or git [pre-commit hook](./docs/pre-commit-linting.md).
-4. Add issue tag in the commit message if possible. for example, you can mention `resolves PATRIC3/patric3_website#1234` in your commit message, which makes a link between the issue tracker and commit.
+1. Please lint your code. Keeping code convention highlights meaningful code changes and makes it easy to track and review. You can use IDE of your choice or git [pre-commit hook](./docs/pre-commit-linting.md).
+2. Add issue tag in the commit message if possible. for example, you can mention `resolves BV-BRC/issues#123` in your commit message, which makes a link between the issue tracker and commit.
 
 
 
 ## Branch configuration
 
 ```
--- master : production + bug fixes -> https://www.patricbrc.org
--- develop : release ready commits + bug fixes -> https://beta.patricbrc.org
--- preview : working in progress. merged feature branches -> https://alpha.patricbrc.org
+-- master : production + bug fixes -> https://www.bv-brc.org
+-- develop : release ready commits + bug fixes -> https://beta.bv-brc.org
+-- preview : working in progress. merged feature branches -> https://alpha.bv-brc.org
 -- features/feature-xx: always branch from develop. delete after merging to develop
 ```
 
@@ -55,9 +53,9 @@ For more detail, [read here](https://help.github.com/articles/syncing-a-fork/).
 If you're developing a **new feature**
 
 1. create a feature branch from `develop` branch
-2. branch name is preferred with a prefix `featuers/` like, `features/workspace2.0`
-3. once you want show it to internal review, pull request to `preview` branch
-4. when code is ready for release, pull request to `develop` branch
+2. branch name is preferred with a prefix `featuers/` like, `features/workspace2.0` and send PR to the branch with same name
+3. for internal review, ask git maintainer to merge into `preview` branch
+4. when code is ready for release, the git maintainer will merge into `develop` branch
 5. delete feature branch
 
 
@@ -71,22 +69,7 @@ If you're making a **hot fix**, which has to be deployed immediately.
 1. pull request to `develop` **and** `master` branch
 
 ## UI Development
-https://github.com/PATRIC3/p3_web/blob/master/docs/README.md
-
-## Build
-
-Although a build a is not explicitly required to make a PR, it's a good idea to ensure your code will build.
-
-Before creating a build, sync your fork with the master of `PATRIC3/p3_web` as above.
-
-The following will create a build in `./public/js/release`:
-
-```
-./buildCLient.sh
-```
-
-**Note**: jBrowse is currently causing some havoc in builds.  You can 'fix' this by commenting out `xstyle/load-css` in `./public/js/JBrowse/main.js`.
-
+https://github.com/BV-BRC/website/blob/master/docs/README.md
 
 
 ## Preparing Release

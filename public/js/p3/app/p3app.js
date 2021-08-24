@@ -148,6 +148,36 @@ define([
         window.postMessage('RemoteReady', '*');
       });
 
+      Router.register('/login', function (params, oldPath, newPath, state) {
+        // console.log("Workspace URL Callback", params.newPath);
+        var newState = populateState(params);
+
+        /* istanbul ignore next */
+        var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/LoginForm';
+        newState.value = path;
+        newState.set = 'path';
+        newState.requireAuth = false;
+        newState.pageTitle = 'BVBRC Login';
+        // console.log("Navigate to ", newState);
+        _self.navigate(newState);
+      });
+
+      Router.register('/register(.*)', function (params, oldPath, newPath, state) {
+        // console.log("Workspace URL Callback", params.newPath);
+        var newState = populateState(params);
+        // console.log("newState /register", params)
+        /* istanbul ignore next */
+        // var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/UserProfileForm';
+        newState.value = '/register'
+        newState.set = 'path';
+        newState.requireAuth = false;
+        newState.pageTitle = 'BVBRC Registration';
+        // console.log("Navigate to ", newState);
+        _self.navigate(newState);
+      });
+
       Router.register('/job(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
         var newState = populateState(params);
@@ -387,7 +417,7 @@ define([
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
-          n.innerHTML = this.user.id.replace(/@patricbrc\.org|@viprbrc\.org/, '');
+          n.innerHTML = this.user.id.replace('@' + localStorage.getItem('realm'), '');
         }
       }
 
@@ -456,10 +486,6 @@ define([
           // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
 
-          // remove account settings if using a non-patric login (for now)
-          if (window.App.user.altLogin) {
-            document.querySelector('.userProfile').style.display = 'none';
-          }
           window.App.authorizationToken = localStorage.getItem('tokenstring');
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
@@ -570,8 +596,10 @@ define([
         localStorage.setItem('auth', JSON.stringify(data));
         localStorage.setItem('tokenstring', token);
         // localStorage.setItem('tokenid', data.tokenid);
-        var userid = data.un.replace('@patricbrc.org', '');
+        var parts = data.un.split('@')
+        var userid = data.un.replace('@' + parts[1], '');
         localStorage.setItem('userid', userid);
+        localStorage.setItem('realm', parts[1])
         var userServiceURL = window.App.userServiceURL;
         userServiceURL.replace(/\/+$/, '');
         xhr.get(userServiceURL + '/user/' + userid, {
@@ -583,11 +611,16 @@ define([
           .then(
             function (user) {
               var userObj = JSON.parse(user);
-              userObj.id += '@patricbrc.org';
+              userObj.id += '@' + localStorage.getItem('realm');
               user = JSON.stringify(userObj);
               localStorage.removeItem('userProfile');
               localStorage.setItem('userProfile', user);
-              window.location.reload();
+              console.log('window.location.path: ', window.location.pathname)
+              if (window.location.pathname === '/login') {
+                window.location = '/'
+              } else {
+                window.location.reload();
+              }
             },
             /* istanbul ignore next */
             function (err) {
@@ -598,7 +631,7 @@ define([
         console.log('i am not logged in yet');
       }
     },
-    loginWithVipr: function (data, token) {
+    WithVipr: function (data, token) {
       if (data !== undefined) {
         localStorage.setItem('auth', JSON.stringify(data));
         localStorage.setItem('tokenstring', token);
@@ -642,7 +675,7 @@ define([
           function (user) {
             var userObj = JSON.parse(user);
             // console.log(userObj);
-            userObj.id += '@patricbrc.org';
+            userObj.id += '@' + localStorage.getItem('realm');
             // console.log(userObj);
             user = JSON.stringify(userObj);
             localStorage.removeItem('userProfile');

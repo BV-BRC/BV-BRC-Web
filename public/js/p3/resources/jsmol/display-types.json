@@ -1,0 +1,107 @@
+{
+    "identifier": "id",
+    "label": "label",
+    "items": [
+        {
+            "id":"3d-charge",
+            "label": "Charge View",
+            "description": 'charge-help.html',
+            "icon": "3Dcharge.png",
+	    "colorMode": "select phe, met, trp, ile, val, leu, ala, pro; color grey; select cys, asn, gln, thr, tyr, ser, gly, his, lys, arg, asp, glu; color magenta; select his, lys, arg; color [X3366ff]; select asp, glu; color [Xdd0000];",
+            "script": [
+                "select all; wireframe off; spacefill 100%; halo off; select solvent; color [X3a79bc]; select ligand; color [X6dfa36];select dna; cartoon on; color [Xae00fe]; select rna; cartoon on; color [Xfd0162];",
+                "select phe, met, trp, ile, val, leu, ala, pro; color grey; select cys, asn, gln, thr, tyr, ser, gly, his, lys, arg, asp, glu; color magenta; select his, lys, arg; color [X3366ff]; select asp, glu; color [Xdd0000];"
+            ]
+        },
+        {
+            "id": "3d-composition",
+            "label": "Composition of Protein,Water,Solvent,etc",
+            "description": '3d-composition-help.html',
+            "icon": "3Dcomposition.png",
+	    "colorMode": "color [Xcbbe8a];",
+            "script": [
+                "select all; wireframe off; spacefill 100%; halo off; select protein; color [Xcbbe8a]; select dna; color [Xae00fe]; select rna; color [Xfd0162]; select solvent; color [X3a79bc]; select ligand; color [X6dfa36];"
+            ]
+        },
+        {
+            "id": "amino",
+            "label": "Primary Structure in Residue Color",
+            "description": 'residue-help.html',
+            "icon": "fstrAmino.png",
+	    "colorMode": "colour trace amino",
+            "script": [
+                "select all; color cpk; wireframe off; spacefill off; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off;trace on; colour trace amino;"
+            ]
+        },
+        {
+            "id": "rainbow",
+            "label": "Primary Structure in Rainbow",
+            "description": 'rainbow-help.html',
+            "icon": "fstrRainbow.png",
+	    "colorMode": "colour trace group",
+            "script": [
+                "select all; color cpk; wireframe off; spacefill off; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off;trace on; colour trace group;"
+                ]
+        },
+        {
+            "id": "cartoon",
+            "label": "Secondary Structure in Cartoon",
+            "description": 'cartoon-help.html',
+            "icon": "sstrCartoon.png",
+	    "colorMode": "colour structure;",
+            "script": [
+                "select all; wireframe off; spacefill off; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off;cartoon on; colour structure;"
+            ]
+        },
+        {
+            "id": "rocket",
+            "label": "Secondary Structure in Rocket",
+            "description": 'rocket-help.html',
+            "icon": "sstrRocket.png",
+	    "colorMode": "colour structure;",
+            "script": [
+                "select all; wireframe off; spacefill off; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off;rocket 1.5; colour structure;"
+            ]
+        },
+        {
+            "id": "ball-stick",
+            "label": "Ball & Stick",
+            "description": "ball-stick-help.html",
+            "icon": "tstrBallStick.png",
+	    "colorMode": "colour none;",
+            "script": [
+                "select all; wireframe 0.10; spacefill 20%; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off; halo off; colour none;"
+            ]
+        },
+        {
+            "id": "space",
+            "label": "Space",
+            "description": 'ball-stick-help.html',
+            "icon": "tstrSpace.png",
+	    "colorMode": "color chain;",
+            "script": [
+                "select all; wireframe off; spacefill 150%; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off; halo off; colour chain;"
+            ]
+        },
+        {
+            "id": "stick",
+            "label": "Stick",
+            "description": 'ball-stick-help.html',
+            "icon": "tstrStick.png",
+	    "colorMode": "colour chain;",
+            "script": [
+                "select all; wireframe 0.50; spacefill 20%; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off; halo off; colour chain;"
+                ]
+        },
+        {
+            "id": "wire",
+            "label": "Line",
+            "description": 'ball-stick-help.html',
+            "icon": "tstrWire.png",
+	    "colorMode": "colour chain;",
+            "script": [
+                "select all; wireframe 0.10; spacefill 20%; trace off; ribbon off;cartoon off; rocket off;hbonds off; ssbonds off; halo off; colour chain;"
+            ]
+        }
+    ]
+}
