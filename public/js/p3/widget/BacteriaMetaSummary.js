@@ -17,7 +17,7 @@ define([
 ) {
 
   var categoryName = {
-    family: 'Bacteria Family',
+    genus: 'Genus',
     host_group: 'Host Group',
     isolation_country: 'Isolation Country',
   };
@@ -48,7 +48,7 @@ define([
       var defMetadata = when(xhr.post(url, {
         handleAs: 'json',
         headers: this.headers,
-        data: this.query + '&facet((field,family),(field,host_group),(field,isolation_country),(mincount,1))' + this.baseQuery
+        data: this.query + '&facet((field,genus),(field,host_group),(field,isolation_country),(mincount,1))' + this.baseQuery
       }), function (response) {
         return response.facet_counts.facet_fields;
       });
@@ -152,10 +152,10 @@ define([
       };
 
       if (!this.host_chart) {
-        var cpBacteriaFamily = domConstruct.create('div', { 'class': 'pie-chart-widget family' });
-        domConstruct.place(cpBacteriaFamily, this.chartNode, 'last');
-        this.bacteria_family_chart = new Chart2D(cpBacteriaFamily, {
-          title: 'Bacteria Family',
+        var cpBacteriaGenus = domConstruct.create('div', { 'class': 'pie-chart-widget genus' });
+        domConstruct.place(cpBacteriaGenus, this.chartNode, 'last');
+        this.bacteria_genus_chart = new Chart2D(cpBacteriaGenus, {
+          title: 'Genus',
           titleFontColor: '#424242',
           titleFont: 'normal normal bold 12pt Tahoma',
           titlePos: 'top'
@@ -166,8 +166,8 @@ define([
             radius: 70,
             labelStyle: 'columns'
           });
-        // new MoveSlice(this.bacteria_family_chart, "default");
-        this.bacteria_family_chart.connectToPlot('default', onClickEventHandler);
+        // new MoveSlice(this.bacteria_genus_chart, "default");
+        this.bacteria_genus_chart.connectToPlot('default', onClickEventHandler);
 
         var cpHostNode = domConstruct.create('div', { 'class': 'pie-chart-widget host_group' });
         domConstruct.place(cpHostNode, this.chartNode, 'last');
@@ -206,9 +206,9 @@ define([
 
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
-            case 'family':
-              this.bacteria_family_chart.addSeries(key, this.data[key]);
-              this.bacteria_family_chart.render();
+            case 'genus':
+              this.bacteria_genus_chart.addSeries(key, this.data[key]);
+              this.bacteria_genus_chart.render();
               break;
             case 'host_group':
               this.host_chart.addSeries(key, this.data[key]);
@@ -227,9 +227,9 @@ define([
 
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
-            case 'family':
-              this.bacteria_family_chart.addSeries(key, this.data[key]);
-              this.bacteria_family_chart.render();
+            case 'genus':
+              this.bacteria_genus_chart.addSeries(key, this.data[key]);
+              this.bacteria_genus_chart.render();
               break;
             case 'host_group':
               this.host_chart.updateSeries(key, this.data[key]);
