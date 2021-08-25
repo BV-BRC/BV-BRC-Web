@@ -17,7 +17,7 @@ define([
 ) {
 
   var categoryName = {
-    family: 'Virus Family',
+    family: 'Family',
     host_group: 'Host Group',
     isolation_country: 'Isolation Country',
   };
@@ -155,7 +155,7 @@ define([
         var cpVirusFamily = domConstruct.create('div', { 'class': 'pie-chart-widget family' });
         domConstruct.place(cpVirusFamily, this.chartNode, 'last');
         this.virus_family_chart = new Chart2D(cpVirusFamily, {
-          title: 'Virus Family',
+          title: 'Family',
           titleFontColor: '#424242',
           titleFont: 'normal normal bold 12pt Tahoma',
           titlePos: 'top'
