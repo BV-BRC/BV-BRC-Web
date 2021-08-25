@@ -87,20 +87,29 @@ define([
     handleHighlight: function (attr, oldValue, newValue) {
       // console.log('old positions ' + oldValue + ' new positions ' + newValue);
 
+      let positions = [], ligandColor = '';
       /* eslint-disable-next-line no-unused-vars */
       for (let [highlightName, highlightPositions] of newValue) {
-        if (highlightPositions && highlightPositions.size > 0) {
-          // No need to clear the canvas as new overpaint will take care of it
-          this.molstar.coloring.clearOverPaint(false);
-          let positions = [];
+        if (highlightName === 'ligands') {
+          const color = highlightPositions.get('ligand');
+          if (color) {
+            ligandColor = this.colorToMolStarColor(color);
+          }
+        } else {
           for (let [pos, color] of highlightPositions) {
             positions.push({ seq: pos, color: this.colorToMolStarColor(color) });
           }
-          this.molstar.coloring.applyOverPaint(positions);
-        } else {
-          // Clear the canvas as there is no overpaint to apply
-          this.molstar.coloring.clearOverPaint(true);
         }
+      }
+
+      if (positions.length > 0 || ligandColor != '') {
+        // No need to clear the canvas as new overpaint will take care of it
+        this.molstar.coloring.clearOverPaint(false);
+        this.molstar.coloring.applyOverPaint(positions, ligandColor);
+        // this.molstar.coloring.applyHeatMap('/js/molstar/mol-bvbrc/pdb1jsd.ent.r4s');
+      } else {
+        // Clear the canvas as there is no overpaint to apply
+        this.molstar.coloring.clearOverPaint(true);
       }
     },
     colorToMolStarColor: function (hexColor) {
