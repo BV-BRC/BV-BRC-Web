@@ -27,7 +27,7 @@ define([
     searchAppName: 'Specialty Gene Search',
     dataKey: 'sp_gene',
     resultUrlBase: '/view/SpecialtyGeneList/?',
-    // resultUrlHash: '#view_tab=features&filter=false',
+    resultUrlHash: '',
     postCreate: function () {
       this.inherited(arguments)
 
