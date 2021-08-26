@@ -76,24 +76,23 @@ define([
     //create a json object and return it
     //this object is the payload that will be passed to the service
     //modify the payload before it reaches the service here
-    //TODO: Come back and reformat this function
-    //regExp:([0-9]+((\.[0-9]+)?))-([0-9]+((\.[0-9]+)?))
     getValues: function() {
         var curr_vars = this.inherited(arguments); //the form values with everything (including empty fields)
         var json_payload = {};
         //Sequence input
         if (this.startWithWorkspace.checked == true) {
-            json_payload["sequence_workspace_fasta".toUpperCase()] = curr_vars["sequence_workspace"];
+            json_payload["sequence_input"] = curr_vars["sequence_workspace"];
+            json_payload["input_type"] = "workspace_fasta";
         }
         if (this.startWithInput.checked == true) {
-            json_payload["sequence_template".toUpperCase()] = this.getSequenceForSubmission(curr_vars["sequence_template"]);
+            json_payload["sequence_input"] = this.getSequenceForSubmission(curr_vars["sequence_template"]);
             json_payload["sequence_id".toUpperCase()] = curr_vars["input_sequence_identifier"];
+            json_payload["input_type"] = "sequence_text";
         }
-        /*
         if (this.startWithIdentifier.checked == true) {
-            json_payload["input_bvbrc_id".toUpperCase()] = curr_vars["sequence_id"];
+            json_payload["sequence_input"] = curr_vars["sequence_id"];
+            json_payload["input_type"] = "database_id";
         }
-        */
         //sequence regions
         var region_keys = ["sequence_excluded_region","sequence_target","sequence_included_region","sequence_overlap_junction_list"];
         for (var x = 0; x < region_keys.length; x++) {
@@ -157,13 +156,11 @@ define([
             this.fasta_input_table.style.display = 'table';
             this.patric_sequence_identifier.style.display = 'none';
         }
-        /*
         if (this.startWithIdentifier.checked == true) {
             this.fasta_workspace_table.style.display = 'none';
             this.fasta_input_table.style.display = 'none';
             this.patric_sequence_identifier.style.display = 'table';
         }
-        */
     },
 
     //When a user pastes a fasta sequence into the input fasta section
