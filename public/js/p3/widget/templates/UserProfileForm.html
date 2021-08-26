@@ -28,27 +28,29 @@
           </tbody>
       </table>
     </div>
-    <div class="" data-dojo-attach-point="notificationsContainer" style="max-width:580px; display:block; border: 1px solid gray;margin:4px;margin-top: 28px;padding:4px;padding-top:8px;">
+    <!-- <div class="" data-dojo-attach-point="notificationsContainer" style="max-width:580px; display:block; border: 1px solid gray;margin:4px;margin-top: 28px;padding:4px;padding-top:8px;">
       <span style="position:relative;top: -17px; border: none; background: #fff;padding: 4px; color: #333;font-weight:600;">Notifications</span>
       <div>
-          <span>
-            <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="general"> <span>BV-BVC General</span>
+          <span style="margin:8px">
+            <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="general"> <span>BV-BVC General Announcements</span>
           </span>
-          <span>
+          <span style="margin:8px">
             <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="bacteria"> <span>Bacteria</span>
           </span>
-          <span>
+          <span style="margin:8px">
             <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="virus"> <span>Virus</span>
           </span>
-          <span>
+          <span style="margin:8px">
             <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="fungi"> <span>Fungi</span>
           </span>
-          <span>
+          <span style="margin:8px">
             <input data-dojo-type="dijit/form/CheckBox" value="vector"> <span>Vector</span>
           </span>
       </div>
+    </div> -->
+    <div data-dojo-attach-point="notificationsContainer">
     </div>
-    <div style="max-width: 580px;">
+    <div style="max-width: 580px;margin:4px;margin-top: 28px;">
       <div class="upSubmit" style="" data-dojo-attach-point="udProfButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Update Profile</div>
       <div class="newSubmit" style="display:none" data-dojo-attach-point="submitButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Register</div>
       <div data-dojo-attach-point="regFormErrorsContainer" class="dijitHidden">
@@ -56,12 +58,15 @@
       </div>
     </div>
     <div class="regMessage dijitHidden" data-dojo-attach-point="regMessage" style="margin:4px;margin-top:16px;padding:4px;font-size:1.1em;">
-      <p style="color: green;font-size:1.1em;">
+      <p style="color: green;font-size:1.1em;margin-bottom: 12px;">
           Your registration has been received. An email has been sent containing the remainder of the registration process.
       </p>
-      <p>Sister BRC Links go here</p>
+      <div style="margin-bottom: 12px;" data-dojo-attach-point="initialNotificationsContainer">
+      </div>
+      <p style="margin-bottom: 12px;" >Visit our partner Bioinformatics Resource Center, and <a href="https://veupathdb.org/veupathdb/app/user/login?destination=https://veupathdb.org">login</a> there or <a href="https://veupathdb.org/veupathdb/app/user/registration">register</a>.</p>
     </div>
   </form>
+
   <div class="changepwsection" data-dojo-attach-point="changePWsec">
     <p>&nbsp;</p>
     <form>
@@ -83,5 +88,8 @@
       <div class="changePWbutton" data-dojo-attach-event="click: onResetClick" style="margin:auto" data-dojo-attach-point="cPWbutton" type="button" data-dojo-type="dijit/form/Button">Change Password</div>
     </form>
     <div class="pwError" style="color:red; margin-top:20px;display:none"><p>The passwords do not match, please fix</p></div>
+  </div>
+  <div data-dojo-attach-point="brcAds" class="dijitHidden" style="padding:4px;margin:8px;font-size:1.2em;">
+    <p>Visit our partner Bioinformatics Resource Center, and <a href="https://veupathdb.org/veupathdb/app/user/login?destination=https://veupathdb.org">login</a> there or <a href="https://veupathdb.org/veupathdb/app/user/registration">register</a>.</p>
   </div>
 </div>
