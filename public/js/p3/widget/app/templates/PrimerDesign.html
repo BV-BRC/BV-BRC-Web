@@ -30,16 +30,12 @@
                             </div>
                             <!-- Input sequences: workspace, user input, and sequence identifier -->
                             <div class="appRow">
-                                <!--
-                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithWorkspace" checked/>
-                                <label for="radio1">Workspace FASTA</label>
-                                -->
                                 <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithInput" data-dojo-attach-event="onChange:onStartWithChange" checked/>
                                 <label for="radio2">Paste Sequence</label>
-                                <!--
+                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithWorkspace" data-dojo-attach-event="onChange:onStartWithChange"/>
+                                <label for="radio1">Workspace FASTA</label>
                                 <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithIdentifier" data-dojo-attach-event="onChange:onStartWithChange"/>
                                 <label for="radio3">BVBRC ID</label>
-                                -->
                             </div>
                             <table data-dojo-attach-point="fasta_workspace_table" style="width:100%; display:none">
                                 <tr name="workspace_input_row">
@@ -76,7 +72,7 @@
                                                     data-dojo-attach-point="sequence_template"
                                                     data-dojo-type="dijit/form/Textarea"
                                                     data-dojo-attach-event="onChange:onChangeSequence"
-                                                    data-dojo-props="rows:13, placeholder:'Enter nucleotide sequence', intermediateChanges:true"></textarea>
+                                                    data-dojo-props="rows:5, placeholder:'Enter nucleotide sequence', intermediateChanges:false"></textarea>
                                                     <div class="warning" data-dojo-attach-point="sequence_message"></div>
                                         </div>
                                     </td>
@@ -86,12 +82,13 @@
                                 <tr>
                                     <td colspan="0">
                                         <div class="appRow">
-                                            <label class="paramlabel">Sequence Identifier</label><br>
-                                            <textarea name="sequence_id"
-                                                    style="width:80%; height:50px; margin-left:10px; font-family: monospace; font-size:12px"
-                                                    data-dojo-attach-point="sequence_id"
-                                                    data-dojo-type="dijit/form/Textarea"
-                                                    data-dojo-props="rows:4, placeholder:'TODO', intermediateChanges:true"></textarea>
+                                            <label class="paramlabel">BVBRC Identifier</label><br>
+                                            <input  name="input_bvbrc_identifier"
+                                                    style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                    data-dojo-attach-point="input_bvbrc_identifier"
+                                                    data-dojo-type="dijit/form/ValidationTextBox"
+                                                    data-dojo-props="trim:true,placeholder:'BVBRC Identifier', intermediateChanges:true"
+                                                    required="false"/>
                                         </div>
                                     </td>
                                 </tr>
@@ -104,25 +101,25 @@
                                           data-dojo-attach-point="sequence_excluded_region"
                                           data-dojo-type="dijit/form/ValidationTextBox"
                                           data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)((\\s[0-9]+,[0-9]+)*)', placeholder:'Space-separated list of start,length pairs. Primers will not overlap these regions.', intermediateChanges:true"
-                                          required="false"/> &nbsp;&#62;
+                                          required="false"/>&nbsp;&#62;
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Targets</label><br>
-                                &nbsp;[ <input  name="sequence_target"
+                                &nbsp;[<input  name="sequence_target"
                                           style="width:85%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                           data-dojo-attach-point="sequence_target"
                                           data-dojo-type="dijit/form/ValidationTextBox"
                                           data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)((\\s[0-9]+,[0-9]+)*)', placeholder:'Space-separated list of start,length pairs. Primers will flank one or more regions.', intermediateChanges:true"
-                                          required="false"/> &nbsp;&nbsp;]
+                                          required="false"/>&nbsp;&nbsp;]
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Included Regions</label><br>
-                                &nbsp;{ <input  name="sequence_included_region"
+                                &nbsp;{<input  name="sequence_included_region"
                                           style="width:85%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                           data-dojo-attach-point="sequence_included_region"
                                           data-dojo-type="dijit/form/ValidationTextBox"
                                           data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)', placeholder:'A single start,length pair. Primers will be picked within this range.', intermediateChanges:true"
-                                          required="false"/> &nbsp;&nbsp;}
+                                          required="false"/>&nbsp;&nbsp;}
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Primer Overlap Positions</label><br>
@@ -136,10 +133,22 @@
                         </div>
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        <div class="appRow" style="text-align:center">
+                            <div class="appRowSegment" data-dojo-attach-point="advanced">
+                                <label class="largelabel">Advanced options</label>
+                                <div class="iconbox" style="margin-left:0">
+                                    <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
                 <!-- Settings row -->
                 <tr>
                     <td>
-                        <div id="settingsBox" class="appBox appShadow">
+                        <div id="settingsBox" class="appBox appShadow" style="display:none;" data-dojo-attach-point="advancedOptions">
                             <div style="width:85%;display:inline-block;">
                                 <label class="appBoxLabel">Settings</label>
                                 <div name="settings" class="infobox iconbox infobutton dialoginfo">
