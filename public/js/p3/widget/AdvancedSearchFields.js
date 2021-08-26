@@ -400,6 +400,62 @@ define([], function () {
         field: 'public', type: 'str', facet: true, facet_hidden: true, search: true
       },
     ],
+    'sp_gene': [
+      {
+        field: 'evidence', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'property', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'source', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'patric_id', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'source_id', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'organism', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'classification', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'antibiotics_class', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'antibiotics', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'pubmed', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'subj_coverage', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'query_coverage', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'identity', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'e_value', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+    ],
     'protein_feature': [
       {
         field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
