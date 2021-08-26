@@ -135,7 +135,7 @@ define([
 
     onSetState: function (attr, oldVal, state) {
       // this.treeDiv.innerHTML= "Loading...";
-      console.log('Phylogeny onSetState: ', state);
+      // console.log('Phylogeny onSetState: ', state);
       if (!state) {
         return;
       }
@@ -163,9 +163,9 @@ define([
     },
 
     processTreeData: function (treeDat, idType, fileType) {
-      console.log('treeDat', treeDat);
-      console.log('idType', idType);
-      console.log('processTreeData fileType', fileType);
+      // console.log('treeDat', treeDat);
+      // console.log('idType', idType);
+      // console.log('processTreeData fileType', fileType);
 
       if (!treeDat.tree) {
         console.log('No newick+json in Request Response');
@@ -180,9 +180,9 @@ define([
     },
 
     processTree: function () {
-      console.log('this', this);
-      console.log('this.newickxml', this.newickxml);
-      console.log('processTree this.fileType', this.fileType);
+      // console.log('this', this);
+      // console.log('this.newickxml', this.newickxml);
+      // console.log('processTree this.fileType', this.fileType);
 
       var options = {};
       options.backgroundColorDefault = '#ffffff';
@@ -258,7 +258,7 @@ define([
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
 
           var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
-          console.log('mytree collectPropertyRefs refs_set: ', refs_set);
+          // console.log('mytree collectPropertyRefs refs_set: ', refs_set);
 
           if (refs_set.size > 0) {
             this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv); // show control1 panel if there are node properties
@@ -291,8 +291,8 @@ define([
         else {
           mytree = window.archaeopteryx.parseNewHampshire(this.newickxml, true, false);
         }
-        console.log('in try tree this.newickxml', this.newickxml);
-        console.log('mytree', mytree);
+        // console.log('in try tree this.newickxml', this.newickxml);
+        // console.log('mytree', mytree);
       }
       catch (e) {
         alert('error while parsing tree: ' + e);
@@ -300,7 +300,7 @@ define([
       if (mytree) {
         try {
           forester.midpointRoot(mytree);
-          console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
+          // console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
           window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, specialVisualizations);
         }
         catch (e) {
@@ -331,14 +331,10 @@ define([
     setupActions: function () {
       if (this.containerActionBar && this.containerActions) {
         this.containerActions.forEach(function (a) {
-          console.log('setupActions a', a);
-          console.log('containerActions', this.containerActions)
           this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
         }, this);
       }
       this.selectionActions.forEach(function (a) {
-        console.log('selectionActions a', a);
-        console.log('selectionActions', this.selectionActions)
 
         var cont = false;
         if (this.state && this.state.href.includes('WithGenomeNames.') && a[0] == 'IDSelection') {
