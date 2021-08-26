@@ -755,3 +755,42 @@
 .sars-mid-news ul {
   font-weight: 300;
 }
+
+@media screen and (max-width: 768px){
+  .column-mid,
+  .column-left,
+  .column-right {
+      min-width: 768px;
+  }
+}
+@media screen and (min-width: 1024px){
+  .column-mid {
+      width: 66.666%;
+      float: right;
+  }
+  .column-left,
+  .column-right {
+      width: 33.333%;
+      float: left;
+  }
+}
+@media screen and (min-width: 1200px){
+  .column-mid {
+      width: 52.99%;
+      float: left;
+  }
+  .column-left {
+      width: 24.99%;
+      float: left;
+  }
+  .column-right {
+      width: 21.99%;
+      float: right;
+  }
+}
+
+.column-mid .section,
+.column-left .section,
+.column-right .section{
+  padding: 0 5px;
+}

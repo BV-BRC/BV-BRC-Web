@@ -18,6 +18,10 @@ define([
   focusUtil, PathJoin
 ) {
 
+  function sortByLabel(firstEl, secondEl) {
+    return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
+  }
+
   function parseFacetCounts(facets) {
     var out = {};
 
@@ -31,6 +35,7 @@ define([
         out[cat].push({ label: data[i], value: data[i], count: data[i + 1] });
         i += 2;
       }
+      out[cat].sort(sortByLabel)
     });
     return out;
   }

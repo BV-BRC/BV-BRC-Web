@@ -1006,7 +1006,7 @@ define([
         highResoutionMode: 'auto',
         // alwaysOnTracks: [,"PATRICGenes"].join(","),
         initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
-        plugins: ['HideTrackLabels'],
+        plugins: ['HideTrackLabels', 'MultiBigWig'],
         show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
         show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
         show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined')) ? state.hashParams.show_overview : true,

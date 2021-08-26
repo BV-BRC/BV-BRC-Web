@@ -16,7 +16,18 @@ define([
     apiUrl: '',
     userId: '',
 
-    forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result', 'modelfolder'],
+    downloadTypes: ['bam', 'bai', 'bigwig', 'biochemistry', 'contigs', 'csv',
+      'de_novo_assembled_transcripts', 'diffexp_experiment', 'diffexp_expression',
+      'diffexp_input_data', 'diffexp_input_metadata', 'diffexp_mapping',
+      'diffexp_sample', 'doc', 'docx', 'embl', 'fba',
+      'feature_dna_fasta', 'feature_protein_fasta',
+      'feature_table', 'genbank_file', 'genome', 'genome_annotation_result',
+      'genome_comparison_table', 'gff', 'gif', 'html', 'jpg',
+      'json', 'mapping', 'media', 'model', 'modelfolder', 'model_edit',
+      'modeltemplate', 'nwk', 'pdf', 'png', 'ppt', 'pptx', 'proteomics_experiment',
+      'reads', 'rxnprobs', 'string', 'svg', 'tar_gz', 'tbi',
+      'transcriptomics_experiment', 'transcripts', 'txt', 'unspecified', 'vcf',
+      'vcf_gz', 'wig', 'xls', 'xlsx', 'zip', 'contigset', 'xml', 'phyloxml'],
 
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
@@ -120,6 +131,11 @@ define([
         label: 'PDF',
         formats: ['.pdf'],
         description: 'A pdf file.'
+      },
+      phyloxml: {
+        label: 'PHYLOXML',
+        formats: ['.xml'],
+        description: 'An phyloxml file.'
       },
       png: {
         label: 'PNG Image',

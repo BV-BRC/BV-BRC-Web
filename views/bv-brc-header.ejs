@@ -73,7 +73,7 @@
             <div class="nav-logo">
                 <a class="nav-logo-link" href="/">
                     <!-- <img class="bv-brc-logo" src="/patric/images/bv-brc/patric-logo.png" alt="BV-BRC Logo" style="height: 32px;"/> -->
-                    <span>BV-BRC <i style="color: #ffffff; font-size: 12px;">BETA</i></span>
+                    <span>BV-BRC <i style="color: #ffffff; font-size: 12px;"><%- request.applicationOptions.appLabel || " " %></i></span>
                 </a>
             </div>
 
@@ -100,7 +100,7 @@
                                 <br>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                        <a class="navigationLink" href="/view/Bacteria/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
                                     </span>
                                     <span class="menuItem half">
                                         <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <!-- <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
                     <span>DATA</span>
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div>
@@ -193,15 +193,15 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
                     <span>SEARCHES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div class="menuHeader">Advanced Search</div>
-                        <div><a class="navigationLink" href="/searches/GenomeSearch">Genomes</a></div>
-                        <div><a class="navigationLink" href="/searches/GenomicFeatureSearch">Genomic Features</a></div>
+                        <div><a class="navigationLink" href="/searches/GenomeSearch">Genome</a></div>
+                        <div><a class="navigationLink" href="/searches/GenomicFeatureSearch">Gene/Protein</a></div>
                         <div><a class="navigationLink" href="/searches/GenomicSequenceSearch">Genomic Sequences</a></div>
                         <div><a class="navigationLink" href="/searches/SpecialtyGeneSearch">Specialty Genes</a></div>
                         <div><a class="navigationLink" href="/searches/ProteinFeatureSearch">Protein Features</a></div>
@@ -329,6 +329,23 @@
                         <div><a class="" href="/contact">Contact Us</a></div>
                     </div>
                 </div>
+
+                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                    <span>ABOUT</span>
+
+                    <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div><a class="TopMenuLink" href="/about">About BV-BRC</a></div>
+                        <div><a class="TopMenuLink" href="/contact">Contact Us</a></div>
+                        <div><a class="TopMenuLink" href="/team">Our Team</a></div>
+                        <div><a class="TopMenuLink" href="/announcements">Announcements</a></div>
+                        <div><a class="TopMenuLink" href="/outreach">Outreach</a></div>
+                        <hr>
+                        <div><a class="TopMenuLink" href="/publications">Publications</a></div>
+                        <div><a class="TopMenuLink" href="/citation">Citation</a></div>
+                        <div><a class="TopMenuLink" href="/related-resources">Related Resources</a></div>
+                        <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/BV-BRC" target="_blank" rel="noopener">BV-BRC GitHub</a></div>
+                    </div>
+                </div>
             </div>
 
             <div id="p3header-search" style="padding: 6px 10px 2px 2px; width: 120px; flex-grow: 0.85">
@@ -343,7 +360,7 @@
                 <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Sign In</div>
             </div>
 
-            <div>
+            <!-- <div>
                 <div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton"
                      data-dojo-props="iconClass:'icon-bars fa-2x'">
                     <span></span>
@@ -360,7 +377,7 @@
                         <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/BV-BRC" target="_blank" rel="noopener">BV-BRC GitHub</a></div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <div class="showOnLoad ShowWithAuth dijitHidden">
                 <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
@@ -381,4 +398,6 @@
         </div>
 
     </div>
-  </div>
+
+    <!-- <div class="msg-box-below-topnav"><strong>Welcome to BV-BRC Beta website. This site is used to seek early community feedback for the BV-BRC resource, which is still under development. Please note that the data and functionality on this site may change frequently and without notice.</strong></div> -->
+</div>

@@ -1,6 +1,33 @@
 
 # Changelog
 
+## 3.6.15 - June 25, 2021
+* [Minor] promote B.1.617.2 to VoC
+
+
+## 3.6.14 - June 4, 2021
+* [Enhancement] Phylogenetic Tree update (iteration 3) & archeaopteryx viewer
+
+
+## 3.6.13 - May 19, 2021
+* [Feature] Add Structure tab and 3D Structure Viewer (jsmol)
+* [Feature] Add Lineage of Interest
+* [Enhancement] Phylogenetic Tree update (iteration 2)
+* [Minor] other updates
+
+
+## 3.6.12 - Apr 16, 2021
+* [Feature] Add Archaeopteryx Phylogenetic Tree Viewer
+
+
+## 3.6.11 - Mar 26, 2021
+* [Enhancement] Installed JBrowse plugin (MultiBigWig)
+
+## 3.6.10 - Mar 19, 2021
+* [Enhancement] Add One Codex option to the SARS-CoV-2 Genome Assembly and Annotation service
+* [Enhancement] Send base_url for all App service submission
+
+
 ## 3.6.9 - Jan 19, 2021
 
 * [Minor] Disable Reconstruct Metabolic Model service UI. [#1008](https://github.com/PATRIC3/p3_web/pull/1008)
