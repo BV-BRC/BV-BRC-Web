@@ -181,22 +181,7 @@ define([
           }
         }
 
-        if (!state.genome_ids) {
-          // console.log("NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
-          if (state.search == oldState.search) {
-            // console.log("Same Search")
-            // console.log("OLD Genome_IDS: ", oldState.genome_ids);
-            this.set('state', lang.mixin({}, state, {
-              genome_ids: oldState.genome_ids,
-              referenceGenomes: oldState.referenceGenomes || []
-            }));
-            return;
-          }
-          this.set('query', state.search);
-
-        } else if (state.search != oldState.search) {
-          this.set('query', state.search);
-        }
+        this.set('query', state.search);
 
         if (!state.hashParams) {
           if (oldState.hashParams && oldState.hashParams.view_tab) {
@@ -226,7 +211,9 @@ define([
         this.totalCountNode.innerHTML = '';
       }));
     },
-
+    onSetGenomeIds: function (attr, oldVal, genome_ids) {
+      // stop
+    },
     setActivePanelState: function () {
 
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
@@ -306,8 +293,12 @@ define([
           } else if (active === 'interactions') {
             prop = 'genome_id_a';
           }
+          var context = [`eq(taxon_lineage_ids,${this.state.taxon_id})`]
+          if (this.state.search) {
+            context = this.state.search.split('&')
+          }
           activeQueryState = lang.mixin({}, this.state, {
-            search: `eq(${prop},*)&genome(${(prop !== 'genome_id') ? `(to,${prop})` : ''}(eq,taxon_lineage_ids,${this.state.taxon_id}))`,
+            search: `eq(${prop},*)&genome(${(prop !== 'genome_id') ? `(to,${prop})` : ''}${(context.length > 1 ? `and(${context.join(',')})` : context[0])})`,
             hashParams: lang.mixin({}, this.state.hashParams)
           });
 

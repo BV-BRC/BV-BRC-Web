@@ -59,55 +59,55 @@ define([
 
       const pathogenGroupValue = this.pathogenGroupNode.get('value')
       if (pathogenGroupValue !== '') {
-        genomeQueryArr.push(`(eq,taxon_lineage_ids,${sanitizeInput(pathogenGroupValue)})`)
+        genomeQueryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(pathogenGroupValue)})`)
       }
 
       const taxonNameValue = this.taxonNameNode.get('value')
       if (taxonNameValue !== '') {
-        genomeQueryArr.push(`(eq,taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
+        genomeQueryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
       }
 
       const hostGroupValue = this.hostGroupNode.get('value')
       if (hostGroupValue !== '') {
-        genomeQueryArr.push(`(eq,host_group,${sanitizeInput(hostGroupValue)})`)
+        genomeQueryArr.push(`eq(host_group,${sanitizeInput(hostGroupValue)})`)
       }
 
       const hostNameValue = this.hostNameNode.get('value')
       if (hostNameValue !== '') {
-        genomeQueryArr.push(`(eq,host_common_name,${sanitizeInput(hostNameValue)})`)
+        genomeQueryArr.push(`eq(host_common_name,${sanitizeInput(hostNameValue)})`)
       }
 
       const geographicGroupValue = this.geographicGroupNode.get('value')
       if (geographicGroupValue !== '') {
-        genomeQueryArr.push(`(eq,geographic_group,${sanitizeInput(geographicGroupValue)})`)
+        genomeQueryArr.push(`eq(geographic_group,${sanitizeInput(geographicGroupValue)})`)
       }
 
       const isolationCountryValue = this.isolationCountryNode.get('value')
       if (isolationCountryValue !== '') {
-        genomeQueryArr.push(`(eq,isolation_country,${sanitizeInput(isolationCountryValue)})`)
+        genomeQueryArr.push(`eq(isolation_country,${sanitizeInput(isolationCountryValue)})`)
       }
 
       const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))
       const collectionYearToValue = parseInt(this.collectionYearToNode.get('value'))
       if (!isNaN(collectionYearFromValue) && !isNaN(collectionYearToValue)) {
         // between
-        genomeQueryArr.push(`(between,collection_year,${collectionYearFromValue},${collectionYearToValue})`)
+        genomeQueryArr.push(`between(collection_year,${collectionYearFromValue},${collectionYearToValue})`)
       } else if (!isNaN(collectionYearFromValue)) {
         // gt
-        genomeQueryArr.push(`(gt,collection_year,${collectionYearFromValue})`)
+        genomeQueryArr.push(`gt(collection_year,${collectionYearFromValue})`)
       } else if (!isNaN(collectionYearToValue)) {
         // lt
-        genomeQueryArr.push(`(lt,collection_year,${collectionYearToValue})`)
+        genomeQueryArr.push(`lt(collection_year,${collectionYearToValue})`)
       }
 
       const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))
       const genomeLengthToValue = parseInt(this.genomeLengthToNode.get('value'))
       if (!isNaN(genomeLengthFromValue) && !isNaN(genomeLengthToValue)) {
-        genomeQueryArr.push(`(betweeen,genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
+        genomeQueryArr.push(`betweeen(genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
       } else if (!isNaN(genomeLengthFromValue)) {
-        genomeQueryArr.push(`(gt,genome_length,${genomeLengthFromValue})`)
+        genomeQueryArr.push(`gt(genome_length,${genomeLengthFromValue})`)
       } else if (!isNaN(genomeLengthToValue)) {
-        genomeQueryArr.push(`(lt,genome_length,${genomeLengthToValue})`)
+        genomeQueryArr.push(`lt(genome_length,${genomeLengthToValue})`)
       }
 
       if (genomeQueryArr.length > 0) {
