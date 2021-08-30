@@ -694,18 +694,12 @@ define([
           validTypes: ['*'],
           multiple: true,
           min: 2,
-          max: 1000,
+          max: 0,
           tooltip: 'Switch to Genome List View. Press and Hold for more options.',
           ignoreDataType: true,
           validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'sequence_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            var map = {};
-            selection.forEach(function (sel) {
-              if (!map[sel.genome_id]) {
-                map[sel.genome_id] = true;
-              }
-            });
-            var genome_ids = Object.keys(map);
+            const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'GenomeList',
@@ -714,17 +708,10 @@ define([
               around: button,
               orient: ['below']
             });
-
           }
         },
         function (selection) {
-          var map = {};
-          selection.forEach(function (sel) {
-            if (!map[sel.genome_id]) {
-              map[sel.genome_id] = true;
-            }
-          });
-          var genome_ids = Object.keys(map);
+          const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
           Topic.publish('/navigate', { href: '/view/GenomeList/?in(genome_id,(' + genome_ids.join(',') + '))' });
         },
         false
