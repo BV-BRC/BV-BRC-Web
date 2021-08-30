@@ -32,7 +32,6 @@ define([
     enableAnchorButton: true,
     dataModel: 'genome',
     primaryKey: 'genome_id',
-    maxDownloadSize: 25000,
     tooltip: 'The "Genomes" tab contains a list of all genomes associated with the current view and their metadata',
     containerActions: GridContainer.prototype.containerActions.concat([
       [

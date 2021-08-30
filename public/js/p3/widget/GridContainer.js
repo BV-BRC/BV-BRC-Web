@@ -116,6 +116,7 @@ define([
     columns: null,
     enableAnchorButton: false,
     showAutoFilterMessage: true,
+    maxDownloadSize: 2500000,
 
     _setColumnsAttr: function (columns) {
       if (this.grid) {
