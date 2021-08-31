@@ -3,7 +3,7 @@ define([
   'dojo/_base/lang',
   'dojo/when',
   './SearchBase',
-  'dojo/text!./templates/ProteinFeatureSearch.html',
+  'dojo/text!./templates/SubsystemSearch.html',
   './FacetStoreBuilder',
   './PathogenGroups',
 ], function (
@@ -22,18 +22,14 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Protein Feature Search',
-    dataKey: 'protein_feature',
-    resultUrlBase: '/view/ProteinFeaturesList/?',
+    searchAppName: 'Subsystem Search',
+    dataKey: 'genome',
+    resultUrlBase: '/view/SubsystemList/?',
     resultUrlHash: '#view_tab',
     postCreate: function () {
       this.inherited(arguments)
 
       this.pathogenGroupNode.store = pathogenGroupStore
-
-      when(storeBuilder('protein_feature', 'source'), lang.hitch(this, function (store) {
-        this.sourceNode.store = store
-      }))
     },
     buildQuery: function () {
       let queryArr = []
@@ -56,25 +52,25 @@ define([
         genomeQuery = `genome(${genomeQueryArr.join(',')})`
       }
 
-      // protein feature specific search
+      // subsystem specific search
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
         queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
       }
 
-      const sourceValue = this.sourceNode.get('value')
-      if (sourceValue !== '') {
-        queryArr.push(`eq(source,"${sanitizeInput(sourceValue)}")`)
+      const subsystemIDValue = this.subsystemIDNode.get('value')
+      if (subsystemIDValue !== '') {
+        queryArr.push(`eq(subsystem_id,"${sanitizeInput(subsystemIDValue)}")`)
       }
 
-      const sourceIDValue = this.sourceIDNode.get('value')
-      if (sourceIDValue !== '') {
-        queryArr.push(`eq(source_id,"${sanitizeInput(sourceIDValue)}")`)
+      const subsystemNameValue = this.subsystemNameNode.get('value')
+      if (subsystemNameValue !== '') {
+        queryArr.push(`eq(subsystem_name,"${sanitizeInput(subsystemNameValue)}")`)
       }
 
-      const descriptionValue = this.descriptionNode.get('value')
-      if (descriptionValue !== '') {
-        queryArr.push(`eq(description,"${sanitizeInput(descriptionValue)}")`)
+      const subsystemRoleValue = this.subsystemRoleNode.get('value')
+      if (subsystemRoleValue !== '') {
+        queryArr.push(`eq(subsystem_role,"${sanitizeInput(subsystemRoleValue)}")`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()
@@ -88,7 +84,6 @@ define([
       } else {
         return query
       }
-
     }
   })
 })

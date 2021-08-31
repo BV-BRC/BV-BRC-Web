@@ -604,6 +604,106 @@ define([], function () {
         field: 'release_date', type: 'str', facet: false, facet_hidden: true, search: true
       },
     ],
+    'pathway': [
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'annotation', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'patric_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'ec_number', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'ec_description', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathway_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathway_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathway_class', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
+    'subsystem': [
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'patric_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'role_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'role_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subsystem_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subsystem_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'superclass', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'class', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subclass', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
     'surveillance': [
       {
         field: 'project_identifier', type: 'str', facet: false, facet_hidden: true, search: true

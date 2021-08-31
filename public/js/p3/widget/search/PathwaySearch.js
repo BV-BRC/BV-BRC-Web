@@ -3,7 +3,7 @@ define([
   'dojo/_base/lang',
   'dojo/when',
   './SearchBase',
-  'dojo/text!./templates/ProteinFeatureSearch.html',
+  'dojo/text!./templates/PathwaySearch.html',
   './FacetStoreBuilder',
   './PathogenGroups',
 ], function (
@@ -22,18 +22,14 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Protein Feature Search',
-    dataKey: 'protein_feature',
-    resultUrlBase: '/view/ProteinFeaturesList/?',
+    searchAppName: 'Pathway Search',
+    dataKey: 'genome',
+    resultUrlBase: '/view/PathwayList/?',
     resultUrlHash: '#view_tab',
     postCreate: function () {
       this.inherited(arguments)
 
       this.pathogenGroupNode.store = pathogenGroupStore
-
-      when(storeBuilder('protein_feature', 'source'), lang.hitch(this, function (store) {
-        this.sourceNode.store = store
-      }))
     },
     buildQuery: function () {
       let queryArr = []
@@ -56,25 +52,35 @@ define([
         genomeQuery = `genome(${genomeQueryArr.join(',')})`
       }
 
-      // protein feature specific search
+      // pathway specific search
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
         queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
       }
 
-      const sourceValue = this.sourceNode.get('value')
-      if (sourceValue !== '') {
-        queryArr.push(`eq(source,"${sanitizeInput(sourceValue)}")`)
+      const pathwayIDValue = this.pathwayIDNode.get('value')
+      if (pathwayIDValue !== '') {
+        queryArr.push(`eq(pathway_id,"${sanitizeInput(pathwayIDValue)}")`)
       }
 
-      const sourceIDValue = this.sourceIDNode.get('value')
-      if (sourceIDValue !== '') {
-        queryArr.push(`eq(source_id,"${sanitizeInput(sourceIDValue)}")`)
+      const pathwayNameValue = this.pathwayNameNode.get('value')
+      if (pathwayNameValue !== '') {
+        queryArr.push(`eq(pathway_name,"${sanitizeInput(pathwayNameValue)}")`)
       }
 
-      const descriptionValue = this.descriptionNode.get('value')
-      if (descriptionValue !== '') {
-        queryArr.push(`eq(description,"${sanitizeInput(descriptionValue)}")`)
+      const pathwayClassValue = this.pathwayClassNode.get('value')
+      if (pathwayClassValue !== '') {
+        queryArr.push(`eq(pathway_class,"${sanitizeInput(pathwayClassValue)}")`)
+      }
+
+      const ecNumberValue = this.ecNumberNode.get('value')
+      if (ecNumberValue !== '') {
+        queryArr.push(`eq(ec_number,"${sanitizeInput(ecNumberValue)}")`)
+      }
+
+      const ecDescriptionValue = this.ecDescriptionNode.get('value')
+      if (ecDescriptionValue !== '') {
+        queryArr.push(`eq(ec_description,"${sanitizeInput(ecDescriptionValue)}")`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()
@@ -88,7 +94,6 @@ define([
       } else {
         return query
       }
-
     }
   })
 })

@@ -23,7 +23,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Influenza A virus'" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Influenza A virus'" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -31,49 +31,49 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="p3/widget/TaxonNameSelector" required="false" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
+            <div data-dojo-type="p3/widget/TaxonNameSelector" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
           </div>
         </div>
       </div>
       <div class="appBox appShadow">
         <div class="headerrow">
-          <label class="appBoxLabel">Property</label>
+          <label class="appBoxLabel">Pathway ID</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Virulence Factor'" data-dojo-attach-point="propertyNode" name="property" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g.'" data-dojo-attach-point="pathwayIDNode" name="pathway_id" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Source</label>
+          <label class="appBoxLabel">Pathway Name</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Victors'" data-dojo-attach-point="sourceNode" name="source" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g.'" data-dojo-attach-point="pathwayNameNode" name="pathway_name" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Evidence</label>
+          <label class="appBoxLabel">Pathway Class</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. BLAT'" data-dojo-attach-point="evidenceNode" name="evidence" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g.'" data-dojo-attach-point="pathwayClassNode" name="pathway_class" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Gene</label>
+          <label class="appBoxLabel">EC Number</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'dnaA'" data-dojo-attach-point="geneNode" name="gene" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g.'" data-dojo-attach-point="ecNumberNode" name="ec_number" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Product</label>
+          <label class="appBoxLabel">EC Description</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'ABC transporter'" data-dojo-attach-point="productNode" name="product" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g.'" data-dojo-attach-point="ecDescriptionNode" name="ec_description" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
