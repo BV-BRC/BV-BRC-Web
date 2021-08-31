@@ -130,27 +130,27 @@ define([
 
       const propertyValue = this.propertyNode.get('value')
       if (propertyValue !== '') {
-        queryArr.push(`eq(property,${sanitizeInput(propertyValue)})`)
+        queryArr.push(`eq(property,"${sanitizeInput(propertyValue)}")`)
       }
 
       const sourceValue = this.sourceNode.get('value')
       if (sourceValue !== '') {
-        queryArr.push(`eq(source,${sanitizeInput(sourceValue)})`)
+        queryArr.push(`eq(source,"${sanitizeInput(sourceValue)}")`)
       }
 
       const evidenceValue = this.evidenceNode.get('value')
       if (evidenceValue !== '') {
-        queryArr.push(`eq(evidence,${sanitizeInput(evidenceValue)})`)
+        queryArr.push(`eq(evidence,"${sanitizeInput(evidenceValue)}")`)
       }
 
       const geneValue = this.geneNode.get('value')
       if (geneValue !== '') {
-        queryArr.push(`eq(gene,${sanitizeInput(geneValue)})`)
+        queryArr.push(`eq(gene,"${sanitizeInput(geneValue)}")`)
       }
 
       const productValue = this.productNode.get('value')
       if (productValue !== '') {
-        queryArr.push(`eq(product,${sanitizeInput(productValue)})`)
+        queryArr.push(`eq(product,"${sanitizeInput(productValue)}")`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()
