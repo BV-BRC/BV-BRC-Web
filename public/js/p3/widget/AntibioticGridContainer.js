@@ -26,7 +26,6 @@ define([
     getFilterPanel: function (opts) {
     },
     primaryKey: 'pubchem_cid',
-    maxDownloadSize: 250000,
     selectionActions: GridContainer.prototype.selectionActions.concat([
       [
         'ViewAntibioticItem',

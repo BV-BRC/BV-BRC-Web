@@ -317,10 +317,10 @@ define([], function () {
         field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'plfam', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'plfam_id', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'pgfam', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'pgfam_id', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'sog_id', type: 'str', facet: true, facet_hidden: false, search: true

@@ -29,7 +29,6 @@ define([
     maxGenomeCount: 10000,
     dataModel: 'protein_structure',
     primaryKey: 'pdb_id',
-    maxDownloadSize: 25000,
     defaultFilter: '',
     tooltip: '',
     getFilterPanel: function (opts) {

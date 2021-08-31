@@ -29,7 +29,6 @@ define([
     maxGenomeCount: 10000,
     dataModel: 'serology',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     defaultFilter: '',
     tooltip: '',
     getFilterPanel: function (opts) {
