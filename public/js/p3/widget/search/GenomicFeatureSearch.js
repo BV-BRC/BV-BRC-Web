@@ -115,14 +115,21 @@ define([
       }
 
       // genome feature specific search
+      const keywordValue = this.keywordNode.get('value')
+      if (keywordValue !== '') {
+        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+      }
+
       const featureTypeValue = this.featureTypeNode.get('value')
       if (featureTypeValue !== '') {
         queryArr.push(`eq(feature_type,${sanitizeInput(featureTypeValue)})`)
       }
+
       const geneValue = this.geneNode.get('value')
       if (geneValue !== '') {
         queryArr.push(`eq(gene,${sanitizeInput(geneValue)})`)
       }
+
       const productValue = this.productNode.get('value')
       if (productValue !== '') {
         queryArr.push(`eq(product,${sanitizeInput(productValue)})`)
