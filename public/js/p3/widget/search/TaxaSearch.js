@@ -1,9 +1,13 @@
 define([
   'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/TaxaSearch.html',
 ], function (
   declare,
+  lang,
+  when,
   SearchBase,
   template,
 ) {
@@ -16,47 +20,34 @@ define([
     templateString: template,
     searchAppName: 'Taxa Search',
     dataKey: 'genome',
-    resultUrlBase: '/view/GenomeList/?',
-    resultUrlHash: '#view_tab=genomes',
+    resultUrlBase: '/view/TaxonList/?',
+    resultUrlHash: '#view_tab',
     buildQuery: function () {
       let queryArr = []
 
-      const hostNameValue = this.hostNameNode.get('value')
-      if (hostNameValue !== '') {
-        queryArr.push(`eq(host_name,${sanitizeInput(hostNameValue)})`)
+      const keywordValue = this.keywordNode.get('value')
+      if (keywordValue !== '') {
+        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
       }
 
-      const isolationCountryValue = this.isolationCountryNode.get('value')
-      if (isolationCountryValue !== '') {
-        queryArr.push(`eq(isolation_country,${sanitizeInput(isolationCountryValue)})`)
+      const taxonIDValue = this.taxonIDNode.get('value')
+      if (taxonIDValue !== '') {
+        queryArr.push(`eq(taxon_id,${sanitizeInput(taxonIDValue)})`)
       }
 
-      const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))
-      const collectionYearToValue = parseInt(this.collectionYearToNode.get('value'))
-      if (!isNaN(collectionYearFromValue) && !isNaN(collectionYearToValue)) {
-        // between
-        queryArr.push(`between(collection_year,${collectionYearFromValue},${collectionYearToValue})`)
-      } else if (!isNaN(collectionYearFromValue)) {
-        // gt
-        queryArr.push(`gt(collection_year,${collectionYearFromValue})`)
-      } else if (!isNaN(collectionYearToValue)) {
-        // lt
-        queryArr.push(`lt(collection_year,${collectionYearToValue})`)
+      const taxonNameValue = this.taxonNameNode.get('value')
+      if (taxonNameValue !== '') {
+        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
       }
 
-      const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))
-      const genomeLengthToValue = parseInt(this.genomeLengthToNode.get('value'))
-      if (!isNaN(genomeLengthFromValue) && !isNaN(genomeLengthToValue)) {
-        queryArr.push(`betweeen(genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
-      } else if (!isNaN(genomeLengthFromValue)) {
-        queryArr.push(`gt(genome_length,${genomeLengthFromValue})`)
-      } else if (!isNaN(genomeLengthToValue)) {
-        queryArr.push(`lt(genome_length,${genomeLengthToValue})`)
+      const taxonRankValue = this.taxonRankNode.get('value')
+      if (taxonRankValue !== '') {
+        queryArr.push(`eq(taxon_rank,${sanitizeInput(taxonRankValue)})`)
       }
 
-      const advancedQueryArr = this._buildAdvancedQuery()
-      if (advancedQueryArr.length > 0) {
-        queryArr = queryArr.concat(advancedQueryArr)
+      const divisionValue = this.divisionNode.get('value')
+      if (divisionValue !== '') {
+        queryArr.push(`eq(division,${sanitizeInput(divisionValue)})`)
       }
 
       return queryArr.join('&')
