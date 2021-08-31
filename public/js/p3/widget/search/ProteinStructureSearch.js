@@ -1,11 +1,17 @@
 define([
   'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/ProteinStructureSearch.html',
+  './FacetStoreBuilder'
 ], function (
   declare,
+  lang,
+  when,
   SearchBase,
   template,
+  storeBuilder,
 ) {
 
   function sanitizeInput(str) {
@@ -15,43 +21,52 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Protein Structure Search',
-    dataKey: 'genome',
-    resultUrlBase: '/view/GenomeList/?',
-    resultUrlHash: '#view_tab=genomes',
+    dataKey: 'protein_structure',
+    resultUrlBase: '/view/ProteinStructureList/?',
+    resultUrlHash: '#view_tab=structures',
+    postCreate: function () {
+      this.inherited(arguments);
+
+      when(storeBuilder('protein_structure', 'method'), lang.hitch(this, function (store) {
+        this.methodNode.store = store
+      }))
+    },
     buildQuery: function () {
       let queryArr = []
 
-      const hostNameValue = this.hostNameNode.get('value')
-      if (hostNameValue !== '') {
-        queryArr.push(`eq(host_name,${sanitizeInput(hostNameValue)})`)
+      const keywordValue = this.keywordNode.get('value')
+      if (keywordValue !== '') {
+        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
       }
 
-      const isolationCountryValue = this.isolationCountryNode.get('value')
-      if (isolationCountryValue !== '') {
-        queryArr.push(`eq(isolation_country,${sanitizeInput(isolationCountryValue)})`)
+      const taxonNameValue = this.taxonNameNode.get('value')
+      if (taxonNameValue !== '') {
+        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
       }
 
-      const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))
-      const collectionYearToValue = parseInt(this.collectionYearToNode.get('value'))
-      if (!isNaN(collectionYearFromValue) && !isNaN(collectionYearToValue)) {
-        // between
-        queryArr.push(`between(collection_year,${collectionYearFromValue},${collectionYearToValue})`)
-      } else if (!isNaN(collectionYearFromValue)) {
-        // gt
-        queryArr.push(`gt(collection_year,${collectionYearFromValue})`)
-      } else if (!isNaN(collectionYearToValue)) {
-        // lt
-        queryArr.push(`lt(collection_year,${collectionYearToValue})`)
+      const pdbIDValue = this.pdbIDNode.get('value')
+      if (pdbIDValue !== '') {
+        queryArr.push(`eq(pdb_id,${sanitizeInput(pdbIDValue)})`)
       }
 
-      const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))
-      const genomeLengthToValue = parseInt(this.genomeLengthToNode.get('value'))
-      if (!isNaN(genomeLengthFromValue) && !isNaN(genomeLengthToValue)) {
-        queryArr.push(`betweeen(genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
-      } else if (!isNaN(genomeLengthFromValue)) {
-        queryArr.push(`gt(genome_length,${genomeLengthFromValue})`)
-      } else if (!isNaN(genomeLengthToValue)) {
-        queryArr.push(`lt(genome_length,${genomeLengthToValue})`)
+      const descriptionValue = this.descriptionNode.get('value')
+      if (descriptionValue !== '') {
+        queryArr.push(`eq(description,${sanitizeInput(descriptionValue)})`)
+      }
+
+      const geneValue = this.geneNode.get('value')
+      if (geneValue !== '') {
+        queryArr.push(`eq(gene,${sanitizeInput(geneValue)})`)
+      }
+
+      const productValue = this.productNode.get('value')
+      if (productValue !== '') {
+        queryArr.push(`eq(product,${sanitizeInput(productValue)})`)
+      }
+
+      const methodValue = this.methodNode.get('value')
+      if (methodValue !== '') {
+        queryArr.push(`eq(method,${sanitizeInput(methodValue)})`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()
