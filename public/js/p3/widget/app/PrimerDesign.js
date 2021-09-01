@@ -177,7 +177,8 @@ define([
         }
         var sanitized = this.sanitizeFastaSequence(val);
         var fasta_header = this.getFastaHeader(sanitized);
-        var fasta_sequence = this.getSequence(sanitized);
+        //var fasta_sequence = this.getSequence(sanitized);
+        var fasta_sequence = sanitized;
         if (fasta_header) {
             this.input_sequence_identifier.set('value',fasta_header);
         }
