@@ -646,8 +646,8 @@ define([
         var labelSearch = 'true';
         var idType = 'genome_id';
         var labelType = 'genome_name';
-        console.log('container', container);
-        console.log('self.browserHeader', self.browserHeader);
+        // console.log('container', container);
+        // console.log('self.browserHeader', self.browserHeader);
         if (container._resultType !== 'CodonTree' && container._resultType !== 'PhylogeneticTree') {
           idType = 'patric_id';
           labelType = 'feature_name';
@@ -1388,8 +1388,8 @@ define([
         var panelCtor;
         var params = { path: this.path, region: 'center' };
 
-        console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
-        console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
+        // console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
+        // console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
 
         switch (obj.type) {
           case 'folder':

@@ -51,6 +51,7 @@ app.use(function (req, res, next) {
     appServiceURL: config.get('appServiceURL'),
     dataServiceURL: config.get('dataServiceURL'),
     homologyServiceURL: config.get('homologyServiceURL'),
+    mailinglistURL: config.get("mailinglistURL"),
     genomedistanceServiceURL: config.get('genomedistanceServiceURL'),
     compareregionServiceURL: config.get('compareregionServiceURL'),
     docsServiceURL: config.get('docsServiceURL'),
@@ -119,6 +120,8 @@ app.use('/content', contentViewer);
 app.use('/webpage', contentViewer);
 app.use('/user', contentViewer);
 app.use('/sulogin', contentViewer);
+app.use('/login', contentViewer);
+app.use('/register', contentViewer);
 app.use('/remote', remotePage);
 app.use('/view', viewers);
 app.use('/search', search);
