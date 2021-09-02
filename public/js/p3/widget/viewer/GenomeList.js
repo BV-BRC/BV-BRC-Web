@@ -38,7 +38,12 @@ define([
       this.setActivePanelState();
     },
     onSetQuery: function (attr, oldVal, newVal) {
-      const content = QueryToEnglish(newVal);
+      const q = newVal.split('&').filter(op => op.includes('genome(')).map(op => {
+        const part = op.replace('genome(', '')
+        return part.substring(0, part.length - 1)
+      }).join('')
+
+      const content = QueryToEnglish(q);
       this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
@@ -53,13 +58,7 @@ define([
         return;
       }
       const activeQueryState = lang.mixin({}, this.state, { hashParams: lang.mixin({}, this.state.hashParams) })
-      // console.log(activeTab, activeQueryState)
 
-      // switch (active) {
-      //   default:
-      //     activeTab.set('state', activeQueryState);
-      //     break;
-      // }
       activeTab.set('state', activeQueryState)
 
       if (activeTab) {
