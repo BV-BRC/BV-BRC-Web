@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/request',
-  './TabViewerBase', '../../util/QueryToEnglish', '../../util/PathJoin',
+  'dojo/_base/declare', 'dojo/_base/lang',
+  './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
   '../GenomeListOverview', '../GenomeGridContainer'
 ], function (
-  declare, lang, xhr,
-  TabViewerBase, QueryToEnglish, PathJoin,
+  declare, lang,
+  TabViewerBase, QueryToEnglish, DataAPI,
   GenomeListOverview, GenomeGridContainer
 ) {
 
@@ -19,54 +19,20 @@ define([
         id: this.viewer.id + '_overview'
       });
     },
-    _setQueryAttr: function (query, force) {
-      if (!query) {
-        console.log('GENOME LIST SKIP EMPTY QUERY: ');
-        return;
-      }
-      if (query && !force && (query == this.query) ) {
-        return;
-      }
-
-      this._set('query', query);
-      var _self = this;
-
-      var url = PathJoin(this.apiServiceUrl, 'genome', '?' + (this.query) + '&select(genome_id)&limit(' + this.maxGenomesPerList + 1 + ')');
-
-      xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
-        headers: {
-          accept: 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        handleAs: 'json',
-        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-        data: (this.query) + '&select(genome_id)&limit(1)'
-
-      }).then(function (res) {
-        if (res && res.response && res.response.docs) {
-          var genomes = res.response.docs;
-          if (genomes) {
-            _self._set('total_genomes', res.response.numFound);
-          }
-        } else {
-          console.warn('Invalid Response for: ', url);
-        }
-      }, function (err) {
-        console.error('Error Retreiving Genomes: ', err);
-      });
-    },
     onSetState: function (attr, oldVal, state) {
       this.inherited(arguments);
-      // console.log(state.search)
       this.set('query', state.search);
+
+      // update genome count on header
+      DataAPI.query('genome', state.search, { select: ['genome_id'], limit: 1 })
+        .then(lang.hitch(this, (res) => {
+          this._set('total_genomes', res.total_items);
+        }))
 
       this.setActivePanelState();
     },
     onSetQuery: function (attr, oldVal, newVal) {
       const content = QueryToEnglish(newVal);
-      // this.overview.set('content', '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + '</div>');
       this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
