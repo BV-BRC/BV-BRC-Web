@@ -692,16 +692,19 @@ define([], function () {
         field: 'subsystem_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'subsystem_name', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'subsystem_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'superclass', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'superclass', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'class', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'class', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'subclass', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'subclass', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'active', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
     'surveillance': [
