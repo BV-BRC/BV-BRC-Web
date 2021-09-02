@@ -23,7 +23,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Subsystem Search',
-    dataKey: 'genome',
+    dataKey: 'subsystem',
     resultUrlBase: '/view/SubsystemList/?',
     resultUrlHash: '#view_tab',
     postCreate: function () {

@@ -21,17 +21,17 @@ define([
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: false },
+      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
       genome_name: { label: 'Genome Name', field: 'genome_name', hidden: false },
-      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: false },
+      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
 
-      sequence_id: { label: 'Sequence ID', field: 'sequence_id', hidden: false },
-      accession: { label: 'Accession', field: 'accession', hidden: false },
+      sequence_id: { label: 'Sequence ID', field: 'sequence_id', hidden: true },
+      accession: { label: 'Accession', field: 'accession', hidden: true },
 
-      annotation: { label: 'Annotation', field: 'annotation', hidden: false },
+      annotation: { label: 'Annotation', field: 'annotation', hidden: true },
 
-      feature_id: { label: 'Feature ID', field: 'feature_id', hidden: false },
-      alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: false },
+      feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
+      alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
       patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
 
@@ -43,7 +43,7 @@ define([
 
       pathway_id: { label: 'Pathway ID', field: 'pathway_id', hidden: false },
       pathway_name: { label: 'Pathway Name', field: 'pathway_name', hidden: false },
-      pathway_class: { label: 'Pathway Class', field: 'pathway_class', hidden: false },
+      pathway_class: { label: 'Pathway Class', field: 'pathway_class', hidden: true },
     },
     startup: function () {
       var _self = this;

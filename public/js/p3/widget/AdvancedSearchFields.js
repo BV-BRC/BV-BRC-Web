@@ -615,19 +615,19 @@ define([], function () {
         field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'sequence_id', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'sequence_id', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
         field: 'accession', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'annotation', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'annotation', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
-        field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
         field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
@@ -642,19 +642,19 @@ define([], function () {
         field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'ec_number', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'ec_number', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'ec_description', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'ec_description', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'pathway_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'pathway_name', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'pathway_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'pathway_class', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'pathway_class', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
     'subsystem': [
@@ -692,16 +692,19 @@ define([], function () {
         field: 'subsystem_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'subsystem_name', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'subsystem_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'superclass', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'superclass', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'class', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'class', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'subclass', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'subclass', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'active', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
     'surveillance': [

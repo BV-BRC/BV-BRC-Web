@@ -23,7 +23,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Pathway Search',
-    dataKey: 'genome',
+    dataKey: 'pathway',
     resultUrlBase: '/view/PathwayList/?',
     resultUrlHash: '#view_tab',
     postCreate: function () {
