@@ -173,17 +173,17 @@ define([
         disabled: false
       });
 
-      this.proteinFamilies = new ProteinFamiliesContainer({
-        title: 'Protein Families',
-        id: this.viewer.id + '_proteinFamilies',
-        disabled: false
-      });
-      this.transcriptomics = new TranscriptomicsContainer({
-        title: 'Transcriptomics',
-        id: this.viewer.id + '_transcriptomics',
-        disabled: false,
-        state: this.state
-      });
+      // this.proteinFamilies = new ProteinFamiliesContainer({
+      //   title: 'Protein Families',
+      //   id: this.viewer.id + '_proteinFamilies',
+      //   disabled: false
+      // });
+      // this.transcriptomics = new TranscriptomicsContainer({
+      //   title: 'Transcriptomics',
+      //   id: this.viewer.id + '_transcriptomics',
+      //   disabled: false,
+      //   state: this.state
+      // });
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
@@ -191,10 +191,10 @@ define([
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.features);
       this.viewer.addChild(this.specialtyGenes);
-      this.viewer.addChild(this.proteinFamilies);
+      // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      this.viewer.addChild(this.transcriptomics);
+      // this.viewer.addChild(this.transcriptomics);
 
     },
 

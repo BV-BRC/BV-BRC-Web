@@ -1,11 +1,17 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
-  '../GenomeListOverview', '../GenomeGridContainer'
+  '../GenomeListOverview', '../GenomeGridContainer',
+  '../AMRPanelGridContainer', '../SequenceGridContainer',
+  '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
+  '../PathwaysContainer', '../TranscriptomicsContainer',  '../SubSystemsContainer'
 ], function (
   declare, lang,
   TabViewerBase, QueryToEnglish, DataAPI,
-  GenomeListOverview, GenomeGridContainer
+  GenomeListOverview, GenomeGridContainer,
+  AMRPanelGridContainer, SequenceGridContainer,
+  FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+  PathwaysContainer, TranscriptomicsContainer, SubSystemsContainer
 ) {
 
   return declare([TabViewerBase], {
@@ -69,7 +75,7 @@ define([
       this.watch('query', lang.hitch(this, 'onSetQuery'))
       this.watch('total_genomes', lang.hitch(this, 'onSetTotalGenomes'))
 
-      // this.overview = this.createOverviewPanel()
+      this.overview = this.createOverviewPanel()
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
@@ -77,8 +83,65 @@ define([
         disable: false
       })
 
-      // this.viewer.addChild(this.overview)
+      this.sequences = new SequenceGridContainer({
+        title: 'Sequences',
+        id: this.viewer.id + '_sequences',
+        state: this.state,
+        disable: false
+      });
+
+      this.amr = new AMRPanelGridContainer({
+        title: 'AMR Phenotypes',
+        id: this.viewer.id + '_amr',
+        disabled: false,
+        state: this.state
+      });
+
+      this.features = new FeatureGridContainer({
+        title: 'Features',
+        id: this.viewer.id + '_features',
+        disabled: false
+      });
+      this.specialtyGenes = new SpecialtyGeneGridContainer({
+        title: 'Specialty Genes',
+        id: this.viewer.id + '_specialtyGenes',
+        disabled: false,
+        state: this.state
+      });
+      this.pathways = new PathwaysContainer({
+        title: 'Pathways',
+        id: this.viewer.id + '_pathways',
+        disabled: false
+      });
+
+      this.subsystems = new SubSystemsContainer({
+        title: 'Subsystems',
+        id: this.viewer.id + '_subsystems',
+        disabled: false
+      });
+
+      // this.proteinFamilies = new ProteinFamiliesContainer({
+      //   title: 'Protein Families',
+      //   id: this.viewer.id + '_proteinFamilies',
+      //   disabled: false
+      // });
+      // this.transcriptomics = new TranscriptomicsContainer({
+      //   title: 'Transcriptomics',
+      //   id: this.viewer.id + '_transcriptomics',
+      //   disabled: false,
+      //   state: this.state
+      // })
+
+      this.viewer.addChild(this.overview)
       this.viewer.addChild(this.genomes)
+      this.viewer.addChild(this.sequences);
+      this.viewer.addChild(this.amr);
+      this.viewer.addChild(this.features);
+      this.viewer.addChild(this.specialtyGenes);
+      // this.viewer.addChild(this.proteinFamilies);
+      this.viewer.addChild(this.pathways);
+      this.viewer.addChild(this.subsystems);
+      // this.viewer.addChild(this.transcriptomics);
     }
   });
 });
