@@ -102,11 +102,7 @@ define([
       evt.stopPropagation();
 
       const query = this.buildQuery()
-      if (query !== '') {
-        Topic.publish('/navigate', { href: this.resultUrlBase + query + this.resultUrlHash });
-      } else {
-        // mark error
-      }
+      Topic.publish('/navigate', { href: this.resultUrlBase + query + this.resultUrlHash });
     }
   })
 })
