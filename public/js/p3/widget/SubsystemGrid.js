@@ -21,21 +21,21 @@ define([
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: false },
+      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
       genome_name: { label: 'Genome Name', field: 'genome_name', hidden: false },
-      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: false },
+      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
 
-      feature_id: { label: 'Feature ID', field: 'feature_id', hidden: false },
+      feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
       patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
 
-      gene: { label: 'Gene', field: 'gene', hidden: false },
+      gene: { label: 'Gene', field: 'gene', hidden: true },
       product: { label: 'Product', field: 'product', hidden: false },
 
-      role_id: { label: 'Role ID', field: 'role_id', hidden: false },
+      role_id: { label: 'Role ID', field: 'role_id', hidden: true },
       role_name: { label: 'Role Name', field: 'role_name', hidden: false },
 
-      subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: false },
+      subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true },
       subsystem_id: { label: 'Subsystem Name', field: 'subsystem_name', hidden: false },
       superclass: { label: 'Superclass', field: 'superclass', hidden: false },
       class: { label: 'Class', field: 'class', hidden: false },
