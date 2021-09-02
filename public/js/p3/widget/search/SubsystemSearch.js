@@ -79,7 +79,7 @@ define([
       }
 
       const query = queryArr.join('&')
-      if (query !== '') {
+      if (genomeQuery !== '') {
         return query + genomeQuery
       } else {
         return query
