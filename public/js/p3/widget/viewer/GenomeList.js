@@ -4,7 +4,7 @@ define([
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
-  '../PathwaysContainer', '../TranscriptomicsContainer',  '../SubSystemsContainer'
+  '../PathwayGridContainer', '../TranscriptomicsContainer',  '../SubsystemGridContainer'
 ], function (
   declare, lang,
   TabViewerBase, QueryToEnglish, DataAPI,
