@@ -27,7 +27,16 @@ define([
     },
     onSetState: function (attr, oldVal, state) {
       this.inherited(arguments);
-      this.set('query', state.search);
+      if (!this.query) {
+        this.set('query', state.search);
+      } else {
+        if (this.query !== state.search && state.search !== '') {
+          this.set('query', state.search);
+        }
+      }
+      if (this.state.search === '' && this.query !== '') {
+        this.state.search = this.query
+      }
 
       // update genome count on header
       DataAPI.query('genome', state.search, { select: ['genome_id'], limit: 1 })
