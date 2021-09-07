@@ -21,7 +21,7 @@ define([
 
   return declare([GridContainer], {
     gridCtor: SubsystemGrid,
-    containerType: 'subsystem_data',
+    containerType: 'subsystemTab_data',
     tutorialLink: '',
     facetFields: AdvancedSearchFields['subsystem'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['subsystem'].filter((ff) => ff.search),

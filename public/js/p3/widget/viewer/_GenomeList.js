@@ -2,17 +2,17 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/_base/lang', 'dojo/request',
   'dijit/layout/ContentPane', 'dojo/topic',
   '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
-  '../PathwaysContainer', '../ProteinFamiliesContainer',
+  '../PathwayGridContainer', '../ProteinFamiliesContainer',
   '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
-  '../AMRPanelGridContainer', '../SubSystemsContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
+  '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
   '../SequenceGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
   FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
-  PathwaysContainer, ProteinFamiliesContainer,
+  PathwayGridContainer, ProteinFamiliesContainer,
   TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-  AMRPanelGridContainer, SubSystemsContainer, SurveillanceGridContainer, SerologyGridContainer,
+  AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
   SequenceGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
@@ -312,18 +312,16 @@ define([
         id: this.viewer.id + '_proteinFeatures',
         disabled: false
       });
-      this.pathways = new PathwaysContainer({
+      this.pathways = new PathwayGridContainer({
         title: 'Pathways',
         id: this.viewer.id + '_pathways',
         disabled: false
       });
-
-      this.subsystems = new SubSystemsContainer({
+      this.subsystems = new SubsystemGridContainer({
         title: 'Subsystems',
         id: this.viewer.id + '_subsystems',
         disabled: false
       });
-
       this.proteinFamilies = new ProteinFamiliesContainer({
         title: 'Protein Families',
         id: this.viewer.id + '_proteinFamilies',

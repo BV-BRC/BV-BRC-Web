@@ -1120,6 +1120,68 @@ define([
       return div;
     },
 
+    subsystemTab_data: function (item, options) {
+      options = options || {};
+
+      var columns;
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name'
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id'
+      }, {
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Role ID',
+        text: 'role_id'
+      }, {
+        name: 'Role Name',
+        text: 'role_name'
+      }, {
+        name: 'Subsystem ID',
+        text: 'subsystem_id'
+      }, {
+        name: 'Subsystem Name',
+        text: 'subsystem_name'
+      },{
+        name: 'Superclass',
+        text: 'superclass'
+      }, {
+        name: 'Class',
+        text: 'class'
+      }, {
+        name: 'Subclass',
+        text: 'subclass'
+      }, {
+        name: 'Active',
+        text: 'active'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.subsystem_name, 'fa icon-git-pull-request fa-2x', '/view/SubsystemList/' + item.subsystem_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     proteinfamily_data: function (item, options) {
       options = options || {};
 
