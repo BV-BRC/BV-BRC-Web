@@ -17,6 +17,7 @@ define([
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
   'dojo/text!../templates/proteinStructure/ProteinStructureViewer.html',
+  'dojo/request',
   '../../util/dataStoreHelpers'
 ],
 function (
@@ -38,6 +39,7 @@ function (
   Templated,
   WidgetsInTmeplateMixin,
   templateString,
+  xhr,
   dataStoreHelpers
 )
 {
@@ -48,10 +50,11 @@ function (
     molstar: null,
     viewState: new ProteinStructureState({}),
     state: {},
-    postCreate: function () {
+    contentServer: `${window.App.dataServiceURL}/content`,
+    postCreate: async function () {
       // console.log('starting ' + this.id + '.postCreate');
 
-      this.proteinStore =   new ItemFileReadStore({
+      this.proteinStore = new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/SARS-CoV-2.json'
       });
       this.displayTypeStore = new ItemFileReadStore({
@@ -98,31 +101,61 @@ function (
       // this.structureHighlighter = new StructureHighlights({});
       // this.highlighters.addChild(this.structureHighlighter);
 
-      this.featureHighlights = new SARS2FeatureHighlights({
-      });
-      this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-        // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-        // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
-        let highlights = new Map(this.viewState.get('highlights'));
-        highlights.set('features', new Map(newValue));
-        this.get('viewState').set('highlights', highlights);
-      }));
-      this.highlighters.addChild(this.featureHighlights);
+      let accessionId = this.state.hashParams.accession || this.viewDefaults.get('accession');
+      accessionId = accessionId.toUpperCase();
 
-      // TODO highlighters need to be dependent on proteins and what's available in the database
-      this.epitopeHighlight = new EpitopeHighlights({
-        id: this.id + '_epitopes',
-        color: '#ffff00'
-      });
-      this.highlighters.addChild(this.epitopeHighlight);
+      const urls = [
+        `${this.contentServer}/structures/protein_features/${accessionId}.fea`,
+        `${this.contentServer}/structures/epitopes/${accessionId}.epi`
+      ];
 
-      this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-        // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-        // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
-        let highlights = new Map(this.viewState.get('highlights'));
-        highlights.set('epitopes', new Map(newValue));
-        this.get('viewState').set('highlights', highlights);
-      }));
+      /* Fetch data files together before parsing feature and epitope content
+        @return JSON object
+        @exception Error object
+       */
+      const response = await Promise.all(
+        urls.map(url => xhr.get(url, {
+          headers: {
+            'Accept': 'application/solr+json',
+            'Authorization': window.App.authorizationToken
+          }
+        }).then(res => res)
+          .catch(e => e))
+      );
+
+      const featureContent = response[0];
+      const epitopeContent = response[1];
+
+      if (!(featureContent instanceof Error)) {
+        this.featureHighlights = new SARS2FeatureHighlights({
+          data: JSON.parse(featureContent).data
+        });
+        this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+          // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+          // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+          let highlights = new Map(this.viewState.get('highlights'));
+          highlights.set('features', new Map(newValue));
+          this.get('viewState').set('highlights', highlights);
+        }));
+        this.highlighters.addChild(this.featureHighlights);
+      }
+
+      if (!(epitopeContent instanceof Error)) {
+        this.epitopeHighlight = new EpitopeHighlights({
+          id: this.id + '_epitopes',
+          color: '#ffff00',
+          data: JSON.parse(epitopeContent).data
+        });
+        this.highlighters.addChild(this.epitopeHighlight);
+
+        this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+          // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+          // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+          let highlights = new Map(this.viewState.get('highlights'));
+          highlights.set('epitopes', new Map(newValue));
+          this.get('viewState').set('highlights', highlights);
+        }));
+      }
 
       this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
         this.onViewStateChange(newValue);
@@ -143,7 +176,7 @@ function (
         // console.log('initial viewstate is ' + JSON.stringify(viewState));
         this.set('viewState', viewState);
       }));
-      if ( has('safari') ) {
+      if (has('safari')) {
         domConstruct.create('div',
           {
             innerHTML: 'Note: The JMol interactive 3D protein viewer is best viewed using the Chrome browser (<a href="https://www.google.com/chrome/">download</a>). For help see the <a href="https://wiki.jmol.org/index.php/JSMol">JSMol Wiki</a>.',
@@ -159,9 +192,13 @@ function (
     },
     updateFromViewState: function (viewState) {
       this.displayControl.set('accessionId', viewState.get('accession').id);
-      this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
-      this.featureHighlights.set('accessionId', viewState.get('accession').id);
-      this.epitopeHighlight.set('accessionId', viewState.get('accession').id);
+      if (this.epitopeHighlight) {
+        this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
+        this.epitopeHighlight.set('accessionId', viewState.get('accession').id);
+      }
+      if (this.featureHighlights) {
+        this.featureHighlights.set('accessionId', viewState.get('accession').id);
+      }
       this.molstar.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
     },
