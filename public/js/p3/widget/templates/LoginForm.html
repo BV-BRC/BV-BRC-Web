@@ -1,6 +1,6 @@
 <div style="width:100%;margin-top: 28px;">
   <div style="max-width:400px; margin-left: auto; margin-right: auto;text-align:center;">
-    <h3>BV-BRC Logo Here</h3>
+    <img src="patric/images/bv-brc/bv-brc-logo-bgwhite.png" style='margin:0px;margin-bottom:16px;width:300px' />
     <h4 class="alt-login-note" style="line-height: 1.9; text-align: center;">
       Sign in with your BV-BRC account
     </h4>
@@ -60,9 +60,21 @@
           <a style="float:left;"class="forgotPW" data-dojo-attach-event="click: makeFPform">Forgot your password?</a> <a style="float: right;" class="forgotPW navigationLink" href="/register">Register/Subscribe</a>
         </div>
 
-        <div class="loginError pull-left" style="color:red"></div>
-      </form>
+        <div class="loginError" style="color:red;margin:10px;font-size:1.1em;width:100%;"></div>
 
+        <div style="margin-top:20px; max-width:400px;">
+          <h6 style="margin-bottom:6px;">NOTE:</h6>
+          <p>You may use your PATRIC or IRD/ViPR BRC username or email to login to this resource if you already had an account on one of those resources.  While we are merging these resources together, you may login at those sites directly as well.</p>
+          <a href="https://patricbrc.org" target="_blank">
+            <img  src="patric/images/bv-brc/patric-logo.png" style="width:100px;text-align: center; vertical-align: middle;margin-right:24px;" />
+          </a>
+          <a href="https://www.viprbrc.org/" target="_blank">
+            <img src="patric/images/bv-brc/ird-vipr-logo.png" style="width:70px;text-align: center; vertical-align: middle;" />
+          </a>
+          <p style="margin-bottom:8px;margin-top:8px;">Visit our partner Bioinformatics Resource Center, <a href="https://veupathdb.org/veupathdb/app/user/login?destination=https://veupathdb.org">VEuPathDB</a></p>
+
+        </div>
+      </form>
     </div>
   </div>
 
@@ -88,12 +100,13 @@
     </form>
   </div>
 
+  <div class="pwrError" style="text-align: center; padding: 2px; margin: 10px; border: 1px solid red; border-radius: 4px;display:none">
+    Unable to reset the account with the provided email address
+  </div>
+
   <div class="pwrMessage" style="display:none; border:2px">
     <h2 style="margin:0px;padding:4px;font-size:1.2em;text-align:center;background:#eee;">Your Password has been reset</h2>
     <p>Please check your email for instructions to complete the reset process.</p>
   </div>
   <p>&nbsp;</p>
-  <div class="pwrError" style="text-align: center; padding: 2px; margin: 10px; border: 1px solid red; border-radius: 4px;display:none">
-    Unable to reset the account with the provided email address
-  </div>
 </div>
