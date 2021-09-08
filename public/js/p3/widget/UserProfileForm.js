@@ -255,7 +255,7 @@ define([
         document.getElementsByClassName('newSubmit')[0].style.display = 'block';
         var changepwsection = document.getElementsByClassName('changepwsection')[0];
         changepwsection.parentNode.removeChild(changepwsection);
-        this.initialNotificationsContainer.innerHTML = `Click <a href="${window.App.mailinglistURL}" target="_blank">HERE</a> to manage your BV-BRC Mailing List subscriptions`
+        // this.initialNotificationsContainer.innerHTML = `Click <a href="${window.App.mailinglistURL}" target="_blank">HERE</a> to manage your BV-BRC Mailing List subscriptions`
         // document.getElementsByClassName('useridField')[0].style.display = 'block';
         // document.getElementsByClassName('usernamehdr')[0].style.display = 'block';
       }
