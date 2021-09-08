@@ -14,17 +14,6 @@ define([
     templateString: Template,
     callbackURL: '',
     loginMethod: 'patric',
-    validateViprCreds: function (evt) {
-      var btn = this.submitViprBtn;
-      btn.setDisabled(true);
-
-      var isValid =
-        this.viprUser.get('value') !== '' &&
-        this.viprPass.get('value') !== '';
-      if (isValid) {
-        btn.setDisabled(false);
-      }
-    },
     validatePatricCreds: function (evt) {
       var btn = this.submitBtn;
       btn.setDisabled(true);
@@ -155,7 +144,6 @@ define([
     makeFPform: function () {
       this.domNode.querySelector('.loginForm').style.display = 'none';
       this.domNode.querySelector('.alt-login-note').style.display = 'none';
-      this.domNode.querySelector('.alt-login').style.display = 'none';
       this.domNode.querySelector('.pwReset').style.display = 'block';
 
       var loginF1 = this.domNode.querySelector('.loginForm');
