@@ -66,6 +66,27 @@ define([], function () {
         field: 'mlst', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
+        field: 'segment', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'subtype', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'h_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'n_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'clade', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subclade', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
         field: 'other_typing', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {

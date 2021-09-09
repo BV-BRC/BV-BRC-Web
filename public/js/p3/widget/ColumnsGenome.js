@@ -37,6 +37,11 @@ define(['./formatter'], function (formatter) {
       hidden: true
     },
 
+    superkingdom: {
+      label: 'Superkingdom',
+      field: 'superkingdom',
+      hidden: true
+    },
     kingdom: {
       label: 'Kingdom',
       field: 'kingdom',
@@ -109,6 +114,42 @@ define(['./formatter'], function (formatter) {
       field: 'mlst',
       hidden: true
     },
+    segment: {
+      label: 'Segment',
+      field: 'segment',
+      hidden: true
+    },
+    subtype: {
+      label: 'Subtype',
+      field: 'subtype',
+      hidden: true
+    },
+    h_type: {
+      label: 'H_type',
+      field: 'h_type',
+      hidden: true
+    },
+    n_type: {
+      label: 'N_type',
+      field: 'n_type',
+      hidden: true
+    },
+    lineage: {
+      label: 'Lineage',
+      field: 'lineage',
+      hidden: true
+    },
+    clade: {
+      label: 'Clade',
+      field: 'clade',
+      hidden: true
+    },
+    subclade: {
+      label: 'Subclade',
+      field: 'subclade',
+      hidden: true
+    },
+
     other_typing: {
       label: 'Other Typing',
       field: 'other_typing',
