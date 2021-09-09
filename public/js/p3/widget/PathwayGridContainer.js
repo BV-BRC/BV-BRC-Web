@@ -21,7 +21,7 @@ define([
 
   return declare([GridContainer], {
     gridCtor: PathwayGrid,
-    containerType: 'pathway_data',
+    containerType: 'pathwayTab_data',
     tutorialLink: '',
     facetFields: AdvancedSearchFields['pathway'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['pathway'].filter((ff) => ff.search),
