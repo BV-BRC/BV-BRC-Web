@@ -114,6 +114,12 @@ define([
           case 'protein_structures':
             Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
             break;
+          case 'pathways':
+            Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+            break;
+          case 'subsystems':
+            Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
+            break;
           case 'surveillance':
             Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
             break;
@@ -181,6 +187,12 @@ define([
           break;
         case 'protein_structures':
           Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
+          break;
+        case 'pathways':
+          Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+          break;
+        case 'subsystems':
+          Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
           break;
         case 'surveillance':
           Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
