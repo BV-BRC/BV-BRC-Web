@@ -993,6 +993,45 @@ define([
       options = options || {};
 
       var columns = [{
+        name: 'Pathway ID',
+        text: 'pathway_id'
+      }, {
+        name: 'Pathway Name',
+        text: 'pathway_name'
+      }, {
+        name: 'Pathway Class',
+        text: 'pathway_class'
+      }, {
+        name: 'Annotation',
+        text: 'annotation'
+      }, {
+        name: 'Unique Genome Count',
+        text: 'genome_count'
+      }, {
+        name: 'Unique Gene Count',
+        text: 'gene_count'
+      }, {
+        name: 'Unique EC Count',
+        text: 'ec_count'
+      }, {
+        name: 'EC Conservation',
+        text: 'ec_cons'
+      }, {
+        name: 'Gene Conservation',
+        text: 'gene_cons'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pathway_name, 'fa icon-git-pull-request fa-2x', '/view/Pathways/' + item.pathway_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    pathwayTab_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
         name: 'Genome ID',
         text: 'genome_id'
       },{
