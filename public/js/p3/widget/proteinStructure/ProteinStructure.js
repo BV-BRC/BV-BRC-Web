@@ -6,7 +6,6 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'jsmol/JSmol.min',
   'dijit/_WidgetBase',
   'dojo/_base/kernel',
   './ProteinStructureState',
@@ -14,7 +13,6 @@ define([
 ], function (
   declare,
   lang,
-  JSMol,
   WidgetBase,
   kernel,
   ProteinStructureState

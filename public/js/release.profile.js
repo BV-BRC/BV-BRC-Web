@@ -45,7 +45,6 @@ var profile = {
     { name: 'cytoscape-context-menus', location:'./cytoscape-context-menus' },
     { name: 'cytoscape-cola', location:'./cytoscape-cola' },
     { name: 'cytoscape-dagre', location:'./cytoscape-dagre' },
-    { name: 'jsmol', location:'./jsmol' },
     { name: 'heatmap', location:'./heatmap' },
     { name: 'molstar', location:'./molstar' }
   ],
