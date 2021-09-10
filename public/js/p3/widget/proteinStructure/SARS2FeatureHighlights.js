@@ -8,8 +8,7 @@ define([
   './HighlightBase',
   '../PageGrid',
   '../GridSelector',
-  'p3/util/colorHelpers',
-  'dojo/text!/public/js/p3/resources/jsmol/sars2-features.json'
+  'p3/util/colorHelpers'
 ], function (
   declare,
   lang,
@@ -19,8 +18,7 @@ define([
   HighlightBase,
   Grid,
   selector,
-  colorHelpers,
-  featureDataString
+  colorHelpers
 ) {
   return declare( [HighlightBase], {
     accessionId: '',
@@ -39,7 +37,7 @@ define([
     features: null,
     color: '#0000ff',
     textColor: colorHelpers.WHITE,
-    data: JSON.parse(featureDataString),
+    data: {},
 
     postCreate: function () {
       this.inherited(arguments);
@@ -57,13 +55,10 @@ define([
       if (this.features) {
         this.removeChild(this.features);
       }
-      let options = [];
-      if (accessionId && this.data[accessionId]) {
-        options = this.data[accessionId];
-      }
+
       let store = new MemoryStore({
         idProperty: 'name',
-        data: options,
+        data: this.data,
       });
       this.features = new this.FeatureList({
         store: store,
