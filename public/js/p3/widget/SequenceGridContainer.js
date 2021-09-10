@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './SequenceGrid', 'dijit/popup',
+  './SequenceGrid', './AdvancedSearchFields', 'dijit/popup',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct',
   'dojo/topic'
 ], function (
   declare, GridContainer,
-  Grid, popup,
+  Grid, AdvancedSearchFields, popup,
   TooltipDialog, FacetFilterPanel,
   lang, on, domConstruct, Topic
 ) {
@@ -22,11 +22,11 @@ define([
   return declare([GridContainer], {
     containerType: 'sequence_data',
     tutorialLink: 'user_guides/organisms_taxon/sequences.html',
-    facetFields: ['sequence_type', 'topology'],
+    facetFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.search),
     maxGenomeCount: 10000,
     dataModel: 'genome_sequence',
     primaryKey: 'sequence_id',
-    maxDownloadSize: 25000,
     tooltip: 'The "Sequences" tab contains a list of genomic sequences (e.g. chromosomes, plasmids, contigs) for genomes associated with the current view',
     containerActions: GridContainer.prototype.containerActions.concat([
       [

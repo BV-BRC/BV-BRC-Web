@@ -3,7 +3,7 @@ define([
   'dojo/request',
   './TabViewerBase',
   '../FeatureOverview', '../GenomeBrowser', '../CompareRegionContainer',
-  '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer',
+  '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
   '../../util/PathJoin'
 
 ], function (
@@ -11,7 +11,7 @@ define([
   xhr,
   TabViewerBase,
   FeatureOverview, GenomeBrowser, CompareRegionContainer,
-  GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer,
+  GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
   PathJoin
 ) {
 
@@ -161,6 +161,10 @@ define([
           return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
         });
         this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; ' + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', { feature: feature });
+
+        if(taxon_lineage_names.includes('Viruses')) {
+          this.removeBacteriaTabs();
+        }
       }));
 
       var content = [];
@@ -209,6 +213,12 @@ define([
           this.set('feature', feature);
         }
       }
+    },
+
+    removeBacteriaTabs: function () {
+      this.viewer.removeChild(this.compareRegionViewer);
+      this.viewer.removeChild(this.transcriptomics);
+      this.viewer.removeChild(this.interactions);
     },
 
     _setFeatureAttr: function (feature) {
@@ -265,12 +275,24 @@ define([
         id: this.viewer.id + '_interactions'
       });
 
+      this.structures = new ProteinStructureGridContainer({
+        title: 'Protein Structures',
+        id: this.viewer.id + '_structures'
+      });
+
+      this.proteinFeatures = new ProteinFeaturesGridContainer({
+        title: 'Protein Features',
+        id: this.viewer.id + '_proteinFeatures'
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomeBrowser);
       this.viewer.addChild(this.compareRegionViewer);
       this.viewer.addChild(this.transcriptomics);
       // this.viewer.addChild(this.correlatedGenes);
       this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.structures);
+      this.viewer.addChild(this.proteinFeatures)
     }
   });
 });

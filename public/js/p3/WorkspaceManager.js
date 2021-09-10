@@ -334,7 +334,7 @@ define([
     addToGroup: function (groupPath, idType, ids) {
       Topic.publish('/Notification', {
         message: '<span class="default">Adding ' + ids.length +
-        ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
+          ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
       });
 
       var _self = this;
@@ -346,7 +346,7 @@ define([
           // add logic to remove duplicate from ids
           var idsFiltered = [];
           ids.forEach(function (id) {
-            if (idsFiltered.indexOf(id)  == -1) {
+            if (idsFiltered.indexOf(id) == -1) {
               idsFiltered.push(id);
             }
           });
@@ -422,7 +422,7 @@ define([
       // add logic to remove duplicate from ids
       var idsFiltered = [];
       ids.forEach(function (id) {
-        if (idsFiltered.indexOf(id)  == -1) {
+        if (idsFiltered.indexOf(id) == -1) {
           idsFiltered.push(id);
         }
       });
@@ -822,7 +822,7 @@ define([
       var newPath = path.slice(0, path.lastIndexOf('/')) + '/' + newName;
 
       // ensure path doesn't already exist
-      console.log('Checking for "', newPath, '" before rename...' );
+      console.log('Checking for "', newPath, '" before rename...');
       return Deferred.when(
         this.getObjects(newPath, true),
         function (response) {
@@ -905,7 +905,7 @@ define([
       var newPath = path.slice(0, path.lastIndexOf('/')) + '/.' + newName;
 
       // log what is happening so that console error is expected
-      console.log('Checking for job data "', newPath, '" before rename...' );
+      console.log('Checking for job data "', newPath, '" before rename...');
       return Deferred.when(
         this.getObjects(newPath, true),
         function (response) {
@@ -1055,7 +1055,7 @@ define([
         },
 
         function (err) {
-        // console.log("Error Loading Workspace:", err);
+          // console.log("Error Loading Workspace:", err);
           _self.showError(err);
         }
       );
@@ -1174,7 +1174,7 @@ define([
         }]), function (res) {
           var pathHash = res[0];
           Object.keys(pathHash).forEach(function (path) {
-          // server sometimes returns 'none' permissions, ignore them.
+            // server sometimes returns 'none' permissions, ignore them.
             var permObjs = pathHash[path].filter(function (p) {
               return p[1] != 'n' || (includeGlobal && p[0] == 'global_permission');
             }).map(function (p) {

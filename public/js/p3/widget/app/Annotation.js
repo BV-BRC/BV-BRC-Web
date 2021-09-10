@@ -14,7 +14,7 @@ define([
     applicationName: 'GenomeAnnotation',
     requireAuth: true,
     applicationLabel: 'Genome Annotation',
-    applicationDescription: 'The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features.',
+    applicationDescription: 'The Genome Annotation Service provides annotation of genomic featuers using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses.  The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.',
     applicationHelp: 'user_guides/services/genome_annotation_service.html',
     tutorialLink: 'tutorial/genome_annotation/annotation.html',
     videoLink: 'videos/genome_annotation_service.html',
@@ -40,16 +40,6 @@ define([
       _self.output_pathWidget.set('value', _self.defaultPath);
     },
 
-    changeCode: function (item) {
-      this.code_four = false;
-      item.lineage_names.forEach(lang.hitch(this, function (lname) {
-        if (array.indexOf(this.genera_four, lname) >= 0) {
-          this.code_four = true;
-        }
-      }));
-      this.code_four ? this.genetic_code.set('value', '4') : this.genetic_code.set('value', '11');
-    },
-
     onTaxIDChange: function (val) {
       this._autoNameSet = true;
       var tax_item = this.tax_idWidget.get('item');
@@ -64,7 +54,6 @@ define([
           if (tax_obj) {
             this.scientific_nameWidget.set('item', tax_obj);
             this.scientific_nameWidget.validate();
-            this.changeCode(this.tax_idWidget.get('item'));
           }
         }));
         // this.scientific_nameWidget.set('value',sci_name);
@@ -74,6 +63,18 @@ define([
 
       }
       this._autoTaxSet = false;
+    },
+
+    onRecipeChange: function (val) {
+      if (this.viral.checked) {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
+      }
+      else if (this.default.checked) {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bacillus Cereus');
+      }
+      else if (this.phage.checked) {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
+      }
     },
 
     updateOutputName: function () {
@@ -108,7 +109,6 @@ define([
         // }));
         this.tax_idWidget.set('displayedValue', tax_id);
         this.tax_idWidget.set('value', tax_id);
-        this.changeCode(this.scientific_nameWidget.get('item'));
         this.updateOutputName();
       }
       this._autoNameSet = false;

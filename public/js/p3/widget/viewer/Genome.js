@@ -4,7 +4,7 @@ define([
   './TabViewerBase', 'dijit/Dialog',
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
+  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
   '../PathwaysContainer', '../SubSystemsContainer', '../TranscriptomicsContainer', '../InteractionContainer',
   '../../util/PathJoin'
 ], function (
@@ -13,7 +13,7 @@ define([
   TabViewerBase, Dialog,
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
-  FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, SubSystemsContainer, TranscriptomicsContainer, InteractionsContainer,
   PathJoin
 ) {
@@ -112,6 +112,19 @@ define([
             search: 'or(eq(genome_id_a,' + this.genome_id + '),eq(genome_id_b,' + this.genome_id + '))'
           }));
           break;
+
+        case 'structures':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(genome_id,' + this.state.genome.genome_id + ')'
+          }));
+          break;
+
+        case 'proteinFeatures':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(genome_id,' + this.state.genome.genome_id + ')'
+          }));
+          break;
+
         default:
           if (activeQueryState) {
             // console.log("Using Default ActiveQueryState: ", activeQueryState);
@@ -160,6 +173,17 @@ define([
       }));
     },
 
+    removeBacteriaTabs: function() {
+      this.viewer.removeChild(this.phylogeny);
+      this.viewer.removeChild(this.amr);
+      this.viewer.removeChild(this.specialtyGenes);
+      this.viewer.removeChild(this.proteinFamilies);
+      this.viewer.removeChild(this.pathways);
+      this.viewer.removeChild(this.subsystems);
+      this.viewer.removeChild(this.transcriptomics);
+      this.viewer.removeChild(this.interactions);
+    },
+
     _setGenomeAttr: function (genome) {
       this.state.genome = genome;
 
@@ -168,13 +192,16 @@ define([
 
       this._set('genome', genome);
 
-
       // check host genomes. remove the circular viewer tab if it's a host genome
       if (genome && genome.taxon_lineage_ids) {
         // console.log("this genome: ", genome);
         if (genome.taxon_lineage_ids.length > 1 && genome.taxon_lineage_ids[1] == '2759') {
           this.viewer.removeChild(this.circular);
         }
+      }
+
+      if(genome.taxon_lineage_names.includes('Viruses')) {
+        this.removeBacteriaTabs();
       }
 
       this.setActivePanelState();
@@ -277,6 +304,11 @@ define([
         id: this.viewer.id + '_features'
       });
 
+      this.structures = new ProteinStructureGridContainer({
+        title: 'Protein Structures',
+        id: this.viewer.id + '_structures'
+      });
+
       this.browser = new GenomeBrowser({
         title: 'Genome Browser',
         id: this.viewer.id + '_browser',
@@ -294,6 +326,11 @@ define([
         title: 'Specialty Genes',
         id: this.viewer.id + '_specialtyGenes',
         state: lang.mixin({}, this.state, { search: (this.genome_id ? '?eq(genome_id,' + this.genome_id + ')' : '?ne(genome_id,*)' ) })
+      });
+
+      this.proteinFeatures = new ProteinFeaturesGridContainer({
+        title: 'Protein Features',
+        id: this.viewer.id + '_proteinFeatures'
       });
 
       this.pathways = new PathwaysContainer({
@@ -332,7 +369,9 @@ define([
       this.viewer.addChild(this.circular);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
+      this.viewer.addChild(this.proteinFeatures);
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
