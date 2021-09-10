@@ -23,7 +23,8 @@ define([
     appBaseURL: 'MetaCATS',
     startingRows: 10,
     maxGroups: 10,
-    autoGroupCount: false,
+    minGroups: 2,
+    autoGroupCount: 0,
     yearRangeStore: '',
     defaultPath: '',
 
@@ -127,13 +128,13 @@ define([
       }
       if (ans) {
         if (this.input_groups.checked == true) {
-          ans = this.numgenomes >= 2;
+          ans = this.numgenomes >= this.minGroups && this.numgenomes <= this.maxGroups;
         } else if (this.input_files.checked == true) {
           if (!(this['alignment_file'].value && this['group_file'].value)) {
             ans = false;
           }
         } else if (this.input_auto.checked == true) {
-          ans = this.autoGroupCount;
+          ans = this.autoGroupCount >= this.minGroups && this.autoGroupCount <= this.maxGroups;
         }
       }
       if (!ans) {
@@ -147,18 +148,26 @@ define([
       const rows = this.grid.store.query(function (object) {
         return true;
       });
-      var count = false;
+      var exist = false;
       for (var i = 0; i < rows.length; i++) {
         const row = rows[i];
         groups.add(row.group);
-        if (groups.size >= 2) {
-          count = true;
-          break;
-        }
+        exist = true;
       }
-      this.autoGroupCount = count;
+      this.autoGroupCount = groups.size;
+      var ans = this.autoGroupCount >= this.minGroups && this.autoGroupCount <= this.maxGroups;
+      if (!ans) {
+        this.num_auto_groups.style.color = 'red';
+      } else {
+        this.num_auto_groups.style.color = 'black';
+      }
+      if (exist) {
+        this.num_auto_groups.innerHTML = this.autoGroupCount + ' groups.';
+      } else {
+        this.num_auto_groups.innerHTML = '';
+      }
       this.validate();
-      return count;
+      return groups.size;
     },
 
     makeFeatureGroupName: function () {
