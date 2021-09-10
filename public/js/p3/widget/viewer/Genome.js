@@ -173,7 +173,7 @@ define([
       }));
     },
 
-    removeBacteriaTabs: function() {
+    removeBacteriaTabs: function () {
       this.viewer.removeChild(this.phylogeny);
       this.viewer.removeChild(this.amr);
       this.viewer.removeChild(this.specialtyGenes);
@@ -200,7 +200,7 @@ define([
         }
       }
 
-      if(genome.taxon_lineage_names.includes('Viruses')) {
+      if (genome.taxon_lineage_names.includes('Viruses')) {
         this.removeBacteriaTabs();
       }
 

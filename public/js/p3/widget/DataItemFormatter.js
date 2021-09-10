@@ -1034,52 +1034,52 @@ define([
       var columns = [{
         name: 'Genome ID',
         text: 'genome_id'
-      },{
+      }, {
         name: 'Genome Name',
         text: 'genome_name'
-      },{
+      }, {
         name: 'Taxon ID',
         text: 'taxon_id'
-      },{
+      }, {
         name: 'Sequence ID',
         text: 'sequence_id'
-      },{
+      }, {
         name: 'Accession',
         text: 'accession'
-      },{
+      }, {
         name: 'Annotation',
         text: 'annotation'
-      },{
+      }, {
         name: 'Feature ID',
         text: 'feature_id'
-      },{
+      }, {
         name: 'Alt Locus Tag',
         text: 'alt_locus_tag'
-      },{
+      }, {
         name: 'RefSeq Locus Tag',
         text: 'refseq_locus_tag'
-      },{
+      }, {
         name: 'Gene',
         text: 'gene'
-      },{
+      }, {
         name: 'PATRIC ID',
         text: 'patric_id'
-      },{
+      }, {
         name: 'Product',
         text: 'product'
-      },{
+      }, {
         name: 'EC Number',
         text: 'ec_number'
-      },{
+      }, {
         name: 'EC Description',
         text: 'ec_description'
-      },{
+      }, {
         name: 'Pathway ID',
         text: 'pathway_id'
-      },{
+      }, {
         name: 'Pathway Name',
         text: 'pathway_name'
-      },{
+      }, {
         name: 'Pathway Class',
         text: 'pathway_class'
       }];
@@ -1200,7 +1200,7 @@ define([
       }, {
         name: 'Subsystem Name',
         text: 'subsystem_name'
-      },{
+      }, {
         name: 'Superclass',
         text: 'superclass'
       }, {

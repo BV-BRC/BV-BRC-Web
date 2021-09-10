@@ -56,7 +56,7 @@ define([
       pathogen_test_interpretation: { label: 'Pathogen Test Interpretation', field: 'pathogen_test_interpretation', hidden: true },
       species: { label: 'Species', field: 'species', hidden: true },
       type: { label: 'Type', field: 'Type', hidden: false },
-      subtype: { label: 'Subtype', field: 'subtype', hidden: false},
+      subtype: { label: 'Subtype', field: 'subtype', hidden: false },
       strain: { label: 'Strain', field: 'strain', hidden: false },
       sequence_accession: { label: 'Sequence Accession', field: 'sequence_accession', hidden: true },
 
@@ -138,7 +138,7 @@ define([
       other_vaccinations: { label: 'Other Vaccinations', field: 'other_vaccinations', hidden: true },
 
       // Other
-      additional_metadata: { label: 'Additional Metadata', field: 'additional_metadata', hidden: true},
+      additional_metadata: { label: 'Additional Metadata', field: 'additional_metadata', hidden: true },
       comments: { label: 'Comments', field: 'comments', hidden: true },
 
     },

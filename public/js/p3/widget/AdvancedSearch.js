@@ -307,7 +307,7 @@ define([
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Feature/" + doc.feature_id + "'>" + doc.pathway_name + '</a></div>');
-        out.push("<div class='resultInfo'>" + doc.patric_id + " | " + doc.product + '</div>');
+        out.push("<div class='resultInfo'>" + doc.patric_id + ' | ' + doc.product + '</div>');
         out.push("<div class='resultInfo'>" + doc.genome_name + '</div>');
         out.push('</div>');
       });
@@ -323,7 +323,7 @@ define([
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Feature/" + doc.feature_id + "'>" + doc.subsystem_name + '</a></div>');
-        out.push("<div class='resultInfo'>" + doc.patric_id + " | " + doc.product + '</div>');
+        out.push("<div class='resultInfo'>" + doc.patric_id + ' | ' + doc.product + '</div>');
         out.push("<div class='resultInfo'>" + doc.genome_name + '</div>');
         out.push('</div>');
       });

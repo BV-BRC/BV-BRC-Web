@@ -86,8 +86,8 @@ define([
       loadingMask.show();
 
       DataAPI.queryGenomeFeatures(`eq(patric_id,${encodeURIComponent(fid)})`)
-        .then(r => {return r.items})
-        .then(function(data) {
+        .then(r => { return r.items })
+        .then(function (data) {
           loadingMask.hide();
           var content = DataItemFormatter(data[0], 'feature_data', { linkTitle: true });
           if (!window.featureDialog) {
@@ -121,7 +121,7 @@ define([
       var proms = genomeIDs.map(function (id) {
         var query = 'eq(genome_id,' + id + ')' +
           '&select(' + self.featureSelect.join(',') + ')&eq(annotation,PATRIC)&ne(feature_type,source)';
-        return DataAPI.queryGenomeFeatures(query,{limit: 25000}).then(r => {return r.items});
+        return DataAPI.queryGenomeFeatures(query, { limit: 25000 }).then(r => { return r.items });
       });
 
       return all(proms);
@@ -139,7 +139,7 @@ define([
       var proms = genomeIDs.map(function (id) {
         var query = 'eq(genome_id,' + id + ')' +
             '&select(' + self.contigSelect.join(',') + ')&sort(-length,+sequence_id)';
-        return DataAPI.queryGenomeSequences(query,{limit:25000}).then(r => {return r.items});
+        return DataAPI.queryGenomeSequences(query, { limit: 25000 }).then(r => { return r.items });
       });
 
       return all(proms);
@@ -152,9 +152,9 @@ define([
      */
     getGenomeLabels: function (genomeIDs, ext) {
       var query = 'in(genome_id,(' + genomeIDs.join(',') + '))';
-          // '&select(genome_id,genome_name)';
-      return DataAPI.queryGenomes(query,{select:["genome_id","genome_name"]})
-        .then(r => {return r.items})
+      // '&select(genome_id,genome_name)';
+      return DataAPI.queryGenomes(query, { select: ['genome_id', 'genome_name'] })
+        .then(r => { return r.items })
         .then(function (data) {
           var mapping = {};
           data.forEach(function (org) {

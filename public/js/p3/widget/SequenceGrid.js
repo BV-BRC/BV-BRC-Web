@@ -34,7 +34,7 @@ define([
       description: { label: 'Description', field: 'description', hidden: false },
       chromosome: { label: 'Chromosome', field: 'chromosome', hidden: true },
       plasmid: { label: 'Plasmid', field: 'plasmid', hidden: true },
-      segment: { label: 'Segment', field: 'segment', hidden: true},
+      segment: { label: 'Segment', field: 'segment', hidden: true },
       gc_content: { label: 'GC Content %', field: 'gc_content', hidden: false },
       length: { label: 'Length (bp)', field: 'length', hidden: false },
       sequence_md5: { label: 'Sequence MD5', field: 'sequence_md5', hidden: true },

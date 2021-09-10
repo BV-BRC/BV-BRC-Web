@@ -64,7 +64,7 @@ define([
       na_length: { label: 'Length (NA)', field: 'na_length', hidden: false },
       aa_length: { label: 'Length (AA)', field: 'aa_length', hidden: true },
       na_sequence_md5: { label: 'NA Sequence MD5', field: 'na_sequence_md5', hidden: true },
-      aa_sequence_md5: { label: 'AA Sequnece MD5', field: 'aa_sequence_md5', hidden: true},
+      aa_sequence_md5: { label: 'AA Sequnece MD5', field: 'aa_sequence_md5', hidden: true },
 
       gene: { label: 'Gene Symbol', field: 'gene', hidden: false },
       product: { label: 'Product', field: 'product', hidden: false },
@@ -72,8 +72,10 @@ define([
       plfam_id: { label: 'PATRIC Local Family', field: 'plfam_id', hidden: true },
       pgfam_id: { label: 'PATRIC Global Family', field: 'pgfam_id', hidden: true },
       sog_id: { label: 'SOG ID', field: 'sog_id', hidden: true },
-      og_id: { label: 'OG ID', field: 'og_id', hidden: true},
-      go: { label: 'GO Terms', field: 'go', sortable: false, hidden: true },
+      og_id: { label: 'OG ID', field: 'og_id', hidden: true },
+      go: {
+        label: 'GO Terms', field: 'go', sortable: false, hidden: true
+      },
 
       property: { label: 'Property', field: 'property', hidden: true },
       notes: { label: 'Notes', field: 'notes', hidden: true },

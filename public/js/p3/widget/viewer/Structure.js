@@ -115,7 +115,7 @@ define([
 
       this.inherited(arguments);
 
-      this.totalCountNode.innerHTML = "";
+      this.totalCountNode.innerHTML = '';
 
       xhr.get(PathJoin(this.apiServiceUrl, 'protein_structure', this.eid), {
         headers: {
