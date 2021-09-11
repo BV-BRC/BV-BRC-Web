@@ -17,6 +17,8 @@ define([
       }
       // console.log("onSetState", state, this);
       this.reload();
+      //this.query();
+      //this.set('refresh');
     },
 
     constructor: function (options) {
@@ -223,8 +225,17 @@ define([
       return this._loadingDeferred;
     },
 
+      getBlankMeta: function(id_list){
+          result={};
+          blank_record={"function":"status unknown","genome_name":"genome unknown","genome_id":"genome unknown","alt_locus_tag":"alias unknown"};
+          id_list.forEach(function (cur_id){
+             result[cur_id]=blank_record;
+          });
+         return result;
+      },
 
       loadWorkspaceData:function(){
+        this._loaded = true;
         if (this._loadingDeferred) {
             return this._loadingDeferred;
         }
@@ -240,13 +251,14 @@ define([
             var def = new Deferred();
             setTimeout(lang.hitch(this, function () {
             this.setData([]);
-            this._loaded = true;
             // def.resolve(true);
             }), 0);
             return def.promise;
         }
-        paths=[this.state.resultPath];
-        WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false).then(lang.hitch(this, function (paths) {
+        //This expects a few pieces of information to be present in the STATE object, including the path and whether the DB is user supplied
+        //Currently set in
+        this._hiddenPath=[this.state.resultPath];
+        this._loadingDeferred = WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false).then(lang.hitch(this, function (paths) {
             var filtered = paths.filter(function (f) {
             // console.log("Filtering f: ", f);
             // if(f instanceof Array){
@@ -254,7 +266,7 @@ define([
             // }else{
             //   path = f;
             // }
-            if ('path' in f && f.path.match('.json')) {
+            if ('path' in f && f.path.match('blast_out.json')) {
                 return true;
             }
             return false;
@@ -272,53 +284,76 @@ define([
                     }
                 });
                 res = objs[0];
-                if ((res.result[0][0].report.results.search.hits).length == 0) {
-                this.setData([]);
-                this._loaded = true;
-                Topic.publish('BLAST_UI', 'showNoResultMessage');
-                Topic.publish(this.topicId, 'hideLoadingMask');
-                return;
+                if ((res.data).length == 0) {
+                    this.setData([]);
+                    this._loaded = true;
+                    Topic.publish('BLAST_UI', 'showNoResultMessage');
+                    Topic.publish(this.topicId, 'hideLoadingMask');
+                    return;
                 }
 
+
                 // console.log(res);
-                var resultIds = Object.keys(res.result[1]);
+                //var resultIds = Object.keys(res.result[1]);
+                res.lookups=[];
+                var resultIds = [];
+                res.data.forEach(function(query_section){
+                    resultIds = resultIds.concat(query_section.report.results.search.hits.map(element =>{return element.description[0].id}));
+                });
+                res.lookups.push(this.getBlankMeta(resultIds));
+
                 var query = { rows: 25000 };
+                var doQuery = false;
                 if (this.type == 'genome_sequence') {
-                resultIds = resultIds.map(function (d) {
-                    return d.replace('accn|', '');
-                }).filter(function (d) {
-                    return d !== '';
-                });
-                query.q = 'accession:(' + resultIds.join(' OR ') + ')';
-                query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,description';
+                    doQuery=true;
+                    resultIds = resultIds.map(function (d) {
+                        return d.replace('accn|', '');
+                    }).filter(function (d) {
+                        return d !== '';
+                    });
+                    query.q = 'accession:(' + resultIds.join(' OR ') + ')';
+                    query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,description';
                 } else if (this.type == 'genome_feature') {
-                // resultIdField = "patric_id";
+                    doQuery=true;
+                    // resultIdField = "patric_id";
 
-                var patric_ids = [];
-                var refseq_locus_tags = [];
-                resultIds.forEach(function (id) {
-                    if (id.indexOf('gi|') > -1) {
-                    refseq_locus_tags.push(id.split('|')[2]);
-                    } else {
-                    patric_ids.push(id);
-                    }
-                });
+                    var patric_ids = [];
+                    var refseq_locus_tags = [];
+                    resultIds.forEach(function (id) {
+                        if (id.indexOf('gi|') > -1) {
+                        refseq_locus_tags.push(id.split('|')[2]);
+                        } else {
+                        patric_ids.push(id);
+                        }
+                    });
 
-                query.q = (patric_ids.length > 0) ? 'patric_id:(' + patric_ids.join(' OR ') + ')' : {};
-                (refseq_locus_tags.length > 0 && patric_ids.length > 0) ? query.q += ' OR ' : {};
-                (refseq_locus_tags.length > 0) ? query.q += '(refseq_locus_tag:(' + refseq_locus_tags.join(' OR ') + ') AND annotation:RefSeq)' : {};
-                query.fl = 'feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,taxon_id,accession,start,end,strand,location,na_length,na_sequence_md5,aa_length,aa_sequence_md5';
+                    query.q = (patric_ids.length > 0) ? 'patric_id:(' + patric_ids.join(' OR ') + ')' : {};
+                    (refseq_locus_tags.length > 0 && patric_ids.length > 0) ? query.q += ' OR ' : {};
+                    (refseq_locus_tags.length > 0) ? query.q += '(refseq_locus_tag:(' + refseq_locus_tags.join(' OR ') + ') AND annotation:RefSeq)' : {};
+                    query.fl = 'feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,taxon_id,accession,start,end,strand,location,na_length,na_sequence_md5,aa_length,aa_sequence_md5';
                 } else if (this.type == 'specialty_genes') {
+                    doQuery=true;
+                    var data = this.formatJSONResult(res);
 
-                var data = this.formatJSONResult(res);
-
-                return when('', lang.hitch(this, function () {
                     this.setData(data);
                     this._loaded = true;
 
                     Topic.publish(this.topicId, 'hideLoadingMask');
-                }));
+                } else {
+
+                    var data = this.formatJSONResult(res);
+
+                    this.setData(data);
+                    this._loaded = true;
+
+                    Topic.publish(this.topicId, 'hideLoadingMask');
                 }
+
+                if (this.state.submit_values.db_source === "fasta_data"){
+                    return this._loadingDeferred;
+                }
+                this.set('refresh');
+
 
                 return when(request.post(window.App.dataAPI + this.type + '/', {
                 handleAs: 'json',
@@ -344,13 +379,14 @@ define([
                     }
                 }, this);
 
-                res.result[3] = keyMap;
+                res.lookups.push(keyMap);
 
                 // console.log(JSON.stringify(res));
                 var data = this.formatJSONResult(res);
                 // console.log(data);
                 // this.updateResult(data, resultIdType);
                 this.setData(data);
+                this.set('refresh');
                 this._loaded = true;
 
                 Topic.publish(this.topicId, 'hideLoadingMask');
@@ -361,12 +397,12 @@ define([
                 Topic.publish('BLAST_UI', 'showErrorMessage', err);
                 Topic.publish(this.topicId, 'hideLoadingMask');
             });
-        }),function (err) {
+        }),lang.hitch(this, function (err) {
         this.setData([]);
         this._loaded = true;
         Topic.publish('BLAST_UI', 'showErrorMessage', err);
         Topic.publish(this.topicId, 'hideLoadingMask');
-      });
+      }));
 
       return this._loadingDeferred;
       }, 
@@ -384,88 +420,103 @@ define([
     },
     formatJSONResult: function (json) {
       // console.log(json);
+      //NEED LOGIC to determine whether ID fetch is likely to work
 
-      var report = json.result[0][0].report;
-      var search = report.results.search;
-      var hits = search.hits;
-      var query_id = search.query_id;
-      var query_length = search.query_len;
-      var metadata = json.result[1];
-      var identical = json.result[2] || {};
-      var features = json.result[3] || {};
+      //NEED ANOTHER LOOP HERE TO ACCOUNT FOR THE MULTIPLE QUERIES
+      //AND TO FIGURE OUT WHICH GRID YOU SHOULD USE FOR NON-DECORATING RESULTS
+        var metadata = json.lookups[0];
+        var identical = {}; //NEED TO FIND OUT WHEN / HOW IDENTICAL IS POPULATED
+        var features = json.lookups[1] || {};
+        var entries = [];
+      json.data.forEach(function (query_section) {
+        var report = query_section.report;
+        var search = report.results.search;
+        var hits = search.hits;
+        hits.forEach(function (hit){
+            //metadata doesn't exist right now from the DB
 
-      var entries = [];
-      hits.forEach(function (hit) {
-        var target_id = hit.description[0].id;
-        var m = Object.prototype.hasOwnProperty.call(metadata, target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', 'function': '' };
-        var entry = {
-          qseqid: query_id,
-          sseqid: target_id,
-          pident: Math.round(hit.hsps[0].identity / hit.hsps[0].align_len * 100),
-          query_coverage: Math.round((Math.abs(hit.hsps[0].query_to - hit.hsps[0].query_from) + 1) / query_length * 100),
-          subject_coverage: Math.round((Math.abs(hit.hsps[0].hit_to - hit.hsps[0].hit_from) + 1) / hit.len * 100),
-          length: hit.len,
-          q_length: query_length,
-          evalue: this.formatEvalue(hit.hsps[0].evalue),
-          bitscore: Math.round(hit.hsps[0].bit_score),
-          genome_id: m.genome_id,
-          genome_name: m.genome_name,
-          'function': m['function'],
-          hit_from: hit.hsps[0].hit_from,
-          hit_to: hit.hsps[0].hit_to,
-          detail: {
-            match_count: m.match_count || 0,
-            matches: identical[target_id] || [],
-            hsps: hit.hsps,
-            query_len: query_length,
-            subject_len: hit.len
-          }
-        };
-        if (this.type === 'genome_feature') {
-          if (Object.prototype.hasOwnProperty.call(features, target_id)) {
-            entry.feature_id = features[target_id].feature_id;
-            entry = lang.mixin(entry, features[target_id]);
-          } else if (target_id.indexOf('gi|') > -1) {
-            var refseq_locus_tag = target_id.split('|')[2];
-            entry.feature_id = features[refseq_locus_tag].feature_id;
-            entry = lang.mixin(entry, features[refseq_locus_tag]);
-          } else {
-            console.warn('missing patric_id in header', target_id);
-          }
-        } else if (this.type === 'genome_sequence') {
-          target_id = target_id.replace('accn|', '');
-          if (Object.prototype.hasOwnProperty.call(features, target_id)) {
-            entry.genome_id = features[target_id].genome_id;
-            entry = lang.mixin(entry, features[target_id]);
-          } else {
-            console.log('missing id: ', target_id);
-          }
-        } else if (this.type === 'specialty_genes') {
-          if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
-            var m = metadata[target_id];
-            var org = hit.description[0].title.match(/\[(.*)\]/)[1];
-            entry = lang.mixin(entry, { database: m.locus_tag, source_id: m.alt_locus_tag, organism: org });
-            delete entry.genome_id;
-            delete entry.genome_name;
-          } else if (hit.description[0].title) {
-            var title = hit.description[0].title;
-            var id = title.split(' ')[0];
-            var desc = title.split(' ')[1].split(' [')[0];
-            var database = id.split('|')[0];
-            var source_id = id.split('|')[1];
-            var orgs = title.match(/\[(.*)\]/);
-            var org = (orgs) ? orgs[1] : '';
-            entry = lang.mixin(entry, {
-              database: database, source_id: source_id, organism: org, function: desc
-            });
-            delete entry.genome_id;
-            delete entry.genome_name;
-          } else {
-            console.log('missing id: ', target_id);
-          }
-        }
-        entries.push(entry);
-      }, this);
+            var query_id = hit.query_id;
+            var query_length = hit.query_len;
+            var target_id = hit.description[0].id;
+            //metadata doesn't exist right now from the DB
+            var m = Object.prototype.hasOwnProperty.call(metadata, target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', 'function': '' };
+            var entry = {
+            qseqid: query_id,
+            sseqid: target_id,
+            pident: Math.round(hit.hsps[0].identity / hit.hsps[0].align_len * 100),
+            query_coverage: Math.round((Math.abs(hit.hsps[0].query_to - hit.hsps[0].query_from) + 1) / query_length * 100),
+            subject_coverage: Math.round((Math.abs(hit.hsps[0].hit_to - hit.hsps[0].hit_from) + 1) / hit.len * 100),
+            length: hit.len,
+            q_length: query_length,
+            evalue: this.formatEvalue(hit.hsps[0].evalue),
+            bitscore: Math.round(hit.hsps[0].bit_score),
+            genome_id: m.genome_id,
+            genome_name: m.genome_name,
+            'function': m['function'],
+            hit_from: hit.hsps[0].hit_from,
+            hit_to: hit.hsps[0].hit_to,
+            detail: {
+                match_count: m.match_count || 0,
+                matches: identical[target_id] || [],
+                hsps: hit.hsps,
+                query_len: query_length,
+                subject_len: hit.len
+            }
+            };
+            if (this.type === 'genome_feature') {
+            if (Object.prototype.hasOwnProperty.call(features, target_id)) {
+                entry.feature_id = features[target_id].feature_id;
+                entry = lang.mixin(entry, features[target_id]);
+            } else if (target_id.indexOf('gi|') > -1) {
+                var refseq_locus_tag = target_id.split('|')[2];
+                entry.feature_id = features[refseq_locus_tag].feature_id;
+                entry = lang.mixin(entry, features[refseq_locus_tag]);
+            } else {
+                console.warn('missing patric_id in header', target_id);
+            }
+            } else if (this.type === 'genome_sequence') {
+            target_id = target_id.replace('accn|', '');
+            if (Object.prototype.hasOwnProperty.call(features, target_id)) {
+                entry.genome_id = features[target_id].genome_id;
+                entry = lang.mixin(entry, features[target_id]);
+            } else {
+                console.log('missing id: ', target_id);
+            }
+            } else if (this.type === 'specialty_genes' || this.state.submit_values.db_source === "fasta_data") {
+            if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
+                var m = metadata[target_id];
+                var parts = hit.description[0].title.match(/\[(.*)\]/);
+                var org = "NA";
+                if (parts && parts.length > 1){
+                    org = parts[1];
+                }
+                entry = lang.mixin(entry, { database: m.locus_tag, source_id: m.alt_locus_tag, organism: org });
+                delete entry.genome_id;
+                delete entry.genome_name;
+            } else {
+                database="custom db";
+                source_id="changeme1";
+                org="unknown";
+                desc="changeme2";
+                if (hit.description[0].title) {
+                var title = hit.description[0].title;
+                var id = title.split(' ')[0];
+                desc = title.split(' ')[1].split(' [')[0];
+                database = id.split('|')[0];
+                source_id = id.split('|')[1];
+                var orgs = title.match(/\[(.*)\]/);
+                org = (orgs) ? orgs[1] : '';
+                }
+                entry = lang.mixin(entry, {
+                database: database, source_id: source_id, organism: org, function: desc
+                });
+                delete entry.genome_id;
+                delete entry.genome_name;
+            }
+            }
+            entries.push(entry);
+        }, this);
+    }, this);
       return entries;
     },
 

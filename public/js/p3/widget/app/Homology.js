@@ -13,7 +13,8 @@ define([
 ) {
 
   var NA = 'nucleotide',
-    AA = 'protein';
+    AA = 'protein',
+    NO = 'invalid';
 
   var ProgramDefs = [
     {
@@ -92,7 +93,9 @@ define([
     result_store: null,
     result_grid: null,
     defaultPath: '',
+    demo: true,
     sequence_type: null,
+    allowMultiple: true,
     input_source: null,
     db_source: null,
     db_type: null,
@@ -105,6 +108,7 @@ define([
 
       if (this._started) { return; }
       this.inherited(arguments);
+
 
       // activate genome group selector when user is logged in
       if (window.App.user) {
@@ -163,9 +167,14 @@ define([
 
     sanitizeFastaSequence: function (sequence) {
       var header = sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; });
-      var sanitized = sequence.split('\n').filter(function (line) { return line.match(/^>.*/) == null; }).map(function (line) { return line.replace(/ /g, ''); });
+      var patternSeqSplit= /(?:>.+\n| )+/;
+      var seq_segments = sequence.split(patternSeqSplit).filter(function (line) { return (line.match(/^>.*/) == null && line!=""); }).map(function (line) { return line.replace(/ /g, ''); });
+      var sanitized = [];
+      header.forEach(function (item, index) {
+        sanitized.push(item+"\n"+seq_segments[index].replace(/\n/g,""));
+      });
 
-      return header.concat(sanitized).join('\n');
+      return sanitized.join('\n');
     },
 
     hasSingleFastaSequence: function (sequence) {
@@ -177,21 +186,26 @@ define([
     },
 
     isNucleotideFastaSequence: function (sequence) {
-      var patternFastaHeader = /^>.*\n/gi;
+      var patternFastaHeader = />.*\n/gi;
       var patternDnaSequence = /[atcgn\n\s]/gi;
 
       return (sequence.replace(patternFastaHeader, '').replace(patternDnaSequence, '').length === 0);
     },
+    isAminoAcidFastaSequence: function (sequence) {
+      var patternFastaHeader = />.*\n/gi;
+      var patternAASequence = /[ACDEFGHIKLMNPQRSTUVWYBXZJUO\n\s]/gi; //extended AminoAcid alphabet
+
+      return (sequence.replace(patternFastaHeader, '').replace(patternAASequence, '').length === 0);
+    },
 
     validate: function () {
       // console.log("validate", this.sequence.get('value'), (this.sequence.get('value')).length,  this.database.get('value'), this.program.get('value'));
-
       var sequence = this.sequence.get('value');
 
       if (sequence && sequence.length > 1
         && this.database.get('value')
         && this.program.get('value')
-        && this.hasSingleFastaSequence(sequence)) {
+        && (this.allowMultiple || this.hasSingleFastaSequence(sequence))) {
 
         // console.log("validation passed");
         this.submitButton.set('disabled', false);
@@ -326,14 +340,21 @@ define([
       //prepare submission values
       var submit_values = {"input_type":input_type,"input_source":_self.input_source,"db_type":_self.db_type,
       "db_source":_self.db_source, "output_file":output_file, "output_path": output_path};
-      if (sequence){
-          if (this.numFastaSequence(sequence) == 0){
-              sequence = ">fasta_record1\n"+sequence;
-          }
-          submit_values["input_fasta_data"]=sequence;
+        if (sequence){
+            if (this.numFastaSequence(sequence) == 0){
+                sequence = ">fasta_record1\n"+sequence;
+            }
+            submit_values["input_fasta_data"]=sequence;
+        }
+      if (this.demo){
+          //resultType = "custom";
+          resultType = "custom";
+          submit_values["db_source"]="fasta_data";
+          submit_values["db_fasta_data"]=">id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n"+
+          ">id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n"
       }
-      if (_self.db_precomputed_database){
-          submit_values["db_precomputed_database"]=database.split(".")[0];
+      else if (_self.db_precomputed_database){
+        submit_values["db_precomputed_database"]=database.split(".")[0];
       }
 
       _self.result.loadingMask.show();
@@ -351,11 +372,17 @@ define([
            //set job hook before submission
             _self.setJobHook(function() {
                 //the state set here shows up again in the HomologyMemoryStore onSetState
-                _self.result.set('state', { query: q, resultType: resultType, resultPath: output_file });
+                _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
+                //Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
             }, function(error){
                 Topic.publish('BLAST_UI', 'showErrorMessage', error);
             });
-            _self.doSubmit(submit_values, start_params);
+            if (this.demo){
+                _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
+            }
+            else{
+                _self.doSubmit(submit_values, start_params);
+            }
         }
     },
 
@@ -368,7 +395,7 @@ define([
     showErrorMessage: function (err) {
       domClass.remove(query('.service_error')[0], 'hidden');
       domClass.remove(query('.service_message')[0], 'hidden');
-      query('.service_error h3')[0].innerHTML = 'We were not able to complete your BLAST request. Please let us know with detail message below.';
+      query('.service_error h3')[0].innerHTML = 'We were not able to complete your BLAST request. Please let us know with details from the message below.';
       if (typeof err === 'string'){
         query('.service_message')[0].innerHTML = err;
       }
@@ -395,6 +422,13 @@ define([
       // console.log("onSuggestNameChange");
       // TODO: implement
       this.validate();
+    },
+
+    checkOutputName: function () {
+        if (this.demo){
+            return true;
+        }
+        return this.inhertied(arguments);
     },
 
     onAddGenome: function () {
@@ -509,13 +543,12 @@ define([
 
     onChangeSequence: function (val) {
       _self = this;
-      allowSingle=false;
       // console.log("onChangeSequence: [", val, "]");
       if (!val) {
-        this.sequence_message.innerHTML = 'Please provide query sequence.';
+        this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format.';
         return;
       }
-      if (!this.hasSingleFastaSequence(val) && allowSingle) {
+      if (!this.hasSingleFastaSequence(val) && !_self.allowMultiple) {
         this.sequence_message.innerHTML = 'PATRIC BLAST accepts only one sequence at a time. Please provide only one sequence.';
         return;
       }
@@ -528,12 +561,23 @@ define([
         this.program.closeDropDown();
       }
       this.program.set('disabled', false);
-
-      this.sequence_type = this.isNucleotideFastaSequence(val) ? NA : AA;
+      this.sequence_type =  NO;
+      if (this.isNucleotideFastaSequence(val)){
+        this.sequence_type =  NA;
+      }
+      else if (this.isAminoAcidFastaSequence(val)){
+        this.sequence_type = AA;
+      }
       this.program.removeOption(ProgramDefs);
       this.program.addOption(ProgramDefs.filter(function (p) {
         return p.validQuery.indexOf(_self.sequence_type) > -1;
       }));
+      if (this.sequence_type == NO) {
+        this.program.setValue(undefined);
+        this.program._setDisplay("");
+        this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format using a valid alphabet.';
+        return;
+      }
       this.program.loadAndOpenDropDown();
     },
 
