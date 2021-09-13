@@ -950,35 +950,59 @@ define([
         name: 'Rank',
         text: 'taxon_rank'
       }, {
-        name: 'Other Names',
-        text: 'other_names',
+        name: 'Families',
+        text: 'unique_family'
       }, {
-        name: 'Lineage Names',
-        text: 'lineage_names',
-        link: function (obj) {
-          var ids = obj.lineage_ids;
-          return obj.lineage_names.map(function (d, idx) {
-            return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
-          }).join(', ');
-        }
+        name: 'Genera',
+        text: 'unique_genus'
       }, {
-        name: 'Lineage IDs',
-        text: 'lineage_ids',
+        name: 'Species',
+        text: 'unique_species'
       }, {
-        name: 'Genetic Code',
-        text: 'genetic_code'
+        name: 'Strains',
+        text: 'unique_strain'
       }, {
-        name: 'Parent ID',
-        text: 'parent_id',
+        name: 'Genomes / Segments',
+        text: 'count'
       }, {
-        name: 'Division',
-        text: 'division',
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
       }, {
-        name: 'Description',
-        text: 'description',
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
       }, {
-        name: 'Genomes',
-        text: 'genomes',
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      // }, {
+      //   name: 'Other Names',
+      //   text: 'other_names',
+      // }, {
+      //   name: 'Lineage Names',
+      //   text: 'lineage_names',
+      //   link: function (obj) {
+      //     var ids = obj.lineage_ids;
+      //     return obj.lineage_names.map(function (d, idx) {
+      //       return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
+      //     }).join(', ');
+      //   }
+      // }, {
+      //   name: 'Lineage IDs',
+      //   text: 'lineage_ids',
+      // }, {
+      //   name: 'Genetic Code',
+      //   text: 'genetic_code'
+      // }, {
+      //   name: 'Parent ID',
+      //   text: 'parent_id',
+      // }, {
+      //   name: 'Division',
+      //   text: 'division',
+      // }, {
+      //   name: 'Description',
+      //   text: 'description',
+      // }, {
+      //   name: 'Genomes',
+      //   text: 'genomes',
       }];
 
       var div = domConstruct.create('div');

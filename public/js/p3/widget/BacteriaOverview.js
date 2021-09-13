@@ -1,15 +1,14 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/BacteriaOverview.html',
-  'dojo/request', 'dojo/_base/lang', 'dojo/when',
-  'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', './GenomeFeatureSummary', './DataItemFormatter', './ExternalItemFormatter'
+  'dojo/request', 'dojo/_base/lang', 'dojo/when', 'dojo/dom-construct',
+  '../util/PathJoin', 'p3/widget/BacteriaMetaSummary', './DataItemFormatter', './ExternalItemFormatter'
 
 ], function (
   declare, WidgetBase, on, _WidgetsInTemplateMixin,
   domClass, Templated, Template,
-  xhr, lang, when,
-  ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-  ExternalItemFormatter
+  xhr, lang, when, domConstruct,
+  PathJoin, BacteriaMetaSummary, DataItemFormatter, ExternalItemFormatter
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
@@ -17,9 +16,7 @@ define([
     disabled: false,
     templateString: Template,
     apiServiceUrl: window.App.dataAPI,
-    genome: null,
     state: null,
-    genome_ids: null,
     searchName: null,
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_taxon/overview.html',
@@ -31,26 +28,10 @@ define([
         this.set('taxonomy', state.taxon_id);
       }
 
-      // widgets called by genome ids
-      var sumWidgets = ['apmSummaryWidget'];
-
-      sumWidgets.forEach(function (w) {
-        if (this[w]) {
-          this[w].set('query', this.state.search);
-        }
-      }, this);
-
       // widgets called by taxon_id
-      sumWidgets = ['rgSummaryWidget', 'bmSummaryWidget'];
-      // sumWidgets = [];
+      const sumWidgets = ['bmSummaryWidget'];
 
-      var taxonQuery = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
-      // check whether we have extra filter
-      if (this.state.taxonomy && this.state.genome_ids
-        && this.state.genome_ids.length !== 25000
-        && this.state.taxonomy.genomes !== this.state.genome_ids.length) {
-        taxonQuery += '&' + this.state.search;
-      }
+      var taxonQuery = `eq(taxon_lineage_ids,${state.taxon_id})`;
       sumWidgets.forEach(function (w) {
         if (this[w]) {
           this[w].set('query', taxonQuery);
@@ -79,10 +60,6 @@ define([
         return;
       }
       this.inherited(arguments);
-
-      if (this.genome) {
-        this.set('genome', this.genome);
-      }
     }
   });
 });
