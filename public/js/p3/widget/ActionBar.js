@@ -50,6 +50,7 @@ define([
               type = s.autoMeta.app.id;
             }
           }
+          selectionTypes["job_result"] = true;
         }
 
         selectionTypes[type] = true;

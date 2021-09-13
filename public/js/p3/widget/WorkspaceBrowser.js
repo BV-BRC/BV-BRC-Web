@@ -598,79 +598,24 @@ define([
         validTypes: ['ComprehensiveGenomeAnalysis'],
         tooltip: 'View Full Genome Report'
       }, function (selection) {
-        console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
-        console.log('self.browserHeader', self.browserHeader);
         var path = self.actionPanel.currentContainerWidget.getReportPath();
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
-
 
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
         validTypes: ['nwk'],
         tooltip: 'View Tree'
-      }, function (selection, container) {
-        console.log('ViewNwk container', container);
-        var path = selection.map(function (obj) { return obj.path;
-          // console.log('ViewNwk obj', obj);
-        });
+      }, function (selection) {
+        var path = selection.map(function (obj) { return obj.path; });
         var labelSearch = 'true';
         var idType = 'genome_id';
-        var labelType = 'genome_name';
-        if (container._resultType == 'CodonTree' || container._resultType == 'PhylogeneticTree') { // handle Genome Tree
-          if (encodePath(path[0]).includes('WithGenomeNames.')) {
-            labelSearch = 'false';
-            idType = 'genome_name';
-          }
-          Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
-        }
-        else { // handle Gene Tree
-          idType = 'patric_id';
-          labelSearch = 'true';
-          labelType = 'feature_name';
-          Topic.publish('/navigate', { href: '/view/PhylogeneticTreeGene/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
-        }
-      }, false);
-
-      this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
-        label: 'VIEW2',
-        multiple: false,
-        validTypes: ['nwk', 'phyloxml'],
-        tooltip: 'View Archaeopteryx Tree'
-      }, function (selection, container) {
-        var path = selection.map(function (obj) { return obj.path;
-        // console.log('ViewNwkXml obj', obj);
-        });
-        var fileType = selection.map(function (obj) { return obj.type; });
-        var labelSearch = 'true';
-        var idType = 'genome_id';
-        var labelType = 'genome_name';
-        console.log('container', container);
-        console.log('self.browserHeader', self.browserHeader);
-        if (container._resultType !== 'CodonTree' && container._resultType !== 'PhylogeneticTree') {
-          idType = 'patric_id';
-          labelType = 'feature_name';
-        }
         if (encodePath(path[0]).includes('WithGenomeNames.')) {
           labelSearch = 'false';
           idType = 'genome_name';
         }
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
-      }, false);
-
-      this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
-        label: 'MSA',
-        multiple: false,
-        validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
-        tooltip: 'View aligned fasta'
-      }, function (selection) {
-        var path = this.selection[0].path; // .get('selection.path');
-        var alignType = 'protein';
-        if (this.selection[0].type.includes('dna')) {
-          alignType = 'dna';
-        }
-        Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -1101,6 +1046,53 @@ define([
       }, false);
 
 
+      this.actionPanel.addAction('Rerun','fa icon-rotate-left fa-2x',{
+        label:'RERUN',
+        allowMultiTypes: true,
+        multiple: true,
+        validTypes: ['job_result'],
+        tooltip: 'Reset job form with current parameters'
+      },function (selection) {
+        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
+        //TODO: make sure service_id variable is present for every service
+        var service_id = selection[0].autoMeta.app.id;
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+        localStorage.setItem("bvbrc_rerun_job",job_params);
+        switch (service_id) {
+          case 'ComprehensiveGenomeAnalysis':
+            Topic.publish('/navigate',{href:'/app/ComprehensiveGenomeAnalysis'});
+            break;
+          case 'GenomeAssembly2':
+            Topic.publish('/navigate',{href:'/app/Assembly2'});
+            break;
+          case 'GenomeAlignment':
+            Topic.publish('/navigate',{href:'/app/GenomeAlignment'});
+            break;
+          case 'GenomeAnnotation':
+            Topic.publish('/navigate',{href:'/app/Annotation'});
+            break;
+          case 'MetagenomicReadMapping':
+            Topic.publish('/navigate',{href:'/app/MetagenomicReadMapping'});
+            break;
+          case 'TaxonomicClassification':
+            Topic.publish('/navigate',{href:'/app/TaxonomicClassification'});
+            break;
+          case 'Variation':
+            Topic.publish('/navigate',{href:'/app/Variation'});
+            break;
+          default:
+            console.log('Rerun not enabled for: ',service_id);
+        }
+        //var url = window.location;
+        //url.pathname = "app/RNASeq.html";
+        //console.log(url.href);
+        //Service page will have to check for the existence of the localStorage key: if exists then populate
+        
+      }, false);
+
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
         self.showPermDialog(selection);
@@ -1387,9 +1379,6 @@ define([
         }
         var panelCtor;
         var params = { path: this.path, region: 'center' };
-
-        console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
-        console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
 
         switch (obj.type) {
           case 'folder':

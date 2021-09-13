@@ -28,6 +28,19 @@ define([
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
     srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmax=10&db=sra&id={0}', // the data we need is in xml string no matter what.
 
+    //common JSON parameters for each of the services: not all are used in each service, but these are the most common
+    single_end_libs: [],
+    paired_end_libs: [],
+    sra_libs: [],
+    contigs: '', //as far as I can tell none of the services have a list of contigs files: TODO (recheck)
+    target_genome_id: '', //referred to as taxon_id or target_genome. The reference genome for most services. 
+                          //Is a list in GenomeAlignment.js
+    taxon_name: '', //name associated with the target_genome_id
+    genome_group: '', //TODO: not sure if this is necessary: user can specify either the name to assign the group or the name of the group to be used in the service
+    strategy:'', //controls the 'program', 'workflow', or 'algorithm' a service will use. Sometimes referred to as 'recipe'
+    output_name: '', //name of the output file/folder. Some services do not have this field
+    output_folder: '', //location where the output_name will be placed in the user's workspace. Some services do not have this field
+
     postMixInProperties: function () {
       // use AppLogin.html when requireAuth & user is not logged in
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
@@ -251,6 +264,7 @@ define([
         }
 
         if (window.App.noJobSubmission) {
+          console.log(values);
           var dlg = new Dialog({
             title: 'Job Submission Params: ',
             content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
@@ -412,7 +426,235 @@ define([
           // this.srr_accession.set('value', '');
         }
       }
-    }
+    },
 
+    /*
+    //FUNCTIONS BELOW RELATED TO FORM FILLING
+    */
+
+    //Assumes the localStorage ID is "bvbrc_rerun_job"
+    //Note: delete "bvbrc_rerun_job" key in function defined in each service (intakeRerunForm)
+    //Note: omit "output_name" since the user should fill this out every time
+    //Note: do paired/single/sra_libs in each service (intakeRerunForm) due to extra parameters in some libraries
+    //CONTEXT: "this" refers to the "this" from where the function is called from
+    //param_dict: is a dictionary mapping non-standard names for each service
+    //Example: {"example_base_name":"example_service_name","single_end_libs":"single_end_libsWidget"}
+    //Use this format when calling this function: AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+    intakeRerunFormBase: function(param_dict) {
+      var base_params = ["contigs","target_genome_id","taxon_name","genome_group","strategy","output_folder"];
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var storage_params = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        for (var idx = 0; idx < base_params.length; idx++) {
+          if (this.hasOwnProperty(base_params[idx]) || param_dict.hasOwnProperty(base_params[idx])) {
+            if (param_dict.hasOwnProperty(base_params[idx]) && param_dict.hasOwnProperty(base_params[idx]) === "NONE") {
+              continue;
+            }
+            if (this.hasOwnProperty([base_params[idx]])) {
+              var attach_point = base_params[idx];
+              if (param_dict.hasOwnProperty("widget_map") && param_dict["widget_map"].hasOwnProperty(attach_point)) {
+                attach_point = param_dict["widget_map"][attach_point];
+              }
+              if (!this[attach_point]) {
+                console.log("(1) attach_point not found: ",attach_point);
+              }
+              else {
+                this[attach_point].set("value",storage_params[base_params[idx]]);
+              }
+            }
+            else if (param_dict.hasOwnProperty(base_params[idx])) {
+              var attach_point = param_dict[base_params[idx]];
+              var job_point = attach_point;
+              if (param_dict.hasOwnProperty("widget_map") && param_dict["widget_map"].hasOwnProperty(attach_point)) {
+                attach_point = param_dict["widget_map"][attach_point];
+              }
+              if (!this[attach_point]) {
+                console.log("(2) attach_point not found: ",attach_point);
+              }
+              else{
+                this[attach_point].set("value",storage_params[job_point]);
+              }
+            }
+            else {
+              console.log("(3) attach_point not found: ",base_params[idx]);
+            }
+          }
+        }
+        if (param_dict.hasOwnProperty("service_specific")) {
+          var service_fields = param_dict["service_specific"];
+          Object.keys(service_fields).forEach(function(job_field) {
+            var attach_point = service_fields[job_field];
+            this[attach_point].set("value",storage_params[job_field]);
+          },this);
+        }
+      }
+    },
+
+    //Load library parameters from localStorage
+    loadLibrary: function(local_job,param_dict) {
+      for (var idx = 0; idx < local_job.paired_end_libs.length; idx++) {
+        var lrec = {_type:'paired',type:'paired'};
+        this.setupLibraryData(lrec,local_job.paired_end_libs[idx],'paired');
+        var infoLabels = {
+          platform: { label: 'Platform', value: 1 },
+          read1: { label: 'Read1', value: 1 },
+          read2: { label: 'Read2', value: 1 },
+          interleaved: { label: 'Interleaved', value: 0 },
+          read_orientation_outward: { label: 'Mate Paired', value: 0 }
+        };
+        this.addLibraryRowFormFill(lrec, infoLabels, 'pairdata');
+      }
+      for (var idx = 0; idx < local_job.single_end_libs.length; idx++) {
+        var lrec = { _type: 'single',type:'single'};
+        this.setupLibraryData(lrec,local_job.single_end_libs[idx],'single');
+        var infoLabels = {
+          platform: { label: 'Platform', value: 1 },
+          read: { label: 'Read File', value: 1 }
+        };
+        this.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
+      }
+      //load SRA names
+      if (local_job.srr_ids) {
+        for (var idx = 0; idx < local_job.srr_ids.length; idx++) {
+          var lrec = { _type: 'srr_accession', type:'srr_accession',title: local_job.srr_ids[idx] };
+          this.setupLibraryData(lrec,local_job.srr_ids[idx],'srr_accession');
+          var infoLabels = {
+            title: { label: 'Title', value: 1 }
+          };
+          this.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
+        }
+      }
+    },
+
+    addLibraryRowFormFill: function(lrec,infoLabels,mode) {
+      var tr = this.libsTable.insertRow(0);
+      lrec._row = tr;
+      var td = domConstruct.create('td', { 'class': 'textcol ' + mode, libID: this.libCreated, innerHTML: '' }, tr);
+      var advInfo = [];
+      switch (mode) {
+        case 'pairdata':
+          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec,'paired') + '</div>';
+          advInfo.push('Paired Library');
+          break;
+        case 'singledata':
+          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec,'single') + '</div>';
+          advInfo.push('Single Library');
+          break;
+        case 'srrdata':
+          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec,'srr_accession') + '</div>';
+          advInfo.push('SRA run accession');
+          break;
+        default:
+          console.error('wrong data type', lrec, infoLabels, mode);
+          break;
+      }
+      // fill out the html of the info mouse over
+      Object.keys(infoLabels).forEach(lang.hitch(this, function (key) {
+        if (lrec[key] && lrec[key] != 'false') {
+          if (infoLabels[key].value) {
+            advInfo.push(infoLabels[key].label + ':' + lrec[key]);
+          }
+          else {
+            advInfo.push(infoLabels[key].label);
+          }
+        }
+      }));
+      if (advInfo.length) {
+        var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
+        var ihandle = new TooltipDialog({
+          content: advInfo.join('</br>'),
+          onMouseLeave: function () {
+            popup.close(ihandle);
+          }
+        });
+        on(tdinfo, 'mouseover', function () {
+          popup.open({
+            popup: ihandle,
+            around: tdinfo
+          });
+        });
+        on(tdinfo, 'mouseout', function () {
+          popup.close(ihandle);
+        });
+      }
+      else {
+        var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+      }
+      var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+      if (this.addedLibs.counter < this.startingRows) {
+        this.libsTable.deleteRow(-1);
+      }
+      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+        this.destroyLibRow(lrec._id, '_id');
+      }));
+      this.libraryStore.put(lrec);
+      lrec._handle = handle;
+      this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+    },
+
+    makeLibraryIDFormFill: function(job_data,mode) {
+      switch (mode) {
+        case 'paired':
+          var fn1 = job_data['read1'];
+          var fn2 = job_data['read2'];
+          return fn1 + fn2;
+        case 'single':
+          var fn = job_data['read'];
+          return fn;
+        case 'srr_accession':
+          if (job_data.hasOwnProperty("title")) {
+            var name = job_data['title'];
+          }
+          else{
+            var name = job_data;
+          }
+          return '' + name;
+        default:
+          console.log("error");
+          return false;
+      }
+    },
+
+    makeLibraryNameFormFill: function(job_data,mode) {
+      switch (mode) {
+        case 'paired':
+          var fn = job_data['read1'];
+          var fn2 = job_data['read2'];
+          var maxName = 14;
+          if (fn.length > maxName) {
+            fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
+          }
+          if (fn2.length > maxName) {
+            fn2 = fn2.substr(0, (maxName / 2) - 2) + '...' + fn2.substr((fn2.length - (maxName / 2)) + 2);
+          }
+          return 'P(' + fn + ', ' + fn2 + ')';
+        case 'single':
+          var fn = job_data['read'];
+          maxName = 24;
+          if (fn.length > maxName) {
+            fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
+          }
+          return 'S(' + fn + ')';
+        case 'srr_accession': 
+          if (job_data.hasOwnProperty("title")) {
+            var name = job_data['title'];
+          }
+          else{
+            var name = job_data;
+          }
+          return '' + name;
+        default:
+          return '';
+      }
+    },
+
+    //Called to get the necessary information into lrec
+    setupLibraryData: function(lrec,job_data,mode) {
+      //lrec._id = some_id
+      lrec._id = this.makeLibraryIDFormFill(job_data,mode); 
+      Object.keys(job_data).forEach( function (field) {
+        lrec[field] = job_data[field];
+      });
+    }
   });
 });
