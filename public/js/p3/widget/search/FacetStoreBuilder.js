@@ -10,27 +10,24 @@ define([
 
     return new Promise((resolve, reject) => {
       xhr('GET', {
-        url: `${window.App.dataServiceURL}/${dataModel}/?keyword(*)&limit(1)&facet((field,${facetField}),(mincount,1),(limit,-1))&json(nl,map)`,
+        url: `${window.App.dataServiceURL}/data/distinct/${dataModel}/${facetField}`,
         handleAs: 'json',
         headers: {
-          'Accept': 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'Accept': 'application/json',
           'X-Requested-With': null,
-          'Authorization': (window.App.authorizationToken || '')
+          'Authorization': ''
         }
-      }).then(function (res) {
-        const facets = Object.keys(res.facet_counts.facet_fields[facetField])
-        const data = facets.map((val) => {
+      }).then((res) => {
+        const data = Object.keys(res).map((val) => {
           return {
             'name': val,
             'id': val
           }
         })
-        // console.log(data)
         resolve(new Memory({
           data: data
         }))
-      }, function (err) {
+      }, (err) => {
         reject(err)
       })
     })
