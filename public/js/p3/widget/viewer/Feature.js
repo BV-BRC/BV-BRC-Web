@@ -20,6 +20,7 @@ define([
     disabled: false,
     containerType: 'feature_group',
     feature_id: '',
+    context: 'bacteria',
     perspectiveLabel: 'Feature View',
     perspectiveIconClass: 'icon-selection-Feature',
 
@@ -162,8 +163,9 @@ define([
         });
         this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; ' + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', { feature: feature });
 
-        if (taxon_lineage_names.includes('Viruses')) {
-          this.removeBacteriaTabs();
+        if (taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
+          this.set('context', 'virus')
+          this.changeToVirusContext();
         }
       }));
 
@@ -215,7 +217,7 @@ define([
       }
     },
 
-    removeBacteriaTabs: function () {
+    changeToVirusContext: function () {
       this.viewer.removeChild(this.compareRegionViewer);
       this.viewer.removeChild(this.transcriptomics);
       this.viewer.removeChild(this.interactions);

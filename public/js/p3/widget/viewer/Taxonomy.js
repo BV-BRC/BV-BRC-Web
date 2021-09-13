@@ -12,6 +12,7 @@ define([
     taxon_id: '',
     apiServiceUrl: window.App.dataAPI,
     taxonomy: null,
+    context: 'bacteria',
     perspectiveLabel: 'Taxon View',
     perspectiveIconClass: 'icon-selection-Taxonomy',
     postCreate: function () {
@@ -51,38 +52,45 @@ define([
 
     },
 
-    addBacteriaTabs: function () {
+    changeToBacteriaContext: function () {
+      this.overview.set('context', 'bacteria');
+
       this.viewer.addChild(this.phylogeny, 1);
       this.viewer.addChild(this.amr, 4);
       this.viewer.addChild(this.sequences, 5)
       this.viewer.addChild(this.specialtyGenes, 8);
       this.viewer.addChild(this.proteinFamilies, 10);
       this.viewer.addChild(this.pathways, 11);
-      // this.viewer.addChild(this.subsystems, 12);
-      this.viewer.addChild(this.transcriptomics, 13);
-      this.viewer.addChild(this.interactions, 14);
+      this.viewer.addChild(this.subsystems, 12);
+      // this.viewer.addChild(this.transcriptomics, 13);
+      // this.viewer.addChild(this.interactions, 14);
     },
 
-    removeBacteriaTabs: function () {
+    changeToVirusContext: function () {
       this.viewer.removeChild(this.phylogeny);
       this.viewer.removeChild(this.amr);
       this.viewer.removeChild(this.sequences);
       this.viewer.removeChild(this.specialtyGenes);
       this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
-      // this.viewer.removeChild(this.subsystems);
-      this.viewer.removeChild(this.transcriptomics);
-      this.viewer.removeChild(this.interactions);
+      this.viewer.removeChild(this.subsystems);
+      // this.viewer.removeChild(this.transcriptomics);
+      // this.viewer.removeChild(this.interactions);
     },
 
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
       this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-      if (this.taxonomy.lineage_names.includes('Bacteria')) {
-        this.addBacteriaTabs();
-      } else if (this.taxonomy.lineage_names.includes('Viruses')) {
-        this.removeBacteriaTabs();
+      // switch tab configuration & view context
+      if (this.taxonomy.lineage_names.includes('Bacteria') && this.context === 'virus') {
+        this.set('context', 'bacteria')
+        this.changeToBacteriaContext();
+      } else if (this.taxonomy.lineage_names.includes('Viruses') && this.context === 'bacteria') {
+        this.set('context', 'virus');
+        this.changeToVirusContext();
       }
+
+      // further customization
       if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
         this.viewer.addChild(this.surveillance);
         this.viewer.addChild(this.serology);

@@ -327,16 +327,16 @@ define([
         id: this.viewer.id + '_proteinFamilies',
         disabled: false
       });
-      this.transcriptomics = new TranscriptomicsContainer({
-        title: 'Transcriptomics',
-        id: this.viewer.id + '_transcriptomics'
-      });
+      // this.transcriptomics = new TranscriptomicsContainer({
+      //   title: 'Transcriptomics',
+      //   id: this.viewer.id + '_transcriptomics'
+      // });
 
-      this.interactions = new InteractionsContainer({
-        title: 'Interactions',
-        id: this.viewer.id + '_interactions',
-        state: this.state
-      });
+      // this.interactions = new InteractionsContainer({
+      //   title: 'Interactions',
+      //   id: this.viewer.id + '_interactions',
+      //   state: this.state
+      // });
 
       this.surveillance = new SurveillanceGridContainer({
         title: 'Surveillance',
@@ -361,8 +361,8 @@ define([
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      this.viewer.addChild(this.transcriptomics);
-      this.viewer.addChild(this.interactions);
+      // this.viewer.addChild(this.transcriptomics);
+      // this.viewer.addChild(this.interactions);
 
       if (localStorage) {
         var gs = localStorage.getItem(this.showQuickstartKey);

@@ -27,6 +27,10 @@ define([
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_genome/overview.html',
 
+    _setContextAttr: function (context) {
+      // console.log('set Context to ', context)
+      // TODO, update overview content based on context
+    },
 
     _setStateAttr: function (state) {
       this._set('state', state);

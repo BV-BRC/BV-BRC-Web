@@ -22,6 +22,7 @@ define([
     disabled: false,
     containerType: 'genome_group',
     genome_id: '',
+    context: 'bacteria',
     perspectiveLabel: 'Genome View',
     perspectiveIconClass: 'icon-selection-Genome',
     apiServiceUrl: window.App.dataAPI,
@@ -173,15 +174,19 @@ define([
       }));
     },
 
-    removeBacteriaTabs: function () {
+    changeToVirusContext: function () {
+      this.overview.set('context', 'Virus');
+
       this.viewer.removeChild(this.phylogeny);
+      this.viewer.removeChild(this.sequences);
       this.viewer.removeChild(this.amr);
+      this.viewer.removeChild(this.circular);
       this.viewer.removeChild(this.specialtyGenes);
       this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
       this.viewer.removeChild(this.subsystems);
-      this.viewer.removeChild(this.transcriptomics);
-      this.viewer.removeChild(this.interactions);
+      // this.viewer.removeChild(this.transcriptomics);
+      // this.viewer.removeChild(this.interactions);
     },
 
     _setGenomeAttr: function (genome) {
@@ -200,8 +205,9 @@ define([
         }
       }
 
-      if (genome.taxon_lineage_names.includes('Viruses')) {
-        this.removeBacteriaTabs();
+      if (genome.taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
+        this.set('context', 'virus')
+        this.changeToVirusContext();
       }
 
       this.setActivePanelState();
@@ -350,17 +356,17 @@ define([
         state: this.state
       });
 
-      this.transcriptomics = new TranscriptomicsContainer({
-        title: 'Transcriptomics',
-        id: this.viewer.id + '_transcriptomics',
-        state: this.state
-      });
+      // this.transcriptomics = new TranscriptomicsContainer({
+      //   title: 'Transcriptomics',
+      //   id: this.viewer.id + '_transcriptomics',
+      //   state: this.state
+      // });
 
-      this.interactions = new InteractionsContainer({
-        title: 'Interactions',
-        id: this.viewer.id + '_interactions',
-        state: this.state
-      });
+      // this.interactions = new InteractionsContainer({
+      //   title: 'Interactions',
+      //   id: this.viewer.id + '_interactions',
+      //   state: this.state
+      // });
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.amr);
@@ -375,8 +381,8 @@ define([
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      this.viewer.addChild(this.transcriptomics);
-      this.viewer.addChild(this.interactions);
+      // this.viewer.addChild(this.transcriptomics);
+      // this.viewer.addChild(this.interactions);
     }
   });
 });
