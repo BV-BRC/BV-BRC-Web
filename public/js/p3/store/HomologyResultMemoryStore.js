@@ -39,17 +39,23 @@ define([
       delete this._loadingDeferred;
       this._loaded = false;
       this.loadWorkspaceData();
-      this.set('refresh');
+    },
+
+    query2: function (query, opts){
+        query = query || {};
+        return this.inherited(arguments);
     },
 
     query: function (query, opts) {
       query = query || {};
-      if (this._loaded) {
+      if (this._loaded || opts.recursive) {
         return this.inherited(arguments);
       }
 
       var results;
+      //var qr = QueryResults(this.loadWorkspaceData());
       var qr = QueryResults(when(this.loadWorkspaceData(), lang.hitch(this, function () { //based on this loadData evaluate whether it should be loadWorkspace called here that returns deferred
+        opts["recursive"]=true;
         results = this.query(query, opts);
         qr.total = when(results, function (results) {
           return results.total || results.length;
@@ -235,7 +241,7 @@ define([
       },
 
       loadWorkspaceData:function(){
-        this._loaded = true;
+        //this._loaded = true;
         if (this._loadingDeferred) {
             return this._loadingDeferred;
         }
@@ -251,9 +257,13 @@ define([
             var def = new Deferred();
             setTimeout(lang.hitch(this, function () {
             this.setData([]);
+            this._loaded = true;
             // def.resolve(true);
             }), 0);
             return def.promise;
+        }
+        if (this.state.resultType != this.type && !(this.type == "specialty_genes" && this.state.resultType == "custom")){
+            return [];
         }
         //This expects a few pieces of information to be present in the STATE object, including the path and whether the DB is user supplied
         //Currently set in

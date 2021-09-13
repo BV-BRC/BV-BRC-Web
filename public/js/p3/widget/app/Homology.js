@@ -128,12 +128,6 @@ define([
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
 
-      this.result = new HomologyResultContainer({
-        id: this.id + '_blastResult',
-        style: 'min-height: 700px; visibility:hidden;'
-      });
-      this.result.placeAt(query('.blast_result')[0]);
-      this.result.startup();
 
       Topic.subscribe('BLAST_UI', lang.hitch(this, function () {
         // console.log("BLAST_UI:", arguments);
@@ -357,28 +351,36 @@ define([
         submit_values["db_precomputed_database"]=database.split(".")[0];
       }
 
-      _self.result.loadingMask.show();
-      query('.blast_result .GridContainer').style('visibility', 'visible');
-      domClass.add(query('.service_form')[0], 'hidden');
-      domClass.add(query('.appSubmissionArea')[0], 'hidden');
-      domClass.add(query('.service_error')[0], 'hidden');
-      query('.reSubmitBtn').style('visibility', 'visible');
 
         if (this.validate()) {
             var start_params = {
             'base_url': window.App.appBaseURL
             }
            //var values = this.getValues();
-           //set job hook before submission
-            _self.setJobHook(function() {
+           var callback = function() {
                 //the state set here shows up again in the HomologyMemoryStore onSetState
-                _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
+                _self.result = new HomologyResultContainer({
+                    id: this.id + '_blastResult',
+                    style: 'min-height: 700px; visibility:hidden;',
+                    state: { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values}
+                });
+                _self.result.placeAt(query('.blast_result')[0]);
+                _self.result.loadingMask.show();
+                query('.blast_result .GridContainer').style('visibility', 'visible');
+                domClass.add(query('.service_form')[0], 'hidden');
+                domClass.add(query('.appSubmissionArea')[0], 'hidden');
+                domClass.add(query('.service_error')[0], 'hidden');
+                query('.reSubmitBtn').style('visibility', 'visible');
+                //_self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
+                _self.result.startup();
                 //Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
-            }, function(error){
+            };
+           //set job hook before submission
+            _self.setJobHook(callback, function(error){
                 Topic.publish('BLAST_UI', 'showErrorMessage', error);
             });
             if (this.demo){
-                _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
+                callback();
             }
             else{
                 _self.doSubmit(submit_values, start_params);
@@ -428,7 +430,7 @@ define([
         if (this.demo){
             return true;
         }
-        return this.inhertied(arguments);
+        return this.inherited(arguments);
     },
 
     onAddGenome: function () {

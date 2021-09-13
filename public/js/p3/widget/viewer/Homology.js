@@ -17,6 +17,7 @@ define([
     query: null,
     loadingMask: null,
     visible: true,
+    state: null,
 
     constructor: function (options) {
 
@@ -82,6 +83,7 @@ define([
         type: 'genome_feature',
         idProperty: 'feature_id',
         topicId: this.topicId,
+        state: this.state,
         queryOptions: {
           sort: [{ attribute: 'pident', descending: true }]
         }
@@ -90,6 +92,7 @@ define([
         type: 'genome_sequence',
         idProperty: 'sequence_id',
         topicId: this.topicId,
+        state: this.state,
         queryOptions: {
           sort: [{ attribute: 'pident', descending: true }]
         }
@@ -98,6 +101,7 @@ define([
         type: 'specialty_genes',
         idProperty: 'source_id',
         topicId: this.topicId,
+        state: this.state,
         queryOptions: {
           sort: [{ attribute: 'pident', descending: true }]
         }
