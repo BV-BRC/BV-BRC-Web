@@ -36,7 +36,7 @@ define([
       }))
 
       when(storeBuilder('surveillance', 'subtype'), lang.hitch(this, function (store) {
-        this.serotypeNode.store = store
+        this.subtypeNode.store = store
       }))
 
       when(storeBuilder('surveillance', 'host_group'), lang.hitch(this, function (store) {
