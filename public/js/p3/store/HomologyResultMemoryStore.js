@@ -248,7 +248,7 @@ define([
 
         // console.warn("loadData", this.type, this.state);
 
-        if (!this.state) {
+        if (!this.state || this.state.resultType != this.type && !(this.type == "specialty_genes" && this.state.resultType == "custom")) {
             // console.log("No state, use empty data set for initial store");
 
             // this is done as a deferred instead of returning an empty array
@@ -261,9 +261,6 @@ define([
             // def.resolve(true);
             }), 0);
             return def.promise;
-        }
-        if (this.state.resultType != this.type && !(this.type == "specialty_genes" && this.state.resultType == "custom")){
-            return [];
         }
         //This expects a few pieces of information to be present in the STATE object, including the path and whether the DB is user supplied
         //Currently set in
