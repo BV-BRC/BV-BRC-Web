@@ -1,14 +1,12 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/ProteinStructureSearch.html',
   './FacetStoreBuilder'
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -27,7 +25,7 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
-      when(storeBuilder('protein_structure', 'method'), lang.hitch(this, function (store) {
+      storeBuilder('protein_structure', 'method').then(lang.hitch(this, (store) => {
         this.methodNode.store = store
       }))
     },

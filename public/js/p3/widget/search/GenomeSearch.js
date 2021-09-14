@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/GenomeSearch.html',
   './FacetStoreBuilder',
@@ -10,7 +9,6 @@ define([
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -34,15 +32,15 @@ define([
       this.pathogenGroupNode.store = pathogenGroupStore
       this.hostGroupNode.store = hostGroupStore
 
-      when(storeBuilder('genome', 'host_common_name'), lang.hitch(this, function (store) {
+      storeBuilder('genome', 'host_common_name').then(lang.hitch(this, (store) => {
         this.hostNameNode.store = store
       }))
 
-      when(storeBuilder('genome', 'geographic_group'), lang.hitch(this, function (store) {
+      storeBuilder('genome', 'geographic_group').then(lang.hitch(this, (store) => {
         this.geographicGroupNode.store = store
       }))
 
-      when(storeBuilder('genome', 'isolation_country'), lang.hitch(this, function (store) {
+      storeBuilder('genome', 'isolation_country').then(lang.hitch(this, (store) => {
         this.isolationCountryNode.store = store
       }))
     },

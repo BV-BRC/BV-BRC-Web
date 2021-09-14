@@ -1,14 +1,12 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/SurveillanceSearch.html',
   './FacetStoreBuilder'
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -27,35 +25,35 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
-      when(storeBuilder('surveillance', 'pathogen_test_type'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'pathogen_test_type').then(lang.hitch(this, (store) => {
         this.pathogenTestTypeNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'pathogen_test_result'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'pathogen_test_result').then(lang.hitch(this, (store) => {
         this.pathogenTestResultNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'subtype'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'subtype').then(lang.hitch(this, (store) => {
         this.subtypeNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'host_group'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'host_group').then(lang.hitch(this, (store) => {
         this.hostGroupNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'host_common_name'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'host_common_name').then(lang.hitch(this, (store) => {
         this.hostCommonNameNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'host_species'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'host_species').then(lang.hitch(this, (store) => {
         this.hostSpeciesNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'geographic_group'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'geographic_group').then(lang.hitch(this, (store) => {
         this.geographicGroupNode.store = store
       }))
 
-      when(storeBuilder('surveillance', 'collection_country'), lang.hitch(this, function (store) {
+      storeBuilder('surveillance', 'collection_country').then(lang.hitch(this, (store) => {
         this.collectionCountryNode.store = store
       }))
 

@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/ProteinFeatureSearch.html',
   './FacetStoreBuilder',
@@ -9,7 +8,6 @@ define([
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -30,8 +28,7 @@ define([
       this.inherited(arguments)
 
       this.pathogenGroupNode.store = pathogenGroupStore
-
-      when(storeBuilder('protein_feature', 'source'), lang.hitch(this, function (store) {
+      storeBuilder('protein_feature', 'source').then(lang.hitch(this, (store) => {
         this.sourceNode.store = store
       }))
     },

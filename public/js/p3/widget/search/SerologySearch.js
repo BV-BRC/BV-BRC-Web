@@ -1,14 +1,12 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/SerologySearch.html',
   './FacetStoreBuilder'
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -27,35 +25,35 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
-      when(storeBuilder('serology', 'test_type'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'test_type').then(lang.hitch(this, (store) => {
         this.testTypeNode.store = store
       }))
 
-      when(storeBuilder('serology', 'test_result'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'test_result').then(lang.hitch(this, (store) => {
         this.testResultNode.store = store
       }))
 
-      when(storeBuilder('serology', 'serotype'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'serotype').then(lang.hitch(this, (store) => {
         this.serotypeNode.store = store
       }))
 
-      when(storeBuilder('serology', 'host_type'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'host_type').then(lang.hitch(this, (store) => {
         this.hostTypeNode.store = store
       }))
 
-      when(storeBuilder('serology', 'host_common_name'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'host_common_name').then(lang.hitch(this, (store) => {
         this.hostCommonNameNode.store = store
       }))
 
-      when(storeBuilder('serology', 'host_species'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'host_species').then(lang.hitch(this, (store) => {
         this.hostSpeciesNode.store = store
       }))
 
-      when(storeBuilder('serology', 'geographic_group'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'geographic_group').then(lang.hitch(this, (store) => {
         this.geographicGroupNode.store = store
       }))
 
-      when(storeBuilder('serology', 'collection_country'), lang.hitch(this, function (store) {
+      storeBuilder('serology', 'collection_country').then(lang.hitch(this, (store) => {
         this.collectionCountryNode.store = store
       }))
     },

@@ -1,13 +1,11 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/TaxaSearch.html',
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
 ) {

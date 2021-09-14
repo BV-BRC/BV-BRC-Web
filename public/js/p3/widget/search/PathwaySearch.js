@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/PathwaySearch.html',
   './FacetStoreBuilder',
@@ -9,7 +8,6 @@ define([
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -30,6 +28,13 @@ define([
       this.inherited(arguments)
 
       this.pathogenGroupNode.store = pathogenGroupStore
+      storeBuilder('pathway_ref', 'pathway_name').then(lang.hitch(this, (store) => {
+        this.pathwayNameNode.store = store
+      }))
+      storeBuilder('pathway_ref', 'pathway_class').then(lang.hitch(this, (store) => {
+        this.pathwayClassNode.store = store
+      }))
+
     },
     buildQuery: function () {
       let queryArr = []

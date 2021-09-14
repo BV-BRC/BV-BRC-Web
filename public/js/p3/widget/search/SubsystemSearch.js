@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/SubsystemSearch.html',
   './FacetStoreBuilder',
@@ -9,7 +8,6 @@ define([
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -30,6 +28,12 @@ define([
       this.inherited(arguments)
 
       this.pathogenGroupNode.store = pathogenGroupStore
+      storeBuilder('subsystem_ref', 'subsystem_id').then(lang.hitch(this, (store) => {
+        this.subsystemIDNode.store = store
+      }))
+      storeBuilder('subsystem_ref', 'subsystem_name').then(lang.hitch(this, (store) => {
+        this.subsystemNameNode.store = store
+      }))
     },
     buildQuery: function () {
       let queryArr = []

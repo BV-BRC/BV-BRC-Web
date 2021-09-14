@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/SpecialtyGeneSearch.html',
   './FacetStoreBuilder',
@@ -9,7 +8,6 @@ define([
 ], function (
   declare,
   lang,
-  when,
   SearchBase,
   template,
   storeBuilder,
@@ -31,19 +29,19 @@ define([
 
       this.pathogenGroupNode.store = pathogenGroupStore
 
-      when(storeBuilder('genome', 'host_common_name'), lang.hitch(this, function (store) {
+      storeBuilder('genome', 'host_common_name').then(lang.hitch(this, (store) => {
         this.hostNameNode.store = store
       }))
 
-      when(storeBuilder('sp_gene', 'property'), lang.hitch(this, function (store) {
+      storeBuilder('sp_gene', 'property').then(lang.hitch(this, (store) => {
         this.propertyNode.store = store
       }))
 
-      when(storeBuilder('sp_gene', 'source'), lang.hitch(this, function (store) {
+      storeBuilder('sp_gene', 'source').then(lang.hitch(this, (store) => {
         this.sourceNode.store = store
       }))
 
-      when(storeBuilder('sp_gene', 'evidence'), lang.hitch(this, function (store) {
+      storeBuilder('sp_gene', 'evidence').then(lang.hitch(this, (store) => {
         this.evidenceNode.store = store
       }))
     },
