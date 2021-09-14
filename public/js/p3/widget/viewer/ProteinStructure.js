@@ -18,6 +18,8 @@ define([
   'dijit/_WidgetsInTemplateMixin',
   'dojo/text!../templates/proteinStructure/ProteinStructureViewer.html',
   'dojo/request',
+  '../DataItemFormatter',
+  '../../util/PathJoin',
   '../../util/dataStoreHelpers'
 ],
 function (
@@ -40,6 +42,8 @@ function (
   WidgetsInTmeplateMixin,
   templateString,
   xhr,
+  DataItemFormatter,
+  PathJoin,
   dataStoreHelpers
 )
 {
@@ -50,6 +54,7 @@ function (
     molstar: null,
     viewState: new ProteinStructureState({}),
     state: {},
+    apiServiceUrl: window.App.dataAPI,
     contentServer: `${window.App.dataServiceURL}/content`,
     postCreate: async function () {
       // console.log('starting ' + this.id + '.postCreate');
@@ -182,13 +187,13 @@ function (
       this.updateFromViewState(viewState);
     },
     updateFromViewState: function (viewState) {
-      this.displayControl.set('accessionId', viewState.get('accession').id);
+      // this.displayControl.set('accessionId', viewState.get('accession').pdb_id);
       if (this.epitopeHighlight) {
         this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
-        this.epitopeHighlight.set('accessionId', viewState.get('accession').id);
+        this.epitopeHighlight.set('accessionId', viewState.get('accession').pdb_id);
       }
       if (this.featureHighlights) {
-        this.featureHighlights.set('accessionId', viewState.get('accession').id);
+        this.featureHighlights.set('accessionId', viewState.get('accession').pdb_id);
       }
       this.molstar.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
@@ -196,8 +201,7 @@ function (
     updateAccessionInfo: function (accessionInfo) {
       // console.log('running ' + this.id + '.updateAccessionInfo with ' + JSON.stringify(accessionInfo) );
       domConstruct.empty(this.accessionTitle.containerNode);
-      domConstruct.place('<span class="searchField" style="font-size: large;">' + accessionInfo.label + '</span>', this.accessionTitle.containerNode);
-      domConstruct.place('<div>' + accessionInfo.description + '</div>', this.accessionTitle.containerNode);
+      domConstruct.place(DataItemFormatter(accessionInfo, 'structure_data', {}), this.accessionTitle.containerNode, 'first');
     },
     viewDefaults: new Map([
       ['accession', '6VXX'],
@@ -233,7 +237,19 @@ function (
     Return a Promise for the protein accession information
      */
     getAccessionInfo: function (accessionId) {
-      return dataStoreHelpers.itemByIdToPromise(this.proteinStore, accessionId);
+      return new Promise(
+        (resolve, reject) => {
+          const experiment = xhr.get(PathJoin(this.apiServiceUrl, 'protein_structure', accessionId), {
+            headers: {
+              accept: 'application/json',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            },
+            handleAs: 'json'
+          });
+
+          resolve(experiment);
+        });
     }
   });
 });

@@ -573,7 +573,7 @@ define([
           validContainerTypes: ['structure_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
-              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Structure/' + selection[0].pdb_id }),
+              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/ProteinStructure#accession=' + selection[0].pdb_id }),
               around: button,
               orient: ['below'],
             });
@@ -582,7 +582,7 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Structure/' + sel.pdb_id, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel.pdb_id, target: 'blank' });
         },
         false
       ],

@@ -61,19 +61,19 @@ define([
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
           this.updateDisplay();
         }));
-        if (oldValue.get('accession', {}).id != newValue.get('accession', {}).id) {
+        if (oldValue.get('accession', {}).pdb_id != newValue.get('accession', {}).pdb_id) {
           this.updateAccession(newValue.get('accession'));
         }
       }));
     },
     updateAccession: function (accessionInfo) {
       this.highlighters = [];
-      this.loadAccession(accessionInfo.id);
+      this.loadAccession(accessionInfo.pdb_id);
       this.updateDisplay();
     },
     onAccessionChange: function (attr, oldValue, newValue) {
       // console.log('JMOL accession changed to ' + JSON.stringify(newValue));
-      if (newValue && newValue.id &&  (oldValue.id != newValue.id)) {
+      if (newValue && newValue.pdb_id &&  (oldValue.pdb_id != newValue.pdb_id)) {
         this.updateAccession(newValue);
       }
     },

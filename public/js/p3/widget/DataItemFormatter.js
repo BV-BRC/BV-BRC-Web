@@ -1320,12 +1320,6 @@ define([
         text: 'taxon_id',
         link: '/view/Taxonomy/'
       }, {
-        name: 'Taxon Lineage IDs',
-        text: 'taxon_lineage_ids'
-      }, {
-        name: 'Taxon Lineage Names',
-        text: 'taxon_lineage_names'
-      }, {
         name: 'Genome ID',
         text: 'genome_id',
         link: '/view/Genome/'
@@ -1352,9 +1346,6 @@ define([
         name: 'Product',
         text: 'product'
       }, {
-        name: 'Alignments',
-        text: 'alignments'
-      }, {
         name: 'Method',
         text: 'method',
       }, {
@@ -1365,7 +1356,7 @@ define([
         text: 'pmid',
       }, {
         name: 'Institution',
-        text: 'Institution',
+        text: 'institution',
       }, {
         name: 'Authors',
         text: 'authors'
@@ -1376,17 +1367,6 @@ define([
       }, {
         name: 'Text',
         text: 'text',
-      }, {
-        name: 'Version',
-        text: '_version_'
-      }, {
-        name: 'Date Inserted',
-        text: 'date_inserted',
-        type: 'date'
-      }, {
-        name: 'Date Modified',
-        text: 'date_modified',
-        type: 'date'
       }];
 
       var div = domConstruct.create('div');
