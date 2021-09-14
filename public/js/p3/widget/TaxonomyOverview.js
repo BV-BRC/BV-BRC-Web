@@ -50,23 +50,25 @@ define([
     },
 
     _setTaxonomyAttr: function (taxon) {
-      xhr.get(PathJoin(window.App.dataAPI, 'data/summary_by_taxon', taxon.taxon_id), {
-        headers: {
-          accept: 'application/json'
-        },
-        handleAs: 'json'
-      }).then(lang.hitch(this, function (summary) {
-        const taxonSummary = lang.mixin(taxon, summary)
-        this.createSummary(taxonSummary)
-      }))
-
+      this.createSummary(taxon)
       this.createExternalLinks(taxon);
       this.createPubmedLinks(taxon);
     },
 
     createSummary: function (taxon) {
       domConstruct.empty(this.taxonomySummaryNode);
-      domConstruct.place(DataItemFormatter(taxon, 'taxonomy_data', {}), this.taxonomySummaryNode, 'first');
+      domConstruct.place('<p>Loading...</p>', this.taxonomySummaryNode, 'first')
+
+      xhr.get(PathJoin(window.App.dataAPI, 'data/summary_by_taxon', taxon.taxon_id), {
+        headers: {
+          accept: 'application/json'
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (summary) {
+        domConstruct.empty(this.taxonomySummaryNode);
+        const taxonSummary = lang.mixin(taxon, summary)
+        domConstruct.place(DataItemFormatter(taxonSummary, 'taxonomy_data', {}), this.taxonomySummaryNode, 'first');
+      }))
     },
     createPubmedLinks: function (taxon) {
       if (this.searchName != taxon.taxon_name) {

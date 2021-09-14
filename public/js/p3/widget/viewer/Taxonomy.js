@@ -105,6 +105,9 @@ define([
     onSetQuery: function (attr, oldVal, newVal) {
       // prevent default action
     },
+    onSetReferenceGenomes: function () {
+      // prevent default action
+    },
     buildTaxonIdByState: function (state) {
       var def = new Deferred();
       var parts = state.pathname.split('/');
