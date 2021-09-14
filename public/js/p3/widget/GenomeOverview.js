@@ -23,13 +23,22 @@ define([
     apiServiceUrl: window.App.dataAPI,
     genome: null,
     state: null,
-    sumWidgets: ['apSummaryWidget', 'gfSummaryWidget', 'pfSummaryWidget', 'spgSummaryWidget'],
+    context: 'bacteria',
+    bacteriSummaryWidgets: ['apSummaryWidget', 'gfSummaryWidget', 'pfSummaryWidget', 'spgSummaryWidget'],
+    virusSummaryWidgets: ['gfSummaryWidget'],
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_genome/overview.html',
 
     _setContextAttr: function (context) {
-      // console.log('set Context to ', context)
-      // TODO, update overview content based on context
+      if (this.context !== context) {
+        if (context === 'virus') {
+          this.changeToVirusContext()
+        } else {
+          this.changeToBacteriaContext()
+        }
+      }
+
+      this.context = context
     },
 
     _setStateAttr: function (state) {
@@ -43,7 +52,14 @@ define([
         domConstruct.place(domConstruct.toDom('Not available'), this.pubmedSummaryNode, 'first');
       }
     },
-
+    changeToVirusContext: function () {
+      domClass.add(this.pfSummaryWidget.domNode.parentNode, 'hidden');
+      domClass.add(this.spgSummaryWidget.domNode.parentNode, 'hidden');
+    },
+    changeToBacteriaContext: function () {
+      domClass.remove(this.pfSummaryWidget.domNode.parentNode, 'hidden');
+      domClass.remove(this.spgSummaryWidget.domNode.parentNode, 'hidden');
+    },
     _setGenomeAttr: function (genome) {
       if (this.genome && (this.genome.genome_id == genome.genome_id)) {
         // console.log("Genome ID Already Set")
@@ -55,7 +71,9 @@ define([
       this.createPubMed(genome);
       this.createExternalLinks(genome);
 
-      this.sumWidgets.forEach(function (w) {
+      // context sensitive widget update
+      const sumWidgets = (this.context === 'bacteria') ? this.bacteriSummaryWidgets : this.virusSummaryWidgets
+      sumWidgets.forEach(function (w) {
         if (this[w]) {
           this[w].set('query', 'eq(genome_id,' + this.genome.genome_id + ')');
         }

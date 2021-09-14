@@ -175,7 +175,7 @@ define([
     },
 
     changeToVirusContext: function () {
-      this.overview.set('context', 'Virus');
+      this.overview.set('context', 'virus');
 
       this.viewer.removeChild(this.phylogeny);
       this.viewer.removeChild(this.sequences);
@@ -286,7 +286,7 @@ define([
       this.overview = new GenomeOverview({
         title: 'Overview',
         id: this.viewer.id + '_overview',
-        state: this.state
+        // state: this.state
       });
 
       this.phylogeny = new Phylogeny({
