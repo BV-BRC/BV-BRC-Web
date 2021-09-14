@@ -37,7 +37,17 @@ define([
         return;
       }
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-      _self.output_pathWidget.set('value', _self.defaultPath);
+      _self.output_path.set('value', _self.defaultPath);
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     onTaxIDChange: function (val) {
@@ -121,9 +131,49 @@ define([
 
     getValues: function () {
       var values = this.inherited(arguments);
-      values.scientific_name = this.output_nameWidget.get('displayedValue');
-      values.taxonomy_id = this.tax_idWidget.get('displayedValue');
+      //values.scientific_name = this.output_nameWidget.get('displayedValue');
+      //values.taxonomy_id = this.tax_idWidget.get('displayedValue');
+      values = this.checkBaseParameters(values);
       return values;
+    },
+
+    checkBaseParameters: function(values) {
+      this.contigs = values.contigs;
+      this.output_name = this.output_nameWidget.get('displayedValue');
+      values.scientific_name = this.output_name;
+      this.target_genome_id = this.tax_idWidget.get('displayedValue');
+      values.taxonomy_id = this.target_genome_id;
+
+      return values;
+    },
+
+    addRerunFields: function(job_params) {
+      if (job_params["recipe"] === "default") {
+        this.default.set("checked",true);
+      }
+      else if (job_params["recipe"] === "viral") {
+        this.viral.set("checked",true);
+      }
+      else { //bacteriophages
+        this.phage.set("checked",true);
+      }
+      //must set tax_idWidget before scientific_nameWidget
+      this.tax_idWidget.set("value",job_params["taxonomy_id"]);
+      this.tax_idWidget.set("displayedValue",job_params["taxonomy_id"]);
+      this.scientific_nameWidget.set("item",job_params["scientific_name"]);
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path","strategy":"recipe"};
+        //var widget_map = {"tax_id":"tax_idWidget"};
+        //param_dict["widget_map"] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        this.addRerunFields(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
     }
   });
 });

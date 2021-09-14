@@ -31,7 +31,7 @@ define([
     constructor: function () {
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
-      this.singleToAttachPt = ['single_end_libs'];
+      this.singleToAttachPt = ['single_end_libsWidget'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
     },
 
@@ -62,6 +62,16 @@ define([
         });
       }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     getValues: function () {
@@ -73,46 +83,7 @@ define([
           delete values[key];
         }
       });
-      var pairedList = this.libraryStore.query({ _type: 'paired' });
-      var singleList = this.libraryStore.query({ _type: 'single' });
-      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-      var pairedLibs = [];
-      var singleLibs = [];
-      var srrAccessions = [];
-
-      pairedLibs = pairedList.map(function (lrec) {
-        var rrec = {};
-        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-          if (!attr.startsWith('_')) {
-            rrec[attr] = lrec[attr];
-          }
-        }));
-        return rrec;
-      });
-      if (pairedLibs.length) {
-        values.paired_end_libs = pairedLibs;
-      }
-
-      singleLibs = singleList.map(function (lrec) {
-        var rrec = {};
-        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-          if (!attr.startsWith('_')) {
-            rrec[attr] = lrec[attr];
-          }
-        }));
-        return rrec;
-      });
-      if (singleLibs.length) {
-        values.single_end_libs = singleLibs;
-      }
-
-      srrAccessions = srrAccessionList.map(function (lrec) {
-        return lrec._id;
-      });
-      if (srrAccessions.length) {
-        values.srr_ids = srrAccessions;
-      }
-
+      values = this.checkBaseParameters(values);
       return values;
     },
 
@@ -129,7 +100,7 @@ define([
         var incomplete = 0;
         var browser_select = 0;
         var alias = attachname;
-        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libs') {
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
           browser_select = 1;
         }
@@ -142,7 +113,7 @@ define([
         }
 
         // Assign cur_value to target
-        if (attachname == 'single_end_libs') {
+        if (attachname == 'single_end_libsWidget') {
           alias = 'read';
         }
         if (typeof (cur_value) === 'string') {
@@ -190,7 +161,7 @@ define([
           return 'P(' + fn + ', ' + fn2 + ')';
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('displayedValue');
+          var fn = this.single_end_libsWidget.searchBox.get('displayedValue');
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -214,7 +185,7 @@ define([
           return fn + fn2;
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('value');
+          var fn = this.single_end_libsWidget.searchBox.get('value');
           return fn;
 
         case 'srr_accession':
@@ -418,6 +389,64 @@ define([
         this.gene_set_fasta.set('required', false);
         this.gene_set_feature_group.set('required', true);
         this.checkParameterRequiredFields();
+      }
+    },
+
+    checkBaseParameters: function(values) {
+      //reads and sr
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
+      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+
+      this.paired_end_libs = pairedList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.paired_end_libs.length) {
+        values.paired_end_libs = this.paired_end_libs;
+      }
+
+      this.single_end_libs = singleList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.single_end_libs.length) {
+        values.single_end_libs = this.single_end_libs;
+      }
+
+      this.sra_libs = srrAccessionList.map(function (lrec) {
+        return lrec._id;
+      });
+      if (this.sra_libs.length) {
+        values.srr_ids = this.sra_libs;
+      }
+      //output_folder
+      this.output_folder = values.output_path;
+      //output_name
+      this.output_name = values.output_file;
+
+      return values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path","strategy":"gene_set_name"};
+        //widget_map
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        AppBase.prototype.loadLibrary.call(this,JSON.parse(localStorage.getItem("bvbrc_rerun_job")),param_dict);
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
       }
     }
   });

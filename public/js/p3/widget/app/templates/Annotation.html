@@ -29,7 +29,7 @@
         <div class="appRow">
           <div class="appFieldLong">
             <label>Contigs</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="contigs" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
           </div>
         </div>
         <div class="appRow">
@@ -76,7 +76,7 @@
         <div class="appRow">
           <div class="appFieldLong">
             <label>Output Folder</label><br>
-            <div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true"
+            <div data-dojo-attach-point="output_path" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true"
               data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
             data-dojo-attach-event="onChange:onOutputPathChange"></div>
           </div>

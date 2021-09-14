@@ -68,6 +68,16 @@ define([
       }));
 
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
 
@@ -158,7 +168,12 @@ define([
       }), function (res) {
         // order matters, organize into  {id: xxxx.x, name: 'org_name}
         var info = genomeIDs.map(function (id) {
-          var name = res.filter(function (obj) { return obj.genome_id == id; })[0].genome_name;
+          var res_filter = res.filter(function (obj) { return obj.genome_id == id; });
+          if (res_filter.length == 0) {
+            console.log("No genome_name found for genome_id: ",id);
+            return null;
+          }
+          var name = res_filter[0].genome_name;
 
           return {
             id: id,
@@ -189,15 +204,49 @@ define([
       // if seedWeight isn't specified, let mauve figure it out
       if (!this.seedWeightSwitch.checked) obj.seedWeight = null;
 
-      // get the ids from table selection
-      var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
-
-      obj.genome_ids = genomeIDs;
-      obj.recipe = 'progressiveMauve';
-      obj.output_path = values.output_path;
-      obj.output_file = values.output_file;
+      obj = this.checkBaseParameters(values,obj);
 
       return obj;
+    },
+
+    checkBaseParameters: function(values,obj) {
+      // get the ids from table selection
+      var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
+      //genome_ids and genome group
+      obj.genome_ids = genomeIDs;
+      this.target_genome_id = genomeIDs;
+      //strategy/recipe
+      obj.recipe = 'progressiveMauve';
+      this.strategy = 'progressiveMauve';
+      //output_folder
+      obj.output_path = values.output_path;
+      this.output_path = values.output_path;
+      //output_name
+      obj.output_file = values.output_file;
+      this.output_name = values.output_file;
+
+      return obj;
+    },
+
+    addGenomeList: function(job_data) {
+      var self = this;
+      when(self.getGenomeInfo(job_data.genome_ids), function (genomeInfos) {
+        genomeInfos.forEach(function (info) {
+          self.addGenome(info);
+        });
+        domStyle.set( query('.loading-status')[0], 'display', 'none');
+      });
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path"};
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        this.addGenomeList(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
     }
   });
 
