@@ -242,6 +242,7 @@ define([
 
       loadWorkspaceData:function(){
         //this._loaded = true;
+        _self = this;
         if (this._loadingDeferred) {
             return this._loadingDeferred;
         }
@@ -265,7 +266,7 @@ define([
         //This expects a few pieces of information to be present in the STATE object, including the path and whether the DB is user supplied
         //Currently set in
         this._hiddenPath=[this.state.resultPath];
-        this._loadingDeferred = WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false).then(lang.hitch(this, function (paths) {
+        this._loadingDeferred = when(WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false), lang.hitch(this, function (paths) {
             var filtered = paths.filter(function (f) {
             // console.log("Filtering f: ", f);
             // if(f instanceof Array){
@@ -284,7 +285,7 @@ define([
 
             // console.log("Experiment Sub Paths: ", paths);
 
-            WorkspaceManager.getObjects(filtered).then(lang.hitch(this, function (objs) {
+            return when(WorkspaceManager.getObjects(filtered), lang.hitch(this, function (objs) {
                 objs.forEach(function (obj) {
                     if (typeof obj.data == 'string') {
                     obj.data = JSON.parse(obj.data);
@@ -355,11 +356,11 @@ define([
 
                     Topic.publish(this.topicId, 'hideLoadingMask');
                 }
+                this.set('refresh');
 
                 if (this.state.submit_values.db_source === "fasta_data"){
                     return this._loadingDeferred;
                 }
-                this.set('refresh');
 
 
                 return when(request.post(window.App.dataAPI + this.type + '/', {
