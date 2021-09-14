@@ -20,7 +20,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Genome Assembly (new)',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
-    applicationHelp: 'user_guides/services/genome_assembly_service2.html',
+    applicationHelp: 'user_guides/services/genome_assembly_service.html',
     tutorialLink: 'tutorial/genome_assembly/assembly2.html',
     videoLink: 'videos/genome_assembly_service.html',
     libraryData: null,
@@ -103,7 +103,6 @@ define([
       }));
       this.pairToAttachPt1.concat(this.singleToAttachPt).forEach(lang.hitch(this, function (attachname) {
         this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function (/* anything */ value, /* __Constraints */ constraints) {
-          console.log("log_here1");
           return (new RegExp('^(?:' + this._computeRegexp(constraints) + ')' + (this.required ? '' : '?') + '$')).test(value) &&
             (!this._isEmpty(value)) &&
             (this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
@@ -120,7 +119,6 @@ define([
           this.read2.set('disabled', true);
         }
       }));
-      //this.loadParameters();
       this._started = true;
       this.form_flag = false;
       try {
@@ -132,7 +130,6 @@ define([
           localStorage.removeItem("bvbrc_rerun_job");
         }
       }
-      
     },
 
     getValues: function () {
@@ -206,7 +203,6 @@ define([
             this[attachname].searchBox._set('state', 'Error');
             this[attachname].focus = true;
           }
-          //console.log("Dupliate: ",duplicate,",target[alias]: ",target[alias],",incomplete: ",incomplete);
           success = 0;
         }
         else {
@@ -332,7 +328,7 @@ define([
     },
 
     onAddPair: function () {
-      if (this.read1.getSearchBoxValue() == this.read2.getSearchBoxValue()) {
+      if (this.read1.searchBox.get('value') == this.read2.searchBox.get('value')) {
         var msg = 'READ FILE 1 and READ FILE 2 cannot be the same.';
         new Dialog({ title: 'Notice', content: msg }).show();
         return;

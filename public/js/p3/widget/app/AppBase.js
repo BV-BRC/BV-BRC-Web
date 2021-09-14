@@ -264,7 +264,6 @@ define([
         }
 
         if (window.App.noJobSubmission) {
-          console.log(values);
           var dlg = new Dialog({
             title: 'Job Submission Params: ',
             content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
@@ -491,7 +490,17 @@ define([
     },
 
     //Load library parameters from localStorage
+    //Conditions assumes a field "experimental_conditions" is present in local_job
     loadLibrary: function(local_job,param_dict) {
+      var condition_map = null;
+      if (local_job.hasOwnProperty("experimental_conditions") && local_job["experimental_conditions"].length > 0) {
+        condition_map = {};
+        var count = 1;
+        local_job["experimental_conditions"].forEach(function(cond) {
+          condition_map[toString(count)] = cond;
+          count++;
+        });
+      }
       for (var idx = 0; idx < local_job.paired_end_libs.length; idx++) {
         var lrec = {_type:'paired',type:'paired'};
         this.setupLibraryData(lrec,local_job.paired_end_libs[idx],'paired');
@@ -502,6 +511,9 @@ define([
           interleaved: { label: 'Interleaved', value: 0 },
           read_orientation_outward: { label: 'Mate Paired', value: 0 }
         };
+        if (condition_map) {
+          lrec.condition_name = condition_map[lrec.condition]; //lrec.condition is a string integer
+        }
         this.addLibraryRowFormFill(lrec, infoLabels, 'pairdata');
       }
       for (var idx = 0; idx < local_job.single_end_libs.length; idx++) {
@@ -511,6 +523,9 @@ define([
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
         };
+        if (condition_map) {
+          lrec.condition_name = condition_map[lrec.condition]; //lrec.condition is a string integer
+        }
         this.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
       }
       //load SRA names
@@ -579,6 +594,14 @@ define([
       }
       else {
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+      }
+      //add condition stuff
+      if (lrec.hasOwnProperty("condition")) {
+        lrec.icon = this.getConditionIcon(lrec.condition_name);
+        //var tdCond = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
+        //tdCond.libRecord = lrec;
+        //tdCond.innerHTML = "<div class='libraryrow'>" + lrec.condition + '</div>';
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
       }
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
       if (this.addedLibs.counter < this.startingRows) {

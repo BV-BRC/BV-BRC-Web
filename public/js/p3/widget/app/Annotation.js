@@ -53,7 +53,6 @@ define([
     onTaxIDChange: function (val) {
       this._autoNameSet = true;
       var tax_item = this.tax_idWidget.get('item');
-      console.log(tax_item);
       if (tax_item) {
         var tax_id = tax_item.taxon_id;
       }
@@ -132,16 +131,13 @@ define([
 
     getValues: function () {
       var values = this.inherited(arguments);
-      /*
-      values.scientific_name = this.output_nameWidget.get('displayedValue');
-      values.taxonomy_id = this.tax_idWidget.get('displayedValue');
-      */
+      //values.scientific_name = this.output_nameWidget.get('displayedValue');
+      //values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       values = this.checkBaseParameters(values);
       return values;
     },
 
     checkBaseParameters: function(values) {
-      //TODO: this.contigs should already be populated
       this.contigs = values.contigs;
       this.output_name = this.output_nameWidget.get('displayedValue');
       values.scientific_name = this.output_name;
