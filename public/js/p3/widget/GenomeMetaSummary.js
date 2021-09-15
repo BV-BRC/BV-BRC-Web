@@ -16,7 +16,8 @@ define([
 
   var categoryName = {
     host_group: 'Host',
-    isolation_country: 'Isolation Country'
+    isolation_country: 'Isolation Country',
+    collection_year: 'Collection Year'
   };
 
   return declare([SummaryWidget], {
@@ -41,7 +42,7 @@ define([
     onSetQuery: function (attr, oldVal, query) {
 
       return DataAPI.query('genome',
-        `${this.query}&facet((field,host_group),(field,isolation_country),(mincount,1))${this.baseQuery}`,
+        `${this.query}&facet((field,host_group),(field,isolation_country),(field,collection_year),(mincount,1))${this.baseQuery}`,
         {
           accept: 'application/solr+json'
         })
@@ -55,16 +56,17 @@ define([
       this._tableData = Object.keys(results).map(function (cat) {
         var categories = [];
         var others = { count: 0 };
-        Object.keys(results[cat]).forEach(function (d) {
-          if (d) {
+        var sorted = Object.entries(results[cat]).sort(([, a], [, b]) => b - a)
+        sorted.forEach(function ([label, val]) {
+          if (label) {
             if (categories.length < 4) {
               categories.push({
-                label: d,
-                count: results[cat][d],
-                link: '#view_tab=genomes&filter=eq(' + cat + ',' + encodeURIComponent(d) + ')'
+                label: label,
+                count: val,
+                link: `#view_tab=genomes&filter=eq(${cat},${encodeURIComponent(label)})`
               });
             }
-            others.count += results[cat][d];
+            others.count += val;
           }
         });
         if (others.count > 0) {
@@ -77,20 +79,20 @@ define([
 
       var data = {};
       Object.keys(results).forEach(function (cat) {
-        var m = results[cat];
         var categories = [];
         var others = { x: 'Others', y: 0 };
-        Object.keys(m).forEach(function (val) {
-          if (val) {
+        var sorted = Object.entries(results[cat]).sort(([, a], [, b]) => b - a)
+        sorted.forEach(function ([label, val]) {
+          if (label) {
             if (categories.length < 4) {
               categories.push({
-                text: val + ' (' + m[val] + ')',
-                link: '#view_tab=genomes&filter=eq(' + cat + ',' + encodeURIComponent(val) + ')',
-                x: val,
-                y: m[val]
+                text: `${label} (${val})`,
+                link: `#view_tab=genomes&filter=eq(${cat},${encodeURIComponent(val)})`,
+                x: label,
+                y: val
               });
             } else {
-              others.y += m[val];
+              others.y += val;
             }
           }
         });
@@ -181,6 +183,22 @@ define([
           });
         this.isolation_country_chart.connectToPlot('default', onClickEventHandler);
 
+        var cpCollectionYear = domConstruct.create('div', { 'class': 'pie-chart-widget collection_year' });
+        domConstruct.place(cpCollectionYear, this.chartNode, 'last');
+        this.collection_year_chart = new Chart2D(cpCollectionYear, {
+          title: 'Collection Year',
+          titleFontColor: '#424242',
+          titleFont: 'normal normal bold 12pt Tahoma',
+          titlePos: 'top'
+        })
+          .setTheme(Theme)
+          .addPlot('default', {
+            type: this.DonutChart,
+            radius: 70,
+            labelStyle: 'columns'
+          });
+        this.collection_year_chart.connectToPlot('default', onClickEventHandler);
+
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
             case 'host_group':
@@ -190,6 +208,10 @@ define([
             case 'isolation_country':
               this.isolation_country_chart.addSeries(key, this.data[key]);
               this.isolation_country_chart.render();
+              break;
+            case 'collection_year':
+              this.collection_year_chart.addSeries(key, this.data[key]);
+              this.collection_year_chart.render();
               break;
             default:
               break;
@@ -207,6 +229,10 @@ define([
             case 'isolation_country':
               this.isolation_country_chart.updateSeries(key, this.data[key]);
               this.isolation_country_chart.render();
+              break;
+            case 'collection_year':
+              this.collection_year_chart.updateSeries(key, this.data[key]);
+              this.collection_year_chart.render();
               break;
             default:
               break;
