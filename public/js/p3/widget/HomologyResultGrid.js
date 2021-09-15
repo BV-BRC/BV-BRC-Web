@@ -84,6 +84,7 @@ define([
                 }
             },
             "specialty_genes": {
+                container_type: "specialty_genes",
                 columns: {
                     'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
                     expand: {
@@ -137,6 +138,7 @@ define([
             if (store !== this.store) {
                 this.store = store;
                 aspect.after(this.store, "onSetLoaded", function () {
+                    console.log("onSetLoaded: ", _self.store.type)
                     _self.set('storeType',_self.store.type)
                     _self.refresh()
                 });
@@ -147,6 +149,7 @@ define([
             if (this.storeType !== type){
                 this.storeType = type;
                 this.container_type = this.result_types[type].container_type;
+                console.log("Set Container Type: ", this.container_type, "storetype: ", this.storeType )
                 this.container.set("containerType", this.container_type)
                 this.set("columns", this.result_types[type].columns)
             }

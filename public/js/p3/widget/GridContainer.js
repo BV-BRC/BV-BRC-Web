@@ -134,10 +134,13 @@ define([
     },
 
     _setContainerTypeAttr: function(containerType) {
-      console.log("setContainerType: ", containerType)
       this.containerType = containerType;
-      this.selectionActionBar.set("currentContainerWidget", this)
-      this.itemDetailPanel.set("currentContainerWidget",this)
+      if (this.selectionActionBar){
+        this.selectionActionBar.set("currentContainerWidget", this)
+      }
+      if (this.itemDetailPanel){
+        this.itemDetailPanel.set("containerWidget",this)
+      }
     },
 
     constructor: function () {
