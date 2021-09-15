@@ -17,7 +17,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Taxa Search',
-    dataKey: 'genome',
+    dataKey: 'taxa',
     resultUrlBase: '/view/TaxonList/?',
     resultUrlHash: '#view_tab',
     buildQuery: function () {
@@ -35,7 +35,7 @@ define([
 
       const taxonNameValue = this.taxonNameNode.get('value')
       if (taxonNameValue !== '') {
-        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
+        queryArr.push(`eq(taxon_id,${sanitizeInput(taxonNameValue)})`)
       }
 
       const taxonRankValue = this.taxonRankNode.get('value')
