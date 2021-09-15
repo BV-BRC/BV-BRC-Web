@@ -1,20 +1,20 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/topic',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', '../../util/QueryToEnglish',
-  '../PageGrid', '../formatter', '../PathwayGridContainer', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
+  '../PageGrid', '../formatter', '../StrainGridContainer', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
 ], function (
   declare, TabViewerBase, on, Topic,
   domClass, ContentPane, domConstruct, QueryToEnglish,
-  Grid, formatter, PathwayGridContainer,
+  Grid, formatter, StrainGridContainer,
   PathJoin, xhr, lang
 ) {
   return declare([TabViewerBase], {
-    baseClass: 'PathwayList',
+    baseClass: 'StrainList',
     disabled: false,
-    containerType: 'pathway_data',
+    containerType: 'strain_data',
     query: null,
-    defaultTab: 'pathway',
-    perspectiveLabel: 'Pathway List View',
+    defaultTab: 'strains',
+    perspectiveLabel: 'Strain List View',
     perspectiveIconClass: 'icon-selection-Sequence',
     totalFeatures: 0,
     warningContent: 'Your query returned too many results for detailed analysis.',
@@ -31,7 +31,7 @@ define([
       var _self = this;
       // console.log('spGeneList setQuery - this.query: ', this.query);
 
-      var url = PathJoin(this.apiServiceUrl, 'pathway', '?' + (this.query) + '&limit(1)'); // &facet((field,genome_id),(limit,35000))");
+      var url = PathJoin(this.apiServiceUrl, 'strain', '?' + (this.query) + '&limit(1)'); // &facet((field,genome_id),(limit,35000))");
 
       // console.log("url: ", url);
       xhr.get(url, {
@@ -51,7 +51,7 @@ define([
           console.warn('Invalid Response for: ', url);
         }
       }, function (err) {
-        console.error('Error Retreiving Pathways: ', err);
+        console.error('Error Retreiving Strains: ', err);
       });
 
     },
@@ -66,12 +66,12 @@ define([
 
     onSetQuery: function (attr, oldVal, newVal) {
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Pathways: </span>  ' + content;
+      this.queryNode.innerHTML = '<span class="queryModel">Strains: </span>  ' + content;
     },
 
     setActivePanelState: function () {
 
-      var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'pathway';
+      var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'strain';
       console.log('Active: ', active, 'state: ', this.state);
 
       var activeTab = this[active];
@@ -82,7 +82,7 @@ define([
       }
 
       switch (active) {
-        case 'pathway':
+        case 'strains':
           activeTab.set('state', this.state);
           break;
       }
@@ -99,21 +99,21 @@ define([
       this.inherited(arguments);
 
       this.watch('query', lang.hitch(this, 'onSetQuery'));
-      this.watch('totalFeatures', lang.hitch(this, 'onSetTotalPathway'));
+      this.watch('totalFeatures', lang.hitch(this, 'onSetTotalStrains'));
 
 
-      this.pathway = new PathwayGridContainer({
-        title: 'Pathways',
-        id: this.viewer.id + '_pathway',
+      this.strains = new StrainGridContainer({
+        title: 'Strains',
+        id: this.viewer.id + '_strain',
         state: this.state,
         disable: false
       });
-      this.viewer.addChild(this.pathway);
+      this.viewer.addChild(this.strains);
 
     },
-    onSetTotalPathway: function (attr, oldVal, newVal) {
+    onSetTotalStrains: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Pathway) ';
+      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Strains) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {
