@@ -99,6 +99,13 @@ define([
         this.viewer.removeChild(this.serology);
       }
 
+      // strains
+      if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
+        this.viewer.addChild(this.strains);
+      } else {
+        this.viewer.removeChild(this.strains);
+      }
+
       this.taxonomy = this.state.taxonomy = taxonomy;
       this.setActivePanelState();
     },
@@ -236,6 +243,7 @@ define([
         case 'structures':
         case 'surveillance':
         case 'serology':
+        case 'strains':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
           }));

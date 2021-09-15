@@ -1077,5 +1077,109 @@ define([], function () {
         field: 'comments', type: 'str', facet: false, facet_hidden: false, search: true
       },
     ],
+    'strain': [
+      {
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'family', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'genus', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'species', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'strain', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subtype', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'h_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'n_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'genome_ids', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genbank_accessions', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_name', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'lab_host', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'passage', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'geographic_group', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'isolation_country', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'collection_year', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'collection_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'season', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: '1_pb2', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '2_pb1', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '3_pa', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '4_ha', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '5_np', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '6_na', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '7_mp', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: '8_ns', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 's', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'm', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'l', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'others', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
   }
 })

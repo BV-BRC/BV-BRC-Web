@@ -2006,6 +2006,121 @@ define([
       return div;
     },
 
+    strain_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Taxon Lineage IDs',
+        text: 'taxon_lineage_ids',
+      }, {
+        name: 'Taxon Lineage Names',
+        text: 'taxon_lineage_names',
+      }, {
+        name: 'Family',
+        text: 'family',
+      }, {
+        name: 'Genus',
+        text: 'genus',
+      }, {
+        name: 'Species',
+        text: 'species',
+      }, {
+        name: 'Strain',
+        text: 'strain',
+      }, {
+        name: 'Subtype',
+        text: 'subtype',
+      }, {
+        name: 'H_type',
+        text: 'h_type',
+      }, {
+        name: 'N_type',
+        text: 'n_type',
+      }, {
+        name: 'Genome IDs',
+        text: 'genome_ids',
+      }, {
+        name: 'Genbank Accessions',
+        text: 'genbank_accessions',
+      }, {
+        name: 'Host Group',
+        text: 'host_group',
+      }, {
+        name: 'Host Common Name',
+        text: 'host_common_name',
+      }, {
+        name: 'Host Name',
+        text: 'host_name',
+      }, {
+        name: 'Lab Host',
+        text: 'lab_host',
+      }, {
+        name: 'Passage',
+        text: 'passage',
+      }, {
+        name: 'Geographic Group',
+        text: 'geographic_group',
+      }, {
+        name: 'Isolation Country',
+        text: 'isolation_country',
+      }, {
+        name: 'Collection Year',
+        text: 'collection_year',
+      }, {
+        name: 'Collection Date',
+        text: 'collection_date',
+      }, {
+        name: 'Season',
+        text: 'season',
+      }, {
+        name: '1_PB2',
+        text: '1_pb2',
+      }, {
+        name: '2_PB2',
+        text: '2_pb2',
+      }, {
+        name: '3_PA',
+        text: '3_pa',
+      }, {
+        name: '4_HA',
+        text: '4_ha',
+      }, {
+        name: '5_NP',
+        text: '5_np',
+      }, {
+        name: '6_NA',
+        text: '6_na',
+      }, {
+        name: '7_MP',
+        text: '7_mp',
+      }, {
+        name: '8_NS',
+        text: '8_ns',
+      }, {
+        name: 'S',
+        text: 's',
+      }, {
+        name: 'M',
+        text: 'm',
+      }, {
+        name: 'L',
+        text: 'l',
+      }, {
+        name: 'Others',
+        text: 'others',
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.strain, 'fa icon-contigs fa-2x', '/view/Genome/' + item.strain, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     transcriptomics_experiment_data: function (item, options) {
       options = options || {};
 
