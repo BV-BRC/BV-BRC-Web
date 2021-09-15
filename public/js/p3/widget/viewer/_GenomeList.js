@@ -273,16 +273,16 @@ define([
 
       this.overview = this.createOverviewPanel();
 
-      this.strains = new StrainGridContainer({
-        title: 'Strains',
-        id: this.viewer.id + '_strains',
-        state: this.state
-      });
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
         state: this.state,
         disable: false
+      });
+      this.strains = new StrainGridContainer({
+        title: 'Strains',
+        id: this.viewer.id + '_strains',
+        state: this.state
       });
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
@@ -290,12 +290,10 @@ define([
         state: this.state,
         disable: false
       });
-
       this.amr = new AMRPanelGridContainer({
         title: 'AMR Phenotypes',
         id: this.viewer.id + '_amr'
       });
-
       this.features = new FeatureGridContainer({
         title: 'Features',
         id: this.viewer.id + '_features',
@@ -353,8 +351,8 @@ define([
       });
 
       this.viewer.addChild(this.overview);
-      this.viewer.addChild(this.strains);
       this.viewer.addChild(this.genomes);
+      this.viewer.addChild(this.strains);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
