@@ -5,7 +5,7 @@ define([
   '../PathwayGridContainer', '../ProteinFamiliesContainer',
   '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../SequenceGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
+  '../SequenceGridContainer', '../StrainGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
@@ -13,7 +13,7 @@ define([
   PathwayGridContainer, ProteinFamiliesContainer,
   TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  SequenceGridContainer, PathJoin, QueryToEnglish, Dialog
+  SequenceGridContainer, StrainGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
     maxGenomesPerList: 10000,
@@ -273,6 +273,11 @@ define([
 
       this.overview = this.createOverviewPanel();
 
+      this.strains = new StrainGridContainer({
+        title: 'Strains',
+        id: this.viewer.id + '_strains',
+        state: this.state
+      });
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
@@ -331,19 +336,16 @@ define([
       //   title: 'Transcriptomics',
       //   id: this.viewer.id + '_transcriptomics'
       // });
-
       // this.interactions = new InteractionsContainer({
       //   title: 'Interactions',
       //   id: this.viewer.id + '_interactions',
       //   state: this.state
       // });
-
       this.surveillance = new SurveillanceGridContainer({
         title: 'Surveillance',
         id: this.viewer.id + '_surveillance',
         state: this.state
       });
-
       this.serology = new SerologyGridContainer({
         title: 'Serology',
         id: this.viewer.id + '_serology',
@@ -351,6 +353,7 @@ define([
       });
 
       this.viewer.addChild(this.overview);
+      this.viewer.addChild(this.strains);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
