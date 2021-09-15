@@ -9,22 +9,77 @@
     <div style="width:550px;margin:auto" class="formFieldsContainer">
       <div class="appBox appShadow">
         <div class="headerrow">
-          <label class="appBoxLabel">Host</label>
+          <label class="appBoxLabel">Keyword</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <!-- <label>Host</label><br> -->
-            <!-- <div data-dojo-type="p3/widget/InputFieldValueSelector" data-dojo-props="dataType:'genome',searchAttr:'host_name'" name="host_name"></div> -->
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Homo sapiens'" data-dojo-attach-point="hostNameNode" name="host_name" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Search term'" data-dojo-attach-point="keywordNode" name="keyword" style="width: 500px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Test Type</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Influenza A virus'" required="false" data-dojo-attach-point="testTypeNode" name="test_type" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Isolation Country</label>
+          <label class="appBoxLabel">Test Result</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <!-- <label>Isolation Country</label><br> -->
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. USA, or United Kingdom'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Positive'" required="false" data-dojo-attach-point="testResultNode" name="test_result" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Serotype</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. H1N1'" required="false" data-dojo-attach-point="serotypeNode" name="serotype" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Host Type</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Avian'" required="false" data-dojo-attach-point="hostTypeNode" name="host_type" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Host Common Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Chicken'" required="false" data-dojo-attach-point="hostCommonNameNode" name="host_common_name" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Host Species</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Gallus sp.'" required="false" data-dojo-attach-point="hostSpeciesNode" name="host_species" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Geographic Group</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. North America, or Europe'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Collection Country</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. USA, or United Kingdom'" data-dojo-attach-point="collectionCountryNode" name="collection_country" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -39,14 +94,14 @@
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Genome Length</label>
+          <label class="appBoxLabel">Collection Date</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
             <label>From</label>
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="genomeLengthFromNode" name="genome_length_from" style="width:80px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'YYYY'" data-dojo-attach-point="collectionDateFromNode" name="collection_date_from" style="width:80px"></div>
             <label>To</label>
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'YYYY'" data-dojo-attach-point="collectionDateToNode" name="collection_date_to" style="width:80px"></div>
           </div>
         </div>
         <div class="headerrow">

@@ -27,8 +27,8 @@ define([
     _setStateAttr: function (state) {
       this._set('state', state);
 
-      if (state.taxonomy) {
-        this.set('taxonomy', state.taxonomy);
+      if (state.taxon_id) {
+        this.set('taxonomy', state.taxon_id);
       }
 
       // widgets called by genome ids
@@ -58,41 +58,20 @@ define([
       }, this);
     },
 
-    _setTaxonomyAttr: function (genome) {
-      this.genome = genome;
-      this.createSummary(genome);
-      this.createExternalLinks(genome);
-      // this.getWikiDescription(genome);
+    _setTaxonomyAttr: function (taxon_id) {
+      xhr.get(PathJoin(this.apiServiceUrl, 'data/summary_by_taxon', taxon_id), {
+        headers: {
+          accept: 'application/json'
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (taxonomy) {
+        this.createSummary(taxonomy);
+      }));
     },
 
-    createSummary: function (genome) {
-      domConstruct.empty(this.virusDataSummaryNode);
-      domConstruct.place(DataItemFormatter(genome, 'virus_data', {}), this.virusDataSummaryNode, 'first');
-    },
-
-    getWikiDescription: function (genome) {
-
-      var wikiApiUrl = 'https://en.wikipedia.org/w/api.php';
-
-      // var token = '?action=centralauthtoken&format=json';
-      var query = '?action=query&prop=extracts&exintro=&format=json&titles=';
-
-      var origin = '&origin=' + window.location.origin;
-
-      var taxonName = genome.taxon_name.split(' ').join('+');
-
-      if (this.searchName != genome.taxon_name) {
-
-        when(xhr.get(wikiApiUrl + query + taxonName + origin, {
-          handleAs: 'json',
-          headers: {
-            'X-Requested-With': null,
-            Accept: 'application/json'
-          }
-        }), function (response) {
-          console.log('response: ', response);
-        });
-      }
+    createSummary: function (data) {
+      domConstruct.empty(this.taxonomySummaryNode);
+      domConstruct.place(DataItemFormatter(data, 'virus_data', {}), this.taxonomySummaryNode, 'first');
     },
 
     startup: function () {

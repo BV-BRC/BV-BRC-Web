@@ -61,7 +61,6 @@ define([
         } else if (d.alt_locus_tag) {
           idType = 'alt_locus_tag';
         }
-        // console.log("SET ID TYPE TO: ", idType)
       }
 
       return d[idType];
@@ -117,6 +116,8 @@ define([
     columns: null,
     enableAnchorButton: false,
     showAutoFilterMessage: true,
+    maxDownloadSize: 2500000,
+    containerType: "",
 
     _setColumnsAttr: function (columns) {
       if (this.grid) {
@@ -132,6 +133,16 @@ define([
       return this.columns || {};
     },
 
+    _setContainerTypeAttr: function(containerType) {
+      this.containerType = containerType;
+      if (this.selectionActionBar){
+        this.selectionActionBar.set("currentContainerWidget", this)
+      }
+      if (this.itemDetailPanel){
+        this.itemDetailPanel.set("containerWidget",this)
+      }
+    },
+
     constructor: function () {
       this._firstView = false;
     },
@@ -142,9 +153,7 @@ define([
     },
 
     onSetState: function (attr, oldState, state) {
-      // console.log("GridContainer onSetState: ", state, " oldState:", oldState);
       if (!state) {
-        // console.log("!state in grid container; return;")
         return;
       }
       var q = [];
@@ -259,22 +268,13 @@ define([
     _setQueryAttr: function (query) {
 
       if (query == this.query) {
-        // console.log("  Skipping Query Update (unchanged)");
         return;
       }
 
       this.query = query;
-      // this.query = query || "?keyword(*)"
-      // console.log("Query Set: ", query);
 
       if (this.grid) {
-        // console.log("    " + this.id + " Found Grid.")
-        // if (query != this.grid.query){
         this.grid.set('query', query);
-        // }
-      }
-      else {
-        // console.log("No Grid Yet");
       }
     },
 
@@ -287,10 +287,8 @@ define([
 
     visible: false,
     _setVisibleAttr: function (visible) {
-      // console.log("GridContainer setVisible: ", visible);
       this.visible = visible;
       if (this.visible && !this._firstView) {
-        // console.log("Trigger First View: ", this.id)
         this.onFirstView();
       }
     },
@@ -306,14 +304,11 @@ define([
           tooltip: 'Toggle Details Pane'
         },
         function (selection, container, button) {
-          // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
           var children = this.getChildren();
-          // console.log("Children: ", children);
           if (children.some(function (child) {
             return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
           }, this)) {
-            // console.log("Remove Item Detail Panel");
             this.removeChild(this.itemDetailPanel);
 
             query('.ActionButtonText', button).forEach(function (node) {
@@ -326,7 +321,6 @@ define([
             });
           }
           else {
-            // console.log("Re-add child: ", this.itemDetailPanel);
             this.addChild(this.itemDetailPanel);
 
             query('.ActionButtonText', button).forEach(function (node) {
@@ -350,8 +344,7 @@ define([
           validTypes: ['*'],
           tooltip: 'Open User Guide in a new Tab'
         },
-        function (selection, container) {
-          // console.log('USER GUIDE action', container);
+        function () {
           window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
         },
         true
@@ -366,7 +359,7 @@ define([
           tooltip: 'Download Selection',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'surveillance_data', 'serology_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
 
@@ -399,7 +392,7 @@ define([
           tooltip: 'Copy Selection to Clipboard.',
           tooltipDialog: copySelectionTT,
           max: 5000,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'surveillance_data', 'serology_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
           this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set('selection', selection);
@@ -428,10 +421,8 @@ define([
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data'],
+          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'Feature',
@@ -462,8 +453,6 @@ define([
           tooltip: 'Switch to Feature List View. Press and Hold for more options.',
           validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'FeatureList',
@@ -495,8 +484,6 @@ define([
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
           validContainerTypes: ['spgene_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'Feature',
@@ -513,8 +500,6 @@ define([
             href: '/view/Feature/' + sel.feature_id,
             target: 'blank'
           });
-          // console.log("View SP GENE: ", sel)
-          // Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
         },
         false
       ], [
@@ -529,13 +514,10 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          // console.log("ViewSpgeneEvidence, sel.feature_id", sel.feature_id);
           Topic.publish('/navigate', {
             href: '/view/SpecialtyGeneEvidence/' + sel.source_id,
             target: 'blank'
           });
-          // console.log("View SP GENE: ", sel)
-          // Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
         },
         false
       ], [
@@ -548,8 +530,6 @@ define([
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           validContainerTypes: ['genome_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Genome/' + selection[0].genome_id }),
               around: button,
@@ -560,8 +540,6 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          // console.log("sel: ", sel)
-          // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
           Topic.publish('/navigate', {
             href: '/view/Genome/' + sel.genome_id,
             target: 'blank'
@@ -577,10 +555,8 @@ define([
           multiple: false,
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data'],
+          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Genome/' + selection[0].genome_id }),
               around: button,
@@ -607,8 +583,6 @@ define([
           ignoreDataType: true,
           validContainerTypes: ['structure_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Structure/' + selection[0].pdb_id }),
               around: button,
@@ -619,8 +593,6 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          // console.log("sel: ", sel)
-          // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
           Topic.publish('/navigate', { href: '/view/Structure/' + sel.pdb_id, target: 'blank' });
         },
         false
@@ -637,8 +609,6 @@ define([
           ignoreDataType: true,
           validContainerTypes: ['surveillance_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Surveillance/' + selection[0].sample_identifier }),
               around: button,
@@ -649,8 +619,6 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          // console.log("sel: ", sel)
-          // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
           Topic.publish('/navigate', { href: '/view/Surveillance/' + sel.sample_identifier, target: 'blank' });
         },
         false
@@ -667,8 +635,6 @@ define([
           ignoreDataType: true,
           validContainerTypes: ['serology_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('PressAndHold');
-            console.log('Selection: ', selection, selection[0]);
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Serology/' + selection[0].sample_identifier }),
               around: button,
@@ -679,8 +645,6 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          // console.log("sel: ", sel)
-          // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
           Topic.publish('/navigate', { href: '/view/Serology/' + sel.sample_identifier, target: 'blank' });
         },
         false
@@ -694,38 +658,25 @@ define([
           validTypes: ['*'],
           multiple: true,
           min: 2,
-          max: 1000,
+          max: 0,
           tooltip: 'Switch to Genome List View. Press and Hold for more options.',
           ignoreDataType: true,
           validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'sequence_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            var map = {};
-            selection.forEach(function (sel) {
-              if (!map[sel.genome_id]) {
-                map[sel.genome_id] = true;
-              }
-            });
-            var genome_ids = Object.keys(map);
+            const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'GenomeList',
-                perspectiveUrl: '/view/GenomeList/?in(genome_id,(' + genome_ids.join(',') + '))'
+                perspectiveUrl: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
               }),
               around: button,
               orient: ['below']
             });
-
           }
         },
         function (selection) {
-          var map = {};
-          selection.forEach(function (sel) {
-            if (!map[sel.genome_id]) {
-              map[sel.genome_id] = true;
-            }
-          });
-          var genome_ids = Object.keys(map);
-          Topic.publish('/navigate', { href: '/view/GenomeList/?in(genome_id,(' + genome_ids.join(',') + '))' });
+          const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
+          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
         },
         false
       ],
@@ -739,8 +690,6 @@ define([
           tooltip: 'Switch to Feature List View. Press and Hold for more options.',
           validContainerTypes: ['sequence_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            // console.log("PressAndHold");
-            // console.log("Selection: ", selection, selection[0])
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'FeatureList',
@@ -752,7 +701,6 @@ define([
           }
         },
         function (selection) {
-          // console.log("selection: ", selection);
           var sel = selection[0];
           Topic.publish('/navigate', { href: '/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,' + sel.sequence_id + '),eq(feature_type,CDS))' });
         },
@@ -867,16 +815,12 @@ define([
           validContainerTypes: ['feature_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
         function (selection) {
-          // console.log("MSA Selection: ", selection);
           viewMSATT.selection = selection;
           popup.open({
             popup: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
             around: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.button,
             orient: ['below']
           });
-          // console.log("OPEN MSA VIEWER");
-          // Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))", target: "blank"});
-
         },
         false
       ], [
@@ -1024,8 +968,6 @@ define([
           tooltip: 'View Experiment'
         },
         function (selection) {
-          // console.log("this.currentContainerType: ", this.currentContainerType, this);
-          // console.log("View Gene List", selection);
           var experimentIdList = selection.map(function (exp) {
             return exp.eid;
           });
@@ -1048,8 +990,6 @@ define([
           tooltip: 'View Experiment List'
         },
         function (selection) {
-          // console.log("this.currentContainerType: ", this.currentContainerType, this);
-          // console.log("View Gene List", selection);
           var experimentIdList = selection.map(function (exp) {
             return exp.eid;
           });
@@ -1072,8 +1012,6 @@ define([
           tooltip: 'View Experiment Gene List'
         },
         function (selection) {
-          // console.log("this.currentContainerType: ", this.currentContainerType, this);
-          // console.log("View Gene List", selection);
           var experimentIdList = selection.map(function (exp) {
             return exp.eid;
           });
@@ -1233,12 +1171,10 @@ define([
           validContainerTypes: ['genome_data', 'feature_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data']
         },
         function (selection, containerWidget) {
-          // console.log("Add Items to Group", selection);
           var dlg = new Dialog({ title: 'Add selected items to group' });
           var type;
 
           if (!containerWidget) {
-            // console.log("Container Widget not setup for addGroup");
             return;
           }
 
@@ -1340,8 +1276,6 @@ define([
           tooltip: 'Switch to Taxonomy View. Press and Hold for more options.',
           validContainerTypes: ['taxonomy_data', 'taxon_data'],
           pressAndHold: function (selection, button, opts, evt) {
-            // console.log("PressAndHold");
-            // console.log("Selection: ", selection, selection[0])
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'Taxonomy',
@@ -1409,7 +1343,6 @@ define([
           validContainerTypes: ['feature_data'],
           tooltip: 'View Feature Details Menu',
           pressAndHold: function (selection, button, opts, evt) {
-            console.log('in pressAndHold');
             popup.open({
               popup: new FeatureDetailsTooltipDialog({
                 perspective: 'FeatureDetails'
@@ -1421,7 +1354,6 @@ define([
           }
         },
         function (selection) {
-          console.log('in selection');
           var genome_id = selection[0].genome_id;
           var selectionList = selection.map(function (sel) {
             return sel.feature_id;
@@ -1541,7 +1473,6 @@ define([
     },
 
     createFilterPanel: function () {
-      // console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
       this.containerActionBar = this.filterPanel = new ContainerActionBar({
         region: 'top',
@@ -1558,11 +1489,7 @@ define([
 
       // console.log("gridcontainer startup()", this.state)
       this.filterPanel.watch('filter', lang.hitch(this, function (attr, oldVal, newVal) {
-        // console.log("FILTER PANEL SET FILTER", arguments)
-        // console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
-        // console.log("setFilter Watch() callback", newVal);
         if ((oldVal != newVal) && (newVal != this.state.hashParams.filter)) {
-          // console.log("Emit UpdateHash: ", newVal);
           on.emit(this.domNode, 'UpdateHash', {
             bubbles: true,
             cancelable: true,
@@ -1609,8 +1536,6 @@ define([
       this.grid = new this.gridCtor(o, this);
 
       if (this.enableFilterPanel) {
-        // console.log("Create FilterPanel: ", this.state);
-
         this.createFilterPanel();
       }
 
@@ -1657,7 +1582,7 @@ define([
     },
 
     getAllSelection: function (query) {
-      console.log('getAll Query: ', query);
+      // console.log('getAll Query: ', query);
     },
 
     listen: function () {
@@ -1667,7 +1592,7 @@ define([
           var row = evt.grid.row(rownum);
           if (row.data) {
             if (this.grid.primaryKey) {
-              if (!this.grid.selectedData.primaryKey || this.grid.selectedData.primaryKey == this.grid.primaryKey) {
+              if (this.selectedData && (!this.grid.selectedData.primaryKey || this.grid.selectedData.primaryKey == this.grid.primaryKey)) {
                 if (!this.grid.selectedData.primaryKey) {
                   this.grid.selectedData.primaryKey = this.grid.primaryKey;
                 }

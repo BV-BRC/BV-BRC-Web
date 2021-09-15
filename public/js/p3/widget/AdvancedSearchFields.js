@@ -3,6 +3,9 @@ define([], function () {
   return {
     'genome': [
       {
+        field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
@@ -42,7 +45,7 @@ define([], function () {
         field: 'species', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'genome_status', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'genome_status', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'completion_date', type: 'str', facet: false, facet_hidden: true, search: true
@@ -61,6 +64,27 @@ define([], function () {
       },
       {
         field: 'mlst', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'segment', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'subtype', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'h_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'n_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'clade', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subclade', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'other_typing', type: 'str', facet: false, facet_hidden: true, search: true
@@ -99,13 +123,13 @@ define([], function () {
         field: 'sequencing_centers', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'sequencing_platform', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'sequencing_platform', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'sequencing_depth', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'assembly_method', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'assembly_method', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'chromosomes', type: 'numeric', facet: false, facet_hidden: true, search: true
@@ -177,13 +201,13 @@ define([], function () {
         field: 'geographic_location', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true
@@ -244,9 +268,6 @@ define([], function () {
       },
       {
         field: 'date_inserted', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
     'genome_feature': [
@@ -317,10 +338,10 @@ define([], function () {
         field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'plfam', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'plfam_id', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'pgfam', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'pgfam_id', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'sog_id', type: 'str', facet: true, facet_hidden: false, search: true
@@ -398,6 +419,62 @@ define([], function () {
       },
       {
         field: 'public', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+    ],
+    'sp_gene': [
+      {
+        field: 'evidence', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'property', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'source', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'patric_id', type: 'numeric', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'source_id', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'organism', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'classification', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'antibiotics_class', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'antibiotics', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'pubmed', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'subj_coverage', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'query_coverage', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'identity', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'e_value', type: 'str', facet: false, facet_hidden: false, search: true
       },
     ],
     'protein_feature': [
@@ -546,6 +623,109 @@ define([], function () {
       },
       {
         field: 'release_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
+    'pathway': [
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sequence_id', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'annotation', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'patric_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'ec_number', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'ec_description', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathway_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathway_name', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'pathway_class', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+    ],
+    'subsystem': [
+      {
+        field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'patric_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'role_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'role_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subsystem_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'subsystem_name', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'superclass', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'class', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'subclass', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'active', type: 'str', facet: true, facet_hidden: false, search: true
       },
     ],
     'surveillance': [

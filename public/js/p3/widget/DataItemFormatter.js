@@ -440,46 +440,73 @@ define([
       return div;
     },
 
+    bacteria_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Genomes / Segments',
+        text: 'count'
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      }];
+
+      var div = domConstruct.create('div');
+      // displayHeader(div, item.taxon_name, 'fa icon-taxonomy fa-2x', '/view/Taxonomy/' + item.taxon_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     virus_data: function (item, options) {
       options = options || {};
 
       var columns = [{
         name: 'Families',
-        text: '',
+        text: 'unique_family'
       }, {
         name: 'Genera',
-        text: '',
+        text: 'unique_genus'
       }, {
         name: 'Species',
-        text: '',
+        text: 'unique_species'
       }, {
-        name: 'Strains (GenBank)',
-        text: '',
+        name: 'Strains',
+        text: 'unique_strain'
       }, {
-        name: 'Sequences (GenBank)',
-        text: ''
+        name: 'Genomes / Segments',
+        text: 'count'
       }, {
-        name: 'Proteins (GenBank and UniProt)',
-        text: ''
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
       }, {
         name: '3D Protein Structures (PDB)',
-        text: '',
-      }, {
-        name: 'Experimentally Determined Epitopes (IEDB)',
-        text: '',
-      }, {
-        name: 'Genomes with Clinical Metadata (NIAID GSCID, manual curation)',
-        text: '',
-      }, {
-        name: 'Gene',
-        text: ''
-      }, {
-        name: 'Host Factor Experiments (NIAID Systems Biology, ViPR DBPs)',
-        text: ''
+        text: 'PDB'
       }];
 
       var div = domConstruct.create('div');
-      displayHeader(div, 'Viruses', 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      // displayHeader(div, item.taxon_name, 'fa icon-taxonomy fa-2x', '/view/Taxonomy/' + item.taxon_id, options);
       displayDetail(item, columns, div, options);
 
       return div;
@@ -1001,6 +1028,69 @@ define([
       return div;
     },
 
+    pathwayTab_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id'
+      },{
+        name: 'Genome Name',
+        text: 'genome_name'
+      },{
+        name: 'Taxon ID',
+        text: 'taxon_id'
+      },{
+        name: 'Sequence ID',
+        text: 'sequence_id'
+      },{
+        name: 'Accession',
+        text: 'accession'
+      },{
+        name: 'Annotation',
+        text: 'annotation'
+      },{
+        name: 'Feature ID',
+        text: 'feature_id'
+      },{
+        name: 'Alt Locus Tag',
+        text: 'alt_locus_tag'
+      },{
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag'
+      },{
+        name: 'Gene',
+        text: 'gene'
+      },{
+        name: 'PATRIC ID',
+        text: 'patric_id'
+      },{
+        name: 'Product',
+        text: 'product'
+      },{
+        name: 'EC Number',
+        text: 'ec_number'
+      },{
+        name: 'EC Description',
+        text: 'ec_description'
+      },{
+        name: 'Pathway ID',
+        text: 'pathway_id'
+      },{
+        name: 'Pathway Name',
+        text: 'pathway_name'
+      },{
+        name: 'Pathway Class',
+        text: 'pathway_class'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pathway_name, 'fa icon-git-pull-request fa-2x', '/view/Pathways/' + item.pathway_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     subsystem_data: function (item, options) {
       options = options || {};
 
@@ -1065,6 +1155,68 @@ define([
       var div = domConstruct.create('div');
       displayHeader(div, item.subsystem_name, 'fa icon-git-pull-request fa-2x', '/view/Subsystems/' + item.subsystem_id, options);
       displayDetailSubsystems(item, columns, div, options);
+
+      return div;
+    },
+
+    subsystemTab_data: function (item, options) {
+      options = options || {};
+
+      var columns;
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name'
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id'
+      }, {
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Role ID',
+        text: 'role_id'
+      }, {
+        name: 'Role Name',
+        text: 'role_name'
+      }, {
+        name: 'Subsystem ID',
+        text: 'subsystem_id'
+      }, {
+        name: 'Subsystem Name',
+        text: 'subsystem_name'
+      },{
+        name: 'Superclass',
+        text: 'superclass'
+      }, {
+        name: 'Class',
+        text: 'class'
+      }, {
+        name: 'Subclass',
+        text: 'subclass'
+      }, {
+        name: 'Active',
+        text: 'active'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.subsystem_name, 'fa icon-git-pull-request fa-2x', '/view/SubsystemList/' + item.subsystem_id, options);
+      displayDetail(item, columns, div, options);
 
       return div;
     },
@@ -2276,6 +2428,10 @@ define([
       }, {
         name: 'Growth Rate',
         text: 'growth_rate'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');
@@ -2314,6 +2470,10 @@ define([
       }, {
         name: 'Growth Rate',
         text: 'growth_rate'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');

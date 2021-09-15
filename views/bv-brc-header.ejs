@@ -87,11 +87,11 @@
                                 <% for (var i = 0; i < servicesMiddle;i++){ %>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
+                                        <a class="" href="<%- services[i].href %>" title="<%- services[i].name %> overview"><%- services[i].name %></a>
                                     </span>
                                     <span class="menuItem half">
                                         <% if (services[servicesMiddle + i]) { %>
-                                        <a class="navigationLink" title="<%- services[servicesMiddle + i].name %> overview"
+                                        <a class="" title="<%- services[servicesMiddle + i].name %> overview"
                                            href="<%- services[servicesMiddle + i].href %>"><%- services[servicesMiddle + i].name %></a>
                                         <% } %>
                                     </span>
@@ -100,16 +100,16 @@
                                 <br>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="/view/Taxonomy/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                        <a class="" href="/view/Bacteria/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
+                                        <a class="" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="/view/Taxonomy/10239" title="Overview page for all Phage genomes">All Phages</a>
+                                        <a class="" href="/view/Taxonomy/10239" title="Overview page for all Phage genomes">All Phages</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                                        <a class="" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
                                             title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
                                 </div>
                             </div>
@@ -122,11 +122,11 @@
                                 <% for (var i = 0; i < virusMiddle;i++){ %>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
+                                        <a class="" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
                                     </span>
                                     <span class="menuItem half">
                                         <% if (virus[virusMiddle + i]) { %>
-                                        <a class="navigationLink" title="<%- virus[virusMiddle + i].name %> overview"
+                                        <a class="" title="<%- virus[virusMiddle + i].name %> overview"
                                            href="<%- virus[virusMiddle + i].href %>"><%- virus[virusMiddle + i].name %></a>
                                         <% } %>
                                     </span>
@@ -140,11 +140,11 @@
                                 <% for (var i = 0; i < featuredVirusMiddle;i++){ %>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="<%- featured_virus[i].href %>" title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
+                                        <a class="" href="<%- featured_virus[i].href %>" title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
                                     </span>
                                     <span class="menuItem half">
                                         <% if (featured_virus[featuredVirusMiddle + i]) { %>
-                                        <a class="navigationLink" title="<%- featured_virus[featuredVirusMiddle + i].name %> overview"
+                                        <a class="" title="<%- featured_virus[featuredVirusMiddle + i].name %> overview"
                                            href="<%- featured_virus[featuredVirusMiddle + i].href %>"><%- featured_virus[featuredVirusMiddle + i].name %></a>
                                         <% } %>
                                     </span>
@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
+                <!-- <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
                     <span>DATA</span>
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div>
@@ -193,24 +193,26 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
                     <span>SEARCHES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div class="menuHeader">Advanced Search</div>
-                        <div><a class="navigationLink" href="/searches/GenomeSearch">Genomes</a></div>
-                        <div><a class="navigationLink" href="/searches/GenomicFeatureSearch">Genomic Features</a></div>
-                        <div><a class="navigationLink" href="/searches/GenomicSequenceSearch">Genomic Sequences</a></div>
+                        <div class="menuHeader" style="padding-right: 20px;">Advanced Search</div>
+                        <div><a class="navigationLink" href="/searches/TaxaSearch">Taxa</a></div>
+                        <div><a class="navigationLink" href="/searches/GenomeSearch">Genome</a></div>
+                        <div><a class="navigationLink" href="/searches/GenomicFeatureSearch">Gene/Protein</a></div>
+                        <!-- <div><a class="navigationLink" href="/searches/GenomicSequenceSearch">Genomic Sequences</a></div> -->
                         <div><a class="navigationLink" href="/searches/SpecialtyGeneSearch">Specialty Genes</a></div>
                         <div><a class="navigationLink" href="/searches/ProteinFeatureSearch">Protein Features</a></div>
                         <div><a class="navigationLink" href="/searches/ProteinStructureSearch">Protein Structures</a></div>
+                        <div><a class="navigationLink" href="/searches/PathwaySearch">Pathways</a></div>
+                        <div><a class="navigationLink" href="/searches/SubsystemSearch">Subsystems</a></div>
                         <div><a class="navigationLink" href="/searches/SurveillanceSearch">Surveillance</a></div>
                         <div><a class="navigationLink" href="/searches/SerologySearch">Serology</a></div>
-                        <div><a class="navigationLink" href="/searches/TaxaSearch">Taxa</a></div>
-                        <div><a class="navigationLink" href="/searches/TranscriptomicExperimentSearch">Transcriptomics Experiments</a></div>
-                        <div><a class="navigationLink" href="/searches/AntibioticSearch">Antibiotics</a></div>
+                        <!-- <div><a class="navigationLink" href="/searches/TranscriptomicExperimentSearch">Transcriptomics Experiments</a></div> -->
+                        <!-- <div><a class="navigationLink" href="/searches/AntibioticSearch">Antibiotics</a></div> -->
                     </div>
                 </div>
 
@@ -317,7 +319,7 @@
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div><a class="DialogButton" rel="quickstart:">Quickstart Video</a></div>
-                        <div><a class="navigationLinkOut" href="https://alpha.bv-brc.org/docs/user_guides/index.html">User Guides</a></div>
+                        <div><a class="navigationLinkOut" href="https://alpha.bv-brc.org/docs/quick_references/index.html">Quick References</a></div>
                         <div><a class="navigationLinkOut" href="https://alpha.bv-brc.org/docs/tutorial/index.html">Tutorials</a></div>
                         <div><a class="navigationLinkOut" href="https://alpha.bv-brc.org/docs/common_tasks/index.html">Common Tasks</a></div>
                         <div><a class="navigationLinkOut" href="https://alpha.bv-brc.org/docs/cli_tutorial/index.html">CLI Tutorial</a></div>
@@ -355,9 +357,9 @@
 
             <!-- <div class="navbar-flex-space" style="flex-grow: 0.85;"></div> -->
 
-            <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 3px 10px 0 0;">
-                <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
-                <div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Sign In</div>
+            <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 8px 10px 0 0;">
+                <a class="LoginButton navigationLink" href="/register">Register</a>
+                <a class="LoginButton navigationLink" href="/login">Sign In</a>
             </div>
 
             <!-- <div>
@@ -399,5 +401,6 @@
 
     </div>
 
-    <div class="msg-box-below-topnav"><strong>Welcome to BV-BRC Alpha website. This site is used for active development and testing of the BV-BRC resource. Hence, the data and functionality may change frequently and without notice.</strong></div>
-  </div>
+    <!-- <div class="msg-box-below-topnav"><strong>Welcome to the BV-BRC Alpha website. This site is used for active development and testing of the BV-BRC resource. Hence, the data and functionality may change frequently and without notice.</strong></div> -->
+    <!-- <div class="msg-box-below-topnav"><strong>Welcome to the BV-BRC Beta website. This site is used to seek early community feedback for the BV-BRC resource, which is still under development. Please note that the data and functionality on this site may change frequently and without notice.</strong></div> -->
+</div>

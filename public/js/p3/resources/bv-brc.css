@@ -438,8 +438,7 @@
 
 }
 
-#bv-brc-home .announcements,
-#virus-announcements {
+#bv-brc-home .announcements {
   background: var(--white-bg);
   padding: 15px 10px;
   border-bottom: 4px solid var(--green);
@@ -449,16 +448,14 @@
   margin-top: 5px;
 }
 
-#bv-brc-home .announcements #slides,
-#virus-announcements #slides {
+#bv-brc-home .announcements #slides {
   position: relative;
   padding: 0px;
   margin: 0px;
   list-style-type: none;
 }
 
-#bv-brc-home .announcements #slides .slide,
-#virus-announcements #slides .slide {
+#bv-brc-home .announcements #slides .slide {
   position: absolute;
   left: 0px;
   top: 0px;
@@ -471,8 +468,7 @@
   transition: opacity 1s;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-title,
-#virus-announcements #slides .slide .feed-title{
+#bv-brc-home .announcements #slides .slide .feed-title {
   font-family: "Roboto", Arial, Helvetica, sans-serif;
   font-size: 11pt;
   font-weight: 400;
@@ -482,32 +478,27 @@
   margin: 0px;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-description,
-#virus-announcements #slides .slide .feed-description {
+#bv-brc-home .announcements #slides .slide .feed-description {
   font-family: "Roboto Slab", Arial, Helvetica, sans-serif;
   font-size: 10pt !important;
   padding: 5px 0px;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-description a,
-#virus-announcements #slides .slide .feed-description a {
+#bv-brc-home .announcements #slides .slide .feed-description a {
   text-decoration: underline;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-img,
-#virus-announcements #slides .slide .feed-img {
+#bv-brc-home .announcements #slides .slide .feed-img {
   width: 100%;
   max-height: 170px!important;
 }
 
-#bv-brc-home .announcements #slides .current-slide,
-#virus-announcements #slides.current-slide {
+#bv-brc-home .announcements #slides .current-slide {
   opacity: 1;
   visibility: visible;
 }
 
-#bv-brc-home .announcements #dot-navigation,
-#virus-announcements #dot-navigation {
+#bv-brc-home .announcements #dot-navigation {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -518,8 +509,7 @@
           justify-content: center;
 }
 
-#bv-brc-home .announcements #dot-navigation .dot,
-#virus-announcements #dot-navigation .dot {
+#bv-brc-home .announcements #dot-navigation .dot {
   height: 20px;
   width: 20px;
   background: var(--main-bg);
@@ -530,8 +520,7 @@
   cursor: pointer;
 }
 
-#bv-brc-home .announcements #dot-navigation .current-dot,
-#virus-announcements #dot-navigation .current-dot {
+#bv-brc-home .announcements #dot-navigation .current-dot {
   background: var(--blue);
   border: 2px solid var(--green);
 }

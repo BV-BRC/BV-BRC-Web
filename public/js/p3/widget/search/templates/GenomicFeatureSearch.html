@@ -9,11 +9,21 @@
     <div style="width:550px;margin:auto" class="formFieldsContainer">
       <div class="appBox appShadow">
         <div class="headerrow">
+          <label class="appBoxLabel">Keyword</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Search term'" data-dojo-attach-point="keywordNode" name="keyword" style="width: 500px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="appBox appShadow">
+        <div class="headerrow">
           <label class="appBoxLabel">Pathogen Group</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'Influenza A virus'" required="false" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -29,7 +39,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Human, or Non-human Mammal'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Human, or Non-human Mammal'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -37,7 +47,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Human, or Pig'" data-dojo-attach-point="hostNameNode" name="host_name" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Human, or Pig'" data-dojo-attach-point="hostNameNode" name="host_name" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -45,7 +55,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. North America, or Europe'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. North America, or Europe'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -73,9 +83,9 @@
         <div class="appRow">
           <div class="appFieldLong">
             <label>From</label>
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="genomeLengthFromNode" name="genome_length_from" style="width:80px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthFromNode" name="genome_length_from" style="width:80px"></div>
             <label>To</label>
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
           </div>
         </div>
       </div>
@@ -85,7 +95,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'CDS'" data-dojo-attach-point="featureTypeNode" name="feature_type" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'CDS'" data-dojo-attach-point="featureTypeNode" name="feature_type" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">

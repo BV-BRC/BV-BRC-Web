@@ -1,11 +1,17 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/request',
-  './TabViewerBase', '../../util/QueryToEnglish', '../../util/PathJoin',
-  '../GenomeListOverview', '../GenomeGridContainer'
+  'dojo/_base/declare', 'dojo/_base/lang',
+  './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
+  '../GenomeListOverview', '../GenomeGridContainer',
+  '../AMRPanelGridContainer', '../SequenceGridContainer',
+  '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
+  '../PathwayGridContainer', '../TranscriptomicsContainer',  '../SubsystemGridContainer'
 ], function (
-  declare, lang, xhr,
-  TabViewerBase, QueryToEnglish, PathJoin,
-  GenomeListOverview, GenomeGridContainer
+  declare, lang,
+  TabViewerBase, QueryToEnglish, DataAPI,
+  GenomeListOverview, GenomeGridContainer,
+  AMRPanelGridContainer, SequenceGridContainer,
+  FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+  PathwaysContainer, TranscriptomicsContainer, SubSystemsContainer
 ) {
 
   return declare([TabViewerBase], {
@@ -19,54 +25,34 @@ define([
         id: this.viewer.id + '_overview'
       });
     },
-    _setQueryAttr: function (query, force) {
-      if (!query) {
-        console.log('GENOME LIST SKIP EMPTY QUERY: ');
-        return;
-      }
-      if (query && !force && (query == this.query) ) {
-        return;
-      }
-
-      this._set('query', query);
-      var _self = this;
-
-      var url = PathJoin(this.apiServiceUrl, 'genome', '?' + (this.query) + '&select(genome_id)&limit(' + this.maxGenomesPerList + 1 + ')');
-
-      xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
-        headers: {
-          accept: 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        handleAs: 'json',
-        'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-        data: (this.query) + '&select(genome_id)&limit(1)'
-
-      }).then(function (res) {
-        if (res && res.response && res.response.docs) {
-          var genomes = res.response.docs;
-          if (genomes) {
-            _self._set('total_genomes', res.response.numFound);
-          }
-        } else {
-          console.warn('Invalid Response for: ', url);
-        }
-      }, function (err) {
-        console.error('Error Retreiving Genomes: ', err);
-      });
-    },
     onSetState: function (attr, oldVal, state) {
       this.inherited(arguments);
-      // console.log(state.search)
-      this.set('query', state.search);
+      if (!this.query) {
+        this.set('query', state.search);
+      } else {
+        if (this.query !== state.search && state.search !== '') {
+          this.set('query', state.search);
+        }
+      }
+      if (this.state.search === '' && this.query !== '') {
+        this.state.search = this.query
+      }
+
+      // update genome count on header
+      DataAPI.query('genome', state.search, { select: ['genome_id'], limit: 1 })
+        .then(lang.hitch(this, (res) => {
+          this._set('total_genomes', res.total_items);
+        }))
 
       this.setActivePanelState();
     },
     onSetQuery: function (attr, oldVal, newVal) {
-      const content = QueryToEnglish(newVal);
-      // this.overview.set('content', '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + '</div>');
+      const q = newVal.split('&').filter(op => op.includes('genome(')).map(op => {
+        const part = op.replace('genome(', '')
+        return part.substring(0, part.length - 1)
+      }).join('')
+
+      const content = QueryToEnglish(q);
       this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
@@ -81,13 +67,7 @@ define([
         return;
       }
       const activeQueryState = lang.mixin({}, this.state, { hashParams: lang.mixin({}, this.state.hashParams) })
-      // console.log(activeTab, activeQueryState)
 
-      // switch (active) {
-      //   default:
-      //     activeTab.set('state', activeQueryState);
-      //     break;
-      // }
       activeTab.set('state', activeQueryState)
 
       if (activeTab) {
@@ -103,7 +83,7 @@ define([
       this.watch('query', lang.hitch(this, 'onSetQuery'))
       this.watch('total_genomes', lang.hitch(this, 'onSetTotalGenomes'))
 
-      // this.overview = this.createOverviewPanel()
+      this.overview = this.createOverviewPanel()
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
@@ -111,8 +91,65 @@ define([
         disable: false
       })
 
-      // this.viewer.addChild(this.overview)
+      this.sequences = new SequenceGridContainer({
+        title: 'Sequences',
+        id: this.viewer.id + '_sequences',
+        state: this.state,
+        disable: false
+      });
+
+      this.amr = new AMRPanelGridContainer({
+        title: 'AMR Phenotypes',
+        id: this.viewer.id + '_amr',
+        disabled: false,
+        state: this.state
+      });
+
+      this.features = new FeatureGridContainer({
+        title: 'Features',
+        id: this.viewer.id + '_features',
+        disabled: false
+      });
+      this.specialtyGenes = new SpecialtyGeneGridContainer({
+        title: 'Specialty Genes',
+        id: this.viewer.id + '_specialtyGenes',
+        disabled: false,
+        state: this.state
+      });
+      this.pathways = new PathwaysContainer({
+        title: 'Pathways',
+        id: this.viewer.id + '_pathways',
+        disabled: false
+      });
+
+      this.subsystems = new SubSystemsContainer({
+        title: 'Subsystems',
+        id: this.viewer.id + '_subsystems',
+        disabled: false
+      });
+
+      // this.proteinFamilies = new ProteinFamiliesContainer({
+      //   title: 'Protein Families',
+      //   id: this.viewer.id + '_proteinFamilies',
+      //   disabled: false
+      // });
+      // this.transcriptomics = new TranscriptomicsContainer({
+      //   title: 'Transcriptomics',
+      //   id: this.viewer.id + '_transcriptomics',
+      //   disabled: false,
+      //   state: this.state
+      // })
+
+      this.viewer.addChild(this.overview)
       this.viewer.addChild(this.genomes)
+      this.viewer.addChild(this.sequences);
+      this.viewer.addChild(this.amr);
+      this.viewer.addChild(this.features);
+      this.viewer.addChild(this.specialtyGenes);
+      // this.viewer.addChild(this.proteinFamilies);
+      this.viewer.addChild(this.pathways);
+      this.viewer.addChild(this.subsystems);
+      // this.viewer.addChild(this.transcriptomics);
     }
   });
 });

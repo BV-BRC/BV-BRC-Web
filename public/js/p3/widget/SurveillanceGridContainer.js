@@ -29,7 +29,6 @@ define([
     maxGenomeCount: 10000,
     dataModel: 'surveillance',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     defaultFilter: '',
     tooltip: '',
     getFilterPanel: function (opts) {

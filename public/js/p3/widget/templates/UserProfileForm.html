@@ -1,46 +1,65 @@
-<div style="max-width:400px; overflow-y:auto">
-  <div class="regMessage" style="display:none; border:2px">
-    <h2 style="margin:0px;padding:4px;font-size:1.2em;text-align:center;background:#eee;">PATRIC User Registration</h2>
-    <p>Your registration has been received. An email has been sent containing the remainder of the registration process.</p>
-    <hr>
-    <p>&nbsp;</p>
-  </div>
-  <form dojoAttachPoint="containerNode" class="${baseClass} PanelForm" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-    <div class="UserProfileForm" style="max-width:380px; display:block">
+<div class="${baseClass}" style="max-width:600px; overflow-y:auto; padding:16px;">
+  <form dojoAttachPoint="containerNode" class="PanelForm" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    <div data-dojo-attach-point="registrationHeading" style="max-width:580px;">
+      <h2>Registration</h2>
+      <div style="margin:4px;">
+        Review our <a href="https://docs.patricbrc.org/privacy_policy.html">Privacy Policy</a>.
+      </div>
+      <div style="margin:4px;margin-bottom:16px;">
+        <span style="color:red;">*</span>= required
+      </div>
+    </div>
+    <div class="" data-dojo-attach-point="mainForm" style="max-width:580px; display:block; border: 1px solid gray;margin:4px;margin-top: 28px;margin-bottom:28px; padding:4px;padding-top:8px;">
+      <span style="position:relative;top: -17px; border: none; background: #fff;padding: 4px; color: #333;font-weight:600;">Identification</span>
       <table style="border-spacing:0">
         <tbody>
-          <tr><th style="padding:0">FIRST NAME</th><th style="padding:0">LAST NAME</th></tr>
-          <tr><td style="padding-top:0">
-            <div style="width:100%" data-dojo-type="dijit/form/ValidationTextBox" name="first_name" data-dojo-attach-point="fname" value="" data-dojo-props="placeholder:'First Name',promptMessage:'Enter your first name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true">
-            </div>
-          </td><td style="padding-top:0">
-            <div data-dojo-type="dijit/form/ValidationTextBox" style="width:100%" name="last_name" value="" data-dojo-attach-point="lname" data-dojo-props="placeholder:'Last Name',promptMessage:'Enter your last name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true">
-            </div>
-          </td></tr>
-          <tr><th style="padding:0">EMAIL ADDRESS</th><th class="usernamehdr" style="padding:0" data-dojo-attach-point="UNH">USERNAME</th></tr>
-          <tr><td style="padding-top:0">
-            <input type="text" name="email" style="width:100%" data-dojo-attach-point="emailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Email Address',promptMessage:'Enter your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: fieldChanged">
-          </td><td style="padding-top:0">
-            <input class="useridField" type="text" style="display:block; width:100%" name="username" data-dojo-attach-point="UNF"
+            <tr><td>* Email:</td><td><input type="text" name="email" style="width:100%" data-dojo-attach-point="emailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Email Address',promptMessage:'Enter your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: fieldChanged"></td></tr>
+            <!-- <tr><td>* Retype Email:</td><td><input type="text" name="repeat_email" style="width:100%" data-dojo-attach-point="repeatEmailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Repeat Email Address',promptMessage:'Repeat your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: fieldChanged"></td></tr> -->
+            <tr><td>* Username:</td><td data-dojo-attach-point="usernameContainer"><input class="useridField" type="text" style="display:block; width:100%" name="username" data-dojo-attach-point="UNF"
               data-dojo-type="dijit/form/ValidationTextBox" value="" required="true"
               data-dojo-props="placeholder:'Username', promptMessage:'Enter your username', intermediateChanges: true, regExp:'[\\w.-]+', invalidMessage: 'Enter a combination of letters, numbers, underscore(_), dot(.), and dash(-)'"
-              data-dojo-attach-event="onChange: fieldChanged" />
-          </td></tr>
-          <tr><th colspan="2" style="padding:0">ORGANIZATION</th></tr>
-          <tr><td colspan="2" style="padding-top:0"><div style="width:100%" data-dojo-type="dijit/form/TextBox" name="affiliation" value=""></div></td></tr>
-          <tr><th colspan="2" style="padding:0">ORGANISMS</th></tr>
-          <tr><td colspan="2" style="padding-top:0"><div name="organisms" data-dojo-type="dijit/form/Textarea" value=""></div></td></tr>
-          <tr><th colspan="2" style="padding:0">INTERESTS</th></tr>
-          <tr><td colspan="2" style="padding-top:0"><div rows="5" name="interests" style="height:75px;max-width:99%" data-dojo-type="dijit/form/SimpleTextarea" value=""></div></td></tr>
-        </tbody>
+              data-dojo-attach-event="onChange: fieldChanged" /></td></tr>
+            <tr><td>* First Name:</td><td><div style="width:100%" data-dojo-type="dijit/form/ValidationTextBox" name="first_name" data-dojo-attach-point="fname" value="" data-dojo-props="placeholder:'First Name',promptMessage:'Enter your first name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true"></div></td></tr>
+            <tr><td>Middle Name:</td><td><div data-dojo-type="dijit/form/ValidationTextBox" style="width:100%" name="middle_name" value="" data-dojo-attach-point="mname" data-dojo-props="placeholder:'Middle Name',promptMessage:'Enter your middle name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" ></div></td></tr>
+            <tr><td>* Last Name:</td><td><div data-dojo-type="dijit/form/ValidationTextBox" style="width:100%" name="last_name" value="" data-dojo-attach-point="lname" data-dojo-props="placeholder:'Last Name',promptMessage:'Enter your last name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true"></div></td></tr>
+            <tr><td>Organization:</td><td><div style="width:100%" data-dojo-type="dijit/form/TextBox" name="affiliation" value=""></div></td></tr>
+            <tr><td>Organisms:</td><td><div name="organisms" data-dojo-type="dijit/form/Textarea" value=""></div></td></tr>
+            <tr><td>Interests:</td><td><div rows="5" name="interests" style="height:75px;max-width:99%" data-dojo-type="dijit/form/SimpleTextarea" value=""></div></td></tr>
+          </tbody>
       </table>
-      <div class="upSubmit" style="position: relative; float:right" data-dojo-attach-point="udProfButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Update Profile</div>
-      <div class="newSubmit" style="position: absolute; right: 20px;display:none" data-dojo-attach-point="submitButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Submit</div>
+    </div>
+    <div class="" data-dojo-attach-point="notificationsContainer" style="max-width:580px; display:block; border: 1px solid gray;margin:4px;margin-top: 28px;padding:4px;padding-top:8px;">
+      <span style="position:relative;top: -17px; border: none; background: #fff;padding: 4px; color: #333;font-weight:600;">Notifications</span>
       <div>
-        <p>&nbsp;</p>
-        <p>&nbsp;</p>
+          <span>
+            <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="general"> <span>BV-BVC General</span>
+          </span>
+          <span>
+            <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="bacteria"> <span>Bacteria</span>
+          </span>
+          <span>
+            <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="virus"> <span>Virus</span>
+          </span>
+          <span>
+            <input name="mailingLists" data-dojo-type="dijit/form/CheckBox" value="fungi"> <span>Fungi</span>
+          </span>
+          <span>
+            <input data-dojo-type="dijit/form/CheckBox" value="vector"> <span>Vector</span>
+          </span>
+      </div>
+    </div>
+    <div style="max-width: 580px;">
+      <div class="upSubmit" style="" data-dojo-attach-point="udProfButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Update Profile</div>
+      <div class="newSubmit" style="display:none" data-dojo-attach-point="submitButton" type="submit" value="Submit" data-dojo-type="dijit/form/Button">Register</div>
+      <div data-dojo-attach-point="regFormErrorsContainer" class="dijitHidden">
         <p class="regFormErrors" style="color:red"></p>
       </div>
+    </div>
+    <div class="regMessage dijitHidden" data-dojo-attach-point="regMessage" style="margin:4px;margin-top:16px;padding:4px;font-size:1.1em;">
+      <p style="color: green;font-size:1.1em;">
+          Your registration has been received. An email has been sent containing the remainder of the registration process.
+      </p>
+      <p>Sister BRC Links go here</p>
     </div>
   </form>
   <div class="changepwsection" data-dojo-attach-point="changePWsec">

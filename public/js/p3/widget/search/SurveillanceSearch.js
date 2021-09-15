@@ -1,11 +1,17 @@
 define([
   'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/when',
   './SearchBase',
   'dojo/text!./templates/SurveillanceSearch.html',
+  './FacetStoreBuilder'
 ], function (
   declare,
+  lang,
+  when,
   SearchBase,
   template,
+  storeBuilder,
 ) {
 
   function sanitizeInput(str) {
@@ -15,20 +21,91 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Surveillance Search',
-    dataKey: 'genome',
-    resultUrlBase: '/view/GenomeList/?',
-    resultUrlHash: '#view_tab=genomes',
+    dataKey: 'surveillance',
+    resultUrlBase: '/view/SurveillanceList/?',
+    resultUrlHash: '#view_tab=surveillance',
+    postCreate: function () {
+      this.inherited(arguments);
+
+      when(storeBuilder('surveillance', 'pathogen_test_type'), lang.hitch(this, function (store) {
+        this.pathogenTestTypeNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'pathogen_test_result'), lang.hitch(this, function (store) {
+        this.pathogenTestResultNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'subtype'), lang.hitch(this, function (store) {
+        this.serotypeNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'host_group'), lang.hitch(this, function (store) {
+        this.hostGroupNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'host_common_name'), lang.hitch(this, function (store) {
+        this.hostCommonNameNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'host_species'), lang.hitch(this, function (store) {
+        this.hostSpeciesNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'geographic_group'), lang.hitch(this, function (store) {
+        this.geographicGroupNode.store = store
+      }))
+
+      when(storeBuilder('surveillance', 'collection_country'), lang.hitch(this, function (store) {
+        this.collectionCountryNode.store = store
+      }))
+
+    },
     buildQuery: function () {
       let queryArr = []
 
-      const hostNameValue = this.hostNameNode.get('value')
-      if (hostNameValue !== '') {
-        queryArr.push(`eq(host_name,${sanitizeInput(hostNameValue)})`)
+      const keywordValue = this.keywordNode.get('value')
+      if (keywordValue !== '') {
+        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
       }
 
-      const isolationCountryValue = this.isolationCountryNode.get('value')
-      if (isolationCountryValue !== '') {
-        queryArr.push(`eq(isolation_country,${sanitizeInput(isolationCountryValue)})`)
+      const pathogenTestTypeValue = this.pathogenTestTypeNode.get('value')
+      if (pathogenTestTypeValue !== '') {
+        queryArr.push(`eq(pathogen_test_type,${sanitizeInput(pathogenTestTypeValue)})`)
+      }
+
+      const pathogenTestResultValue = this.pathogenTestResultNode.get('value')
+      if (pathogenTestResultValue !== '') {
+        queryArr.push(`eq(pathogen_test_result,${sanitizeInput(pathogenTestResultValue)})`)
+      }
+
+      const subtypeValue = this.subtypeNode.get('value')
+      if (subtypeValue !== '') {
+        queryArr.push(`eq(subtype,${sanitizeInput(subtypeValue)})`)
+      }
+
+      const hostGroupValue = this.hostGroupNode.get('value')
+      if (hostGroupValue !== '') {
+        queryArr.push(`eq(host_group,${sanitizeInput(hostGroupValue)})`)
+      }
+
+      const hostCommonNameValue = this.hostCommonNameNode.get('value')
+      if (hostCommonNameValue !== '') {
+        queryArr.push(`eq(host_common_name,${sanitizeInput(hostCommonNameValue)})`)
+      }
+
+      const hostSpeciesValue = this.hostSpeciesNode.get('value')
+      if (hostSpeciesValue !== '') {
+        queryArr.push(`eq(host_species,${sanitizeInput(hostSpeciesValue)})`)
+      }
+
+      const geographicGroupValue = this.geographicGroupNode.get('value')
+      if (geographicGroupValue !== '') {
+        queryArr.push(`eq(geographic_group,${sanitizeInput(geographicGroupValue)})`)
+      }
+
+      const collectionCountryValue = this.collectionCountryNode.get('value')
+      if (collectionCountryValue !== '') {
+        queryArr.push(`eq(collection_country,${sanitizeInput(collectionCountryValue)})`)
       }
 
       const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))
@@ -42,16 +119,6 @@ define([
       } else if (!isNaN(collectionYearToValue)) {
         // lt
         queryArr.push(`lt(collection_year,${collectionYearToValue})`)
-      }
-
-      const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))
-      const genomeLengthToValue = parseInt(this.genomeLengthToNode.get('value'))
-      if (!isNaN(genomeLengthFromValue) && !isNaN(genomeLengthToValue)) {
-        queryArr.push(`betweeen(genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
-      } else if (!isNaN(genomeLengthFromValue)) {
-        queryArr.push(`gt(genome_length,${genomeLengthFromValue})`)
-      } else if (!isNaN(genomeLengthToValue)) {
-        queryArr.push(`lt(genome_length,${genomeLengthToValue})`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()

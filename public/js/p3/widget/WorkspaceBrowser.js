@@ -523,8 +523,18 @@ define([
       }, function (selection) {
         var gid = self.actionPanel.currentContainerWidget.getGenomeId();
         Topic.publish('/navigate', { href: '/view/Genome/' + gid + '#view_tab=browser' });
-
       }, false);
+
+      this.browserHeader.addAction('ViewBlastResults', 'fa icon-genome-browser fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['Homology'],
+        tooltip: 'View alignments'
+      }, function (selection) {
+        // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
+        Topic.publish('/navigate', { href: '/view/Homology' + self.actionPanel.currentContainerWidget.path});
+      }, false);
+
 
       this.browserHeader.addAction('Upload', 'fa icon-upload fa-2x', {
         label: 'UPLOAD',
@@ -598,24 +608,79 @@ define([
         validTypes: ['ComprehensiveGenomeAnalysis'],
         tooltip: 'View Full Genome Report'
       }, function (selection) {
+        console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
+        console.log('self.browserHeader', self.browserHeader);
         var path = self.actionPanel.currentContainerWidget.getReportPath();
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
+
 
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
         validTypes: ['nwk'],
         tooltip: 'View Tree'
-      }, function (selection) {
-        var path = selection.map(function (obj) { return obj.path; });
+      }, function (selection, container) {
+        console.log('ViewNwk container', container);
+        var path = selection.map(function (obj) { return obj.path;
+          // console.log('ViewNwk obj', obj);
+        });
         var labelSearch = 'true';
         var idType = 'genome_id';
+        var labelType = 'genome_name';
+        if (container._resultType == 'CodonTree' || container._resultType == 'PhylogeneticTree') { // handle Genome Tree
+          if (encodePath(path[0]).includes('WithGenomeNames.')) {
+            labelSearch = 'false';
+            idType = 'genome_name';
+          }
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
+        }
+        else { // handle Gene Tree
+          idType = 'patric_id';
+          labelSearch = 'true';
+          labelType = 'feature_name';
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTreeGene/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) });
+        }
+      }, false);
+
+      this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW2',
+        multiple: false,
+        validTypes: ['nwk', 'phyloxml'],
+        tooltip: 'View Archaeopteryx Tree'
+      }, function (selection, container) {
+        var path = selection.map(function (obj) { return obj.path;
+        // console.log('ViewNwkXml obj', obj);
+        });
+        var fileType = selection.map(function (obj) { return obj.type; });
+        var labelSearch = 'true';
+        var idType = 'genome_id';
+        var labelType = 'genome_name';
+        console.log('container', container);
+        console.log('self.browserHeader', self.browserHeader);
+        if (container._resultType !== 'CodonTree' && container._resultType !== 'PhylogeneticTree') {
+          idType = 'patric_id';
+          labelType = 'feature_name';
+        }
         if (encodePath(path[0]).includes('WithGenomeNames.')) {
           labelSearch = 'false';
           idType = 'genome_name';
         }
-        Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=genome_name&wsTreeFile=' + encodePath(path[0]) });
+        Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
+      }, false);
+
+      this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
+        label: 'MSA',
+        multiple: false,
+        validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
+        tooltip: 'View aligned fasta'
+      }, function (selection) {
+        var path = this.selection[0].path; // .get('selection.path');
+        var alignType = 'protein';
+        if (this.selection[0].type.includes('dna')) {
+          alignType = 'dna';
+        }
+        Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -1333,6 +1398,9 @@ define([
         var panelCtor;
         var params = { path: this.path, region: 'center' };
 
+        console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
+        console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
+
         switch (obj.type) {
           case 'folder':
             panelCtor = WorkspaceExplorerView;
@@ -1379,6 +1447,9 @@ define([
                   break;
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
+                  break;
+                case "Homology":
+                  d = 'p3/widget/viewer/BlastJobResult';
                   break;
                 default:
                   console.log('Using the default JobResult viewer. A viewer could not be found for id: ' + id);

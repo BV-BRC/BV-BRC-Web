@@ -38,7 +38,7 @@ define([
         case 'in':
           var f = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
           var v = term.args[1];
-          console.log('V: ', v);
+          // console.log('V: ', v);
           var vals;
           if (!(v instanceof Array)) {
             v = [v];

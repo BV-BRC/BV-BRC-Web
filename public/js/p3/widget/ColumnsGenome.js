@@ -4,7 +4,7 @@ define(['./formatter'], function (formatter) {
     genome_id: {
       label: 'Genome ID',
       field: 'genome_id',
-      hidden: false
+      hidden: true
     },
     genome_name: {
       label: 'Genome Name',
@@ -13,7 +13,7 @@ define(['./formatter'], function (formatter) {
         return item;
       },
       formatter: formatter.genomeName,
-      hidden: false
+      hidden: true
     },
     other_names: {
       label: 'Other Names',
@@ -37,6 +37,11 @@ define(['./formatter'], function (formatter) {
       hidden: true
     },
 
+    superkingdom: {
+      label: 'Superkingdom',
+      field: 'superkingdom',
+      hidden: true
+    },
     kingdom: {
       label: 'Kingdom',
       field: 'kingdom',
@@ -70,7 +75,12 @@ define(['./formatter'], function (formatter) {
     species: {
       label: 'Species',
       field: 'species',
-      hidden: true
+      hidden: false
+    },
+    strain: {
+      label: 'Strain',
+      field: 'strain',
+      hidden: false
     },
 
     genome_status: {
@@ -78,12 +88,12 @@ define(['./formatter'], function (formatter) {
       field: 'genome_status',
       hidden: false
     },
-
-    strain: {
-      label: 'Strain',
-      field: 'strain',
-      hidden: true
+    genome_quality: {
+      label: 'Genome Quality',
+      field: 'genome_quality',
+      hidden: false
     },
+
     serovar: {
       label: 'Serovar',
       field: 'serovar',
@@ -104,6 +114,42 @@ define(['./formatter'], function (formatter) {
       field: 'mlst',
       hidden: true
     },
+    segment: {
+      label: 'Segment',
+      field: 'segment',
+      hidden: true
+    },
+    subtype: {
+      label: 'Subtype',
+      field: 'subtype',
+      hidden: true
+    },
+    h_type: {
+      label: 'H_type',
+      field: 'h_type',
+      hidden: true
+    },
+    n_type: {
+      label: 'N_type',
+      field: 'n_type',
+      hidden: true
+    },
+    lineage: {
+      label: 'Lineage',
+      field: 'lineage',
+      hidden: true
+    },
+    clade: {
+      label: 'Clade',
+      field: 'clade',
+      hidden: true
+    },
+    subclade: {
+      label: 'Subclade',
+      field: 'subclade',
+      hidden: true
+    },
+
     other_typing: {
       label: 'Other Typing',
       field: 'other_typing',
@@ -196,7 +242,6 @@ define(['./formatter'], function (formatter) {
     },
 
 
-
     chromosomes: {
       label: 'Chromosome',
       field: 'chromosomes',
@@ -215,7 +260,7 @@ define(['./formatter'], function (formatter) {
     contigs: {
       label: 'Contigs',
       field: 'contigs',
-      hidden: false
+      hidden: true
     },
     genome_length: {
       label: 'Size',
@@ -334,11 +379,6 @@ define(['./formatter'], function (formatter) {
       field: 'genome_quality_flags',
       hidden: true,
       sortable: false
-    },
-    genome_quality: {
-      label: 'Genome Quality',
-      field: 'genome_quality',
-      hidden: true
     },
     outgroup_genomes: {
       label: 'Outgroup Genomes',
@@ -498,7 +538,7 @@ define(['./formatter'], function (formatter) {
     date_inserted: {
       label: 'Date Inserted',
       field: 'date_inserted',
-      hidden: false,
+      hidden: true,
       formatter: formatter.dateOnly
     },
     date_modified: {

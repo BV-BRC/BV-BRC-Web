@@ -18,13 +18,15 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
       genome_feature: 'Genomic Features',
       genome_sequence: 'Genomic Sequences',
       protein_feature: 'Protein Features',
       protein_structure: 'Protein Structures',
+      pathway: 'Pathways',
+      subsystem: 'Subsystems',
       surveillance: 'Surveillance',
       serology: 'Serology',
       taxonomy: 'Taxonomy',
@@ -97,6 +99,14 @@ define([
 
       protein_structure: function (docs, total) {
         return ['/view/ProteinStructureList/?', this.state.search].join('');
+      },
+
+      pathway: function (docs, total) {
+        return ['/view/PathwayList/?', this.state.search].join('');
+      },
+
+      subsystem: function (docs, total) {
+        return ['/view/SubsystemList/?', this.state.search].join('');
       },
 
       surveillance: function (docs, total) {
@@ -283,6 +293,38 @@ define([
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Structure/" + doc.pdb_id + "'>" + doc.pdb_id + ' | ' + doc.title + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.organism_name + '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatpathway: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer pathwayResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/PathwayList/?', q, '">Pathways</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Feature/" + doc.feature_id + "'>" + doc.pathway_name + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.patric_id + " | " + doc.product + '</div>');
+        out.push("<div class='resultInfo'>" + doc.genome_name + '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatsubsystem: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer subsystemResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SubsystemList/?', q, '">Subsystems</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Feature/" + doc.feature_id + "'>" + doc.subsystem_name + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.patric_id + " | " + doc.product + '</div>');
+        out.push("<div class='resultInfo'>" + doc.genome_name + '</div>');
         out.push('</div>');
       });
       out.push('</div>');
