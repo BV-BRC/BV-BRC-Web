@@ -157,25 +157,23 @@
             </div>
         </div>
         <div class="appSubmissionArea">
-            <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-point="submitButton"
-                     data-dojo-attach-event="onClick:submit"
-                     data-dojo-props="disabled:true">
-                    Search
-                </div>
+            <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+                Submitting Homology Job
             </div>
-        </div>
-        <div class="reSubmitBtn" style="visibility: hidden"
-             data-dojo-type="dijit/form/Button"
-             data-dojo-attach-event="onClick:resubmit">Edit form and resubmit
+            <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+                Error Submitting Job
+            </div>
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+                Homology Job has been queued.
+            </div>
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel
+                </div>
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+            </div>
         </div>
     </div>
 
-    <div class="service_error hidden">
-        <h3></h3>
-        <div class="service_message"></div>
-    </div>
-    <div class="blast_result"></div>
 </form>
 

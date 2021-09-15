@@ -10,6 +10,7 @@ define([
 
   return declare([Memory, Stateful], {
     // baseQuery: {},
+      first_load: true,
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -31,6 +32,9 @@ define([
     },
 
     reload: function () {
+     if (!this._loaded){
+         return;
+     }
 
       if (this._loadingDeferred && !this._loadingDeferred.isResolved()) {
         this._loadingDeferred.cancel('reloaded');
@@ -265,27 +269,8 @@ define([
         }
         //This expects a few pieces of information to be present in the STATE object, including the path and whether the DB is user supplied
         //Currently set in
-        this._hiddenPath=[this.state.resultPath];
-        this._loadingDeferred = when(WorkspaceManager.getFolderContents(this._hiddenPath, false, false, false), lang.hitch(this, function (paths) {
-            var filtered = paths.filter(function (f) {
-            // console.log("Filtering f: ", f);
-            // if(f instanceof Array){
-            //   var path = f[0];
-            // }else{
-            //   path = f;
-            // }
-            if ('path' in f && f.path.match('blast_out.json')) {
-                return true;
-            }
-            return false;
-            }).map(function (f) {
-            return f.path;
-            });
-            filtered.sort();
-
-            // console.log("Experiment Sub Paths: ", paths);
-
-            return when(WorkspaceManager.getObjects(filtered), lang.hitch(this, function (objs) {
+        this._hiddenPath=[this.state.resultPath+'/blast_out.json'];
+        this._loadingDeferred = when(WorkspaceManager.getObjects([this._hiddenPath]), lang.hitch(this, function (objs) {
                 objs.forEach(function (obj) {
                     if (typeof obj.data == 'string') {
                     obj.data = JSON.parse(obj.data);
@@ -399,18 +384,12 @@ define([
 
                 Topic.publish(this.topicId, 'hideLoadingMask');
                 }));
-            }),function (err) {
+            }),lang.hitch(this, function (err) {
                 this.setData([]);
                 this._loaded = true;
                 Topic.publish('BLAST_UI', 'showErrorMessage', err);
                 Topic.publish(this.topicId, 'hideLoadingMask');
-            });
-        }),lang.hitch(this, function (err) {
-        this.setData([]);
-        this._loaded = true;
-        Topic.publish('BLAST_UI', 'showErrorMessage', err);
-        Topic.publish(this.topicId, 'hideLoadingMask');
-      }));
+            }));
 
       return this._loadingDeferred;
       }, 

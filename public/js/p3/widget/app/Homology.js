@@ -55,9 +55,9 @@ define([
   ];
 
   var DatabaseDefs = [
-    { value: 'BacteriaArchaea.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
+    { value: 'bacteria-archea.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
     //{ value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
-    { value: 'ref.ffn', label: 'Reference and representative genomes - features (ffn)', db_type: 'ffn', db_source:"precomputed_database"},
+    { value: 'bacteria-archaea.ffn', label: 'Reference and representative genomes - features (ffn)', db_type: 'ffn', db_source:"precomputed_database"},
     { value: 'ref.faa', label: 'Reference and representative genomes - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
     { value: 'ref.frn', label: 'Reference and representative genomes - RNAs (frn)', db_type: 'frn', db_source:"precomputed_database" },
     { value: '16sRNA.frn', label: 'PATRIC 16s RNA Genes (frn)', db_type: 'frn', db_source:"precomputed_database" },
@@ -93,7 +93,7 @@ define([
     result_store: null,
     result_grid: null,
     defaultPath: '',
-    demo: true,
+    demo: false,
     sequence_type: null,
     allowMultiple: true,
     input_source: null,
@@ -210,7 +210,7 @@ define([
 
     },
 
-    submit: function () {
+    getValues: function () {
       var _self = this;
       var sequence = this.sequence.get('value');
       var database = this.database.get('value');
@@ -376,14 +376,18 @@ define([
                 //Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
             };
            //set job hook before submission
-            _self.setJobHook(callback, function(error){
+            _self.setJobHook(function(){
+                Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
+            }, function(error){
                 Topic.publish('BLAST_UI', 'showErrorMessage', error);
             });
-            if (this.demo){
+            if (this.demo && false){
                 callback();
             }
             else{
-                _self.doSubmit(submit_values, start_params);
+                //changing the submit() function to be getValues() in shift away from form/viewer
+                //_self.doSubmit(submit_values, start_params);
+                return submit_values;
             }
         }
     },
