@@ -645,9 +645,6 @@ define([], function () {
         field: 'annotation', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: false
-      },
-      {
         field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
@@ -687,9 +684,6 @@ define([], function () {
       },
       {
         field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'feature_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true

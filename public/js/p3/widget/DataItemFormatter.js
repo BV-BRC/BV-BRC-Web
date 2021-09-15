@@ -1057,16 +1057,24 @@ define([
 
       var columns = [{
         name: 'Genome ID',
-        text: 'genome_id'
+        text: 'genome_id',
+        link: '/view/Genome/'
       }, {
         name: 'Genome Name',
-        text: 'genome_name'
+        text: 'genome_name',
+        link: function (obj) {
+          return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', { obj: obj });
+        }
       }, {
         name: 'Taxon ID',
-        text: 'taxon_id'
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
       }, {
         name: 'Sequence ID',
-        text: 'sequence_id'
+        text: 'sequence_id',
+        link: function (obj) {
+          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
+        },
       }, {
         name: 'Accession',
         text: 'accession'
@@ -1074,20 +1082,19 @@ define([
         name: 'Annotation',
         text: 'annotation'
       }, {
-        name: 'Feature ID',
-        text: 'feature_id'
-      }, {
         name: 'Alt Locus Tag',
         text: 'alt_locus_tag'
       }, {
         name: 'RefSeq Locus Tag',
-        text: 'refseq_locus_tag'
+        text: 'refseq_locus_tag',
+        link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
       }, {
         name: 'Gene',
         text: 'gene'
       }, {
         name: 'PATRIC ID',
-        text: 'patric_id'
+        text: 'patric_id',
+        link: '/view/Feature/'
       }, {
         name: 'Product',
         text: 'product'
@@ -1190,22 +1197,26 @@ define([
 
       var columns = [{
         name: 'Genome ID',
-        text: 'genome_id'
+        text: 'genome_id',
+        link: '/view/Genome/'
       }, {
         name: 'Genome Name',
-        text: 'genome_name'
+        text: 'genome_name',
+        link: function (obj) {
+          return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', { obj: obj });
+        }
       }, {
         name: 'Taxon ID',
-        text: 'taxon_id'
-      }, {
-        name: 'Feature ID',
-        text: 'feature_id'
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
       }, {
         name: 'RefSeq Locus Tag',
-        text: 'refseq_locus_tag'
+        text: 'refseq_locus_tag',
+        link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
       }, {
         name: 'PATRIC ID',
-        text: 'patric_id'
+        text: 'patric_id',
+        link: '/view/Feature/'
       }, {
         name: 'Gene',
         text: 'gene'

@@ -30,7 +30,6 @@ define([
 
       annotation: { label: 'Annotation', field: 'annotation', hidden: true },
 
-      feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
       patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
