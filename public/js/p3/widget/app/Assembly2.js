@@ -14,11 +14,11 @@ define([
 
   return declare([AppBase], {
     baseClass: 'App Assembly2',
-    pageTitle: 'Genome Assembly Service (new)',
+    pageTitle: 'Genome Assembly Service',
     templateString: Template,
     applicationName: 'GenomeAssembly2',
     requireAuth: true,
-    applicationLabel: 'Genome Assembly (new)',
+    applicationLabel: 'Genome Assembly',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
     applicationHelp: 'user_guides/services/genome_assembly_service.html',
     tutorialLink: 'tutorial/genome_assembly/assembly2.html',

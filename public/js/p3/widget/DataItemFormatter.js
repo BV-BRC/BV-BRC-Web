@@ -963,16 +963,28 @@ define([
         text: 'unique_strain'
       }, {
         name: 'Genomes / Segments',
-        text: 'count'
+        text: 'count',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=genomes">${obj.count}</a>`;
+        }
       }, {
         name: 'Protein Coding Genes (CDS)',
-        text: 'CDS'
+        text: 'CDS',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,CDS)">${obj.CDS}</a>`;
+        }
       }, {
         name: 'Mature Peptides',
-        text: 'mat_peptide'
+        text: 'mat_peptide',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,mat_peptide)">${obj.mat_peptide}</a>`;
+        }
       }, {
         name: '3D Protein Structures (PDB)',
-        text: 'PDB'
+        text: 'PDB',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=structures">${obj.PDB}</a>`;
+        }
       // }, {
       //   name: 'Other Names',
       //   text: 'other_names',

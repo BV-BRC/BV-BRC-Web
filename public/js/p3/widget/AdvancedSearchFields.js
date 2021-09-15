@@ -137,7 +137,7 @@ define([], function () {
         field: 'type_strain', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'reference_genome', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'reference_genome', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'publication', type: 'str', facet: false, facet_hidden: true, search: true
@@ -237,6 +237,9 @@ define([], function () {
       },
       {
         field: 'isolation_country', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'geographic_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'geographic_location', type: 'str', facet: false, facet_hidden: true, search: true

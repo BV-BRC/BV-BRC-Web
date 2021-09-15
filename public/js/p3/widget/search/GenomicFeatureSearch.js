@@ -22,7 +22,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Gene/Protein Search',
+    searchAppName: 'Protein Search',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features&filter=false',
@@ -44,9 +44,9 @@ define([
         this.isolationCountryNode.store = store
       }))
 
-      storeBuilder('genome_feature', 'feature_type').then(lang.hitch(this, (store) => {
-        this.featureTypeNode.store = store
-      }))
+      // storeBuilder('genome_feature', 'feature_type').then(lang.hitch(this, (store) => {
+      //   this.featureTypeNode.store = store
+      // }))
     },
     buildQuery: function () {
       console.log(
@@ -121,10 +121,11 @@ define([
         queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
       }
 
-      const featureTypeValue = this.featureTypeNode.get('value')
-      if (featureTypeValue !== '') {
-        queryArr.push(`eq(feature_type,${sanitizeInput(featureTypeValue)})`)
-      }
+      // const featureTypeValue = this.featureTypeNode.get('value')
+      // if (featureTypeValue !== '') {
+      //   queryArr.push(`eq(feature_type,${sanitizeInput(featureTypeValue)})`)
+      // }
+      queryArr.push('or(eq(feature_type,CDS),eq(feature_type,mat_peptide))')
 
       const geneValue = this.geneNode.get('value')
       if (geneValue !== '') {

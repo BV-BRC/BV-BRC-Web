@@ -418,6 +418,11 @@ define(['./formatter'], function (formatter) {
       field: 'isolation_country',
       hidden: false
     },
+    geographic_group: {
+      label: 'Geographic Group',
+      field: 'geographic_group',
+      hidden: true
+    },
     geographic_location: {
       label: 'Geographic Location',
       field: 'geographic_location',
