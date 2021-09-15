@@ -1074,9 +1074,6 @@ define([
         name: 'Annotation',
         text: 'annotation'
       }, {
-        name: 'Feature ID',
-        text: 'feature_id'
-      }, {
         name: 'Alt Locus Tag',
         text: 'alt_locus_tag'
       }, {
@@ -1197,9 +1194,6 @@ define([
       }, {
         name: 'Taxon ID',
         text: 'taxon_id'
-      }, {
-        name: 'Feature ID',
-        text: 'feature_id'
       }, {
         name: 'RefSeq Locus Tag',
         text: 'refseq_locus_tag'
