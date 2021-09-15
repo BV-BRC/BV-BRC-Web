@@ -115,7 +115,7 @@ define([
     }, */
 
     getSelected: function () {
-      var user = this.get("item")
+      var user = this.get('item')
       return user.id.length ?  user.id + '@' + user.realm : null;
     },
 
