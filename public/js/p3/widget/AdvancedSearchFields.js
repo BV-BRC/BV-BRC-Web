@@ -1,6 +1,47 @@
 define([], function () {
   // column configuraion for facet and advanced search
   return {
+    'taxa': [
+      {
+        field: 'taxon_id', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'taxon_name', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'taxon_rank', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'other_names', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'genetic_code', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lineage_ids', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lineage_names', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lineage_ranks', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'parent_id', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'division', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'description', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'genomes', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+    ],
     'genome': [
       {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true

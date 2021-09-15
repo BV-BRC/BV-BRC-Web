@@ -104,6 +104,9 @@ define([
             Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
             // clear = true;
             break;
+          case 'strains':
+            Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
+            break;
           case 'genomes':
             Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
             // clear = true;
@@ -178,6 +181,9 @@ define([
           break;
         case 'genome_sequences':
           Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
+          break;
+        case 'strains':
+          Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
           break;
         case 'genomes':
           Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });

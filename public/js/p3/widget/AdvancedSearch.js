@@ -18,9 +18,10 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'strain', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
     labelsByType: {
       genome: 'Genomes',
+      strain: 'Strains',
       genome_feature: 'Genomic Features',
       genome_sequence: 'Genomic Sequences',
       protein_feature: 'Protein Features',
@@ -77,6 +78,10 @@ define([
           return ['/view/Genome/', docs[0].genome_id, '#view_tab=overview'].join('');
         }
         return ['/view/GenomeList/?', this.state.search, '#view_tab=genomes'].join('');
+      },
+
+      strain: function (docs, total) {
+        return ['/view/StrainList/?', this.state.search].join('');
       },
 
       genome_feature: function (docs, total) {
@@ -220,6 +225,21 @@ define([
         out.push('</div>');
       });
       out.push('</div>');
+      return out.join('');
+    },
+
+    formatstrain: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer strainResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/StrainList/?', q, '">Strains</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/StrainList/?eq(strain," + '"' + doc.strain + '"' + ")'>" + doc.strain + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.species + '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
       return out.join('');
     },
 
