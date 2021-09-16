@@ -1436,7 +1436,8 @@ define([
         text: 'product'
       }, {
         name: 'Interpro ID',
-        text: 'interpro_id'
+        text: 'interpro_id',
+        link: 'https://www.ebi.ac.uk/interpro/entry/InterPro/',
       }, {
         name: 'Interpro Description',
         text: 'interpro_description'
@@ -1449,6 +1450,15 @@ define([
       }, {
         name: 'Source ID',
         text: 'source_id',
+        link: function (obj) {
+          var link = formatter.getExternalLinks(obj.source);
+
+          if (link) {
+            return '<a href="' + link + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+          }
+          return obj.source_id;
+
+        }
       }, {
         name: 'Description',
         text: 'description',
