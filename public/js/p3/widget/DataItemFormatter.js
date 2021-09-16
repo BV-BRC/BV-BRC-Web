@@ -1436,7 +1436,8 @@ define([
         text: 'product'
       }, {
         name: 'Interpro ID',
-        text: 'interpro_id'
+        text: 'interpro_id',
+        link: 'https://www.ebi.ac.uk/interpro/entry/InterPro/',
       }, {
         name: 'Interpro Description',
         text: 'interpro_description'
@@ -1448,7 +1449,7 @@ define([
         text: 'source',
       }, {
         name: 'Source ID',
-        text: 'source_id',
+        text: 'source_id'
       }, {
         name: 'Description',
         text: 'description',
