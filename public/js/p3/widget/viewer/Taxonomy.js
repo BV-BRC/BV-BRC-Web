@@ -262,7 +262,7 @@ define([
             context = this.state.search.split('&')
           }
           activeQueryState = lang.mixin({}, this.state, {
-            search: `eq(${prop},*)&genome(${(prop !== 'genome_id') ? `(to,${prop}),` : ''}${(context.length > 1 ? `and(${context.join(',')})` : context[0])})`,
+            search: `eq(${prop},*)&genome(${(prop !== 'genome_id') ? `to(${prop}),` : ''}${(context.length > 1 ? `and(${context.join(',')})` : context[0])})`,
             hashParams: lang.mixin({}, this.state.hashParams)
           });
 
