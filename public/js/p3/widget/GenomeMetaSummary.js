@@ -87,7 +87,7 @@ define([
             if (categories.length < 4) {
               categories.push({
                 text: `${label} (${val})`,
-                link: `#view_tab=genomes&filter=eq(${cat},${encodeURIComponent(val)})`,
+                link: `#view_tab=genomes&filter=eq(${cat},${encodeURIComponent(label)})`,
                 x: label,
                 y: val
               });
