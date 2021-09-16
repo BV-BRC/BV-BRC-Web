@@ -1449,7 +1449,16 @@ define([
         text: 'source',
       }, {
         name: 'Source ID',
-        text: 'source_id'
+        text: 'source_id',
+        link: function (obj) {
+          var link = formatter.getExternalLinks(obj.source);
+
+          if (link) {
+            return '<a href="' + link + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+          }
+          return obj.source_id;
+
+        }
       }, {
         name: 'Description',
         text: 'description',
