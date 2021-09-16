@@ -16,18 +16,7 @@ define([
     apiUrl: '',
     userId: '',
 
-    downloadTypes: ['bam', 'bai', 'bigwig', 'biochemistry', 'contigs', 'csv',
-      'de_novo_assembled_transcripts', 'diffexp_experiment', 'diffexp_expression',
-      'diffexp_input_data', 'diffexp_input_metadata', 'diffexp_mapping',
-      'diffexp_sample', 'doc', 'docx', 'embl', 'fba',
-      'feature_dna_fasta', 'feature_protein_fasta',
-      'feature_table', 'genbank_file', 'genome', 'genome_annotation_result',
-      'genome_comparison_table', 'gff', 'gif', 'html', 'jpg',
-      'json', 'mapping', 'media', 'model', 'modelfolder', 'model_edit',
-      'modeltemplate', 'nwk', 'pdf', 'png', 'ppt', 'pptx', 'proteomics_experiment',
-      'reads', 'rxnprobs', 'string', 'svg', 'tar_gz', 'tbi',
-      'transcriptomics_experiment', 'transcripts', 'txt', 'unspecified', 'vcf',
-      'vcf_gz', 'wig', 'xls', 'xlsx', 'zip', 'contigset', 'xml', 'phyloxml'],
+    forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result', 'modelfolder'],
 
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
@@ -334,7 +323,7 @@ define([
     addToGroup: function (groupPath, idType, ids) {
       Topic.publish('/Notification', {
         message: '<span class="default">Adding ' + ids.length +
-        ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
+          ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
       });
 
       var _self = this;
@@ -346,7 +335,7 @@ define([
           // add logic to remove duplicate from ids
           var idsFiltered = [];
           ids.forEach(function (id) {
-            if (idsFiltered.indexOf(id)  == -1) {
+            if (idsFiltered.indexOf(id) == -1) {
               idsFiltered.push(id);
             }
           });
@@ -422,7 +411,7 @@ define([
       // add logic to remove duplicate from ids
       var idsFiltered = [];
       ids.forEach(function (id) {
-        if (idsFiltered.indexOf(id)  == -1) {
+        if (idsFiltered.indexOf(id) == -1) {
           idsFiltered.push(id);
         }
       });
@@ -822,7 +811,7 @@ define([
       var newPath = path.slice(0, path.lastIndexOf('/')) + '/' + newName;
 
       // ensure path doesn't already exist
-      console.log('Checking for "', newPath, '" before rename...' );
+      console.log('Checking for "', newPath, '" before rename...');
       return Deferred.when(
         this.getObjects(newPath, true),
         function (response) {
@@ -905,7 +894,7 @@ define([
       var newPath = path.slice(0, path.lastIndexOf('/')) + '/.' + newName;
 
       // log what is happening so that console error is expected
-      console.log('Checking for job data "', newPath, '" before rename...' );
+      console.log('Checking for job data "', newPath, '" before rename...');
       return Deferred.when(
         this.getObjects(newPath, true),
         function (response) {
@@ -1055,7 +1044,7 @@ define([
         },
 
         function (err) {
-        // console.log("Error Loading Workspace:", err);
+          // console.log("Error Loading Workspace:", err);
           _self.showError(err);
         }
       );
@@ -1174,7 +1163,7 @@ define([
         }]), function (res) {
           var pathHash = res[0];
           Object.keys(pathHash).forEach(function (path) {
-          // server sometimes returns 'none' permissions, ignore them.
+            // server sometimes returns 'none' permissions, ignore them.
             var permObjs = pathHash[path].filter(function (p) {
               return p[1] != 'n' || (includeGlobal && p[0] == 'global_permission');
             }).map(function (p) {
