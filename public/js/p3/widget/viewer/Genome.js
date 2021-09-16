@@ -306,7 +306,7 @@ define([
       });
 
       this.features = new FeatureGridContainer({
-        title: 'Features',
+        title: 'Proteins',
         id: this.viewer.id + '_features'
       });
 
@@ -335,7 +335,7 @@ define([
       });
 
       this.proteinFeatures = new ProteinFeaturesGridContainer({
-        title: 'Protein Features',
+        title: 'Domains and Motifs',
         id: this.viewer.id + '_proteinFeatures'
       });
 

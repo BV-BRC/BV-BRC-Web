@@ -40,7 +40,7 @@ define([
       accession: { label: 'Accession', field: 'accession', hidden: false },
 
       annotation: { label: 'Annotation', field: 'annotation', hidden: true },
-      feature_type: { label: 'Feature Type', field: 'feature_type', hidden: true },
+      feature_type: { label: 'Feature Type', field: 'feature_type', hidden: false },
 
       feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
@@ -54,9 +54,9 @@ define([
       uniprotkb_accession: { label: 'UniProtKB Accession', field: 'uniprotkb_accession', hidden: true },
       pdb_accession: { label: 'PDB Accession', field: 'pdb_accession', hidden: true },
 
-      start: { label: 'Start', field: 'start', hidden: true },
-      end: { label: 'End', field: 'end', hidden: true },
-      strand: { label: 'Strand', field: 'strand', hidden: true },
+      start: { label: 'Start', field: 'start', hidden: false },
+      end: { label: 'End', field: 'end', hidden: false },
+      strand: { label: 'Strand', field: 'strand', hidden: false },
       location: { label: 'Location', field: 'location', hidden: true },
       segments: { label: 'Segments', field: 'segments', hidden: true },
       codon_start: { label: 'Codon Start', field: 'Codon Start', hidden: true },
@@ -99,43 +99,43 @@ define([
       // console.log(query.match(/CDS/), query.match(/eq\(genome_id/))
       // show or hide columns based on CDS vs Non-CDS feature type
       if (query.match(/CDS/)) {
-        _self.toggleColumnHiddenState('plfam_id', false);
-        _self.toggleColumnHiddenState('pgfam_id', false);
+        // _self.toggleColumnHiddenState('plfam_id', false);
+        // _self.toggleColumnHiddenState('pgfam_id', false);
 
-        _self.toggleColumnHiddenState('feature_type', true);
-        _self.toggleColumnHiddenState('start', true);
-        _self.toggleColumnHiddenState('end', true);
-        _self.toggleColumnHiddenState('strand', true);
+        // _self.toggleColumnHiddenState('feature_type', true);
+        // _self.toggleColumnHiddenState('start', true);
+        // _self.toggleColumnHiddenState('end', true);
+        // _self.toggleColumnHiddenState('strand', true);
       } else if (query.match(/eq\(feature_type,%22classifier_predicted_region%22\)/)) {
         _self.toggleColumnHiddenState('refseq_locus_tag', true);
         _self.toggleColumnHiddenState('gene', true);
 
-        _self.toggleColumnHiddenState('plfam_id', true);
-        _self.toggleColumnHiddenState('pgfam_id', true);
+        // _self.toggleColumnHiddenState('plfam_id', true);
+        // _self.toggleColumnHiddenState('pgfam_id', true);
 
-        _self.toggleColumnHiddenState('feature_type', false);
-        _self.toggleColumnHiddenState('start', false);
-        _self.toggleColumnHiddenState('end', false);
-        _self.toggleColumnHiddenState('strand', false);
+        // _self.toggleColumnHiddenState('feature_type', false);
+        // _self.toggleColumnHiddenState('start', false);
+        // _self.toggleColumnHiddenState('end', false);
+        // _self.toggleColumnHiddenState('strand', false);
 
         _self.toggleColumnHiddenState('classifier_score', false);
         _self.toggleColumnHiddenState('classifier_round', false);
       } else {
-        _self.toggleColumnHiddenState('plfam_id', true);
-        _self.toggleColumnHiddenState('pgfam_id', true);
+        // _self.toggleColumnHiddenState('plfam_id', true);
+        // _self.toggleColumnHiddenState('pgfam_id', true);
 
-        _self.toggleColumnHiddenState('feature_type', false);
-        _self.toggleColumnHiddenState('start', false);
-        _self.toggleColumnHiddenState('end', false);
-        _self.toggleColumnHiddenState('strand', false);
+        // _self.toggleColumnHiddenState('feature_type', false);
+        // _self.toggleColumnHiddenState('start', false);
+        // _self.toggleColumnHiddenState('end', false);
+        // _self.toggleColumnHiddenState('strand', false);
       }
 
       // hide genome_name and genome_id if feature list is rendered genome view
       if (query.match(/eq\(genome_id/)) {
-        _self.toggleColumnHiddenState('genome_name', true);
+        // _self.toggleColumnHiddenState('genome_name', true);
         _self.toggleColumnHiddenState('genome_id', true);
       } else {
-        _self.toggleColumnHiddenState('genome_name', false);
+        // _self.toggleColumnHiddenState('genome_name', false);
         _self.toggleColumnHiddenState('genome_id', false);
       }
 

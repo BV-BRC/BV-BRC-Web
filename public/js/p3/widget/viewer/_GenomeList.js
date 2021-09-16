@@ -295,7 +295,7 @@ define([
         id: this.viewer.id + '_amr'
       });
       this.features = new FeatureGridContainer({
-        title: 'Features',
+        title: 'Proteins',
         id: this.viewer.id + '_features',
         disabled: false
       });
@@ -311,7 +311,7 @@ define([
         state: this.state
       });
       this.proteinFeatures = new ProteinFeaturesGridContainer({
-        title: 'Protein Features',
+        title: 'Domains and Motifs',
         id: this.viewer.id + '_proteinFeatures',
         disabled: false
       });
@@ -325,20 +325,22 @@ define([
         id: this.viewer.id + '_subsystems',
         disabled: false
       });
-      this.proteinFamilies = new ProteinFamiliesContainer({
-        title: 'Protein Families',
-        id: this.viewer.id + '_proteinFamilies',
-        disabled: false
+      // this.proteinFamilies = new ProteinFamiliesContainer({
+      //   title: 'Protein Families',
+      //   id: this.viewer.id + '_proteinFamilies',
+      //   disabled: false
+      // });
+      this.transcriptomics = new TranscriptomicsContainer({
+        title: 'Transcriptomics',
+        id: this.viewer.id + '_transcriptomics'
       });
-      // this.transcriptomics = new TranscriptomicsContainer({
-      //   title: 'Transcriptomics',
-      //   id: this.viewer.id + '_transcriptomics'
-      // });
-      // this.interactions = new InteractionsContainer({
-      //   title: 'Interactions',
-      //   id: this.viewer.id + '_interactions',
-      //   state: this.state
-      // });
+
+      this.interactions = new InteractionsContainer({
+        title: 'Interactions',
+        id: this.viewer.id + '_interactions',
+        state: this.state
+      });
+
       this.surveillance = new SurveillanceGridContainer({
         title: 'Surveillance',
         id: this.viewer.id + '_surveillance',
@@ -359,11 +361,11 @@ define([
       this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);
-      this.viewer.addChild(this.proteinFamilies);
+      // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      // this.viewer.addChild(this.transcriptomics);
-      // this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.transcriptomics);
+      this.viewer.addChild(this.interactions);
 
       if (localStorage) {
         var gs = localStorage.getItem(this.showQuickstartKey);

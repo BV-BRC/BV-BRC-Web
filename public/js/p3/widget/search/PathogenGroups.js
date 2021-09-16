@@ -58,7 +58,7 @@ define([
       { name: 'Dengue virus', id: 12637 },
       { name: 'Ebolavirus', id: 186536 },
       { name: 'Enterovirus', id: 12059 },
-      { name: 'Hepatitis C virus', id: 63746 },
+      { name: 'Hepatitis C virus', id: 11103 },
       { name: 'Influenza A virus', id: 11320 },
       { name: 'Lassa mammarenavirus', id: 11620 },
       { name: 'SARS-CoV-2', id: 2697049 },

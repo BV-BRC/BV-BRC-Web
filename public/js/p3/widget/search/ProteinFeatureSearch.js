@@ -20,7 +20,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Protein Feature Search',
+    searchAppName: 'Domain and Motif Search',
     dataKey: 'protein_feature',
     resultUrlBase: '/view/ProteinFeaturesList/?',
     resultUrlHash: '#view_tab',

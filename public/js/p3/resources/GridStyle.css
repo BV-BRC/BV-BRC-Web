@@ -258,9 +258,9 @@
 }
 
 /* Protein Features Grid */
-.patric .dgrid-cell.field-product {
+/* .patric .dgrid-cell.field-product {
     width: 15%;
-}
+} */
 .patric .dgrid-cell.field-description {
     width: 20%;
 }
