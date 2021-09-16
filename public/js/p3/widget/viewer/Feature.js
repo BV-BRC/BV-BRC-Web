@@ -283,7 +283,7 @@ define([
       });
 
       this.proteinFeatures = new ProteinFeaturesGridContainer({
-        title: 'Protein Features',
+        title: 'Domain and Motifs',
         id: this.viewer.id + '_proteinFeatures'
       });
 
@@ -293,8 +293,8 @@ define([
       this.viewer.addChild(this.transcriptomics);
       // this.viewer.addChild(this.correlatedGenes);
       this.viewer.addChild(this.interactions);
-      this.viewer.addChild(this.structures);
       this.viewer.addChild(this.proteinFeatures)
+      this.viewer.addChild(this.structures);
     }
   });
 });

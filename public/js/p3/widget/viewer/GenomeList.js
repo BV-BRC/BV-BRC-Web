@@ -106,7 +106,7 @@ define([
       });
 
       this.features = new FeatureGridContainer({
-        title: 'Features',
+        title: 'Proteins',
         id: this.viewer.id + '_features',
         disabled: false
       });

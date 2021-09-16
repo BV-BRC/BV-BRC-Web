@@ -139,10 +139,10 @@ define([
 
       // <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">
       this.heatmapContainerNew = new HeatmapContainerNew({
-        title: 'Heatmap (new)',
+        title: 'Heatmap',
         type: 'webGLHeatmap',
         topicId: this.topicId,
-        content: 'Heatmap (new)'
+        content: 'Heatmap'
       });
 
       this.watch('state', lang.hitch(this, 'onSetState'));
