@@ -229,8 +229,8 @@ define([
         'WHO name': 'Gamma',
         'LoC name': 'P.1 + P.1.* lineages',
         'PANGO lineage': '<a href="https://cov-lineages.org/lineages/lineage_B.1.1.28.html" target=_blank>P.1 + P.1.* lineages</a>',
-        'NextStrain lineage': '20J (Gamma, V3), B.1.1.28.1',
-        'Other synonyms': '20J/501Y.V3, Brazilian variant, B.1.1.248',
+        'NextStrain lineage': '20J (Gamma, V3)',
+        'Other synonyms': '20J/501Y.V3, Brazilian variant, B.1.1.28.1, B.1.1.248',
         'Emergence location': 'Brazil',
         'Emergence date': 'November 2020',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'L18F**, T20N, P26S, D138Y, R190S, K417T**, E484K**, N501Y**, D614G**, H655Y, T1027I, V1176F',
@@ -256,7 +256,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19R, L452R, T478K, D614G, P681R,  D950N',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3:P1469S; nsp12:P323L, G671S; nsp13:P77L; ORF3a:S26L; M:I82T; ORF7a:V82A, T120I; N:D63G, R203M, D377Y',
         'Impact': 'Predominantly India lineage with several spike mutations, pango-designation issue #49',
-        'ViPR representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/MZ009823.1" target=_blank>SARS-CoV-2/human/USA/IN-CDC-STM-000049216/2021</a>',
+        'ViPR representative strain link': '<a href="https://www.viprbrc.org/brc/vipr_genome_search.spg?method=doQuickTextSearch&decorator=corona_ncov&pageTo=1&selectionContext=1631918231229" target=_blank>SARS-CoV-2/human/USA/IN-CDC-STM-000049216/2021</a>',
         'GISAID representative strain': 'hCoV-19/USA/NJ-CDC-LC0038223/2021, EPI_ISL_1611370',
         'Relevant publications': [
           'https://github.com/cov-lineages/pango-designation/issues/49'
