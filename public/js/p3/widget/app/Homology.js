@@ -55,11 +55,19 @@ define([
   ];
 
   var DatabaseDefs = [
-    { value: 'bacteria-archaea', label: 'Reference and representative genomes', db_type: ['fna','ffn','faa'], db_source:"precomputed_database"},
-    //{ value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
-    { value: 'selGenome', label: 'Search within selected genome' , db_type: ['fna','ffn','faa','frn'], db_source:"genome_list"},
-    { value: 'selGroup', label: 'Search within selected genome group' , db_type: ['fna','ffn','faa','frn'], db_source:"genome_list"},
-    { value: 'selTaxon', label: 'Search within a taxon' , db_type: ['fna','ffn','faa','frn'], db_source:"taxon_list"}
+    {
+      value: 'bacteria-archaea', label: 'Reference and representative genomes', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
+    },
+    // { value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
+    {
+      value: 'selGenome', label: 'Search within selected genome', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_list'
+    },
+    {
+      value: 'selGroup', label: 'Search within selected genome group', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_list'
+    },
+    {
+      value: 'selTaxon', label: 'Search within a taxon', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'taxon_list'
+    }
   ];
 
   var SearchForDefs = [
@@ -73,7 +81,7 @@ define([
     baseClass: 'BLAST',
     templateString: Template,
     applicationHelp: 'user_guides/services/blast.html',
-    applicationName:"Homology",
+    applicationName: 'Homology',
     tutorialLink: 'tutorial/blast/blast.html',
     addedGenomes: 0,
     maxGenomes: 20,
@@ -150,14 +158,14 @@ define([
 
     sanitizeFastaSequence: function (sequence) {
       var header = sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; });
-      var patternSeqSplit= /(?:>.+\n| )+/;
-      var seq_segments = sequence.split(patternSeqSplit).filter(function (line) { return (line.match(/^>.*/) == null && line!=""); }).map(function (line) { return line.replace(/ /g, ''); });
+      var patternSeqSplit = /(?:>.+\n| )+/;
+      var seq_segments = sequence.split(patternSeqSplit).filter(function (line) { return (line.match(/^>.*/) == null && line != ''); }).map(function (line) { return line.replace(/ /g, ''); });
       var sanitized = [];
-      if (header.length == 0){
-          header.push(">query_seq1");
+      if (header.length == 0) {
+        header.push('>query_seq1');
       }
       header.forEach(function (item, index) {
-        sanitized.push(item+"\n"+seq_segments[index].replace(/\n/g,""));
+        sanitized.push(item + '\n' + seq_segments[index].replace(/\n/g, ''));
       });
 
       return sanitized.join('\n');
@@ -167,7 +175,7 @@ define([
       return this.numFastaSequence(sequence) <= 1;
     },
 
-    numFastaSequence: function(sequence){
+    numFastaSequence: function (sequence) {
       return sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; }).length;
     },
 
@@ -179,7 +187,7 @@ define([
     },
     isAminoAcidFastaSequence: function (sequence) {
       var patternFastaHeader = />.*\n/gi;
-      var patternAASequence = /[ACDEFGHIKLMNPQRSTUVWYBXZJUO\n\s]/gi; //extended AminoAcid alphabet
+      var patternAASequence = /[ACDEFGHIKLMNPQRSTUVWYBXZJUO\n\s]/gi; // extended AminoAcid alphabet
 
       return (sequence.replace(patternFastaHeader, '').replace(patternAASequence, '').length === 0);
     },
@@ -212,22 +220,22 @@ define([
       var output_file = this.output_file.get('value');
       var output_path = this.output_path.get('value');
       var max_hits = parseInt(this.max_hits.get('value'));
-      //var def = new Deferred();
+      // var def = new Deferred();
       var resultType;
-      var input_type=null;
+      var input_type = null;
 
-      //temporary until new input types
-      _self.input_source="fasta_data";
+      // temporary until new input types
+      _self.input_source = 'fasta_data';
 
-      switch(_self.sequence_type){
-          case NA:
-            input_type = "dna";
-            break;
-          case AA:
-            input_type = "aa";
-            break;
-          default:
-            break;
+      switch (_self.sequence_type) {
+        case NA:
+          input_type = 'dna';
+          break;
+        case AA:
+          input_type = 'aa';
+          break;
+        default:
+          break;
       }
       var genomeIds = [];
 
@@ -246,7 +254,7 @@ define([
           method: 'HomologyService.blast_fasta_to_database',
           params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
         };
-        //def.resolve(q);
+        // def.resolve(q);
       } else {
         // blast against genomes/groups/taxon
         var search_for = this.search_for.get('value');
@@ -267,7 +275,7 @@ define([
               method: 'HomologyService.blast_fasta_to_genomes',
               params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
             };
-            //def.resolve(q);
+            // def.resolve(q);
             break;
           case 'selGroup':
             var path = this.genome_group.get('value');
@@ -293,7 +301,7 @@ define([
                 method: 'HomologyService.blast_fasta_to_genomes',
                 params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
               };
-              //def.resolve(q);
+              // def.resolve(q);
             }));
             break;
           case 'selTaxon':
@@ -307,7 +315,7 @@ define([
               method: 'HomologyService.blast_fasta_to_taxon',
               params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
             };
-            //def.resolve(q);
+            // def.resolve(q);
             break;
           default:
             break;
@@ -316,85 +324,95 @@ define([
       var db_obj = DatabaseDefs.find(obj => {
         return obj.value === database;
       });
-      //this should probably move up into the if/else block above
-      if(db_obj){
+      // this should probably move up into the if/else block above
+      if (db_obj) {
         this.db_source = db_obj.db_source;
         this.db_precomputed_database = db_obj.db_source;
       }
       this.db_type = this.search_for.value;
 
-      //prepare submission values
-      var submit_values = {"input_type":input_type,"input_source":_self.input_source,"db_type":_self.db_type,
-      "db_source":_self.db_source, "output_file":output_file, "output_path": output_path, "blast_max_hits":max_hits, "blast_evalue_cutoff":evalue};
-        if (sequence){
-            if (this.numFastaSequence(sequence) == 0){
-                sequence = ">fasta_record1\n"+sequence;
-            }
-            submit_values["input_fasta_data"]=sequence;
+      // prepare submission values
+      var submit_values = {
+        'input_type': input_type,
+        'input_source': _self.input_source,
+        'db_type': _self.db_type,
+        'db_source': _self.db_source,
+        'output_file': output_file,
+        'output_path': output_path,
+        'blast_max_hits': max_hits,
+        'blast_evalue_cutoff': evalue
+      };
+      if (sequence) {
+        if (this.numFastaSequence(sequence) == 0) {
+          sequence = '>fasta_record1\n' + sequence;
         }
-      if (genomeIds.length > 0){
-          submit_values["db_genome_list"]=genomeIds;
+        submit_values['input_fasta_data'] = sequence;
       }
-      if (taxon){
-          submit_values["db_taxon_list"]=[taxon];
+      if (genomeIds.length > 0) {
+        submit_values['db_genome_list'] = genomeIds;
       }
-
-      if (this.demo){
-          //resultType = "custom";
-          resultType = "custom";
-          submit_values["db_source"]="fasta_data";
-          submit_values["db_fasta_data"]=">id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n"+
-          ">id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n"
-      }
-      else if (_self.db_precomputed_database){
-        submit_values["db_precomputed_database"]=database.split(".")[0];
+      if (taxon) {
+        submit_values['db_taxon_list'] = [taxon];
       }
 
+      if (this.demo) {
+        // resultType = "custom";
+        resultType = 'custom';
+        submit_values['db_source'] = 'fasta_data';
+        submit_values['db_fasta_data'] = '>id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n' +
+          '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
+      }
+      else if (_self.db_precomputed_database) {
+        submit_values['db_precomputed_database'] = database.split('.')[0];
+      }
 
-        if (this.validate()) {
-            var start_params = {
-            'base_url': window.App.appBaseURL
-            }
-           //var values = this.getValues();
-           var callback = function() {
-                //the state set here shows up again in the HomologyMemoryStore onSetState
-                _self.result = new HomologyResultContainer({
-                    id: this.id + '_blastResult',
-                    style: 'min-height: 700px; visibility:hidden;',
-                    state: { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values}
-                });
-                _self.result.placeAt(query('.blast_result')[0]);
-                _self.result.loadingMask.show();
-                query('.blast_result .GridContainer').style('visibility', 'visible');
-                domClass.add(query('.service_form')[0], 'hidden');
-                domClass.add(query('.appSubmissionArea')[0], 'hidden');
-                domClass.add(query('.service_error')[0], 'hidden');
-                query('.reSubmitBtn').style('visibility', 'visible');
-                //_self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
-                _self.result.startup();
-                //Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
-            };
-           //set job hook before submission
-            if (_self.live_job.value){
-                _self.setJobHook(function(){
-                    Topic.publish('/navigate', { href: `/view/Homology/${output_path}/${output_file}`});
-                }, function(error){
-                    //Topic.publish('BLAST_UI', 'showErrorMessage', error);
-                });
-            }
-            if (this.demo && false){
-                callback();
-            }
-            else{
-                //changing the submit() function to be getValues() in shift away from form/viewer
-                //_self.doSubmit(submit_values, start_params);
-                return submit_values;
-            }
+
+      if (this.validate()) {
+        var start_params = {
+          'base_url': window.App.appBaseURL
         }
+        // var values = this.getValues();
+        var callback = function () {
+          // the state set here shows up again in the HomologyMemoryStore onSetState
+          _self.result = new HomologyResultContainer({
+            id: this.id + '_blastResult',
+            style: 'min-height: 700px; visibility:hidden;',
+            state: {
+              query: q, resultType: resultType, resultPath: output_path + '/.' + output_file, 'submit_values': submit_values
+            }
+          });
+          _self.result.placeAt(query('.blast_result')[0]);
+          _self.result.loadingMask.show();
+          query('.blast_result .GridContainer').style('visibility', 'visible');
+          domClass.add(query('.service_form')[0], 'hidden');
+          domClass.add(query('.appSubmissionArea')[0], 'hidden');
+          domClass.add(query('.service_error')[0], 'hidden');
+          query('.reSubmitBtn').style('visibility', 'visible');
+          // _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
+          _self.result.startup();
+          // Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
+        };
+        // set job hook before submission
+        if (_self.live_job.value) {
+          _self.setJobHook(function () {
+            Topic.publish('/navigate', { href: `/view/Homology/${output_path}/${output_file}` });
+          }, function (error) {
+            // Topic.publish('BLAST_UI', 'showErrorMessage', error);
+          });
+        }
+        if (this.demo) {
+          callback();
+        }
+        else {
+          // changing the submit() function to be getValues() in shift away from form/viewer
+          // _self.doSubmit(submit_values, start_params);
+          return submit_values;
+        }
+      }
     },
 
-    setLiveJob: function(){
-        this.live_job.value = this.live_job.checked;
+    setLiveJob: function () {
+      this.live_job.value = this.live_job.checked;
     },
 
     resubmit: function () {
@@ -407,11 +425,11 @@ define([
       domClass.remove(query('.service_error')[0], 'hidden');
       domClass.remove(query('.service_message')[0], 'hidden');
       query('.service_error h3')[0].innerHTML = 'We were not able to complete your BLAST request. Please let us know with details from the message below.';
-      if (typeof err === 'string'){
+      if (typeof err === 'string') {
         query('.service_message')[0].innerHTML = err;
       }
-      else{
-          query('.service_message')[0].innerHTML = err.response.data.error.message;
+      else {
+        query('.service_message')[0].innerHTML = err.response.data.error.message;
       }
 
       query('.blast_result .GridContainer').style('visibility', 'hidden');
@@ -436,10 +454,10 @@ define([
     },
 
     checkOutputName: function () {
-        if (this.demo){
-            return true;
-        }
-        return this.inherited(arguments);
+      if (this.demo) {
+        return true;
+      }
+      return this.inherited(arguments);
     },
 
     onAddGenome: function () {
@@ -553,7 +571,7 @@ define([
     },
 
     onChangeSequence: function (val) {
-      _self = this;
+      var _self = this;
       // console.log("onChangeSequence: [", val, "]");
       if (!val) {
         this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format.';
@@ -573,10 +591,10 @@ define([
       }
       this.program.set('disabled', false);
       this.sequence_type =  NO;
-      if (this.isNucleotideFastaSequence(val)){
+      if (this.isNucleotideFastaSequence(val)) {
         this.sequence_type =  NA;
       }
-      else if (this.isAminoAcidFastaSequence(val)){
+      else if (this.isAminoAcidFastaSequence(val)) {
         this.sequence_type = AA;
       }
       this.program.removeOption(ProgramDefs);
@@ -585,7 +603,7 @@ define([
       }));
       if (this.sequence_type == NO) {
         this.program.setValue(undefined);
-        this.program._setDisplay("");
+        this.program._setDisplay('');
         this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format using a valid alphabet.';
         return;
       }
@@ -602,32 +620,32 @@ define([
       }).validDatabase;
 
       // console.log(validDatabaseTypes);
-      //keep this logic for now, but all databases are valid for all programs now.
+      // keep this logic for now, but all databases are valid for all programs now.
       this.database.removeOption(DatabaseDefs);
       this.database.addOption(DatabaseDefs.filter(function (d) {
         return validDatabaseTypes.some(function (t) {
-          //return (d.value).match(t);
+          // return (d.value).match(t);
           return true;
         });
       }));
 
       this.validate();
-      if (this.search_for.value){
-          this.setDbType(this.database.value);
+      if (this.search_for.value) {
+        this.setDbType(this.database.value);
       }
 
       this.database.loadAndOpenDropDown();
     },
     setDbType: function (val) {
-       var candidate_types =DatabaseDefs.filter(function (record) {
-           return record.value == val;
-       })[0].db_type;
+      var candidate_types = DatabaseDefs.filter(function (record) {
+        return record.value == val;
+      })[0].db_type;
 
-       var target_program = this.program.value;
-       var candidate_types2 = ProgramDefs.find(function (p) {
-            return p.value === target_program;
-        }).validSearchFor;
-       var valid_types = candidate_types.filter(value => candidate_types2.includes(value)); //intersection
+      var target_program = this.program.value;
+      var candidate_types2 = ProgramDefs.find(function (p) {
+        return p.value === target_program;
+      }).validSearchFor;
+      var valid_types = candidate_types.filter(value => candidate_types2.includes(value)); // intersection
 
       this.search_for.removeOption(SearchForDefs);
       this.search_for.addOption(SearchForDefs.filter(function (d) {
@@ -644,7 +662,7 @@ define([
         // show advance options
         this.toggleAdvanced(true);
 
-        //domClass.remove(this.search_for_wrapper, 'hidden');
+        // domClass.remove(this.search_for_wrapper, 'hidden');
 
         switch (val) {
           case 'selGenome':
