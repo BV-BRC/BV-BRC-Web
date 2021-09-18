@@ -20,64 +20,53 @@ define([
     {
       value: 'blastn',
       label: 'blastn - search a nucleotide database using a nucleotide query',
-      validDatabase: ['.fna', '.ffn', '.frn', 'selGenome', 'selGroup', 'selTaxon'],
-      validSearchFor: ['contigs', 'features'],
+      validDatabase: ['bacteria-archaea', 'selGenome', 'selGroup', 'selTaxon'],
+      validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     },
     {
       value: 'blastp',
       label: 'blastp - search protein database using a protein query',
-      validDatabase: ['faa', 'selGenome', 'selGroup', 'selTaxon'],
-      validSearchFor: ['features'],
+      validDatabase: ['bacteria-archaea', 'selGenome', 'selGroup', 'selTaxon'],
+      validSearchFor: ['faa'],
       validQuery: [AA]
     },
     {
       value: 'blastx',
       label: 'blastx - search protein database using a translated nucleotide query',
-      validDatabase: ['faa', 'selGenome', 'selGroup', 'selTaxon'],
-      validSearchFor: ['features'],
+      validDatabase: ['bacteria-archaea', 'selGenome', 'selGroup', 'selTaxon'],
+      validSearchFor: ['faa'],
       validQuery: [NA]
     },
     {
       value: 'tblastn',
       label: 'tblastn - search translated nucleotide database using a protein query',
-      validDatabase: ['fna', 'ffn', 'selGenome', 'selGroup', 'selTaxon'],
-      validSearchFor: ['contigs', 'features'],
+      validDatabase: ['bacteria-archaea', 'selGenome', 'selGroup', 'selTaxon'],
+      validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [AA]
     },
     {
       value: 'tblastx',
       label: 'tblastx - search translated nucleotide database using a translated nucleotide query',
-      validDatabase: ['fna', 'ffn', 'selGenome', 'selGroup', 'selTaxon'],
-      validSearchFor: ['contigs', 'features'],
+      validDatabase: ['bacteria-archaea', 'selGenome', 'selGroup', 'selTaxon'],
+      validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     }
   ];
 
   var DatabaseDefs = [
-    { value: 'bacteria-archea.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
+    { value: 'bacteria-archaea', label: 'Reference and representative genomes', db_type: ['fna','ffn','faa'], db_source:"precomputed_database"},
     //{ value: 'ref.fna', label: 'Reference and representative genomes - contigs (fna)', db_type: 'fna', db_source:"precomputed_database"},
-    { value: 'bacteria-archaea.ffn', label: 'Reference and representative genomes - features (ffn)', db_type: 'ffn', db_source:"precomputed_database"},
-    { value: 'ref.faa', label: 'Reference and representative genomes - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
-    { value: 'ref.frn', label: 'Reference and representative genomes - RNAs (frn)', db_type: 'frn', db_source:"precomputed_database" },
-    { value: '16sRNA.frn', label: 'PATRIC 16s RNA Genes (frn)', db_type: 'frn', db_source:"precomputed_database" },
-    { value: 'transcriptomics.ffn', label: 'Features with transcriptomic data (ffn)', db_type: 'ffn', db_source:"precomputed_database" },
-    { value: 'transcriptomics.faa', label: 'Proteins with transcriptomic data(faa)', db_type: 'faa', db_source:"precomputed_database" },
-    { value: 'plasmid.fna', label: 'Plasmids - contigs (fna)', db_type: 'fna', db_source:"precomputed_database" },
-    { value: 'plasmid.ffn', label: 'Plasmids - features (ffn)', db_type: 'ffn', db_source:"precomputed_database" },
-    { value: 'plasmid.faa', label: 'Plasmids - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
-    { value: 'phage.fna', label: 'Phages - contigs (fna)', db_type: 'fna', db_source:"precomputed_database" },
-    { value: 'phage.ffn', label: 'Phages - features (ffn)', db_type: 'ffn', db_source:"precomputed_database" },
-    { value: 'phage.faa', label: 'Phages - proteins (faa)', db_type: 'faa', db_source:"precomputed_database" },
-    { value: 'spgenes.faa', label: 'Proteins with specialty gene reference (faa)', db_type: 'faa', db_source:"precomputed_database" },
-    { value: 'selGenome', label: 'Search within selected genome' },
-    { value: 'selGroup', label: 'Search within selected genome group' },
-    { value: 'selTaxon', label: 'Search within a taxon' }
+    { value: 'selGenome', label: 'Search within selected genome' , db_type: ['fna','ffn','faa','frn'], db_source:"genome_list"},
+    { value: 'selGroup', label: 'Search within selected genome group' , db_type: ['fna','ffn','faa','frn'], db_source:"genome_list"},
+    { value: 'selTaxon', label: 'Search within a taxon' , db_type: ['fna','ffn','faa','frn'], db_source:"taxon_list"}
   ];
 
   var SearchForDefs = [
-    { value: 'contigs', label: 'Genomic sequences (contigs)' },
-    { value: 'features', label: 'Genomic features (genes, proteins or RNAs)' }
+    { value: 'fna', label: 'Contigs (NT)' },
+    { value: 'faa', label: 'Proteins (AA)' },
+    { value: 'ffn', label: 'Genes (NT)' },
+    { value: 'frn', label: 'RNAs (NT)' }
   ];
 
   return declare([AppBase], {
@@ -164,6 +153,9 @@ define([
       var patternSeqSplit= /(?:>.+\n| )+/;
       var seq_segments = sequence.split(patternSeqSplit).filter(function (line) { return (line.match(/^>.*/) == null && line!=""); }).map(function (line) { return line.replace(/ /g, ''); });
       var sanitized = [];
+      if (header.length == 0){
+          header.push(">query_seq1");
+      }
       header.forEach(function (item, index) {
         sanitized.push(item+"\n"+seq_segments[index].replace(/\n/g,""));
       });
@@ -220,7 +212,7 @@ define([
       var output_file = this.output_file.get('value');
       var output_path = this.output_path.get('value');
       var max_hits = parseInt(this.max_hits.get('value'));
-      var def = new Deferred();
+      //var def = new Deferred();
       var resultType;
       var input_type=null;
 
@@ -237,6 +229,7 @@ define([
           default:
             break;
       }
+      var genomeIds = [];
 
       if (useDatabase) {
         if (!sequence) {
@@ -253,10 +246,9 @@ define([
           method: 'HomologyService.blast_fasta_to_database',
           params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
         };
-        def.resolve(q);
+        //def.resolve(q);
       } else {
         // blast against genomes/groups/taxon
-        var genomeIds = [];
         var search_for = this.search_for.get('value');
         resultType = search_for == 'contigs' ? 'genome_sequence' : 'genome_feature';
 
@@ -275,7 +267,7 @@ define([
               method: 'HomologyService.blast_fasta_to_genomes',
               params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
             };
-            def.resolve(q);
+            //def.resolve(q);
             break;
           case 'selGroup':
             var path = this.genome_group.get('value');
@@ -296,26 +288,26 @@ define([
                   }
                 });
               });
-              var genomeIds = Object.keys(genomeIdHash);
+              genomeIds = Object.keys(genomeIdHash);
               var q = {
                 method: 'HomologyService.blast_fasta_to_genomes',
                 params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
               };
-              def.resolve(q);
+              //def.resolve(q);
             }));
             break;
           case 'selTaxon':
-            var taxon = this.taxonomy.get('value');
+            var taxon = null;
+            taxon = this.taxonomy.get('value');
             if (taxon === '') {
               this.taxonomy_message.innerHTML = 'No taxon has selected';
               return;
             }
-
             var q = {
               method: 'HomologyService.blast_fasta_to_taxon',
               params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
             };
-            def.resolve(q);
+            //def.resolve(q);
             break;
           default:
             break;
@@ -327,19 +319,26 @@ define([
       //this should probably move up into the if/else block above
       if(db_obj){
         this.db_source = db_obj.db_source;
-        this.db_type = db_obj.db_type;
         this.db_precomputed_database = db_obj.db_source;
       }
+      this.db_type = this.search_for.value;
 
       //prepare submission values
       var submit_values = {"input_type":input_type,"input_source":_self.input_source,"db_type":_self.db_type,
-      "db_source":_self.db_source, "output_file":output_file, "output_path": output_path};
+      "db_source":_self.db_source, "output_file":output_file, "output_path": output_path, "blast_max_hits":max_hits, "blast_evalue_cutoff":evalue};
         if (sequence){
             if (this.numFastaSequence(sequence) == 0){
                 sequence = ">fasta_record1\n"+sequence;
             }
             submit_values["input_fasta_data"]=sequence;
         }
+      if (genomeIds.length > 0){
+          submit_values["db_genome_list"]=genomeIds;
+      }
+      if (taxon){
+          submit_values["db_taxon_list"]=[taxon];
+      }
+
       if (this.demo){
           //resultType = "custom";
           resultType = "custom";
@@ -376,11 +375,13 @@ define([
                 //Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
             };
            //set job hook before submission
-            _self.setJobHook(function(){
-                Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
-            }, function(error){
-                Topic.publish('BLAST_UI', 'showErrorMessage', error);
-            });
+            if (_self.live_job.value){
+                _self.setJobHook(function(){
+                    Topic.publish('/navigate', { href: `/view/Homology/${output_path}/${output_file}`});
+                }, function(error){
+                    //Topic.publish('BLAST_UI', 'showErrorMessage', error);
+                });
+            }
             if (this.demo && false){
                 callback();
             }
@@ -390,6 +391,10 @@ define([
                 return submit_values;
             }
         }
+    },
+
+    setLiveJob: function(){
+        this.live_job.value = this.live_job.checked;
     },
 
     resubmit: function () {
@@ -597,33 +602,49 @@ define([
       }).validDatabase;
 
       // console.log(validDatabaseTypes);
+      //keep this logic for now, but all databases are valid for all programs now.
       this.database.removeOption(DatabaseDefs);
       this.database.addOption(DatabaseDefs.filter(function (d) {
         return validDatabaseTypes.some(function (t) {
-          return (d.value).match(t);
-        });
-      }));
-
-      var validSearchForTypes = ProgramDefs.find(function (p) {
-        return p.value === val;
-      }).validSearchFor;
-      // console.log(validSearchForTypes);
-      this.search_for.removeOption(SearchForDefs);
-      this.search_for.addOption(SearchForDefs.filter(function (s) {
-        return validSearchForTypes.some(function (t) {
-          return (s.value).match(t);
+          //return (d.value).match(t);
+          return true;
         });
       }));
 
       this.validate();
+      if (this.search_for.value){
+          this.setDbType(this.database.value);
+      }
+
+      this.database.loadAndOpenDropDown();
+    },
+    setDbType: function (val) {
+       var candidate_types =DatabaseDefs.filter(function (record) {
+           return record.value == val;
+       })[0].db_type;
+
+       var target_program = this.program.value;
+       var candidate_types2 = ProgramDefs.find(function (p) {
+            return p.value === target_program;
+        }).validSearchFor;
+       var valid_types = candidate_types.filter(value => candidate_types2.includes(value)); //intersection
+
+      this.search_for.removeOption(SearchForDefs);
+      this.search_for.addOption(SearchForDefs.filter(function (d) {
+        return valid_types.some(function (t) {
+          return (d.value).match(t);
+        });
+      }));
+      this.search_for.set('disabled', false);
     },
 
     onChangeDatabase: function (val) {
+      this.setDbType(val);
       if (['selGenome', 'selGroup', 'selTaxon'].indexOf(val) > -1) {
         // show advance options
         this.toggleAdvanced(true);
 
-        domClass.remove(this.search_for_wrapper, 'hidden');
+        //domClass.remove(this.search_for_wrapper, 'hidden');
 
         switch (val) {
           case 'selGenome':
@@ -658,13 +679,13 @@ define([
       } else {
         this.toggleAdvanced(false);
 
-        domClass.add(this.search_for_wrapper, 'hidden');
         domClass.add(this.genome_id_wrapper, 'hidden');
         domClass.add(this.genome_group_wrapper, 'hidden');
         domClass.add(this.taxon_wrapper, 'hidden');
       }
 
       this.validate();
+      this.search_for.loadAndOpenDropDown();
     }
   });
 });

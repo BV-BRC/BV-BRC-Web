@@ -247,10 +247,17 @@ define([
     },
 
     doSubmit: function(values, start_params){
-        _self = this;
         // tack on container build ID if specified in debugging panel
         if (window.App.containerBuildID) {
           values.container_id = window.App.containerBuildID;
+        }
+        if(this.lookaheadJob){
+            var jobPath = `${this.output_path.value || "" }/${this.output_file.value || ""}`;
+            var liveMsg = `<br>Live job!<br>Stick around to see results.`;
+            if(this.submittedMessage && this.submittedMessage.innerHTML.indexOf('Live job!') === -1){
+                this.submittedMessage.innerHTML += liveMsg;
+                this.workingMessage.innerHTML += liveMsg;
+            }
         }
 
         if (window.App.noJobSubmission) {
@@ -262,19 +269,22 @@ define([
           dlg.show();
           return;
         }
-        return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function(results){
-          if(_self.lookaheadJob){
-              JobManager.setJobHook(results[0].id, _self.lookaheadCallback, _self.lookaheadError);
+        return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(lang.hitch(this, function(results){
+          if(this.lookaheadJob){
+              var jobPath = `${this.output_path.value || "" }/${this.output_file.value || ""}`;
+              var jobLabel = `${this.output_file.value || this.applicationName}`;
+              var jobInfo={"jobID":results[0].id, "jobLabel":jobLabel, "jobPath": jobPath}
+              JobManager.setJobHook(jobInfo, this.lookaheadCallback, this.lookaheadError);
           }
                 return results;
-        }, function(error){
+        }), lang.hitch(this,function(error){
           //if there is an error submitting the job and there is a lookahead error function, call it.
           //will also be called if JobManager gets back a failed.
-          if(_self.lookaheadJob && _self.lookaheadError){
-            _self.lookaheadError("Job submission not accepted. Please try again or report this error.");
+          if(this.lookaheadJob && this.lookaheadError){
+            this.lookaheadError("Job submission not accepted. Please try again or report this error.");
           }
-          return error;
-        });
+          throw(error);
+        }));
     },
 
     onSubmit: function (evt) {

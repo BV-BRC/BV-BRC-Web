@@ -28,7 +28,7 @@
                           style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
                           data-dojo-attach-point="sequence"
                           data-dojo-type="dijit/form/Textarea"
-                          data-dojo-props="rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true"
+                          data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Multiple query sequences require FASTA format.', intermediateChanges:true"
                           data-dojo-attach-event="onChange:onChangeSequence"></textarea>
                 <div class="warning" data-dojo-attach-point="sequence_message"></div>
 
@@ -43,22 +43,36 @@
                 </select>
                 <div class="warning" data-dojo-attach-point="program_message"></div>
 
-                <div class="headerrow" style="margin: 16px 0 7px 0">
-                    <label class="appBoxLabel">Database</label>
+                <div class="appRow">
+                    <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
+                        <div class="headerrow" style="margin-bottom: 7px">
+                            <label class="appBoxLabel">Database</label>
+                        </div>
+                        <div name="database" style="width:96%; margin-left:10px"
+                                data-dojo-type="dijit/form/Select"
+                                data-dojo-attach-event="onChange:onChangeDatabase"
+                                data-dojo-props="disabled:true"
+                                data-dojo-attach-point="database">
+                        </div>
+                    </div>
+                    <div class="appRowSegment" style="text-align:left; width:20%">
+                        <div class="headerrow" style="margin-bottom: 7px">
+                            <label class="appBoxLabel">Database Type</label>
+                        </div>
+                        <div  data-dojo-type="dijit/form/Select"name="search_for"
+                            data-dojo-props="disabled:true"
+                            maxHeight="200" style="width:100%" required="true" 
+                            data-dojo-attach-point="search_for"></div>
+                    <div class="warning" data-dojo-attach-point="search_for_message"></div>
+                    </div>
                 </div>
-                <select name="database" style="width:96%; margin-left:10px"
-                        data-dojo-type="dijit/form/Select"
-                        data-dojo-attach-event="onChange:onChangeDatabase"
-                        data-dojo-props="disabled:true"
-                        data-dojo-attach-point="database">
-                </select>
               <div class="headerrow" style="margin: 16px 0 7px 0">
                 <label class="appBoxLabel">Output Folder</label>
              </div>
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true"
                   data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
               <div class="headerrow" style="margin: 16px 0 7px 0">
-                <label class="appBoxLabel">Output Name</label>
+                  <label class="appBoxLabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
               </div>
                 <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
                 <div class="warning" data-dojo-attach-point="database_message"></div>
@@ -113,14 +127,6 @@
                     <div class="warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
 
-                <div class="appBox appShadow hidden" data-dojo-attach-point="search_for_wrapper">
-                    <label class="paramlabel">Search for: </label><br/>
-                    <select name="search_for" style="width:250px"
-                            data-dojo-type="dijit/form/Select"
-                            data-dojo-attach-point="search_for">
-                    </select>
-                    <div class="warning" data-dojo-attach-point="search_for_message"></div>
-                </div>
 
                 <div class="appBox appShadow">
                     <div class="headerrow">
@@ -132,8 +138,9 @@
                                 data-dojo-type="dijit/form/Select"
                                 data-dojo-attach-point="max_hits">
                             <option value="1">1</option>
-                            <option value="10">10</option>
-                            <option value="50" selected="selected">50</option>
+                            <option value="10" selected="selected">10</option>
+                            <option value="20" >20</option>
+                            <option value="50">50</option>
                             <option value="100">100</option>
                             <option value="500">500</option>
                         </select>
@@ -141,15 +148,15 @@
 
                     <div class="left third">
                         <label class="paramlabel">E value threshold: </label><br/>
-                        <select name="threshold" type="text" value="10" style="width:50px"
+                        <select name="threshold" type="text" value="0.0001" style="width:50px"
                                data-dojo-type="dijit/form/Select"
                                data-dojo-attach-point="evalue">
-                            <option value="0.0001">0.0001</option>
+                            <option value="0.0001" selected="selected">0.0001</option>
                             <option value="0.001">0.001</option>
                             <option value="0.01">0.01</option>
                             <option value="0.1">0.1</option>
                             <option value="1">1</option>
-                            <option value="10" selected="selected">10</option>
+                            <option value="10">10</option>
                         </select>
                     </div>
                     <div class="clear"></div>
@@ -171,7 +178,8 @@
                 </div>
                 <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
                 <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-            </div>
+                <div id="live_job_check123" value=true data-dojo-type="dijit/form/CheckBox" checked data-dojo-attach-point="live_job" data-dojo-attach-event="onChange:setLiveJob"></div>
+                <label for="live_job_check123">Live job</label>
         </div>
     </div>
 

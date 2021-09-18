@@ -163,7 +163,7 @@ define([
                                 return d !== '';
                             });
                             query.q = 'accession:(' + resultIds.join(' OR ') + ')';
-                            query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,description';
+                            query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type';
                         } else if (this.type == 'genome_feature') {
                             doQuery = true;
 
@@ -270,24 +270,30 @@ define([
             var identical = {}; //NEED TO FIND OUT WHEN / HOW IDENTICAL IS POPULATED
             var features = json.lookups[1] || {};
             var entries = [];
+            var query_id = null;
+            var query_length = null;
+            var target_id = null;
+            var report = null;
+            var search = null;
+            var hits = null;
             json.data.forEach(function (query_section) {
-                var report = query_section.report;
-                var search = report.results.search;
-                var hits = search.hits;
+                report = query_section.report;
+                search = report.results.search;
+                hits = search.hits;
                 hits.forEach(function (hit) {
                     //metadata doesn't exist right now from the DB
 
-                    var query_id = hit.query_id;
-                    var query_length = hit.query_len;
-                    var target_id = hit.description[0].id;
+                    query_id = search.query_id;
+                    query_length = search.query_len;
+                    target_id = hit.description[0].id;
                     //metadata doesn't exist right now from the DB
                     var m = Object.prototype.hasOwnProperty.call(metadata, target_id) ? metadata[target_id] : { genome_id: '', genome_name: '', 'function': '' };
                     var entry = {
                         qseqid: query_id,
                         sseqid: target_id,
                         pident: Math.round(hit.hsps[0].identity / hit.hsps[0].align_len * 100),
-                        query_coverage: Math.round((Math.abs(hit.hsps[0].query_to - hit.hsps[0].query_from) + 1) / query_length * 100),
-                        subject_coverage: Math.round((Math.abs(hit.hsps[0].hit_to - hit.hsps[0].hit_from) + 1) / hit.len * 100),
+                        query_coverage: ((Math.abs(hit.hsps[0].query_to - hit.hsps[0].query_from) + 1) / query_length * 100).toFixed(2),
+                        subject_coverage: ((Math.abs(hit.hsps[0].hit_to - hit.hsps[0].hit_from) + 1) / hit.len * 100).toFixed(2),
                         length: hit.len,
                         q_length: query_length,
                         evalue: this.formatEvalue(hit.hsps[0].evalue),
@@ -308,6 +314,7 @@ define([
                     if (this.type === 'genome_feature') {
                         if (Object.prototype.hasOwnProperty.call(features, target_id)) {
                             entry.feature_id = features[target_id].feature_id;
+                            entry.function = features[target_id].product;
                             entry = lang.mixin(entry, features[target_id]);
                         } else if (target_id.indexOf('gi|') > -1) {
                             var refseq_locus_tag = target_id.split('|')[2];
@@ -320,6 +327,7 @@ define([
                         target_id = target_id.replace('accn|', '');
                         if (Object.prototype.hasOwnProperty.call(features, target_id)) {
                             entry.genome_id = features[target_id].genome_id;
+                            entry.function = features[target_id].sequence_type;
                             entry = lang.mixin(entry, features[target_id]);
                         } else {
                             console.log('missing id: ', target_id);

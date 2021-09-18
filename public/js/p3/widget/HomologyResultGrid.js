@@ -1,7 +1,7 @@
 define([
     'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
     'dojo/aspect', 'dojo/on', 'dojo/dom-class', 'dojo/dom-construct',
-    './Grid', 'dojox/widget/Standby', '../store/HomologyResultMemoryStore',
+    './PageGrid', 'dojox/widget/Standby', '../store/HomologyResultMemoryStore',
     './GridSelector'
 ], function (
     declare, lang, Deferred,
@@ -34,11 +34,12 @@ define([
                             node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>';
                         }
                     },
+                    query: { label: 'Query ID', field: 'qseqid' },
                     genome: { label: 'Genome', field: 'genome_name' },
                     genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
-                    patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+                    patric_id: { label: 'Subject ID', field: 'patric_id' },
                     refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
-                    gene: { label: 'Gene', field: 'gene' },
+                    gene: { label: 'Gene', field: 'gene', hidden: true},
                     plfam: { label: 'PATRIC Local family', field: 'plfam_id', hidden: true },
                     pgfam: { label: 'PATRIC Global family', field: 'pgfam_id', hidden: true },
                     product: { label: 'Product', field: 'function' },
@@ -67,9 +68,10 @@ define([
                             node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>';
                         }
                     },
+                    query: { label: 'Query ID', field: 'qseqid' },
                     genome: { label: 'Genome', field: 'genome_name' },
                     genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
-                    accession: { label: 'Accession', field: 'accession' },
+                    accession: { label: 'Subject ID', field: 'accession' },
                     description: { label: 'Description', field: 'description', hidden: true },
                     product: { label: 'Product', field: 'function' },
                     identity: { label: 'Identity (%)', field: 'pident' },
@@ -78,7 +80,7 @@ define([
                     hit_from: { label: 'Hit from', field: 'hit_from', hidden: true },
                     hit_to: { label: 'Hit to', field: 'hit_to', hidden: true },
                     q_length: { label: 'Query Length', field: 'q_length' },
-                    length: { label: 'Sub Length', field: 'length' },
+                    length: { label: 'Subject Length', field: 'length' },
                     score: { label: 'Score', field: 'bitscore' },
                     evalue: { label: 'E value', field: 'evalue' }
                 }

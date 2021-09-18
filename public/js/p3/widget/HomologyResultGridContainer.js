@@ -3,9 +3,9 @@ define([
     'dojo/on', 'dojo/topic',
     'dijit/popup', 'dijit/TooltipDialog',
     './ContainerActionBar', 'FileSaver',
-    './GridContainer', './HomologyResultGrid', './PerspectiveToolTip'
+    './GridContainer', './HomologyResultGrid', './PerspectiveToolTip', 'dojo/_base/lang'
   ], function (
-    declare, lang,
+    declare, lang, 
     on, Topic,
     popup, TooltipDialog,
     ContainerActionBar, saveAs,
@@ -14,7 +14,7 @@ define([
 
     var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 
-    var downloadTT = new TooltipDialog({
+    var downloadTT = new PerspectiveToolTipDialog({
       content: dfc,
       onMouseLeave: function () {
         popup.close(downloadTT);
@@ -25,7 +25,7 @@ define([
       var rel = evt.target.attributes.rel.value;
       var data = downloadTT.get('data');
       var headers = downloadTT.get('headers');
-      var filename = 'PATRIC_blast';
+      var filename = 'BVBRC_blast';
       // console.log(data, headers);
 
       var DELIMITER,
@@ -70,7 +70,11 @@ define([
         if (!state) {
           return;
         }
-
+        //This is a hack / place holder for a real breadcrumb. Can't find the path parsing and linking function.
+        if (state.path && this.containerActionBar){
+            this.containerActionBar.path = state.path;
+            this.containerActionBar.pathContainer.innerHTML=`<span class="wsBreadCrumb"><b class="perspective">${state.path}</b></span>`;
+        }
         if (this.grid) {
           this.grid.set('state', state);
         }
@@ -80,7 +84,8 @@ define([
           region: 'top',
           layoutPriority: 7,
           splitter: true,
-          className: 'BrowserHeader',
+          className: 'BrowserHeader WSBrowserHeader',
+          path: "Homology Viewer",
           dataModel: this.dataModel,
           facetFields: this.facetFields,
           state: lang.mixin({}, this.state),
@@ -109,13 +114,13 @@ define([
 
             switch (this.type) {
               case 'genome_feature':
-                headers = ['Genome', 'Genome ID', 'PATRIC ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
+                headers = ['Genome', 'Genome ID', 'Subject ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
                 content = data.map(function (row) {
                   return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row['function']), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
                 });
                 break;
               case 'genome_sequence':
-                headers = ['Genome', 'Genome ID', 'Accession', 'Description', 'Product', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'ALN Length', 'Score', 'E value'];
+                headers = ['Genome', 'Genome ID', 'Subject ID', 'Description', 'Product', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'ALN Length', 'Score', 'E value'];
                 content = data.map(function (row) {
                   return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row['function']), row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.length, row.bitscore, row.evalue];
                 });

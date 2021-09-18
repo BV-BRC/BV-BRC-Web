@@ -63,6 +63,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       var inProgress = status['in-progress'] || 0;
       var completed = status.completed || 0;
       var failed = status.failed || 0;
+      _self=this;
 
       // check for any changes in status
       var change = false;
@@ -80,13 +81,39 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
                 if (status == "failed"){
                     var currentJob = self.targetJob;
                     self.targetJob = null;
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} failed..</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
                     if (self.targetErrorCallback){
                         self.targetErrorCallback(`Job failed to finish. Please check ${res[0][currentJob].parameters.output_path}/${res[0][currentJob].parameters.output_file} for details`);
                     }
                 }
-                else if (self.targetJobCallback && status != "queued" && status != "in-progress"){
+                else if (status == "in-progress"){
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} running...</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                }
+                else if (status == "queued"){
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} allocating resources...</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                }
+                else{ 
                     self.targetJob=null;
-                    self.targetJobCallback();
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} finished.</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                    if (self.targetJobCallback){
+                        self.targetJobCallback();
+                    }
                 }
             });
         }
@@ -186,8 +213,10 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     targetJob: null,
     targetJobCallback: null,
     targetErrorCallback: null,
-    setJobHook: function(jobID, callback, error_callback){
-      self.targetJob = jobID;
+    setJobHook: function(jobInfo, callback, error_callback){
+      self.targetJob = jobInfo.jobID;
+      self.targetJobLabel = jobInfo.jobLabel;
+      self.targetJobPath = jobInfo.jobPath;
       self.targetJobCallback = callback;
       self.targetErrorCallback = error_callback;
     },
