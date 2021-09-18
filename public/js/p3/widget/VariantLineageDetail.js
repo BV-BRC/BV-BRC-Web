@@ -256,7 +256,7 @@ define([
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19R, L452R, T478K, D614G, P681R,  D950N',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3:P1469S; nsp12:P323L, G671S; nsp13:P77L; ORF3a:S26L; M:I82T; ORF7a:V82A, T120I; N:D63G, R203M, D377Y',
         'Impact': 'Predominantly India lineage with several spike mutations, pango-designation issue #49',
-        'ViPR representative strain link': '<a href="https://www.viprbrc.org/brc/vipr_genome_search.spg?method=doQuickTextSearch&decorator=corona_ncov&pageTo=1&selectionContext=1631918231229" target=_blank>SARS-CoV-2/human/USA/IN-CDC-STM-000049216/2021</a>',
+        'ViPR representative strain link': '<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=MZ009823&decorator=corona_ncov&context=1631918231229" target=_blank>SARS-CoV-2/human/USA/IN-CDC-STM-000049216/2021</a>',
         'GISAID representative strain': 'hCoV-19/USA/NJ-CDC-LC0038223/2021, EPI_ISL_1611370',
         'Relevant publications': [
           'https://github.com/cov-lineages/pango-designation/issues/49'
