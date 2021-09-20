@@ -170,6 +170,52 @@ define([
           });
         },
         false
+      ], [
+        'Rerun',
+        'MultiButton fa icon-rotate-left fa-2x',
+        {
+          label: 'RERUN',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Return to service page with same job parameters',
+          validContainerTypes: ['*']
+        },
+        function (selection) {
+          var job_params = JSON.stringify(selection[0].parameters);
+          //TODO: make sure service_id variable is present for every service
+          var service_id = selection[0].app;
+          var localStorage = window.localStorage;
+          if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+            localStorage.removeItem("bvbrc_rerun_job");
+          }
+          localStorage.setItem("bvbrc_rerun_job",job_params);
+          switch (service_id) {
+            case 'ComprehensiveGenomeAnalysis':
+              Topic.publish('/navigate',{href:'/app/ComprehensiveGenomeAnalysis'});
+              break;
+            case 'GenomeAssembly2':
+              Topic.publish('/navigate',{href:'/app/Assembly2'});
+              break;
+            case 'GenomeAlignment':
+              Topic.publish('/navigate',{href:'/app/GenomeAlignment'});
+              break;
+            case 'GenomeAnnotation':
+              Topic.publish('/navigate',{href:'/app/Annotation'});
+              break;
+            case 'MetagenomicReadMapping':
+              Topic.publish('/navigate',{href:'/app/MetagenomicReadMapping'});
+              break;
+            case 'TaxonomicClassification':
+              Topic.publish('/navigate',{href:'/app/TaxonomicClassification'});
+              break;
+            case 'Variation':
+              Topic.publish('/navigate',{href:'/app/Variation'});
+              break;
+            default:
+              console.log('Rerun not enabled for: ',service_id);
+          }
+        },
+        false
       ]
     ],
 

@@ -497,9 +497,20 @@ define([
         var service_specific = {"mapper":"mapper","caller":"caller"};
         param_dict["service_specific"] = service_specific;
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        AppBase.prototype.loadLibrary.call(this,JSON.parse(localStorage.getItem("bvbrc_rerun_job")),param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        job_data = this.formatRerunJson(job_data);
+        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
       }
-    }
+    },
 
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
+    }
   });
 });

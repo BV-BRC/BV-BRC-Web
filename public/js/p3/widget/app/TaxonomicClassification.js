@@ -451,12 +451,13 @@ define([
     intakeRerunForm: function() {
       var localStorage = window.localStorage;
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","contigs":"contigs","strategy":"algorithm"};
+        var param_dict = {"output_folder":"output_path","contigs":"contigs"};
         var widget_map = {"contigs":"contigsFile"};
         param_dict["widget_map"] = widget_map;
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         this.selectStartWith(job_data);
+        job_data = this.formatRerunJson(job_data);
         if (this.startWithRead.checked) {
           AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
         }
@@ -464,6 +465,16 @@ define([
         localStorage.removeItem("bvbrc_rerun_job");
         this.form_flag = true;
       }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     },
 
     //Selects the start with button: reads or contigs
