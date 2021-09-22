@@ -264,3 +264,11 @@
 .patric .dgrid-cell.field-description {
     width: 20%;
 }
+
+/* Strains */
+.dgrid-column-species {
+    width: 10%;
+}
+.dgrid-column-strain {
+    width: 20%;
+}
