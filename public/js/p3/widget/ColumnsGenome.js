@@ -20,7 +20,6 @@ define(['./formatter'], function (formatter) {
       field: 'other_names',
       hidden: true
     },
-
     taxon_id: {
       label: 'NCBI Taxon ID',
       field: 'taxon_id',
@@ -434,8 +433,6 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       sortable: false
     },
-
-
     host_name: {
       label: 'Host Name',
       field: 'host_name',
@@ -460,6 +457,21 @@ define(['./formatter'], function (formatter) {
       label: 'Host Health',
       field: 'host_health',
       hidden: true
+    },
+    host_group: {
+      label: 'Host Group',
+      field: 'host_group',
+      hidden: true
+    },
+    lab_host: {
+      label: 'Lab Host',
+      field: 'lab_host',
+      hidden: false
+    },
+    passage: {
+      label: 'Passage',
+      field: 'passage',
+      hidden: false
     },
     other_clinical: {
       label: 'Other Clinical',
