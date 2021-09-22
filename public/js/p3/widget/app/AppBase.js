@@ -3,13 +3,15 @@ define([
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin', 'dojox/xml/parser',
-  'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom'
+  'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom',
+  '../../JobManager'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
-  Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom
+  Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom,
+  JobManager
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
@@ -23,6 +25,9 @@ define([
     showCancel: false,
     activeWorkspace: '',
     activeWorkspacePath: '',
+    lookaheadJob: false,
+    lookaheadCallback: null,
+    lookaheadError: null,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -199,6 +204,14 @@ define([
       this._started = true;
     },
 
+    setJobHook: function (callback, error_callback) {
+      this.lookaheadJob = true;
+      this.lookaheadCallback = callback;
+      if (error_callback) {
+        this.lookaheadError = error_callback;
+      }
+    },
+
     onReset: function (evt) {
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
@@ -246,6 +259,47 @@ define([
 
     },
 
+    doSubmit: function (values, start_params) {
+      // tack on container build ID if specified in debugging panel
+      if (window.App.containerBuildID) {
+        values.container_id = window.App.containerBuildID;
+      }
+      if (this.lookaheadJob) {
+        var jobPath = `${this.output_path.value || '' }/${this.output_file.value || ''}`;
+        var liveMsg = '<br>Live job!<br>Stick around to see results.';
+        if (this.submittedMessage && this.submittedMessage.innerHTML.indexOf('Live job!') === -1) {
+          this.submittedMessage.innerHTML += liveMsg;
+          this.workingMessage.innerHTML += liveMsg;
+        }
+      }
+
+      if (window.App.noJobSubmission) {
+        var dlg = new Dialog({
+          title: 'Job Submission Params: ',
+          content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
+        });
+        dlg.startup();
+        dlg.show();
+        return;
+      }
+      return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(lang.hitch(this, function (results) {
+        if (this.lookaheadJob) {
+          var jobPath = `${this.output_path.value || '' }/${this.output_file.value || ''}`;
+          var jobLabel = `${this.output_file.value || this.applicationName}`;
+          var jobInfo = { 'jobID': results[0].id, 'jobLabel': jobLabel, 'jobPath': jobPath }
+          JobManager.setJobHook(jobInfo, this.lookaheadCallback, this.lookaheadError);
+        }
+        return results;
+      }), lang.hitch(this, function (error) {
+        // if there is an error submitting the job and there is a lookahead error function, call it.
+        // will also be called if JobManager gets back a failed.
+        if (this.lookaheadJob && this.lookaheadError) {
+          this.lookaheadError('Job submission not accepted. Please try again or report this error.');
+        }
+        throw (error);
+      }));
+    },
+
     onSubmit: function (evt) {
       var _self = this;
 
@@ -258,26 +312,12 @@ define([
         domClass.remove(this.domNode, 'Error');
         domClass.remove(this.domNode, 'Submitted');
 
-        // tack on container build ID if specified in debugging panel
-        if (window.App.containerBuildID) {
-          values.container_id = window.App.containerBuildID;
-        }
-
-        if (window.App.noJobSubmission) {
-          var dlg = new Dialog({
-            title: 'Job Submission Params: ',
-            content: '<pre>' + JSON.stringify(values, null, 4) + '</pre>'
-          });
-          dlg.startup();
-          dlg.show();
-          return;
-        }
 
         this.submitButton.set('disabled', true);
         var start_params = {
           'base_url': window.App.appBaseURL
         }
-        window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function (results) {
+        _self.doSubmit(values, start_params).then(function (results) {
           console.log('Job Submission Results: ', results);
 
           if (window.gtag) {

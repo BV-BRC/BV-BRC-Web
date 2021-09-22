@@ -28,6 +28,7 @@ define([
     defaultPath: '',
     startingRows: 14,
     maxGenomes: 256,
+    maxTextInput: 64000,
     textInput: false,
 
     constructor: function () {
@@ -232,6 +233,10 @@ define([
     },
 
     validateFasta: function () {
+      if (this.fasta_keyboard_input.value.length > this.maxTextInput) {
+        this.input_validation_message.innerHTML = 'The text input is too large. Save the data to a file.';
+        return false;
+      }
       var records = this.fasta_keyboard_input.value.trim().toUpperCase();
       records = records.replace(/^\s*[\r\n]/gm, '');
       var arr = records.split('\n');

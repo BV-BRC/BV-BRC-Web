@@ -509,10 +509,22 @@ define([
         var service_spec = {"trim":"trim","min_contig_len":"min_contig_len","racon_iter":"racon_iter","pilon_iter":"pilon_iter","min_contig_cov":"min_contig_cov"}; //job : attach_point
         param_dict["service_specific"] = service_spec;
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        AppBase.prototype.loadLibrary.call(this,JSON.parse(localStorage.getItem("bvbrc_rerun_job")),param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        job_data = this.formatRerunJson(job_data);
+        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
         localStorage.removeItem("bvbrc_rerun_job");
         this.form_flag = true;
       }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

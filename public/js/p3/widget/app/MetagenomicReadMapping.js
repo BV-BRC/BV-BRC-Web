@@ -444,10 +444,22 @@ define([
         var param_dict = {"output_folder":"output_path","strategy":"gene_set_name"};
         //widget_map
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        AppBase.prototype.loadLibrary.call(this,JSON.parse(localStorage.getItem("bvbrc_rerun_job")),param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        job_data = this.formatRerunJson(job_data);
+        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
         localStorage.removeItem("bvbrc_rerun_job");
         this.form_flag = true;
       }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

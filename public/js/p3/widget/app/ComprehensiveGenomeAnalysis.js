@@ -540,6 +540,7 @@ define([
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         this.selectStartWith(job_data);
+        job_data = this.formatRerunJson(job_data);
         if (this.startWithRead.checked) {
           AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
         }
@@ -557,6 +558,16 @@ define([
       else {
         this.startWithRead.set("checked",true);
       }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

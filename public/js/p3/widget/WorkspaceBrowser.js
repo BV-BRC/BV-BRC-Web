@@ -523,8 +523,18 @@ define([
       }, function (selection) {
         var gid = self.actionPanel.currentContainerWidget.getGenomeId();
         Topic.publish('/navigate', { href: '/view/Genome/' + gid + '#view_tab=browser' });
-
       }, false);
+
+      this.browserHeader.addAction('ViewBlastResults', 'fa icon-genome-browser fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['Homology'],
+        tooltip: 'View alignments'
+      }, function (selection) {
+        // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
+        Topic.publish('/navigate', { href: '/view/Homology' + self.actionPanel.currentContainerWidget.path});
+      }, false);
+
 
       this.browserHeader.addAction('Upload', 'fa icon-upload fa-2x', {
         label: 'UPLOAD',
@@ -1478,6 +1488,9 @@ define([
                   break;
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
+                  break;
+                case "Homology":
+                  d = 'p3/widget/viewer/BlastJobResult';
                   break;
                 default:
                   console.log('Using the default JobResult viewer. A viewer could not be found for id: ' + id);
