@@ -1110,6 +1110,47 @@ define([
         self.showPermDialog(selection);
       }, false);
 
+      this.actionPanel.addAction('Rerun','fa icon-rotate-left fa-2x',{
+        label:'RERUN',
+        allowMultiTypes: true,
+        multiple: true,
+        validTypes: ['job_result'],
+        tooltip: 'Reset job form with current parameters'
+      },function (selection) {
+        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
+        //TODO: make sure service_id variable is present for every service
+        var service_id = selection[0].autoMeta.app.id;
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+        localStorage.setItem("bvbrc_rerun_job",job_params);
+        switch (service_id) {
+          case 'ComprehensiveGenomeAnalysis':
+            Topic.publish('/navigate',{href:'/app/ComprehensiveGenomeAnalysis'});
+            break;
+          case 'GenomeAssembly2':
+            Topic.publish('/navigate',{href:'/app/Assembly2'});
+            break;
+          case 'GenomeAlignment':
+            Topic.publish('/navigate',{href:'/app/GenomeAlignment'});
+            break;
+          case 'GenomeAnnotation':
+            Topic.publish('/navigate',{href:'/app/Annotation'});
+            break;
+          case 'MetagenomicReadMapping':
+            Topic.publish('/navigate',{href:'/app/MetagenomicReadMapping'});
+            break;
+          case 'TaxonomicClassification':
+            Topic.publish('/navigate',{href:'/app/TaxonomicClassification'});
+            break;
+          case 'Variation':
+            Topic.publish('/navigate',{href:'/app/Variation'});
+            break;
+          default:
+            console.log('Rerun not enabled for: ',service_id);
+        }
+      }, false);
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {

@@ -84,6 +84,16 @@ define([
       // this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
       // this.output_path.set('value',"/" +  window.App.user.id +"/home/");
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     emptyTable: function (target, rowLimit) {
@@ -98,54 +108,20 @@ define([
     getValues: function () {
       var submit_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ _type: 'paired' });
-      var pairedAttrs = ['read1', 'read2'];
-      var singleAttrs = ['read'];
-      var singleList = this.libraryStore.query({ _type: 'single' });
-      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-      var condLibs = [];
-      var pairedLibs = [];
-      var singleLibs = [];
-      var srrAccessions = [];
-      this.ingestAttachPoints(this.paramToAttachPt, submit_values);
+      
+      submit_values = this.checkBaseParameters(values,submit_values);
+      if (!this.form_flag) {
+        this.ingestAttachPoints(this.paramToAttachPt, submit_values);
+      }
       // for (var k in values) {
       //   if(!k.startsWith("libdat_")){
       //     submit_values[k]=values[k];
       //   }
       // }
-      pairedList.concat(singleList);
-      submit_values.reference_genome_id = values.genome_name;
+      
       submit_values.mapper = values.mapper;
       submit_values.caller = values.caller;
 
-      pairedList.forEach(function (libRecord) {
-        var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
-        pairedAttrs.forEach(function (attr) { toAdd[attr] = libRecord[attr]; });
-        pairedLibs.push(toAdd);
-      }, this);
-      if (pairedLibs.length) {
-        submit_values.paired_end_libs = pairedLibs;
-      }
-      singleList.forEach(function (libRecord) {
-        var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
-        singleAttrs.forEach(function (attr) { toAdd[attr] = libRecord[attr]; });
-        singleLibs.push(toAdd);
-      }, this);
-      if (singleLibs.length) {
-        submit_values.single_end_libs = singleLibs;
-      }
-      srrAccessions = srrAccessionList.map(function (lrec) {
-        return lrec._id;
-      });
-      if (srrAccessions.length) {
-        submit_values.srr_ids = srrAccessions;
-      }
       return submit_values;
 
     },
@@ -466,7 +442,75 @@ define([
       else {
         if (this.submitButton) { this.submitButton.set('disabled', true); }
       }
-    }
+    },
 
+    checkBaseParameters: function(values,submit_values) {
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
+      var pairedAttrs = ['read1', 'read2'];
+      var singleAttrs = ['read'];
+      var singleList = this.libraryStore.query({ _type: 'single' });
+      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+      var condLibs = [];
+
+      pairedList.concat(singleList);
+      submit_values.reference_genome_id = values.genome_name;
+
+
+      pairedList.forEach(function (libRecord) {
+        var toAdd = {};
+        if ('condition' in libRecord && this.exp_design.checked) {
+          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+        }
+        pairedAttrs.forEach(function (attr) { toAdd[attr] = libRecord[attr]; });
+        this.paired_end_libs.push(toAdd);
+      }, this);
+      if (this.paired_end_libs.length) {
+        submit_values.paired_end_libs = this.paired_end_libs;
+      }
+      singleList.forEach(function (libRecord) {
+        var toAdd = {};
+        if ('condition' in libRecord && this.exp_design.checked) {
+          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+        }
+        singleAttrs.forEach(function (attr) { toAdd[attr] = libRecord[attr]; });
+        this.single_end_libs.push(toAdd);
+      }, this);
+      if (this.single_end_libs.length) {
+        submit_values.single_end_libs = this.single_end_libs;
+      }
+      this.sra_libs = srrAccessionList.map(function (lrec) {
+        return lrec._id;
+      });
+      if (this.sra_libs.length) {
+        submit_values.srr_ids = this.sra_libs;
+      }
+
+      return submit_values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path","target_genome_id":"reference_genome_id"};
+        var widget_map = {"reference_genome_id":"genome_nameWidget"};
+        param_dict["widget_map"] = widget_map;
+        var service_specific = {"mapper":"mapper","caller":"caller"};
+        param_dict["service_specific"] = service_specific;
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        job_data = this.formatRerunJson(job_data);
+        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+      }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
+    }
   });
 });
