@@ -269,13 +269,13 @@ define([], function () {
         field: 'phenotype', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'lab_host', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'lab_host', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'passage', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'passage', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'gram_strain', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'gram_strain', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'cell_shape', type: 'str', facet: false, facet_hidden: true, search: true
