@@ -1225,5 +1225,61 @@ define([], function () {
         field: 'others', type: 'str', facet: false, facet_hidden: true, search: true
       },
     ],
+    'epitope': [
+      {
+        field: 'epitope_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'epitope_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'epitope_sequence', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'organism', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'protein_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'protein_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'protein_accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'start', type: 'int', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'end', type: 'int', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'total_assays', type: 'int', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'assay_results', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'bcell_assays', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'tcell_assays', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'mhc_assays', type: 'str', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'comments', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+    ],
   }
 })
