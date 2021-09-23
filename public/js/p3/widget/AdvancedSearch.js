@@ -18,7 +18,7 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'strain', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics'],
+    searchTypes: ['genome', 'strain', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics', 'epitope'],
     labelsByType: {
       genome: 'Genomes',
       strain: 'Strains',
@@ -33,7 +33,8 @@ define([
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
       transcriptomics_experiment: 'Transcriptomics Experiments',
-      antibiotics: 'Antibiotics'
+      antibiotics: 'Antibiotics',
+      epitope: 'Epitopes'
     },
 
     advancedSearchDef: {
@@ -102,6 +103,10 @@ define([
         return ['/view/ProteinFeaturesList/?', this.state.search].join('');
       },
 
+      epitope: function (docs, total) {
+        return ['/view/EpitopeList/?', this.state.search].join('');
+      },
+
       protein_structure: function (docs, total) {
         return ['/view/ProteinStructureList/?', this.state.search].join('');
       },
@@ -148,7 +153,7 @@ define([
           return ['/view/Antibiotic/', docs[0].eid].join('');
         }
         return ['/view/AntibioticList/?', this.state.search].join('');
-      }
+      },
     },
 
     generateLink: function (type, docs, total) {
@@ -298,6 +303,22 @@ define([
         out.push("<div class='resultHead' style='color: #09456f;'>" + doc.source + ' | ' + doc.description + '</a></div>');
         out.push("<div class='resultInfo'>" + doc.genome_name + '</div>');
         out.push("<div class='resultInfo'>" + doc.patric_id + ' | ' + doc.refseq_locus_tag + '</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+
+      return out.join('');
+    },
+
+    formatepitope: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer epitopeResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/EpitopeList/?', q, '">Epitopes</a>&nbsp;(', total, ')</div>'];
+
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead' style='color: #09456f;'>" + doc.epitope_id + ' | ' + doc.epitope_sequence + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.protein_name + '</div>');
+        out.push("<div class='resultInfo'>" + doc.organism + '</div>');
         out.push('</div>');
       });
       out.push('</div>');
