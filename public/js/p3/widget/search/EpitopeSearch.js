@@ -103,8 +103,13 @@ define([
         assayArr.push('eq(assay_results,"MHC cell - Negative")')
       }
 
-      const assayResults = assayArr.toString();
-      const assayQuery = `or(${assayResults})`;
+      let assayResults = assayArr.toString();
+      let assayQuery = `or(${assayResults})`;
+
+      if (assayCheckBox1 === false && assayCheckBox2 === false && assayCheckBox3 === false && assayCheckBox4 === false && assayCheckBox5 === false && assayCheckBox6 === false) {
+        assayQuery = '';
+      }
+
       queryArr = queryArr.concat(assayQuery);
 
       const advancedQueryArr = this._buildAdvancedQuery()
