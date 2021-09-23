@@ -5,7 +5,7 @@ define([
   '../PathwayGridContainer', '../ProteinFamiliesContainer',
   '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../SequenceGridContainer', '../StrainGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
+  '../SequenceGridContainer', '../StrainGridContainer', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
@@ -13,7 +13,7 @@ define([
   PathwayGridContainer, ProteinFamiliesContainer,
   TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  SequenceGridContainer, StrainGridContainer, PathJoin, QueryToEnglish, Dialog
+  SequenceGridContainer, StrainGridContainer, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
     maxGenomesPerList: 10000,
@@ -351,6 +351,11 @@ define([
         id: this.viewer.id + '_serology',
         state: this.state
       });
+      this.epitope = new EpitopeGridContainer({
+        title: 'Epitopes',
+        id: this.viewer.id + '_epitope',
+        state: this.state
+      });
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
@@ -361,6 +366,7 @@ define([
       this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);
+      this.viewer.addChild(this.epitope);
       // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);

@@ -2149,6 +2149,75 @@ define([
       return div;
     },
 
+    epitope_data: function (item, options) {
+      options = options || {};
+
+      var columns;
+
+      var columns = [{
+        name: 'Epitope ID',
+        text: 'epitope_id'
+      }, {
+        name: 'Epitope Type',
+        text: 'epitope_type'
+      }, {
+        name: 'Epitope Sequence',
+        text: 'epitope_sequence'
+      }, {
+        name: 'Organism',
+        text: 'organism'
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Taxon Lineage IDs',
+        text: 'taxon_lineage_ids',
+      }, {
+        name: 'Taxon Lineage Names',
+        text: 'taxon_lineage_names',
+      }, {
+        name: 'Protein Name',
+        text: 'protein_name'
+      }, {
+        name: 'Protein ID',
+        text: 'protein_id'
+      }, {
+        name: 'Protein Accession',
+        text: 'protein_accession'
+      }, {
+        name: 'Start',
+        text: 'start',
+      }, {
+        name: 'End',
+        text: 'end',
+      }, {
+        name: 'Total Assays',
+        text: 'total_assays',
+      }, {
+        name: 'Assay Reults',
+        text: 'assay_results',
+      }, {
+        name: 'B Cell Assays',
+        text: 'bcell_assays'
+      }, {
+        name: 'T Cell Assays',
+        text: 'tcell_assays'
+      }, {
+        name: 'MHC Assays',
+        text: 'mhc_assays'
+      }, {
+        name: 'Comments',
+        text: 'comments'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.epitope_id, 'fa icon-git-pull-request fa-2x', '/view/EpitopeList/' + item.epitope_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     transcriptomics_experiment_data: function (item, options) {
       options = options || {};
 

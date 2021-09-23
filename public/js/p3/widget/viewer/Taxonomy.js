@@ -244,6 +244,7 @@ define([
         case 'surveillance':
         case 'serology':
         case 'strains':
+        case 'epitope':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
           }));

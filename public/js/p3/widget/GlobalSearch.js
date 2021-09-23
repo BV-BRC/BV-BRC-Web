@@ -141,6 +141,10 @@ define([
             Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
             // clear = true;
             break;
+          case 'epitope':
+            Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
+            // clear = true;
+            break;
           default:
             console.log('Do Search: ', searchFilter, query);
         }
@@ -214,6 +218,9 @@ define([
           break;
         case 'antibiotic':
           Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
+          break;
+        case 'epitope':
+          Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
           break;
         default:
           Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });
