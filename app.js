@@ -95,7 +95,6 @@ app.use('/js/' + packageJSON.version + '/', [
     }
   })
 ]);
-app.use('/js/swfobject/', express.static(path.join(__dirname, 'node_modules/swfobject-amd/')));
 app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',
