@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin', 'dojox/xml/parser',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom',
-  '../../JobManager'
+  '../../JobManager', '../../util/loading'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom,
-  JobManager
+  JobManager, Loading
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
@@ -28,6 +28,7 @@ define([
     lookaheadJob: false,
     lookaheadCallback: null,
     lookaheadError: null,
+    lookaheadGif: null,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -151,6 +152,7 @@ define([
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
+
       this.inherited(arguments);
       var state = this.get('state');
       if ((state == 'Incomplete') || (state == 'Error')) {
@@ -267,9 +269,13 @@ define([
       if (this.lookaheadJob) {
         var jobPath = `${this.output_path.value || '' }/${this.output_file.value || ''}`;
         var liveMsg = '<br>Live job!<br>Stick around to see results.';
-        if (this.submittedMessage && this.submittedMessage.innerHTML.indexOf('Live job!') === -1) {
-          this.submittedMessage.innerHTML += liveMsg;
-          this.workingMessage.innerHTML += liveMsg;
+        if (this.submittedMessage && this.lookaheadGif == null) {
+            var gif_container = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
+            domConstruct.place(gif_container, this.submittedMessage);
+            this.lookaheadGif= Loading(gif_container, liveMsg);
+            var gif_container2 = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
+            domConstruct.place(gif_container2, this.workingMessage);
+            this.lookaheadGif2= Loading(gif_container2, liveMsg);
         }
       }
 
