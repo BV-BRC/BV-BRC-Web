@@ -2152,7 +2152,8 @@ define([
 
       var columns = [{
         name: 'Epitope ID',
-        text: 'epitope_id'
+        text: 'epitope_id',
+        link: 'http://www.iedb.org/epitope/'
       }, {
         name: 'Epitope Type',
         text: 'epitope_type'
@@ -2166,12 +2167,6 @@ define([
         name: 'Taxon ID',
         text: 'taxon_id',
         link: '/view/Taxonomy/'
-      }, {
-        name: 'Taxon Lineage IDs',
-        text: 'taxon_lineage_ids',
-      }, {
-        name: 'Taxon Lineage Names',
-        text: 'taxon_lineage_names',
       }, {
         name: 'Protein Name',
         text: 'protein_name'
