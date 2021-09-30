@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 3.6.17 - Sep 30, 2021
+* [Release] BVBRC Integration beta release
+
+
 ## 3.6.16 - Sep 8, 2021
 * [Enhancement] Phylogenetic Tree update (iteration 6)
 * [Enhancement] CrossBRC compatible authentication
@@ -76,10 +80,7 @@
 * [Dev Enhancement] Allow devs to specify build container IDs in app submissions; related improvements. [7a4ff1f](https://github.com/PATRIC3/p3_web/commit/7a4ff1fd47f7da545322d5a1240756fcabae1f2f)
 
 * [Dev Enhancement] Navigate to default job result viewer if not implemented. [#994](https://github.com/PATRIC3/p3_web/pull/994)
-<<<<<<< HEAD
 
-=======
->>>>>>> merge in latest p3_web changes (#24)
 
 ## 3.6.5 - June 5, 2020
 
