@@ -359,7 +359,7 @@ define([
           tooltip: 'Download Selection',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
         },
         function (selection, container) {
 
@@ -392,7 +392,7 @@ define([
           tooltip: 'Copy Selection to Clipboard.',
           tooltipDialog: copySelectionTT,
           max: 5000,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
         },
         function (selection, container) {
           this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set('selection', selection);
@@ -646,6 +646,32 @@ define([
         function (selection) {
           var sel = selection[0];
           Topic.publish('/navigate', { href: '/view/Serology/' + sel.sample_identifier, target: 'blank' });
+        },
+        false
+      ],
+
+      [
+        'ViewEpitopeItem',
+        'MultiButton fa icon-selection-Experiment fa-2x',
+        {
+          label: 'EPITOPE',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to Epitope View. Press and Hold for more options.',
+          ignoreDataType: true,
+          validContainerTypes: [],
+          pressAndHold: function (selection, button, opts, evt) {
+            popup.open({
+              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Epitope/' + selection[0].epitope_id }),
+              around: button,
+              orient: ['below'],
+            });
+
+          }
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', { href: '/view/Epitope/' + sel.epitope_id, target: 'blank' });
         },
         false
       ],
