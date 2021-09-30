@@ -2042,12 +2042,6 @@ define([
         text: 'taxon_id',
         link: '/view/Taxonomy/'
       }, {
-        name: 'Taxon Lineage IDs',
-        text: 'taxon_lineage_ids',
-      }, {
-        name: 'Taxon Lineage Names',
-        text: 'taxon_lineage_names',
-      }, {
         name: 'Family',
         text: 'family',
       }, {
@@ -2071,9 +2065,11 @@ define([
       }, {
         name: 'Genome IDs',
         text: 'genome_ids',
+        link: '/view/Genome/'
       }, {
         name: 'Genbank Accessions',
         text: 'genbank_accessions',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: 'Host Group',
         text: 'host_group',
@@ -2107,36 +2103,47 @@ define([
       }, {
         name: '1_PB2',
         text: '1_pb2',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '2_PB2',
         text: '2_pb2',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '3_PA',
         text: '3_pa',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '4_HA',
         text: '4_ha',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '5_NP',
         text: '5_np',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '6_NA',
         text: '6_na',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '7_MP',
         text: '7_mp',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: '8_NS',
         text: '8_ns',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: 'S',
         text: 's',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: 'M',
         text: 'm',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: 'L',
         text: 'l',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
         name: 'Others',
         text: 'others',
