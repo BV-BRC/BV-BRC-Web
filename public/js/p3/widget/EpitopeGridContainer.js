@@ -28,7 +28,7 @@ define([
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'epitope',
-    primaryKey: 'id',
+    primaryKey: 'epitope_id',
     defaultFilter: '',
     tooltip: '',
     getFilterPanel: function (opts) {

@@ -17,7 +17,7 @@ define([
     apiServer: window.App.dataAPI,
     store: store,
     dataModel: 'epitope',
-    primaryKey: 'id',
+    primaryKey: 'epitope_id',
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
