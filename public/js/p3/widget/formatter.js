@@ -209,6 +209,45 @@ define(
       else if (target.match(/PseudoCAP/i)) {
         link = 'http://www.pseudomonas.com/feature/show?locus_tag=';
       }
+      else if (target.match(/CDD/i)) {
+        link = 'https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=';
+      }
+      else if (target.match(/DisProt/i)) {
+        link = 'https://disprot.org/';
+      }
+      else if (target.match(/Gene3D/i)) {
+        link = 'http://www.cathdb.info/superfamily/';
+      }
+      else if (target.match(/InterPro/i)) {
+        link = 'https://www.ebi.ac.uk/interpro/entry/InterPro/';
+      }
+      else if (target.match(/Pfam/i)) {
+        link = 'https://pfam.xfam.org/family/';
+      }
+      else if (target.match(/SMART/i)) {
+        link = 'http://smart.embl.de/smart/do_annotation.pl?DOMAIN=';
+      }
+      else if (target.match(/SUPERFAMILY/i)) {
+        link = 'https://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid=';
+      }
+      else if (target.match(/ProSiteProfile/i)) {
+        link = 'https://prosite.expasy.org/doc/';
+      }
+      else if (target.match(/Hamap/i)) {
+        link = 'https://hamap.expasy.org/rule/';
+      }
+      // else if (target.match(/MobiDBLite/i)) {
+      //   link = '';
+      // }
+      // else if (target.match(/Coils/i)) {
+      //   link = '';
+      // }
+      else if (target.match(/PANTHER/i)) {
+        link = 'http://www.pantherdb.org/panther/family.do?clsAccession=';
+      }
+      else if (target.match(/PIRSF/i)) {
+        link = 'https://proteininformationresource.org/cgi-bin/ipcSF?id=';
+      }
       // edit patric-searches-and-tools/WebContent/js/specialty_gene_list_grids.js as well
       return link;
     };

@@ -100,9 +100,34 @@ define([
             Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
             // clear = true;
             break;
+          case 'genome_sequences':
+            Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
+            // clear = true;
+            break;
+          case 'strains':
+            Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
+            break;
           case 'genomes':
             Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
             // clear = true;
+            break;
+          case 'protein_features':
+            Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
+            break;
+          case 'protein_structures':
+            Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
+            break;
+          case 'pathways':
+            Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+            break;
+          case 'subsystems':
+            Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
+            break;
+          case 'surveillance':
+            Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
+            break;
+          case 'serology':
+            Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
             break;
           case 'transcriptomics_experiments':
             Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
@@ -114,6 +139,10 @@ define([
             break;
           case 'antibiotic':
             Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
+            // clear = true;
+            break;
+          case 'epitope':
+            Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
             // clear = true;
             break;
           default:
@@ -154,8 +183,32 @@ define([
         case 'genome_features':
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
           break;
+        case 'genome_sequences':
+          Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
+          break;
+        case 'strains':
+          Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
+          break;
         case 'genomes':
           Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
+          break;
+        case 'protein_features':
+          Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
+          break;
+        case 'protein_structures':
+          Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
+          break;
+        case 'pathways':
+          Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+          break;
+        case 'subsystems':
+          Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
+          break;
+        case 'surveillance':
+          Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
+          break;
+        case 'serology':
+          Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
           break;
         case 'transcriptomics_experiments':
           Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
@@ -165,6 +218,9 @@ define([
           break;
         case 'antibiotic':
           Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
+          break;
+        case 'epitope':
+          Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
           break;
         default:
           Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });

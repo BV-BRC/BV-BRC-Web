@@ -27,7 +27,6 @@ define([
       this.topicId = 'ProteinFamilies_' + options.id.split('_proteinFamilies')[0];
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("ProteinFamiliesHeatmapContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 
@@ -139,10 +138,10 @@ define([
 
       // <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">
       this.heatmapContainerNew = new HeatmapContainerNew({
-        title: 'Heatmap (new)',
+        title: 'Heatmap',
         type: 'webGLHeatmap',
         topicId: this.topicId,
-        content: 'Heatmap (new)'
+        content: 'Heatmap'
       });
 
       this.watch('state', lang.hitch(this, 'onSetState'));

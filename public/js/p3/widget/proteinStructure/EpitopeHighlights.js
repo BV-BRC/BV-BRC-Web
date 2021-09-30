@@ -6,7 +6,6 @@ define([
   './HighlightBase',
   '../EpitopeGrid',
   'p3/util/colorHelpers',
-  'dojo/text!/public/js/p3/resources/jsmol/sars2-epitopes.json',
   'dojo/store/Memory',
 ], function (
   declare,
@@ -16,21 +15,19 @@ define([
   HighlightBase,
   EpitopeGrid,
   colorHelpers,
-  epitopeDataString,
   MemoryStore
 ) {
   return declare([HighlightBase], {
     title: 'Epitopes',
     accessionId: '',
     updatingPositions: false,
-    epitopeData: {},
+    data: {},
     store: null,
     selection: null,
     multiple: true,
     textColor: colorHelpers.WHITE,
     postCreate: function () {
       this.inherited(arguments);
-      this.epitopeData = JSON.parse(epitopeDataString);
 
       this.watch('color', lang.hitch(this, function (attr, oldValue, newValue) {
         this.set('textColor', colorHelpers.contrastingTextColor(newValue));
@@ -91,7 +88,7 @@ define([
       }
       let memoryStore = new MemoryStore({
         idProperty: 'id',
-        data: this.epitopeData[accessionId],
+        data: this.data
       });
       this.selection = new EpitopeGrid({
         name: 'highlight_color',

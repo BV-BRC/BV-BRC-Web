@@ -440,6 +440,78 @@ define([
       return div;
     },
 
+    bacteria_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Genomes / Segments',
+        text: 'count'
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      }];
+
+      var div = domConstruct.create('div');
+      // displayHeader(div, item.taxon_name, 'fa icon-taxonomy fa-2x', '/view/Taxonomy/' + item.taxon_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    virus_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Genomes / Segments',
+        text: 'count'
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      }];
+
+      var div = domConstruct.create('div');
+      // displayHeader(div, item.taxon_name, 'fa icon-taxonomy fa-2x', '/view/Taxonomy/' + item.taxon_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     feature_data: function (item, options) {
       options = options || {};
 
@@ -466,6 +538,9 @@ define([
         name: 'Feature Type',
         text: 'feature_type'
       }, {
+        name: 'BRC ID',
+        text: 'brc_id'
+      }, {
         name: 'Classifier Score',
         text: 'classifier_score'
       }, {
@@ -481,6 +556,12 @@ define([
         name: 'Gene ID',
         text: 'gene_id',
         link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'PDB Accession',
+        text: 'pdb_accession'
       }, {
         name: 'gi',
         text: 'gi'
@@ -506,6 +587,17 @@ define([
             { obj: obj }
           );
         }
+      }, {
+        name: 'SOG ID',
+        text: 'sog_id',
+        link: function (obj) {
+          return lang.replace(
+            '<a href="/view/FeatureList/?eq(sog_id,' + obj.sog_id + ')#view_tab=features">' +
+              obj.sog_id +
+            '</a>',
+            { obj: obj }
+          );
+        }
       }];
 
       section.Genome = [{
@@ -525,8 +617,21 @@ define([
       }];
 
       section.Location = [{
+        name: 'Sequence ID',
+        text: 'sequence_id',
+        link: function (obj) {
+          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
+        },
+        mini: true
+      }, {
         name: 'Accession',
         text: 'accession'
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession'
+      }, {
+        name: 'PDB Accession',
+        text: 'pdb_accession'
       }, {
         name: 'Start',
         text: 'start'
@@ -540,6 +645,9 @@ define([
         name: 'Location',
         text: 'location',
         mini: true
+      }, {
+        name: 'Segments',
+        text: 'segments',
       }];
 
       section.Sequences = [{
@@ -570,6 +678,12 @@ define([
         name: 'Last Modified',
         text: 'date_modified',
         type: 'date'
+      }, {
+        name: 'Classifier Score',
+        text: 'classifier_score',
+      }, {
+        name: 'Classifier Round',
+        text: 'classifier_round',
       }];
 
       var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
@@ -830,20 +944,83 @@ define([
         text: 'taxon_id',
         link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
+        name: 'Taxonomy Name',
+        text: 'taxonomy_name',
+      }, {
         name: 'Rank',
         text: 'taxon_rank'
       }, {
-        name: 'Lineage',
-        text: 'lineage_names',
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Unique Strains',
+        text: 'strains_count',
         link: function (obj) {
-          var ids = obj.lineage_ids;
-          return obj.lineage_names.map(function (d, idx) {
-            return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
-          }).join(', ');
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=strains">${obj.strains_count}</a>`;
         }
       }, {
-        name: 'Genetic Code',
-        text: 'genetic_code'
+        name: 'Genomes / Segments',
+        text: 'count',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=genomes">${obj.count}</a>`;
+        }
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,CDS)">${obj.CDS}</a>`;
+        }
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,mat_peptide)">${obj.mat_peptide}</a>`;
+        }
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB',
+        link: function (obj) {
+          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=structures">${obj.PDB}</a>`;
+        }
+      // }, {
+      //   name: 'Other Names',
+      //   text: 'other_names',
+      // }, {
+      //   name: 'Lineage Names',
+      //   text: 'lineage_names',
+      //   link: function (obj) {
+      //     var ids = obj.lineage_ids;
+      //     return obj.lineage_names.map(function (d, idx) {
+      //       return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
+      //     }).join(', ');
+      //   }
+      // }, {
+      //   name: 'Lineage IDs',
+      //   text: 'lineage_ids',
+      // }, {
+      //   name: 'Genetic Code',
+      //   text: 'genetic_code'
+      // }, {
+      //   name: 'Parent ID',
+      //   text: 'parent_id',
+      // }, {
+      //   name: 'Division',
+      //   text: 'division',
+      // }, {
+      //   name: 'Description',
+      //   text: 'description',
+      // }, {
+      //   name: 'Genomes',
+      //   text: 'genomes',
       }];
 
       var div = domConstruct.create('div');
@@ -884,6 +1061,76 @@ define([
       }, {
         name: 'Gene Conservation',
         text: 'gene_cons'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pathway_name, 'fa icon-git-pull-request fa-2x', '/view/Pathways/' + item.pathway_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    pathwayTab_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
+        link: function (obj) {
+          return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', { obj: obj });
+        }
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Sequence ID',
+        text: 'sequence_id',
+        link: function (obj) {
+          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
+        },
+      }, {
+        name: 'Accession',
+        text: 'accession'
+      }, {
+        name: 'Annotation',
+        text: 'annotation'
+      }, {
+        name: 'Alt Locus Tag',
+        text: 'alt_locus_tag'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag',
+        link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'EC Number',
+        text: 'ec_number'
+      }, {
+        name: 'EC Description',
+        text: 'ec_description'
+      }, {
+        name: 'Pathway ID',
+        text: 'pathway_id'
+      }, {
+        name: 'Pathway Name',
+        text: 'pathway_name'
+      }, {
+        name: 'Pathway Class',
+        text: 'pathway_class'
       }];
 
       var div = domConstruct.create('div');
@@ -961,6 +1208,72 @@ define([
       return div;
     },
 
+    subsystemTab_data: function (item, options) {
+      options = options || {};
+
+      var columns;
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
+        link: function (obj) {
+          return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', { obj: obj });
+        }
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag',
+        link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Role ID',
+        text: 'role_id'
+      }, {
+        name: 'Role Name',
+        text: 'role_name'
+      }, {
+        name: 'Subsystem ID',
+        text: 'subsystem_id'
+      }, {
+        name: 'Subsystem Name',
+        text: 'subsystem_name'
+      }, {
+        name: 'Superclass',
+        text: 'superclass'
+      }, {
+        name: 'Class',
+        text: 'class'
+      }, {
+        name: 'Subclass',
+        text: 'subclass'
+      }, {
+        name: 'Active',
+        text: 'active'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.subsystem_name, 'fa icon-git-pull-request fa-2x', '/view/SubsystemList/' + item.subsystem_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     proteinfamily_data: function (item, options) {
       options = options || {};
 
@@ -1019,22 +1332,620 @@ define([
       return div;
     },
 
-    sequence_data: function (item, options) {
+    structure_data: function (item, options) {
       options = options || {};
-
       var columns = [{
-        name: 'Genome Name',
-        text: 'genome_name',
-        mini: true
+        name: 'PDB ID',
+        text: 'pdb_id',
+        link: 'https://www.rcsb.org/structure/'
+      }, {
+        name: 'Title',
+        text: 'title',
+      }, {
+        name: 'Organism Name',
+        text: 'organism_name',
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
       }, {
         name: 'Genome ID',
         text: 'genome_id',
         link: '/view/Genome/'
       }, {
-        name: 'Accession',
-        text: 'accession',
-        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+        name: 'Feature ID',
+        text: 'feature_id'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'UniProtKB Accession',
+        text: 'uniprotkb_accession',
+        link: function (obj) {
+          var ids = obj.uniprotkb_accession;
+          return obj.uniprotkb_accession.map(function (d, idx) {
+            return lang.replace('<a href="https://www.uniprot.org/uniprot/{0}">{1}</a>', [ids[idx], d]);
+          }).join(', ');
+        }
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Method',
+        text: 'method',
+      }, {
+        name: 'Resolution',
+        text: 'resolution',
+      }, {
+        name: 'PMID',
+        text: 'pmid',
+      }, {
+        name: 'Institution',
+        text: 'institution',
+      }, {
+        name: 'Authors',
+        text: 'authors'
+      }, {
+        name: 'Release Date',
+        text: 'release_date',
+        type: 'date'
+      }, {
+        name: 'Text',
+        text: 'text',
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    proteinFeatures_data: function (item, options) {
+      options = options || {};
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'PATRIC ID',
+        text: 'patric_id',
+        link: '/view/Feature/'
+      }, {
+        name: 'RefSeq Locus Tag',
+        text: 'refseq_locus_tag',
+        link: 'http://www.ncbi.nlm.nih.gov/protein/?term='
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Interpro ID',
+        text: 'interpro_id',
+        link: 'https://www.ebi.ac.uk/interpro/entry/InterPro/',
+      }, {
+        name: 'Interpro Description',
+        text: 'interpro_description'
+      }, {
+        name: 'Feature Type',
+        text: 'feature_type'
+      }, {
+        name: 'Source',
+        text: 'source',
+      }, {
+        name: 'Source ID',
+        text: 'source_id',
+        link: function (obj) {
+          var link = formatter.getExternalLinks(obj.source);
+
+          if (link) {
+            return '<a href="' + link + obj.source_id + '" target="_blank">' + obj.source_id + '</a>';
+          }
+          return obj.source_id;
+
+        }
+      }, {
+        name: 'Description',
+        text: 'description',
+      }, {
+        name: 'Classification',
+        text: 'classification',
+      }, {
+        name: 'Score',
+        text: 'score'
+      }, {
+        name: 'E Value',
+        text: 'e_value'
+      }, {
+        name: 'Evidence',
+        text: 'evidence'
+      }, {
+        name: 'Publication',
+        text: 'publication'
+      }, {
+        name: 'Start',
+        text: 'start'
+      }, {
+        name: 'End',
+        text: 'end'
+      }, {
+        name: 'Segments',
+        text: 'segments'
+      }, {
+        name: 'Length',
+        text: 'length'
+      }, {
+        name: 'Sequence',
+        text: 'sequence'
+      }, {
+        name: 'Comments',
+        text: 'comments'
+      }, {
+        name: 'Text',
+        text: 'text',
+      }, {
+        name: 'Date Inserted',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Date Modified',
+        text: 'date_modified',
+        type: 'date'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.genome_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    surveillance_data: function (item, options) {
+      options = options || {};
+
+      var metadataSurveillanceID = this.surveillance_meta_table_names();
+      var metadataSurveillanceValue = this.surveillance_meta_spec();
+
+      var div = domConstruct.create('div');
+      var label = item.sample_identifier;
+      displayHeader(div, label, 'fa icon-contigs fa-2x', '/view/Surveillance/' + item.sample_identifier, options);
+
+      displayDetailBySections(item, metadataSurveillanceID, metadataSurveillanceValue, div, options);
+
+      return div;
+    },
+    surveillance_meta_table_names: function () {
+      return ['Sample Info', 'Sample Collection', 'Sample Tests', 'Host Info', 'Environmental Exposure', 'Clinical Data', 'Symptoms/Diagnosis', 'Treatment', 'Vaccination', 'Other'];
+    },
+    surveillance_meta_spec: function () {
+      var spec = {
+        'Sample Info': [{
+          name: 'Project Identifier',
+          text: 'project_identifier'
+        }, {
+          name: 'Contributing Institution',
+          text: 'contributing_institution'
+        }, {
+          name: 'Sample Identifier',
+          text: 'sample_identifier'
+        }, {
+          name: 'Sample Accession',
+          text: 'sample_accession'
+        }, {
+          name: 'Sample Material',
+          text: 'sample_material'
+        }, {
+          name: 'Sample Transport Medium',
+          text: 'sample_transport_medium'
+        }, {
+          name: 'Sample Receipt Date',
+          text: 'sample_receipt_date'
+        }, {
+          name: 'Submission Date',
+          text: 'submission_date'
+        }, {
+          name: 'Last Update Date',
+          text: 'last_update_date'
+        }, {
+          name: 'Longitudinal Study',
+          text: 'longitudinal_study'
+        }, {
+          name: 'Embargo End Date',
+          text: 'embargo_end_date'
+        }],
+
+        'Sample Collection': [{
+          name: 'Collector Name',
+          text: 'collector_name'
+        }, {
+          name: 'Collector Institution',
+          text: 'collector_institution'
+        }, {
+          name: 'Contact Email Address',
+          text: 'contact_email_address'
+        }, {
+          name: 'Collection Date',
+          text: 'collection_date'
+        }, {
+          name: 'Collection Year',
+          text: 'collection_year'
+        }, {
+          name: 'Collection Season',
+          text: 'collection_season'
+        }, {
+          name: 'Days Elapsed to Sample Collection',
+          text: 'days_elapsed_to_sample_collection'
+        }, {
+          name: 'Collection Country',
+          text: 'collection_country'
+        }, {
+          name: 'Collection State Province',
+          text: 'collection_state_province'
+        }, {
+          name: 'Collection City',
+          text: 'collection_city'
+        }, {
+          name: 'Collection POI',
+          text: 'collection_poi'
+        }, {
+          name: 'Collection Latitude',
+          text: 'collection_latitude'
+        }, {
+          name: 'Collection Longitude',
+          text: 'collection_longitude'
+        }],
+
+        'Sample Tests': [{
+          name: 'Pathogen Test Type',
+          text: 'pathogen_test_type'
+        }, {
+          name: 'Pathogen Test Result',
+          text: 'pathogen_test_Result'
+        }, {
+          name: 'Pathogen Test Interpretation',
+          text: 'pathogen_test_interpretation'
+        }, {
+          name: 'Species',
+          text: 'species'
+        }, {
+          name: 'Type',
+          text: 'type'
+        }, {
+          name: 'Subtype',
+          text: 'subtype'
+        }, {
+          name: 'Strain',
+          text: 'strain'
+        }, {
+          name: 'Sequence Accession',
+          text: 'sequence_accession'
+        }],
+
+        'Host Info': [{
+          name: 'Host Species',
+          text: 'host_species'
+        }, {
+          name: 'Host Common Name',
+          text: 'host_common_name'
+        }, {
+          name: 'Host Group',
+          text: 'host_group'
+        }, {
+          name: 'Host Identifier',
+          text: 'host_identifier'
+        }, {
+          name: 'Host ID Type',
+          text: 'host_id_type'
+        }, {
+          name: 'Host Capture Status',
+          text: 'host_capture_status'
+        }, {
+          name: 'Host Health',
+          text: 'host_health'
+        }, {
+          name: 'Host Natural State',
+          text: 'host_natural_state'
+        }, {
+          name: 'Host Habitat',
+          text: 'host_habitat'
+        }, {
+          name: 'Host Sex',
+          text: 'host_sex'
+        }, {
+          name: 'Host Age',
+          text: 'host_age'
+        }],
+
+        'Environmental Exposure': [{
+          name: 'Exposure',
+          text: 'exposure'
+        }, {
+          name: 'Duration of Exposure',
+          text: 'duration_of_exposure'
+        }, {
+          name: 'Exposure Type',
+          text: 'exposure_type'
+        }, {
+          name: 'Use of Personal Protective Equipment',
+          text: 'use_of_personal_protective_equipment'
+        }, {
+          name: 'Primary Living Situation',
+          text: 'primary_living_situation'
+        }, {
+          name: 'Nursing Home Residence',
+          text: 'nursing_home_residence'
+        }, {
+          name: 'Daycare Attendance',
+          text: 'daycare_attendance'
+        }, {
+          name: 'Travel History',
+          text: 'travel_history'
+        }, {
+          name: 'Profession',
+          text: 'profession'
+        }, {
+          name: 'Education',
+          text: 'educaction'
+        }],
+
+        'Clinical Data': [{
+          name: 'Pregnancy',
+          text: 'pregnancy'
+        }, {
+          name: 'Trimester of Pregnancy',
+          text: 'trimester_of_pregnancy'
+        }, {
+          name: 'Breastfeeding',
+          text: 'breastfeeding'
+        }, {
+          name: 'Hospitalized',
+          text: 'hospitalized'
+        }, {
+          name: 'Hospitalization Duration',
+          text: 'hospitalization_duration'
+        }, {
+          name: 'Intensive Care Unit',
+          text: 'intensive_care_unit'
+        }, {
+          name: 'Chest Imaging Interpretation',
+          text: 'chest_imaging_interpretation'
+        }, {
+          name: 'Ventilation',
+          text: 'ventilation'
+        }, {
+          name: 'Oxygen Saturation',
+          text: 'oxygen_saturation'
+        }, {
+          name: 'Ecmo',
+          text: 'ecmo'
+        }, {
+          name: 'Dialysis',
+          text: 'dialysis'
+        }, {
+          name: 'Disease Status',
+          text: 'disease_status'
+        }, {
+          name: 'Days Elapsed to Disease Status',
+          text: 'days_elapsed_to_disease_status'
+        }, {
+          name: 'Disease Severity',
+          text: 'disease_severity'
+        }, {
+          name: 'Tobacco Use',
+          text: 'tobacco_use'
+        }, {
+          name: 'Packs Per Day For How Many Years',
+          text: 'packs_per_day_for_how_many_years'
+        }, {
+          name: 'Chronic Conditions',
+          text: 'chronic_conditions'
+        }, {
+          name: 'Maintenance Medications',
+          text: 'maintenance_medications'
+        }, {
+          name: 'Types of Allergies',
+          text: 'types_of_allergies'
+        }, {
+          name: 'Influenza Like Illness Over The Past Year',
+          text: 'influenza_like_illness_over_the_past_year'
+        }, {
+          name: 'Infections Within Five Years',
+          text: 'infections_within_five_years'
+        }, {
+          name: 'Human Leukocyte Antigens',
+          text: 'human_leukocyte_antigens'
+        }],
+
+        'Symptoms/Diagnosis': [{
+          name: 'Symptoms',
+          text: 'symptoms'
+        }, {
+          name: 'Onset Hours',
+          text: 'onset_hours'
+        }, {
+          name: 'Sudden Onset',
+          text: 'sudden_onset'
+        }, {
+          name: 'Diagnosis',
+          text: 'diagnosis'
+        }, {
+          name: 'Pre Visit Medications',
+          text: 'pre_visit_medications'
+        }, {
+          name: 'Post Visit Medications',
+          text: 'post_visit_medications'
+        }],
+
+        'Treatment': [{
+          name: 'Treatment',
+          text: 'treatment'
+        }, {
+          name: 'Initiation of Treatment',
+          text: 'initiation_of_treatment'
+        }, {
+          name: 'Duration of Treatment',
+          text: 'duration_of_treatment'
+        }, {
+          name: 'Treatment Dosage',
+          text: 'treatment_dosage'
+        }],
+
+        'Vaccination': [{
+          name: 'Vaccination_Type',
+          text: 'vaccination_type'
+        }, {
+          name: 'Days Elapsed to Vaccination',
+          text: 'days_elapsed_to_vaccination'
+        }, {
+          name: 'Source of Vaccine Information',
+          text: 'source_of_vaccine_information'
+        }, {
+          name: 'Vaccine Lot Number',
+          text: 'vaccine_lot_number'
+        }, {
+          name: 'Vaccine Manufacturer',
+          text: 'vaccine_manufacturer'
+        }, {
+          name: 'Vaccine Dosage',
+          text: 'vaccine_dosage'
+        }, {
+          name: 'Other Vaccinations',
+          text: 'other_vaccinations'
+        }],
+
+        'Other': [{
+          name: 'Additional Metadata',
+          text: 'additional_metadata'
+        }, {
+          name: 'Comments',
+          text: 'comments'
+        }]
+      }
+
+      return spec;
+    },
+
+    serology_data: function (item, options) {
+      var metadataSerologyID = this.serology_meta_table_names();
+      var metadataSerologyValue = this.serology_meta_spec();
+
+      var div = domConstruct.create('div');
+      var label = item.sample_identifier;
+      displayHeader(div, label, 'fa icon-contigs fa-2x', '/view/Serology/' + item.sample_identifier, options);
+      displayDetailBySections(item, metadataSerologyID, metadataSerologyValue, div, options);
+
+      return div;
+    },
+    serology_meta_table_names: function () {
+      return ['Sample Info', 'Host Info', 'Sample Collection', 'Sample Tests', 'Other'];
+    },
+    serology_meta_spec: function () {
+      var spec = {
+        'Sample Info': [{
+          name: 'Project Identifier',
+          text: 'project_identifier'
+        }, {
+          name: 'Contributing Institution',
+          text: 'contributing_institution'
+        }, {
+          name: 'Sample Identifier',
+          text: 'sample_identifier'
+        }],
+
+        'Host Info': [{
+          name: 'Host Identifier',
+          text: 'host_identifier'
+        }, {
+          name: 'Host Type',
+          text: 'host_type'
+        }, {
+          name: 'Host Species',
+          text: 'host_species'
+        }, {
+          name: 'Host Common Name',
+          text: 'host_common_name'
+        }, {
+          name: 'Host Sex',
+          text: 'host_sex'
+        }, {
+          name: 'Host Age',
+          text: 'host_age'
+        }, {
+          name: 'Host Age Group',
+          text: 'host_age_group'
+        }, {
+          name: 'Host Health',
+          text: 'host_health'
+        }],
+
+        'Sample Collection': [{
+          name: 'Collection Country',
+          text: 'collection_country'
+        }, {
+          name: 'Collection State',
+          text: 'collection_state'
+        }, {
+          name: 'Collection City',
+          text: 'collection_city'
+        }, {
+          name: 'Collection Date',
+          text: 'collection_date'
+        }, {
+          name: 'Collection Year',
+          text: 'collection_year'
+        }],
+
+        'Sample Tests': [{
+          name: 'Test Type',
+          text: 'test_type'
+        }, {
+          name: 'Test Result',
+          text: 'test_result'
+        }, {
+          name: 'Test Interpretation',
+          text: 'test_interpretation'
+        }, {
+          name: 'Serotype',
+          text: 'serotype'
+        }],
+
+        'Other': [{
+          name: 'Comments',
+          text: 'comments'
+        }]
+      };
+
+      return spec;
+    },
+
+    sequence_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Genome ID',
+        text: 'genome_id',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genome Name',
+        text: 'genome_name',
         mini: true
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
         name: 'Sequence ID',
         text: 'sequence_id',
@@ -1043,16 +1954,22 @@ define([
         },
         mini: true
       }, {
-        name: 'Length',
-        text: 'length',
-        mini: true
+        name: 'GI',
+        text: 'gi',
       }, {
-        name: 'GC Content',
-        text: 'gc_content',
+        name: 'Accession',
+        text: 'accession',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
         mini: true
       }, {
         name: 'Sequence Type',
         text: 'sequence_type'
+      }, {
+        name: 'Sequence Status',
+        text: 'sequence_status'
+      }, {
+        name: 'Mol Type',
+        text: 'mol_type'
       }, {
         name: 'Topology',
         text: 'topology'
@@ -1066,22 +1983,227 @@ define([
         name: 'Plasmid',
         text: 'plasmid'
       }, {
-        name: 'GI',
-        text: 'gi'
+        name: 'Segment',
+        text: 'segment'
       }, {
-        name: 'Taxon ID',
-        text: 'taxon_id',
-        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+        name: 'GC Content',
+        text: 'gc_content',
+        mini: true
+      }, {
+        name: 'Length',
+        text: 'length',
+        mini: true
+      }, {
+        name: 'Sequence MD5',
+        text: 'sequence_md5'
+      }, {
+        name: 'Sequence',
+        text: 'sequence'
+      }, {
+        name: 'Release Date',
+        text: 'release_date',
+        type: 'date'
       }, {
         name: 'Version',
         text: 'version'
       }, {
-        name: 'Release Date',
-        text: 'release_date'
+        name: 'Insert Date',
+        text: 'date_inserted',
+        type: 'date'
+      }, {
+        name: 'Last Modified',
+        text: 'date_modified',
+        type: 'date'
       }];
 
       var div = domConstruct.create('div');
       displayHeader(div, item.sequence_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    strain_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Family',
+        text: 'family',
+      }, {
+        name: 'Genus',
+        text: 'genus',
+      }, {
+        name: 'Species',
+        text: 'species',
+      }, {
+        name: 'Strain',
+        text: 'strain',
+      }, {
+        name: 'Subtype',
+        text: 'subtype',
+      }, {
+        name: 'H_type',
+        text: 'h_type',
+      }, {
+        name: 'N_type',
+        text: 'n_type',
+      }, {
+        name: 'Genome IDs',
+        text: 'genome_ids',
+        link: '/view/Genome/'
+      }, {
+        name: 'Genbank Accessions',
+        text: 'genbank_accessions',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: 'Host Group',
+        text: 'host_group',
+      }, {
+        name: 'Host Common Name',
+        text: 'host_common_name',
+      }, {
+        name: 'Host Name',
+        text: 'host_name',
+      }, {
+        name: 'Lab Host',
+        text: 'lab_host',
+      }, {
+        name: 'Passage',
+        text: 'passage',
+      }, {
+        name: 'Geographic Group',
+        text: 'geographic_group',
+      }, {
+        name: 'Isolation Country',
+        text: 'isolation_country',
+      }, {
+        name: 'Collection Year',
+        text: 'collection_year',
+      }, {
+        name: 'Collection Date',
+        text: 'collection_date',
+      }, {
+        name: 'Season',
+        text: 'season',
+      }, {
+        name: '1_PB2',
+        text: '1_pb2',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '2_PB2',
+        text: '2_pb2',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '3_PA',
+        text: '3_pa',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '4_HA',
+        text: '4_ha',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '5_NP',
+        text: '5_np',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '6_NA',
+        text: '6_na',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '7_MP',
+        text: '7_mp',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: '8_NS',
+        text: '8_ns',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: 'S',
+        text: 's',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: 'M',
+        text: 'm',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: 'L',
+        text: 'l',
+        link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: 'Others',
+        text: 'others',
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.strain, 'fa icon-contigs fa-2x', '/view/Genome/' + item.strain, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
+    epitope_data: function (item, options) {
+      options = options || {};
+
+      var columns;
+
+      var columns = [{
+        name: 'Epitope ID',
+        text: 'epitope_id',
+        link: 'http://www.iedb.org/epitope/'
+      }, {
+        name: 'Epitope Type',
+        text: 'epitope_type'
+      }, {
+        name: 'Epitope Sequence',
+        text: 'epitope_sequence'
+      }, {
+        name: 'Organism',
+        text: 'organism'
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: '/view/Taxonomy/'
+      }, {
+        name: 'Protein Name',
+        text: 'protein_name'
+      }, {
+        name: 'Protein ID',
+        text: 'protein_id'
+      }, {
+        name: 'Protein Accession',
+        text: 'protein_accession'
+      }, {
+        name: 'Start',
+        text: 'start',
+      }, {
+        name: 'End',
+        text: 'end',
+      }, {
+        name: 'Total Assays',
+        text: 'total_assays',
+      }, {
+        name: 'Assay Reults',
+        text: 'assay_results',
+      }, {
+        name: 'B Cell Assays',
+        text: 'bcell_assays'
+      }, {
+        name: 'T Cell Assays',
+        text: 'tcell_assays'
+      }, {
+        name: 'MHC Assays',
+        text: 'mhc_assays'
+      }, {
+        name: 'Comments',
+        text: 'comments'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.epitope_id, 'fa icon-git-pull-request fa-2x', '/view/EpitopeList/' + item.epitope_id, options);
       displayDetail(item, columns, div, options);
 
       return div;
@@ -1620,6 +2742,11 @@ define([
           text: 'genome_name',
           mini: true
         }, {
+          name: 'Other Names',
+          text: 'other_names',
+          mini: true,
+          editable: true
+        }, {
           name: 'NCBI Taxon ID',
           text: 'taxon_id',
           link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
@@ -1686,14 +2813,6 @@ define([
           text: 'type_strain',
           editable: true
         }, {
-          name: 'Antimicrobial Resistance',
-          text: 'antimicrobial_resistance',
-          link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=amr">AMR Phenotypes</a>', { obj: obj });
-          },
-          editable: true,
-          isList: false // not displayed as list although returned as list
-        }, {
           name: 'Reference Genome',
           text: 'reference_genome'
         }],
@@ -1751,6 +2870,10 @@ define([
           link: 'http://www.ncbi.nlm.nih.gov/pubmed/',
           editable: true
         }, {
+          name: 'Authors',
+          text: 'authors',
+          editable: true
+        }, {
           name: 'BioProject Accession',
           text: 'bioproject_accession',
           link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
@@ -1782,18 +2905,9 @@ define([
           text: 'genbank_accessions',
           link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
           editable: true
-        }, {
-          name: 'RefSeq Accessions',
-          text: 'refseq_accessions',
-          link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
-          editable: true
         }],
 
         'Sequence Info': [{
-          name: 'Sequencing Status',
-          text: 'sequencing_status',
-          editable: true
-        }, {
           name: 'Sequencing Platform',
           text: 'sequencing_platform',
           editable: true
@@ -1812,6 +2926,9 @@ define([
           name: 'Plasmids',
           text: 'plasmids'
         }, {
+          name: 'Segments',
+          text: 'segments'
+        }, {
           name: 'Contigs',
           text: 'contigs',
           link: function (obj) {
@@ -1824,21 +2941,11 @@ define([
           name: 'GC Content',
           text: 'gc_content'
         }, {
-          name: 'PATRIC CDS',
-          text: 'patric_cds',
-          link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">{obj.patric_cds}</a>', { obj: obj });
-          }
-        }, {
-          name: 'RefSeq CDS',
-          text: 'refseq_cds'
+          name: 'Mat Peptide',
+          text: 'mat_peptide'
         }],
 
         'Isolate Info': [{
-          name: 'Isolation Site',
-          text: 'isolation_site',
-          editable: true
-        }, {
           name: 'Isolation Source',
           text: 'isolation_source',
           editable: true,
@@ -1858,28 +2965,16 @@ define([
           editable: true,
           type: 'date'
         }, {
+          name: 'Season',
+          text: 'season',
+          editable: true
+        }, {
           name: 'Isolation Country',
           text: 'isolation_country',
           editable: true
         }, {
           name: 'Geographic Location',
           text: 'geographic_location',
-          editable: true
-        }, {
-          name: 'Latitude',
-          text: 'latitude',
-          editable: true
-        }, {
-          name: 'Longitude',
-          text: 'longitude',
-          editable: true
-        }, {
-          name: 'Altitude',
-          text: 'altitude',
-          editable: true
-        }, {
-          name: 'Depth',
-          text: 'depth',
           editable: true
         }, {
           name: 'Other Environmental',
@@ -1893,6 +2988,10 @@ define([
           text: 'host_name',
           editable: true
         }, {
+          name: 'Host Common Name',
+          text: 'host_common_name',
+          editable: true
+        }, {
           name: 'Host Gender',
           text: 'host_gender',
           editable: true
@@ -1903,14 +3002,6 @@ define([
         }, {
           name: 'Host Health',
           text: 'host_health',
-          editable: true
-        }, {
-          name: 'Body Sample Site',
-          text: 'body_sample_site',
-          editable: true
-        }, {
-          name: 'Body Sample Subsite',
-          text: 'body_sample_subsite',
           editable: true
         }, {
           name: 'Other Clinical',
