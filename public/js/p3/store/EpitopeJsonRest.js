@@ -7,7 +7,7 @@ define([
 ) {
   return declare([Store], {
     autoFacet: false,
-    idProperty: 'id',
+    idProperty: 'epitope_id',
     facetFields: [],
     dataModel: 'epitope'
   });
