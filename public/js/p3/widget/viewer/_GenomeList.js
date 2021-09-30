@@ -359,7 +359,6 @@ define([
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
-      this.viewer.addChild(this.strains);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
