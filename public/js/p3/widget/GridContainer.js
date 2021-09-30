@@ -1340,7 +1340,7 @@ define([
           label: 'FEATURE DETAILS',
           validTypes: ['*'],
           multiple: true,
-          validContainerTypes: ['feature_data'],
+          validContainerTypes: [],
           tooltip: 'View Feature Details Menu',
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
