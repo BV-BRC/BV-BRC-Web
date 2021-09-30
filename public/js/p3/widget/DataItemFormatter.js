@@ -1408,9 +1408,6 @@ define([
     proteinFeatures_data: function (item, options) {
       options = options || {};
       var columns = [{
-        name: 'ID',
-        text: 'id'
-      }, {
         name: 'Genome ID',
         text: 'genome_id',
         link: '/view/Genome/'
@@ -1422,18 +1419,13 @@ define([
         text: 'taxon_id',
         link: '/view/Taxonomy/'
       }, {
-        name: 'Feature ID',
-        text: 'feature_id'
-      }, {
         name: 'PATRIC ID',
         text: 'patric_id',
         link: '/view/Feature/'
       }, {
         name: 'RefSeq Locus Tag',
-        text: 'refseq_locus_tag'
-      }, {
-        name: 'AA Sequence MD5',
-        text: 'aa_sequence_md5'
+        text: 'refseq_locus_tag',
+        link: 'http://www.ncbi.nlm.nih.gov/protein/?term='
       }, {
         name: 'Gene',
         text: 'gene'
@@ -1504,9 +1496,6 @@ define([
       }, {
         name: 'Text',
         text: 'text',
-      }, {
-        name: 'Version',
-        text: '_version_'
       }, {
         name: 'Date Inserted',
         text: 'date_inserted',
