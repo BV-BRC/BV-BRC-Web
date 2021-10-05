@@ -1,16 +1,16 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  '../PageGrid', '../formatter',
+  '../PageGrid', '../formatter', '../EpitopeAssayGridContainer',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter'
 ], function (
   declare, TabViewerBase, on,
   domClass, ContentPane, domConstruct,
-  Grid, formatter,
+  Grid, formatter, EpitopeAssayGridContainer,
   PathJoin, xhr, lang, DataItemFormatter
 ) {
   return declare([TabViewerBase], {
-    baseClass: 'ExperimentComparison',
+    baseClass: 'Epitope',
     disabled: false,
     containerType: 'epitope_data',
     query: null,
@@ -133,8 +133,15 @@ define([
         handleAs: 'json'
       }).then(lang.hitch(this, function (experiment) {
         this.overview = this.createOverviewPanel(this.state);
+        this.assays = new EpitopeAssayGridContainer({
+          title: 'Assays',
+          enableFilterPanel: false,
+          id: this.viewer.id + '_assays',
+          disabled: false
+        });
 
         this.viewer.addChild(this.overview);
+        this.viewer.addChild(this.assays);
 
         this.set('experiment', experiment);
         // console.log('Experiment : ', experiment);
