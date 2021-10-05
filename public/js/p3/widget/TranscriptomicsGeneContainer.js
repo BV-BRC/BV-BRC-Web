@@ -102,10 +102,10 @@ define([
       });
 
       this.heatmapContainerNew = new HeatmapContainerNew({
-        title: 'Heatmap (new)',
+        title: 'Heatmap',
         type: 'webGLHeatmap',
         topicId: this.topicId,
-        content: 'Heatmap (new)'
+        content: 'Heatmap'
       });
 
       this.watch('state', lang.hitch(this, 'onSetState'));

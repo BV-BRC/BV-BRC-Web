@@ -1,25 +1,23 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/TaxonomyOverview.html',
-  'dojo/request', 'dojo/_base/lang', 'dojo/when',
-  'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', './GenomeFeatureSummary', './DataItemFormatter', './ExternalItemFormatter'
+  'dojo/request', 'dojo/_base/lang', 'dojo/when', 'dojo/dom-construct',
+  'p3/widget/ReferenceGenomeSummary', 'p3/widget/AMRPanelMetaSummary', 'p3/widget/GenomeMetaSummary',
+  '../util/PathJoin', './DataItemFormatter', './ExternalItemFormatter'
 
 ], function (
   declare, WidgetBase, on, _WidgetsInTemplateMixin,
   domClass, Templated, Template,
-  xhr, lang, when,
-  ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-  ExternalItemFormatter
+  xhr, lang, when, domConstruct,
+  ReferenceGenomeSummary, AMRPanelMetaSummary, GenomeMetaSumary, // preload widgets
+  PathJoin, DataItemFormatter, ExternalItemFormatter
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
     baseClass: 'TaxonomyOverview',
     disabled: false,
     templateString: Template,
-    apiServiceUrl: window.App.dataAPI,
-    genome: null,
     state: null,
-    genome_ids: null,
     searchName: null,
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_taxon/overview.html',
@@ -42,15 +40,8 @@ define([
 
       // widgets called by taxon_id
       sumWidgets = ['rgSummaryWidget', 'gmSummaryWidget'];
-      // sumWidgets = [];
 
-      var taxonQuery = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
-      // check whether we have extra filter
-      if (this.state.taxonomy && this.state.genome_ids
-        && this.state.genome_ids.length !== 25000
-        && this.state.taxonomy.genomes !== this.state.genome_ids.length) {
-        taxonQuery += '&' + this.state.search;
-      }
+      const taxonQuery = `eq(taxon_lineage_ids,${state.taxon_id})`;
       sumWidgets.forEach(function (w) {
         if (this[w]) {
           this[w].set('query', taxonQuery);
@@ -58,20 +49,32 @@ define([
       }, this);
     },
 
-    _setTaxonomyAttr: function (genome) {
-      this.genome = genome;
-      this.createSummary(genome);
-      this.createExternalLinks(genome);
-      // this.getWikiDescription(genome);
+    _setTaxonomyAttr: function (taxon) {
+      this.createSummary(taxon)
+      this.createExternalLinks(taxon);
+      this.createPubmedLinks(taxon);
     },
 
-    createSummary: function (genome) {
+    createSummary: function (taxon) {
       domConstruct.empty(this.taxonomySummaryNode);
-      domConstruct.place(DataItemFormatter(genome, 'taxonomy_data', {}), this.taxonomySummaryNode, 'first');
-      if (this.searchName != genome.taxon_name) {
-        this.searchName = this.genome.taxon_name;
+      domConstruct.place('<p>Loading...</p>', this.taxonomySummaryNode, 'first')
+
+      xhr.get(PathJoin(window.App.dataAPI, 'data/summary_by_taxon', taxon.taxon_id), {
+        headers: {
+          accept: 'application/json'
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (summary) {
+        domConstruct.empty(this.taxonomySummaryNode);
+        const taxonSummary = lang.mixin(taxon, summary)
+        domConstruct.place(DataItemFormatter(taxonSummary, 'taxonomy_data', {}), this.taxonomySummaryNode, 'first');
+      }))
+    },
+    createPubmedLinks: function (taxon) {
+      if (this.searchName != taxon.taxon_name) {
+        this.searchName = taxon.taxon_name;
         domConstruct.empty(this.pubmedSummaryNode);
-        domConstruct.place(ExternalItemFormatter(genome, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
+        domConstruct.place(ExternalItemFormatter(taxon, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
       }
     },
 
@@ -122,10 +125,6 @@ define([
         return;
       }
       this.inherited(arguments);
-
-      if (this.genome) {
-        this.set('genome', this.genome);
-      }
     }
   });
 });

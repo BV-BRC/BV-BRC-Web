@@ -24,7 +24,6 @@ define([
     facetFields: ['public', 'antibiotic', 'resistant_phenotype', 'evidence', 'laboratory_typing_method', 'computational_method'],
     dataModel: 'genome_amr',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',

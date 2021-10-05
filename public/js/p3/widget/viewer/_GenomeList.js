@@ -1,29 +1,24 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/_base/lang', 'dojo/request',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/topic',
-  '../GenomeOverview',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer',
-  '../ActionBar', '../ContainerActionBar', '../PathwaysContainer', '../ProteinFamiliesContainer',
-  '../DiseaseContainer', '../PublicationGridContainer', '../CircularViewerContainer',
+  'dijit/layout/ContentPane', 'dojo/topic',
+  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
+  '../PathwayGridContainer', '../ProteinFamiliesContainer',
   '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
-  '../AMRPanelGridContainer', '../SubSystemsContainer',
-  '../SequenceGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
+  '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
+  '../SequenceGridContainer', '../StrainGridContainer', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
-  domClass, ContentPane, domConstruct, Topic,
-  GenomeOverview,
-  FeatureGridContainer, SpecialtyGeneGridContainer,
-  ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
-  DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
+  ContentPane, Topic,
+  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
+  PathwayGridContainer, ProteinFamiliesContainer,
   TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-  AMRPanelGridContainer, SubSystemsContainer,
-  SequenceGridContainer, PathJoin, QueryToEnglish, Dialog
+  AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
+  SequenceGridContainer, StrainGridContainer, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
     maxGenomesPerList: 10000,
     maxReferenceGenomes: 500,
     totalGenomes: 0,
-    // defaultTab: "overview",
     perspectiveLabel: 'Genome List View',
     perspectiveIconClass: 'icon-selection-GenomeList',
 
@@ -38,7 +33,6 @@ define([
       if (query && !force && (query == this.query) ) {
         return;
       }
-      // console.log("GenomeList SetQuery: ", query, this);
 
       this._set('query', query);
 
@@ -58,8 +52,6 @@ define([
         data: (this.query) + '&select(genome_id)&limit(' + this.maxGenomesPerList + 1 + ')'
 
       }).then(function (res) {
-        // console.log(" URL: ", url);
-        // console.log("Get GenomeList Res: ", res);
         if (res && res.response && res.response.docs) {
           var genomes = res.response.docs;
           if (genomes) {
@@ -79,9 +71,6 @@ define([
     },
 
     getReferenceAndRepresentativeGenomes: function () {
-      // console.log("GET REFERENCE AND REPRESENTATIVE GENOMES")
-      // var query = this.get('query');
-
       var _self = this;
 
       xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
@@ -94,8 +83,6 @@ define([
         handleAs: 'json',
         data: (this.query) + '&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(' + this.maxGenomesPerList + ')'
       }).then(function (res) {
-        // console.log(" URL: ", url);
-        // console.log("Get GenomeList Res: ", res);
         if (res && res.response && res.response.docs) {
           var genomes = res.response.docs;
           _self._set('referenceGenomes', genomes);
@@ -109,14 +96,9 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
-      // console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
       this.inherited(arguments);
       if (!state.genome_ids) {
-        // console.log("NO Genome_IDS: old: ", oldVal.search, " new: ", state.search);
         if (state.search == oldVal.search) {
-          // console.log("Same Search")
-          // console.log("OLD Genome_IDS: ", oldVal.genome_ids);
-          // console.log("INTERNAL STATE UPDATE")
           this.set('state', lang.mixin({}, state, {
             genome_ids: oldVal.genome_ids,
             referenceGenomes: oldVal.referenceGenomes || []
@@ -126,7 +108,6 @@ define([
         this.set('query', state.search);
 
       } else if (state.search != oldVal.search) {
-        // console.log("SET QUERY: ", state.search);
         this.set('query', state.search);
       }
 
@@ -136,7 +117,6 @@ define([
     onSetQuery: function (attr, oldVal, newVal) {
 
       var content = QueryToEnglish(newVal);
-      // console.log("QueryToEnglish Content: ", content, newVal);
       this.overview.set('content', '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + '</div>');
       this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
     },
@@ -144,7 +124,6 @@ define([
     setActivePanelState: function () {
 
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
-      // console.log("Active: ", active, "state: ", JSON.stringify(this.state));
 
       var activeTab = this[active];
 
@@ -173,13 +152,9 @@ define([
           }
           var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
 
-          // console.log("ActiveTab.maxGenomeCount: ", activeTab.maxGenomeCount);
-          // console.log("ACTIVE MAX: ", activeMax);
           var autoFilterMessage;
           if (this.state && this.state.genome_ids) {
-            // console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
             if (this.state.genome_ids.length <= activeMax) {
-              // console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
               activeQueryState = lang.mixin({}, this.state, {
                 search: 'in(' + prop + ',(' + this.state.genome_ids.join(',') + '))',
                 hashParams: lang.mixin({}, this.state.hashParams)
@@ -188,7 +163,6 @@ define([
               var ids = this.state.referenceGenomes.map(function (x) {
                 return x.genome_id;
               });
-              // console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
               autoFilterMessage = 'This tab has been filtered to view data limited to Reference and Representative Genomes in your view.';
               activeQueryState = lang.mixin({}, this.state, {
                 genome_ids: ids,
@@ -202,7 +176,6 @@ define([
               }).map(function (x) {
                 return x.genome_id;
               });
-              // console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
               if (!referenceOnly || referenceOnly.length < 1 || referenceOnly.length > activeMax) {
                 autoFilterMessage = 'There are too many genomes in your view.  This tab will not show any data';
                 activeQueryState = lang.mixin({}, this.state, {
@@ -221,8 +194,6 @@ define([
                 });
               }
             }
-            // console.log("gidQueryState: ", gidQueryState);
-            // console.log("Active Query State: ", activeQueryState);
           }
 
           if (activeQueryState && active == 'proteinFamilies') {
@@ -235,7 +206,6 @@ define([
           // special case for host genomes
           if (active == 'features' && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
             var q = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))&select(taxon_lineage_ids)&limit(' + this.state.genome_ids.length + ')';
-            // console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
             xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
               headers: {
                 accept: 'application/json',
@@ -264,8 +234,6 @@ define([
 
 
           if (activeQueryState) {
-            // console.log("Active Query State: ", activeQueryState);
-
             activeTab.set('state', activeQueryState);
           } else {
             console.warn('MISSING activeQueryState for PANEL: ' + active);
@@ -275,7 +243,6 @@ define([
 
       if (activeTab) {
         var pageTitle = 'Genome List ' + activeTab.title;
-        // console.log("Genome List setActivePanelState: ", pageTitle);
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
         }
@@ -283,16 +250,11 @@ define([
     },
 
     onSetGenomeIds: function (attr, oldVal, genome_ids) {
-      // console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
-      // this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
       this.state.genome_ids = genome_ids;
       this.setActivePanelState();
     },
 
     onSetReferenceGenomes: function (attr, oldVal, referenceGenomes) {
-      // console.log("onSetReferenceGenomes: ", referenceGenomes);
-      // this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
-
       this.state.referenceGenomes = referenceGenomes;
       this.setActivePanelState();
     },
@@ -317,21 +279,29 @@ define([
         state: this.state,
         disable: false
       });
+      this.strains = new StrainGridContainer({
+        title: 'Strains',
+        id: this.viewer.id + '_strains',
+        state: this.state
+      });
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
         id: this.viewer.id + '_sequences',
         state: this.state,
         disable: false
       });
-
       this.amr = new AMRPanelGridContainer({
         title: 'AMR Phenotypes',
         id: this.viewer.id + '_amr'
       });
-
       this.features = new FeatureGridContainer({
-        title: 'Features',
+        title: 'Proteins',
         id: this.viewer.id + '_features',
+        disabled: false
+      });
+      this.structures = new ProteinStructureGridContainer({
+        title: 'Protein Structures',
+        id: this.viewer.id + '_structures',
         disabled: false
       });
       this.specialtyGenes = new SpecialtyGeneGridContainer({
@@ -340,23 +310,26 @@ define([
         disabled: false,
         state: this.state
       });
-      this.pathways = new PathwaysContainer({
+      this.proteinFeatures = new ProteinFeaturesGridContainer({
+        title: 'Domains and Motifs',
+        id: this.viewer.id + '_proteinFeatures',
+        disabled: false
+      });
+      this.pathways = new PathwayGridContainer({
         title: 'Pathways',
         id: this.viewer.id + '_pathways',
         disabled: false
       });
-
-      this.subsystems = new SubSystemsContainer({
+      this.subsystems = new SubsystemGridContainer({
         title: 'Subsystems',
         id: this.viewer.id + '_subsystems',
         disabled: false
       });
-
-      this.proteinFamilies = new ProteinFamiliesContainer({
-        title: 'Protein Families',
-        id: this.viewer.id + '_proteinFamilies',
-        disabled: false
-      });
+      // this.proteinFamilies = new ProteinFamiliesContainer({
+      //   title: 'Protein Families',
+      //   id: this.viewer.id + '_proteinFamilies',
+      //   disabled: false
+      // });
       this.transcriptomics = new TranscriptomicsContainer({
         title: 'Transcriptomics',
         id: this.viewer.id + '_transcriptomics'
@@ -368,13 +341,32 @@ define([
         state: this.state
       });
 
+      this.surveillance = new SurveillanceGridContainer({
+        title: 'Surveillance',
+        id: this.viewer.id + '_surveillance',
+        state: this.state
+      });
+      this.serology = new SerologyGridContainer({
+        title: 'Serology',
+        id: this.viewer.id + '_serology',
+        state: this.state
+      });
+      this.epitope = new EpitopeGridContainer({
+        title: 'Epitopes',
+        id: this.viewer.id + '_epitope',
+        state: this.state
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
-      this.viewer.addChild(this.proteinFamilies);
+      this.viewer.addChild(this.proteinFeatures);
+      this.viewer.addChild(this.epitope);
+      // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.transcriptomics);
@@ -398,7 +390,6 @@ define([
       }
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
-      // console.log("ON SET TOTAL GENOMES: ", newVal);
       this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomes ) ';
 
       if (newVal > 500) {
@@ -430,7 +421,6 @@ define([
       this.addChild(this.warningPanel);
     },
     onSetAnchor: function (evt) {
-      // console.log("onSetAnchor: ", evt, evt.filter);
       evt.stopPropagation();
       evt.preventDefault();
 
@@ -446,8 +436,6 @@ define([
         parts.push(evt.filter);
       }
 
-      // console.log("parts: ", parts);
-
       if (parts.length > 1) {
         q = '?and(' + parts.join(',') + ')';
       } else if (parts.length == 1) {
@@ -456,9 +444,7 @@ define([
         q = '';
       }
 
-      // console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
       var hp;
-
       if (this.state.hashParams && this.state.hashParams.view_tab) {
         hp = { view_tab: this.state.hashParams.view_tab };
       } else {
@@ -467,11 +453,9 @@ define([
 
       hp.filter = 'false';
 
-      // console.log("HP: ", JSON.stringify(hp));
       var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];
       }, this).join('&');
-      // console.log("NavigateTo: ", l);
       Topic.publish('/navigate', { href: l });
     }
   });

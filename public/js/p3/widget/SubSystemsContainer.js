@@ -24,7 +24,6 @@ define([
       this.topicId = 'SubSystemMap_' + options.id.split('_subsystems')[0];
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("ProteinFamiliesHeatmapContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 

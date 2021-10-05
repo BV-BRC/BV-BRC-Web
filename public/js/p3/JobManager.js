@@ -7,12 +7,13 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
   var self = this;
   var TIME_OUT = 5000; // in ms
-
+  var job_callbacks={}; // key job id to callback function
   // state model of filters applied to jobs
   self.filters = {
     app: 'all',
     status: null
   };
+
 
   // state of status (used to detect changes)
   var StatusSummary = { init: null };
@@ -37,13 +38,14 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
       // perform any callback action before filtering
       if (cb) cb();
+      
 
       if (self.filters.app || self.filters.status) {
         Topic.publish('/Jobs', { status: 'filtered', jobs: _DataStore.data });
         Topic.publish('/JobFilter', self.filters);
         return;
       }
-
+      //check job ids as finished and remove them from callback list and call the callback
       Topic.publish('/Jobs', { status: 'updated', jobs: _DataStore.data });
     });
   }
@@ -61,6 +63,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       var inProgress = status['in-progress'] || 0;
       var completed = status.completed || 0;
       var failed = status.failed || 0;
+      _self=this;
 
       // check for any changes in status
       var change = false;
@@ -69,6 +72,51 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
           completed !== StatusSummary.completed ||
           failed !== StatusSummary.failed) {
         change = true;
+
+        if (self.targetJob){
+            //NEED TO FIND FINISHED JOBS
+            var prom2 = window.App.api.service('AppService.query_tasks', [[self.targetJob]]);
+            prom2.then(function (res) {
+                var status = res[0][self.targetJob].status;
+                if (status == "failed"){
+                    var currentJob = self.targetJob;
+                    self.targetJob = null;
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} failed..</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                    if (self.targetErrorCallback){
+                        self.targetErrorCallback(`Job failed to finish. Please check ${res[0][currentJob].parameters.output_path}/${res[0][currentJob].parameters.output_file} for details`);
+                    }
+                }
+                else if (status == "in-progress"){
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} running...</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                }
+                else if (status == "queued"){
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} allocating resources...</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                }
+                else{ 
+                    self.targetJob=null;
+                    Topic.publish('/Notification', {
+                        message: '<span class="default">'+`Job ${_self.targetJobLabel} finished.</span>`,
+                        type: 'default',
+                        duration: 50000
+                    });
+                    if (self.targetJobCallback){
+                        self.targetJobCallback();
+                    }
+                }
+            });
+        }
       }
 
       StatusSummary = {
@@ -84,6 +132,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       return change; // bool
     });
   }
+
 
   function PollJobs() {
     // leaving this here since instantiation order is unpredictable
@@ -160,6 +209,16 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
     getStore: function () {
       return _DataStore;
+    },
+    targetJob: null,
+    targetJobCallback: null,
+    targetErrorCallback: null,
+    setJobHook: function(jobInfo, callback, error_callback){
+      self.targetJob = jobInfo.jobID;
+      self.targetJobLabel = jobInfo.jobLabel;
+      self.targetJobPath = jobInfo.jobPath;
+      self.targetJobCallback = callback;
+      self.targetErrorCallback = error_callback;
     },
 
     killJob: function (id) {

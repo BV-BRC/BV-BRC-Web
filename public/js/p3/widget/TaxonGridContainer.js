@@ -27,7 +27,6 @@ define([
     maxGenomeCount: 10000,
     dataModel: 'taxonomy',
     primaryKey: 'taxon_id',
-    maxDownloadSize: 25000,
     defaultFilter: '',
     getFilterPanel: function (opts) {
 

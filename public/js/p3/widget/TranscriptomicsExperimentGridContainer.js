@@ -28,7 +28,6 @@ define([
     getFilterPanel: function (opts) {
     },
     primaryKey: 'eid',
-    maxDownloadSize: 10000,
     query: '&keyword(*)',
     containerActions: GridContainer.prototype.containerActions.concat([
       [

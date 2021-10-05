@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './GenomeGrid', 'dijit/popup', 'dojo/_base/lang',
+  './GenomeGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/_base/lang',
   'dijit/TooltipDialog', './FacetFilterPanel', 'dojo/topic',
   'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  GenomeGrid, popup, lang,
+  GenomeGrid, AdvancedSearchFields, popup, lang,
   TooltipDialog, FacetFilterPanel, Topic,
   domConstruct
 ) {
@@ -24,15 +24,14 @@ define([
     gridCtor: GenomeGrid,
     containerType: 'genome_data',
     tutorialLink: 'user_guides/organisms_taxon/genome_table.html',
-    // facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_year"],
-    facetFields: ['public', 'genome_status', 'reference_genome', 'antimicrobial_resistance', 'isolation_country', 'host_name', 'collection_year', 'genome_quality'],
+    facetFields: AdvancedSearchFields['genome'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['genome'].filter((ff) => ff.search),
     getFilterPanel: function (opts) {
 
     },
     enableAnchorButton: true,
     dataModel: 'genome',
     primaryKey: 'genome_id',
-    maxDownloadSize: 25000,
     tooltip: 'The "Genomes" tab contains a list of all genomes associated with the current view and their metadata',
     containerActions: GridContainer.prototype.containerActions.concat([
       [
