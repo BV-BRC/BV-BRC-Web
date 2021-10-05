@@ -493,7 +493,7 @@ define([
       assembly_values.recipe = values.recipe;
       //output_path and output_file
       assembly_values.output_path = values.output_path;
-      this.output_path = values.output_path;
+      this.output_folder = values.output_path;
       assembly_values.output_file = values.output_file;
       this.output_name = values.output_file;
 
