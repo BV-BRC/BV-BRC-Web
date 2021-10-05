@@ -2209,6 +2209,93 @@ define([
       return div;
     },
 
+    epitope_assay_data: function (item, options) {
+      options = options || {};
+
+      var columns;
+
+      var columns = [{
+        name: 'Assay ID',
+        text: 'assay_id',
+      }, {
+        name: 'Assay Type',
+        text: 'assay_type',
+      }, {
+        name: 'Epitope ID',
+        text: 'epitope_id',
+        link: 'http://www.iedb.org/epitope/'
+      }, {
+        name: 'Epitope Type',
+        text: 'epitope_type'
+      }, {
+        name: 'Epitope Sequence',
+        text: 'epitope_sequence'
+      }, {
+        name: 'Organism',
+        text: 'organism'
+      }, {
+        name: 'Taxon ID',
+        text: 'taxon_id',
+      }, {
+        name: 'Protein Name',
+        text: 'protein_name'
+      }, {
+        name: 'Protein ID',
+        text: 'protein_id'
+      }, {
+        name: 'Protein Accession',
+        text: 'protein_accession'
+      }, {
+        name: 'Start',
+        text: 'start',
+      }, {
+        name: 'End',
+        text: 'end',
+      }, {
+        name: 'Host Name',
+        text: 'host_name'
+      }, {
+        name: 'Host Taxon ID',
+        text: 'host_taxon_id'
+      }, {
+        name: 'Assay Group',
+        text: 'assay_group'
+      }, {
+        name: 'Assay Method',
+        text: 'assay_method'
+      }, {
+        name: 'Assay Result',
+        text: 'assay_result'
+      }, {
+        name: 'Assay Measurement',
+        text: 'assay_measurement'
+      }, {
+        name: 'Assay Measurement Unit',
+        text: 'assay_measurement_unit'
+      }, {
+        name: 'MHC Allele',
+        text: 'mhc_allele'
+      }, {
+        name: 'MHC Allele Class',
+        text: 'mhc_allele_class'
+      }, {
+        name: 'PMID',
+        text: 'pmid'
+      }, {
+        name: 'Authors',
+        text: 'authors'
+      }, {
+        name: 'Title',
+        text: 'title'
+      }];
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.epitope_id, 'fa icon-git-pull-request fa-2x', '/view/EpitopeList/' + item.epitope_id, options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     transcriptomics_experiment_data: function (item, options) {
       options = options || {};
 
