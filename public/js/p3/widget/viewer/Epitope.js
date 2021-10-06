@@ -33,17 +33,12 @@ define([
       this._set('state', state);
     },
 
-    _setExperimentAttr: function (experiment) {
-      if (!experiment) {
+    _setExperimentAttr: function (epitope) {
+      if (!epitope) {
         return;
       }
 
-      this.queryNode.innerHTML = experiment.title;
-      this.totalCountNode.innerHTML = ' ( ' + experiment.samples + ' Assays )';
-
-      // if (this.eid == experiment.eid) {
-
-      // }
+      this.queryNode.innerHTML = epitope.epitope_id + ' | ' + epitope.epitope_sequence + ' | ' + epitope.organism;
     },
 
     onSetState: function (attr, oldVal, state) {
@@ -122,7 +117,7 @@ define([
 
       this.inherited(arguments);
 
-      // this.totalCountNode.innerHTML = " (1 Experiment) ";
+      this.totalCountNode.innerHTML = '';
 
       xhr.get(PathJoin(this.apiServiceUrl, 'epitope', this.eid), {
         headers: {
