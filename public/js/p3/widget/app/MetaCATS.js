@@ -185,11 +185,12 @@ define([
       values.p_value = parseFloat(this['p_value'].value);
       delete values.user_genomes_featuregroup;
       delete values.auto_feature_group;
+      delete values.metadata_group;
       delete values.name_list;
-      delete values.year_ranges;
       values.alphabet = 'na';
       if (this.input_groups.checked == true) {
         values.input_type = 'groups';
+        delete values.year_ranges;
         delete values.alignment_file;
         delete values.group_file;
         delete values.metadata_group;
@@ -208,6 +209,7 @@ define([
         values.groups = userGroups;
       } else if (this.input_files.checked == true) {
         values.input_type = 'files';
+        delete values.year_ranges;
         delete values.group_alphabet;
         delete values.auto_alphabet;
         delete values.metadata_group;
@@ -221,6 +223,7 @@ define([
         delete values.group_alphabet;
       } else if (this.input_auto.checked == true) {
         values.input_type = 'auto';
+        values.metadata_group = this['metadata_group'].value;
         delete values.alignment_file;
         delete values.group_file;
         delete values.group_alphabet;
@@ -233,7 +236,12 @@ define([
         });
         const auto_groups = [];
         rows.forEach(function (row) {
-          auto_groups.push({ id: row.patric_id, grp: row.group });
+          auto_groups.push({
+            id: row.patric_id,
+            metadata: row.metadata,
+            grp: row.group,
+            g_id: row.genome_id
+          });
         });
         values.auto_groups = auto_groups;
       } else {
