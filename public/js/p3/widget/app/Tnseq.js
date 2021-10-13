@@ -118,6 +118,8 @@ define([
       // this.output_path.set('value',"/" +  window.App.user.id +"/home/");
       this.primer.set('disabled', true);
       this.transposon.set('disabled', true);
+      this.primer.set('_resetValue', 'ACTTATCAGCCAACCTGTTA');
+      this.transposon.set('_resetValue', 'himar1');
       this.onProtocolChange();
       this._started = true;
     },
@@ -152,7 +154,7 @@ define([
         } else if (transposon == 'tn5') {
           this.primer.set('value', 'TAAGAGACAG');
         } else {
-          this.primer.set('value', 'err');
+          this.primer.set('value', 'ERROR');
         }
       }
     },
@@ -245,7 +247,7 @@ define([
           toAdd[attr] = libRecord[attr];
         });
         // pairedLibs.push(toAdd);
-        if ( !(curCond in allLibs)) {
+        if (!(curCond in allLibs)) {
           allLibs[curCond] = { replicates: [], library: curCond };
         }
         allLibs[curCond].replicates.push(toAdd);
@@ -269,7 +271,7 @@ define([
         singleAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
         });
-        if ( !(curCond in allLibs)) {
+        if (!(curCond in allLibs)) {
           allLibs[curCond] = { replicates: [], library: curCond };
         }
         // singleLibs.push(toAdd);
@@ -423,7 +425,6 @@ define([
     makeConditionName: function () {
       return this.condition.get('displayedValue');
     },
-
 
     // counter is a widget for requirements checking
     increaseRows: function (targetTable, counter, counterWidget) {
