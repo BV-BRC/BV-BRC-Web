@@ -55,6 +55,21 @@ define([
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
+      on(this.exclude_button, 'click', lang.hitch(this, function (event) {
+        this.markSelectedRegion("exclude_button");
+      }));
+      on(this.include_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("include_button");
+      }));
+      on(this.target_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("target_button");
+      }));
+      on(this.clear_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("clear_button");
+      }));
+      this.sequence_selected_text = "";
+
+      this._started = true;
     },
 
     // validate inputs
@@ -272,6 +287,89 @@ define([
     // Message to display when selecting a workspace file
     displayNote: function () {
       this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    },
+
+    getSelectedText: function() {
+      //var selected_text = window.getSelection().toString();
+      //Apparently there is a firefox bug where window.getSelection().toString() and other easy
+      //ways to get the selected text do not work in a TextArea
+      var field = this.sequence_template.textbox;
+      var startPos = field.selectionStart;
+      var endPos = field.selectionEnd;
+      var sequence_text = this.sequence_template.get("displayedValue");
+      var selected_text = sequence_text.substring(startPos,endPos);
+      if (selected_text == "" || selected_text.trim() == "") {
+        return;
+      }
+      this.sequence_selected_text = selected_text;
+    },
+
+    //TODO: html background color not working
+    highlightSelectedText: function() {
+      if (this.sequence_selected_text == "" || this.sequence_selected_text.trim() == "") {
+        return;
+      }
+      var sequence_text = this.sequence_template.get("displayedValue");
+      var txt_idx = this.sequence_template.textbox.selectionStart;
+      if (txt_idx >= 0) {
+        var before_highlight = sequence_text.substring(0,txt_idx);
+        var after_highlight = sequence_text.substring(txt_idx+this.sequence_selected_text.length,sequence_text.length);
+        var highlight_text = before_highlight + "<span style='background:yellow'>" + this.sequence_selected_text + "</span>" + after_highlight;
+        this.sequence_template.set("value",highlight_text);
+      }
+    },
+
+    //Does not check for if markers have already been place in other locations in the sequence text
+    markSelectedRegion: function(button_name) {
+      var selected_text = this.sequence_selected_text;
+      var sequence_text = this.sequence_template.get("displayedValue");
+      if (button_name == "clear_button") {
+        var header = "";
+        if (this.hasFastaHeader(sequence_text)) {
+          header = this.getFastaHeader(sequence_text);
+          var sequence = this.getSequence(sequence_text);
+        } else{
+          var sequence = sequence_text;
+        }
+        var markers = ["<",">","[","]","{","}"];
+        markers.forEach(function(m) {
+          sequence = sequence.replace(m,"");
+        },this);
+        if (header != "") {
+          var clear_sequence = ">" + header + "\n" + sequence;
+        } else {
+          var clear_sequence = sequence;
+        }
+        this.sequence_template.set("value",clear_sequence);
+        this.sequence_selected_text = "";
+        return;
+      }
+      if (selected_text == "" || selected_text.trim() == "") {
+        return;
+      }
+      if (button_name != "clear_button" && sequence_text.includes(selected_text)) { //shouldn't ever be clear_button here but just in case
+        var txt_idx = this.sequence_template.textbox.selectionStart;
+        if (this.hasFastaHeader(sequence_text)) {
+          var header = this.getFastaHeader(sequence_text);
+          if (txt_idx <= header.length) {
+            return;
+          }
+        }
+        var before_marker = sequence_text.substring(0,txt_idx);
+        var after_marker = sequence_text.substring(txt_idx+this.sequence_selected_text.length,sequence_text.length);
+        if (button_name == "exclude_button") {
+          var marker = ["<",">"];
+        }
+        else if (button_name == "target_button") {
+          var marker = ["[","]"];
+        }
+        else { //include button
+          var marker = ["{","}"];
+        }
+        var marker_text = before_marker + marker[0] + this.sequence_selected_text + marker[1] + after_marker;
+        this.sequence_template.set("value",marker_text);
+        this.sequence_selected_text = "";
+      }
     }
   });
 });

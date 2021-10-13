@@ -30,7 +30,7 @@
                             </div>
                             <!-- Input sequences: workspace, user input, and sequence identifier -->
                             <div class="appRow">
-                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithInput" data-dojo-attach-event="onChange:onStartWithChange" checked/>
+                                <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithInput" data-dojo-attach-event="onChange:onStartWithChange"checked/>
                                 <label for="radio2">Paste Sequence</label>
                                 <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithWorkspace" data-dojo-attach-event="onChange:onStartWithChange"/>
                                 <label for="radio1">Workspace FASTA</label>
@@ -67,14 +67,23 @@
                                     <td colspan="0">
                                         <div class="appRow">
                                             <label class="paramlabel">Paste Sequence</label><br>
-                                            <textarea name="sequence_template"
+                                            <textarea name="sequence_template" 
                                                     style="width:85%; height:50px; margin-left:10px; font-family: monospace; font-size:12px"
                                                     data-dojo-attach-point="sequence_template"
                                                     data-dojo-type="dijit/form/Textarea"
-                                                    data-dojo-attach-event="onChange:onChangeSequence"
+                                                    data-dojo-attach-event="onChange:onChangeSequence,onMouseUp:getSelectedText"
                                                     data-dojo-props="rows:5, placeholder:'Enter nucleotide sequence', intermediateChanges:false"></textarea>
                                                     <div class="warning" data-dojo-attach-point="sequence_message"></div>
                                         </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label>Mark Selected Region:</label>
+                                        <input type="button" label="&#60; &#62;" data-dojo-type="dijit/form/Button" data-dojo-attach-point="exclude_button" value="exclude_button"/>
+                                        <input type="button" label="&#91; &#93;" data-dojo-type="dijit/form/Button" data-dojo-attach-point="target_button" value="target_button"/>
+                                        <input type="button" label="&#123; &#125;" data-dojo-type="dijit/form/Button" data-dojo-attach-point="include_button" value="include_button"/>
+                                        <input type="button" label="clear" data-dojo-type="dijit/form/Button" data-dojo-attach-point="clear_button" value="clear_button"/>
                                     </td>
                                 </tr>
                             </table>
@@ -350,8 +359,9 @@
                             </div>
                             <div class="appRow">
                                 <div class="appFieldLong" style="width:85%">
-                                    <label class="paramlabel">Output Name</label>
+                                    <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
                                     <div data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName" style="width:100%; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Primer Design results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+                                    
                                 </div>
                             </div>
                         </div>
