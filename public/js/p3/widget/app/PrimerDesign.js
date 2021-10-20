@@ -186,9 +186,16 @@ define([
         this.sequence_message.innerHTML = 'Please provide a nucleotide sequence.';
         return;
       }
-      if (!this.hasSingleFastaSequence(val)) {
+      else if (this.isProteinSequence(val)) {
+        this.sequence_message.innerHTML = 'This looks like a protein sequence. Please provide a nucleotide sequence';
+        return;
+      }
+      else if (!this.hasSingleFastaSequence(val)) {
         this.sequence_message.innerHTML = 'Primer Design accepts only one sequence at a time. Please provide only one sequence.';
         return;
+      }
+      else {
+        this.sequence_message.innerHTML = '';
       }
       var sanitized = this.sanitizeFastaSequence(val);
       var fasta_header = this.getFastaHeader(sanitized);
@@ -199,6 +206,26 @@ define([
       }
       this.sequence_template.set('value', fasta_sequence);
       this.sequence_message.innerHTML = '';
+    },
+
+    isProteinSequence: function(val) {
+      var split_seq = val.toLowerCase().split("\n");
+      var valid_chars = ["a","c","t","g","n","<",">","[","]","{","}"];
+      var remaining_seq = "";
+      for (var index in split_seq) {
+        var line = split_seq[index];
+        if (line.charAt(0) === '>') {
+          continue;
+        }
+        for (var char in valid_chars) {
+          remaining_seq = remaining_seq + line.replace(char,"");
+        }
+      }
+      if (remaining_seq.length > 0) {
+        return true;
+      } else {
+        return false;
+      }
     },
 
     // checks for the occurence of multiple fastas records
