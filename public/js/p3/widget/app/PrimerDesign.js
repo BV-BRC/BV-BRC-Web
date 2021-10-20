@@ -187,7 +187,7 @@ define([
         return;
       }
       else if (this.isProteinSequence(val)) {
-        this.sequence_message.innerHTML = 'This looks like a protein sequence. Please provide a nucleotide sequence';
+        this.sequence_message.innerHTML = 'This looks like an invalid sequence. Please provide a valid nucleotide sequence';
         return;
       }
       else if (!this.hasSingleFastaSequence(val)) {
@@ -208,24 +208,61 @@ define([
       this.sequence_message.innerHTML = '';
     },
 
+    validate: function() {
+      if (this.output_path.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.output_file.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.startWithInput.checked == true) {
+        var seq = this.getSequenceForSubmission(this.sequence_template.get("value"));
+        if (seq === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+        if (this.isProteinSequence(seq)) {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      else if (this.startWithWorkspace.checked == true) {
+        if (this.sequence_workspace.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      } else { //bvbrc-id
+        if (this.input_bvbrc_identifier.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      this.submitButton.set("disabled",false);
+      return true;
+    },
+
+    //Removes all valid nucleotide sequence characters and 
+    //assumes the remaining characters are protein sequence characters
+    //bad assumption but works
     isProteinSequence: function(val) {
       var split_seq = val.toLowerCase().split("\n");
       var valid_chars = ["a","c","t","g","n","<",">","[","]","{","}"];
-      var remaining_seq = "";
       for (var index in split_seq) {
         var line = split_seq[index];
         if (line.charAt(0) === '>') {
           continue;
         }
         for (var char in valid_chars) {
-          remaining_seq = remaining_seq + line.replace(char,"");
+          var curr_char = valid_chars[char];
+          line = line.replace(curr_char,"");
+        }
+        if (line.length > 0) {
+          return true;
         }
       }
-      if (remaining_seq.length > 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return false;
     },
 
     // checks for the occurence of multiple fastas records
