@@ -167,7 +167,7 @@
                             <div class="appRow">
                                 <label class="paramlabel">Number to Return</label><br>
                                 <input  name="primer_num_return"
-                                        style="width:60%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                        style="width:41%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                         data-dojo-attach-point="primer_num_return"
                                         data-dojo-type="dijit/form/ValidationTextBox"
                                         data-dojo-props="trim:true,placeholder:'Max number of primer pairs to report (5)',regExp:'(([0-9])*)', intermediateChanges:true"
@@ -204,7 +204,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_opt_size"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,regExp:'([0-9]+)', placeholder:'25', intermediateChanges:true"
+                                                data-dojo-props="trim:true,regExp:'([0-9]+)', placeholder:'20', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                         <td>
@@ -213,7 +213,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_max_size"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,placeholder:'30',regExp:'(([0-9])+)', intermediateChanges:true"
+                                                data-dojo-props="trim:true,placeholder:'27',regExp:'(([0-9])+)', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                     </tr>
@@ -228,7 +228,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_min_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,placeholder:'50.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                data-dojo-props="trim:true,placeholder:'57.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                         <td>
@@ -237,7 +237,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_opt_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', placeholder:'50.0', intermediateChanges:true"
+                                                data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', placeholder:'60.0', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                         <td>
@@ -246,7 +246,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_max_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,placeholder:'60.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                data-dojo-props="trim:true,placeholder:'63.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                         <td>
@@ -255,7 +255,7 @@
                                                 style="width:40%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_pair_max_diff_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,placeholder:'10.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                data-dojo-props="trim:true,placeholder:'100.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                     </tr>
@@ -270,7 +270,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_min_gc"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,placeholder:'40.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                data-dojo-props="trim:true,placeholder:'20.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                         <td>
@@ -288,7 +288,7 @@
                                                 style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                 data-dojo-attach-point="primer_max_gc"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
-                                                data-dojo-props="trim:true,placeholder:'60.0',regExp:'([0-9]+((\.[0-9]+)?))',intermediateChanges:true"
+                                                data-dojo-props="trim:true,placeholder:'80.0',regExp:'([0-9]+((\.[0-9]+)?))',intermediateChanges:true"
                                                 required="false"/>
                                         </td>
                                     </tr>
@@ -298,42 +298,42 @@
                             <div class="appRow">
                                 <table>
                                     <tr>
-                                        <td><label class="paramlabel">Concentration of monovalent cations:</label></td>
+                                        <td><label class="paramlabel" style="white-space:nowrap;overflow:hidden">Concentration of monovalent cations (mM):</label></td>
                                         <td>
                                             <input  name="primer_salt_monovalent"
                                                       style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                       data-dojo-attach-point="primer_salt_monovalent"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
-                                                      data-dojo-props="trim:true,placeholder:'mM',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                      data-dojo-props="trim:true,placeholder:'50.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                       required="false"/>
                                         </td>
-                                        <td><label class="paramlabel">Annealing Oligo Concentration:</label></td>
+                                        <td><label class="paramlabel" style="white-space:nowrap;overflow:hidden">Annealing Oligo Concentration (nM):</label></td>
                                         <td>
                                             <input  name="primer_dna_conc"
                                                       style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                       data-dojo-attach-point="primer_dna_conc"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
-                                                      data-dojo-props="trim:true,placeholder:'nM',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                      data-dojo-props="trim:true,placeholder:'50.0',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                       required="false"/>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td><label class="paramlabel">Concentration of divalent cations:</label></td>
+                                        <td><label class="paramlabel">Concentration of divalent cations (mM):</label></td>
                                         <td>
                                             <input  name="primer_salt_divalent"
                                                       style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                       data-dojo-attach-point="primer_salt_divalent"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
-                                                      data-dojo-props="trim:true,placeholder:'mM',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                      data-dojo-props="trim:true,placeholder:'1.5',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                       required="false"/>
                                         </td>
-                                        <td><label class="paramlabel">Concentration of dNTPs:</label></td>
+                                        <td><label class="paramlabel">Concentration of dNTPs (mM):</label></td>
                                         <td>
                                             <input  name="primer_dntp_conc"
                                                       style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
                                                       data-dojo-attach-point="primer_dntp_conc"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
-                                                      data-dojo-props="trim:true,placeholder:'mM',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
+                                                      data-dojo-props="trim:true,placeholder:'0.6',regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
                                                       required="false"/>
                                         </td>
                                     </tr>
