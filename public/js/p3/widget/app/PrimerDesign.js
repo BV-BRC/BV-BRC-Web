@@ -67,6 +67,7 @@ define([
       on(this.clear_button, 'click', lang.hitch(this, function () {
         this.markSelectedRegion("clear_button");
       }));
+      this.setRegionTooltips();
       this.sequence_selected_text = "";
 
       this._started = true;
@@ -351,6 +352,21 @@ define([
     // Message to display when selecting a workspace file
     displayNote: function () {
       this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    },
+
+    setRegionTooltips: function() {
+      new Tooltip({
+        connectId: ["exclude_tooltip"],
+        label: "OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. "
+      });
+      new Tooltip({
+        connectId: ["target_tooltip"],
+        label: "OR: mark the source sequence with [ and ]: e.g. ...ATCT[CCCC]TCAT.. means that primers must flank the central CCCC"
+      });
+      new Tooltip({
+        connectId: ["include_tooltip"],
+        label: "OR: use { and } in the source sequence to mark the beginning and end of the included region: e.g. in ATC{TTC...TCT}AT the included region is TTC...TCT"
+      });
     },
 
     getSelectedText: function() {
