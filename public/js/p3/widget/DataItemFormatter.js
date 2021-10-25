@@ -625,7 +625,8 @@ define([
         mini: true
       }, {
         name: 'Accession',
-        text: 'accession'
+        text: 'accession',
+        link: 'https://www.ncbi.nlm.nih.gov/nuccore/'
       }, {
         name: 'UniProtKB Accession',
         text: 'uniprotkb_accession'

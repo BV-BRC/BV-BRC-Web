@@ -9,7 +9,7 @@ define([
 
   return declare([FilteringSelect, AutoCompleterMixin], {
     apiServiceUrl: window.App.dataAPI,
-    promptMessage: 'Taxonomy name of the organism being annotated.',
+    promptMessage: 'Taxonomy name of the organism.',
     missingMessage: 'Taxonomy Name must be provided.',
     placeHolder: 'e.g. Bacillus Cereus',
     searchAttr: 'taxon_name',
