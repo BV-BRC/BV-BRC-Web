@@ -67,6 +67,7 @@ define([
       on(this.clear_button, 'click', lang.hitch(this, function () {
         this.markSelectedRegion("clear_button");
       }));
+      this.setRegionTooltips();
       this.sequence_selected_text = "";
 
       this._started = true;
@@ -186,9 +187,16 @@ define([
         this.sequence_message.innerHTML = 'Please provide a nucleotide sequence.';
         return;
       }
-      if (!this.hasSingleFastaSequence(val)) {
+      else if (this.isProteinSequence(val)) {
+        this.sequence_message.innerHTML = 'This looks like an invalid sequence. Please provide a valid nucleotide sequence';
+        return;
+      }
+      else if (!this.hasSingleFastaSequence(val)) {
         this.sequence_message.innerHTML = 'Primer Design accepts only one sequence at a time. Please provide only one sequence.';
         return;
+      }
+      else {
+        this.sequence_message.innerHTML = '';
       }
       var sanitized = this.sanitizeFastaSequence(val);
       var fasta_header = this.getFastaHeader(sanitized);
@@ -199,6 +207,63 @@ define([
       }
       this.sequence_template.set('value', fasta_sequence);
       this.sequence_message.innerHTML = '';
+    },
+
+    validate: function() {
+      if (this.output_path.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.output_file.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.startWithInput.checked == true) {
+        var seq = this.getSequenceForSubmission(this.sequence_template.get("value"));
+        if (seq === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+        if (this.isProteinSequence(seq)) {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      else if (this.startWithWorkspace.checked == true) {
+        if (this.sequence_workspace.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      } else { //bvbrc-id
+        if (this.input_bvbrc_identifier.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      this.submitButton.set("disabled",false);
+      return true;
+    },
+
+    //Removes all valid nucleotide sequence characters and 
+    //assumes the remaining characters are protein sequence characters
+    //bad assumption but works
+    isProteinSequence: function(val) {
+      var split_seq = val.toLowerCase().split("\n");
+      var valid_chars = ["a","c","t","g","n","<",">","[","]","{","}"];
+      for (var index in split_seq) {
+        var line = split_seq[index];
+        if (line.charAt(0) === '>') {
+          continue;
+        }
+        for (var char in valid_chars) {
+          var curr_char = valid_chars[char];
+          line = line.replace(curr_char,"");
+        }
+        if (line.length > 0) {
+          return true;
+        }
+      }
+      return false;
     },
 
     // checks for the occurence of multiple fastas records
@@ -287,6 +352,21 @@ define([
     // Message to display when selecting a workspace file
     displayNote: function () {
       this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    },
+
+    setRegionTooltips: function() {
+      new Tooltip({
+        connectId: ["exclude_tooltip"],
+        label: "OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. "
+      });
+      new Tooltip({
+        connectId: ["target_tooltip"],
+        label: "OR: mark the source sequence with [ and ]: e.g. ...ATCT[CCCC]TCAT.. means that primers must flank the central CCCC"
+      });
+      new Tooltip({
+        connectId: ["include_tooltip"],
+        label: "OR: use { and } in the source sequence to mark the beginning and end of the included region: e.g. in ATC{TTC...TCT}AT the included region is TTC...TCT"
+      });
     },
 
     getSelectedText: function() {
