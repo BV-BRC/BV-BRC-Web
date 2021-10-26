@@ -34,7 +34,7 @@ define([
     constructor: function () {
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
-      this.singleToAttachPt = ['single_end_libs'];
+      this.singleToAttachPt = ['single_end_libsWidget'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
       this._autoTaxSet = false;
       this._autoNameSet = false;
@@ -151,7 +151,7 @@ define([
         var incomplete = 0;
         var browser_select = 0;
         var alias = attachname;
-        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libs') {
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
           browser_select = 1;
         }
@@ -164,7 +164,7 @@ define([
         }
 
         // Assign cur_value to target
-        if (attachname == 'single_end_libs') {
+        if (attachname == 'single_end_libsWidget') {
           alias = 'read';
         }
         if (typeof (cur_value) === 'string') {
@@ -212,7 +212,7 @@ define([
           return 'P(' + fn + ', ' + fn2 + ')';
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('displayedValue');
+          var fn = this.single_end_libsWidget.searchBox.get('displayedValue');
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -236,7 +236,7 @@ define([
           return fn + fn2;
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('value');
+          var fn = this.single_end_libsWidget.searchBox.get('value');
           return fn;
 
         case 'srr_accession':
