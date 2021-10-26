@@ -105,10 +105,12 @@ define([
         json_payload['sequence_id'.toUpperCase()] = curr_vars['input_sequence_identifier'];
         json_payload['input_type'] = 'sequence_text';
       }
+      /*
       if (this.startWithIdentifier.checked == true) {
         json_payload['sequence_input'] = curr_vars['sequence_id'];
         json_payload['input_type'] = 'database_id';
       }
+      */
       // sequence regions
       var region_keys = ['sequence_excluded_region', 'sequence_target', 'sequence_included_region', 'sequence_overlap_junction_list'];
       for (var x = 0; x < region_keys.length; x++) {
@@ -172,11 +174,13 @@ define([
         this.fasta_input_table.style.display = 'table';
         this.patric_sequence_identifier.style.display = 'none';
       }
+      /*
       if (this.startWithIdentifier.checked == true) {
         this.fasta_workspace_table.style.display = 'none';
         this.fasta_input_table.style.display = 'none';
         this.patric_sequence_identifier.style.display = 'table';
       }
+      */
     },
 
     // When a user pastes a fasta sequence into the input fasta section
