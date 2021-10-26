@@ -397,6 +397,7 @@ define([
 
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
+      console.log("accession=",accession);
       var isrun = false;
       if (!accession.match(/^[a-z]{3}[0-9]+$/i)) {
         this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
