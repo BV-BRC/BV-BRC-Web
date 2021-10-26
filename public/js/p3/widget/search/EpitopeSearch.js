@@ -48,7 +48,7 @@ define([
 
       const taxonNameValue = this.taxonNameNode.get('value')
       if (taxonNameValue !== '') {
-        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
+        queryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
       }
 
       const epitopeIDValue = this.epitopeIDNode.get('value')
