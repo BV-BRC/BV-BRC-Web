@@ -55,6 +55,22 @@ define([
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
+      on(this.exclude_button, 'click', lang.hitch(this, function (event) {
+        this.markSelectedRegion("exclude_button");
+      }));
+      on(this.include_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("include_button");
+      }));
+      on(this.target_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("target_button");
+      }));
+      on(this.clear_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("clear_button");
+      }));
+      this.setRegionTooltips();
+      this.sequence_selected_text = "";
+
+      this._started = true;
     },
 
     // validate inputs
@@ -89,10 +105,12 @@ define([
         json_payload['sequence_id'.toUpperCase()] = curr_vars['input_sequence_identifier'];
         json_payload['input_type'] = 'sequence_text';
       }
+      /*
       if (this.startWithIdentifier.checked == true) {
         json_payload['sequence_input'] = curr_vars['sequence_id'];
         json_payload['input_type'] = 'database_id';
       }
+      */
       // sequence regions
       var region_keys = ['sequence_excluded_region', 'sequence_target', 'sequence_included_region', 'sequence_overlap_junction_list'];
       for (var x = 0; x < region_keys.length; x++) {
@@ -156,11 +174,13 @@ define([
         this.fasta_input_table.style.display = 'table';
         this.patric_sequence_identifier.style.display = 'none';
       }
+      /*
       if (this.startWithIdentifier.checked == true) {
         this.fasta_workspace_table.style.display = 'none';
         this.fasta_input_table.style.display = 'none';
         this.patric_sequence_identifier.style.display = 'table';
       }
+      */
     },
 
     // When a user pastes a fasta sequence into the input fasta section
@@ -171,9 +191,16 @@ define([
         this.sequence_message.innerHTML = 'Please provide a nucleotide sequence.';
         return;
       }
-      if (!this.hasSingleFastaSequence(val)) {
+      else if (this.isProteinSequence(val)) {
+        this.sequence_message.innerHTML = 'This looks like an invalid sequence. Please provide a valid nucleotide sequence';
+        return;
+      }
+      else if (!this.hasSingleFastaSequence(val)) {
         this.sequence_message.innerHTML = 'Primer Design accepts only one sequence at a time. Please provide only one sequence.';
         return;
+      }
+      else {
+        this.sequence_message.innerHTML = '';
       }
       var sanitized = this.sanitizeFastaSequence(val);
       var fasta_header = this.getFastaHeader(sanitized);
@@ -184,6 +211,63 @@ define([
       }
       this.sequence_template.set('value', fasta_sequence);
       this.sequence_message.innerHTML = '';
+    },
+
+    validate: function() {
+      if (this.output_path.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.output_file.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.startWithInput.checked == true) {
+        var seq = this.getSequenceForSubmission(this.sequence_template.get("value"));
+        if (seq === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+        if (this.isProteinSequence(seq)) {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      else if (this.startWithWorkspace.checked == true) {
+        if (this.sequence_workspace.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      } else { //bvbrc-id
+        if (this.input_bvbrc_identifier.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      this.submitButton.set("disabled",false);
+      return true;
+    },
+
+    //Removes all valid nucleotide sequence characters and 
+    //assumes the remaining characters are protein sequence characters
+    //bad assumption but works
+    isProteinSequence: function(val) {
+      var split_seq = val.toLowerCase().split("\n");
+      var valid_chars = ["a","c","t","g","n","<",">","[","]","{","}"];
+      for (var index in split_seq) {
+        var line = split_seq[index];
+        if (line.charAt(0) === '>') {
+          continue;
+        }
+        for (var char in valid_chars) {
+          var curr_char = valid_chars[char];
+          line = line.replace(curr_char,"");
+        }
+        if (line.length > 0) {
+          return true;
+        }
+      }
+      return false;
     },
 
     // checks for the occurence of multiple fastas records
@@ -272,6 +356,104 @@ define([
     // Message to display when selecting a workspace file
     displayNote: function () {
       this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    },
+
+    setRegionTooltips: function() {
+      new Tooltip({
+        connectId: ["exclude_tooltip"],
+        label: "OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. "
+      });
+      new Tooltip({
+        connectId: ["target_tooltip"],
+        label: "OR: mark the source sequence with [ and ]: e.g. ...ATCT[CCCC]TCAT.. means that primers must flank the central CCCC"
+      });
+      new Tooltip({
+        connectId: ["include_tooltip"],
+        label: "OR: use { and } in the source sequence to mark the beginning and end of the included region: e.g. in ATC{TTC...TCT}AT the included region is TTC...TCT"
+      });
+    },
+
+    getSelectedText: function() {
+      //var selected_text = window.getSelection().toString();
+      //Apparently there is a firefox bug where window.getSelection().toString() and other easy
+      //ways to get the selected text do not work in a TextArea
+      var field = this.sequence_template.textbox;
+      var startPos = field.selectionStart;
+      var endPos = field.selectionEnd;
+      var sequence_text = this.sequence_template.get("displayedValue");
+      var selected_text = sequence_text.substring(startPos,endPos);
+      if (selected_text == "" || selected_text.trim() == "") {
+        return;
+      }
+      this.sequence_selected_text = selected_text;
+    },
+
+    //TODO: html background color not working
+    highlightSelectedText: function() {
+      if (this.sequence_selected_text == "" || this.sequence_selected_text.trim() == "") {
+        return;
+      }
+      var sequence_text = this.sequence_template.get("displayedValue");
+      var txt_idx = this.sequence_template.textbox.selectionStart;
+      if (txt_idx >= 0) {
+        var before_highlight = sequence_text.substring(0,txt_idx);
+        var after_highlight = sequence_text.substring(txt_idx+this.sequence_selected_text.length,sequence_text.length);
+        var highlight_text = before_highlight + "<span style='background:yellow'>" + this.sequence_selected_text + "</span>" + after_highlight;
+        this.sequence_template.set("value",highlight_text);
+      }
+    },
+
+    //Does not check for if markers have already been place in other locations in the sequence text
+    markSelectedRegion: function(button_name) {
+      var selected_text = this.sequence_selected_text;
+      var sequence_text = this.sequence_template.get("displayedValue");
+      if (button_name == "clear_button") {
+        var header = "";
+        if (this.hasFastaHeader(sequence_text)) {
+          header = this.getFastaHeader(sequence_text);
+          var sequence = this.getSequence(sequence_text);
+        } else{
+          var sequence = sequence_text;
+        }
+        var markers = ["<",">","[","]","{","}"];
+        markers.forEach(function(m) {
+          sequence = sequence.replace(m,"");
+        },this);
+        if (header != "") {
+          var clear_sequence = ">" + header + "\n" + sequence;
+        } else {
+          var clear_sequence = sequence;
+        }
+        this.sequence_template.set("value",clear_sequence);
+        this.sequence_selected_text = "";
+        return;
+      }
+      if (selected_text == "" || selected_text.trim() == "") {
+        return;
+      }
+      if (button_name != "clear_button" && sequence_text.includes(selected_text)) { //shouldn't ever be clear_button here but just in case
+        var txt_idx = this.sequence_template.textbox.selectionStart;
+        if (this.hasFastaHeader(sequence_text)) {
+          var header = this.getFastaHeader(sequence_text);
+          if (txt_idx <= header.length) {
+            return;
+          }
+        }
+        var before_marker = sequence_text.substring(0,txt_idx);
+        var after_marker = sequence_text.substring(txt_idx+this.sequence_selected_text.length,sequence_text.length);
+        if (button_name == "exclude_button") {
+          var marker = ["<",">"];
+        }
+        else if (button_name == "target_button") {
+          var marker = ["[","]"];
+        }
+        else { //include button
+          var marker = ["{","}"];
+        }
+        var marker_text = before_marker + marker[0] + this.sequence_selected_text + marker[1] + after_marker;
+        this.sequence_template.set("value",marker_text);
+        this.sequence_selected_text = "";
+      }
     }
   });
 });

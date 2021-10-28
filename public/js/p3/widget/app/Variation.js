@@ -500,6 +500,7 @@ define([
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         job_data = this.formatRerunJson(job_data);
         AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+        localStorage.removeItem("bvbrc_rerun_job");
       }
     },
 
