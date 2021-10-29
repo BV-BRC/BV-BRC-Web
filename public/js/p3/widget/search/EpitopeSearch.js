@@ -30,7 +30,7 @@ define([
       this.pathogenGroupNode.store = pathogenGroupStore;
 
       storeBuilder('epitope', 'epitope_type').then(lang.hitch(this, (store) => {
-        this.hostNameNode.store = store
+        this.epitopeTypeNode.store = store
       }))
     },
     buildQuery: function () {
