@@ -1,5 +1,5 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
-      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
@@ -8,180 +8,284 @@
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
                 <div class="infobox iconbox tutorialButton tutorialInfo">
-                    <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+                            title="click to open tutorial"></i></a>
                 </div>
             </h3>
-            <p>The PATRIC BLAST service integrates the BLAST (Basic Local Aligment Search Tool) algorithms to perform searches
-                against against public or private genomes in PATRIC or other reference databases using a DNA or protein sequence
-                and find matching genomes, genes, RNAs, or proteins.
-                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">BLAST Service User Guide</a> and
+            <p>The BLAST service integrates the BLAST (Basic Local Aligment Search Tool) algorithms to perform
+                searches against public or private genomes or other reference databases using DNA or protein
+                sequence(s).
+                For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">BLAST
+                    Service User Guide</a> and
                 <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
             </p>
         </div>
-
-        <div class="service_form">
-            <div class="appBox appShadow">
-                <div class="headerrow" style="margin-bottom: 7px">
-                    <label class="appBoxLabel">Sequence</label>
+        <div id="Program_box" style="width:97%;" class="appBox appShadow">
+            <div class="headerrow">
+                <label class="appBoxLabel">Search program</label>
+                <div name="program" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
-                <textarea name="sequence"
-                          style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
-                          data-dojo-attach-point="sequence"
-                          data-dojo-type="dijit/form/Textarea"
-                          data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Multiple query sequences require FASTA format.', intermediateChanges:true"
-                          data-dojo-attach-event="onChange:onChangeSequence"></textarea>
-                <div class="warning" data-dojo-attach-point="sequence_message"></div>
-
-                <div class="headerrow" style="margin-bottom: 7px">
-                    <label class="appBoxLabel">Program</label>
+            </div>
+            <div class="appRow">
+                <table>
+                    <tr>
+                        <td>
+                            <input type="radio" id="blastn" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="blastn" name="program" value="blastn"
+                                data-dojo-attach-event="onChange:onChangeProgram" checked />
+                            <label for="blastn">BLASTN (nucleotide > nucleotide database)</label>
+                        </td>
+                        <td>
+                            <input type="radio" id="blastp" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="blastp" name="program" value="blastp"
+                                data-dojo-attach-event="onChange:onChangeProgram" />
+                            <label for="blastp">BLASTP (protein > protein database)</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" id="blastx" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="blastx" name="program" value="blastx"
+                                data-dojo-attach-event="onChange:onChangeProgram" />
+                            <label for="blastx">BLASTX (translated nucleotide > protein database)</label>
+                        </td>
+                        <td>
+                            <input type="radio" id="tblastn" data-dojo-type="dijit/form/RadioButton"
+                                data-dojo-attach-point="tblastn" name="program" value="tblastn"
+                                data-dojo-attach-event="onChange:onChangeProgram" />
+                            <label for="tblastn">tBLASTn (protein > translated nucleotide database)</label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="appBox appShadow">
+            <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                    <label class="appBoxLabel">Query source</label>
                 </div>
-                <select name="program" style="margin-left:10px; width:96%"
-                        data-dojo-type="dijit/form/Select"
-                        data-dojo-attach-event="onChange:onChangeProgram"
-                        data-dojo-props="disabled:true"
-                        data-dojo-attach-point="program">
-                </select>
-                <div class="warning" data-dojo-attach-point="program_message"></div>
-
+                <br>
                 <div class="appRow">
-                    <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
-                        <div class="headerrow" style="margin-bottom: 7px">
-                            <label class="appBoxLabel">Database</label>
-                        </div>
-                        <div name="database" style="width:96%; margin-left:10px"
-                                data-dojo-type="dijit/form/Select"
-                                data-dojo-attach-event="onChange:onChangeDatabase"
-                                data-dojo-props="disabled:true"
-                                data-dojo-attach-point="database">
-                        </div>
-                    </div>
-                    <div class="appRowSegment" style="text-align:left; width:20%">
-                        <div class="headerrow" style="margin-bottom: 7px">
-                            <label class="appBoxLabel">Database Type</label>
-                        </div>
-                        <div  data-dojo-type="dijit/form/Select"name="search_for"
-                            data-dojo-props="disabled:true"
-                            maxHeight="200" style="width:100%" required="true" 
-                            data-dojo-attach-point="search_for"></div>
-                    <div class="warning" data-dojo-attach-point="search_for_message"></div>
-                    </div>
+                    <input type="radio" id="input_sequence" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_sequence" name="input" value="input_sequence"
+                        data-dojo-attach-event="onChange:onInputChange" checked />
+                    <label for="input_sequence">Enter sequence</label>
+                    <input type="radio" id="input_fasta" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
+                        data-dojo-attach-event="onChange:onInputChange" />
+                    <label for="input_fasta">Select FASTA file</label>
+                    <input type="radio" id="input_group" data-dojo-type="dijit/form/RadioButton"
+                        data-dojo-attach-point="input_group" name="input" value="input_group"
+                        data-dojo-attach-event="onChange:onInputChange" />
+                    <label for="input_group">Select feature group</label>
                 </div>
-              <div class="headerrow" style="margin: 16px 0 7px 0">
-                <label class="appBoxLabel">Output Folder</label>
-             </div>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true"
-                  data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-              <div class="headerrow" style="margin: 16px 0 7px 0">
-                  <label class="appBoxLabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-              </div>
-                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-                <div class="warning" data-dojo-attach-point="database_message"></div>
+                <table data-dojo-attach-point="sequence_table" style="width:100%; display:none">
+                    <tr>
+                        <td>
+                            <!-- <div class="service_form"> -->
+                            <textarea name="sequence"
+                                style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
+                                data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea" required="false"
+                                data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format.', intermediateChanges:true"
+                                data-dojo-attach-event="onBlur:validateFasta"></textarea>
+                            <div class="warning" data-dojo-attach-point="sequence_message"></div>
+                            <!-- </div>> -->
+                        </td>
+                    </tr>
+                </table>
+                <table data-dojo-attach-point="fasta_table" style="width:100%; display:none">
+                    <tr>
+                        <td>
+                            <div style="width:85%;display:inline-block;"
+                                data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
+                                data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
+                                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta'],multi:false,promptMessage:'Select or Upload fasta file to your workspace.',missingMessage:'User file is optional.',placeHolder:'FASTA file'">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table data-dojo-attach-point="group_table" style="width:100%; display:none">
+                    <tr>
+                        <td>
+                            <div style="width:85%;display:inline-block;"
+                                data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_featuregroup"
+                                required="false" data-dojo-attach-point="query_featuregroup"
+                                data-dojo-attach-event="onChange:validate"
+                                data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.',placeHolder:'Feature group'">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
-
-            <div class="appRow" style="text-align:center">
-                <div class="appRowSegment" data-dojo-attach-point="advanced">
-                    <label class="largelabel">Advanced options</label>
-                    <div class="iconbox" style="margin-left:0">
-                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+        </div>
+        <div class="appBox appShadow">
+            <div class="appRow">
+                <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
+                    <div class="headerrow" style="margin-bottom: 7px">
+                        <label class="appBoxLabel">Database Source</label>
                     </div>
-                </div>
-            </div>
-
-            <div data-dojo-attach-point="advancedOptions" style="display: none">
-                <div class="appBox appShadow hidden" data-dojo-attach-point="genome_id_wrapper">
-                    <div class="left half" style="vertical-align: top">
-                        <label class="paramlabel">Add Genomes to Search: </label>
-                        <div data-dojo-attach-event="onChange:onSuggestNameChange"
-                             data-dojo-type="p3/widget/GenomeNameSelector"
-                             data-dojo-attach-point="genome_id"
-                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
-                             style="width:310px;">
-                        </div>
-                        <div style="width:17px; display:inline-block;">
-                            <i data-dojo-attach-event="click:onAddGenome"
-                               class="fa icon-arrow-circle-o-right fa-lg"></i>
-                        </div>
-                    </div>
-                    <div class="left half">
-                        <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable"
-                               style='width:330px;'>
-                            <tbody data-dojo-attach-point="genomeTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="clear"></div>
-                    <div class="warning" data-dojo-attach-point="genome_id_message"></div>
-                </div>
-
-                <div class="appBox appShadow hidden" data-dojo-attach-point="genome_group_wrapper">
-                    <label class="paramlabel">Select genome group: </label><br/>
-                    <div name="genome_group" style="width: 650px"></div>
-                    <div class="warning" data-dojo-attach-point="genome_group_message"></div>
-                </div>
-
-                <div class="appBox appShadow hidden" data-dojo-attach-point="taxon_wrapper">
-                    <label class="paramlabel">Select Taxon: </label><br/>
-                    <select name="taxon" style="width: 650px"
-                            data-dojo-type="p3/widget/TaxonNameSelector"
-                            data-dojo-attach-point="taxonomy">
+                    <select name="database" style="width:96%; margin-left:10px" data-dojo-type="dijit/form/Select"
+                        data-dojo-attach-event="onChange:onChangeDatabase" data-dojo-props="disabled:false"
+                        data-dojo-attach-point="database">
+                        <option value="bacteria-archaea">Reference and representative genomes (bacteria, archaea)
+                        </option>
+                        <option value="virus-reference">Reference and representative genomes (virus)
+                        </option>
+                        <option value="selGenome">Search within selected genome</option>
+                        <option value="selGroup">Search within selected genome group</option>
+                        <option value="selTaxon">Search within a taxon</option>
+                        <option value="selFasta">Search within selected fasta file</option>
                     </select>
-                    <div class="warning" data-dojo-attach-point="taxonomy_message"></div>
                 </div>
-
-
-                <div class="appBox appShadow">
-                    <div class="headerrow">
-                        <label class="appBoxLabel">BLAST Parameters</label>
+                <div class="appRowSegment" style="text-align:left; width:20%">
+                    <div class="headerrow" style="margin-bottom: 7px">
+                        <label class="appBoxLabel">Database Type</label>
                     </div>
-                    <div class="left third">
-                        <label class="paramlabel">Max hits: </label><br/>
-                        <select name="max_target" style="width: 100px"
-                                data-dojo-type="dijit/form/Select"
-                                data-dojo-attach-point="max_hits">
-                            <option value="1">1</option>
-                            <option value="10" selected="selected">10</option>
-                            <option value="20" >20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                            <option value="500">500</option>
-                        </select>
+                    <div data-dojo-type="dijit/form/Select" name="search_for" data-dojo-props="disabled:false"
+                        data-dojo-attach-event="onChange:onChangeDBType" maxHeight="200" style="width:100%"
+                        required="true" data-dojo-attach-point="search_for">
                     </div>
-
-                    <div class="left third">
-                        <label class="paramlabel">E value threshold: </label><br/>
-                        <select name="threshold" type="text" value="0.0001" style="width:50px"
-                               data-dojo-type="dijit/form/Select"
-                               data-dojo-attach-point="evalue">
-                            <option value="0.0001" selected="selected">0.0001</option>
-                            <option value="0.001">0.001</option>
-                            <option value="0.01">0.01</option>
-                            <option value="0.1">0.1</option>
-                            <option value="1">1</option>
-                            <option value="10">10</option>
-                        </select>
+                    <div class="warning" data-dojo-attach-point="search_for_message"></div>
+                </div>
+            </div>
+            <div class="appBox hidden" data-dojo-attach-point="genome_id_wrapper">
+                <div class="left half" style="vertical-align: top">
+                    <label class="paramlabel">Add Genomes to Search: </label>
+                    <div data-dojo-attach-event="onChange:onSuggestNameChange"
+                        data-dojo-type="p3/widget/GenomeNameSelector" required="false"
+                        data-dojo-attach-point="genome_id" data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
+                        style="width:310px;">
                     </div>
-                    <div class="clear"></div>
+                    <div style="width:17px; display:inline-block;">
+                        <i data-dojo-attach-event="click:onAddGenome" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                    </div>
+                </div>
+                <div class="left half">
+                    <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable" style='width:330px;'>
+                        <tbody data-dojo-attach-point="genomeTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="clear"></div>
+                <div class="warning" data-dojo-attach-point="genome_id_message"></div>
+            </div>
+            <div class="appBox hidden" data-dojo-attach-point="genome_group_wrapper">
+                <label class="paramlabel">Select genome group: </label><br />
+                <div name="genome_group" data-dojo-attach-point="genome_group"
+                    data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-event="onChange:validate"
+                    required="false" style="width: 650px"
+                    data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Genome group'">
+                </div>
+                <div class="warning" data-dojo-attach-point="genome_group_message"></div>
+            </div>
+            <div class="appBox hidden" data-dojo-attach-point="taxon_wrapper">
+                <label class="paramlabel">Select Taxon: </label><br />
+                <select name="taxonomy" data-dojo-attach-event="onChange:validate" required="false" style="width: 650px"
+                    data-dojo-type="p3/widget/TaxonNameSelector" data-dojo-attach-point="taxonomy"
+                    data-dojo-props="multi:false,promptMessage:'Select a taxon.',missingMessage:'Taxon is required.'">
+                </select>
+                <div class="warning" data-dojo-attach-point="taxonomy_message"></div>
+            </div>
+            <div class="appBox hidden" data-dojo-attach-point="fasta_wrapper">
+                <label class="paramlabel">Select fasta file: </label><br />
+                <div name="fasta_db" data-dojo-attach-event="onChange:validate" required="false"
+                    data-dojo-type="p3/widget/WorkspaceObjectSelector" style="width: 650px"
+                    data-dojo-attach-point="fasta_db"
+                    data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta'],multi:false,promptMessage:'Select or Upload fasta file to your workspace.',missingMessage:'User file is required.'">
+                </div>
+                <div class="warning" data-dojo-attach-point="fasta_db_message"></div>
+            </div>
+            <table>
+                <tr>
+                    <td>
+                        <div class="headerrow" style="margin: 16px 0 7px 0">
+                            <label class="appBoxLabel">Output Folder</label>
+                        </div>
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                            data-dojo-attach-point="output_path" style="width:300px" required="true"
+                            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+                            data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                    </td>
+                    <td>
+                        <div class="headerrow" style="margin: 16px 0 7px 0">
+                            <label class="appBoxLabel">Output Name</label><span class="charError"
+                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                        </div>
+                        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                            data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
+                            style="width:300px" required="true"
+                            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="warning" data-dojo-attach-point="database_message"></div>
+        </div>
+        <div class="appRow" style="text-align:center">
+            <div class="appRowSegment" data-dojo-attach-point="advanced">
+                <label class="largelabel">Advanced options</label>
+                <div class="iconbox" style="margin-left:0">
+                    <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
                 </div>
             </div>
         </div>
-        <div class="appSubmissionArea">
-            <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-                Submitting Homology Job
-            </div>
-            <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-                Error Submitting Job
-            </div>
-            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-                Homology Job has been queued.
-            </div>
-            <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel
+        <div data-dojo-attach-point="advancedOptions" style="display: none">
+            <div class="appBox appShadow">
+                <div class="headerrow">
+                    <label class="appBoxLabel">BLAST Parameters</label>
                 </div>
-                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-                <div id="live_job_check123" value=true data-dojo-type="dijit/form/CheckBox" checked data-dojo-attach-point="live_job" data-dojo-attach-event="onChange:setLiveJob"></div>
-                <label for="live_job_check123">Live job</label>
+                <div class="left third">
+                    <label class="paramlabel">Max hits: </label><br />
+                    <select name="max_target" style="width: 100px" data-dojo-type="dijit/form/Select"
+                        data-dojo-attach-point="max_hits">
+                        <option value="1">1</option>
+                        <option value="10" selected="selected">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+                <div class="left third">
+                    <label class="paramlabel">E value threshold: </label><br />
+                    <select name="threshold" type="text" value="0.0001" style="width:50px"
+                        data-dojo-type="dijit/form/Select" data-dojo-attach-point="evalue">
+                        <option value="0.0001" selected="selected">0.0001</option>
+                        <option value="0.001">0.001</option>
+                        <option value="0.01">0.01</option>
+                        <option value="0.1">0.1</option>
+                        <option value="1">1</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="clear"></div>
+            </div>
         </div>
     </div>
-
+    <div class="appSubmissionArea">
+        <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+            style="margin-top:10px; text-align:center;">
+            Submitting Homology job
+        </div>
+        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+            style="margin-top:10px; text-align:center;">
+            Error submitting job
+        </div>
+        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+            style="margin-top:10px; text-align:center;">
+            Homology Job has been queued.
+        </div>
+        <div style="margin-top: 10px; text-align:center;">
+            <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                data-dojo-type="dijit/form/Button">Cancel
+            </div>
+            <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset
+            </div>
+            <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit
+            </div>
+            <div id="live_job_check123" value=true data-dojo-type="dijit/form/CheckBox" checked
+                data-dojo-attach-point="live_job" data-dojo-attach-event="onChange:setLiveJob"></div>
+            <label for="live_job_check123">View results</label>
+        </div>
+    </div>
 </form>
-
