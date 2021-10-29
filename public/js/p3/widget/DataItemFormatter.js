@@ -2187,7 +2187,7 @@ define([
         name: 'Total Assays',
         text: 'total_assays',
       }, {
-        name: 'Assay Reults',
+        name: 'Assay Results',
         text: 'assay_results',
       }, {
         name: 'B Cell Assays',
