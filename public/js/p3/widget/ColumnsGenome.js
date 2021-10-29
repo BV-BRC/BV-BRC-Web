@@ -399,12 +399,12 @@ define(['./formatter'], function (formatter) {
     collection_date: {
       label: 'Collection Date',
       field: 'collection_date',
-      hidden: false
+      hidden: true
     },
     collection_year: {
       label: 'Collection Year',
       field: 'collection_year',
-      hidden: true
+      hidden: false
     },
     season: {
       label: 'Season',
@@ -436,12 +436,12 @@ define(['./formatter'], function (formatter) {
     host_name: {
       label: 'Host Name',
       field: 'host_name',
-      hidden: false
+      hidden: true
     },
     host_common_name: {
       label: 'Host Common Name',
       field: 'host_common_name',
-      hidden: true
+      hidden: false
     },
     host_gender: {
       label: 'Host Gender',
@@ -466,12 +466,12 @@ define(['./formatter'], function (formatter) {
     lab_host: {
       label: 'Lab Host',
       field: 'lab_host',
-      hidden: false
+      hidden: true
     },
     passage: {
       label: 'Passage',
       field: 'passage',
-      hidden: false
+      hidden: true
     },
     other_clinical: {
       label: 'Other Clinical',
