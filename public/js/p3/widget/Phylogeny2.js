@@ -1,5 +1,5 @@
 define([
-  'dojo/_base/declare', 'phyloxml/phyloxml', 'archaeopteryx/archaeopteryx-js/archaeopteryx',
+  'dojo/_base/declare',
   'dijit/_WidgetBase', 'dojo/request', 'dojo/dom-construct', 'dojo/_base/lang',
   'dojo/dom-geometry', 'dojo/dom-style', 'd3/d3', '../util/PathJoin',
   'dijit/form/DropDownButton', 'dijit/DropDownMenu', 'dijit/form/Button',
@@ -9,7 +9,7 @@ define([
   'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic',
   'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin'
 ], function (
-  declare, phyloxml, archaeopteryx,
+  declare,
   WidgetBase, request, domConstruct,
   lang, domGeometry, domStyle, d3, PathJoin,
   DropDownButton, DropDownMenu,
