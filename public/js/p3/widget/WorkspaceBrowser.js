@@ -77,7 +77,6 @@ define([
         validTypes: ['*'],
         tooltip: 'Toggle Selection Detail'
       }, function (selection) {
-        console.log("selection=",selection);
         if (self.getChildren().some(function (child) {
           return child === self.itemDetailPanel;
         })) {
@@ -1150,7 +1149,6 @@ define([
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         // console.log("View Tracks: ", this);
-        console.log("rerun within object");
         console.log(selection);
 
       }, false);

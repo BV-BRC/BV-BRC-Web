@@ -611,8 +611,6 @@ define([
     },
 
     destroyLib: function (lrec, query_id, id_type) {
-      console.log("destroyLib: query_id = ",query_id);
-      console.log("destroyLib: id_type = ",id_type);
       this.destroyLibRow(query_id, id_type);
       if (lrec.condition) {
         var query_obj = { id: lrec.condition };
@@ -700,10 +698,7 @@ define([
       console.log('Delete Rows');
       var query_obj = {};
       query_obj[id_type] = query_id;
-      console.log(query_obj);
       var toRemove = this.libraryStore.query(query_obj);
-      console.log("destroyLibRow: toRemove = ",toRemove);
-      console.log("libraryStore = ",this.libraryStore);
       toRemove.forEach(function (obj) {
         domConstruct.destroy(obj.row);
         this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
@@ -842,9 +837,7 @@ define([
       var condLibs = [];
       var contrastPairs = [];
 
-      console.log('condList =',condList);
       var combinedList = pairedList.concat(singleList).concat(srrList);
-      console.log('combinedList = ',combinedList);
       if (this.exp_design.checked) {
         condList.forEach(function (condRecord) {
           for (var i = 0; i < combinedList.length; i++) {
@@ -873,7 +866,6 @@ define([
       if (this.paired_end_libs.length) {
         assembly_values.paired_end_libs = this.paired_end_libs;
       }
-      console.log("condLibs = ",condLibs);
       if (condLibs.length) {
         assembly_values.experimental_conditions = condLibs;
       }
