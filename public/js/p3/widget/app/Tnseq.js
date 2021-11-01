@@ -122,6 +122,16 @@ define([
       this.transposon.set('_resetValue', 'himar1');
       this.onProtocolChange();
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     onRecipeChange: function () {
@@ -203,84 +213,11 @@ define([
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ type: 'paired' });
-      var pairedAttrs = ['read1', 'read2'];
-      var singleAttrs = ['read'];
-      var condList = this.conditionStore.data;
-      var singleList = this.libraryStore.query({ type: 'single' });
-      var condLibs = [];
-      var allLibs = {};
-      this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
-      var defaultCond = 'control';
-      // for (var k in values) {
-      //   if(!k.startsWith("libdat_")){
-      //     assembly_values[k]=values[k];
-      //   }
-      // }
-      var combinedList = pairedList.concat(singleList);
-      assembly_values.reference_genome_id = values.genome_name;
-      if (this.exp_design.checked) {
-        condList.forEach(function (condRecord) {
-          for (var i = 0; i < combinedList.length; i++) {
-            if (combinedList[i].condition == condRecord.condition) {
-              condLibs.push(condRecord.condition);
-              break;
-            }
-          }
-        });
+      
+      assembly_values = this.checkBaseParameters(values,assembly_values);
+      if (!this.form_flag) {
+        this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
-      else {
-        condLibs.push(defaultCond);
-      }
-
-      pairedList.forEach(function (libRecord) {
-        var toAdd = {};
-        var curCond = null;
-        if ('condition' in libRecord && this.exp_design.checked) {
-          // toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
-          curCond = libRecord.condition;
-        }
-        else {
-          curCond = defaultCond;
-        }
-        pairedAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        // pairedLibs.push(toAdd);
-        if (!(curCond in allLibs)) {
-          allLibs[curCond] = { replicates: [], library: curCond };
-        }
-        allLibs[curCond].replicates.push(toAdd);
-      }, this);
-      // if(pairedLibs.length){
-      //   assembly_values["paired_end_libs"] = pairedLibs;
-      // }
-      if (condLibs.length) {
-        assembly_values.experimental_conditions = condLibs;
-      }
-      singleList.forEach(function (libRecord) {
-        var toAdd = {};
-        var curCond = null;
-        if ('condition' in libRecord && this.exp_design.checked) {
-          // toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
-          curCond = libRecord.condition;
-        }
-        else {
-          curCond = defaultCond;
-        }
-        singleAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        if (!(curCond in allLibs)) {
-          allLibs[curCond] = { replicates: [], library: curCond };
-        }
-        // singleLibs.push(toAdd);
-        allLibs[curCond].replicates.push(toAdd);
-      }, this);
-      // if(singleLibs.length){
-      //   assembly_values["single_end_libs"] = singleLibs;
-      // }
-      assembly_values.read_files = allLibs;
       if (assembly_values.recipe == 'resampling') {
         assembly_values.contrasts = [['control', 'treatment']];
       }
@@ -641,7 +578,154 @@ define([
         this.libraryStore.put(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
-    }
+    },
 
+    checkBaseParameters: function(values,assembly_values) {
+      //reads and sra
+      var pairedList = this.libraryStore.query({ type: 'paired' });
+      var pairedAttrs = ['read1', 'read2'];
+      var singleAttrs = ['read'];
+      var condList = this.conditionStore.data;
+      var singleList = this.libraryStore.query({ type: 'single' });
+      var condLibs = [];
+      var allLibs = {};
+
+
+      var defaultCond = 'control';
+      // for (var k in values) {
+      //   if(!k.startsWith("libdat_")){
+      //     assembly_values[k]=values[k];
+      //   }
+      // }
+      var combinedList = pairedList.concat(singleList);
+      
+      if (this.exp_design.checked) {
+        condList.forEach(function (condRecord) {
+          for (var i = 0; i < combinedList.length; i++) {
+            if (combinedList[i].condition == condRecord.condition) {
+              condLibs.push(condRecord.condition);
+              break;
+            }
+          }
+        });
+      }
+      else {
+        condLibs.push(defaultCond);
+      }
+
+      pairedList.forEach(function (libRecord) {
+        var toAdd = {};
+        var curCond = null;
+        if ('condition' in libRecord && this.exp_design.checked) {
+          // toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
+          curCond = libRecord.condition;
+        }
+        else {
+          curCond = defaultCond;
+        }
+        pairedAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        // pairedLibs.push(toAdd);
+        if ( !(curCond in allLibs)) {
+          allLibs[curCond] = { replicates: [], library: curCond };
+        }
+        allLibs[curCond].replicates.push(toAdd);
+      }, this);
+      // if(pairedLibs.length){
+      //   assembly_values["paired_end_libs"] = pairedLibs;
+      // }
+      if (condLibs.length) {
+        assembly_values.experimental_conditions = condLibs;
+      }
+      singleList.forEach(function (libRecord) {
+        var toAdd = {};
+        var curCond = null;
+        if ('condition' in libRecord && this.exp_design.checked) {
+          // toAdd['condition'] = condLibs.indexOf(libRecord['condition']) + 1;
+          curCond = libRecord.condition;
+        }
+        else {
+          curCond = defaultCond;
+        }
+        singleAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        if ( !(curCond in allLibs)) {
+          allLibs[curCond] = { replicates: [], library: curCond };
+        }
+        // singleLibs.push(toAdd);
+        allLibs[curCond].replicates.push(toAdd);
+      }, this);
+      // if(singleLibs.length){
+      //   assembly_values["single_end_libs"] = singleLibs;
+      // }
+      assembly_values.read_files = allLibs;
+      //strategy (not protocol)
+      //target genome
+      assembly_values.reference_genome_id = values.genome_name;
+      this.target_genome_id = assembly_values.reference_genome_id;
+      //output_folder
+      assembly_values.output_path = values.output_path;
+      this.output_folder = values.output_path;
+      //output_name
+      assembly_values.output_file = values.output_file;
+      this.output_name = values.output_file;
+
+      return assembly_values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if(localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var job_data = this.formatJsonRerun(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+        var param_dict = {"output_folder":"output_path","strategy":"recipe","target_genome_id":"reference_genome_id"};
+        var widget_map = {"reference_genome_id":"genome_nameWidget"};
+        param_dict["widget_map"] = widget_map;
+        //No service specific parameters in job output
+        //var service_specific = {"protocol":"protocol","primer":"primer"};
+        //param_dict["service_specific"] = service_specific;
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
+    },
+
+    //Formate the json input to AppBase.loadLibrary() so it populates the library field correctly
+    formatJsonRerun: function(job_data) {
+      var read_files = job_data["read_files"];
+      var single_libs = [];
+      var paired_libs = [];
+      //go through control
+      var control_reps = read_files["control"]["replicates"];
+      for (var idx = 0; idx < control_reps.length; idx++) {
+        var curr_rep = control_reps[idx];
+        curr_rep.icon = this.getConditionIcon("control");
+        curr_rep.condition = "control";
+        if (curr_rep.hasOwnProperty("read")) {
+          single_libs.push(curr_rep);
+        } else{
+          paired_libs.push(curr_rep);
+        }
+      }
+      //go through treatment, if it exists
+      if (read_files.hasOwnProperty("treatment")) {
+        var treatment_reps = read_files["treatment"]["replicates"];
+        for (var idx = 0; idx < treatment_reps.length; idx++) {
+          var curr_rep = treatment_reps[idx];
+          curr_rep.icon = this.getConditionIcon("treatment");
+          curr_rep.condition = "treatment";
+          if (curr_rep.hasOwnProperty("read")) {
+            single_libs.push(curr_rep);
+          } else {
+            paired_libs.push(curr_rep);
+          }
+        }
+      }
+      job_data["single_end_libs"] = single_libs;
+      job_data["paired_end_libs"] = paired_libs;
+      return job_data;
+    }
   });
 });
