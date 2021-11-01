@@ -72,6 +72,16 @@ define([
       //        }
       //      }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     emptyTable: function (target, rowLimit) {
@@ -582,6 +592,7 @@ define([
     getValues: function () {
       var seqcomp_values = {};
       var values = this.inherited(arguments);
+      console.log(values);
       var compGenomeList = query('.genomedata');
       var userGenomes = [];
       var featureGroups = [];
@@ -607,12 +618,106 @@ define([
         seqcomp_values.feature_groups = featureGroups;
       }
       seqcomp_values.aligner = values.aligner;
-      seqcomp_values.output_path = values.output_path;
-      seqcomp_values.output_file = values.output_file;
+      seqcomp_values = this.checkBaseParameters(values,seqcomp_values);
+      
       seqcomp_values.fasta_keyboard_input = values.fasta_keyboard_input;
       seqcomp_values.fasta_keyboard_input = seqcomp_values.fasta_keyboard_input.replace(/^\s*[\r\n]/gm, '');
       seqcomp_values.alphabet = values.alphabet;
       return seqcomp_values;
+    },
+
+    checkBaseParameters: function(values,seqcomp_values) {
+      seqcomp_values.output_path = values.output_path;
+      this.output_folder = values.output_path;
+      seqcomp_values.output_file = values.output_file;
+      this.output_name = values.output_file;
+      return seqcomp_values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path","strategy":"aligner"};
+        var service_specific = {"fasta_keyboard_input":"fasta_keyboard_input"};
+        param_dict["service_specific"] = service_specific;
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        this.setAlphabetFormFill(job_data);
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        this.addSequenceFilesFormFill(job_data);
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
+    },
+
+    setAlphabetFormFill: function(job_data) {
+      if (job_data["alphabet"] == "DNA") {
+        this.protein.set("checked",false);
+        this.dna.set("checked",true);
+      }
+      else {
+        this.dna.set("checked",false);
+        this.protein.set("checked",true);
+      }
+      this.onAlphabetChanged();
+    },
+
+    addSequenceFilesFormFill: function(job_data) {
+      if (job_data.hasOwnProperty("fasta_files") && job_data.hasOwnProperty("feature_groups")) {
+        var sequence_files = job_data["fasta_files"].concat(job_data["feature_groups"]);
+      }
+      else if (job_data.hasOwnProperty("fasta_files")) {
+        var sequence_files = job_data["fasta_files"];
+      }
+      else {
+        var sequence_files = job_data["feature_groups"];
+      }
+      sequence_files.forEach(function(seq_file) {
+        if (seq_file.hasOwnProperty("type")) { //fasta file
+          var lrec = {"user_genomes_alignment":{"file":seq_file.file,"type":seq_file.type}};
+          var newGenomeIds = [lrec.user_genomes_alignment.file];
+          var seq_type = 'fasta';
+        }
+        else { //feature group
+          var seq_type = 'feature_group';
+          var lrec = {"user_genomes_featuregroup":{"file":seq_file,"type":seq_type}};;
+          var newGenomeIds = [lrec];
+        }
+        var tr = this.genomeTable.insertRow(0);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+        td.genomeRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(newGenomeIds[0].split("/").pop()) + "</div>";
+        domConstruct.create('td', { innerHTML: '' }, tr);
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedGenomes < this.startingRows) {
+          this.genomeTable.deleteRow(-1);
+        }
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          console.log("Delete Row");
+          domConstruct.destroy(tr);
+          this.decreaseGenome(seq_type, newGenomeIds);
+          if (this.addedGenomes < this.startingRows) {
+            var ntr = this.genomeTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+        }));
+        this.increaseGenome(seq_type, newGenomeIds);
+        if (seq_type == 'fasta') {
+          this.onAlphabetChanged();
+        }
+      },this);
+    },
+
+    //TODO: add type (AA:, NT:)
+    makeFormFillName: function(name) {
+      var display_name = name;
+      var maxName = 36;
+      if (name.length > maxName) {
+        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
+      }
+      return display_name;
     }
 
   });

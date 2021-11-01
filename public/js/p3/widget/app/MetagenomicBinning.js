@@ -67,6 +67,16 @@ define([
         });
       }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     getValues: function () {
@@ -78,50 +88,7 @@ define([
           delete values[key];
         }
       });
-      if (this.startWithRead.checked) { // start from read file
-        var pairedList = this.libraryStore.query({ _type: 'paired' });
-        var singleList = this.libraryStore.query({ _type: 'single' });
-        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-        var pairedLibs = [];
-        var singleLibs = [];
-        var srrAccessions = [];
-
-        pairedLibs = pairedList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (pairedLibs.length) {
-          values.paired_end_libs = pairedLibs;
-        }
-
-        singleLibs = singleList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (singleLibs.length) {
-          values.single_end_libs = singleLibs;
-        }
-
-        srrAccessions = srrAccessionList.map(function (lrec) {
-          return lrec._id;
-        });
-        if (srrAccessions.length) {
-          values.srr_ids = srrAccessions;
-        }
-        delete values.contigs;       // contigs file is not needed
-        // values.input_type = 'reads'; // set input_type to be 'reads'
-
-      } // startWithRead
+      values = this.checkBaseParameters(values);
 
       if (values.organism == 'bacteria') {
         values.perform_bacterial_annotation = true;
@@ -473,6 +440,149 @@ define([
         this.megahit.set('disabled', true);
         this.metaspades.set('disabled', true);
       }
+    },
+
+    checkBaseParameters: function(values) {
+      //reads, sra, or contigs
+      if (this.startWithRead.checked) { // start from read file
+        var pairedList = this.libraryStore.query({ _type: 'paired' });
+        var singleList = this.libraryStore.query({ _type: 'single' });
+        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+
+        this.paired_end_libs = pairedList.map(function (lrec) {
+          var rrec = {};
+          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+            if (!attr.startsWith('_')) {
+              rrec[attr] = lrec[attr];
+            }
+          }));
+          return rrec;
+        });
+        if (this.paired_end_libs.length) {
+          values.paired_end_libs = this.paired_end_libs;
+        }
+
+        this.single_end_libs = singleList.map(function (lrec) {
+          var rrec = {};
+          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+            if (!attr.startsWith('_')) {
+              rrec[attr] = lrec[attr];
+            }
+          }));
+          return rrec;
+        });
+        if (this.single_end_libs.length) {
+          values.single_end_libs = this.single_end_libs;
+        }
+
+        this.sra_libs = srrAccessionList.map(function (lrec) {
+          return lrec._id;
+        });
+        if (this.sra_libs.length) {
+          values.srr_ids = this.sra_libs;
+        }
+        delete values.contigs;       // contigs file is not needed
+        // values.input_type = 'reads'; // set input_type to be 'reads'
+
+      } // startWithRead
+      if (this.startWithContigs.checked) {
+        this.contigs = values.contigs;
+      }
+      //strategy (assembly)
+      if (values.assembler) {
+        this.strategy = values.assembler;
+      }
+      //output_folder
+      this.output_folder = values.output_path;
+      //output_name
+      this.output_name = values.output_file;
+      //genome group
+      this.genome_group = values.genome_group;
+
+      return values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path","contigs":"NONE"};
+        //var widget_map = {"contigs":"contigsFile"};
+        //param_dict["widget_map"] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        this.selectOrganismFormFill(job_data);
+        this.selectStartWith(job_data);
+        if (this.startWithRead.checked) {
+          AppBase.prototype.loadLibrary.call(this,this.formatRerunJson(job_data),param_dict);
+        }
+        else {
+          this.setContigsFileFormFill(job_data);
+        }
+        //TODO set other parameters
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
+    },
+
+    setContigsFileFormFill: function(job_data) {
+      this.contigsFile.set("value",job_data["contigs"]);
+      this.contigsFile.set("displayedValue",job_data["contigs"]);
+      this.checkParameterRequiredFields();
+    },
+
+    selectOrganismFormFill: function(job_data) {
+      var check_bacteria = job_data["perform_bacterial_annotation"] == true;
+      var check_viruses = job_data["perform_viral_annotation"] == true;
+      if (!check_bacteria && !check_viruses) {
+        return;
+      }
+      if (check_bacteria && !check_viruses) {
+        this.bacteria.set("checked",true);
+      }
+      else if (!check_bacteria && check_viruses) {
+        this.viruses.set("checked",true);
+      }
+      else {
+        this.bacteriaAndViruses.set("checked",true);
+      }
+    },
+
+    //Selects the start with button: reads or contigs
+    //Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function(job_data) {
+      if (job_data.contigs) {
+        this.startWithContigs.set("checked",true);
+        this.startWithRead.set("checked",false);
+      }
+      else {
+        this.startWithRead.set("checked",true);
+        this.startWithContigs.set("checked",false);
+      }
+    },
+
+    //Job object can apparently have paired end libs without read1 read2 identifiers
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      if (job_data.paired_end_libs.length == 2) {
+        if (!job_data.paired_end_libs[0].hasOwnProperty("read1")) {
+          var new_record = {"read1":job_data.paired_end_libs[0],"read2":job_data.paired_end_libs[1]};
+          job_data.paired_end_libs = [];
+          job_data.paired_end_libs.push(new_record);
+        }
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
+    },
+
+    checkOutputName: function() {
+      this.checkParameterRequiredFields();
     }
   });
 });

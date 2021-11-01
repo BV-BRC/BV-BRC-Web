@@ -70,6 +70,17 @@ define([
         }
       }));
       this._started = true;
+      this.form_flag = false;
+      try{ 
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
+      
     },
 
     emptyTable: function (target, rowLimit) {
@@ -573,11 +584,100 @@ define([
         seqcomp_values.min_ident = values.min_ident / 100;
       }
 
-      seqcomp_values.output_path = values.output_path;
-      seqcomp_values.output_file = values.output_file;
+      seqcomp_values = this.checkBaseParameters(values,seqcomp_values);
 
       return seqcomp_values;
-    }
+    },
 
+    checkBaseParameters: function(values,seqcomp_values) {
+
+      seqcomp_values.output_path = values.output_path;
+      seqcomp_values.output_file = values.output_file;
+      this.output_folder = values.output_path;
+      this.output_name = values.output_file;
+
+      return seqcomp_values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path"};
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        this.setReferenceGenomeFormFill(job_data);
+        this.addGenomesFormFill(job_data);
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = false;
+      }
+    },
+
+    setReferenceGenomeFormFill: function(job_data) {
+      //reference_genome_index is base index 1
+      //TODO: make sure that the default for reference_genome_index = 1 is just a default, do not set if others are set
+      console.log(job_data);
+      var set_ref = false;
+      if (job_data["user_genomes"]) {
+        if (job_data["user_genomes"].length > 0) {
+          this.ref_user_genomes_fasta.set("value",job_data["user_genomes"][0]);
+          set_ref = true;
+        } 
+      }
+      else if (job_data["user_feature_groups"]) {
+        if (job_data["user_feature_groups"].length > 0) { //feature group
+          this.ref_user_genomes_featuregroup.set("value",job_data["user_feature_groups"][0]);
+          set_ref = true;
+        }
+      }
+      else {
+        var ref_gid = job_data["genome_ids"][parseInt(job_data["reference_genome_index"]) - 1];
+        this.ref_genome_id.set("value",ref_gid);
+        set_ref = true;
+      }
+    },
+
+    addGenomesFormFill: function(job_data) {
+      var genome_ids = job_data["genome_ids"];
+      genome_ids.forEach(function(gid) {
+        var name_promise = this.scientific_nameWidget.store.get(gid);
+        name_promise.then(lang.hitch(this,function (tax_obj) { 
+          this.scientific_nameWidget.set('item', tax_obj);
+          this.scientific_nameWidget.validate();
+          var genome_name = this.scientific_nameWidget.get('displayedValue');
+          var lrec = {};
+          var tr = this.genomeTable.insertRow(0);
+          var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+          td.genomeRecord = lrec;
+          td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(genome_name) + '</div>';
+          domConstruct.create('td', { innerHTML: '' }, tr);
+          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+          if (this.addedGenomes < this.startingRows) {
+            this.genomeTable.deleteRow(-1);
+          }
+          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+            // console.log("Delete Row");
+            domConstruct.destroy(tr);
+            this.decreaseGenome('genome', [gid]);
+            if (this.addedGenomes < this.startingRows) {
+              var ntr = this.genomeTable.insertRow(-1);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            }
+            handle.remove();
+          }));
+          this.increaseGenome('genome', [gid]);
+        }));
+      },this);
+    },
+
+    genDisplayName: function (name) {
+      var maxName = 36;
+      var display_name = name;
+      if (name.length > maxName) {
+        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
+      }
+      return display_name;
+    },
   });
 });

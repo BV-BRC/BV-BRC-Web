@@ -484,7 +484,6 @@ define([
       if (this.sra_libs.length) {
         submit_values.srr_ids = this.sra_libs;
       }
-
       return submit_values;
     },
 

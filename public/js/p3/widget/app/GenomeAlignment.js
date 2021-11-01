@@ -244,9 +244,20 @@ define([
         var param_dict = {"output_folder":"output_path"};
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
         this.addGenomeList(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+        this.serviceSpecific(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
         localStorage.removeItem("bvbrc_rerun_job");
         this.form_flag = true;
       }
+    },
+
+    serviceSpecific: function(job_data) {
+      //TODO: Skipping setting seed weight
+      var attach_list = ["maxGappedAlignerLength","maxBreakpointDistanceScale","conservationDistanceScale","weight","minScaledPenalty","hmmPGoHomologous","hmmPGoUnrelated"];
+      attach_list.forEach(function(attach_point) {
+        if (job_data[attach_point]) {
+          this[attach_point].set("value",job_data[attach_point]);
+        }
+      },this);
     }
   });
 

@@ -69,8 +69,17 @@ define([
       }));
       this.setRegionTooltips();
       this.sequence_selected_text = "";
-
-      this._started = true;
+        this._started = true;
+        this.form_flag = false;
+        try {
+          this.intakeRerunForm();
+        } catch (error) {
+          console.error(error);
+          var localStorage = window.localStorage;
+          if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+            localStorage.removeItem("bvbrc_rerun_job");
+          }
+        }
     },
 
     // validate inputs
@@ -117,48 +126,62 @@ define([
         if (curr_vars[region_keys[x]]) {
           json_payload[region_keys[x].toUpperCase()] = curr_vars[region_keys[x]];
         }
-      }
-      // settings
-      if (curr_vars['primer_num_return']) {
-        json_payload['primer_num_return'.toUpperCase()] = curr_vars['primer_num_return'];
-      }
-      if (curr_vars['primer_product_size_range']) {
-        json_payload['primer_product_size_range'.toUpperCase()] = curr_vars['primer_product_size_range'].replace(',', '-');
-      }
-      var settings_keys = ['size', 'tm', 'gc'];
-      for (var x = 0; x < settings_keys.length; x++) {
-        var min_key = 'primer_min_' + settings_keys[x];
-        var opt_key = 'primer_opt_' + settings_keys[x];
-        var max_key = 'primer_max_' + settings_keys[x];
-        if (curr_vars[min_key]) {
-          json_payload[min_key.toUpperCase()] = curr_vars[min_key];
+        if (this.startWithInput.checked == true) {
+            json_payload["sequence_input"] = this.getSequenceForSubmission(values["sequence_template"]);
+            json_payload["sequence_id".toUpperCase()] = values["input_sequence_identifier"];
+            json_payload["input_type"] = "sequence_text";
         }
-        if (curr_vars[opt_key]) {
-          if (settings_keys[x] == 'gc') {
-            json_payload['PRIMER_OPT_GC_PERCENT'] = curr_vars[opt_key];
-          }
-          else {
-            json_payload[opt_key.toUpperCase()] = curr_vars[opt_key];
-          }
+        if (this.startWithIdentifier.checked == true) {
+            json_payload["sequence_input"] = values["sequence_id"];
+            json_payload["input_type"] = "database_id";
         }
-        if (curr_vars[max_key]) {
-          json_payload[max_key.toUpperCase()] = curr_vars[max_key];
+        //sequence regions
+        var region_keys = ["sequence_excluded_region","sequence_target","sequence_included_region","sequence_overlap_junction_list"];
+        for (var x = 0; x < region_keys.length; x++) {
+            if (values[region_keys[x]]) {
+                json_payload[region_keys[x].toUpperCase()] = values[region_keys[x]];
+            }
         }
-      }
-      if (curr_vars['primer_pair_max_diff_tm']) {
-        json_payload['primer_pair_max_diff_tm'.toUpperCase()] = curr_vars['primer_pair_max_diff_tm'];
-      }
-      var concentration_keys = ['salt_monovalent', 'dna_conc', 'salt_divalent', 'dntp_conc'];
-      for (var x = 0; x < concentration_keys.length; x++) {
-        var curr_conc_key = 'primer_' + concentration_keys[x];
-        if (curr_vars[curr_conc_key]) {
-          json_payload[curr_conc_key.toUpperCase()] = curr_vars[curr_conc_key];
+        //settings
+        if (values["primer_num_return"]){
+            json_payload["primer_num_return".toUpperCase()] = values["primer_num_return"];
         }
-      }
-      // output
-      json_payload['output_path'] = curr_vars['output_path'];
-      json_payload['output_file'] = curr_vars['output_file'];
-      return json_payload;
+        if (values["primer_product_size_range"]){
+            json_payload["primer_product_size_range".toUpperCase()] = values["primer_product_size_range"].replace(",","-");
+        }
+        var settings_keys = ["size","tm","gc"];
+        for (var x = 0; x < settings_keys.length; x++) {
+            var min_key = "primer_min_" + settings_keys[x];
+            var opt_key = "primer_opt_" + settings_keys[x];
+            var max_key = "primer_max_" + settings_keys[x];
+            if (values[min_key]) {
+                json_payload[min_key.toUpperCase()] = values[min_key];
+            }
+            if (values[opt_key]) {
+                if (settings_keys[x] == "gc") {
+                    json_payload["PRIMER_OPT_GC_PERCENT"] = values[opt_key];
+                }
+                else {
+                    json_payload[opt_key.toUpperCase()] = values[opt_key];
+                }
+            }
+            if (values[max_key]) {
+                json_payload[max_key.toUpperCase()] = values[max_key];
+            }
+        }
+        if (values["primer_pair_max_diff_tm"]) {
+            json_payload["primer_pair_max_diff_tm".toUpperCase()] = values["primer_pair_max_diff_tm"];
+        }
+        var concentration_keys = ["salt_monovalent","dna_conc","salt_divalent","dntp_conc"];
+        for (var x = 0; x < concentration_keys.length; x++) {
+            var curr_conc_key = "primer_" + concentration_keys[x];
+            if (values[curr_conc_key]) {
+                json_payload[curr_conc_key.toUpperCase()] = values[curr_conc_key];
+            }
+        }
+        //output
+        json_payload = this.checkBaseParameters(values,json_payload);
+        return json_payload;
     },
 
     // swap between sequence input types based on what is checked
@@ -353,9 +376,101 @@ define([
       return val;
     },
 
-    // Message to display when selecting a workspace file
-    displayNote: function () {
-      this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    //Message to display when selecting a workspace file
+    displayNote: function() {
+        this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    },
+
+    checkBaseParameters: function(values,json_payload) {
+        json_payload["output_path"] = values["output_path"];
+        this.output_folder = values["output_path"];
+        json_payload["output_file"] = values["output_file"];
+        this.output_name = values["output_file"];
+        return json_payload;
+    },
+
+    intakeRerunForm: function() {
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+            var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+            var param_dict = {"output_folder":"output_path"};
+            var service_specific = {"SEQUENCE_EXCLUDED_REGION":"sequence_excluded_region","SEQUENCE_TARGET":"sequence_target",
+            "SEQUENCE_INCLUDED_REGION":"sequence_included_region","SEQUENCE_OVERLAP_JUNCTION_LIST":"sequence_overlap_junction_list"};
+            param_dict["service_specific"] = service_specific;
+            this.setSequenceSourceFormFill(job_data);
+            this.setAdvancedParamsFormFill(job_data);
+            AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+            localStorage.removeItem("bvbrc_rerun_job");
+            this.form_flag = true;
+        }
+    },
+
+    setAdvancedParamsFormFill: function(job_data) {
+        var params1 = {"PRIMER_NUM_RETURN":"primer_num_return","PRIMER_PRODUCT_SIZE_RANGE":"primer_product_size_range"};
+        var min_dict = {"PRIMER_MIN_SIZE":"primer_min_size","PRIMER_MIN_TM":"primer_min_tm","PRIMER_MIN_GC":"primer_min_gc"};
+        var opt_dict = {"PRIMER_OPT_SIZE":"primer_opt_size","PRIMER_OPT_GC_PERCENT":"primer_opt_gc","PRIMER_OPT_TM":"primer_opt_tm"};
+        var max_dict = {"PRIMER_MAX_SIZE":"primer_max_size","PRIMER_MAX_GC":"primer_max_gc","PRIMER_MAX_TM":"primer_max_tm","PRIMER_PAIR_MAX_DIFF_TM":"primer_pair_max_diff_tm"};
+        var concentration_dict = {"PRIMER_SALT_MONOVALENT":"primer_salt_monovalent","PRIMER_DNA_CONC":"primer_dna_conc","PRIMER_SALT_DIVALENT":"primer_salt_divalent","PRIMER_NTP_CONC":"primer_ntp_conc"};
+        var all_params = Object.assign({},params1,min_dict,opt_dict,max_dict,concentration_dict);
+        var advanced_settings = false;
+        Object.keys(all_params).forEach(function(field) {
+          if (job_data.hasOwnProperty(field)) {
+            advanced_settings = true;
+          }
+        },this);
+        if (advanced_settings) {
+          this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
+        }
+        Object.keys(params1).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[params1[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(min_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[min_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(opt_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[opt_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(max_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[max_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(concentration_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[concentration_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+    },
+
+    setSequenceSourceFormFill: function(job_data) {
+        if (job_data["input_type"] == "database_id") {
+            this.startWithIdentifier.set("checked",true);
+            this.startWithInput.set("checked",false);
+            this.startWithWorkspace.set("checked",false);
+            //add input
+            this.input_bvbrc_identifier.set("value",job_data["sequence_input"]);
+        }
+        else if (job_data["input_type"] == "sequence_text") {
+            this.startWithInput.set("checked",true);
+            this.startWithIdentifier.set("checked",false);
+            this.startWithWorkspace.set("checked",false);
+            //add input
+            this.input_sequence_identifier.set("value",job_data["sequence_id".toUpperCase()]);
+            this.sequence_template.set("value",job_data["sequence_input"]);
+        }
+        else {
+            this.startWithWorkspace.set("checked",true);
+            this.startWithIdentifier.set("checked",false);
+            this.startWithInput.set("checked",false);
+            //add input
+            this.sequence_workspace.set("value",job_data["sequence_input"]);
+        }
     },
 
     setRegionTooltips: function() {
