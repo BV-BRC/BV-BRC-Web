@@ -1110,6 +1110,8 @@ define([
         self.showPermDialog(selection);
       }, false);
 
+      //TODO: in order to make this button appear "inside" the job result:
+      //look into validContainerTypes???
       this.actionPanel.addAction('Rerun','fa icon-rotate-left fa-2x',{
         label:'RERUN',
         allowMultiTypes: true,
@@ -1125,31 +1127,30 @@ define([
           localStorage.removeItem("bvbrc_rerun_job");
         }
         localStorage.setItem("bvbrc_rerun_job",job_params);
-        switch (service_id) {
-          case 'ComprehensiveGenomeAnalysis':
-            Topic.publish('/navigate',{href:'/app/ComprehensiveGenomeAnalysis'});
-            break;
-          case 'GenomeAssembly2':
-            Topic.publish('/navigate',{href:'/app/Assembly2'});
-            break;
-          case 'GenomeAlignment':
-            Topic.publish('/navigate',{href:'/app/GenomeAlignment'});
-            break;
-          case 'GenomeAnnotation':
-            Topic.publish('/navigate',{href:'/app/Annotation'});
-            break;
-          case 'MetagenomicReadMapping':
-            Topic.publish('/navigate',{href:'/app/MetagenomicReadMapping'});
-            break;
-          case 'TaxonomicClassification':
-            Topic.publish('/navigate',{href:'/app/TaxonomicClassification'});
-            break;
-          case 'Variation':
-            Topic.publish('/navigate',{href:'/app/Variation'});
-            break;
-          default:
-            console.log('Rerun not enabled for: ',service_id);
+        var service_app_map = {"ComprehensiveGenomeAnalysis":"ComprehensiveGenomeAnalysis","ComprehensiveSARS2Analysis":"ComprehensiveSARS2Analysis","DifferentialExpression":"Expression",
+        "FastqUtils":"FastqUtil","GeneTree":"GeneTree","GenomeAssembly2":"Assembly2", "GenomeAlignment":"GenomeAlignment","GenomeAnnotation":"Annotation","GenomeComparison":"SeqComparison",
+        "MetagenomeBinning":"MetagenomicBinning","MetagenomicReadMapping":"MetagenomicReadMapping","MSA":"MSA",
+        "PrimerDesign":"PrimerDesign","RNASeq":"Rnaseq","TaxonomicClassification":"TaxonomicClassification","TnSeq":"Tnseq","Variation":"Variation"};
+        if (service_app_map.hasOwnProperty(service_id)) {
+          Topic.publish('/navigate',{href:'/app/'+service_app_map[service_id]});
         }
+        else{
+          console.log('Rerun not enabled for: ',service_id);
+        }
+      }, false);
+
+      this.browserHeader.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
+        label: 'RERUN',
+        multiple: false,
+        persistent: true,
+        //TODO: list of services that allow "descending" into a job object
+        //TODO: does not last past the 
+        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'folder'],
+        tooltip: 'Reset job form with current parameters'
+      }, function (selection) {
+        // console.log("View Tracks: ", this);
+        console.log(selection);
+
       }, false);
 
       // listen for opening user permisssion dialog

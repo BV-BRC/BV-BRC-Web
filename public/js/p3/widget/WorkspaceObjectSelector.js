@@ -480,17 +480,17 @@ define([
       domConstr.place(cancelButton.domNode, buttonsPane.containerNode, 'last');
       domConstr.place(okButton.domNode, buttonsPane.containerNode, 'last');
 
+      var grid = this.grid = this.createGrid();
 
       on(selectionPane.domNode, 'i:click', function (evt) {
         var rel = domAttr.get(evt.target, 'rel');
         switch (rel) {
           case 'upload':
             _self.dialog.flip();
+            grid.domNode.style.display = 'none';
             break;
         }
       });
-
-      var grid = this.grid = this.createGrid();
 
       frontBC.addChild(selectionPane);
       frontBC.addChild(grid);
@@ -509,6 +509,7 @@ define([
           switch (rel) {
             case 'flip':
               _self.dialog.flip();
+              grid.domNode.style.display = '';
               break;
           }
         });
@@ -543,6 +544,7 @@ define([
           } else {
             _self.dialog.flip();
           }
+          grid.domNode.style.display = '';
         });
 
         uploader.startup();

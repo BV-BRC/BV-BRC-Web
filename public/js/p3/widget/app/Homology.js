@@ -337,6 +337,7 @@ define([
         'input_source': _self.input_source,
         'db_type': _self.db_type,
         'db_source': _self.db_source,
+        'program': program,
         'output_file': output_file,
         'output_path': output_path,
         'blast_max_hits': max_hits,

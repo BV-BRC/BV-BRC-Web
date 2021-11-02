@@ -54,7 +54,7 @@ define([
     constructor: function () {
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
-      this.singleToAttachPt = ['single_end_libs'];
+      this.singleToAttachPt = ['single_end_libsWidget'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
 
       this.advPairToAttachPt = ['paired_platform'];
@@ -91,6 +91,16 @@ define([
         });
       }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     getValues: function () {
@@ -178,7 +188,7 @@ define([
         var incomplete = 0;
         var browser_select = 0;
         var alias = attachname;
-        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libs') {
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
           browser_select = 1;
         }
@@ -194,7 +204,7 @@ define([
         if (attachname == 'paired_platform' || attachname == 'single_platform') {
           alias = 'platform';
         }
-        if (attachname == 'single_end_libs') {
+        if (attachname == 'single_end_libsWidget') {
           alias = 'read';
         }
         if (typeof (cur_value) === 'string') {
@@ -242,7 +252,7 @@ define([
           return 'P(' + fn + ', ' + fn2 + ')';
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('displayedValue');
+          var fn = this.single_end_libsWidget.searchBox.get('displayedValue');
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -266,7 +276,7 @@ define([
           return fn + fn2;
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('value');
+          var fn = this.single_end_libsWidget.searchBox.get('value');
           return fn;
 
         case 'srr_accession':
@@ -578,11 +588,11 @@ define([
 
     onRecipeChange: function () {
       if (this.recipe.value == 'canu') {
-        this.genome_size_block.style.display = 'block';
+        //this.genome_size_block.style.display = 'block';
         this.checkParameterRequiredFields();
       }
       else {
-        this.genome_size_block.style.display = 'none';
+        //this.genome_size_block.style.display = 'none';
         this.checkParameterRequiredFields();
       }
     },
@@ -608,6 +618,54 @@ define([
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
       }
+    },
+
+    //TODO:
+    //checkBaseParameters: function() {},
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        var param_dict = {"output_folder":"output_path","strategy":"recipe","target_genome_id":"taxonomy_id","contigs":"contigs"};
+        var widget_map = {"taxonomy_id":"tax_idWidget","contigs":"contigsFile"};
+        param_dict["widget_map"] = widget_map;
+        job_data = this.formatRerunJson(job_data);
+        this.selectStartWith(job_data);
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        if (this.startWithRead.checked == true) {
+          AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+        }
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
+    },
+
+    //Selects the start with button: reads or contigs
+    //Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function(job_data) {
+      if (job_data.input_type == "contigs") {
+        this.startWithContigs.set("checked",true);
+      }
+      else {
+        this.startWithRead.set("checked",true);
+      }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
+    },
+
+    //For some reason the button that is supposed to trigger onAddSRR is not doing so,
+    //so this function just calls the function the button was supposed to invoke on click
+    callOnAddSRR: function() {
+      AppBase.prototype.onAddSRR.call(this);
     }
   });
 });

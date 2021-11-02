@@ -84,7 +84,7 @@
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
               </div>
               <div class="appRow" data-dojo-attach-point="advrow">
                 <div class="appRowSegment" style="margin:0 0 0 17px">
@@ -104,7 +104,7 @@
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:callOnAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
                 <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>

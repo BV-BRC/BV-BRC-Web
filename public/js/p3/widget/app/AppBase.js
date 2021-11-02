@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin', 'dojox/xml/parser',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom',
-  '../../JobManager'
+  '../../JobManager', '../../util/loading'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom,
-  JobManager
+  JobManager, Loading
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
@@ -28,6 +28,7 @@ define([
     lookaheadJob: false,
     lookaheadCallback: null,
     lookaheadError: null,
+    lookaheadGif: null,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -36,7 +37,7 @@ define([
     //common JSON parameters for each of the services: not all are used in each service, but these are the most common
     single_end_libs: [],
     paired_end_libs: [],
-    sra_libs: [],
+    sra_libs: [], //srr_libs in some services
     contigs: '', //as far as I can tell none of the services have a list of contigs files: TODO (recheck)
     target_genome_id: '', //referred to as taxon_id or target_genome. The reference genome for most services. 
                           //Is a list in GenomeAlignment.js
@@ -151,6 +152,7 @@ define([
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
+
       this.inherited(arguments);
       var state = this.get('state');
       if ((state == 'Incomplete') || (state == 'Error')) {
@@ -267,9 +269,13 @@ define([
       if (this.lookaheadJob) {
         var jobPath = `${this.output_path.value || '' }/${this.output_file.value || ''}`;
         var liveMsg = '<br>Live job!<br>Stick around to see results.';
-        if (this.submittedMessage && this.submittedMessage.innerHTML.indexOf('Live job!') === -1) {
-          this.submittedMessage.innerHTML += liveMsg;
-          this.workingMessage.innerHTML += liveMsg;
+        if (this.submittedMessage && this.lookaheadGif == null) {
+            var gif_container = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
+            domConstruct.place(gif_container, this.submittedMessage);
+            this.lookaheadGif= Loading(gif_container, liveMsg);
+            var gif_container2 = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
+            domConstruct.place(gif_container2, this.workingMessage);
+            this.lookaheadGif2= Loading(gif_container2, liveMsg);
         }
       }
 
@@ -486,7 +492,7 @@ define([
         var storage_params = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         for (var idx = 0; idx < base_params.length; idx++) {
           if (this.hasOwnProperty(base_params[idx]) || param_dict.hasOwnProperty(base_params[idx])) {
-            if (param_dict.hasOwnProperty(base_params[idx]) && param_dict.hasOwnProperty(base_params[idx]) === "NONE") {
+            if (param_dict.hasOwnProperty(base_params[idx]) && param_dict[base_params[idx]] === "NONE") {
               continue;
             }
             if (this.hasOwnProperty([base_params[idx]])) {
@@ -523,7 +529,9 @@ define([
           var service_fields = param_dict["service_specific"];
           Object.keys(service_fields).forEach(function(job_field) {
             var attach_point = service_fields[job_field];
-            this[attach_point].set("value",storage_params[job_field]);
+            if (storage_params.hasOwnProperty(job_field)) {
+              this[attach_point].set("value",storage_params[job_field]);
+            }
           },this);
         }
       }
@@ -532,18 +540,9 @@ define([
     //Load library parameters from localStorage
     //Conditions assumes a field "experimental_conditions" is present in local_job
     loadLibrary: function(local_job,param_dict) {
-      var condition_map = null;
-      if (local_job.hasOwnProperty("experimental_conditions") && local_job["experimental_conditions"].length > 0) {
-        condition_map = {};
-        var count = 1;
-        local_job["experimental_conditions"].forEach(function(cond) {
-          condition_map[toString(count)] = cond;
-          count++;
-        });
-      }
-      for (var idx = 0; idx < local_job.paired_end_libs.length; idx++) {
+      local_job.paired_end_libs.forEach(lang.hitch(this,function(paired_lib) {
         var lrec = {_type:'paired',type:'paired'};
-        this.setupLibraryData(lrec,local_job.paired_end_libs[idx],'paired');
+        this.setupLibraryData(lrec,paired_lib,'paired');
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read1: { label: 'Read1', value: 1 },
@@ -551,39 +550,46 @@ define([
           interleaved: { label: 'Interleaved', value: 0 },
           read_orientation_outward: { label: 'Mate Paired', value: 0 }
         };
-        if (condition_map) {
-          lrec.condition_name = condition_map[lrec.condition]; //lrec.condition is a string integer
-        }
         this.addLibraryRowFormFill(lrec, infoLabels, 'pairdata');
-      }
-      for (var idx = 0; idx < local_job.single_end_libs.length; idx++) {
+      }));
+      local_job.single_end_libs.forEach(lang.hitch(this,function(single_lib) {
         var lrec = { _type: 'single',type:'single'};
-        this.setupLibraryData(lrec,local_job.single_end_libs[idx],'single');
+        this.setupLibraryData(lrec,single_lib,'single');
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
         };
-        if (condition_map) {
-          lrec.condition_name = condition_map[lrec.condition]; //lrec.condition is a string integer
-        }
         this.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
-      }
-      //load SRA names
+      }));
+      //load SRA names: can be in eithers srr_ids (list of ids) or sra_libs (list of key-item entries)
       if (local_job.srr_ids) {
-        for (var idx = 0; idx < local_job.srr_ids.length; idx++) {
-          var lrec = { _type: 'srr_accession', type:'srr_accession',title: local_job.srr_ids[idx] };
-          this.setupLibraryData(lrec,local_job.srr_ids[idx],'srr_accession');
+        local_job.srr_ids.forEach(lang.hitch(this,function(srr_id) {
+          var lrec = { _type: 'srr_accession', type:'srr_accession',title: srr_id };
+          //this.setupLibraryData(lrec,srr_id,'srr_accession');
+          lrec._id = this.makeLibraryIDFormFill(srr_id,lrec.type); 
+          lrec.id = this.makeLibraryIDFormFill(srr_id,lrec.type);
           var infoLabels = {
             title: { label: 'Title', value: 1 }
           };
           this.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
-        }
+        }));
+      }
+      if (local_job.sra_libs) {
+        local_job.sra_libs.forEach(lang.hitch(this,function(sra_lib) {
+          var lrec = { _type: 'srr_accession', type:'srr_accession',title: sra_lib["srr_accession"] };
+          this.setupLibraryData(lrec,sra_lib,'srr_accession');
+          var infoLabels = {
+            title: { label: 'Title', value: 1 }
+          };
+          this.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
+        }));
       }
     },
 
     addLibraryRowFormFill: function(lrec,infoLabels,mode) {
       var tr = this.libsTable.insertRow(0);
       lrec._row = tr;
+      lrec.row = tr;
       var td = domConstruct.create('td', { 'class': 'textcol ' + mode, libID: this.libCreated, innerHTML: '' }, tr);
       var advInfo = [];
       switch (mode) {
@@ -636,12 +642,8 @@ define([
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
       }
       //add condition stuff
-      if (lrec.hasOwnProperty("condition")) {
-        lrec.icon = this.getConditionIcon(lrec.condition_name);
-        //var tdCond = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
-        //tdCond.libRecord = lrec;
-        //tdCond.innerHTML = "<div class='libraryrow'>" + lrec.condition + '</div>';
-        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+      if (lrec.hasOwnProperty("icon")) {
+       domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
       }
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
       if (this.addedLibs.counter < this.startingRows) {
@@ -650,8 +652,10 @@ define([
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
         this.destroyLibRow(lrec._id, '_id');
       }));
-      this.libraryStore.put(lrec);
       lrec._handle = handle;
+      lrec.handle = handle;
+      this.libraryStore.put(lrec);
+      //debugger;
       this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
     },
 
@@ -668,6 +672,9 @@ define([
           if (job_data.hasOwnProperty("title")) {
             var name = job_data['title'];
           }
+          else if (job_data.hasOwnProperty("srr_accession")) {
+            var name = job_data['srr_accession'];
+          }
           else{
             var name = job_data;
           }
@@ -681,8 +688,8 @@ define([
     makeLibraryNameFormFill: function(job_data,mode) {
       switch (mode) {
         case 'paired':
-          var fn = job_data['read1'];
-          var fn2 = job_data['read2'];
+          var fn = job_data['read1'].split("/")[job_data['read1'].split("/").length - 1];
+          var fn2 = job_data['read2'].split("/")[job_data['read2'].split("/").length - 1];
           var maxName = 14;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -692,7 +699,7 @@ define([
           }
           return 'P(' + fn + ', ' + fn2 + ')';
         case 'single':
-          var fn = job_data['read'];
+          var fn = job_data['read'].split("/")[job_data['read'].split("/").length - 1];
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -701,6 +708,9 @@ define([
         case 'srr_accession': 
           if (job_data.hasOwnProperty("title")) {
             var name = job_data['title'];
+          }
+          else if (job_data.hasOwnProperty("srr_accession")) {
+            var name = job_data['srr_accession'];
           }
           else{
             var name = job_data;
@@ -713,8 +723,8 @@ define([
 
     //Called to get the necessary information into lrec
     setupLibraryData: function(lrec,job_data,mode) {
-      //lrec._id = some_id
       lrec._id = this.makeLibraryIDFormFill(job_data,mode); 
+      lrec.id = this.makeLibraryIDFormFill(job_data,mode);
       Object.keys(job_data).forEach( function (field) {
         lrec[field] = job_data[field];
       });

@@ -55,6 +55,31 @@ define([
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
+      on(this.exclude_button, 'click', lang.hitch(this, function (event) {
+        this.markSelectedRegion("exclude_button");
+      }));
+      on(this.include_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("include_button");
+      }));
+      on(this.target_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("target_button");
+      }));
+      on(this.clear_button, 'click', lang.hitch(this, function () {
+        this.markSelectedRegion("clear_button");
+      }));
+      this.setRegionTooltips();
+      this.sequence_selected_text = "";
+        this._started = true;
+        this.form_flag = false;
+        try {
+          this.intakeRerunForm();
+        } catch (error) {
+          console.error(error);
+          var localStorage = window.localStorage;
+          if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+            localStorage.removeItem("bvbrc_rerun_job");
+          }
+        }
     },
 
     // validate inputs
@@ -89,58 +114,74 @@ define([
         json_payload['sequence_id'.toUpperCase()] = curr_vars['input_sequence_identifier'];
         json_payload['input_type'] = 'sequence_text';
       }
+      /*
       if (this.startWithIdentifier.checked == true) {
         json_payload['sequence_input'] = curr_vars['sequence_id'];
         json_payload['input_type'] = 'database_id';
       }
+      */
       // sequence regions
       var region_keys = ['sequence_excluded_region', 'sequence_target', 'sequence_included_region', 'sequence_overlap_junction_list'];
       for (var x = 0; x < region_keys.length; x++) {
         if (curr_vars[region_keys[x]]) {
           json_payload[region_keys[x].toUpperCase()] = curr_vars[region_keys[x]];
         }
-      }
-      // settings
-      if (curr_vars['primer_num_return']) {
-        json_payload['primer_num_return'.toUpperCase()] = curr_vars['primer_num_return'];
-      }
-      if (curr_vars['primer_product_size_range']) {
-        json_payload['primer_product_size_range'.toUpperCase()] = curr_vars['primer_product_size_range'].replace(',', '-');
-      }
-      var settings_keys = ['size', 'tm', 'gc'];
-      for (var x = 0; x < settings_keys.length; x++) {
-        var min_key = 'primer_min_' + settings_keys[x];
-        var opt_key = 'primer_opt_' + settings_keys[x];
-        var max_key = 'primer_max_' + settings_keys[x];
-        if (curr_vars[min_key]) {
-          json_payload[min_key.toUpperCase()] = curr_vars[min_key];
+        if (this.startWithInput.checked == true) {
+            json_payload["sequence_input"] = this.getSequenceForSubmission(values["sequence_template"]);
+            json_payload["sequence_id".toUpperCase()] = values["input_sequence_identifier"];
+            json_payload["input_type"] = "sequence_text";
         }
-        if (curr_vars[opt_key]) {
-          if (settings_keys[x] == 'gc') {
-            json_payload['PRIMER_OPT_GC_PERCENT'] = curr_vars[opt_key];
-          }
-          else {
-            json_payload[opt_key.toUpperCase()] = curr_vars[opt_key];
-          }
+        if (this.startWithIdentifier.checked == true) {
+            json_payload["sequence_input"] = values["sequence_id"];
+            json_payload["input_type"] = "database_id";
         }
-        if (curr_vars[max_key]) {
-          json_payload[max_key.toUpperCase()] = curr_vars[max_key];
+        //sequence regions
+        var region_keys = ["sequence_excluded_region","sequence_target","sequence_included_region","sequence_overlap_junction_list"];
+        for (var x = 0; x < region_keys.length; x++) {
+            if (values[region_keys[x]]) {
+                json_payload[region_keys[x].toUpperCase()] = values[region_keys[x]];
+            }
         }
-      }
-      if (curr_vars['primer_pair_max_diff_tm']) {
-        json_payload['primer_pair_max_diff_tm'.toUpperCase()] = curr_vars['primer_pair_max_diff_tm'];
-      }
-      var concentration_keys = ['salt_monovalent', 'dna_conc', 'salt_divalent', 'dntp_conc'];
-      for (var x = 0; x < concentration_keys.length; x++) {
-        var curr_conc_key = 'primer_' + concentration_keys[x];
-        if (curr_vars[curr_conc_key]) {
-          json_payload[curr_conc_key.toUpperCase()] = curr_vars[curr_conc_key];
+        //settings
+        if (values["primer_num_return"]){
+            json_payload["primer_num_return".toUpperCase()] = values["primer_num_return"];
         }
-      }
-      // output
-      json_payload['output_path'] = curr_vars['output_path'];
-      json_payload['output_file'] = curr_vars['output_file'];
-      return json_payload;
+        if (values["primer_product_size_range"]){
+            json_payload["primer_product_size_range".toUpperCase()] = values["primer_product_size_range"].replace(",","-");
+        }
+        var settings_keys = ["size","tm","gc"];
+        for (var x = 0; x < settings_keys.length; x++) {
+            var min_key = "primer_min_" + settings_keys[x];
+            var opt_key = "primer_opt_" + settings_keys[x];
+            var max_key = "primer_max_" + settings_keys[x];
+            if (values[min_key]) {
+                json_payload[min_key.toUpperCase()] = values[min_key];
+            }
+            if (values[opt_key]) {
+                if (settings_keys[x] == "gc") {
+                    json_payload["PRIMER_OPT_GC_PERCENT"] = values[opt_key];
+                }
+                else {
+                    json_payload[opt_key.toUpperCase()] = values[opt_key];
+                }
+            }
+            if (values[max_key]) {
+                json_payload[max_key.toUpperCase()] = values[max_key];
+            }
+        }
+        if (values["primer_pair_max_diff_tm"]) {
+            json_payload["primer_pair_max_diff_tm".toUpperCase()] = values["primer_pair_max_diff_tm"];
+        }
+        var concentration_keys = ["salt_monovalent","dna_conc","salt_divalent","dntp_conc"];
+        for (var x = 0; x < concentration_keys.length; x++) {
+            var curr_conc_key = "primer_" + concentration_keys[x];
+            if (values[curr_conc_key]) {
+                json_payload[curr_conc_key.toUpperCase()] = values[curr_conc_key];
+            }
+        }
+        //output
+        json_payload = this.checkBaseParameters(values,json_payload);
+        return json_payload;
     },
 
     // swap between sequence input types based on what is checked
@@ -156,11 +197,13 @@ define([
         this.fasta_input_table.style.display = 'table';
         this.patric_sequence_identifier.style.display = 'none';
       }
+      /*
       if (this.startWithIdentifier.checked == true) {
         this.fasta_workspace_table.style.display = 'none';
         this.fasta_input_table.style.display = 'none';
         this.patric_sequence_identifier.style.display = 'table';
       }
+      */
     },
 
     // When a user pastes a fasta sequence into the input fasta section
@@ -171,9 +214,16 @@ define([
         this.sequence_message.innerHTML = 'Please provide a nucleotide sequence.';
         return;
       }
-      if (!this.hasSingleFastaSequence(val)) {
+      else if (this.isProteinSequence(val)) {
+        this.sequence_message.innerHTML = 'This looks like an invalid sequence. Please provide a valid nucleotide sequence';
+        return;
+      }
+      else if (!this.hasSingleFastaSequence(val)) {
         this.sequence_message.innerHTML = 'Primer Design accepts only one sequence at a time. Please provide only one sequence.';
         return;
+      }
+      else {
+        this.sequence_message.innerHTML = '';
       }
       var sanitized = this.sanitizeFastaSequence(val);
       var fasta_header = this.getFastaHeader(sanitized);
@@ -184,6 +234,63 @@ define([
       }
       this.sequence_template.set('value', fasta_sequence);
       this.sequence_message.innerHTML = '';
+    },
+
+    validate: function() {
+      if (this.output_path.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.output_file.get("value") === "") {
+        this.submitButton.set("disabled",true);
+        return false;
+      }
+      if (this.startWithInput.checked == true) {
+        var seq = this.getSequenceForSubmission(this.sequence_template.get("value"));
+        if (seq === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+        if (this.isProteinSequence(seq)) {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      else if (this.startWithWorkspace.checked == true) {
+        if (this.sequence_workspace.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      } else { //bvbrc-id
+        if (this.input_bvbrc_identifier.get("value") === "") {
+          this.submitButton.set("disabled",true);
+          return false;
+        }
+      }
+      this.submitButton.set("disabled",false);
+      return true;
+    },
+
+    //Removes all valid nucleotide sequence characters and 
+    //assumes the remaining characters are protein sequence characters
+    //bad assumption but works
+    isProteinSequence: function(val) {
+      var split_seq = val.toLowerCase().split("\n");
+      var valid_chars = ["a","c","t","g","n","<",">","[","]","{","}"];
+      for (var index in split_seq) {
+        var line = split_seq[index];
+        if (line.charAt(0) === '>') {
+          continue;
+        }
+        for (var char in valid_chars) {
+          var curr_char = valid_chars[char];
+          line = line.replace(curr_char,"");
+        }
+        if (line.length > 0) {
+          return true;
+        }
+      }
+      return false;
     },
 
     // checks for the occurence of multiple fastas records
@@ -269,9 +376,199 @@ define([
       return val;
     },
 
-    // Message to display when selecting a workspace file
-    displayNote: function () {
-      this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    //Message to display when selecting a workspace file
+    displayNote: function() {
+        this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+    },
+
+    checkBaseParameters: function(values,json_payload) {
+        json_payload["output_path"] = values["output_path"];
+        this.output_folder = values["output_path"];
+        json_payload["output_file"] = values["output_file"];
+        this.output_name = values["output_file"];
+        return json_payload;
+    },
+
+    intakeRerunForm: function() {
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+            var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+            var param_dict = {"output_folder":"output_path"};
+            var service_specific = {"SEQUENCE_EXCLUDED_REGION":"sequence_excluded_region","SEQUENCE_TARGET":"sequence_target",
+            "SEQUENCE_INCLUDED_REGION":"sequence_included_region","SEQUENCE_OVERLAP_JUNCTION_LIST":"sequence_overlap_junction_list"};
+            param_dict["service_specific"] = service_specific;
+            this.setSequenceSourceFormFill(job_data);
+            this.setAdvancedParamsFormFill(job_data);
+            AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+            localStorage.removeItem("bvbrc_rerun_job");
+            this.form_flag = true;
+        }
+    },
+
+    setAdvancedParamsFormFill: function(job_data) {
+        var params1 = {"PRIMER_NUM_RETURN":"primer_num_return","PRIMER_PRODUCT_SIZE_RANGE":"primer_product_size_range"};
+        var min_dict = {"PRIMER_MIN_SIZE":"primer_min_size","PRIMER_MIN_TM":"primer_min_tm","PRIMER_MIN_GC":"primer_min_gc"};
+        var opt_dict = {"PRIMER_OPT_SIZE":"primer_opt_size","PRIMER_OPT_GC_PERCENT":"primer_opt_gc","PRIMER_OPT_TM":"primer_opt_tm"};
+        var max_dict = {"PRIMER_MAX_SIZE":"primer_max_size","PRIMER_MAX_GC":"primer_max_gc","PRIMER_MAX_TM":"primer_max_tm","PRIMER_PAIR_MAX_DIFF_TM":"primer_pair_max_diff_tm"};
+        var concentration_dict = {"PRIMER_SALT_MONOVALENT":"primer_salt_monovalent","PRIMER_DNA_CONC":"primer_dna_conc","PRIMER_SALT_DIVALENT":"primer_salt_divalent","PRIMER_NTP_CONC":"primer_ntp_conc"};
+        var all_params = Object.assign({},params1,min_dict,opt_dict,max_dict,concentration_dict);
+        var advanced_settings = false;
+        Object.keys(all_params).forEach(function(field) {
+          if (job_data.hasOwnProperty(field)) {
+            advanced_settings = true;
+          }
+        },this);
+        if (advanced_settings) {
+          this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
+        }
+        Object.keys(params1).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[params1[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(min_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[min_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(opt_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[opt_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(max_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[max_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+        Object.keys(concentration_dict).forEach(function(field) {
+            if (job_data.hasOwnProperty(field)) {
+                this[concentration_dict[field]].set("value",job_data[field]);
+            }
+        },this);
+    },
+
+    setSequenceSourceFormFill: function(job_data) {
+        if (job_data["input_type"] == "database_id") {
+            this.startWithIdentifier.set("checked",true);
+            this.startWithInput.set("checked",false);
+            this.startWithWorkspace.set("checked",false);
+            //add input
+            this.input_bvbrc_identifier.set("value",job_data["sequence_input"]);
+        }
+        else if (job_data["input_type"] == "sequence_text") {
+            this.startWithInput.set("checked",true);
+            this.startWithIdentifier.set("checked",false);
+            this.startWithWorkspace.set("checked",false);
+            //add input
+            this.input_sequence_identifier.set("value",job_data["sequence_id".toUpperCase()]);
+            this.sequence_template.set("value",job_data["sequence_input"]);
+        }
+        else {
+            this.startWithWorkspace.set("checked",true);
+            this.startWithIdentifier.set("checked",false);
+            this.startWithInput.set("checked",false);
+            //add input
+            this.sequence_workspace.set("value",job_data["sequence_input"]);
+        }
+    },
+
+    setRegionTooltips: function() {
+      new Tooltip({
+        connectId: ["exclude_tooltip"],
+        label: "OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. "
+      });
+      new Tooltip({
+        connectId: ["target_tooltip"],
+        label: "OR: mark the source sequence with [ and ]: e.g. ...ATCT[CCCC]TCAT.. means that primers must flank the central CCCC"
+      });
+      new Tooltip({
+        connectId: ["include_tooltip"],
+        label: "OR: use { and } in the source sequence to mark the beginning and end of the included region: e.g. in ATC{TTC...TCT}AT the included region is TTC...TCT"
+      });
+    },
+
+    getSelectedText: function() {
+      //var selected_text = window.getSelection().toString();
+      //Apparently there is a firefox bug where window.getSelection().toString() and other easy
+      //ways to get the selected text do not work in a TextArea
+      var field = this.sequence_template.textbox;
+      var startPos = field.selectionStart;
+      var endPos = field.selectionEnd;
+      var sequence_text = this.sequence_template.get("displayedValue");
+      var selected_text = sequence_text.substring(startPos,endPos);
+      if (selected_text == "" || selected_text.trim() == "") {
+        return;
+      }
+      this.sequence_selected_text = selected_text;
+    },
+
+    //TODO: html background color not working
+    highlightSelectedText: function() {
+      if (this.sequence_selected_text == "" || this.sequence_selected_text.trim() == "") {
+        return;
+      }
+      var sequence_text = this.sequence_template.get("displayedValue");
+      var txt_idx = this.sequence_template.textbox.selectionStart;
+      if (txt_idx >= 0) {
+        var before_highlight = sequence_text.substring(0,txt_idx);
+        var after_highlight = sequence_text.substring(txt_idx+this.sequence_selected_text.length,sequence_text.length);
+        var highlight_text = before_highlight + "<span style='background:yellow'>" + this.sequence_selected_text + "</span>" + after_highlight;
+        this.sequence_template.set("value",highlight_text);
+      }
+    },
+
+    //Does not check for if markers have already been place in other locations in the sequence text
+    markSelectedRegion: function(button_name) {
+      var selected_text = this.sequence_selected_text;
+      var sequence_text = this.sequence_template.get("displayedValue");
+      if (button_name == "clear_button") {
+        var header = "";
+        if (this.hasFastaHeader(sequence_text)) {
+          header = this.getFastaHeader(sequence_text);
+          var sequence = this.getSequence(sequence_text);
+        } else{
+          var sequence = sequence_text;
+        }
+        var markers = ["<",">","[","]","{","}"];
+        markers.forEach(function(m) {
+          sequence = sequence.replace(m,"");
+        },this);
+        if (header != "") {
+          var clear_sequence = ">" + header + "\n" + sequence;
+        } else {
+          var clear_sequence = sequence;
+        }
+        this.sequence_template.set("value",clear_sequence);
+        this.sequence_selected_text = "";
+        return;
+      }
+      if (selected_text == "" || selected_text.trim() == "") {
+        return;
+      }
+      if (button_name != "clear_button" && sequence_text.includes(selected_text)) { //shouldn't ever be clear_button here but just in case
+        var txt_idx = this.sequence_template.textbox.selectionStart;
+        if (this.hasFastaHeader(sequence_text)) {
+          var header = this.getFastaHeader(sequence_text);
+          if (txt_idx <= header.length) {
+            return;
+          }
+        }
+        var before_marker = sequence_text.substring(0,txt_idx);
+        var after_marker = sequence_text.substring(txt_idx+this.sequence_selected_text.length,sequence_text.length);
+        if (button_name == "exclude_button") {
+          var marker = ["<",">"];
+        }
+        else if (button_name == "target_button") {
+          var marker = ["[","]"];
+        }
+        else { //include button
+          var marker = ["{","}"];
+        }
+        var marker_text = before_marker + marker[0] + this.sequence_selected_text + marker[1] + after_marker;
+        this.sequence_template.set("value",marker_text);
+        this.sequence_selected_text = "";
+      }
     }
   });
 });

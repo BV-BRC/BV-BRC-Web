@@ -659,7 +659,7 @@ define([
           multiple: false,
           tooltip: 'Switch to Epitope View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: [],
+          validContainerTypes: ['epitope_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Epitope/' + selection[0].epitope_id }),
