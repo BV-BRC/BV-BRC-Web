@@ -102,21 +102,21 @@ define([
     // this object is the payload that will be passed to the service
     // modify the payload before it reaches the service here
     getValues: function () {
-      var curr_vars = this.inherited(arguments); // the form values with everything (including empty fields)
+      var values = this.inherited(arguments); // the form values with everything (including empty fields)
       var json_payload = {};
       // Sequence input
       if (this.startWithWorkspace.checked == true) {
-        json_payload['sequence_input'] = curr_vars['sequence_workspace'];
+        json_payload['sequence_input'] = values['sequence_workspace'];
         json_payload['input_type'] = 'workspace_fasta';
       }
       if (this.startWithInput.checked == true) {
-        json_payload['sequence_input'] = this.getSequenceForSubmission(curr_vars['sequence_template']);
-        json_payload['sequence_id'.toUpperCase()] = curr_vars['input_sequence_identifier'];
+        json_payload['sequence_input'] = this.getSequenceForSubmission(values['sequence_template']);
+        json_payload['sequence_id'.toUpperCase()] = values['input_sequence_identifier'];
         json_payload['input_type'] = 'sequence_text';
       }
       /*
       if (this.startWithIdentifier.checked == true) {
-        json_payload['sequence_input'] = curr_vars['sequence_id'];
+        json_payload['sequence_input'] = values['sequence_id'];
         json_payload['input_type'] = 'database_id';
       }
       */
