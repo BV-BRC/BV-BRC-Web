@@ -371,23 +371,6 @@ define([
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.transcriptomics);
       this.viewer.addChild(this.interactions);
-
-      if (localStorage) {
-        var gs = localStorage.getItem(this.showQuickstartKey);
-        if (gs) {
-          gs = JSON.parse(gs);
-        }
-        if (!gs) {
-
-          var dlg = new Dialog({
-            title: 'PATRIC Quickstart',
-            content: '<iframe width="945" height="480" src="https://www.youtube.com/embed/K3eL4i9vQBo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
-          });
-          dlg.show();
-          localStorage.setItem(this.showQuickstartKey, true);
-        }
-
-      }
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
       this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomes ) ';
