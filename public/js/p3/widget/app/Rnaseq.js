@@ -259,7 +259,6 @@ define([
       var values = this.inherited(arguments);
 
       assembly_values = this.checkBaseParameters(values,assembly_values);
-      console.log(assembly_values);
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
