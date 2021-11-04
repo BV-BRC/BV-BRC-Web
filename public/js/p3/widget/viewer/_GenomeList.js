@@ -22,8 +22,6 @@ define([
     perspectiveLabel: 'Genome List View',
     perspectiveIconClass: 'icon-selection-GenomeList',
 
-    showQuickstartKey: 'hideQuickstart',
-
     warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes. When you are satisfied, click APPLY ( <i class="fa icon-apply-perspective-filter fa-1x" style="color:#333"></i> ) to restablish the page context.',
     _setQueryAttr: function (query, force) {
       if (!query) {
