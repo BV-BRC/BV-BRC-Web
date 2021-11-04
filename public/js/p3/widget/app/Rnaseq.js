@@ -259,6 +259,7 @@ define([
       var values = this.inherited(arguments);
 
       assembly_values = this.checkBaseParameters(values,assembly_values);
+      console.log(assembly_values);
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
@@ -750,6 +751,9 @@ define([
             label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: true
           },
           {
+            label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: true
+          },
+          {
             label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
           }];
         this.recipe.set('options', newOptions).reset();
@@ -761,11 +765,17 @@ define([
             label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
           },
           {
+            label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: false
+          },
+          {
             label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
           }];
         this.recipe.set('options', newOptions).reset();
         if (curRecipe == 'RNA-Rocket') {
           this.recipe.set('value', 'RNA-Rocket');
+        } 
+        else if (curRecipe == "HTSeq-DESeq") {
+          this.recipe.set('value', "HTSeq-DESeq");
         }
       }
     },
@@ -898,6 +908,15 @@ define([
 
       //strategy (recipe)
       assembly_values.recipe = values.recipe;
+      if (values.recipe == "HTSeq-DESeq") {
+        assembly_values.feature_count = "htseq";
+        assembly_values.recipe = "RNA-Rocket";
+      } else if (values.recipe == "RNA-Rocket") {
+        assembly_values.feature_count = "cufflinks";
+      } else { //host
+        assembly_values.feature_count = "htseq";
+      }
+      
       //target_genome
       assembly_values.reference_genome_id = values.genome_name;
       //output_folder
