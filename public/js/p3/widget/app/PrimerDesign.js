@@ -102,72 +102,63 @@ define([
     // this object is the payload that will be passed to the service
     // modify the payload before it reaches the service here
     getValues: function () {
-      var curr_vars = this.inherited(arguments); // the form values with everything (including empty fields)
+      var values = this.inherited(arguments); // the form values with everything (including empty fields)
       var json_payload = {};
       // Sequence input
       if (this.startWithWorkspace.checked == true) {
-        json_payload['sequence_input'] = curr_vars['sequence_workspace'];
+        json_payload['sequence_input'] = values['sequence_workspace'];
         json_payload['input_type'] = 'workspace_fasta';
       }
       if (this.startWithInput.checked == true) {
-        json_payload['sequence_input'] = this.getSequenceForSubmission(curr_vars['sequence_template']);
-        json_payload['sequence_id'.toUpperCase()] = curr_vars['input_sequence_identifier'];
+        json_payload['sequence_input'] = this.getSequenceForSubmission(values['sequence_template']);
+        json_payload['sequence_id'.toUpperCase()] = values['input_sequence_identifier'];
         json_payload['input_type'] = 'sequence_text';
       }
       /*
       if (this.startWithIdentifier.checked == true) {
-        json_payload['sequence_input'] = curr_vars['sequence_id'];
+        json_payload['sequence_input'] = values['sequence_id'];
         json_payload['input_type'] = 'database_id';
       }
       */
-      // sequence regions
-      var region_keys = ['sequence_excluded_region', 'sequence_target', 'sequence_included_region', 'sequence_overlap_junction_list'];
+      //Primer pick internal oligonucleotide sequence
+      if (this.internal_oligo_checkbox.checked) {
+        json_payload['PRIMER_PICK_INTERNAL_OLIGO'] = true;
+      } else {
+        json_payload['PRIMER_PICK_INTERNAL_OLIGO'] = false;
+      }
+      //sequence regions
+      var region_keys = ["sequence_excluded_region","sequence_target","sequence_included_region","sequence_overlap_junction_list"];
       for (var x = 0; x < region_keys.length; x++) {
-        if (curr_vars[region_keys[x]]) {
-          json_payload[region_keys[x].toUpperCase()] = curr_vars[region_keys[x]];
+        if (values[region_keys[x]]) {
+            json_payload[region_keys[x].toUpperCase()] = values[region_keys[x]];
         }
-        if (this.startWithInput.checked == true) {
-            json_payload["sequence_input"] = this.getSequenceForSubmission(values["sequence_template"]);
-            json_payload["sequence_id".toUpperCase()] = values["input_sequence_identifier"];
-            json_payload["input_type"] = "sequence_text";
-        }
-        if (this.startWithIdentifier.checked == true) {
-            json_payload["sequence_input"] = values["sequence_id"];
-            json_payload["input_type"] = "database_id";
-        }
-        //sequence regions
-        var region_keys = ["sequence_excluded_region","sequence_target","sequence_included_region","sequence_overlap_junction_list"];
-        for (var x = 0; x < region_keys.length; x++) {
-            if (values[region_keys[x]]) {
-                json_payload[region_keys[x].toUpperCase()] = values[region_keys[x]];
-            }
-        }
-        //settings
-        if (values["primer_num_return"]){
-            json_payload["primer_num_return".toUpperCase()] = values["primer_num_return"];
-        }
-        if (values["primer_product_size_range"]){
-            json_payload["primer_product_size_range".toUpperCase()] = values["primer_product_size_range"].replace(",","-");
-        }
-        var settings_keys = ["size","tm","gc"];
-        for (var x = 0; x < settings_keys.length; x++) {
-            var min_key = "primer_min_" + settings_keys[x];
-            var opt_key = "primer_opt_" + settings_keys[x];
-            var max_key = "primer_max_" + settings_keys[x];
-            if (values[min_key]) {
-                json_payload[min_key.toUpperCase()] = values[min_key];
-            }
-            if (values[opt_key]) {
-                if (settings_keys[x] == "gc") {
-                    json_payload["PRIMER_OPT_GC_PERCENT"] = values[opt_key];
-                }
-                else {
-                    json_payload[opt_key.toUpperCase()] = values[opt_key];
-                }
-            }
-            if (values[max_key]) {
-                json_payload[max_key.toUpperCase()] = values[max_key];
-            }
+      }
+      //settings
+      if (values["primer_num_return"]){
+          json_payload["primer_num_return".toUpperCase()] = values["primer_num_return"];
+      }
+      if (values["primer_product_size_range"]){
+          json_payload["primer_product_size_range".toUpperCase()] = values["primer_product_size_range"].replace(",","-");
+      }
+      var settings_keys = ["size","tm","gc"];
+      for (var x = 0; x < settings_keys.length; x++) {
+          var min_key = "primer_min_" + settings_keys[x];
+          var opt_key = "primer_opt_" + settings_keys[x];
+          var max_key = "primer_max_" + settings_keys[x];
+          if (values[min_key]) {
+              json_payload[min_key.toUpperCase()] = values[min_key];
+          }
+          if (values[opt_key]) {
+              if (settings_keys[x] == "gc") {
+                  json_payload["PRIMER_OPT_GC_PERCENT"] = values[opt_key];
+              }
+              else {
+                  json_payload[opt_key.toUpperCase()] = values[opt_key];
+              }
+          }
+          if (values[max_key]) {
+              json_payload[max_key.toUpperCase()] = values[max_key];
+          }
         }
         if (values["primer_pair_max_diff_tm"]) {
             json_payload["primer_pair_max_diff_tm".toUpperCase()] = values["primer_pair_max_diff_tm"];
@@ -214,7 +205,7 @@ define([
         this.sequence_message.innerHTML = 'Please provide a nucleotide sequence.';
         return;
       }
-      else if (this.isProteinSequence(val)) {
+      else if (this.isInvalidSequence(val)) {
         this.sequence_message.innerHTML = 'This looks like an invalid sequence. Please provide a valid nucleotide sequence';
         return;
       }
@@ -251,7 +242,7 @@ define([
           this.submitButton.set("disabled",true);
           return false;
         }
-        if (this.isProteinSequence(seq)) {
+        if (this.isInvalidSequence(seq)) {
           this.submitButton.set("disabled",true);
           return false;
         }
@@ -271,21 +262,18 @@ define([
       return true;
     },
 
-    //Removes all valid nucleotide sequence characters and 
-    //assumes the remaining characters are protein sequence characters
-    //bad assumption but works
-    isProteinSequence: function(val) {
+    //Removes all valid nucleotide sequence characters and and valid markings and 
+    //assumes the remaining characters are invalid
+    isInvalidSequence: function(val) {
       var split_seq = val.toLowerCase().split("\n");
-      var valid_chars = ["a","c","t","g","n","<",">","[","]","{","}"];
       for (var index in split_seq) {
-        var line = split_seq[index];
+        var line = split_seq[index].trim();
         if (line.charAt(0) === '>') {
           continue;
         }
-        for (var char in valid_chars) {
-          var curr_char = valid_chars[char];
-          line = line.replace(curr_char,"");
-        }
+        //case insensitive replace a,g,c,t,>,<,[,],{,}
+        line = line.replace(/a|g|c|t|n/gi,"");
+        line = line.replace(/([><{}\[\]])/g,"");
         if (line.length > 0) {
           return true;
         }
@@ -450,7 +438,7 @@ define([
 
     setSequenceSourceFormFill: function(job_data) {
         if (job_data["input_type"] == "database_id") {
-            this.startWithIdentifier.set("checked",true);
+            //this.startWithIdentifier.set("checked",true);
             this.startWithInput.set("checked",false);
             this.startWithWorkspace.set("checked",false);
             //add input
@@ -458,7 +446,7 @@ define([
         }
         else if (job_data["input_type"] == "sequence_text") {
             this.startWithInput.set("checked",true);
-            this.startWithIdentifier.set("checked",false);
+            //this.startWithIdentifier.set("checked",false);
             this.startWithWorkspace.set("checked",false);
             //add input
             this.input_sequence_identifier.set("value",job_data["sequence_id".toUpperCase()]);
@@ -466,7 +454,7 @@ define([
         }
         else {
             this.startWithWorkspace.set("checked",true);
-            this.startWithIdentifier.set("checked",false);
+            //this.startWithIdentifier.set("checked",false);
             this.startWithInput.set("checked",false);
             //add input
             this.sequence_workspace.set("value",job_data["sequence_input"]);
