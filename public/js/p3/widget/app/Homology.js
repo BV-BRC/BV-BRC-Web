@@ -628,12 +628,9 @@ define([
         this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format using a valid alphabet.';
         return;
       }
-      //this.program.loadAndOpenDropDown();
       if (this.form_flag) {
-        console.log("branch1");
         this.onChangeProgram(this.program.getValue());
       } else {
-        console.log("branch2");
         this.program.loadAndOpenDropDown();
       }
     },
@@ -744,10 +741,8 @@ define([
       var localStorage = window.localStorage;
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
         this.form_flag = true;
-        console.log("should be true = ",this.form_flag);
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         job_data['program'] = "blastp";
-        console.log(job_data);
         var param_dict = {"output_folder":"output_path"};
         var service_specific = {"input_fasta_data":"sequence","blast_evalue_cutoff":"evalue","blast_max_hits":"max_hits"};
         this.program.set("value",job_data['program']);
@@ -765,7 +760,6 @@ define([
 
     setDatabaseInfoFormFill: function(job_data) {
       var db_attach_points = {"program":"program","db_source":"database","db_type":"search_for"};
-      console.log("setDatabaseInfoFormFill form_flag = ",this.form_flag);
       Object.keys(db_attach_points).forEach(function(param) {
         this[db_attach_points[param]].set("value",job_data[param]);
       },this);
