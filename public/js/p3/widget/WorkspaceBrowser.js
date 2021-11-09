@@ -1129,7 +1129,7 @@ define([
         localStorage.setItem("bvbrc_rerun_job",job_params);
         var service_app_map = {"ComprehensiveGenomeAnalysis":"ComprehensiveGenomeAnalysis","ComprehensiveSARS2Analysis":"ComprehensiveSARS2Analysis","DifferentialExpression":"Expression",
         "FastqUtils":"FastqUtil","GeneTree":"GeneTree","GenomeAssembly2":"Assembly2", "GenomeAlignment":"GenomeAlignment","GenomeAnnotation":"Annotation","GenomeComparison":"SeqComparison",
-        "MetagenomeBinning":"MetagenomicBinning","MetagenomicReadMapping":"MetagenomicReadMapping","MSA":"MSA",
+        "Homology":"Homology","MetaCATS":"MetaCATS","MetagenomeBinning":"MetagenomicBinning","MetagenomicReadMapping":"MetagenomicReadMapping","MSA":"MSA",
         "PrimerDesign":"PrimerDesign","RNASeq":"Rnaseq","TaxonomicClassification":"TaxonomicClassification","TnSeq":"Tnseq","Variation":"Variation"};
         if (service_app_map.hasOwnProperty(service_id)) {
           Topic.publish('/navigate',{href:'/app/'+service_app_map[service_id]});
