@@ -3,11 +3,13 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/TaxaSearch.html',
+  './TextInputEncoder',
 ], function (
   declare,
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
 ) {
 
   function sanitizeInput(str) {
@@ -25,7 +27,7 @@ define([
 
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const taxonIDValue = this.taxonIDNode.get('value')

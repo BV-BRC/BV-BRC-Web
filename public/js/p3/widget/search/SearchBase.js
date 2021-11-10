@@ -2,11 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang',
   'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/on', 'dojo/dom-construct', 'dojo/topic',
+  './TextInputEncoder',
   '../AdvancedSearchFields', '../AdvancedSearchRowForm'
 ], function (
   declare, lang,
   WidgetBase, Templated, WidgetsInTemplate,
   on, domConstruct, Topic,
+  TextInputEncoder,
   AdvancedSearchFields, AdvancedSearchRowForm
 ) {
   return declare([WidgetBase, Templated, WidgetsInTemplate], {
@@ -68,7 +70,8 @@ define([
         let q;
 
         if (condition.type === 'str' && condition.value !== '') {
-          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
+          const encodedConditionValue = TextInputEncoder(condition.value)
+          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${encodedConditionValue})`
         } else if (condition.type === 'numeric') {
           // numeric
           const lowerBound = parseInt(condition.from)

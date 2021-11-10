@@ -3,12 +3,14 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/SurveillanceSearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder'
 ], function (
   declare,
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
 ) {
 
@@ -63,7 +65,7 @@ define([
 
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const pathogenTestTypeValue = this.pathogenTestTypeNode.get('value')
