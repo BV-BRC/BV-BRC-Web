@@ -289,11 +289,15 @@ define([
 
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
-        multiple: false,
+        allowMultiTypes: true,
+        multiple: true,
         forbiddenTypes: WorkspaceManager.forbiddenDownloadTypes,
         tooltip: 'Download'
       }, function (selection) {
-        WorkspaceManager.downloadFile(selection[0].path);
+        //WorkspaceManager.downloadFile(selection[0].path);
+        for (var idx = 0; idx < selection.length; idx++) {
+          WorkspaceManager.downloadFile(selection[idx].path);
+        }
       }, false);
 
       var dfc = '<div>Download Table As...</div>' +
