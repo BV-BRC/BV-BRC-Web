@@ -306,49 +306,6 @@ define([], function () {
       },
 
       {
-        field: '----- Phenotype Info -----', type: 'str', facet: false, face_hidden: true, search: true
-      },
-      {
-        field: 'phenotype', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'lab_host', type: 'str', facet: true, facet_hidden: true, search: true
-      },
-      {
-        field: 'passage', type: 'str', facet: true, facet_hidden: true, search: true
-      },
-      {
-        field: 'gram_strain', type: 'str', facet: true, facet_hidden: true, search: true
-      },
-      {
-        field: 'cell_shape', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'motility', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'sporulation', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'temperature_range', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'optimal_temperature', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'salinity', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'oxygen_requirement', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'habitat', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-      {
-        field: 'disease', type: 'str', facet: false, facet_hidden: true, search: true
-      },
-
-      {
         field: '----- Additional Info -----', type: 'str', facet: false, face_hidden: true, search: true
       },
       {
