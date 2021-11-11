@@ -20,6 +20,7 @@ define(['./formatter'], function (formatter) {
       field: 'other_names',
       hidden: true
     },
+
     taxon_id: {
       label: 'NCBI Taxon ID',
       field: 'taxon_id',
@@ -35,7 +36,6 @@ define(['./formatter'], function (formatter) {
       field: 'taxon_lineage_names',
       hidden: true
     },
-
     superkingdom: {
       label: 'Superkingdom',
       field: 'superkingdom',
@@ -76,23 +76,24 @@ define(['./formatter'], function (formatter) {
       field: 'species',
       hidden: false
     },
-    strain: {
-      label: 'Strain',
-      field: 'strain',
-      hidden: false
-    },
 
     genome_status: {
       label: 'Genome Status',
       field: 'genome_status',
       hidden: false
     },
+
     genome_quality: {
       label: 'Genome Quality',
       field: 'genome_quality',
       hidden: false
     },
 
+    strain: {
+      label: 'Strain',
+      field: 'strain',
+      hidden: false
+    },
     serovar: {
       label: 'Serovar',
       field: 'serovar',
@@ -148,13 +149,11 @@ define(['./formatter'], function (formatter) {
       field: 'subclade',
       hidden: true
     },
-
     other_typing: {
       label: 'Other Typing',
       field: 'other_typing',
       hidden: true
     },
-
     culture_collection: {
       label: 'Culture Collection',
       field: 'culture_collection',
@@ -187,7 +186,6 @@ define(['./formatter'], function (formatter) {
       field: 'authors',
       hidden: true
     },
-
     bioproject_accession: {
       label: 'BioProject Accession',
       field: 'bioproject_accession',
@@ -329,11 +327,6 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       sortable: false
     },
-    // outgroup_genomes: {
-    //   label: 'Outgroup Genomes',
-    //   name: 'outgroup_genomes',
-    //   hidden: true
-    // },
 
     isolation_source: {
       label: 'Isolation Source',
