@@ -428,62 +428,6 @@ define(['./formatter'], function (formatter) {
       field: 'other_clinical',
       hidden: true
     },
-    // phenotype: {
-    //   label: 'Phenotype',
-    //   field: 'phenotype',
-    //   hidden: true
-    // },
-    // gram_stain: {
-    //   label: 'Gram Stain',
-    //   field: 'gram_stain',
-    //   hidden: true
-    // },
-    // cell_shape: {
-    //   label: 'Cell Shape',
-    //   field: 'cell_shape',
-    //   hidden: true
-    // },
-    // motility: {
-    //   label: 'Motility',
-    //   field: 'motility',
-    //   hidden: true
-    // },
-    // sporulation: {
-    //   label: 'Sporulation',
-    //   field: 'sporulation',
-    //   hidden: true
-    // },
-    // temperature_range: {
-    //   label: 'Temperature Range',
-    //   field: 'temperature_range',
-    //   hidden: true
-    // },
-    // optimal_temperature: {
-    //   label: 'Optimal Temperature',
-    //   field: 'optimal_temperature',
-    //   hidden: true
-    // },
-    // salinity: {
-    //   label: 'Salinity',
-    //   field: 'salinity',
-    //   hidden: true
-    // },
-    // oxygen_requirement: {
-    //   label: 'Oxygen Requirement',
-    //   field: 'oxygen_requirement',
-    //   hidden: true
-    // },
-    // habitat: {
-    //   label: 'Habitat',
-    //   field: 'habitat',
-    //   hidden: true
-    // },
-    // disease: {
-    //   label: 'Disease',
-    //   field: 'disease',
-    //   hidden: true,
-    //   sortable: false
-    // },
 
     additional_metadata: {
       label: 'Additional Metadata',
