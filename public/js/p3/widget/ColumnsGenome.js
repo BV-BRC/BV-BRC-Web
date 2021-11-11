@@ -302,56 +302,6 @@ define(['./formatter'], function (formatter) {
       name: 'cds',
       hidden: false
     },
-    // cds_ratio: {
-    //   label: 'CDS Ratio',
-    //   name: 'cds_ratio',
-    //   hidden: true
-    // },
-    // hypothethical_cds: {
-    //   label: 'Hypothethical CDS',
-    //   name: 'hypothethical_cds',
-    //   hidden: true
-    // },
-    // hypothethical_cds_ratio: {
-    //   label: 'Hypothethical CDS Ratio',
-    //   name: 'hypothethical_cds_ratio',
-    //   hidden: true
-    // },
-    // partial_cds: {
-    //   label: 'Partial CDS',
-    //   name: 'partial_cds',
-    //   hidden: true
-    // },
-    // partial_cds_ratio: {
-    //   label: 'Partial CDS Ratio',
-    //   name: 'partial_cds_ratio',
-    //   hidden: true
-    // },
-    // plfam_cds: {
-    //   label: 'PLFam CDS',
-    //   name: 'plfam_cds',
-    //   hidden: true
-    // },
-    // plfam_cds_ratio: {
-    //   label: 'PLFam CDS Ratio',
-    //   name: 'plfam_cds_ratio',
-    //   hidden: true
-    // },
-    // core_families: {
-    //   label: 'Core Families',
-    //   name: 'core_families',
-    //   hidden: true
-    // },
-    // core_families_ratio: {
-    //   label: 'Core Families Ratio',
-    //   name: 'core_families_ratio',
-    //   hidden: true
-    // },
-    // missing_core_family_ids: {
-    //   label: 'Missing Core Family IDs',
-    //   name: 'missing_core_family_ids',
-    //   hidden: true
-    // },
 
     coarse_consistency: {
       label: 'Coarse Consistency',
