@@ -50,6 +50,16 @@ define([
       this.numgenomes.startup();
       this.onInputTypeChange();
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     onInputTypeChange: function () {
@@ -277,7 +287,6 @@ define([
       }
       return ans;
     },
-
     onAddAutoGroup: function () {
       query('.auto_feature_button').style('visibility', 'hidden');
       var self = this;
@@ -468,5 +477,131 @@ define([
       this.numgenomes.set('value', Number(this.addedGroups));
     },
 
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path"};
+        var service_specific = {"p_value":"p_value"};
+        param_dict["service_specific"] = service_specific;
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        this.setInputFormFill(job_data);
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+        const rows = this.grid.store.query(function (object) {
+          return true;
+        });
+      }
+    },
+
+    setInputFormFill: function(job_data) {
+      if (job_data["input_type"] == "files") {
+        this.input_auto.set("checked",false);
+        this.input_groups.set("checked",false);
+        this.input_files.set("checked",true);
+        //add files
+        this.alignment_file.set("value",job_data["alignment_file"]);
+        this.group_file.set("value",job_data["group_file"]);
+      } else if (job_data["input_type"] == "groups") {
+        this.input_auto.set("checked",false);
+        this.input_files.set("checked",false);
+        this.input_groups.set("checked",true);
+        this.addFeatureGroupFormFill(job_data);
+        this.setAlphabetFormFill(job_data,"group");
+      } else { //auto
+        this.input_files.set("checked",false);
+        this.input_groups.set("checked",false);
+        this.input_auto.set("checked",true);
+        this.setAlphabetFormFill(job_data,"auto");
+        this.addAutoGroupFormFill(job_data);
+      }
+    },
+
+    addFeatureGroupFormFill: function(job_data) {
+      job_data["groups"].forEach(function(group) {
+        var lrec = {};
+        lrec["user_genomes_featuregroup"] = group;
+        var tr = this.groupsTable.insertRow(0);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+        td.genomeRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(group) + '</div>';
+        domConstruct.create('td', { innerHTML: '' }, tr);
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedGroups < this.startingRows) {
+          this.groupsTable.deleteRow(-1);
+        }
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          domConstruct.destroy(tr);
+          this.decreaseGenome();
+          if (this.addedGroups < this.startingRows) {
+            var ntr = this.groupsTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+        }));
+        this.increaseGenome();
+      },this);
+    },
+
+    genDisplayName: function(name) {
+      var display_name = name;
+      var maxName = 72;
+      if (name.length > maxName) {
+        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
+      }
+      return display_name;
+    },
+
+    setAlphabetFormFill: function(job_data,input_type) {
+      if (job_data["alphabet"] == "na") { //DNA
+        if (input_type == "group") {
+          this.protein.set("checked",false);
+          this.dna.set("checked",true);
+        } else {
+          this.auto_protein.set("checked",false);
+          this.auto_dna.set("checked",true);
+        }
+      } else { //protein
+        if (input_type == "group") {
+          this.dna.set("checked",false);
+          this.protein.set("checked",true);
+        } else {
+          this.auto_dna.set("checked",false);
+          this.auto_protein.set("checked",true);
+        }
+      }
+    },
+
+    addAutoGroupFormFill: function(job_data) {
+      var self = this;
+      var auto_groups = job_data["auto_groups"];
+      auto_groups.forEach(function(group){
+        if (self.grid.store.query({ patric_id: group["id"] }).length == 0) {
+          self.grid.store.put({
+            patric_id: group["id"],
+            metadata: group["metadata"],
+            group: group["grp"],
+            genome_id: group["g_id"]
+          });
+        }
+      },self);
+      self.grid.refresh();
+      self.getNumberGroups();
+    },
+
+    getGenomeIDs: function(job_data) {
+      var genome_ids = [];
+      var auto_groups = job_data["auto_groups"];
+      auto_groups.forEach(function(g) {
+        var feature_id = group["id"];
+        var genome_id = ".".join(feature_id.split("|")[1].split(".").slice(0,2));
+        if (!genome_ids.has(genome_id)) {
+          genome_ids.push(genome_id);
+        }
+      },this);
+      return genome_ids;
+    }
   });
 });
