@@ -961,9 +961,6 @@ define([
         text: 'unique_species'
       }, {
         name: 'Strains',
-        text: 'unique_strain'
-      }, {
-        name: 'Unique Strains',
         text: 'strains_count',
         link: function (obj) {
           return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=strains">${obj.strains_count}</a>`;

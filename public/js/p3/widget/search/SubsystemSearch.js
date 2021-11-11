@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/SubsystemSearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
 ], function (
@@ -10,6 +11,7 @@ define([
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
 ) {
@@ -59,7 +61,7 @@ define([
       // subsystem specific search
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const subsystemIDValue = this.subsystemIDNode.get('value')
@@ -74,7 +76,7 @@ define([
 
       const subsystemRoleValue = this.subsystemRoleNode.get('value')
       if (subsystemRoleValue !== '') {
-        queryArr.push(`eq(subsystem_role,"${sanitizeInput(subsystemRoleValue)}")`)
+        queryArr.push(`eq(subsystem_role,"${TextInputEncoder(sanitizeInput(subsystemRoleValue))}")`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()
