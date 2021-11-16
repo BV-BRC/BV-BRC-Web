@@ -20,7 +20,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Taxonomic Classification',
     applicationDescription: 'The Taxonomic Classification Service computes taxonomic classification for read data.',
-    applicationHelp: 'user_guides/services/taxonomic_classification_service.html',
+    applicationHelp: 'quick_references/services/taxonomic_classification_service.html',
     tutorialLink: 'tutorial/taxonomic_classification/taxonomic_classification.html',
     libraryData: null,
     defaultPath: '',
@@ -467,16 +467,6 @@ define([
       }
     },
 
-    formatRerunJson: function(job_data) {
-      if (!job_data.paired_end_libs) {
-        job_data.paired_end_libs = [];
-      }
-      if (!job_data.single_end_libs) {
-        job_data.single_end_libs = [];
-      }
-      return job_data;
-    },
-
     //Selects the start with button: reads or contigs
     //Checking it helps the rest of the form filling run smoothly
     selectStartWith: function(job_data) {
@@ -497,6 +487,16 @@ define([
         this.save_unclassified_sequences_no.set("value",false);
         this.save_unclassified_sequences_yes.set("value",true);
       }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

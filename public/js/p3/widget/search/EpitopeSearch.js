@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/EpitopeSearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
 ], function (
@@ -10,6 +11,7 @@ define([
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
 ) {
@@ -30,7 +32,7 @@ define([
       this.pathogenGroupNode.store = pathogenGroupStore;
 
       storeBuilder('epitope', 'epitope_type').then(lang.hitch(this, (store) => {
-        this.hostNameNode.store = store
+        this.epitopeTypeNode.store = store
       }))
     },
     buildQuery: function () {
@@ -38,7 +40,7 @@ define([
 
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const pathogenGroupValue = this.pathogenGroupNode.get('value')
@@ -48,7 +50,7 @@ define([
 
       const taxonNameValue = this.taxonNameNode.get('value')
       if (taxonNameValue !== '') {
-        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
+        queryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
       }
 
       const epitopeIDValue = this.epitopeIDNode.get('value')
@@ -68,7 +70,7 @@ define([
 
       const proteinNameValue = this.proteinNameNode.get('value')
       if (proteinNameValue !== '') {
-        queryArr.push(`eq(protein_name,${sanitizeInput(proteinNameValue)})`)
+        queryArr.push(`eq(protein_name,${TextInputEncoder(sanitizeInput(proteinNameValue))})`)
       }
 
       const proteinAccessionValue = this.proteinAccessionNode.get('value')

@@ -15,7 +15,7 @@ define([
   return declare([AppBase], {
     baseClass: 'App GenomeDistance',
     templateString: Template,
-    applicationHelp: 'user_guides/services/similar_genome_finder_service.html',
+    applicationHelp: 'quick_references/services/similar_genome_finder_service.html',
     tutorialLink: 'tutorial/similar_genome_finder/similar_genome_finder.html',
     loadingMask: null,
     result_store: null,

@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/PathwaySearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
 ], function (
@@ -10,6 +11,7 @@ define([
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
 ) {
@@ -60,7 +62,7 @@ define([
       // pathway specific search
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const pathwayIDValue = this.pathwayIDNode.get('value')
@@ -85,7 +87,7 @@ define([
 
       const ecDescriptionValue = this.ecDescriptionNode.get('value')
       if (ecDescriptionValue !== '') {
-        queryArr.push(`eq(ec_description,"${sanitizeInput(ecDescriptionValue)}")`)
+        queryArr.push(`eq(ec_description,"${TextInputEncoder(sanitizeInput(ecDescriptionValue))}")`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()

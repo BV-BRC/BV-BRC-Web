@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/GenomeSearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
   './HostGroups'
@@ -11,6 +12,7 @@ define([
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
   hostGroupStore
@@ -49,7 +51,7 @@ define([
 
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const pathogenGroupValue = this.pathogenGroupNode.get('value')

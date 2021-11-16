@@ -20,9 +20,9 @@ define([
     requireAuth: true,
     applicationLabel: 'Genome Assembly',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
-    applicationHelp: 'user_guides/services/genome_assembly_service.html',
-    tutorialLink: 'tutorial/genome_assembly/assembly2.html',
-    videoLink: 'videos/genome_assembly_service.html',
+    applicationHelp: 'quick_references/services/genome_assembly_service.html',
+    tutorialLink: 'tutorial/genome_assembly/assembly.html',
+    videoLink: '',
     libraryData: null,
     defaultPath: '',
     startingRows: 13,
@@ -493,7 +493,7 @@ define([
       assembly_values.recipe = values.recipe;
       //output_path and output_file
       assembly_values.output_path = values.output_path;
-      this.output_path = values.output_path;
+      this.output_folder = values.output_path;
       assembly_values.output_file = values.output_file;
       this.output_name = values.output_file;
 

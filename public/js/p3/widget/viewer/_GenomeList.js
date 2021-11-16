@@ -22,8 +22,6 @@ define([
     perspectiveLabel: 'Genome List View',
     perspectiveIconClass: 'icon-selection-GenomeList',
 
-    showQuickstartKey: 'hideQuickstart',
-
     warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes. When you are satisfied, click APPLY ( <i class="fa icon-apply-perspective-filter fa-1x" style="color:#333"></i> ) to restablish the page context.',
     _setQueryAttr: function (query, force) {
       if (!query) {
@@ -371,23 +369,6 @@ define([
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.transcriptomics);
       this.viewer.addChild(this.interactions);
-
-      if (localStorage) {
-        var gs = localStorage.getItem(this.showQuickstartKey);
-        if (gs) {
-          gs = JSON.parse(gs);
-        }
-        if (!gs) {
-
-          var dlg = new Dialog({
-            title: 'PATRIC Quickstart',
-            content: '<iframe width="945" height="480" src="https://www.youtube.com/embed/K3eL4i9vQBo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
-          });
-          dlg.show();
-          localStorage.setItem(this.showQuickstartKey, true);
-        }
-
-      }
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
       this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomes ) ';

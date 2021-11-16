@@ -1,26 +1,30 @@
-# BV-BRC WebApp
+# BV-BRC Web Application
 
 ## Requirements
 
-Nodejs (12.x LTS).
+Node.js is required. We use the latest LTS version which is currently v14.18.0
 
+The current stable build should also work just fine.
+
+[Node.js LTS v14.18.0](https://nodejs.org/)
 
 ## Installation
 
 ```
-git clone --recursive  https://github.com/BV-BRC/website.git
-cd website
+git clone --recursive https://github.com/BV-BRC/bvbrc_website.git
+cd bvbrc_website
 npm install
 cp p3-web.conf.sample p3-web.conf  (and edit as necessary)
 ```
 
-If you cloned without --recursive flag,
+If you cloned without the --recursive flag,
 ```
-cd website
+cd bvbrc_website
 npm install
 git submodule update --init
-// Note: git submodule fetches a module in node_modules directory. So npm install first!
+cp p3-web.conf.sample p3-web.conf  (and edit as necessary)
 ```
+Note: `git submodule update --init` fetches a module in the node_modules directory. So you must run `npm install` first!
 
 ## Running
 
@@ -28,9 +32,10 @@ git submodule update --init
 npm start
 ```
 
-Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.
+Your local dev environment will run on ```http://localhost:3000/```
 
+Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted.
 
 ## Contributing
 
-Please refer [this doc](CONTRIBUTING.md) for contribution.
+If you'd like to contribute please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for instructions.

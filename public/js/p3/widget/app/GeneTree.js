@@ -20,9 +20,9 @@ define([
     requireAuth: true,
     applicationLabel: 'Gene Tree',
     applicationDescription: 'The Gene Tree Service is being tested.',
-    applicationHelp: 'user_guides/services/gene_tree_service.html',
-    tutorialLink: 'tutorial/proteome_comparison/gene_tree.html',
-    videoLink: '/videos/gene_tree_service.html',
+    applicationHelp: 'quick_references/services/gene_tree_service.html',
+    tutorialLink: 'tutorial/gene_tree/gene_tree.html',
+    videoLink: '',
     pageTitle: 'Gene Tree',
     defaultPath: '',
     startingRows: 3,
@@ -57,6 +57,16 @@ define([
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     emptyTable: function (target, rowLimit) {
@@ -398,7 +408,7 @@ define([
         when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
           var fileType = res.metadata.type;
           this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
-        }))
+        }));
       }
       // console.log(lrec);
     },
@@ -439,7 +449,7 @@ define([
         when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
           var fileType = res.metadata.type;
           this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
-        }))
+        }));
 
       }
       // console.log(lrec);
@@ -533,10 +543,115 @@ define([
       seqcomp_values.trim_threshold = values.trim_threshold;
       seqcomp_values.gap_threshold = values.gap_threshold;
       seqcomp_values.sequences = this.fastaNamesAndTypes;
-      seqcomp_values.output_path = values.output_path;
-      seqcomp_values.output_file = values.output_file;
+      seqcomp_values = this.checkBaseParameters(values,seqcomp_values);
 
       return seqcomp_values;
+    },
+
+    checkBaseParameters: function(values,seqcomp_values) {
+      seqcomp_values.output_path = values.output_path;
+      seqcomp_values.output_file = values.output_file;
+      this.output_folder = values.output_path;
+      this.output_name = values.output_file;
+      return seqcomp_values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        console.log(job_data);
+        var param_dict = {"output_folder":"output_path"};
+        var service_specific = {"gap_threshold":"gap_threshold","trim_threshold":"trim_threshold","substitution_model":"substitution_model"};
+        param_dict["service_specific"] = service_specific;
+        this.setAlphabetFormFill(job_data);
+        this.setRecipeFormFill(job_data);
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        this.addSequenceFilesFormFill(job_data);
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
+    },
+
+    setAlphabetFormFill: function(job_data) {
+      if (job_data["alphabet"] == "DNA") {
+        this.protein.set("checked",false);
+        this.dna.set("checked",true);
+      }
+      else {
+        this.dna.set("checked",false);
+        this.protein.set("checked",true);
+      }
+      this.onAlphabetChanged();
+    },
+
+    setRecipeFormFill: function(job_data) {
+      if (job_data["recipe"] == "RAxML") {
+        this.recipePhyML.set("checked",false);
+        this.recipeFastTree.set("checked",false);
+        this.recipeRAxML.set("checked",true);
+      }
+      else if (job_data["recipe"] == "PhyML") {
+        this.recipeRAxML.set("checked",false);
+        this.recipeFastTree.set("checked",false);
+        this.recipePhyML.set("checked",true);
+      }
+      else {
+        this.recipeRAxML.set("checked",false);
+        this.recipePhyML.set("checked",false);
+        this.recipeFastTree.set("checked",true);
+      }
+    },
+
+    addSequenceFilesFormFill: function(job_data) {
+      var sequence_files = job_data["sequences"];
+      sequence_files.forEach(function(seq_file) {
+        var lrec = {"type":seq_file.type,"filename":seq_file.filename};
+        ///General implementation
+        var newGenomeIds = [seq_file["filename"]];
+        var tr = this.genomeTable.insertRow(0);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+        td.genomeRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(newGenomeIds[0].split("/").pop()) + "</div>";
+        domConstruct.create('td', { innerHTML: '' }, tr);
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedGenomes < this.startingRows) {
+          this.genomeTable.deleteRow(-1);
+        }
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          console.log("Delete Row");
+          domConstruct.destroy(tr);
+          this.decreaseGenome(lrec.type, newGenomeIds);
+          if (this.addedGenomes < this.startingRows) {
+            var ntr = this.genomeTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+        }));
+        this.increaseGenome(lrec.type, newGenomeIds);
+        if (lrec.type == 'feature_group') {
+          this.sequenceSource = 'feature_group';
+        }
+        else {
+          this.sequenceSource = 'ws';
+        }
+        var path = seq_file["filename"];
+        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+          var fileType = res.metadata.type;
+          this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+        }));
+      },this);
+    },
+
+    makeFormFillName: function(name) {
+      var display_name = name;
+      var maxName = 36;
+      if (name.length > maxName) {
+        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
+      }
+      return display_name;
     }
 
   });

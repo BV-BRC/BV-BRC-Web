@@ -189,30 +189,15 @@ define([
             localStorage.removeItem("bvbrc_rerun_job");
           }
           localStorage.setItem("bvbrc_rerun_job",job_params);
-          switch (service_id) {
-            case 'ComprehensiveGenomeAnalysis':
-              Topic.publish('/navigate',{href:'/app/ComprehensiveGenomeAnalysis'});
-              break;
-            case 'GenomeAssembly2':
-              Topic.publish('/navigate',{href:'/app/Assembly2'});
-              break;
-            case 'GenomeAlignment':
-              Topic.publish('/navigate',{href:'/app/GenomeAlignment'});
-              break;
-            case 'GenomeAnnotation':
-              Topic.publish('/navigate',{href:'/app/Annotation'});
-              break;
-            case 'MetagenomicReadMapping':
-              Topic.publish('/navigate',{href:'/app/MetagenomicReadMapping'});
-              break;
-            case 'TaxonomicClassification':
-              Topic.publish('/navigate',{href:'/app/TaxonomicClassification'});
-              break;
-            case 'Variation':
-              Topic.publish('/navigate',{href:'/app/Variation'});
-              break;
-            default:
-              console.log('Rerun not enabled for: ',service_id);
+          var service_app_map = {"ComprehensiveGenomeAnalysis":"ComprehensiveGenomeAnalysis","ComprehensiveSARS2Analysis":"ComprehensiveSARS2Analysis","DifferentialExpression":"Expression",
+          "FastqUtils":"FastqUtil","GeneTree":"GeneTree","GenomeAssembly2":"Assembly2","GenomeAssembly":"Assembly2","GenomeAlignment":"GenomeAlignment","GenomeAnnotation":"Annotation","GenomeComparison":"SeqComparison",
+          "Homology":"Homology","MetaCATS":"MetaCATS","MetagenomeBinning":"MetagenomicBinning","MetagenomicReadMapping":"MetagenomicReadMapping","MSA":"MSA",
+          "CodonTree":"PhylogeneticTree","PrimerDesign":"PrimerDesign","RNASeq":"Rnaseq","TaxonomicClassification":"TaxonomicClassification","TnSeq":"Tnseq","Variation":"Variation"};
+          if (service_app_map.hasOwnProperty(service_id)) {
+            Topic.publish('/navigate',{href:'/app/'+service_app_map[service_id]});
+          }
+          else{
+            console.log('Rerun not enabled for: ',service_id);
           }
         },
         false
@@ -297,7 +282,6 @@ define([
         else
         { domAttr.set(text, 'textContent', 'HIDE'); }
       });
-
 
       // listen for new job data
       Topic.subscribe('/Jobs', function (info) {
