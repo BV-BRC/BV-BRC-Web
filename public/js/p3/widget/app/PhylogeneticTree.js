@@ -18,9 +18,9 @@ define([
     requireAuth: true,
     applicationLabel: 'Phylogenetic Tree Building',
     applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
-    applicationHelp: 'user_guides/services/phylogenetic_tree_building_service.html',
-    tutorialLink: 'tutorial/codon_tree_building/codon_tree_building.html',
-    videoLink: 'videos/phylogenetic_codon_tree.html',
+    applicationHelp: 'quick_references/services/phylogenetic_tree_building_service.html',
+    tutorialLink: 'tutorial/phylogenetic_tree/phylogenetic_tree.html',
+    videoLink: '',
     pageTitle: 'Phylogenetic Tree Building',
     defaultPath: '',
     startingRows: 9,
@@ -505,14 +505,14 @@ define([
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
         var param_dict = {"output_folder":"output_path"};
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict); 
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
         this.addGenomesFormFill(job_data);
         this.form_flag = true;
         localStorage.removeItem("bvbrc_rerun_job");
       }
     },
 
-    //Some discrepancies: 
+    //Some discrepancies:
     addGenomesFormFill: function(job_data) {
       var genome_ids = job_data["genome_ids"];
       genome_ids.forEach(function(gid) {

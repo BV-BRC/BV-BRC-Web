@@ -20,9 +20,9 @@ define([
     requireAuth: true,
     applicationLabel: 'Multiple Sequence Alignment and SNP/Variation Analysis',
     applicationDescription: 'The multiple sequence alignment service with variation and SNP analysis can be used with feature groups, fasta files, aligned fasta files, and user input fasta records. If a single alignment file is given, then only the variation analysis is run. If multiple inputs are given, the program concatenates all sequence records and aligns them. If a mixture of protein and nucleotides are given, then nucleotides are converted to proteins.',
-    applicationHelp: 'user_guides/services/',
-    tutorialLink: 'tutorial/multiple_sequence_alignment/',
-    videoLink: '/videos/',
+    applicationHelp: 'quick_references/services/msa_snp_variation_service.html',
+    tutorialLink: 'tutorial/msa_snp_variation/msa_snp_variation.html',
+    videoLink: '',
     pageTitle: 'Multiple Sequence Alignment and SNP/Variation Analysis',
     appBaseURL: 'MSA',
     defaultPath: '',
@@ -619,7 +619,7 @@ define([
       }
       seqcomp_values.aligner = values.aligner;
       seqcomp_values = this.checkBaseParameters(values,seqcomp_values);
-      
+
       seqcomp_values.fasta_keyboard_input = values.fasta_keyboard_input;
       seqcomp_values.fasta_keyboard_input = seqcomp_values.fasta_keyboard_input.replace(/^\s*[\r\n]/gm, '');
       seqcomp_values.alphabet = values.alphabet;

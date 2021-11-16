@@ -14,7 +14,7 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'GenomeAlignment',
-    applicationHelp: 'user_guides/services/genome_alignment_service.html',
+    applicationHelp: 'quick_references/services/genome_alignment_service.html',
     tutorialLink: 'tutorial/genome_alignment/genome_alignment.html',
     pageTitle: 'Genome Alignment',
     requireAuth: true,
