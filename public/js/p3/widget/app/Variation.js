@@ -19,8 +19,8 @@ define([
     requireAuth: true,
     applicationLabel: 'Variation Analysis',
     applicationDescription: 'The Variation Analysis Service can be used to identify and annotate sequence variations.',
-    applicationHelp: 'user_guides/services/variation_analysis_service.html',
-    tutorialLink: 'tutorial/variation_analysis_service/variation_analysis_service.html',
+    applicationHelp: 'quick_references/services/variation_analysis_service.html',
+    tutorialLink: 'tutorial/variation_analysis/variation_analysis.html',
     pageTitle: 'Variation Service',
     libraryData: null,
     defaultPath: '',
@@ -108,7 +108,7 @@ define([
     getValues: function () {
       var submit_values = {};
       var values = this.inherited(arguments);
-      
+
       submit_values = this.checkBaseParameters(values,submit_values);
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, submit_values);
@@ -118,7 +118,7 @@ define([
       //     submit_values[k]=values[k];
       //   }
       // }
-      
+
       submit_values.mapper = values.mapper;
       submit_values.caller = values.caller;
 
