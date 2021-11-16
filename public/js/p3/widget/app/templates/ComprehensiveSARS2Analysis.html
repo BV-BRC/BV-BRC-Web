@@ -6,14 +6,12 @@
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
-        <!--
         <div class="infobox iconbox tutorialButton tutorialInfo">
-          <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
-        </div>
-        -->
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+      </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${bvbrcHelpURL}" target="_blank">User Guide</a> and
-        <a href="${bvbrcTutorialURL}" target="_blank">Tutorial</a>.
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference</a> and
+        <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
     <div class="formFieldsContainer">
