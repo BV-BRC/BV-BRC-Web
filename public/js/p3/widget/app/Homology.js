@@ -80,7 +80,7 @@ define([
   return declare([AppBase], {
     baseClass: 'BLAST',
     templateString: Template,
-    applicationHelp: 'user_guides/services/blast.html',
+    applicationHelp: 'quick_references/services/blast.html',
     applicationName: 'Homology',
     tutorialLink: 'tutorial/blast/blast.html',
     addedGenomes: 0,
@@ -144,7 +144,26 @@ define([
             break;
         }
       }));
+
+      this._started = true;
+      this.form_flag = false;
+      var _self = this;
+      try {
+        this.intakeRerunForm();
+        if (this.form_flag) {
+            _self.output_file.focus();
+        }
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
+
+    //postCreate()
+
     toggleAdvanced: function (flag) {
       if (flag) {
         this.advancedOptions.style.display = 'block';
@@ -573,6 +592,7 @@ define([
 
     onChangeSequence: function (val) {
       var _self = this;
+      //debugger;
       // console.log("onChangeSequence: [", val, "]");
       if (!val) {
         this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format.';
@@ -608,7 +628,11 @@ define([
         this.sequence_message.innerHTML = 'Please provide a single query sequence or multiple in FASTA format using a valid alphabet.';
         return;
       }
-      this.program.loadAndOpenDropDown();
+      if (this.form_flag) {
+        this.onChangeProgram(this.program.getValue());
+      } else {
+        this.program.loadAndOpenDropDown();
+      }
     },
 
     onChangeProgram: function (val) {
@@ -634,8 +658,12 @@ define([
       if (this.search_for.value) {
         this.setDbType(this.database.value);
       }
-
-      this.database.loadAndOpenDropDown();
+      //this.database.loadAndOpenDropDown();
+      if (this.form_flag) {
+        this.onChangeDatabase(this.database.getValue());
+      } else {
+        this.database.loadAndOpenDropDown();
+      }
     },
     setDbType: function (val) {
       var candidate_types = DatabaseDefs.filter(function (record) {
@@ -704,7 +732,39 @@ define([
       }
 
       this.validate();
-      this.search_for.loadAndOpenDropDown();
-    }
+      if (!this.form_flag) {
+        this.search_for.loadAndOpenDropDown();
+      }
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        this.form_flag = true;
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        job_data['program'] = "blastp";
+        var param_dict = {"output_folder":"output_path"};
+        var service_specific = {"input_fasta_data":"sequence","blast_evalue_cutoff":"evalue","blast_max_hits":"max_hits"};
+        this.program.set("value",job_data['program']);
+        param_dict["service_specific"] = service_specific;
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        this.program.set("disabled",false);
+        this.database.set("disabled",false);
+        this.search_for.set("disabled",false);
+        this.setDatabaseInfoFormFill(job_data);
+
+        //TODO: function to set genome_list,fasta,feature_group based on database type (input_source?)
+        localStorage.removeItem("bvbrc_rerun_job");
+      }
+    },
+
+    setDatabaseInfoFormFill: function(job_data) {
+      var db_attach_points = {"program":"program","db_source":"database","db_type":"search_for"};
+      Object.keys(db_attach_points).forEach(function(param) {
+        this[db_attach_points[param]].set("value",job_data[param]);
+      },this);
+    },
+
+
   });
 });

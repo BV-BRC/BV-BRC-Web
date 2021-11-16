@@ -10,8 +10,8 @@
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
-          target="_blank">${applicationLabel} Service User Guide</a> and
+      <p>${applicationDescription} For further explanation, please see the <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">${applicationLabel} Service Quick Reference</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
@@ -145,7 +145,7 @@
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="bacteriaAndViruses" name="organism" value="both" checked/>
           <label for="radio3" style="font-size:8pt">Both</label>
         </div>
-        
+
         <div class="appRow">
           <label class="paramlabel">Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-attach-event="onChange:onOutputPathChange" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>

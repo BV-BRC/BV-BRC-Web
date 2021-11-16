@@ -20,9 +20,9 @@ define([
     requireAuth: true,
     applicationLabel: 'Proteome Comparison',
     applicationDescription: 'The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP. This service allows users to select genomes and compare them to reference genome.',
-    applicationHelp: 'user_guides/services/proteome_comparison_service.html',
+    applicationHelp: 'quick_references/services/proteome_comparison_service.html',
     tutorialLink: 'tutorial/proteome_comparison/proteome_comparison.html',
-    videoLink: '/videos/proteome_comparison_service.html',
+    videoLink: '',
     pageTitle: 'Proteome Comparison',
     defaultPath: '',
     startingRows: 9,
@@ -71,7 +71,7 @@ define([
       }));
       this._started = true;
       this.form_flag = false;
-      try{ 
+      try{
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
@@ -80,7 +80,7 @@ define([
           localStorage.removeItem("bvbrc_rerun_job");
         }
       }
-      
+
     },
 
     emptyTable: function (target, rowLimit) {
@@ -621,7 +621,7 @@ define([
         if (job_data["user_genomes"].length > 0) {
           this.ref_user_genomes_fasta.set("value",job_data["user_genomes"][0]);
           set_ref = true;
-        } 
+        }
       }
       else if (job_data["user_feature_groups"]) {
         if (job_data["user_feature_groups"].length > 0) { //feature group
@@ -640,7 +640,7 @@ define([
       var genome_ids = job_data["genome_ids"];
       genome_ids.forEach(function(gid) {
         var name_promise = this.scientific_nameWidget.store.get(gid);
-        name_promise.then(lang.hitch(this,function (tax_obj) { 
+        name_promise.then(lang.hitch(this,function (tax_obj) {
           this.scientific_nameWidget.set('item', tax_obj);
           this.scientific_nameWidget.validate();
           var genome_name = this.scientific_nameWidget.get('displayedValue');

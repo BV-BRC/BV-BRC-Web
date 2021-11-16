@@ -23,8 +23,8 @@ define([
     requireAuth: true,
     applicationLabel: 'Primer Design',
     applicationDescription: 'The Primer Design Service utilizes Primer3 to design primers from a given input sequence under a variety of temperature, size, and concentration constraints.',
-    applicationHelp: 'TODO',
-    tutorialLink: 'TODO',
+    applicationHelp: 'quick_references/',
+    tutorialLink: 'tutorial/',
     pageTitle: 'Primer Design',
     libraryData: null,
     defaultPath: '',
@@ -262,7 +262,7 @@ define([
       return true;
     },
 
-    //Removes all valid nucleotide sequence characters and and valid markings and 
+    //Removes all valid nucleotide sequence characters and and valid markings and
     //assumes the remaining characters are invalid
     isInvalidSequence: function(val) {
       var split_seq = val.toLowerCase().split("\n");

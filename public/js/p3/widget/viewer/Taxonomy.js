@@ -81,6 +81,24 @@ define([
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
       this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
+      // customization for viruses only when the context is changed
+      if (this.context === 'bacteria') {
+        if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
+          this.viewer.addChild(this.surveillance);
+          this.viewer.addChild(this.serology);
+        } else {
+          this.viewer.removeChild(this.surveillance);
+          this.viewer.removeChild(this.serology);
+        }
+
+        // strains
+        if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
+          this.viewer.addChild(this.strains, 3);
+        } else {
+          this.viewer.removeChild(this.strains);
+        }
+      }
+
       // switch tab configuration & view context
       if (this.taxonomy.lineage_names.includes('Bacteria') && this.context === 'virus') {
         this.set('context', 'bacteria')
@@ -88,22 +106,6 @@ define([
       } else if (this.taxonomy.lineage_names.includes('Viruses') && this.context === 'bacteria') {
         this.set('context', 'virus');
         this.changeToVirusContext();
-      }
-
-      // further customization
-      if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
-        this.viewer.addChild(this.surveillance);
-        this.viewer.addChild(this.serology);
-      } else {
-        this.viewer.removeChild(this.surveillance);
-        this.viewer.removeChild(this.serology);
-      }
-
-      // strains
-      if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
-        this.viewer.addChild(this.strains, 3);
-      } else {
-        this.viewer.removeChild(this.strains);
       }
 
       this.taxonomy = this.state.taxonomy = taxonomy;

@@ -20,7 +20,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Metagenomic Binning',
     applicationDescription: 'The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.',
-    applicationHelp: 'user_guides/services/metagenomic_binning_service.html',
+    applicationHelp: 'quick_references/services/metagenomic_binning_service.html',
     tutorialLink: 'tutorial/metagenomic_binning/metagenomic_binning.html',
     libraryData: null,
     defaultPath: '',

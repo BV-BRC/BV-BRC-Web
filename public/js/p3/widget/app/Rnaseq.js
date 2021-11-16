@@ -22,7 +22,7 @@ define([
     requireAuth: true,
     applicationLabel: 'RNA-Seq Analysis',
     applicationDescription: 'The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.',
-    applicationHelp: 'user_guides/services/rna_seq_analysis_service.html',
+    applicationHelp: 'quick_references/services/rna_seq_analysis_service.html',
     tutorialLink: 'tutorial/rna_seq_submission/submitting_rna_seq_job.html',
     pageTitle: 'RNA-Seq Analysis',
     libraryData: null,
@@ -772,7 +772,7 @@ define([
         this.recipe.set('options', newOptions).reset();
         if (curRecipe == 'RNA-Rocket') {
           this.recipe.set('value', 'RNA-Rocket');
-        } 
+        }
         else if (curRecipe == "HTSeq-DESeq") {
           this.recipe.set('value', "HTSeq-DESeq");
         }
@@ -915,7 +915,7 @@ define([
       } else { //host
         assembly_values.feature_count = "htseq";
       }
-      
+
       //target_genome
       assembly_values.reference_genome_id = values.genome_name;
       //output_folder
@@ -1017,7 +1017,7 @@ define([
         this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
         this.onDesignToggle();
         var condition_counts = this.getConditionCounts(job_data);
-        //for each 
+        //for each
         job_data["experimental_conditions"].forEach(function(cond) {
           var lrec = { count: condition_counts[cond], type: 'condition' , condition: cond};
           lrec.icon = this.getConditionIcon();
@@ -1116,7 +1116,7 @@ define([
           this.destroyContrastRow(lrec.contrast, 'contrast');
         }));
         this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
-      },this); 
+      },this);
     },
 
     getConditionCounts: function(job_data) {

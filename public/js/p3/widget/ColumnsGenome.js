@@ -20,6 +20,7 @@ define(['./formatter'], function (formatter) {
       field: 'other_names',
       hidden: true
     },
+
     taxon_id: {
       label: 'NCBI Taxon ID',
       field: 'taxon_id',
@@ -35,7 +36,6 @@ define(['./formatter'], function (formatter) {
       field: 'taxon_lineage_names',
       hidden: true
     },
-
     superkingdom: {
       label: 'Superkingdom',
       field: 'superkingdom',
@@ -76,23 +76,24 @@ define(['./formatter'], function (formatter) {
       field: 'species',
       hidden: false
     },
-    strain: {
-      label: 'Strain',
-      field: 'strain',
-      hidden: false
-    },
 
     genome_status: {
       label: 'Genome Status',
       field: 'genome_status',
       hidden: false
     },
+
     genome_quality: {
       label: 'Genome Quality',
       field: 'genome_quality',
       hidden: false
     },
 
+    strain: {
+      label: 'Strain',
+      field: 'strain',
+      hidden: false
+    },
     serovar: {
       label: 'Serovar',
       field: 'serovar',
@@ -148,13 +149,11 @@ define(['./formatter'], function (formatter) {
       field: 'subclade',
       hidden: true
     },
-
     other_typing: {
       label: 'Other Typing',
       field: 'other_typing',
       hidden: true
     },
-
     culture_collection: {
       label: 'Culture Collection',
       field: 'culture_collection',
@@ -187,7 +186,6 @@ define(['./formatter'], function (formatter) {
       field: 'authors',
       hidden: true
     },
-
     bioproject_accession: {
       label: 'BioProject Accession',
       field: 'bioproject_accession',
@@ -302,56 +300,6 @@ define(['./formatter'], function (formatter) {
       name: 'cds',
       hidden: false
     },
-    // cds_ratio: {
-    //   label: 'CDS Ratio',
-    //   name: 'cds_ratio',
-    //   hidden: true
-    // },
-    // hypothethical_cds: {
-    //   label: 'Hypothethical CDS',
-    //   name: 'hypothethical_cds',
-    //   hidden: true
-    // },
-    // hypothethical_cds_ratio: {
-    //   label: 'Hypothethical CDS Ratio',
-    //   name: 'hypothethical_cds_ratio',
-    //   hidden: true
-    // },
-    // partial_cds: {
-    //   label: 'Partial CDS',
-    //   name: 'partial_cds',
-    //   hidden: true
-    // },
-    // partial_cds_ratio: {
-    //   label: 'Partial CDS Ratio',
-    //   name: 'partial_cds_ratio',
-    //   hidden: true
-    // },
-    // plfam_cds: {
-    //   label: 'PLFam CDS',
-    //   name: 'plfam_cds',
-    //   hidden: true
-    // },
-    // plfam_cds_ratio: {
-    //   label: 'PLFam CDS Ratio',
-    //   name: 'plfam_cds_ratio',
-    //   hidden: true
-    // },
-    // core_families: {
-    //   label: 'Core Families',
-    //   name: 'core_families',
-    //   hidden: true
-    // },
-    // core_families_ratio: {
-    //   label: 'Core Families Ratio',
-    //   name: 'core_families_ratio',
-    //   hidden: true
-    // },
-    // missing_core_family_ids: {
-    //   label: 'Missing Core Family IDs',
-    //   name: 'missing_core_family_ids',
-    //   hidden: true
-    // },
 
     coarse_consistency: {
       label: 'Coarse Consistency',
@@ -379,11 +327,6 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       sortable: false
     },
-    // outgroup_genomes: {
-    //   label: 'Outgroup Genomes',
-    //   name: 'outgroup_genomes',
-    //   hidden: true
-    // },
 
     isolation_source: {
       label: 'Isolation Source',
@@ -478,62 +421,6 @@ define(['./formatter'], function (formatter) {
       field: 'other_clinical',
       hidden: true
     },
-    // phenotype: {
-    //   label: 'Phenotype',
-    //   field: 'phenotype',
-    //   hidden: true
-    // },
-    // gram_stain: {
-    //   label: 'Gram Stain',
-    //   field: 'gram_stain',
-    //   hidden: true
-    // },
-    // cell_shape: {
-    //   label: 'Cell Shape',
-    //   field: 'cell_shape',
-    //   hidden: true
-    // },
-    // motility: {
-    //   label: 'Motility',
-    //   field: 'motility',
-    //   hidden: true
-    // },
-    // sporulation: {
-    //   label: 'Sporulation',
-    //   field: 'sporulation',
-    //   hidden: true
-    // },
-    // temperature_range: {
-    //   label: 'Temperature Range',
-    //   field: 'temperature_range',
-    //   hidden: true
-    // },
-    // optimal_temperature: {
-    //   label: 'Optimal Temperature',
-    //   field: 'optimal_temperature',
-    //   hidden: true
-    // },
-    // salinity: {
-    //   label: 'Salinity',
-    //   field: 'salinity',
-    //   hidden: true
-    // },
-    // oxygen_requirement: {
-    //   label: 'Oxygen Requirement',
-    //   field: 'oxygen_requirement',
-    //   hidden: true
-    // },
-    // habitat: {
-    //   label: 'Habitat',
-    //   field: 'habitat',
-    //   hidden: true
-    // },
-    // disease: {
-    //   label: 'Disease',
-    //   field: 'disease',
-    //   hidden: true,
-    //   sortable: false
-    // },
 
     additional_metadata: {
       label: 'Additional Metadata',
