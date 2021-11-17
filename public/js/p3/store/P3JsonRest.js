@@ -78,7 +78,7 @@ define([
       if (options.start >= 0 || options.count >= 0) {
         headers['X-Range'] = 'items=' + (options.start || '0') + '-' +
           (('count' in options && options.count != Infinity) ?
-            (options.count + (options.start || 0) - 1) : '');
+            (options.count + (options.start || 0)) : '');
         if (this.rangeParam) {
           query += (query || hasQuestionMark ? '&' : '?') + this.rangeParam + '=' + headers['X-Range'];
           hasQuestionMark = true;

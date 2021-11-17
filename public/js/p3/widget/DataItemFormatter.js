@@ -625,7 +625,8 @@ define([
         mini: true
       }, {
         name: 'Accession',
-        text: 'accession'
+        text: 'accession',
+        link: 'https://www.ncbi.nlm.nih.gov/nuccore/'
       }, {
         name: 'UniProtKB Accession',
         text: 'uniprotkb_accession'
@@ -960,9 +961,6 @@ define([
         text: 'unique_species'
       }, {
         name: 'Strains',
-        text: 'unique_strain'
-      }, {
-        name: 'Unique Strains',
         text: 'strains_count',
         link: function (obj) {
           return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=strains">${obj.strains_count}</a>`;
@@ -2186,7 +2184,7 @@ define([
         name: 'Total Assays',
         text: 'total_assays',
       }, {
-        name: 'Assay Reults',
+        name: 'Assay Results',
         text: 'assay_results',
       }, {
         name: 'B Cell Assays',
@@ -2815,14 +2813,15 @@ define([
       return div;
     },
     genome_meta_table_names: function () {
-      return ['Organism Info', 'Genome Quality', 'Sharing', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Other'];
+      return ['General Info', 'Taxonomy Info', 'Status', 'Type Info', 'Database Cross Reference', 'Sequence Info', 'Genome Statistics', 'Annotation Statistics', 'Genome Quality', 'Isolate Info', 'Host Info', 'Phenotype Info', 'Additional Info'];
     },
 
     genome_meta_spec: function () {
       var spec = {
-        'Organism Info': [{
+        'General Info': [{
           name: 'Genome ID',
           text: 'genome_id',
+          link: '/view/Genome/',
           mini: true
         }, {
           name: 'Genome Name',
@@ -2833,40 +2832,82 @@ define([
           text: 'other_names',
           mini: true,
           editable: true
-        }, {
-          name: 'NCBI Taxon ID',
+        },],
+
+        'Taxonomy Info': [{
+          name: 'Taxon ID',
           text: 'taxon_id',
           link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
         }, {
+          name: 'Superkingdom',
+          text: 'superkingdom',
+        }, {
+          name: 'Kingdom',
+          text: 'kingdom',
+        }, {
+          name: 'Phylum',
+          text: 'phylum',
+        }, {
+          name: 'Class',
+          text: 'class',
+        }, {
+          name: 'Order',
+          text: 'order',
+        }, {
+          name: 'Family',
+          text: 'family',
+        }, {
+          name: 'Genus',
+          text: 'genus',
+        }, {
+          name: 'Species',
+          text: 'species',
+        }],
+
+        'Status': [{
           name: 'Genome Status',
           text: 'genome_status',
-          mini: true,
-          editable: true
-        }, {
+        }],
+
+        'Type Info': [{
           name: 'Strain',
           text: 'strain',
-          editable: true
         }, {
           name: 'Serovar',
           text: 'serovar',
-          editable: true
         }, {
           name: 'Biovar',
           text: 'biovar',
-          editable: true
         }, {
           name: 'Pathovar',
           text: 'pathovar',
-          editable: true
         }, {
           name: 'MLST',
           text: 'mlst',
-          editable: true
+        }, {
+          name: 'Segment',
+          text: 'segment',
+        }, {
+          name: 'Subtype',
+          text: 'subtype',
+        }, {
+          name: 'H Type',
+          text: 'h_type',
+        }, {
+          name: 'N Type',
+          text: 'n_type',
+        }, {
+          name: 'Lineage',
+          text: 'lineage',
+        }, {
+          name: 'Clade',
+          text: 'clade',
+        }, {
+          name: 'Subclade',
+          text: 'subclade',
         }, {
           name: 'Other Typing',
           text: 'other_typing',
-          editable: true,
-          isList: true
         }, {
           name: 'Culture Collection',
           text: 'culture_collection',
@@ -2904,49 +2945,7 @@ define([
           text: 'reference_genome'
         }],
 
-        'Genome Quality': [{
-          name: 'Genome Quality',
-          text: 'genome_quality',
-          editable: false
-        }, {
-          name: 'Genome Quality Flags',
-          text: 'genome_quality_flags',
-          editable: false
-        }, {
-          name: 'Coarse Consistency',
-          text: 'coarse_consistency',
-          editable: false
-        }, {
-          name: 'Fine Consistency',
-          text: 'fine_consistency',
-          editable: false
-        }, {
-          name: 'CheckM Completeness',
-          text: 'checkm_completeness',
-          editable: false
-        }, {
-          name: 'CheckM Contamination',
-          text: 'checkm_contamination',
-          editable: false
-        }],
-
-        Sharing: [{
-          name: 'Can view',
-          text: 'user_read',
-          editable: false,
-          isList: true
-        }, {
-          name: 'Can edit',
-          text: 'user_write',
-          editable: false,
-          isList: true
-        }
-        ],
-
-        'Project Info': [{
-          name: 'Sequencing Center',
-          text: 'sequencing_centers'
-        }, {
+        'Database Cross Reference': [{
           name: 'Completion Date',
           text: 'completion_date',
           editable: true,
@@ -2988,33 +2987,38 @@ define([
           },
           editable: true
         }, {
-          name: 'GenBank Accessions',
+          name: 'Genbank Accessions',
           text: 'genbank_accessions',
           link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
           editable: true
         }],
 
         'Sequence Info': [{
+          name: 'Sequencing Centers',
+          text: 'sequencing_centers',
+        }, {
+          name: 'Sequencing Status',
+          text: 'sequencing_status',
+        }, {
           name: 'Sequencing Platform',
           text: 'sequencing_platform',
-          editable: true
         }, {
           name: 'Sequencing Depth',
           text: 'sequencing_depth',
-          editable: true
         }, {
           name: 'Assembly Method',
           text: 'assembly_method',
-          editable: true
-        }, {
+        }],
+
+        'Genome Statistics': [{
           name: 'Chromosomes',
-          text: 'chromosomes'
+          text: 'chromosomes',
         }, {
           name: 'Plasmids',
-          text: 'plasmids'
+          text: 'plasmids',
         }, {
           name: 'Segments',
-          text: 'segments'
+          text: 'segments',
         }, {
           name: 'Contigs',
           text: 'contigs',
@@ -3023,144 +3027,198 @@ define([
           }
         }, {
           name: 'Genome Length',
-          text: 'genome_length'
+          text: 'genome_length',
         }, {
           name: 'GC Content',
-          text: 'gc_content'
+          text: 'gc_content',
+        }, {
+          name: 'Contig L50',
+          text: 'contig_l50',
+        }, {
+          name: 'Contig N50',
+          text: 'contig_n50',
+        }],
+
+        'Annotation Statistics': [{
+          name: 'tRNA',
+          text: 'trna',
+        }, {
+          name: 'rRNA',
+          text: 'rrna',
         }, {
           name: 'Mat Peptide',
-          text: 'mat_peptide'
+          text: 'mat_peptide',
+        }, {
+          name: 'CDS',
+          text: 'cds',
+        }, {
+          name: 'CDS Ratio',
+          text: 'cds_ratio',
+        }, {
+          name: 'Hypothetical CDS',
+          text: 'hypothetical_cds',
+        }, {
+          name: 'Hypothetical CDS Ratio',
+          text: 'hypothetical_cds_ratio',
+        }, {
+          name: 'Partial CDS',
+          text: 'partial_cds',
+        }, {
+          name: 'Partial CDS Ratio',
+          text: 'partial_cds_ratio',
+        }, {
+          name: 'PLFAM CDS',
+          text: 'plfam_cds',
+        }, {
+          name: 'PLFAM CDS Ratio',
+          text: 'plfam_cds_ratio',
+        }, {
+          name: 'Core Families',
+          text: 'core_families',
+        }, {
+          name: 'Core Family Ratio',
+          text: 'core_family_ratio',
+        }, {
+          name: 'Missing Core Family IDs',
+          text: 'missing_core_family_ids',
+        }],
+
+        'Genome Quality': [{
+          name: 'Coarse Consistency',
+          text: 'coarse_consistency',
+        }, {
+          name: 'Fine Consistency',
+          text: 'fine_consistency',
+        }, {
+          name: 'CheckM Completeness',
+          text: 'checkm_completeness',
+        }, {
+          name: 'CheckM Contamination',
+          text: 'checkm_contamination',
+        }, {
+          name: 'Genome Quality Flags',
+          text: 'genome_quality_flags',
+        }, {
+          name: 'Genome Quality',
+          text: 'genome_quality',
+        }, {
+          name: 'Nearest Genomes',
+          text: 'nearest_genomes',
+          link: 'http://www.ncbi.nlm.nih.gov/genome/?term=',
+          editable: true
+        }, {
+          name: 'Outgroup Genomes',
+          text: 'outgroup_genomes',
+          link: 'http://www.ncbi.nlm.nih.gov/genome/?term=',
+          editable: true
         }],
 
         'Isolate Info': [{
           name: 'Isolation Source',
           text: 'isolation_source',
-          editable: true,
-          type: 'textarea'
         }, {
           name: 'Isolation Comments',
           text: 'isolation_comments',
-          editable: true
-        }, {
-          name: 'Collection Year',
-          text: 'collection_year',
-          editable: true,
-          type: 'number'
         }, {
           name: 'Collection Date',
           text: 'collection_date',
-          editable: true,
-          type: 'date'
+        }, {
+          name: 'Collection Year',
+          text: 'collection_year',
         }, {
           name: 'Season',
           text: 'season',
-          editable: true
         }, {
           name: 'Isolation Country',
           text: 'isolation_country',
-          editable: true
+        }, {
+          name: 'Geographic Group',
+          text: 'geographic_group',
         }, {
           name: 'Geographic Location',
           text: 'geographic_location',
-          editable: true
         }, {
           name: 'Other Environmental',
           text: 'other_environmental',
-          editable: true,
-          isList: true
         }],
 
         'Host Info': [{
           name: 'Host Name',
           text: 'host_name',
-          editable: true
         }, {
           name: 'Host Common Name',
           text: 'host_common_name',
-          editable: true
         }, {
           name: 'Host Gender',
           text: 'host_gender',
-          editable: true
         }, {
           name: 'Host Age',
           text: 'host_age',
-          editable: true
         }, {
           name: 'Host Health',
           text: 'host_health',
-          editable: true
+        }, {
+          name: 'Host Group',
+          text: 'host_group',
+        }, {
+          name: 'Lab Host',
+          text: 'lab_host',
+        }, {
+          name: 'Passage',
+          text: 'passage',
         }, {
           name: 'Other Clinical',
           text: 'other_clinical',
-          editable: true,
-          isList: true
         }],
 
         'Phenotype Info': [{
+          name: 'Phenotype',
+          text: 'phenotype',
+        }, {
           name: 'Gram Stain',
           text: 'gram_stain',
-          editable: true
         }, {
           name: 'Cell Shape',
           text: 'cell_shape',
-          editable: true
         }, {
           name: 'Motility',
           text: 'motility',
-          editable: true
         }, {
           name: 'Sporulation',
           text: 'sporulation',
-          editable: true
         }, {
           name: 'Temperature Range',
           text: 'temperature_range',
-          editable: true
         }, {
           name: 'Optimal Temperature',
           text: 'optimal_temperature',
-          editable: true
         }, {
           name: 'Salinity',
           text: 'salinity',
-          editable: true
         }, {
           name: 'Oxygen Requirement',
           text: 'oxygen_requirement',
-          editable: true
         }, {
           name: 'Habitat',
           text: 'habitat',
-          editable: true
         }, {
           name: 'Disease',
           text: 'disease',
-          editable: true,
-          isList: true
         }],
 
-        Other: [{
-          name: 'Comments',
-          text: 'comments',
-          editable: true,
-          type: 'textarea',
-          isList: true
-        }, {
+        'Additional Info': [{
           name: 'Additional Metadata',
           text: 'additional_metadata',
-          editable: true,
-          type: 'textarea',
-          isList: true
         }, {
-          name: 'Insert Date',
+          name: 'Comments',
+          text: 'comments',
+        }, {
+          name: 'Date Inserted',
           text: 'date_inserted',
-          type: 'date'
         }, {
-          name: 'Last Modified',
+          name: 'Date Modified',
           text: 'date_modified',
-          type: 'date'
-        }]
+        }],
       };
 
       return spec;

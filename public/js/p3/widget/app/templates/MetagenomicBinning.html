@@ -10,8 +10,8 @@
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
-          target="_blank">${applicationLabel} Service User Guide</a> and
+      <p>${applicationDescription} For further explanation, please see the <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">${applicationLabel} Service Quick Reference</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
@@ -68,7 +68,7 @@
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
               </div>
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
@@ -142,10 +142,10 @@
           <label for="radio1" style="font-size:8pt">Bacteria/Archaea</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="viruses" name="organism" value="viral" />
           <label for="radio2" style="font-size:8pt">Viruses</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="bacteriaAndViruses" name="organism" value="both" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="bacteriaAndViruses" name="organism" value="both" checked/>
           <label for="radio3" style="font-size:8pt">Both</label>
         </div>
-        
+
         <div class="appRow">
           <label class="paramlabel">Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-attach-event="onChange:onOutputPathChange" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>

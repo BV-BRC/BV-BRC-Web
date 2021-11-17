@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/GenomicFeatureSearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
   './HostGroups',
@@ -11,6 +12,7 @@ define([
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
   hostGroupStore,
@@ -49,9 +51,6 @@ define([
       // }))
     },
     buildQuery: function () {
-      console.log(
-        'buildQuery',
-      );
       let queryArr = []
       let genomeQuery = ''
 
@@ -118,7 +117,7 @@ define([
       // genome feature specific search
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       // const featureTypeValue = this.featureTypeNode.get('value')
@@ -129,12 +128,12 @@ define([
 
       const geneValue = this.geneNode.get('value')
       if (geneValue !== '') {
-        queryArr.push(`eq(gene,${sanitizeInput(geneValue)})`)
+        queryArr.push(`eq(gene,${TextInputEncoder(sanitizeInput(geneValue))})`)
       }
 
       const productValue = this.productNode.get('value')
       if (productValue !== '') {
-        queryArr.push(`eq(product,${sanitizeInput(productValue)})`)
+        queryArr.push(`eq(product,${TextInputEncoder(sanitizeInput(productValue))})`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()

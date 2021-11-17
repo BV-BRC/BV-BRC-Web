@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   './SearchBase',
   'dojo/text!./templates/ProteinFeatureSearch.html',
+  './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
 ], function (
@@ -10,6 +11,7 @@ define([
   lang,
   SearchBase,
   template,
+  TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
 ) {
@@ -56,7 +58,7 @@ define([
       // protein feature specific search
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
-        queryArr.push(`keyword(${sanitizeInput(keywordValue)})`)
+        queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
       const sourceValue = this.sourceNode.get('value')
@@ -71,7 +73,7 @@ define([
 
       const descriptionValue = this.descriptionNode.get('value')
       if (descriptionValue !== '') {
-        queryArr.push(`eq(description,"${sanitizeInput(descriptionValue)}")`)
+        queryArr.push(`eq(description,"${TextInputEncoder(sanitizeInput(descriptionValue))}")`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()
