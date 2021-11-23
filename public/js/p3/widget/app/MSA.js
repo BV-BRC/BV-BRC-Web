@@ -28,7 +28,6 @@ define([
     defaultPath: '',
     startingRows: 14,
     // maxGenomes: 256,
-    maxTextInput: 64000,
     validFasta: false,
     textInput: false,
 
@@ -297,35 +296,26 @@ define([
     //   this.defaultToDNA();
     // },
 
-    validateFasta: function () {
+    checkFasta: function () {
+      // Check the FASTA data.
+      var fastaText = this.fasta_keyboard_input.get('value');
+      var fastaObject = this.validateFasta(fastaText);
+      // Replace the FASTA data with trimmed data.
+      this.fasta_keyboard_input.set('value', fastaObject.trimFasta);
+      // Update the error message.
+      this.sequence_message.innerHTML = fastaObject.message;
+      // Set the validity and check that there are at least two sequences.
+      if (fastaObject.valid && fastaObject.numseq >= 2) {
+        this.validFasta = true;
+        return true;
+      }
+      if (fastaObject.valid) {
+        this.sequence_message.innerHTML = 'At least two sequences are required.';
+        this.validFasta = false;
+        return false;
+      }
       this.validFasta = false;
-      if (this.fasta_keyboard_input.value.length > this.maxTextInput) {
-        this.sequence_message.innerHTML = 'The text input is too large. Save the data to a file.';
-        return false;
-      }
-      var records = this.fasta_keyboard_input.value.trim().toUpperCase();
-      records = records.replace(/^\s*[\r\n]/gm, '');
-      var arr = records.split('\n');
-      if (arr.length == 0 || arr[0] == '') {
-        this.sequence_message.innerHTML = '';
-        return false;
-      }
-      if (arr[0][0] != '>' || arr.length <= 1) {
-        this.sequence_message.innerHTML = ' A fasta record is at least two lines and starts with ">".';
-        return false;
-      }
-      for (var i = 0; i < arr.length; i++) {
-        if (arr[i][0] == '>') {
-          continue;
-        }
-        if (!(/^[ACDEFGHIKLMNPQRSTUVWY\-\n]+$/i.test(arr[i]))) {
-          this.sequence_message.innerHTML = ' The fasta records must have amino acid or nucleotide letters. Check line: ' + (i + 1);
-          return false;
-        }
-      }
-      this.sequence_message.innerHTML = '';
-      this.validFasta = true;
-      return true;
+      return false
     },
 
     // onAlphabetChanged: function () {

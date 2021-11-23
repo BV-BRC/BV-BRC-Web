@@ -88,7 +88,7 @@
                                 style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
                                 data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea" required="false"
                                 data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format.', intermediateChanges:true"
-                                data-dojo-attach-event="onBlur:validateFasta"></textarea>
+                                data-dojo-attach-event="onBlur:checkFasta"></textarea>
                             <div class="warning" data-dojo-attach-point="sequence_message"></div>
                             <!-- </div>> -->
                         </td>
@@ -100,7 +100,7 @@
                             <div style="width:85%;display:inline-block;"
                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
                                 data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
-                                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta'],multi:false,promptMessage:'Select or Upload fasta file to your workspace.',missingMessage:'User file is optional.',placeHolder:'FASTA file'">
+                                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
                             </div>
                         </td>
                     </tr>
@@ -112,7 +112,7 @@
                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_featuregroup"
                                 required="false" data-dojo-attach-point="query_featuregroup"
                                 data-dojo-attach-event="onChange:validate"
-                                data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is optional.',placeHolder:'Feature group'">
+                                data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'Feature group is required.',placeHolder:'Feature group'">
                             </div>
                         </td>
                     </tr>

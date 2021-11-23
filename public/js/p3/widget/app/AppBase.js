@@ -29,6 +29,7 @@ define([
     lookaheadCallback: null,
     lookaheadError: null,
     lookaheadGif: null,
+    maxFastaText: 64000,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -39,11 +40,11 @@ define([
     paired_end_libs: [],
     sra_libs: [], //srr_libs in some services
     contigs: '', //as far as I can tell none of the services have a list of contigs files: TODO (recheck)
-    target_genome_id: '', //referred to as taxon_id or target_genome. The reference genome for most services. 
-                          //Is a list in GenomeAlignment.js
+    target_genome_id: '', //referred to as taxon_id or target_genome. The reference genome for most services.
+    //Is a list in GenomeAlignment.js
     taxon_name: '', //name associated with the target_genome_id
     genome_group: '', //TODO: not sure if this is necessary: user can specify either the name to assign the group or the name of the group to be used in the service
-    strategy:'', //controls the 'program', 'workflow', or 'algorithm' a service will use. Sometimes referred to as 'recipe'
+    strategy: '', //controls the 'program', 'workflow', or 'algorithm' a service will use. Sometimes referred to as 'recipe'
     output_name: '', //name of the output file/folder. Some services do not have this field
     output_folder: '', //location where the output_name will be placed in the user's workspace. Some services do not have this field
 
@@ -191,12 +192,13 @@ define([
         });
         var a = this.submitButton.domNode;
         on(a, 'mouseover', lang.hitch(this, function () {
-          if (this.activeUploads && this.activeUploads.length != 0)
-          { popup.open({
-            popup: uploadTolltip,
-            around: a,
-            orient: ['above-centered', 'below-centered']
-          }); }
+          if (this.activeUploads && this.activeUploads.length != 0) {
+            popup.open({
+              popup: uploadTolltip,
+              around: a,
+              orient: ['above-centered', 'below-centered']
+            });
+          }
         }));
         on(a, 'mouseout', function () {
           popup.close(uploadTolltip);
@@ -267,15 +269,15 @@ define([
         values.container_id = window.App.containerBuildID;
       }
       if (this.lookaheadJob) {
-        var jobPath = `${this.output_path.value || '' }/${this.output_file.value || ''}`;
+        var jobPath = `${this.output_path.value || ''}/${this.output_file.value || ''}`;
         var liveMsg = '<br>Live job!<br>Stick around to see results.';
         if (this.submittedMessage && this.lookaheadGif == null) {
-            var gif_container = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
-            domConstruct.place(gif_container, this.submittedMessage);
-            this.lookaheadGif= Loading(gif_container, liveMsg);
-            var gif_container2 = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
-            domConstruct.place(gif_container2, this.workingMessage);
-            this.lookaheadGif2= Loading(gif_container2, liveMsg);
+          var gif_container = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
+          domConstruct.place(gif_container, this.submittedMessage);
+          this.lookaheadGif = Loading(gif_container, liveMsg);
+          var gif_container2 = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
+          domConstruct.place(gif_container2, this.workingMessage);
+          this.lookaheadGif2 = Loading(gif_container2, liveMsg);
         }
       }
 
@@ -290,7 +292,7 @@ define([
       }
       return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(lang.hitch(this, function (results) {
         if (this.lookaheadJob) {
-          var jobPath = `${this.output_path.value || '' }/${this.output_file.value || ''}`;
+          var jobPath = `${this.output_path.value || ''}/${this.output_file.value || ''}`;
           var jobLabel = `${this.output_file.value || this.applicationName}`;
           var jobInfo = { 'jobID': results[0].id, 'jobLabel': jobLabel, 'jobPath': jobPath }
           JobManager.setJobHook(jobInfo, this.lookaheadCallback, this.lookaheadError);
@@ -417,53 +419,53 @@ define([
             {
               sync: false, handleAs: 'xml', headers: { 'X-Requested-With': null }, timeout: 15000
             }).then(
-            lang.hitch(this, function (xml_resp) {
-              try {
-                title = xml_resp.children[0].children[0].childNodes[3].children[1].childNodes[0].innerHTML;
-              }
-              catch (e) {
-                console.log(xml_resp);
-                console.error('Could not get title from SRA record.  Error: ' + e);
-              }
-              try {
-                xml_resp.children[0].children[0].childNodes.forEach(function (item) {
-                  if (item.nodeName == 'RUN_SET') {
-                    item.childNodes.forEach(function (currentValue) {
-                      if (accession == currentValue.attributes.accession.nodeValue) {
-                        isrun = true;
-                      }
-                    });
-                  }
-                });
-              }
-              catch (e) {
-                console.log(xml_resp);
-                console.error('Could not get run id from SRA record.  Error: ' + e);
-              }
-              if (isrun) {
-                this.onAddSRRHelper(title);
-              } else {
-                this.srr_accession.set('disabled', false);
-                this.srr_accession_validation_message.innerHTML = ' The accession is not a run id.';
-              }
-            }),
-            lang.hitch(this,
-              function (err) {
-                var status = err.response.status;
-                this.srr_accession.set('disabled', false);
-                //                console.log(status);
-                //                console.log(err);
-                if (status >= 400 && status < 500) {
-                  // NCBI eutils gives error code 400 when the accession does not exist.
-                  this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
-                } else if (err.message.startsWith('Timeout exceeded')) {
-                  this.onAddSRRHelper(title);
-                  this.srr_accession_validation_message.innerHTML = ' Timeout exceeded.';
-                } else {
-                  throw new Error('Unhandled SRA validation error.');
+              lang.hitch(this, function (xml_resp) {
+                try {
+                  title = xml_resp.children[0].children[0].childNodes[3].children[1].childNodes[0].innerHTML;
                 }
-              })
-          );
+                catch (e) {
+                  console.log(xml_resp);
+                  console.error('Could not get title from SRA record.  Error: ' + e);
+                }
+                try {
+                  xml_resp.children[0].children[0].childNodes.forEach(function (item) {
+                    if (item.nodeName == 'RUN_SET') {
+                      item.childNodes.forEach(function (currentValue) {
+                        if (accession == currentValue.attributes.accession.nodeValue) {
+                          isrun = true;
+                        }
+                      });
+                    }
+                  });
+                }
+                catch (e) {
+                  console.log(xml_resp);
+                  console.error('Could not get run id from SRA record.  Error: ' + e);
+                }
+                if (isrun) {
+                  this.onAddSRRHelper(title);
+                } else {
+                  this.srr_accession.set('disabled', false);
+                  this.srr_accession_validation_message.innerHTML = ' The accession is not a run id.';
+                }
+              }),
+              lang.hitch(this,
+                function (err) {
+                  var status = err.response.status;
+                  this.srr_accession.set('disabled', false);
+                  //                console.log(status);
+                  //                console.log(err);
+                  if (status >= 400 && status < 500) {
+                    // NCBI eutils gives error code 400 when the accession does not exist.
+                    this.srr_accession_validation_message.innerHTML = ' Your input ' + accession + ' is not valid';
+                  } else if (err.message.startsWith('Timeout exceeded')) {
+                    this.onAddSRRHelper(title);
+                    this.srr_accession_validation_message.innerHTML = ' Timeout exceeded.';
+                  } else {
+                    throw new Error('Unhandled SRA validation error.');
+                  }
+                })
+            );
         } catch (e) {
           console.error(e);
           this.srr_accession.set('disabled', false);
@@ -485,8 +487,8 @@ define([
     //param_dict: is a dictionary mapping non-standard names for each service
     //Example: {"example_base_name":"example_service_name","single_end_libs":"single_end_libsWidget"}
     //Use this format when calling this function: AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-    intakeRerunFormBase: function(param_dict) {
-      var base_params = ["contigs","target_genome_id","taxon_name","genome_group","strategy","output_folder"];
+    intakeRerunFormBase: function (param_dict) {
+      var base_params = ["contigs", "target_genome_id", "taxon_name", "genome_group", "strategy", "output_folder"];
       var localStorage = window.localStorage;
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
         var storage_params = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
@@ -501,10 +503,10 @@ define([
                 attach_point = param_dict["widget_map"][attach_point];
               }
               if (!this[attach_point]) {
-                console.log("(1) attach_point not found: ",attach_point);
+                console.log("(1) attach_point not found: ", attach_point);
               }
               else {
-                this[attach_point].set("value",storage_params[base_params[idx]]);
+                this[attach_point].set("value", storage_params[base_params[idx]]);
               }
             }
             else if (param_dict.hasOwnProperty(base_params[idx])) {
@@ -514,35 +516,35 @@ define([
                 attach_point = param_dict["widget_map"][attach_point];
               }
               if (!this[attach_point]) {
-                console.log("(2) attach_point not found: ",attach_point);
+                console.log("(2) attach_point not found: ", attach_point);
               }
-              else{
-                this[attach_point].set("value",storage_params[job_point]);
+              else {
+                this[attach_point].set("value", storage_params[job_point]);
               }
             }
             else {
-              console.log("(3) attach_point not found: ",base_params[idx]);
+              console.log("(3) attach_point not found: ", base_params[idx]);
             }
           }
         }
         if (param_dict.hasOwnProperty("service_specific")) {
           var service_fields = param_dict["service_specific"];
-          Object.keys(service_fields).forEach(function(job_field) {
+          Object.keys(service_fields).forEach(function (job_field) {
             var attach_point = service_fields[job_field];
             if (storage_params.hasOwnProperty(job_field)) {
-              this[attach_point].set("value",storage_params[job_field]);
+              this[attach_point].set("value", storage_params[job_field]);
             }
-          },this);
+          }, this);
         }
       }
     },
 
     //Load library parameters from localStorage
     //Conditions assumes a field "experimental_conditions" is present in local_job
-    loadLibrary: function(local_job,param_dict) {
-      local_job.paired_end_libs.forEach(lang.hitch(this,function(paired_lib) {
-        var lrec = {_type:'paired',type:'paired'};
-        this.setupLibraryData(lrec,paired_lib,'paired');
+    loadLibrary: function (local_job, param_dict) {
+      local_job.paired_end_libs.forEach(lang.hitch(this, function (paired_lib) {
+        var lrec = { _type: 'paired', type: 'paired' };
+        this.setupLibraryData(lrec, paired_lib, 'paired');
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read1: { label: 'Read1', value: 1 },
@@ -552,9 +554,9 @@ define([
         };
         this.addLibraryRowFormFill(lrec, infoLabels, 'pairdata');
       }));
-      local_job.single_end_libs.forEach(lang.hitch(this,function(single_lib) {
-        var lrec = { _type: 'single',type:'single'};
-        this.setupLibraryData(lrec,single_lib,'single');
+      local_job.single_end_libs.forEach(lang.hitch(this, function (single_lib) {
+        var lrec = { _type: 'single', type: 'single' };
+        this.setupLibraryData(lrec, single_lib, 'single');
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
@@ -563,11 +565,11 @@ define([
       }));
       //load SRA names: can be in eithers srr_ids (list of ids) or sra_libs (list of key-item entries)
       if (local_job.srr_ids) {
-        local_job.srr_ids.forEach(lang.hitch(this,function(srr_id) {
-          var lrec = { _type: 'srr_accession', type:'srr_accession',title: srr_id };
+        local_job.srr_ids.forEach(lang.hitch(this, function (srr_id) {
+          var lrec = { _type: 'srr_accession', type: 'srr_accession', title: srr_id };
           //this.setupLibraryData(lrec,srr_id,'srr_accession');
-          lrec._id = this.makeLibraryIDFormFill(srr_id,lrec.type); 
-          lrec.id = this.makeLibraryIDFormFill(srr_id,lrec.type);
+          lrec._id = this.makeLibraryIDFormFill(srr_id, lrec.type);
+          lrec.id = this.makeLibraryIDFormFill(srr_id, lrec.type);
           var infoLabels = {
             title: { label: 'Title', value: 1 }
           };
@@ -575,9 +577,9 @@ define([
         }));
       }
       if (local_job.sra_libs) {
-        local_job.sra_libs.forEach(lang.hitch(this,function(sra_lib) {
-          var lrec = { _type: 'srr_accession', type:'srr_accession',title: sra_lib["srr_accession"] };
-          this.setupLibraryData(lrec,sra_lib,'srr_accession');
+        local_job.sra_libs.forEach(lang.hitch(this, function (sra_lib) {
+          var lrec = { _type: 'srr_accession', type: 'srr_accession', title: sra_lib["srr_accession"] };
+          this.setupLibraryData(lrec, sra_lib, 'srr_accession');
           var infoLabels = {
             title: { label: 'Title', value: 1 }
           };
@@ -586,7 +588,7 @@ define([
       }
     },
 
-    addLibraryRowFormFill: function(lrec,infoLabels,mode) {
+    addLibraryRowFormFill: function (lrec, infoLabels, mode) {
       var tr = this.libsTable.insertRow(0);
       lrec._row = tr;
       lrec.row = tr;
@@ -594,15 +596,15 @@ define([
       var advInfo = [];
       switch (mode) {
         case 'pairdata':
-          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec,'paired') + '</div>';
+          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec, 'paired') + '</div>';
           advInfo.push('Paired Library');
           break;
         case 'singledata':
-          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec,'single') + '</div>';
+          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec, 'single') + '</div>';
           advInfo.push('Single Library');
           break;
         case 'srrdata':
-          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec,'srr_accession') + '</div>';
+          td.innerHTML = "<div class='libraryrow'>" + this.makeLibraryNameFormFill(lrec, 'srr_accession') + '</div>';
           advInfo.push('SRA run accession');
           break;
         default:
@@ -643,7 +645,7 @@ define([
       }
       //add condition stuff
       if (lrec.hasOwnProperty("icon")) {
-       domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
       }
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
       if (this.addedLibs.counter < this.startingRows) {
@@ -659,7 +661,7 @@ define([
       this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
     },
 
-    makeLibraryIDFormFill: function(job_data,mode) {
+    makeLibraryIDFormFill: function (job_data, mode) {
       switch (mode) {
         case 'paired':
           var fn1 = job_data['read1'];
@@ -675,7 +677,7 @@ define([
           else if (job_data.hasOwnProperty("srr_accession")) {
             var name = job_data['srr_accession'];
           }
-          else{
+          else {
             var name = job_data;
           }
           return '' + name;
@@ -685,7 +687,128 @@ define([
       }
     },
 
-    makeLibraryNameFormFill: function(job_data,mode) {
+    cleanFasta: function (fastaText) {
+      /*
+      Removes unnecessary whitespace from the FASTA text.
+      */
+      var newFasta = '';
+      var records = fastaText.trim();
+      records = records.replace(/[\r\n]/g, '\n');
+      records = records.replace(/\r|\f/g, '\n');
+      records = records.replace(/^\s*[\r\n]/gm, '');
+      var arr = records.split('\n');
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i][0] == '>') {
+          newFasta += arr[i].trim();
+        } else {
+          newFasta += arr[i].replace(/\s/g, '');
+        }
+        if (i < arr.length - 1) {
+          newFasta += '\n';
+        }
+      }
+      return newFasta;
+    },
+
+    validateFasta: function (fastaText, seqType = 'aa', replace = true) {
+      /*
+      Calculates the validity of a FASTA file.
+
+      Parameters
+      ----------
+      fastaText: string
+        A string representing a FASTA data
+      seqType: string
+        Use 'dna' to indicate that the FASTA file should just be nucleotide sequences.
+
+      Returns
+      -------
+      valid: boolean
+        True if valid FASTA. False if invalid.
+      status: string
+        Description of issues found with the FASTA file.
+      numseq: int
+        The number of sequences.
+      message: string
+        Example message
+
+      */
+      var valid = false;
+      var status = '';
+      var numseq = 0;
+      var message = '';
+      var trimFasta = '';
+      var reto = {
+        valid,
+        status,
+        numseq,
+        message,
+        trimFasta,
+      };
+      if (fastaText.length > this.maxFastaText) {
+        reto.status = 'too_long';
+        reto.message = 'The text input is too large. Save the data to a file.';
+        return reto;
+      }
+      var records = this.cleanFasta(fastaText);
+      reto.trimFasta = records;
+      records = records.replace(/^\s*[\r\n]/gm, '');
+      if (records != '' && records[0] != '>' && !replace) {
+        reto.status = 'invalid_start'
+        reto.message = 'A fasta record is at least two lines and starts with ">".'
+        return reto;
+      } else if (records != '' && records[0] != '>' && replace) {
+        records = '>record_1\n' + records;
+        reto.trimFasta = records;
+      }
+      var arr = records.split('\n');
+      if (arr.length == 0 || arr[0] == '') {
+        reto.status = 'empty'
+        reto.message = '';
+        return reto;
+      }
+      if (arr[0][0] != '>' || arr.length <= 1) {
+        reto.status = 'too_short';
+        reto.message = 'A fasta record is at least two lines and starts with ">".';
+        return reto;
+      }
+      var nextseq = 0; // Checks that there are the same number of identifiers as sequences.
+      var protein = false;
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i][0] == '>') {
+          numseq += 1;
+          nextseq += 1;
+          continue;
+        }
+        nextseq -= 1;
+        nextseq = Math.max(0, nextseq);
+        if (!protein && !(/^[ACTGN\-\n]+$/i.test(arr[i].toUpperCase()))) {
+          if (seqType == 'dna') {
+            reto.status = 'need_dna'
+            reto.message = 'Some letters are not nucleotide letters on line ' + (i + 1) + '.';
+            return reto;
+          }
+          protein = true;
+        }
+        if (!(/^[ABCDEFGHIJKLMNOPQRSTUVWXYZ\-\n]+$/i.test(arr[i].toUpperCase()))) { // extended amino acid alphabet
+          reto.status = 'invalid_letters';
+          reto.message = ' The sequences must have valid letters. Check line: ' + (i + 1) + '.';
+          return reto;
+        }
+      }
+      if (nextseq) {
+        reto.status = 'missing_seqs';
+        reto.message = ' There are missing sequences or extra fasta identifier lines.'
+        return reto;
+      }
+      reto.valid = true;
+      reto.status = (protein ? 'valid_protein' : 'valid_dna');
+      reto.numseq = numseq;
+      reto.message = '';
+      return reto;
+    },
+
+    makeLibraryNameFormFill: function (job_data, mode) {
       switch (mode) {
         case 'paired':
           var fn = job_data['read1'].split("/")[job_data['read1'].split("/").length - 1];
@@ -705,14 +828,14 @@ define([
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
           }
           return 'S(' + fn + ')';
-        case 'srr_accession': 
+        case 'srr_accession':
           if (job_data.hasOwnProperty("title")) {
             var name = job_data['title'];
           }
           else if (job_data.hasOwnProperty("srr_accession")) {
             var name = job_data['srr_accession'];
           }
-          else{
+          else {
             var name = job_data;
           }
           return '' + name;
@@ -722,10 +845,10 @@ define([
     },
 
     //Called to get the necessary information into lrec
-    setupLibraryData: function(lrec,job_data,mode) {
-      lrec._id = this.makeLibraryIDFormFill(job_data,mode); 
-      lrec.id = this.makeLibraryIDFormFill(job_data,mode);
-      Object.keys(job_data).forEach( function (field) {
+    setupLibraryData: function (lrec, job_data, mode) {
+      lrec._id = this.makeLibraryIDFormFill(job_data, mode);
+      lrec.id = this.makeLibraryIDFormFill(job_data, mode);
+      Object.keys(job_data).forEach(function (field) {
         lrec[field] = job_data[field];
       });
     }
