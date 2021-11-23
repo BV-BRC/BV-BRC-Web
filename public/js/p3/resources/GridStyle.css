@@ -43,6 +43,11 @@
 	text-align: left;
 }
 
+.dgrid-cell.field-na_sequence_md5,
+.dgrid-cell.field-aa_sequence_md5 {
+    width: 6%;
+}
+
 /* protein family grid */
 .dgrid-cell.field-family_id {
     width: 12%;
