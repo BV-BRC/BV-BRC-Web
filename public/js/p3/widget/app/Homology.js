@@ -94,7 +94,6 @@ define([
     // maxPatternFiles: 20,
     // addedPatternFiles: 0,
     startingRows: 5,
-    maxTextInput: 64000,
     validFasta: 0,
     // patternRows: 4,
     max: 256,
@@ -133,7 +132,7 @@ define([
       this.emptyTable(this.genomeTable, this.startingRows);
       // this.emptyTable(this.patternFileTable, this.patternRows);
       this.onInputChange(true);
-      this.onChangeProgram(true);
+      this.onChangeProgram(true, true);
 
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
@@ -164,7 +163,7 @@ define([
       try {
         this.intakeRerunForm();
         if (this.form_flag) {
-            _self.output_file.focus();
+          _self.output_file.focus();
         }
       } catch (error) {
         console.error(error);
@@ -304,60 +303,25 @@ define([
       return false;
     },
 
-    // getFastaArray: function () {
-    //   var records = this.sequence.value.trim().toUpperCase();
-    //   records = records.replace(/^\s*[\r\n]/gm, '');
-    //   return records.split('\n');
-    // },
-
-    validateFasta: function () {
+    checkFasta: function () {
+      // Check the FASTA data.
+      var fastaText = this.sequence.get('value');
+      var fastaObject = this.validateFasta(fastaText, this.input_type);
+      // Replace the FASTA data with trimmed data.
+      this.sequence.set('value', fastaObject.trimFasta);
+      // Update the error message.
+      if (fastaObject.status == 'need_dna') {
+        this.sequence_message.innerHTML = this.program.toUpperCase() + ' requires nucleotide sequences. ' + fastaObject.message;
+      } else {
+        this.sequence_message.innerHTML = fastaObject.message;
+      }
+      // Set the validity with the number of records.
+      if (fastaObject.valid) {
+        this.validFasta = fastaObject.numseq;
+        return true;
+      }
       this.validFasta = 0;
-      if (this.sequence.value.length > this.maxTextInput) {
-        this.sequence_message.innerHTML = 'The text input is too large. Save the data to a file.';
-        return false;
-      }
-      var records = this.sequence.value.trim();
-      records = records.replace(/^\s*[\r\n]/gm, '');
-      if (records != '' && records[0] != '>') {
-        records = '>query_1\n' + this.sequence.get('value');
-      }
-      this.sequence.set('value', records);
-      var arr = records.split('\n');
-      if (arr.length == 0 || arr[0] == '') {
-        this.sequence_message.innerHTML = '';
-        return false;
-      }
-      if (arr[0][0] != '>' || arr.length <= 1) {
-        this.sequence_message.innerHTML = ' A fasta record is at least two lines and starts with ">".';
-        return false;
-      }
-      var numseq = 0; // Keeps track of the number of sequences
-      var nextseq = 0; // Checks that their are the same number of identifiers as sequences
-      for (var i = 0; i < arr.length; i++) {
-        if (arr[i][0] == '>') {
-          numseq += 1;
-          nextseq += 1;
-          continue;
-        }
-        nextseq -= 1;
-        nextseq = Math.max(0, nextseq);
-        if (!(/^[ACTGN\-\n]+$/i.test(arr[i].toUpperCase())) && this.input_type == 'dna') {
-          this.sequence_message.innerHTML = ' ' + this.program + ' requires nucleotide sequences, but some letters are not nucleotide letters on line ' + (i + 1);
-          return false;
-        }
-        if (!(/^[ACDEFGHIKLMNPQRSTUVWYBXZJUO\-\n]+$/i.test(arr[i].toUpperCase()))) { // extended amino acid alphabet
-          this.sequence_message.innerHTML = ' The fasta records must have amino acid or nucleotide letters. Check line: ' + (i + 1);
-          return false;
-        }
-      }
-      if (nextseq) {
-        console.log('nextseq', nextseq)
-        this.sequence_message.innerHTML = ' There are missing sequences or extra fasta identifier lines.'
-        return false;
-      }
-      this.sequence_message.innerHTML = '';
-      this.validFasta = numseq;
-      return true;
+      return false
     },
 
     getValues: function () {
@@ -715,8 +679,8 @@ define([
     },
 
 
-    onChangeProgram: function (val) {
-
+    onChangeProgram: function (val, start = false) {
+      console.log(val);
       if (!val) {
         return;
       }
@@ -745,9 +709,9 @@ define([
         this.query_fasta.set('type', 'feature_protein_fasta');
       }
       if (old_type != this.input_type) {
-        this.validateFasta();
+        this.checkFasta();
       }
-      this.onChangeDatabase(this.database.get('value'), true);
+      this.onChangeDatabase(this.database.get('value'), start);
     },
 
 
@@ -878,20 +842,20 @@ define([
       }
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
         this.form_flag = true;
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         job_data['program'] = "blastp";
-        var param_dict = {"output_folder":"output_path"};
-        var service_specific = {"input_fasta_data":"sequence","blast_evalue_cutoff":"evalue","blast_max_hits":"max_hits"};
-        this.program.set("value",job_data['program']);
+        var param_dict = { "output_folder": "output_path" };
+        var service_specific = { "input_fasta_data": "sequence", "blast_evalue_cutoff": "evalue", "blast_max_hits": "max_hits" };
+        this.program.set("value", job_data['program']);
         param_dict["service_specific"] = service_specific;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        this.program.set("disabled",false);
-        this.database.set("disabled",false);
-        this.search_for.set("disabled",false);
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        this.program.set("disabled", false);
+        this.database.set("disabled", false);
+        this.search_for.set("disabled", false);
         this.setDatabaseInfoFormFill(job_data);
 
         //TODO: function to set genome_list,fasta,feature_group based on database type (input_source?)
@@ -899,11 +863,11 @@ define([
       }
     },
 
-    setDatabaseInfoFormFill: function(job_data) {
-      var db_attach_points = {"program":"program","db_source":"database","db_type":"search_for"};
-      Object.keys(db_attach_points).forEach(function(param) {
-        this[db_attach_points[param]].set("value",job_data[param]);
-      },this);
+    setDatabaseInfoFormFill: function (job_data) {
+      var db_attach_points = { "program": "program", "db_source": "database", "db_type": "search_for" };
+      Object.keys(db_attach_points).forEach(function (param) {
+        this[db_attach_points[param]].set("value", job_data[param]);
+      }, this);
     },
 
   });
