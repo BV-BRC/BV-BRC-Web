@@ -177,7 +177,7 @@ define([], function () {
         field: 'sra_accession', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'genbank_accession', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'genbank_accessions', type: 'str', facet: false, facet_hidden: true, search: true
       },
 
       {
