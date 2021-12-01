@@ -255,7 +255,7 @@ define([
         d.show();
         return;
       })
-      this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-lightbulb-o fa-2x', {
+      this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-cog fa-2x', {
         label: 'SERVICES',
         validTypes: ['genome_group'],
         multiple: false, //TODO: check and see if you can select two or more at a time
