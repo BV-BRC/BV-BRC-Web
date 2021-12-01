@@ -5,7 +5,7 @@ define([
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
   './ExternalItemFormatter', './AdvancedDownload', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
   './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor',
-  '../DataAPI', './PermissionEditor'
+  '../DataAPI', './PermissionEditor', './ServicesTooltipDialog','dijit/popup'
 ], function (
   declare, lang, on, xhr, Topic,
   domClass, domQuery, domStyle, Template, domConstruct,
@@ -13,7 +13,7 @@ define([
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
   ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
   InputList, TextArea, DateTextBox, MetaEditor,
-  DataAPI, PermissionEditor
+  DataAPI, PermissionEditor, ServicesTooltipDialog,popup
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
@@ -268,6 +268,31 @@ define([
       if (this.genome) {
         this.set('genome', this.genome);
       }
+    }, 
+
+    onGenomeServiceSelection: function() {
+      console.log(this.genome);
+      if (!this.genome.genome_id) {
+        console.log("genome_id not found");
+        return;
+      }
+      if (this.genome.genome_id === "") {
+        console.log("genome_id is empty");
+        return;
+      }
+      var params = {
+        "genome_id":this.genome.genome_id,
+        "organism": this.genome.organism
+      };
+      popup.open({
+        popup: new ServicesTooltipDialog({
+          context: "genome",
+          data: params
+        }),
+        parent: this,
+        around: this.genomeServiceSelectionButton,
+        orient: ['below']
+      });
     }
   });
 });
