@@ -279,6 +279,19 @@ define([
           case 'selGroup':
             genomeIds = this.group_genomes;
             break;
+          case 'selTaxon':
+            var taxon = null;
+            taxon = this.taxonomy.get('value');
+            if (taxon === '') {
+              this.taxonomy_message.innerHTML = 'No taxon was selected.';
+              return;
+            }
+            var q = {
+              method: 'HomologyService.blast_fasta_to_taxon',
+              params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
+            };
+            // def.resolve(q);
+            break;
           case 'selFasta':
             var fasta = null;
             fasta = this.fasta_db.get('value');
@@ -334,6 +347,10 @@ define([
 
       if (genomeIds.length > 0) {
         submit_values['db_genome_list'] = genomeIds;
+        if (database == 'selGroup'){
+          submit_values['db_genome_group'] = this.genome_group.get('value');
+        }
+
       }
       if (taxon) {
         submit_values['db_taxon_list'] = [taxon];
