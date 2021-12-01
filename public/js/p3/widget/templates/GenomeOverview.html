@@ -39,6 +39,10 @@
   <div class="column-opt">
     <div class="section">
       <div class="BrowserHeader right">
+        <div class="ActionButtonWrapper" data-dojo-attach-event="onclick:onGenomeServiceSelection" style="margin-top: 2px", data-dojo-attach-point="genomeServiceSelectionButton">
+          <div class="ActionButton fa icon-lightbulb-o fa-2x"></div>
+          <div class="ActionButtonText">Services</div>
+        </div>
         <div class="ActionButtonWrapper" data-dojo-attach-event="onclick:onAddGenome" style="margin-top: 2px">
           <div class="ActionButton fa icon-object-group fa-2x"></div>
           <div class="ActionButtonText">Add To Group</div>
@@ -60,12 +64,6 @@
         </div>
       </div>
       <div class="clear"></div>
-      <!--
-      <div class="SummaryWidget">
-      <button data-dojo-attach-event="onclick:onAddGenome">Add Genome to Group</button>
-      <button data-dojo-attach-event="onclick:onDownload">Download Genome</button>
-    </div>
-  -->
 </div>
 <div class="section">
   <h3 class="close section-title"><span class="wrap">External Tools</span></h3>

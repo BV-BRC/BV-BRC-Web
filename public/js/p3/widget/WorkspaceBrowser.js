@@ -17,7 +17,7 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath, when, request, tsvCsvFeatures, JobResult
+  All, encodePath, when, request, tsvCsvFeatures, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -207,6 +207,67 @@ define([
           Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
         }
       }, false);
+
+      //ServicesGenomeGroups functionality
+      var dstContent = domConstruct.create('div', {});
+      var viewGGServices = new TooltipDialog({
+        content: dstContent,
+        onMouseLeave: function() {
+          popup.close(viewGGServices);
+        }
+      }); 
+      var table = domConstruct.create('table',{},dstContent);
+      domConstruct.create('tr',{innerHTML: "<p>Services</p>",style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;'},table);
+      var options = ["BLAST","Genome Alignment","Phylogenetic Tree"];
+      options.forEach(function(key) {
+        var curr_tr = domConstruct.create('tr',{},table);
+        var curr_div = domConstruct.create('div',{'class':'wsActionTooltip',innerHTML:key,service:key},curr_tr);
+      },this);
+      on(viewGGServices.domNode, 'click', function(evt) {
+        console.log("service=",evt.target.getAttribute("service"));
+        var service = evt.target.getAttribute("service");
+        var serviceContent = null;
+        var params = null;
+        if (service === "BLAST") {
+          serviceContent = new Homology();
+          params = {
+            "program":"blastn",
+            "db_source":"selGenome",
+            "db_genome_list": []
+          };
+
+        } 
+        else if (service === "Genome Alignment") {
+          serviceContent = new GenomeAlignment();
+        }
+        else if (service === "Phylogenetic Tree") {
+          serviceContent = new PhylogeneticTree();
+        } else {
+          console.log("invalid service: ",service);
+          return;
+        }
+        //TODO: Create data object based on service
+        //TODO: Store data object 
+        var d = new Dialog({
+          title: service,
+          content: serviceContent
+        });
+        d.show();
+        return;
+      })
+      this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-lightbulb-o fa-2x', {
+        label: 'SERVICES',
+        validTypes: ['genome_group'],
+        multiple: false, //TODO: check and see if you can select two or more at a time
+        tooltip: 'Select services using this GenomeGroup',
+        tooltipDialog: viewGGServices
+      },function(selection) {
+          popup.open({
+            popup: this._actions.ServicesGenomeGroups.options.tooltipDialog,
+            around: this._actions.ServicesGenomeGroups.button,
+            orient: ['below']
+          });
+        }, false);
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',

@@ -767,6 +767,9 @@ define([
       else {
         var sequence_files = job_data["feature_groups"];
       }
+      if (!sequence_files) {
+        return;
+      }
       sequence_files.forEach(function (seq_file) {
         if (seq_file.hasOwnProperty("type")) { //fasta file
           var lrec = { "user_genomes_alignment": { "file": seq_file.file, "type": seq_file.type } };
