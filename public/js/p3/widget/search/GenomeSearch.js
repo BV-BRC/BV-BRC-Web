@@ -100,7 +100,7 @@ define([
       const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))
       const genomeLengthToValue = parseInt(this.genomeLengthToNode.get('value'))
       if (!isNaN(genomeLengthFromValue) && !isNaN(genomeLengthToValue)) {
-        queryArr.push(`betweeen(genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
+        queryArr.push(`between(genome_length,${genomeLengthFromValue},${genomeLengthToValue})`)
       } else if (!isNaN(genomeLengthFromValue)) {
         queryArr.push(`gt(genome_length,${genomeLengthFromValue})`)
       } else if (!isNaN(genomeLengthToValue)) {
