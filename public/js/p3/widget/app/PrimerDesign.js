@@ -67,7 +67,7 @@ define([
       on(this.clear_button, 'click', lang.hitch(this, function () {
         this.markSelectedRegion("clear_button");
       }));
-      this.setRegionTooltips();
+      this.setTooltips();
       this.sequence_selected_text = "";
         this._started = true;
         this.form_flag = false;
@@ -461,7 +461,7 @@ define([
         }
     },
 
-    setRegionTooltips: function() {
+    setTooltips: function() {
       new Tooltip({
         connectId: ["exclude_tooltip"],
         label: "OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. "
@@ -473,6 +473,26 @@ define([
       new Tooltip({
         connectId: ["include_tooltip"],
         label: "OR: use { and } in the source sequence to mark the beginning and end of the included region: e.g. in ATC{TTC...TCT}AT the included region is TTC...TCT"
+      });
+      new Tooltip({
+        connectId: ["numReturn_tooltip"],
+        label: "The maximum number of primer pairs to return. Primer pairs returned are sorted by their 'quality', in other words by the value of the objective function (where a lower number indicates a better primer pair). Caution: setting this parameter to a large value will increase running time."
+      });
+      new Tooltip({
+        connectId: ["prodSize_tooltip"],
+        label: "Minimum, Optimum, and Maximum lengths (in bases) of the PCR product. Primer3 will not generate primers with products shorter than Min or longer than Max, and with default arguments Primer3 will attempt to pick primers producing products close to the Optimum length."
+      });
+      new Tooltip({
+        connectId: ["primerSize_tooltip"],
+        label: "Minimum, Optimum, and Maximum lengths (in bases) of a primer oligo. Primer3 will not pick primers shorter than Min or longer than Max, and with default arguments will attempt to pick primers close with size close to Opt. Min cannot be smaller than 1. Max cannot be larger than 36. (This limit is governed by maximum oligo size for which melting-temperature calculations are valid.) Min cannot be greater than Max."
+      });
+      new Tooltip({
+        connectId: ["primerTemp_tooltip"],
+        label: "Minimum, Optimum, and Maximum melting temperatures (Celsius) for a primer oligo. Primer3 will not pick oligos with temperatures smaller than Min or larger than Max, and with default conditions will try to pick primers with melting temperatures close to Opt."
+      });
+      new Tooltip({
+        connectId: ["primerGC_tooltip"],
+        label: "Minimum, Optimum, and Maximum percentage of Gs and Cs in any primer or oligo."
       });
     },
 
