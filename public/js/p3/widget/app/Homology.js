@@ -108,6 +108,7 @@ define([
     db_source: null,
     db_type: null,
     db_precomputed_database: null,
+    group_genomes: [], //list that is populated with the genome ids when selGroup is selected
     constructor: function () {
       this.genomeToAttachPt = ['genome_id'];
       this.featureGroupToAttachPt = ['query_featuregroup'];
@@ -184,99 +185,6 @@ define([
         this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
       }
     },
-
-    // Using another FASTA validation function
-
-    // onChangeSequence: function (val) {
-    //   var _self = this;
-    //   if (!val) {
-    //     this.sequence_message.innerHTML = 'Please provide query sequence(s) in FASTA format.';
-    //     return;
-    //   }
-    //   if (!_self.allowMultiple && !this.hasSingleFastaSequence(val)) {
-    //     this.sequence_message.innerHTML = 'This service accepts only one sequence at a time. Please provide only one sequence.';
-    //     return;
-    //   }
-    //   if (val) {
-    //     var sanitized = this.sanitizeFastaSequence(val);
-    //     // console.log(sanitized)
-    //     this.sequence.set('value', sanitized);
-    //   }
-    //   this.sequence_message.innerHTML = '';
-    //   // var progDisabled = this.program.get('disabled');
-    //   // this.program.set('disabled', false);
-    //   // this.sequence_type = NO;
-    //   // if (this.isNucleotideFastaSequence(val)) {
-    //   //   this.sequence_type = NA;
-    //   // }
-    //   // else if (this.isAminoAcidFastaSequence(val)) {
-    //   //   this.sequence_type = AA;
-    //   // }
-    //   // this.program.removeOption(ProgramDefs);
-    //   // this.program.addOption(ProgramDefs.filter(function (p) {
-    //   //   return p.validQuery.indexOf(_self.sequence_type) > -1;
-    //   // }));
-    //   // if (this.sequence_type == NO) {
-    //   //   this.program.setValue(undefined);
-    //   //   this.program._setDisplay('');
-    //   //   this.sequence_message.innerHTML = 'Please provide sequences using a valid alphabet.';
-    //   //   return;
-    //   // }
-    //   // if (progDisabled) {
-    //   //   this.program.loadAndOpenDropDown();
-    //   // }
-    // },
-
-    // sanitizeFastaSequence: function (sequence) {
-    //   var header = sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; });
-    //   var patternSeqSplit = /(?:>.+\n| )+/;
-    //   var seq_segments = sequence.split(patternSeqSplit).filter(function (line) { return (line.match(/^>.*/) == null && line != ''); }).map(function (line) { return line.replace(/ /g, ''); });
-    //   var sanitized = [];
-    //   if (header.length == 0) {
-    //     header.push('>query_seq1');
-    //   }
-    //   header.forEach(function (item, index) {
-    //     sanitized.push(item + '\n' + seq_segments[index].replace(/\n/g, ''));
-    //   });
-    //   return sanitized.join('\n');
-    // },
-
-    // hasSingleFastaSequence: function (sequence) {
-    //   return this.numFastaSequence(sequence) <= 1;
-    // },
-
-    // numFastaSequence: function (sequence) {
-    //   return sequence.split('\n').filter(function (line) { return line.match(/^>.*/) !== null; }).length;
-    // },
-
-    // isNucleotideFastaSequence: function (sequence) {
-    //   var patternFastaHeader = />.*\n/gi;
-    //   var patternDnaSequence = /[atcgn\n\s]/gi;
-    //   var patternType = this.getFastaType();
-    //   var seqcheck = false;
-    //   if (typeof sequence !== 'undefined') {
-    //     seqcheck = sequence.replace(patternFastaHeader, '').replace(patternDnaSequence, '').length === 0;
-    //   }
-    //   return (seqcheck || patternType == 'NT');
-    // },
-
-    // isAminoAcidFastaSequence: function (sequence) {
-    //   var patternFastaHeader = />.*\n/gi;
-    //   var patternAASequence = /[ACDEFGHIKLMNPQRSTUVWYBXZJUO\n\s]/gi; // extended AminoAcid alphabet
-    //   var patternType = this.getFastaType();
-    //   var seqcheck = false;
-    //   if (typeof sequence !== 'undefined') {
-    //     seqcheck = sequence.replace(patternFastaHeader, '').replace(patternAASequence, '').length === 0
-    //   }
-    //   return (seqcheck || patternType == 'AA');
-    // },
-
-    // getFastaType: function () {
-    //   if (this.query_fasta.type == 'feature_protein_fasta') {
-    //     return 'AA';
-    //   }
-    //   return 'NT';
-    // },
 
     validate: function () {
       if (this.inherited(arguments)) {
@@ -369,30 +277,7 @@ define([
             // def.resolve(q);
             break;
           case 'selGroup':
-            var path = this.genome_group.get('value');
-            if (path === '') {
-              this.genome_group_message.innerHTML = 'No genome group was selected.';
-              return;
-            }
-
-            WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function (objs) {
-
-              var genomeIdHash = {};
-              objs.forEach(function (obj) {
-                var data = JSON.parse(obj.data);
-                data.id_list.genome_id.forEach(function (d) {
-                  if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
-                    genomeIdHash[d] = true;
-                  }
-                });
-              });
-              genomeIds = Object.keys(genomeIdHash);
-              var q = {
-                method: 'HomologyService.blast_fasta_to_genomes',
-                params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
-              };
-              // def.resolve(q);
-            }));
+            genomeIds = this.group_genomes;
             break;
           case 'selTaxon':
             var taxon = null;
@@ -462,6 +347,10 @@ define([
 
       if (genomeIds.length > 0) {
         submit_values['db_genome_list'] = genomeIds;
+        if (database == 'selGroup'){
+          submit_values['db_genome_group'] = this.genome_group.get('value');
+        }
+
       }
       if (taxon) {
         submit_values['db_taxon_list'] = [taxon];
@@ -678,6 +567,37 @@ define([
       }
     },
 
+    onSetGroupGenomes: function() {
+      var path = this.genome_group.get('value');
+      // console.log("selGroup", path);
+      if (path === '') {
+        this.genome_group_message.innerHTML = 'No genome group has selected';
+        return;
+      }
+      if (this.group_genomes.length > 0) {
+        this.group_genomes = [];
+      }
+      WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function (objs) {
+        var genomeIdHash = {};
+        objs.forEach(function (obj) {
+          var data = JSON.parse(obj.data);
+          data.id_list.genome_id.forEach(function (d) {
+            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
+              genomeIdHash[d] = true;
+            }
+          });
+        });
+        Object.keys(genomeIdHash).forEach(function(genome_id) {
+          this.addToGroupGenomeList(genome_id);
+        },this);
+      }));
+      this.validate();
+    },
+
+    addToGroupGenomeList: function(g_id) {
+      this.group_genomes.push(g_id);
+    },
+    
 
     onChangeProgram: function (val, start = false) {
       console.log(val);
@@ -847,7 +767,6 @@ define([
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
         this.form_flag = true;
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        job_data['program'] = "blastp";
         var param_dict = { "output_folder": "output_path" };
         var service_specific = { "input_fasta_data": "sequence", "blast_evalue_cutoff": "evalue", "blast_max_hits": "max_hits" };
         this.program.set("value", job_data['program']);
