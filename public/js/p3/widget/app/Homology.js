@@ -71,7 +71,7 @@ define([
       value: 'selTaxon', label: 'Search within a taxon', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'taxon_list'
     },
     {
-      value: 'selFasta', label: 'Search within selected fasta file', db_type: ['fna', 'faa'], db_source: 'fasta_list'
+      value: 'selFasta', label: 'Search within selected fasta file', db_type: ['fna', 'faa'], db_source: 'fasta_file'
     },
   ];
 
@@ -108,7 +108,7 @@ define([
     db_source: null,
     db_type: null,
     db_precomputed_database: null,
-    group_genomes: [], //list that is populated with the genome ids when selGroup is selected
+    group_genomes: [], // list that is populated with the genome ids when selGroup is selected
     constructor: function () {
       this.genomeToAttachPt = ['genome_id'];
       this.featureGroupToAttachPt = ['query_featuregroup'];
@@ -169,8 +169,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -294,9 +294,9 @@ define([
             break;
           case 'selFasta':
             var fasta = null;
-            fasta = this.fasta_db.get('value');
+            fasta = this.db_fasta_file.get('value');
             if (fasta === '') {
-              this.fasta_db_message.innerHTML = 'No fasta file was selected.';
+              this.db_fasta_file_message.innerHTML = 'No fasta file was selected.';
               return;
             }
             var q = {
@@ -344,19 +344,17 @@ define([
       } else if (_self.input_source == 'feature_group') {
         submit_values['input_feature_group'] = _self.query_featuregroup.get('value')
       }
-
+      if (database == 'selGroup') {
+        submit_values['db_genome_group'] = this.genome_group.get('value');
+      }
       if (genomeIds.length > 0) {
         submit_values['db_genome_list'] = genomeIds;
-        if (database == 'selGroup'){
-          submit_values['db_genome_group'] = this.genome_group.get('value');
-        }
-
       }
       if (taxon) {
         submit_values['db_taxon_list'] = [taxon];
       }
       if (fasta) {
-        submit_values['db_fasta'] = [fasta];
+        submit_values['db_fasta_file'] = fasta;
       }
       if (this.demo) {
         // resultType = "custom";
@@ -369,9 +367,9 @@ define([
         submit_values['db_precomputed_database'] = database.split('.')[0];
       }
       if (this.validate()) {
-        var start_params = {
-          'base_url': window.App.appBaseURL
-        }
+        // var start_params = {
+        //   'base_url': window.App.appBaseURL
+        // }
         // var values = this.getValues();
         var callback = function () {
           // the state set here shows up again in the HomologyMemoryStore onSetState
@@ -567,17 +565,20 @@ define([
       }
     },
 
-    onSetGroupGenomes: function() {
-      var path = this.genome_group.get('value');
+    onSetGroupGenomes: function () {
+      var genome_group_path = this.genome_group.get('value');
       // console.log("selGroup", path);
-      if (path === '') {
-        this.genome_group_message.innerHTML = 'No genome group has selected';
+      if (genome_group_path === '') {
+        //   this.genome_group_message.innerHTML = 'No genome group was selected.';
         return;
       }
+      // } else {
+      //   this.genome_group_message.innerHTML = '';
+      // }
       if (this.group_genomes.length > 0) {
         this.group_genomes = [];
       }
-      WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function (objs) {
+      WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
         var genomeIdHash = {};
         objs.forEach(function (obj) {
           var data = JSON.parse(obj.data);
@@ -587,20 +588,20 @@ define([
             }
           });
         });
-        Object.keys(genomeIdHash).forEach(function(genome_id) {
+        Object.keys(genomeIdHash).forEach(function (genome_id) {
           this.addToGroupGenomeList(genome_id);
-        },this);
+        }, this);
       }));
       this.validate();
     },
 
-    addToGroupGenomeList: function(g_id) {
+    addToGroupGenomeList: function (g_id) {
       this.group_genomes.push(g_id);
     },
-    
+
 
     onChangeProgram: function (val, start = false) {
-      console.log(val);
+      // console.log(val);
       if (!val) {
         return;
       }
@@ -695,9 +696,9 @@ define([
     onChangeDBType: function () {
       var fastaDB = this.database.get('value') == 'selFasta';
       if (fastaDB && this.search_for.get('value') == 'faa') {
-        this.fasta_db.set('type', 'feature_protein_fasta');
+        this.db_fasta_file.set('type', 'feature_protein_fasta');
       } else if (fastaDB) {
-        this.fasta_db.set('type', 'feature_dna_fasta');
+        this.db_fasta_file.set('type', 'feature_dna_fasta');
       }
     },
 
@@ -705,7 +706,7 @@ define([
       this.setDbType(val);
       this.genome_group.set('required', false);
       this.taxonomy.set('required', false);
-      this.fasta_db.set('required', false);
+      this.db_fasta_file.set('required', false);
       if (['selGenome', 'selGroup', 'selTaxon', 'selFasta'].indexOf(val) > -1) {
         switch (val) {
           case 'selGenome':
@@ -739,7 +740,7 @@ define([
             domClass.add(this.fasta_wrapper, 'hidden');
             break;
           case 'selFasta':
-            this.fasta_db.set('required', true);
+            this.db_fasta_file.set('required', true);
             domClass.remove(this.fasta_wrapper, 'hidden');
             domClass.add(this.genome_id_wrapper, 'hidden');
             if (this.genome_group) {
@@ -764,28 +765,28 @@ define([
 
     intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.form_flag = true;
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        var param_dict = { "output_folder": "output_path" };
-        var service_specific = { "input_fasta_data": "sequence", "blast_evalue_cutoff": "evalue", "blast_max_hits": "max_hits" };
-        this.program.set("value", job_data['program']);
-        param_dict["service_specific"] = service_specific;
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        var param_dict = { 'output_folder': 'output_path' };
+        var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
+        this.program.set('value', job_data['program']);
+        param_dict['service_specific'] = service_specific;
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        this.program.set("disabled", false);
-        this.database.set("disabled", false);
-        this.search_for.set("disabled", false);
+        this.program.set('disabled', false);
+        this.database.set('disabled', false);
+        this.search_for.set('disabled', false);
         this.setDatabaseInfoFormFill(job_data);
 
-        //TODO: function to set genome_list,fasta,feature_group based on database type (input_source?)
-        localStorage.removeItem("bvbrc_rerun_job");
+        // TODO: function to set genome_list,fasta,feature_group based on database type (input_source?)
+        localStorage.removeItem('bvbrc_rerun_job');
       }
     },
 
     setDatabaseInfoFormFill: function (job_data) {
-      var db_attach_points = { "program": "program", "db_source": "database", "db_type": "search_for" };
+      var db_attach_points = { 'program': 'program', 'db_source': 'database', 'db_type': 'search_for' };
       Object.keys(db_attach_points).forEach(function (param) {
-        this[db_attach_points[param]].set("value", job_data[param]);
+        this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
     },
 
