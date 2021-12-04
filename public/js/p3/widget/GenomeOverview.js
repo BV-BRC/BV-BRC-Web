@@ -270,6 +270,8 @@ define([
       }
     }, 
 
+    //TODO: ask about default database type
+    //TODO: ask about services that require reads
     onGenomeServiceSelection: function() {
       console.log(this.genome);
       if (!this.genome.genome_id) {
@@ -281,8 +283,13 @@ define([
         return;
       }
       var params = {
-        "genome_id":this.genome.genome_id,
-        "organism": this.genome.organism
+        "db_precomputed_database": "selGenome",
+        "db_genome_list": [
+          this.genome.genome_id
+        ],
+        "db_source":"genome_list",
+        "db_type":"fna",
+        "blast_program":"blastn"
       };
       popup.open({
         popup: new ServicesTooltipDialog({

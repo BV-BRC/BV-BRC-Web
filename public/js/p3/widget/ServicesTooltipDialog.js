@@ -71,31 +71,12 @@ define([
       this.labelNode = domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;' }, dstContent);
       this.selectedCount = domConstruct.create('div', {}, dstContent);
 
-
-      // var d = domConstruct.create('div', {}, dstContent);
-      // domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Phylogenetic Tree', href: '/view/PathwaySummary/?features=' + this.selectionList.join(',') }, d);
-      // var d = domConstruct.create('div', {}, dstContent);
-      // //domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Genome Alignment', href: '/view/GenomeList/?in(genome_id,(' + this.genome_id + '))#view_tab=subsystems&filter=in(' + this.selectionList.join(',') + ')' }, d);
-      // //domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Genome Alignment', href: '/app/GenomeAlignment/?genome_name=' + this.genome_name  }, d);
-      // domConstruct.create('div', {'class' : 'wsActionTootip', rel: 'GenomeAlignment', innerHTML: 'Genome Alignment' }, d);
-      // //domConstruct.create('a', { 'class': 'navigationLink', innerHTML: 'Genome Alignment', href: '/app/GenomeAlignment'  }, d);
-
-      // var d = domConstruct.create('div', {}, dstContent);
-      // domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Comparative Pathway', href: '/view/GenomeList/#view_tab=specialtyGenes&filter=and(eq(property,"Virulence%20Factor"),in(feature_id,(' + this.selectionList.join(',') + ')))' }, d);
-      // //var d = domConstruct.create('div', {}, dstContent);
-      // //domConstruct.create('a', { 'class': 'navigationLinkOut', innerHTML: 'Antimicrobial Resistance', href: '/view/GenomeList/#view_tab=amr&filter=in(' + this.selectionList.join(',') + ')' }, d);
-      // this.set('content', dstContent);
-
       var table = domConstruct.create('table', {}, dstContent);
       var tr = domConstruct.create('tr', {}, table);
       var tData = this.tableCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
       // spacer
       domConstruct.create('td', { style: 'width:10px;' }, tr);
       this.otherCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
-
-      //domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'full_wo_header', innerHTML: 'Full Table (without headers)' }, tData);
-      //domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_w_header', innerHTML: 'Selected Rows (with headers)' }, tData);
-      //domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'selected_wo_header', innerHTML: 'Selected Rows (without headers)' }, tData);
 
       tr = domConstruct.create('tr', {}, table);
       domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
@@ -144,7 +125,12 @@ define([
         // console.log("Selection: ", _self.selection);
         var d = new Dialog({ 
           title: 'Genome Alignment',
-          content: genomeAlignment });
+          content: genomeAlignment ,
+          onHide: function() {
+            genomeAlignment.destroy();
+            d.destroy();
+          }
+        });
         //var ad = new AdvancedDownload({ selection: _self.selection, containerType: _self.containerType });
         
         //domConstruct.place("junk", d.containerNode);
@@ -161,7 +147,11 @@ define([
           var primerDesign = new PrimerDesign();
           var d = new Dialog({
             title: "Primer Design",
-            content: primerDesign
+            content: primerDesign,
+            onHide: function() {
+              primerDesign.destroy();
+              d.destroy();
+            }
           });
           d.show();
           return;
@@ -176,19 +166,19 @@ define([
           }
           //TODO: finish genomeGroup loading and such
           else if (this.context === "genome") {
-            var params = {
-              "input_fasta_data": ">InputSequence\nAACCTTGG",
-              "program":"blastn",
-              "db_source": "selGenome",
-              "db_type":"fna"
-            };
+            var params = this.params.data;
+            //var params["input_fasta_data"] = ">InputSequence\nAACCTTGG";
             this._setJSONStorage(params);
           }
           var blastContent = new Homology();
           console.log("blastContent=",blastContent);
           var d = new Dialog({
             title: "Blast",
-            content: blastContent
+            content: blastContent,
+            onHide: function() {
+              blastContent.destroy();
+              d.destroy();
+            }
           });
           d.show();
           return;
@@ -201,7 +191,11 @@ define([
           var msaContent = new MSA();
           var d = new Dialog({
             title: "MSA",
-            content: msaContent
+            content: msaContent,
+            onHide: function() {
+              msaContent.destroy();
+              d.destroy();
+            }
           });
           d.show();
           return;
@@ -214,7 +208,11 @@ define([
         var genomeDistanceContent = new GenomeDistance();
         var d = new Dialog({
           title: "Similar Genome Finder",
-          content: genomeDistanceContent
+          content: genomeDistanceContent,
+          onHide: function() {
+            genomeDistanceContent.destroy();
+            d.destroy();
+          }
         });
         d.show();
         return;

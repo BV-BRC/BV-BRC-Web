@@ -829,10 +829,10 @@ define([
         },this);
       }
       if (this.database.getValue() === "selGroup") {
-        this.genome_group.setVaue(job_data["db_genome_group"])
+        this.genome_group.set("value",job_data["db_genome_group"]);
       }
       if (this.database.getValue() === "selTaxon") {
-        this.taxonomy.setValue(job_data["db_taxon_list"][0]);
+        this.taxonomy.set("value",job_data["db_taxon_list"][0]);
       }
     },
 
