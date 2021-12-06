@@ -282,7 +282,8 @@ define([
         console.log("genome_id is empty");
         return;
       }
-      var params = {
+      var params = {};
+      params["blast"] = {
         "db_precomputed_database": "selGenome",
         "db_genome_list": [
           this.genome.genome_id
@@ -291,6 +292,10 @@ define([
         "db_type":"fna",
         "blast_program":"blastn"
       };
+      params["genome_distance"] = {
+        "genome_id":this.genome.genome_id
+      };
+      var params = 
       popup.open({
         popup: new ServicesTooltipDialog({
           context: "genome",

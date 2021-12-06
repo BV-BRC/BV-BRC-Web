@@ -8,7 +8,7 @@ define([
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './viewer/JobResult',
 
-  'dojo/NodeList-traverse'
+  'dojo/NodeList-traverse', './app/Homology','./app/GenomeAlignment','./app/PhylogeneticTree'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -208,7 +208,7 @@ define([
         }
       }, false);
 
-      //ServicesGenomeGroups functionality
+      ///START: ServicesGenomeGroups functionality
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,
@@ -223,38 +223,55 @@ define([
         var curr_tr = domConstruct.create('tr',{},table);
         var curr_div = domConstruct.create('div',{'class':'wsActionTooltip',innerHTML:key,service:key},curr_tr);
       },this);
-      on(viewGGServices.domNode, 'click', function(evt) {
-        console.log("service=",evt.target.getAttribute("service"));
+      this.selected_genome_group = null;
+      on(viewGGServices.domNode, 'click', lang.hitch(this,function(evt) {
         var service = evt.target.getAttribute("service");
         var serviceContent = null;
         var params = null;
         if (service === "BLAST") {
           serviceContent = new Homology();
           params = {
-            "program":"blastn",
-            "db_source":"selGenome",
-            "db_genome_list": []
+            "blast_program":"blastn",
+            "db_precomputed_database":"selGroup",
+            "db_genome_group": this.selected_genome_group[0].path,
+            "db_source":"genome_list",
+            "db_type":"fna"
           };
-
         } 
         else if (service === "Genome Alignment") {
           serviceContent = new GenomeAlignment();
+          params = {
+            "genome_group":this.selected_genome_group[0].path
+          };
         }
         else if (service === "Phylogenetic Tree") {
           serviceContent = new PhylogeneticTree();
+          params = {
+            "genome_group":this.selected_genome_group[0].path
+          };
         } else {
           console.log("invalid service: ",service);
           return;
         }
-        //TODO: Create data object based on service
-        //TODO: Store data object 
+        if (params) {
+          var job_params = JSON.stringify(params);
+          if (window.localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+            window.localStorage.removeItem("bvbrc_rerun_job");
+          }
+          window.localStorage.setItem("bvbrc_rerun_job",job_params);
+        }
         var d = new Dialog({
           title: service,
-          content: serviceContent
+          content: serviceContent,
+          onHide: function() {
+            serviceContent.destroy();
+            d.destroy();
+          }
         });
         d.show();
         return;
-      })
+      }))
+      var sgSelf = this; //do not remove, sets the genome group selection below and makes it accessible in on("click")
       this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-cog fa-2x', {
         label: 'SERVICES',
         validTypes: ['genome_group'],
@@ -262,12 +279,14 @@ define([
         tooltip: 'Select services using this GenomeGroup',
         tooltipDialog: viewGGServices
       },function(selection) {
+          sgSelf.selected_genome_group = selection;
           popup.open({
             popup: this._actions.ServicesGenomeGroups.options.tooltipDialog,
             around: this._actions.ServicesGenomeGroups.button,
             orient: ['below']
           });
         }, false);
+      ///END: ServicesGenomeGroups functionality
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',

@@ -713,7 +713,6 @@ define([
           "patric_id":this.feature.patric_id,
           "sequence":result.sequence
         };
-
         popup.open({
           popup: new ServicesTooltipDialog({
             context: "feature",

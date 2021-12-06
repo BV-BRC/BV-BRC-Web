@@ -160,13 +160,14 @@ define([
           //TODO: finish after stuff has been deployed
           if (this.context === "feature") {
             var params = {
-              "input_fasta_data": ">" + this.data.patric_id + "\n" + this.data.sequence
+              "input_fasta_data": ">" + this.data.patric_id + "\n" + this.data.sequence,
+              "blast_program":"blastn"
             };
             this._setJSONStorage(params);
           }
           //TODO: finish genomeGroup loading and such
           else if (this.context === "genome") {
-            var params = this.params.data;
+            var params = this.params.data.blast;
             //var params["input_fasta_data"] = ">InputSequence\nAACCTTGG";
             this._setJSONStorage(params);
           }
@@ -184,26 +185,39 @@ define([
           return;
       }
       else if (type == 'msa') {
+        if (this.context === "feature") {
           var params = {
-            "fasta_keyboard_input": ">" + this.data.patric_id + "\n" + this.data.sequence
+            "fasta_keyboard_input": ">" + this.data.patric_id + "\n" + this.data.sequence,
+            "input_status":"unaligned",
+            "input_type":"input_sequence",
+            "alphabet":"dna"
           };
-          this._setJSONStorage(params);
-          var msaContent = new MSA();
-          var d = new Dialog({
-            title: "MSA",
-            content: msaContent,
-            onHide: function() {
-              msaContent.destroy();
-              d.destroy();
-            }
-          });
-          d.show();
-          return;
+        } 
+        else{
+          params = {};
+        }
+        this._setJSONStorage(params);
+        var msaContent = new MSA();
+        var d = new Dialog({
+          title: "MSA",
+          content: msaContent,
+          onHide: function() {
+            msaContent.destroy();
+            d.destroy();
+          }
+        });
+        d.show();
+        return;
       }
       else if (type == "genome_distance") {
-        var params = {
-          "genome_id": this.data.genome_id
-        };
+        if (this.context === "genome") {
+          var params = {
+            "genome_id": this.data.genome_distance.genome_id
+          };
+        }
+        else {
+          var params = {};
+        }
         this._setJSONStorage(params);
         var genomeDistanceContent = new GenomeDistance();
         var d = new Dialog({
