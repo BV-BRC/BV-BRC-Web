@@ -506,15 +506,39 @@ define([
         var param_dict = {"output_folder":"output_path"};
         var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        this.addGenomesFormFill(job_data);
+        if (job_data.hasOwnProperty("genome_group")) {
+          //this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
+          this.addGenomeGroupFormFill(job_data["genome_group"]);
+        }else {
+          this.addGenomesFormFill(job_data["genome_ids"]);
+        }
         this.form_flag = true;
         localStorage.removeItem("bvbrc_rerun_job");
       }
     },
 
+    addGenomeGroupFormFill: function (genome_group_path) {
+      WorkspaceManager.getObjects(genome_group_path,false).then(lang.hitch(this,function(objs) {
+        var genomeIdHash = {};
+        objs.forEach(function (obj) {
+          var data = JSON.parse(obj.data);
+          data.id_list.genome_id.forEach(function (d) {
+            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
+              genomeIdHash[d] = true;
+            }
+          });
+        });
+        var genome_list = []
+        Object.keys(genomeIdHash).forEach(function(genome_id) {
+          genome_list.push(genome_id);
+        },this);
+        this.addGenomesFormFill(genome_list);
+      }));
+    },
+
     //Some discrepancies:
-    addGenomesFormFill: function(job_data) {
-      var genome_ids = job_data["genome_ids"];
+    addGenomesFormFill: function(genome_id_list) {
+      var genome_ids = genome_id_list;
       genome_ids.forEach(function(gid) {
         var name_promise = this.scientific_nameWidget.store.get(gid);
         name_promise.then(lang.hitch(this, function (tax_obj) {
@@ -539,7 +563,7 @@ define([
             var handle = on(td2, 'click', lang.hitch(this, function (evt) {
               // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
               domConstruct.destroy(tr);
-              this.decreaseGenome(groupType, newGenomeIds);
+              this.decreaseGenome(groupType, [newGenomeIds]);
               if (this[groupType].addedNum < this.startingRows) {
                 var ntr = this.codonGroupGenomeTable.insertRow(-1);
                 domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
