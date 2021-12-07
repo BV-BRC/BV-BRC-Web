@@ -118,7 +118,7 @@ define([
       var select_lineage = new Select({
         name: 'selectLoC',
         id: 'selectLoC',
-        options: ['Lineages', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'BA.1', 'BA.2', 'B.1.621', 'C.37', 'B.1.1.318', 'B.1.1.519', 'B.1.1.523', 'B.1.214.2', 'B.1.427/B.1.429', 'B.1.466.2', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3', 'B.1.619', 'B.1.620', 'C.1.2', 'C.36.3', 'P.2', 'R.1'].map((el) => { return { 'label': el, 'value': el } }),
+        options: ['Lineages', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'BA.1', 'BA.2', 'B.1.621', 'C.37', 'B.1.1.318', 'B.1.1.519', 'B.1.1.523', 'B.1.214.2', 'B.1.427/B.1.429', 'B.1.466.2', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3', 'B.1.619/B.1.619.1', 'B.1.620', 'C.1.2', 'C.36.3/C.36.3.1', 'P.2', 'R.1'].map((el) => { return { 'label': el, 'value': el } }),
         style: 'width: 200px; margin: 5px 0'
       });
       this.select_lineage = select_lineage;
@@ -468,7 +468,7 @@ define([
           '<a href="https://github.com/cov-lineages/pango-designation/issues/49" target=_blank>https://github.com/cov-lineages/pango-designation/issues/49</a>',
         ]
       },
-      'B.1.619': {
+      'B.1.619/B.1.619.1': {
         'Lineage': 'B.1.619 / B.1.619.1',
         'WHO name': '---',
         'WHO classification': 'VUM',
@@ -513,7 +513,7 @@ define([
           '<a href="https://www.medrxiv.org/content/10.1101/2021.08.20.21262342v3" target=_blank>https://www.medrxiv.org/content/10.1101/2021.08.20.21262342v3</a>',
         ]
       },
-      'C.36.3': {
+      'C.36.3/C.36.3.1': {
         'Lineage': 'C.36.3 + C.36.3.1',
         'WHO name': '---',
         'WHO classification': 'VUM',
