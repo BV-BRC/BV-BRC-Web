@@ -386,7 +386,7 @@ define([
             Topic.publish('/Notification', {
               message: ids.length + ' Item removed from group ' + groupPath,
               type: 'message',
-              duration: 1000
+              duration: 3000
             });
             return r;
           });
@@ -395,7 +395,7 @@ define([
         Topic.publish('/Notification', {
           message: 'Unable to remove items from group.  Invalid group structure',
           type: 'error',
-          duration: 1000
+          duration: 3000
         });
         return new Error('Unable to remove from group.  Group structure incomplete');
       });
