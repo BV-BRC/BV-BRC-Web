@@ -302,7 +302,7 @@ define([], function () {
         field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'lab_host', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'lab_host', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'passage', type: 'str', facet: true, facet_hidden: false, search: true
