@@ -259,7 +259,7 @@ define([
         'Emergence location': 'Southern Africa',
         'Emergence date': 'November 2021',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'A67V, H69-, V70-, T95I, G142D, V143-, Y144-, Y145-, N211-, L212I, ins214EPE, G339D, S371L, S373P, S375F, K417N, N440K, G446S, S477N, T478K, E484A, Q493R, G496S, Q498R, N501Y, Y505H, T547K, D614G, H655Y, N679K, P681H, N764K, D796Y, N856K, Q954H, N969K, L981F',
-        'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3: K38R, S1265-, L1266I, A1892T; nsp4: T492I; nsp5): P132H; nsp6: L105-, S106-, G107-, I189V; nsp12: P323L; nsp14: I42V; E: T9I; M: D3G, Q19E, A63T; N: P13L, E31-, R32-, S33-, R203K, G204R',
+        'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3: K38R, S1265-, L1266I, A1892T; nsp4: T492I; nsp5: P132H; nsp6: L105-, S106-, G107-, I189V; nsp12: P323L; nsp14: I42V; E: T9I; M: D3G, Q19E, A63T; N: P13L, E31-, R32-, S33-, R203K, G204R',
         'ViPR representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/OL672836" target=_blank>Severe acute respiratory syndrome coronavirus 2 isolate SARS-CoV-2/human/BEL/rega-20174/2021</a>',
         'Relevant publications': [
           '<a href="https://www.ecdc.europa.eu/en/publications-data/covid-19-threat-assessment-spread-omicron-first-update" target=_blank>Threat Assessment Brief: Implications of the further emergence and spread of the SARS CoV 2 B.1.1.529 variant of concern (Omicron) for the EU/EEA first update</a>',
