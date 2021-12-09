@@ -20,35 +20,35 @@ define([
     {
       value: 'blastn',
       label: 'blastn - search a nucleotide database using a nucleotide query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     },
     {
       value: 'blastp',
       label: 'blastp - search protein database using a protein query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['faa'],
       validQuery: [AA]
     },
     {
       value: 'blastx',
       label: 'blastx - search protein database using a translated nucleotide query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['faa'],
       validQuery: [NA]
     },
     {
       value: 'tblastn',
       label: 'tblastn - search translated nucleotide database using a protein query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [AA]
     },
     {
       value: 'tblastx',
       label: 'tblastx - search translated nucleotide database using a translated nucleotide query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     }
@@ -59,7 +59,7 @@ define([
       value: 'bacteria-archaea', label: 'Reference and representative genomes (bacteria, archaea)', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
     },
     {
-      value: 'virus-reference', label: 'Reference and representative genomes (virus)', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
+      value: 'viral-reference', label: 'Reference and representative genomes (virus)', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
     },
     {
       value: 'selGenome', label: 'Search within selected genome', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_list'
@@ -542,7 +542,6 @@ define([
       if (name.length > maxName) {
         display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
       }
-
       return display_name;
     },
 
@@ -781,63 +780,63 @@ define([
         localStorage.removeItem('bvbrc_rerun_job');
       }
     },
-    
+
     //blastn,blastp,blastx,tblastn, no tblastx button
-    setProgramButton: function(job_data) {
+    setProgramButton: function (job_data) {
       var p = job_data["blast_program"];
-      p === "blastn" ? this.blastn.set("checked",true) : this.blastn.set("checked",false);
-      p === "blastp" ? this.blastp.set("checked",true) : this.blastp.set("checked",false);
-      p === "blastx" ? this.blastx.set("checked",true) : this.blastx.set("checked",false);
-      p === "tblastn" ? this.tblastn.set("checked",true) : this.tblastn.set("checked",false);
+      p === "blastn" ? this.blastn.set("checked", true) : this.blastn.set("checked", false);
+      p === "blastp" ? this.blastp.set("checked", true) : this.blastp.set("checked", false);
+      p === "blastx" ? this.blastx.set("checked", true) : this.blastx.set("checked", false);
+      p === "tblastn" ? this.tblastn.set("checked", true) : this.tblastn.set("checked", false);
     },
 
-    setInputSource: function(job_data) {
+    setInputSource: function (job_data) {
       var s = job_data["input_source"];
-      if (s === "fasta_data"){
-        this.input_sequence.set("checked",true);
-        this.input_fasta.set("checked",false);
-        this.input_group.set("checked",false);
-        this.sequence.set("value",job_data["input_fasta_data"]);
+      if (s === "fasta_data") {
+        this.input_sequence.set("checked", true);
+        this.input_fasta.set("checked", false);
+        this.input_group.set("checked", false);
+        this.sequence.set("value", job_data["input_fasta_data"]);
       }
       else if (s === "fasta_file") {
-        this.input_sequence.set("checked",false);
-        this.input_fasta.set("checked",true);
-        this.input_group.set("checked",false);
-        this.query_fasta.set("value",job_data["input_fasta_file"]);
+        this.input_sequence.set("checked", false);
+        this.input_fasta.set("checked", true);
+        this.input_group.set("checked", false);
+        this.query_fasta.set("value", job_data["input_fasta_file"]);
       }
       else if (s === "feature_group") {
-        this.input_sequence.set("checked",false);
-        this.input_fasta.set("checked",false);
-        this.input_group.set("checked",true);
-        this.query_featuregroup.set("value",job_data["input_feature_group"]);
+        this.input_sequence.set("checked", false);
+        this.input_fasta.set("checked", false);
+        this.input_group.set("checked", true);
+        this.query_featuregroup.set("value", job_data["input_feature_group"]);
       }
     },
 
-    setDatabaseInfoFormFill: function(job_data) {
-      var db_attach_points = {"db_precomputed_database":"database","db_type":"search_for"};
-      var db_order = ["db_precomputed_database","db_type"];
-      db_order.forEach(function(param) {
+    setDatabaseInfoFormFill: function (job_data) {
+      var db_attach_points = { "db_precomputed_database": "database", "db_type": "search_for" };
+      var db_order = ["db_precomputed_database", "db_type"];
+      db_order.forEach(function (param) {
         if (param === "db_type") {
           this.onChangeDatabase(job_data["db_precomputed_database"]);
         }
-        this[db_attach_points[param]].set("disabled",false);
-        this[db_attach_points[param]].set('value',job_data[param]);
-      },this);
+        this[db_attach_points[param]].set("disabled", false);
+        this[db_attach_points[param]].set('value', job_data[param]);
+      }, this);
       //Check database value and populate with genome id
       if (this.database.getValue() === "selGenome") {
-        job_data["db_genome_list"].forEach(function(g_id) {
+        job_data["db_genome_list"].forEach(function (g_id) {
           this.addGenomeFormFill(g_id);
-        },this);
+        }, this);
       }
       if (this.database.getValue() === "selGroup") {
-        this.genome_group.set("value",job_data["db_genome_group"]);
+        this.genome_group.set("value", job_data["db_genome_group"]);
       }
       if (this.database.getValue() === "selTaxon") {
-        this.taxonomy.set("value",job_data["db_taxon_list"][0]);
+        this.taxonomy.set("value", job_data["db_taxon_list"][0]);
       }
     },
 
-    addGenomeFormFill: function(genome) {
+    addGenomeFormFill: function (genome) {
       var lrec = {};
       lrec.genome_id = genome;
       var tr = this.genomeTable.insertRow(0);
