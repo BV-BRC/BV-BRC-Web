@@ -10,13 +10,22 @@
 
             <div class="bv-brc-info">
                 <h1>BACTERIAL AND VIRAL BIOINFORMATICS RESOURCE CENTER</h1>
-                <p>The Bacterial and Viral Bioinformatics Resource Center (BV-BRC) is an information system designed to support research on bacterial and viral infectious diseases via integration of vital pathogen information with rich data and analysis tools. BV-BRC combines two long-running centers: PATRIC, the bacterial system, and IRD/ViPR, the viral systems.</p>
+                <p>
+                    Welcome to the Bacterial and Viral Bioinformatics Resource Center (BV-BRC), an information system designed to support research on bacterial and viral infectious diseases. BV-BRC combines two long-running BRCs: <a href="https://www.patricbrc.org" target="_blank" style="font-weight: bold;">PATRIC</a>, the bacterial system, and <a href="https://www.viprbrc.org/brc/home.spg?decorator=vipr" target="_blank" style="font-weight: bold;">IRD/ViPR</a>, the viral systems. <a href="/about" style="font-weight: bold;">Learn more about BV-BRC</a>.
+                </p>
+                <br>
+                <p>
+                    This is the <span style="font-weight: bold; font-style: italic;">Beta Version</span> of the website, designed to allow users to explore, try out features, and provide feedback to the BV-BRC team. Since it is a Beta Version, the website appearance and functionality may change intermittently due to changes based on feedback received. Introductory material for transitioning PATRIC and IRD/ViPR users is provided in the sections at the bottom of this page.
+                    <br>
+                    <br>
+                    <a href="" style="font-size: 1.1em; font-weight: bold;">Provide Feedback</a>.
+                </p>
                 <div class="browse" style="display: flex; align-items: center; justify-content: space-between;">
                     <h3>BROWSE</h3>
-                    <a href="/view/Taxonomy/2157" class="btn btn-blue">ARCHAEA</a>
                     <a href="/view/Bacteria/2" class="btn btn-blue">BACTERIA</a>
-                    <a href="/view/Taxonomy/10239" class="btn btn-blue">PHAGES</a>
+                    <a href="/view/Taxonomy/2157" class="btn btn-blue">ARCHAEA</a>
                     <a href="/view/Virus/10239" class="btn btn-blue">VIRUSES</a>
+                    <a href="/view/Taxonomy/10239" class="btn btn-blue">PHAGES</a>
                     <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes" class="btn btn-blue" style="width: 150px;">EUKARYOTIC HOSTS</a>
                 </div>
                 <div class="search" style="display: flex; align-items: center; justify-content: space-between;">
@@ -35,7 +44,95 @@
                 <div id="dot-navigation"></div>
             </div>
 
-            <div class="patric-info">
+            <div class="bv-brc-mid">
+                <div class="bv-brc-mid-content">
+                    <h2>ANALYZE DATA IN BV-BRC</h2>
+                    <p style="padding-bottom: 20px;">At BV-BRC, you can upload your private data in a workspace, analyze it using high-throughput services, and compare it with other public databases using visual analytics tools. Please <a href="/register" style="font-weight: bold;">Register</a> or <a href="/login" style="font-weight: bold;">Login</a> to get started.</p>
+
+                    <div class="bv-brc-mid-content-links">
+                        <div class="mid-links">
+                            <h3>SEARCH</h3>
+                            <a href="/searches/TaxaSearch">Taxa</a>
+                            <a href="/searches/GenomicFeatureSearch">Proteins</a>
+                            <a href="/searches/SpecialtyGeneSearch">Specialty Genes</a>
+                            <a href="/searches/ProteinFeatureSearch">Domains and Motifs</a>
+                            <a href="/searches/EpitopeSearch">Epitopes</a>
+                            <a href="/">All Searches</a>
+                        </div>
+                        <div class="mid-links">
+                            <h3>ANALYZE</h3>
+                            <a href="/app/Assembly2">Genome Assembly</a>
+                            <a href="/app/Annotation">Genome Annotation</a>
+                            <a href="/app/Homology">BLAST</a>
+                            <a href="/app/MSA">MSA</a>
+                            <a href="/app/GeneTree">Gene Tree</a>
+                            <a href="/app/PhylogenticTree">Phylogenetic Tree</a>
+                        </div>
+                        <div class="mid-links">
+                            <h3>&nbsp;</h3>
+                            <a href="/app/FastqUtil">Fastq Utilities</a>
+                            <a href="/app/TaxonomicClassification">Taxonomy Classification</a>
+                            <a href="/app/MetagenomicBinning">Metagenomic Binning</a>
+                            <a href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a>
+                            <a href="/app/Rnaseq">RNA-seq Analysis</a>
+                            <a href="/app/Expression">Expression Import</a>
+                            <a href="/">All Tools &amp; Services</a>
+                        </div>
+                        <div class="mid-links">
+                            <h3>MANAGE DATA</h3>
+                            <a href="">Access Private Workspace</a>
+                            <a href="">Save Search Results</a>
+                            <a href="">Upload Data</a>
+                            <a href="">Access Analysis Jobs</a>
+                            <a href="">Share and Publish</a>
+                        </div>
+                        <div class="mid-links">
+                            <h3>BATCH ACCESS</h3>
+                            <a href="/docs/cli_tutorial/index.html">Command-Line Interface</a>
+                            <a href="/api/doc">Data API</a>
+                            <a href="">FTP</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="mid-content-bottom">
+                    <div class="mid-content-buttons">
+                        <a href="/" class="btn btn-blue" style="width: 125px">QUICKSTART</a>
+                        <a href="/docs/quick_references/index.html" class="btn btn-blue" style="width: 150px;">REFERENCE GUIDES</a>
+                        <a href="/docs/tutorial/index.html" class="btn btn-blue">TUTORIALS</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bv-brc-bottom-left">
+                <div class="bottom-left-content">
+                    <h2>Info for PATRIC Users</h2>
+                    <img src="/patric/images/bv-brc/patric-logo.png" alt="PATRIC Logo">
+                    <p>
+                        The new BV-BRC system is based on the PATRIC website and underlying infrastructure.  As a result, most of the functionality of PATRIC is essentially the same in BV-BRC. The primary difference is that viral data and analysis tools and services have been integrated into the resource.
+                    </p>
+                    <br>
+                    <div class="bottom-left-content-links">
+                        <a href="/">BV-BRC Data and Functionality Overview (for PATRIC Users)</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bv-brc-bottom-right">
+                <div class="bottom-right-content">
+                    <h2>Info for IRD/ViPR Users</h2>
+                    <img class="ird-vipr-logo" src="/patric/images/bv-brc/ird-vipr-logo.png" alt="IRD and ViPR Logo">
+                    <p>
+                        The new BV-BRC system is based on the PATRIC Bacterial BRC website and underlying infrastructure.  As a result, the BV-BRC functionality closely resembles PATRIC. To aid IRD and ViPR users in making this transition, we have created a summary sheet that maps IRD/ViPR terminology and features to BV-BRC. We also have created short tutorials that demonstrate how to perform common viral data searches and analysis tasks in BV-BRC.
+                    </p>
+                    <br>
+                    <div class="bottom-right-content-links">
+                        <a href="/">IRD/ViPR to BV-BRC Mapping </a>
+                        <a href="/">BV-BRC Common Tasks (for IRD/ViPR Users)</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="patric-info">
                 <div class="patric-info-content">
                     <h2>PATRIC</h2>
                     <img src="/patric/images/bv-brc/patric-logo.png" alt="PATRIC Logo">
@@ -82,10 +179,10 @@
                     <a class="navigationLinkOut btn btn-blue btn1" href="https://www.fludb.org/brc/home.spg?decorator=influenza">IRD</a>
                     <a class="navigationLinkOut btn btn-blue btn2" href="https://www.viprbrc.org/brc/home.spg?decorator=vipr">ViPR</a>
                 </div>
-            </div>
+            </div> -->
 
             <div class="twitter-feed">
-                <a class="twitter-timeline" data-lang="en" data-height="410" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
+                <a class="twitter-timeline" data-lang="en" data-height="750" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
             </div>
         </div>
     </div>
