@@ -2,11 +2,11 @@
     <div id="bv-brc-home-container">
         <div class="grid-container">
 
-            <div class="home-banner">
+            <!-- <div class="home-banner">
                 <p>
                     <strong>NEW: </strong>Check out our <a href="/view/VariantLineage/#view_tab=overview" style="font-weight: bold;">SARS-CoV-2 Variants and Lineages of Concern</a> and <a class="navigationLink" href="app/ComprehensiveSARS2Analysis" style="font-weight: bold;">Genome Assembly and Annotation Service</a>.
                 </p>
-            </div>
+            </div> -->
 
             <div class="bv-brc-info">
                 <h1>BACTERIAL AND VIRAL BIOINFORMATICS RESOURCE CENTER</h1>
@@ -15,10 +15,7 @@
                 </p>
                 <br>
                 <p>
-                    This is the <span style="font-weight: bold; font-style: italic;">Beta Version</span> of the website, designed to allow users to explore, try out features, and provide feedback to the BV-BRC team. Since it is a Beta Version, the website appearance and functionality may change intermittently due to changes based on feedback received. Introductory material for transitioning PATRIC and IRD/ViPR users is provided in the sections at the bottom of this page.
-                    <br>
-                    <br>
-                    <a href="" style="font-size: 1.1em; font-weight: bold;">Provide Feedback</a>.
+                    This is the <span style="font-weight: bold; font-style: italic;">Beta Version</span> of the website, designed to allow users to explore, try out features, and <a href="" style="font-weight: bold;">provide feedback</a> to the BV-BRC team. Since it is a Beta Version, the website appearance and functionality may change intermittently due to changes based on feedback received. Introductory material for transitioning PATRIC and IRD/ViPR users is provided in the sections at the bottom of this page.
                 </p>
                 <div class="browse" style="display: flex; align-items: center; justify-content: space-between;">
                     <h3>BROWSE</h3>
@@ -53,16 +50,17 @@
                         <div class="mid-links">
                             <h3>SEARCH</h3>
                             <a href="/searches/TaxaSearch">Taxa</a>
+                            <a href="/searches/GenomeSearch">Genomes</a>
                             <a href="/searches/GenomicFeatureSearch">Proteins</a>
                             <a href="/searches/SpecialtyGeneSearch">Specialty Genes</a>
-                            <a href="/searches/ProteinFeatureSearch">Domains and Motifs</a>
+                            <a href="/searches/ProteinFeatureSearch">Domains / Motifs</a>
                             <a href="/searches/EpitopeSearch">Epitopes</a>
                             <a href="/">All Searches</a>
                         </div>
                         <div class="mid-links">
                             <h3>ANALYZE</h3>
-                            <a href="/app/Assembly2">Genome Assembly</a>
-                            <a href="/app/Annotation">Genome Annotation</a>
+                            <a href="/app/Assembly2">Assembly</a>
+                            <a href="/app/Annotation">Annotation</a>
                             <a href="/app/Homology">BLAST</a>
                             <a href="/app/MSA">MSA</a>
                             <a href="/app/GeneTree">Gene Tree</a>
@@ -73,7 +71,7 @@
                             <a href="/app/FastqUtil">Fastq Utilities</a>
                             <a href="/app/TaxonomicClassification">Taxonomy Classification</a>
                             <a href="/app/MetagenomicBinning">Metagenomic Binning</a>
-                            <a href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a>
+                            <a href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Analysis</a>
                             <a href="/app/Rnaseq">RNA-seq Analysis</a>
                             <a href="/app/Expression">Expression Import</a>
                             <a href="/">All Tools &amp; Services</a>
@@ -105,29 +103,29 @@
 
             <div class="bv-brc-bottom-left">
                 <div class="bottom-left-content">
-                    <h2>Info for PATRIC Users</h2>
+                    <h2>Information for PATRIC Users</h2>
                     <img src="/patric/images/bv-brc/patric-logo.png" alt="PATRIC Logo">
                     <p>
-                        The new BV-BRC system is based on the PATRIC website and underlying infrastructure.  As a result, most of the functionality of PATRIC is essentially the same in BV-BRC. The primary difference is that viral data and analysis tools and services have been integrated into the resource.
+                        The new BV-BRC system is based on the PATRIC website and underlying infrastructure. As a result, most of the functionality of PATRIC is essentially the same in BV-BRC. The primary difference is that <span style="font-style: italic; font-weight: bold;">viral</span> data and analysis tools and services have been integrated into the resource.
                     </p>
                     <br>
                     <div class="bottom-left-content-links">
-                        <a href="/">BV-BRC Data and Functionality Overview (for PATRIC Users)</a>
+                        <a href="/docs/get_started/data_functionality_overview.html">BV-BRC Data and Functionality Overview (for PATRIC Users)</a>
                     </div>
                 </div>
             </div>
 
             <div class="bv-brc-bottom-right">
                 <div class="bottom-right-content">
-                    <h2>Info for IRD/ViPR Users</h2>
+                    <h2>Information for IRD/ViPR Users</h2>
                     <img class="ird-vipr-logo" src="/patric/images/bv-brc/ird-vipr-logo.png" alt="IRD and ViPR Logo">
                     <p>
-                        The new BV-BRC system is based on the PATRIC Bacterial BRC website and underlying infrastructure.  As a result, the BV-BRC functionality closely resembles PATRIC. To aid IRD and ViPR users in making this transition, we have created a summary sheet that maps IRD/ViPR terminology and features to BV-BRC. We also have created short tutorials that demonstrate how to perform common viral data searches and analysis tasks in BV-BRC.
+                        The new BV-BRC system is based on the PATRIC Bacterial BRC website and underlying infrastructure. To aid IRD and ViPR users in making this transition, we have created a summary matrix mapping IRD/ViPR terminology and features to BV-BRC, and short tutorials that demonstrate how to perform common viral data searches and analysis tasks in BV-BRC.
                     </p>
                     <br>
                     <div class="bottom-right-content-links">
-                        <a href="/">IRD/ViPR to BV-BRC Mapping </a>
-                        <a href="/">BV-BRC Common Tasks (for IRD/ViPR Users)</a>
+                        <a href="/docs/get_started/ird-vipr_bv-brc_mapping.html">IRD/ViPR to BV-BRC Mapping </a>
+                        <a href="/docs/get_started/common_tasks.html">BV-BRC Common Tasks (for IRD/ViPR Users)</a>
                     </div>
                 </div>
             </div>
@@ -182,7 +180,7 @@
             </div> -->
 
             <div class="twitter-feed">
-                <a class="twitter-timeline" data-lang="en" data-height="750" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
+                <a class="twitter-timeline" data-lang="en" data-height="655" data-dnt="true" data-theme="light" href="https://twitter.com/BVBRC_DB/lists/bvbrc?ref_src=twsrc%5Etfw">A Twitter list by BVBRC_DB</a>
             </div>
         </div>
     </div>
