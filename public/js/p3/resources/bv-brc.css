@@ -195,6 +195,7 @@
 #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
 }
 
 #bv-brc-home .bv-brc-mid-content-links .mid-links {
