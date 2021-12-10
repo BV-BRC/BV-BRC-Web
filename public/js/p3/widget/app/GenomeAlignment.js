@@ -243,8 +243,14 @@ define([
       if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
         var param_dict = {"output_folder":"output_path"};
         AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        this.addGenomeList(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
-        this.serviceSpecific(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        if (job_data.hasOwnProperty("genome_group")) { //support for filling in the form based on genome groups
+          this.genomeGroupSelector.set("value",job_data["genome_group"]);
+          this.genomeGroupButton.onClick();
+        } else {
+          this.addGenomeList(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+          this.serviceSpecific(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+        }
         localStorage.removeItem("bvbrc_rerun_job");
         this.form_flag = true;
       }

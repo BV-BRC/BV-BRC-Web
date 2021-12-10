@@ -20,35 +20,35 @@ define([
     {
       value: 'blastn',
       label: 'blastn - search a nucleotide database using a nucleotide query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     },
     {
       value: 'blastp',
       label: 'blastp - search protein database using a protein query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['faa'],
       validQuery: [AA]
     },
     {
       value: 'blastx',
       label: 'blastx - search protein database using a translated nucleotide query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['faa'],
       validQuery: [NA]
     },
     {
       value: 'tblastn',
       label: 'tblastn - search translated nucleotide database using a protein query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [AA]
     },
     {
       value: 'tblastx',
       label: 'tblastx - search translated nucleotide database using a translated nucleotide query',
-      validDatabase: ['bacteria-archaea', 'virus-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     }
@@ -59,7 +59,7 @@ define([
       value: 'bacteria-archaea', label: 'Reference and representative genomes (bacteria, archaea)', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
     },
     {
-      value: 'virus-reference', label: 'Reference and representative genomes (virus)', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
+      value: 'viral-reference', label: 'Reference and representative genomes (virus)', db_type: ['fna', 'ffn', 'faa'], db_source: 'precomputed_database'
     },
     {
       value: 'selGenome', label: 'Search within selected genome', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_list'
@@ -71,7 +71,7 @@ define([
       value: 'selTaxon', label: 'Search within a taxon', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'taxon_list'
     },
     {
-      value: 'selFasta', label: 'Search within selected fasta file', db_type: ['fna', 'faa'], db_source: 'fasta_list'
+      value: 'selFasta', label: 'Search within selected fasta file', db_type: ['fna', 'faa'], db_source: 'fasta_file'
     },
   ];
 
@@ -108,7 +108,7 @@ define([
     db_source: null,
     db_type: null,
     db_precomputed_database: null,
-    group_genomes: [], //list that is populated with the genome ids when selGroup is selected
+    group_genomes: [], // list that is populated with the genome ids when selGroup is selected
     constructor: function () {
       this.genomeToAttachPt = ['genome_id'];
       this.featureGroupToAttachPt = ['query_featuregroup'];
@@ -169,8 +169,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -294,9 +294,9 @@ define([
             break;
           case 'selFasta':
             var fasta = null;
-            fasta = this.fasta_db.get('value');
+            fasta = this.db_fasta_file.get('value');
             if (fasta === '') {
-              this.fasta_db_message.innerHTML = 'No fasta file was selected.';
+              this.db_fasta_file_message.innerHTML = 'No fasta file was selected.';
               return;
             }
             var q = {
@@ -344,19 +344,17 @@ define([
       } else if (_self.input_source == 'feature_group') {
         submit_values['input_feature_group'] = _self.query_featuregroup.get('value')
       }
-
+      if (database == 'selGroup') {
+        submit_values['db_genome_group'] = this.genome_group.get('value');
+      }
       if (genomeIds.length > 0) {
         submit_values['db_genome_list'] = genomeIds;
-        if (database == 'selGroup'){
-          submit_values['db_genome_group'] = this.genome_group.get('value');
-        }
-
       }
       if (taxon) {
         submit_values['db_taxon_list'] = [taxon];
       }
       if (fasta) {
-        submit_values['db_fasta'] = [fasta];
+        submit_values['db_fasta_file'] = fasta;
       }
       if (this.demo) {
         // resultType = "custom";
@@ -369,9 +367,9 @@ define([
         submit_values['db_precomputed_database'] = database.split('.')[0];
       }
       if (this.validate()) {
-        var start_params = {
-          'base_url': window.App.appBaseURL
-        }
+        // var start_params = {
+        //   'base_url': window.App.appBaseURL
+        // }
         // var values = this.getValues();
         var callback = function () {
           // the state set here shows up again in the HomologyMemoryStore onSetState
@@ -544,7 +542,6 @@ define([
       if (name.length > maxName) {
         display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
       }
-
       return display_name;
     },
 
@@ -567,17 +564,20 @@ define([
       }
     },
 
-    onSetGroupGenomes: function() {
-      var path = this.genome_group.get('value');
+    onSetGroupGenomes: function () {
+      var genome_group_path = this.genome_group.get('value');
       // console.log("selGroup", path);
-      if (path === '') {
-        this.genome_group_message.innerHTML = 'No genome group has selected';
+      if (genome_group_path === '') {
+        //   this.genome_group_message.innerHTML = 'No genome group was selected.';
         return;
       }
+      // } else {
+      //   this.genome_group_message.innerHTML = '';
+      // }
       if (this.group_genomes.length > 0) {
         this.group_genomes = [];
       }
-      WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function (objs) {
+      WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
         var genomeIdHash = {};
         objs.forEach(function (obj) {
           var data = JSON.parse(obj.data);
@@ -587,20 +587,20 @@ define([
             }
           });
         });
-        Object.keys(genomeIdHash).forEach(function(genome_id) {
+        Object.keys(genomeIdHash).forEach(function (genome_id) {
           this.addToGroupGenomeList(genome_id);
-        },this);
+        }, this);
       }));
       this.validate();
     },
 
-    addToGroupGenomeList: function(g_id) {
+    addToGroupGenomeList: function (g_id) {
       this.group_genomes.push(g_id);
     },
-    
+
 
     onChangeProgram: function (val, start = false) {
-      console.log(val);
+      // console.log(val);
       if (!val) {
         return;
       }
@@ -695,9 +695,9 @@ define([
     onChangeDBType: function () {
       var fastaDB = this.database.get('value') == 'selFasta';
       if (fastaDB && this.search_for.get('value') == 'faa') {
-        this.fasta_db.set('type', 'feature_protein_fasta');
+        this.db_fasta_file.set('type', 'feature_protein_fasta');
       } else if (fastaDB) {
-        this.fasta_db.set('type', 'feature_dna_fasta');
+        this.db_fasta_file.set('type', 'feature_dna_fasta');
       }
     },
 
@@ -705,7 +705,7 @@ define([
       this.setDbType(val);
       this.genome_group.set('required', false);
       this.taxonomy.set('required', false);
-      this.fasta_db.set('required', false);
+      this.db_fasta_file.set('required', false);
       if (['selGenome', 'selGroup', 'selTaxon', 'selFasta'].indexOf(val) > -1) {
         switch (val) {
           case 'selGenome':
@@ -739,7 +739,7 @@ define([
             domClass.add(this.fasta_wrapper, 'hidden');
             break;
           case 'selFasta':
-            this.fasta_db.set('required', true);
+            this.db_fasta_file.set('required', true);
             domClass.remove(this.fasta_wrapper, 'hidden');
             domClass.add(this.genome_id_wrapper, 'hidden');
             if (this.genome_group) {
@@ -764,30 +764,113 @@ define([
 
     intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.form_flag = true;
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        var param_dict = { "output_folder": "output_path" };
-        var service_specific = { "input_fasta_data": "sequence", "blast_evalue_cutoff": "evalue", "blast_max_hits": "max_hits" };
-        this.program.set("value", job_data['program']);
-        param_dict["service_specific"] = service_specific;
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        //job_data['program'] = 'blastp';
+        var param_dict = { 'output_folder': 'output_path' };
+        var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
+        param_dict['service_specific'] = service_specific;
+        this.setProgramButton(job_data);
+        this.setInputSource(job_data);
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        this.program.set("disabled", false);
-        this.database.set("disabled", false);
-        this.search_for.set("disabled", false);
+        this.database.set('disabled', false);
+        this.search_for.set('disabled', false);
         this.setDatabaseInfoFormFill(job_data);
+        localStorage.removeItem('bvbrc_rerun_job');
+      }
+    },
 
-        //TODO: function to set genome_list,fasta,feature_group based on database type (input_source?)
-        localStorage.removeItem("bvbrc_rerun_job");
+    //blastn,blastp,blastx,tblastn, no tblastx button
+    setProgramButton: function (job_data) {
+      var p = job_data["blast_program"];
+      p === "blastn" ? this.blastn.set("checked", true) : this.blastn.set("checked", false);
+      p === "blastp" ? this.blastp.set("checked", true) : this.blastp.set("checked", false);
+      p === "blastx" ? this.blastx.set("checked", true) : this.blastx.set("checked", false);
+      p === "tblastn" ? this.tblastn.set("checked", true) : this.tblastn.set("checked", false);
+    },
+
+    setInputSource: function (job_data) {
+      var s = job_data["input_source"];
+      if (s === "fasta_data") {
+        this.input_sequence.set("checked", true);
+        this.input_fasta.set("checked", false);
+        this.input_group.set("checked", false);
+        this.sequence.set("value", job_data["input_fasta_data"]);
+      }
+      else if (s === "fasta_file") {
+        this.input_sequence.set("checked", false);
+        this.input_fasta.set("checked", true);
+        this.input_group.set("checked", false);
+        this.query_fasta.set("value", job_data["input_fasta_file"]);
+      }
+      else if (s === "feature_group") {
+        this.input_sequence.set("checked", false);
+        this.input_fasta.set("checked", false);
+        this.input_group.set("checked", true);
+        this.query_featuregroup.set("value", job_data["input_feature_group"]);
       }
     },
 
     setDatabaseInfoFormFill: function (job_data) {
-      var db_attach_points = { "program": "program", "db_source": "database", "db_type": "search_for" };
-      Object.keys(db_attach_points).forEach(function (param) {
-        this[db_attach_points[param]].set("value", job_data[param]);
+      var db_attach_points = { "db_precomputed_database": "database", "db_type": "search_for" };
+      var db_order = ["db_precomputed_database", "db_type"];
+      db_order.forEach(function (param) {
+        if (param === "db_type") {
+          this.onChangeDatabase(job_data["db_precomputed_database"]);
+        }
+        this[db_attach_points[param]].set("disabled", false);
+        this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
+      //Check database value and populate with genome id
+      if (this.database.getValue() === "selGenome") {
+        job_data["db_genome_list"].forEach(function (g_id) {
+          this.addGenomeFormFill(g_id);
+        }, this);
+      }
+      if (this.database.getValue() === "selGroup") {
+        this.genome_group.set("value", job_data["db_genome_group"]);
+      }
+      if (this.database.getValue() === "selTaxon") {
+        this.taxonomy.set("value", job_data["db_taxon_list"][0]);
+      }
     },
+
+    addGenomeFormFill: function (genome) {
+      var lrec = {};
+      lrec.genome_id = genome;
+      var tr = this.genomeTable.insertRow(0);
+      var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+      td.genomeRecord = lrec;
+      td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeNameFormFill(genome) + '</div>';
+      domConstruct.create('td', { innerHTML: '' }, tr);
+      var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+      if (this.addedGenomes < this.startingRows) {
+        this.genomeTable.deleteRow(-1);
+      }
+      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+        domConstruct.destroy(tr);
+        this.decreaseGenome();
+        if (this.addedGenomes < this.startingRows) {
+          var ntr = this.genomeTable.insertRow(-1);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        }
+        handle.remove();
+      }));
+      this.increaseGenome();
+    },
+
+    makeGenomeNameFormFill: function (name) {
+      var maxName = 50;
+      var display_name = name;
+      if (name.length > maxName) {
+        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
+      }
+
+      return display_name;
+    }
 
   });
 });
