@@ -369,11 +369,28 @@ define([
 
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
-        multiple: false,
+        multiple: true,
+        allowMultiTypes: true,
+        persistent: true,
         forbiddenTypes: WorkspaceManager.forbiddenDownloadTypes,
         tooltip: 'Download'
       }, function (selection) {
-        WorkspaceManager.downloadFile(selection[0].path);
+        if (selection.length == 1) {
+          console.log("download one item:",selection[0].path);
+          WorkspaceManager.downloadFile(selection[0].path);
+        } else {
+          //get_archive_url(get_archive_url_params input) returns (string url, int file_count, int total_size)
+          var path_list = [];
+          selection.forEach(function (selected_file) {
+            path_list.push(selected_file.path);
+          },this);
+          var archive_type = "zip";
+          var archive_name = "BVBRC_TEST1_MULTIDOWNLOAD" + "." + archive_type;
+          var recursive = false; //TODO: support for this later
+          var zip_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
+          console.log("zip_url = ",zip_url);
+        }
+        //
       }, false);
 
       var dfc = '<div>Download Table As...</div>' +
