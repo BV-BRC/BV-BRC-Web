@@ -379,16 +379,62 @@ define([
           console.log("download one item:",selection[0].path);
           WorkspaceManager.downloadFile(selection[0].path);
         } else {
+          console.log(this);
+          var tmp_archive_name = "";
+          //add different defaults here
+          if (this.currentContainerType === "job_result") {
+            tmp_archive_name = this.currentContainerWidget.data.name;
+          }
           //get_archive_url(get_archive_url_params input) returns (string url, int file_count, int total_size)
           var path_list = [];
           selection.forEach(function (selected_file) {
             path_list.push(selected_file.path);
           },this);
-          var archive_type = "zip";
-          var archive_name = "BVBRC_TEST1_MULTIDOWNLOAD" + "." + archive_type;
-          var recursive = false; //TODO: support for this later
-          var zip_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
-          console.log("zip_url = ",zip_url);
+          ///show dialog with name and archive options
+          var dwnldContent = domConstruct.create('div',{});
+          console.log(dwnldContent);
+          //create table header row
+          var table = domConstruct.create('table',{},dwnldContent);
+          var title_tr = domConstruct.create('tr',{},table);
+          domConstruct.create('td',{innerHTML:"<p>File Name</p>"},title_tr);
+          domConstruct.create('td',{innerHTML:'<p>File Type</p>'},title_tr);
+          //create input row
+          var option_tr = domConstruct.create('tr',{},table);
+          var archive_name_td = domConstruct.create('td',{},option_tr);
+          var archive_name_input = domConstruct.create('input',{type:"text",placeholder:tmp_archive_name,value:tmp_archive_name},archive_name_td);
+          var dropdown_row = domConstruct.create('td',{},option_tr);
+          var dropdown_select = domConstruct.create('select',{},dropdown_row);
+          //Add more archive types as they become available
+          domConstruct.create('option',{value:'zip',innerHTML:'zip'},dropdown_select);
+          //example: domConstruct.create('option',{value:'opt2',innerHTML:'opt2'},dropdown_select);
+          //add submit button:
+          var btn_td = domConstruct.create('td',{},option_tr);
+          var submit_btn = domConstruct.create('button',{type:'button',innerHTML:'Submit',style:'background-color:#09456f;color:#fff'},btn_td);
+          //get input and validate
+          var archive_name = "";
+          var archive_type = "";
+          on(submit_btn,'click',lang.hitch(this,function(button) {
+            //TODO: archive name validation
+            var valid = true;
+            if (valid) {
+              archive_name = archive_name_input.value;
+              archive_type = dropdown_select.value;
+              archive_name = archive_name + "." + archive_type;
+              var recursive = false; //TODO: support for this later
+              var zip_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
+              console.log("zip_url = ",zip_url);
+              dwnld_dialog.onHide();
+            }
+          }));
+          //show dialog
+          var dwnld_dialog = new Dialog({
+            title:"Download File Options",
+            content:dwnldContent,
+            onHide: function (){
+              dwnld_dialog.destroy();
+            }
+          });
+          dwnld_dialog.show();
         }
         //
       }, false);
