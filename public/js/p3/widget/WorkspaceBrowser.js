@@ -376,13 +376,12 @@ define([
         tooltip: 'Download'
       }, function (selection) {
         if (selection.length == 1) {
-          console.log("download one item:",selection[0].path);
+          console.log('download one item:',selection[0].path);
           WorkspaceManager.downloadFile(selection[0].path);
         } else {
-          console.log(this);
-          var tmp_archive_name = "";
+          var tmp_archive_name = '';
           //add different defaults here
-          if (this.currentContainerType === "job_result") {
+          if (this.currentContainerType === 'job_result') {
             tmp_archive_name = this.currentContainerWidget.data.name;
           }
           //get_archive_url(get_archive_url_params input) returns (string url, int file_count, int total_size)
@@ -390,18 +389,17 @@ define([
           selection.forEach(function (selected_file) {
             path_list.push(selected_file.path);
           },this);
-          ///show dialog with name and archive options
+          ///create dialog with name and archive options
           var dwnldContent = domConstruct.create('div',{});
-          console.log(dwnldContent);
           //create table header row
           var table = domConstruct.create('table',{},dwnldContent);
           var title_tr = domConstruct.create('tr',{},table);
-          domConstruct.create('td',{innerHTML:"<p>File Name</p>"},title_tr);
+          domConstruct.create('td',{innerHTML:'<p>File Name</p>'},title_tr);
           domConstruct.create('td',{innerHTML:'<p>File Type</p>'},title_tr);
           //create input row
           var option_tr = domConstruct.create('tr',{},table);
           var archive_name_td = domConstruct.create('td',{},option_tr);
-          var archive_name_input = domConstruct.create('input',{type:"text",placeholder:tmp_archive_name,value:tmp_archive_name},archive_name_td);
+          var archive_name_input = domConstruct.create('input',{type:'text',placeholder:tmp_archive_name,value:tmp_archive_name},archive_name_td);
           var dropdown_row = domConstruct.create('td',{},option_tr);
           var dropdown_select = domConstruct.create('select',{},dropdown_row);
           //Add more archive types as they become available
@@ -411,19 +409,49 @@ define([
           var btn_td = domConstruct.create('td',{},option_tr);
           var submit_btn = domConstruct.create('button',{type:'button',innerHTML:'Submit',style:'background-color:#09456f;color:#fff'},btn_td);
           //get input and validate
-          var archive_name = "";
-          var archive_type = "";
+          var archive_name = '';
+          var archive_type = '';
           on(submit_btn,'click',lang.hitch(this,function(button) {
-            //TODO: archive name validation
             var valid = true;
+            if (!archive_name_input.value) {
+              return;
+            }
+            var invalid_chars = archive_name_input.value.match(/[~`!#$%\^&*+=\\[\]\\';,/{}|\\":<>\?]/g);
+            //returns null if no matches in regular expression
+            if (invalid_chars) {
+              if (invalid_chars.length > 0) {
+                valid = false;
+              }
+            }
             if (valid) {
               archive_name = archive_name_input.value;
               archive_type = dropdown_select.value;
-              archive_name = archive_name + "." + archive_type;
+              archive_name = archive_name + '.' + archive_type;
               var recursive = false; //TODO: support for this later
-              var zip_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
-              console.log("zip_url = ",zip_url);
-              dwnld_dialog.onHide();
+              try {
+                var archive_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
+                console.log('archive_url = ',archive_url);
+                dwnld_dialog.onHide();
+              }
+              catch (error) {
+                console.log(error);
+              }
+            }
+            else {
+
+              let error_unique = [...new Set(invalid_chars)];
+              var error_msg = 'Error in download filename, remove invalid characters: ' + error_unique.join(', ');
+              var errorTT = new TooltipDialog({
+                content:domConstruct.create('div',{innerHTML:'<p>'+error_msg+"</p>"}),
+                onMouseLeave: function () {
+                  popup.close(errorTT);
+                }
+              });
+              popup.open({
+                popup:errorTT,
+                around:archive_name_input,
+                orient:['below']
+              });
             }
           }));
           //show dialog
