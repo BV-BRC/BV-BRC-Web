@@ -618,6 +618,19 @@ define([
       });
     },
 
+    downloadArchiveFile: function (path_list,archive_name,archive_type,recursive) {
+      var archive_params = [path_list,recursive,archive_name,archive_type];
+      return Deferred.when(this.api('Workspace.get_archive_url',[{
+        objects:path_list,
+        recursive: recursive,
+        archive_name: archive_name,
+        archive_type: archive_type
+      }]),function(url) {
+        console.log(url[0]);
+        window.location.assign(url[0]);
+      });
+    },
+
     getObject: function (path, metadataOnly) {
       if (!path) {
         throw new Error('Invalid Path(s) to retrieve');
