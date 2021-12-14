@@ -20,35 +20,35 @@ define([
     {
       value: 'blastn',
       label: 'blastn - search a nucleotide database using a nucleotide query',
-      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selFeatureGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     },
     {
       value: 'blastp',
       label: 'blastp - search protein database using a protein query',
-      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selFeatureGroup', 'selTaxon'],
       validSearchFor: ['faa'],
       validQuery: [AA]
     },
     {
       value: 'blastx',
       label: 'blastx - search protein database using a translated nucleotide query',
-      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selFeatureGroup', 'selTaxon'],
       validSearchFor: ['faa'],
       validQuery: [NA]
     },
     {
       value: 'tblastn',
       label: 'tblastn - search translated nucleotide database using a protein query',
-      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selFeatureGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [AA]
     },
     {
       value: 'tblastx',
       label: 'tblastx - search translated nucleotide database using a translated nucleotide query',
-      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selTaxon'],
+      validDatabase: ['bacteria-archaea', 'viral-reference', 'selGenome', 'selGroup', 'selFeatureGroup', 'selTaxon'],
       validSearchFor: ['fna', 'ffn', 'frn'],
       validQuery: [NA]
     }
@@ -66,6 +66,9 @@ define([
     },
     {
       value: 'selGroup', label: 'Search within selected genome group', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_group'
+    },
+    {
+      value: 'selFeatureGroup', label: 'Search within selected feature group', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'feature_group'
     },
     {
       value: 'selTaxon', label: 'Search within a taxon', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'taxon_list'
@@ -236,7 +239,7 @@ define([
       var _self = this;
       var sequence = this.sequence.get('value');
       var database = this.database.get('value');
-      var useDatabase = !(['selGenome', 'selGroup', 'selTaxon', 'selFasta'].indexOf(database) > -1);
+      var useDatabase = !(['selGenome', 'selGroup', 'selTaxon', 'selFasta', 'selFeatureGroup'].indexOf(database) > -1);
       var program = this.program;
       var evalue = this.evalue.get('value');
       var output_file = this.output_file.get('value');
@@ -276,10 +279,10 @@ define([
             };
             // def.resolve(q);
             break;
-          case 'selGroup':
-            var genome_group = this.genome_group.get('value');
-            // genomeIds = this.group_genomes;
-            break;
+          // case 'selGroup':
+          //   var genome_group = this.genome_group.get('value');
+          //   // genomeIds = this.group_genomes;
+          //   break;
           case 'selTaxon':
             var taxon = null;
             taxon = this.taxonomy.get('value');
@@ -347,6 +350,9 @@ define([
       }
       if (database == 'selGroup') {
         submit_values['db_genome_group'] = this.genome_group.get('value');
+      }
+      else if (database == 'selFeatureGroup') {
+        submit_values['db_feature_group'] = this.feature_group.get('value');
       }
       if (genomeIds.length > 0) {
         submit_values['db_genome_list'] = genomeIds;
@@ -705,15 +711,17 @@ define([
     onChangeDatabase: function (val, start) {
       this.setDbType(val);
       this.genome_group.set('required', false);
+      this.feature_group.set('required', false);
       this.taxonomy.set('required', false);
       this.db_fasta_file.set('required', false);
-      if (['selGenome', 'selGroup', 'selTaxon', 'selFasta'].indexOf(val) > -1) {
+      if (['selGenome', 'selGroup', 'selTaxon', 'selFasta', 'selFeatureGroup'].indexOf(val) > -1) {
         switch (val) {
           case 'selGenome':
             domClass.remove(this.genome_id_wrapper, 'hidden');
             if (this.genome_group) {
               domClass.add(this.genome_group_wrapper, 'hidden');
             }
+            domClass.add(this.feature_group_wrapper, 'hidden');
             domClass.add(this.taxon_wrapper, 'hidden');
             domClass.add(this.fasta_wrapper, 'hidden');
             break;
@@ -727,6 +735,19 @@ define([
             if (this.genome_group) {
               domClass.remove(this.genome_group_wrapper, 'hidden');
             }
+            domClass.add(this.feature_group_wrapper, 'hidden');
+            domClass.add(this.taxon_wrapper, 'hidden');
+            domClass.add(this.fasta_wrapper, 'hidden');
+            break;
+          case 'selFeatureGroup':
+            this.feature_group.set('required', true);
+            if (!window.App.user) {
+              this.database_message.innerHTML = 'Please login first to use feature group selection';
+              return;
+            }
+            domClass.add(this.genome_id_wrapper, 'hidden');
+            domClass.remove(this.feature_group_wrapper, 'hidden');
+            domClass.add(this.genome_group_wrapper, 'hidden');
             domClass.add(this.taxon_wrapper, 'hidden');
             domClass.add(this.fasta_wrapper, 'hidden');
             break;
@@ -736,6 +757,7 @@ define([
             if (this.genome_group) {
               domClass.add(this.genome_group_wrapper, 'hidden');
             }
+            domClass.add(this.feature_group_wrapper, 'hidden');
             domClass.remove(this.taxon_wrapper, 'hidden');
             domClass.add(this.fasta_wrapper, 'hidden');
             break;
@@ -746,6 +768,7 @@ define([
             if (this.genome_group) {
               domClass.add(this.genome_group_wrapper, 'hidden');
             }
+            domClass.add(this.feature_group_wrapper, 'hidden');
             domClass.add(this.taxon_wrapper, 'hidden');
             this.onChangeDBType();
             break;
@@ -755,6 +778,7 @@ define([
       } else {
         domClass.add(this.genome_id_wrapper, 'hidden');
         domClass.add(this.genome_group_wrapper, 'hidden');
+        domClass.add(this.feature_group_wrapper, 'hidden');
         domClass.add(this.fasta_wrapper, 'hidden');
         domClass.add(this.taxon_wrapper, 'hidden');
       }
@@ -831,6 +855,9 @@ define([
       }
       if (this.database.getValue() === "selGroup") {
         this.genome_group.set("value", job_data["db_genome_group"]);
+      }
+      if (this.database.getValue() === "selFeatureGroup") {
+        this.feature_group.set("value", job_data["db_feature_group"]);
       }
       if (this.database.getValue() === "selTaxon") {
         this.taxonomy.set("value", job_data["db_taxon_list"][0]);

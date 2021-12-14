@@ -132,8 +132,9 @@
                         </option>
                         <option value="viral-reference">Reference and representative genomes (virus)
                         </option>
-                        <option value="selGenome">Search within selected genome</option>
+                        <option value="selGenome">Search within selected genome list</option>
                         <option value="selGroup">Search within selected genome group</option>
+                        <option value="selFeatureGroup">Search within selected feature group</option>
                         <option value="selTaxon">Search within a taxon</option>
                         <option value="selFasta">Search within selected fasta file</option>
                     </select>
@@ -175,6 +176,15 @@
                     data-dojo-attach-point="genome_group" data-dojo-type="p3/widget/WorkspaceObjectSelector"
                     required="false" style="width: 650px"
                     data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Genome group'">
+                </div>
+                <div class="warning" data-dojo-attach-point="genome_group_message"></div>
+            </div>
+            <div class="appBox hidden" data-dojo-attach-point="feature_group_wrapper">
+                <label class="paramlabel">Select feature group: </label><br />
+                <div name="feature_group" data-dojo-attach-event="onChange:validate"
+                    data-dojo-attach-point="feature_group" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    required="false" style="width: 650px"
+                    data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
                 </div>
                 <div class="warning" data-dojo-attach-point="genome_group_message"></div>
             </div>
