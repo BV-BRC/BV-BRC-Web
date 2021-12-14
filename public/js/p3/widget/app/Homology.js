@@ -65,7 +65,7 @@ define([
       value: 'selGenome', label: 'Search within selected genome', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_list'
     },
     {
-      value: 'selGroup', label: 'Search within selected genome group', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_list'
+      value: 'selGroup', label: 'Search within selected genome group', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'genome_group'
     },
     {
       value: 'selTaxon', label: 'Search within a taxon', db_type: ['fna', 'ffn', 'faa', 'frn'], db_source: 'taxon_list'
@@ -108,7 +108,7 @@ define([
     db_source: null,
     db_type: null,
     db_precomputed_database: null,
-    group_genomes: [], // list that is populated with the genome ids when selGroup is selected
+    // group_genomes: [], // list that is populated with the genome ids when selGroup is selected
     constructor: function () {
       this.genomeToAttachPt = ['genome_id'];
       this.featureGroupToAttachPt = ['query_featuregroup'];
@@ -277,7 +277,8 @@ define([
             // def.resolve(q);
             break;
           case 'selGroup':
-            genomeIds = this.group_genomes;
+            var genome_group = this.genome_group.get('value');
+            // genomeIds = this.group_genomes;
             break;
           case 'selTaxon':
             var taxon = null;
@@ -564,39 +565,39 @@ define([
       }
     },
 
-    onSetGroupGenomes: function () {
-      var genome_group_path = this.genome_group.get('value');
-      // console.log("selGroup", path);
-      if (genome_group_path === '') {
-        //   this.genome_group_message.innerHTML = 'No genome group was selected.';
-        return;
-      }
-      // } else {
-      //   this.genome_group_message.innerHTML = '';
-      // }
-      if (this.group_genomes.length > 0) {
-        this.group_genomes = [];
-      }
-      WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
-        var genomeIdHash = {};
-        objs.forEach(function (obj) {
-          var data = JSON.parse(obj.data);
-          data.id_list.genome_id.forEach(function (d) {
-            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
-              genomeIdHash[d] = true;
-            }
-          });
-        });
-        Object.keys(genomeIdHash).forEach(function (genome_id) {
-          this.addToGroupGenomeList(genome_id);
-        }, this);
-      }));
-      this.validate();
-    },
+    // onSetGroupGenomes: function () {
+    //   var genome_group_path = this.genome_group.get('value');
+    //   // console.log("selGroup", path);
+    //   if (genome_group_path === '') {
+    //     //   this.genome_group_message.innerHTML = 'No genome group was selected.';
+    //     return;
+    //   }
+    //   // } else {
+    //   //   this.genome_group_message.innerHTML = '';
+    //   // }
+    //   if (this.group_genomes.length > 0) {
+    //     this.group_genomes = [];
+    //   }
+    //   WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
+    //     var genomeIdHash = {};
+    //     objs.forEach(function (obj) {
+    //       var data = JSON.parse(obj.data);
+    //       data.id_list.genome_id.forEach(function (d) {
+    //         if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
+    //           genomeIdHash[d] = true;
+    //         }
+    //       });
+    //     });
+    //     Object.keys(genomeIdHash).forEach(function (genome_id) {
+    //       this.addToGroupGenomeList(genome_id);
+    //     }, this);
+    //   }));
+    //   this.validate();
+    // },
 
-    addToGroupGenomeList: function (g_id) {
-      this.group_genomes.push(g_id);
-    },
+    // addToGroupGenomeList: function (g_id) {
+    //   this.group_genomes.push(g_id);
+    // },
 
 
     onChangeProgram: function (val, start = false) {

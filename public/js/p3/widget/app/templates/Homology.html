@@ -171,7 +171,7 @@
             </div>
             <div class="appBox hidden" data-dojo-attach-point="genome_group_wrapper">
                 <label class="paramlabel">Select genome group: </label><br />
-                <div name="genome_group" data-dojo-attach-event="onChange:onSetGroupGenomes"
+                <div name="genome_group" data-dojo-attach-event="onChange:validate"
                     data-dojo-attach-point="genome_group" data-dojo-type="p3/widget/WorkspaceObjectSelector"
                     required="false" style="width: 650px"
                     data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Genome group'">
