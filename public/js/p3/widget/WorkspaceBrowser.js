@@ -367,6 +367,7 @@ define([
         });
       }, false);
 
+      //TODO: why isn't download appearing for job_results
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
         multiple: true,
@@ -375,7 +376,11 @@ define([
         forbiddenTypes: WorkspaceManager.forbiddenDownloadTypes,
         tooltip: 'Download'
       }, function (selection) {
-        if (selection.length == 1) {
+        console.log("selection=",selection);
+        //TODO: job_result folders are downloaded with their '.' prefix, making them initially hidden in the zip file
+          //some users may not like that
+        //criteria for single download: one file and is not a folder and is not a job_result
+        if ((selection.length == 1) & !(selection[0].autoMeta.is_folder) & !(selection[0].type === "job_result")){
           console.log('download one item:',selection[0].path);
           WorkspaceManager.downloadFile(selection[0].path);
         } else {
@@ -387,6 +392,13 @@ define([
           //get_archive_url(get_archive_url_params input) returns (string url, int file_count, int total_size)
           var path_list = [];
           selection.forEach(function (selected_file) {
+            //if file is a job result, add hidden file to download list
+            if (selected_file.type === "job_result") {
+              var path = selected_file.path.split("/");
+              var base = path.pop();
+              var new_path = path.join("/") + "/." + base;
+              path_list.push(new_path);
+            }
             path_list.push(selected_file.path);
           },this);
           ///create dialog with name and archive options
@@ -427,7 +439,7 @@ define([
               archive_name = archive_name_input.value;
               archive_type = dropdown_select.value;
               archive_name = archive_name + '.' + archive_type;
-              var recursive = false; //TODO: support for this later
+              var recursive = true; 
               try {
                 var archive_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
                 console.log('archive_url = ',archive_url);
