@@ -990,12 +990,12 @@ define([
           label: 'EXPRMNT',
           multiple: false,
           validTypes: ['*'],
-          validContainerTypes: ['transcriptomics_experiment_data'],
+          validContainerTypes: ['experiment_data'],
           tooltip: 'View Experiment'
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
           Topic.publish('/navigate', {
             href: '/view/ExperimentComparison/' + experimentIdList + '#view_tab=overview',
@@ -1012,7 +1012,7 @@ define([
           min: 2,
           max: 5000,
           validTypes: ['*'],
-          validContainerTypes: ['transcriptomics_experiment_data'],
+          validContainerTypes: ['experiment_data'],
           tooltip: 'View Experiment List'
         },
         function (selection) {
@@ -1034,7 +1034,7 @@ define([
           multiple: true,
           validTypes: ['*'],
           max: 5000,
-          validContainerTypes: ['transcriptomics_experiment_data', 'transcriptomics_sample_data'],
+          validContainerTypes: ['experiment_data', 'transcriptomics_sample_data'],
           tooltip: 'View Experiment Gene List'
         },
         function (selection) {

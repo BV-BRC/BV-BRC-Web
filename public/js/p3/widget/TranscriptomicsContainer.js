@@ -22,9 +22,9 @@ define([
     eids: null,
 
     onSetQuery: function (attr, oldVal, query) {
-      query += '&select(eid)&limit(25000)';
+      query += '&select(exp_id)&limit(25000)';
       query = (query && (query.charAt(0) == '?')) ? query.substr(1) : query;
-      xhr.post(PathJoin(this.apiServer, 'transcriptomics_experiment/?'), {
+      xhr.post(PathJoin(this.apiServer, 'experiment/?'), {
         headers: {
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -36,7 +36,7 @@ define([
       }).then(lang.hitch(this, function (eids) {
         // console.log("eids: ", eids);
         eids = eids.map(function (x) {
-          return x.eid;
+          return x.exp_id;
         });
         // console.log("EIDS: ", eids);
         this.set('eids', eids);
@@ -46,7 +46,7 @@ define([
     onSetEIDS: function (attr, oldVal, eids) {
       // console.log("set eids: ", eids);
       if (this.comparisonsGrid && eids && eids.length > 0) {
-        this.comparisonsGrid.set('state', lang.mixin({}, this.state, { search: '&in(eid,(' + eids.join(',') + '))' }));
+        this.comparisonsGrid.set('state', lang.mixin({}, this.state, { search: '&in(exp_id,(' + eids.join(',') + '))' }));
       }
     },
     onSetState: function (attr, oldVal, state) {
@@ -93,9 +93,7 @@ define([
       }
     },
     _setStateAttr: function (val) {
-      // console.log("GenomeContainer onSetStateAttr: ", val);
       this._set('state', val ? lang.mixin({}, val) : val);
-      // console.log("After internal set")
     },
 
     postCreate: function () {
@@ -175,7 +173,7 @@ define([
         state: this.state,
         className: 'BrowserHeader',
         currentContainerWidget: this,
-        dataModel: 'transcriptomics_experiment'
+        dataModel: 'experiment'
       });
 
       var tabController = new StackController({
@@ -190,7 +188,7 @@ define([
       });
       this.comparisonsGrid = new TranscriptomicsComparisonGridContainer({
         enableFilterPanel: false,
-        title: 'Comparisions'
+        title: 'Biosets'
       });
       this.tabContainer.addChild(this.experimentsGrid);
       this.tabContainer.addChild(this.comparisonsGrid);

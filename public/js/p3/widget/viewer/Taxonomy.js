@@ -62,7 +62,7 @@ define([
       // this.viewer.addChild(this.proteinFamilies, 10);
       this.viewer.addChild(this.pathways, 11);
       this.viewer.addChild(this.subsystems, 12);
-      this.viewer.addChild(this.transcriptomics, 13);
+      // this.viewer.addChild(this.transcriptomics, 13);
       this.viewer.addChild(this.interactions, 14);
     },
 
@@ -74,7 +74,7 @@ define([
       // this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
       this.viewer.removeChild(this.subsystems);
-      this.viewer.removeChild(this.transcriptomics);
+      // this.viewer.removeChild(this.transcriptomics);
       this.viewer.removeChild(this.interactions);
     },
 
@@ -247,6 +247,7 @@ define([
         case 'serology':
         case 'strains':
         case 'epitope':
+        case 'transcriptomics':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
           }));
@@ -255,9 +256,7 @@ define([
         default:
           var activeQueryState;
           var prop = 'genome_id';
-          if (active === 'transcriptomics') {
-            prop = 'genome_ids';
-          } else if (active === 'interactions') {
+          if (active === 'interactions') {
             prop = 'genome_id_a';
           }
           var context = [`eq(taxon_lineage_ids,${this.state.taxon_id})`]

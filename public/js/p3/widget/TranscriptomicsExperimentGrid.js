@@ -16,34 +16,30 @@ define([
     apiToken: window.App.authorizationToken,
     apiServer: window.App.dataAPI,
     store: store,
-    dataModel: 'transcriptomics_experiment',
-    primaryKey: 'eid',
+    dataModel: 'experiment',
+    primaryKey: 'exp_id',
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      eid: { label: 'Experiment ID', field: 'eid', hidden: true },
-      title: { label: 'Title', field: 'title', hidden: false },
-      samples: { label: 'Comparisons', field: 'samples', hidden: false },
-      genes: { label: 'Genes', field: 'genes', hidden: false },
-      pubmed: { label: 'PubMed', field: 'pmid', hidden: false },
-      // linkout: {label: "Link Out", field: "", hidden: false},
+      exp_id: { label: 'Experiment ID', field: 'exp_id', hidden: true },
+      study_name: { label: 'Study Name', field: 'study_name', hidden: false },
+      study_title: { label: 'Study Title', field: 'study_title', hidden: false },
+      exp_name: { label: 'Exp Name', field: 'exp_name', hidden: false },
+      exp_title: { label: 'Exp Title', field: 'exp_title', hidden: false },
+      public_id: { label: 'Public Identifier', field: 'public_identifier', hidden: false },
+      exp_type: { label: 'Exp Type', field: 'exp_type', hidden: false },
       organism: {
         label: 'Organism', field: 'organism', hidden: false, sortable: false
       },
       strain: {
         label: 'Strain', field: 'strain', hidden: false, sortable: false
       },
-      geneMod: {
-        label: 'Gene Modification', field: 'mutant', hidden: false, sortable: false
-      },
-      expCond: {
-        label: 'Experimental Condition', field: 'condition', hidden: false, sortable: false
-      },
-      timeSeries: { label: 'Time Series', field: 'timeseries', hidden: false },
-      releaseDate: { label: 'Release Date', field: 'release_date', hidden: false },
-      author: { label: 'Author', field: 'author', hidden: true },
-      pi: { label: 'PI', field: 'pi', hidden: true },
-      institution: { label: 'Institution', field: 'institution', hidden: true }
+      treatment_type: { label: 'Treatment Type', field: 'treatment_type', hidden: false },
+      treatment_name: { label: 'Treatment Name', field: 'treatment_name', hidden: false },
+      treatment_amount: { label: 'Treatment Amount', field: 'treatment_amount', hidden: false },
+      treatment_duration: { label: 'Treatment Duration', field: 'treatment_duration', hidden: false },
+
+      biosets: { label: 'Biosets', field: 'biosets', hidden: false },
     },
     startup: function () {
       var _self = this;
