@@ -3,7 +3,7 @@ define([
   'dijit/layout/ContentPane', 'dojo/topic',
   '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../PathwayGridContainer', '../ProteinFamiliesContainer',
-  '../TranscriptomicsContainer', '../InteractionContainer', '../GenomeGridContainer',
+  '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
   '../SequenceGridContainer', '../StrainGridContainer', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
@@ -11,7 +11,7 @@ define([
   ContentPane, Topic,
   FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   PathwayGridContainer, ProteinFamiliesContainer,
-  TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
+  ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
   SequenceGridContainer, StrainGridContainer, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
@@ -328,9 +328,9 @@ define([
       //   id: this.viewer.id + '_proteinFamilies',
       //   disabled: false
       // });
-      this.transcriptomics = new TranscriptomicsContainer({
-        title: 'Transcriptomics',
-        id: this.viewer.id + '_transcriptomics'
+      this.experiments = new ExperimentsContainer({
+        title: 'Experiments',
+        id: this.viewer.id + '_experiments'
       });
 
       this.interactions = new InteractionsContainer({
@@ -367,7 +367,7 @@ define([
       // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      this.viewer.addChild(this.transcriptomics);
+      this.viewer.addChild(this.experiments);
       this.viewer.addChild(this.interactions);
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {

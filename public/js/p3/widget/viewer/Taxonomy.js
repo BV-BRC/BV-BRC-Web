@@ -247,7 +247,7 @@ define([
         case 'serology':
         case 'strains':
         case 'epitope':
-        case 'transcriptomics':
+        case 'experiments':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
           }));

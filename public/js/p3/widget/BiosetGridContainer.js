@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './TranscriptomicsComparisonGrid'
+  './BiosetGrid'
 ], function (
   declare, GridContainer,
   Grid

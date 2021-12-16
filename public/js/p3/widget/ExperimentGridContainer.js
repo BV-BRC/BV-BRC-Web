@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './TranscriptomicsExperimentGrid', './AdvancedSearchFields', 'dijit/popup',
+  './ExperimentGrid', './AdvancedSearchFields', 'dijit/popup',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct'
 ], function (

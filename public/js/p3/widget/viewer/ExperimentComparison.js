@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  '../PageGrid', '../formatter', '../TranscriptomicsComparisonGridContainer',
+  '../PageGrid', '../formatter', '../BiosetGridContainer',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter'
 ], function (
   declare, TabViewerBase, on,
   domClass, ContentPane, domConstruct,
-  Grid, formatter, TranscriptomicsComparisonGridContainer,
+  Grid, formatter, BiosetGridContainer,
   PathJoin, xhr, lang, DataItemFormatter
 ) {
   return declare([TabViewerBase], {
@@ -133,7 +133,7 @@ define([
         handleAs: 'json'
       }).then(lang.hitch(this, function (experiment) {
         this.overview = this.createOverviewPanel(this.state);
-        this.biosets = new TranscriptomicsComparisonGridContainer({
+        this.biosets = new BiosetGridContainer({
           title: 'Biosets',
           enableFilterPanel: false,
           id: this.viewer.id + '_biosets',

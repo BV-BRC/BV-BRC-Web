@@ -1017,11 +1017,11 @@ define([
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
 
           Topic.publish('/navigate', {
-            href: '/view/TranscriptomicsExperimentList/?in(eid,(' + experimentIdList.join(',') + '))#view_tab=experiments',
+            href: '/view/TranscriptomicsExperimentList/?in(exp_id,(' + experimentIdList.join(',') + '))#view_tab=experiments',
             target: 'blank'
           });
         },
@@ -1034,21 +1034,21 @@ define([
           multiple: true,
           validTypes: ['*'],
           max: 5000,
-          validContainerTypes: ['experiment_data', 'transcriptomics_sample_data'],
+          validContainerTypes: ['experiment_data', 'bioset_data'],
           tooltip: 'View Experiment Gene List'
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
           if (experimentIdList.length == 1) {
             Topic.publish('/navigate', {
-              href: '/view/TranscriptomicsExperiment/?eq(eid,(' + experimentIdList + '))',
+              href: '/view/TranscriptomicsExperiment/?eq(exp_id,(' + experimentIdList + '))',
               target: 'blank'
             });
           } else {
             Topic.publish('/navigate', {
-              href: '/view/TranscriptomicsExperiment/?in(eid,(' + experimentIdList.join(',') + '))',
+              href: '/view/TranscriptomicsExperiment/?in(exp_id,(' + experimentIdList.join(',') + '))',
               target: 'blank'
             });
           }
