@@ -165,7 +165,7 @@ define([
               .style('opacity', 0.95);
 
             var content = [];
-            (d.patric_id) ? content.push('PATRIC ID: ' + d.patric_id) : {};
+            (d.patric_id) ? content.push('BRC ID: ' + d.patric_id) : {};
             (d.refseq_locus_tag) ? content.push('RefSeq Locus tag: ' + d.refseq_locus_tag) : {};
             (d.gene) ? content.push('Gene: ' + d.gene) : {};
             (d.product) ? content.push('Product: ' + d.product) : {};

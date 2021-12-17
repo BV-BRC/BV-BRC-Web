@@ -17,7 +17,7 @@ define([
     idProperty: 'patric_id',
     // filterOptions: {},
     data: [],
-    columns: [selector({ label: selector({ unidable: true }) }), { label: 'Patric ID', field: 'patric_id' }, { label: 'Metadata', field: 'metadata' }, { label: 'Group', field: 'group' }, { label: 'Genome ID', field: 'genome_id' }],
+    columns: [selector({ label: selector({ unidable: true }) }), { label: 'BRC ID', field: 'patric_id' }, { label: 'Metadata', field: 'metadata' }, { label: 'Group', field: 'group' }, { label: 'Genome ID', field: 'genome_id' }],
 
   });
 });
