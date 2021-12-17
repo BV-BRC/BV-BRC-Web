@@ -45,9 +45,9 @@ define([
         queryArr.push(`eq(taxon_rank,${sanitizeInput(taxonRankValue)})`)
       }
 
-      const divisionValue = this.divisionNode.get('value')
-      if (divisionValue !== '') {
-        queryArr.push(`eq(division,${sanitizeInput(divisionValue)})`)
+      const advancedQueryArr = this._buildAdvancedQuery()
+      if (advancedQueryArr.length > 0) {
+        queryArr = queryArr.concat(advancedQueryArr)
       }
 
       return queryArr.join('&')
