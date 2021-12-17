@@ -6,7 +6,7 @@ define([
   PageGrid, Deferred, MetaCATSStore
 ) {
   return declare([PageGrid], {
-    // columns: { patric_id: 'Patric ID', genome_id: 'Genome ID' },
+    // columns: { patric_id: 'BRC ID', genome_id: 'Genome ID' },
     primaryKey: 'patric_id',
     region: 'center',
     query: '',

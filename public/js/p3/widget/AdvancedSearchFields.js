@@ -349,9 +349,9 @@ define([], function () {
       {
         field: 'patric_id', type: 'str', facet: false, facet_hidden: false, search: true
       },
-      {
-        field: 'brc_id', type: 'str', facet: false, facet_hidden: false, search: true
-      },
+      // {
+      //   field: 'brc_id', type: 'str', facet: false, facet_hidden: false, search: true
+      // },
       {
         field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
       },

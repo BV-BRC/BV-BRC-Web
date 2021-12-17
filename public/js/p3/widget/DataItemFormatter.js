@@ -515,186 +515,191 @@ define([
     feature_data: function (item, options) {
       options = options || {};
 
-      var sectionList = ['Summary', 'Identifiers', 'Genome', 'Location', 'Sequences', 'Other'];
-      var section = {};
-
-      section.Summary = [{
-        name: 'RefSeq Locus Tag',
-        text: 'refseq_locus_tag',
-        link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
-        mini: true
-      }, {
-        name: 'Gene Symbol',
-        text: 'gene',
-        mini: true
-      }, {
-        name: 'Product',
-        text: 'product',
-        mini: true
-      }, {
-        name: 'Annotation',
-        text: 'annotation'
-      }, {
-        name: 'Feature Type',
-        text: 'feature_type'
-      }, {
-        name: 'BRC ID',
-        text: 'brc_id'
-      }, {
-        name: 'Classifier Score',
-        text: 'classifier_score'
-      }, {
-        name: 'Classifier Round',
-        text: 'classifier_round'
-      }];
-
-      section.Identifiers = [{
-        name: 'Protein ID',
-        text: 'protein_id',
-        link: 'http://www.ncbi.nlm.nih.gov/protein/'
-      }, {
-        name: 'Gene ID',
-        text: 'gene_id',
-        link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
-      }, {
-        name: 'UniProtKB Accession',
-        text: 'uniprotkb_accession'
-      }, {
-        name: 'PDB Accession',
-        text: 'pdb_accession'
-      }, {
-        name: 'gi',
-        text: 'gi'
-      }, {
-        name: 'PATRIC Local Family',
-        text: 'plfam_id',
-        link: function (obj) {
-          return lang.replace(
-            '<a href="/view/FeatureList/?eq(plfam_id,' + obj.plfam_id + ')#view_tab=features">' +
-              obj.plfam_id +
-            '</a>',
-            { obj: obj }
-          );
-        }
-      }, {
-        name: 'PATRIC Global Family',
-        text: 'pgfam_id',
-        link: function (obj) {
-          return lang.replace(
-            '<a href="/view/FeatureList/?eq(pgfam_id,' + obj.pgfam_id + ')#view_tab=features">' +
-              obj.pgfam_id +
-            '</a>',
-            { obj: obj }
-          );
-        }
-      }, {
-        name: 'SOG ID',
-        text: 'sog_id',
-        link: function (obj) {
-          return lang.replace(
-            '<a href="/view/FeatureList/?eq(sog_id,' + obj.sog_id + ')#view_tab=features">' +
-              obj.sog_id +
-            '</a>',
-            { obj: obj }
-          );
-        }
-      }];
-
-      section.Genome = [{
-        name: 'Taxon ID',
-        text: 'taxon_id',
-        link: '/view/Taxonomy/'
-      }, {
-        name: 'Genome ID',
-        text: 'genome_id',
-        link: '/view/Genome/'
-      }, {
-        name: 'Genome Name',
-        text: 'genome_name',
-        link: function (obj) {
-          return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', { obj: obj });
-        }
-      }];
-
-      section.Location = [{
-        name: 'Sequence ID',
-        text: 'sequence_id',
-        link: function (obj) {
-          return lang.replace('<a href="/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,{obj.sequence_id}),eq(feature_type,CDS))" target="_blank">{obj.sequence_id}</a>', { obj: obj });
-        },
-        mini: true
-      }, {
-        name: 'Accession',
-        text: 'accession',
-        link: 'https://www.ncbi.nlm.nih.gov/nuccore/'
-      }, {
-        name: 'UniProtKB Accession',
-        text: 'uniprotkb_accession'
-      }, {
-        name: 'PDB Accession',
-        text: 'pdb_accession'
-      }, {
-        name: 'Start',
-        text: 'start'
-      }, {
-        name: 'End',
-        text: 'end'
-      }, {
-        name: 'Strand',
-        text: 'strand'
-      }, {
-        name: 'Location',
-        text: 'location',
-        mini: true
-      }, {
-        name: 'Segments',
-        text: 'segments',
-      }];
-
-      section.Sequences = [{
-        name: 'NA Length',
-        text: 'na_length'
-      }, {
-        name: 'NA Sequence',
-        text: 'na_sequence_md5',
-        link: function (obj) {
-          return '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
-        }
-      }, {
-        name: 'AA Length',
-        text: 'aa_length'
-      }, {
-        name: 'AA Sequence',
-        text: 'aa_sequence_md5',
-        link: function (obj) {
-          return '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
-        }
-      }];
-
-      section.Other = [{
-        name: 'Insert Date',
-        text: 'date_inserted',
-        type: 'date'
-      }, {
-        name: 'Last Modified',
-        text: 'date_modified',
-        type: 'date'
-      }, {
-        name: 'Classifier Score',
-        text: 'classifier_score',
-      }, {
-        name: 'Classifier Round',
-        text: 'classifier_round',
-      }];
+      var metadataFeatureDataID = this.feature_data_meta_table_names();
+      var metadataFeatureDataValue = this.feature_data_meta_spec();
 
       var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
 
       var div = domConstruct.create('div');
       displayHeader(div, label, 'fa icon-genome-features fa-2x', '/view/Feature/' + item.feature_id, options);
 
-      displayDetailBySections(item, sectionList, section, div, options);
+      displayDetailBySections(item, metadataFeatureDataID, metadataFeatureDataValue, div, options);
 
       return div;
+    },
+
+    feature_data_meta_table_names: function () {
+      return ['Genome', 'Source', 'Identifiers', 'Database Cross References', 'Location', 'Sequences', 'Annotation', 'Families', 'Misc', 'Provenance'];
+    },
+
+    feature_data_meta_spec: function () {
+      var spec = {
+        'Genome': [{
+          name: 'Genome ID',
+          text: 'genome_id',
+          link: '/view/Genome/'
+        }, {
+          name: 'Genome Name',
+          text: 'genome_name',
+          link: function (obj) {
+            return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', { obj: obj });
+          }
+        }, {
+          name: 'Taxon ID',
+          text: 'taxon_id',
+          link: '/view/Taxonomy/'
+        },],
+
+        'Source': [{
+          name: 'Annotation',
+          text: 'annotation',
+        }, {
+          name: 'Feature Type',
+          text: 'feature_type',
+        },],
+
+        'Identifiers': [{
+          name: 'Feature ID',
+          text: 'feature_id',
+        }, {
+          name: 'BRC ID',
+          text: 'patric_id',
+        },],
+
+        'Database Cross References': [{
+          name: 'RefSeq Locus Tag',
+          text: 'refseq_locus_tag',
+          link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+        }, {
+          name: 'Protein ID',
+          text: 'protein_id',
+          link: 'http://www.ncbi.nlm.nih.gov/protein/'
+        }, {
+          name: 'Gene ID',
+          text: 'gene_id',
+          link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+        }, {
+          name: 'UniProtKB Accession',
+          text: 'uniprotkb_accession',
+          link: function (obj) {
+            var ids = obj.uniprotkb_accession;
+            return obj.uniprotkb_accession.map(function (d, idx) {
+              return lang.replace('<a href="https://www.uniprot.org/uniprot/{0}">{1}</a>', [ids[idx], d]);
+            }).join(', ');
+          }
+        }, {
+          name: 'PDB Accession',
+          text: 'pdb_accession',
+          link: 'https://www.rcsb.org/structure/'
+        },],
+
+        'Location': [{
+          name: 'Start',
+          text: 'start'
+        }, {
+          name: 'End',
+          text: 'end'
+        }, {
+          name: 'Strand',
+          text: 'strand'
+        }, {
+          name: 'Location',
+          text: 'location',
+          mini: true
+        }, {
+          name: 'Segments',
+          text: 'segments',
+        }, {
+          name: 'Codon Start',
+          text: 'codon_start',
+        }],
+
+        'Sequences': [{
+          name: 'NA Length',
+          text: 'na_length'
+        }, {
+          name: 'AA Length',
+          text: 'aa_length'
+        }, {
+          name: 'NA Sequence',
+          text: 'na_sequence_md5',
+          link: function (obj) {
+            return '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+          }
+        }, {
+          name: 'AA Sequence',
+          text: 'aa_sequence_md5',
+          link: function (obj) {
+            return '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+          }
+        },],
+
+        'Annotation': [{
+          name: 'Gene',
+          text: 'gene',
+        }, {
+          name: 'Product',
+          text: 'product',
+        },],
+
+        'Families': [{
+          name: 'PATRIC Local Family',
+          text: 'plfam_id',
+          link: function (obj) {
+            return lang.replace(
+              '<a href="/view/FeatureList/?eq(plfam_id,' + obj.plfam_id + ')#view_tab=features">' +
+                obj.plfam_id +
+              '</a>',
+              { obj: obj }
+            );
+          }
+        }, {
+          name: 'PATRIC Global Family',
+          text: 'pgfam_id',
+          link: function (obj) {
+            return lang.replace(
+              '<a href="/view/FeatureList/?eq(pgfam_id,' + obj.pgfam_id + ')#view_tab=features">' +
+                obj.pgfam_id +
+              '</a>',
+              { obj: obj }
+            );
+          }
+        }, {
+          name: 'SOG ID',
+          text: 'sog_id',
+          link: function (obj) {
+            return lang.replace(
+              '<a href="/view/FeatureList/?eq(sog_id,' + obj.sog_id + ')#view_tab=features">' +
+                obj.sog_id +
+              '</a>',
+              { obj: obj }
+            );
+          }
+        }, {
+          name: 'OG ID',
+          text: 'og_id',
+        }, {
+          name: 'GO',
+          text: 'go',
+        },],
+
+        'Misc': [{
+          name: 'Property',
+          text: 'property',
+        }, {
+          name: 'Notes',
+          text: 'notes',
+        }],
+
+        'Provenance': [{
+          name: 'Date Inserted',
+          text: 'date_inserted',
+        }, {
+          name: 'Date Modified',
+          text: 'date_modified',
+        }],
+      }
+      return spec;
     },
 
     spgene_data: function (item, options) {
@@ -704,7 +709,7 @@ define([
         name: 'Genome Name',
         text: 'genome_name'
       }, {
-        name: 'PATRIC ID',
+        name: 'BRC ID',
         text: 'patric_id'
       }, {
         name: 'RefSeq Locus Tag',
@@ -941,84 +946,33 @@ define([
       options = options || {};
 
       var columns = [{
-        name: 'Taxonomy ID',
+        name: 'Taxon ID',
         text: 'taxon_id',
         link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
-        name: 'Taxonomy Name',
-        text: 'taxonomy_name',
+        name: 'Taxon Name',
+        text: 'taxon_name',
       }, {
-        name: 'Rank',
+        name: 'Taxon Rank',
         text: 'taxon_rank'
       }, {
-        name: 'Families',
-        text: 'unique_family'
+        name: 'Other Names',
+        text: 'other_names'
       }, {
-        name: 'Genera',
-        text: 'unique_genus'
+        name: 'Genetic Code',
+        text: 'genetic_code'
       }, {
-        name: 'Species',
-        text: 'unique_species'
+        name: 'Parent ID',
+        text: 'parent_id'
       }, {
-        name: 'Strains',
-        text: 'strains_count',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=strains">${obj.strains_count}</a>`;
-        }
+        name: 'Division',
+        text: 'division'
       }, {
-        name: 'Genomes / Segments',
-        text: 'count',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=genomes">${obj.count}</a>`;
-        }
+        name: 'Description',
+        text: 'description'
       }, {
-        name: 'Protein Coding Genes (CDS)',
-        text: 'CDS',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,CDS)">${obj.CDS}</a>`;
-        }
-      }, {
-        name: 'Mature Peptides',
-        text: 'mat_peptide',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,mat_peptide)">${obj.mat_peptide}</a>`;
-        }
-      }, {
-        name: '3D Protein Structures (PDB)',
-        text: 'PDB',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=structures">${obj.PDB}</a>`;
-        }
-      // }, {
-      //   name: 'Other Names',
-      //   text: 'other_names',
-      // }, {
-      //   name: 'Lineage Names',
-      //   text: 'lineage_names',
-      //   link: function (obj) {
-      //     var ids = obj.lineage_ids;
-      //     return obj.lineage_names.map(function (d, idx) {
-      //       return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
-      //     }).join(', ');
-      //   }
-      // }, {
-      //   name: 'Lineage IDs',
-      //   text: 'lineage_ids',
-      // }, {
-      //   name: 'Genetic Code',
-      //   text: 'genetic_code'
-      // }, {
-      //   name: 'Parent ID',
-      //   text: 'parent_id',
-      // }, {
-      //   name: 'Division',
-      //   text: 'division',
-      // }, {
-      //   name: 'Description',
-      //   text: 'description',
-      // }, {
-      //   name: 'Genomes',
-      //   text: 'genomes',
+        name: 'Genomes',
+        text: 'genomes'
       }];
 
       var div = domConstruct.create('div');
@@ -1108,7 +1062,7 @@ define([
         name: 'Gene',
         text: 'gene'
       }, {
-        name: 'PATRIC ID',
+        name: 'BRC ID',
         text: 'patric_id',
         link: '/view/Feature/'
       }, {
@@ -1165,7 +1119,7 @@ define([
             name: 'Active',
             text: 'active'
           }, {
-            name: 'PATRIC ID',
+            name: 'BRC ID',
             text: 'patric_id'
           }, {
             name: 'Gene',
@@ -1230,7 +1184,7 @@ define([
         text: 'refseq_locus_tag',
         link: 'http://www.ncbi.nlm.nih.gov/protein/?term=',
       }, {
-        name: 'PATRIC ID',
+        name: 'BRC ID',
         text: 'patric_id',
         link: '/view/Feature/'
       }, {
@@ -1354,7 +1308,7 @@ define([
         name: 'Feature ID',
         text: 'feature_id'
       }, {
-        name: 'PATRIC ID',
+        name: 'BRC ID',
         text: 'patric_id',
         link: '/view/Feature/'
       }, {
@@ -1417,7 +1371,7 @@ define([
         text: 'taxon_id',
         link: '/view/Taxonomy/'
       }, {
-        name: 'PATRIC ID',
+        name: 'BRC ID',
         text: 'patric_id',
         link: '/view/Feature/'
       }, {
@@ -2450,7 +2404,7 @@ define([
         name: 'Accession',
         text: 'accession'
       }, {
-        name: 'PATRIC ID',
+        name: 'BRC ID',
         text: 'patric_id'
       }, {
         name: 'RefSeq Locus Tag',

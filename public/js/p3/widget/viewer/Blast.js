@@ -123,7 +123,7 @@ define([
           },
           genome: { label: 'Genome', field: 'genome_name' },
           genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
-          patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+          patric_id: { label: 'BRC ID', field: 'patric_id' },
           refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
           gene: { label: 'Gene', field: 'gene' },
           plfam: { label: 'PATRIC Local family', field: 'plfam_id', hidden: true },

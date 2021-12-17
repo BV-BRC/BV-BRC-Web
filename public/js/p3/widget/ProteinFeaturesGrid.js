@@ -26,7 +26,7 @@ define([
       genome_name: { label: 'Genome Name', field: 'genome_name', hidden: true },
       taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
       feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
-      patric_id: { label: 'Patric ID', field: 'patric_id', hidden: false },
+      patric_id: { label: 'BRC ID', field: 'patric_id', hidden: false },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
       aa_sequence_md5: { label: 'AA Sequence MD5', field: 'aa_sequence_md5', hidden: true },
       gene: { label: 'Gene', field: 'gene', hidden: false },

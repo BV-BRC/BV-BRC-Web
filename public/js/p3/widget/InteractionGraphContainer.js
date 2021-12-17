@@ -577,7 +577,7 @@ define([
 
           var content = [];
           if (ele.isNode()) {
-            ele.data('id') ? content.push('PATRIC ID: ' + ele.data('id')) : {};
+            ele.data('id') ? content.push('BRC ID: ' + ele.data('id')) : {};
             ele.data('genome') ? content.push('Genome: ' + ele.data('genome')) : {};
             ele.data('refseq_locus_tag') ? content.push('RefSeq Locus Tag: ' + ele.data('refseq_locus_tag')) : {};
             ele.data('gene') ? content.push('Gene: ' + ele.data('gene')) : {};

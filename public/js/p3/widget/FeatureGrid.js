@@ -44,8 +44,8 @@ define([
 
       feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
-      brc_id: { label: 'BRC ID', field: 'brc_id', hidden: true },
+      patric_id: { label: 'BRC ID', field: 'patric_id', hidden: false },
+      // brc_id: { label: 'BRC ID', field: 'brc_id', hidden: true },
 
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
 

@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dojo/_base/lang', 'dojo/mouse',
   'dijit/popup', 'dijit/TooltipDialog',
-  'dijit/Dialog', '../WorkspaceManager', './app/AppBase', './app/Blast', './app/GenomeAlignment', './app/GenomeDistance',
+  'dijit/Dialog', '../WorkspaceManager', './app/AppBase', './app/GenomeAlignment', './app/GenomeDistance',
   './app/Homology', './app/MSA', './app/PrimerDesign'
 ], function (
   declare, on, domConstruct,
   lang, Mouse,
   popup, TooltipDialog,
-  Dialog, WorkspaceManager, AppBase, Blast, GenomeAlignment, GenomeDistance, Homology, MSA, PrimerDesign
+  Dialog, WorkspaceManager, AppBase, GenomeAlignment, GenomeDistance, Homology, MSA, PrimerDesign
 ) {
 
   return declare([TooltipDialog], {

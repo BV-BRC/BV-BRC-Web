@@ -236,11 +236,11 @@ define([
       if (this.labels) {
         this.tree.setTree(this.newick, this.labels, 'Feature Names', this.idType);
         idMenuDivs.push('<div class="wsActionTooltip" rel="Feature Names">Feature Names</div>');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">PATRIC ID</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">BRC ID</div>');
       }
       else {
         this.tree.setTree(this.newick, null, null, this.idType);
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">PATRIC ID</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">BRC ID</div>');
       }
       idMenu.set('content', idMenuDivs.join(''));
       this.tree.startup();

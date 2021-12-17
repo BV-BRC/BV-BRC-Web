@@ -29,7 +29,7 @@ define([
     maxGenomeCount: 10000,
     dataModel: 'genome_feature',
     primaryKey: 'feature_id',
-    defaultFilter: 'and(or(eq(feature_type,CDS),eq(feature_type,mat_peptide)),eq(annotation,%22PATRIC%22))',
+    defaultFilter: 'and(eq(feature_type,CDS),eq(annotation,%22PATRIC%22))',
     tooltip: 'The "Features" tab contains a list of Genomic Feature (e.g., CDS, rRNA, tRNA, etc) for genomes associated with the current view',
     getFilterPanel: function (opts) {
 

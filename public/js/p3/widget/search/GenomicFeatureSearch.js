@@ -27,7 +27,7 @@ define([
     searchAppName: 'Protein Search',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
-    resultUrlHash: '#view_tab=features&filter=false',
+    resultUrlHash: '#view_tab=features',
     postCreate: function () {
       this.inherited(arguments)
 
@@ -124,7 +124,12 @@ define([
       // if (featureTypeValue !== '') {
       //   queryArr.push(`eq(feature_type,${sanitizeInput(featureTypeValue)})`)
       // }
-      queryArr.push('or(eq(feature_type,CDS),eq(feature_type,mat_peptide))')
+      queryArr.push('eq(feature_type,CDS)')
+
+      const brcIDValue = this.brcIDNode.get('value')
+      if (brcIDValue !== '') {
+        queryArr.push(`eq(patric_id,${TextInputEncoder(brcIDValue)})`)
+      }
 
       const geneValue = this.geneNode.get('value')
       if (geneValue !== '') {
