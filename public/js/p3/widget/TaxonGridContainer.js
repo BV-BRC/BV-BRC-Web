@@ -31,7 +31,7 @@ define([
     getFilterPanel: function (opts) {
 
     },
-    facetFields: ['division', 'taxon_rank'],
+    facetFields: ['taxon_rank', 'genetic_code', 'division'],
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',
