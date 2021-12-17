@@ -219,7 +219,7 @@
   background-color: #e3e3e3;
   width: 100%;
   padding: 5px 0px;
-  margin-top: -4px;
+  margin-top: -2px;
 }
 
 #bv-brc-home .mid-content-buttons {
@@ -690,7 +690,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 340px 60px 210px 100px 310px;
+    grid-template-rows: 300px 100px 100px 100px 260px;
     grid-gap: 20px;
   }
   #bv-brc-home .bv-brc-info {
