@@ -946,84 +946,33 @@ define([
       options = options || {};
 
       var columns = [{
-        name: 'Taxonomy ID',
+        name: 'Taxon ID',
         text: 'taxon_id',
         link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
       }, {
-        name: 'Taxonomy Name',
-        text: 'taxonomy_name',
+        name: 'Taxon Name',
+        text: 'taxon_name',
       }, {
-        name: 'Rank',
+        name: 'Taxon Rank',
         text: 'taxon_rank'
       }, {
-        name: 'Families',
-        text: 'unique_family'
+        name: 'Other Names',
+        text: 'other_names'
       }, {
-        name: 'Genera',
-        text: 'unique_genus'
+        name: 'Genetic Code',
+        text: 'genetic_code'
       }, {
-        name: 'Species',
-        text: 'unique_species'
+        name: 'Parent ID',
+        text: 'parent_id'
       }, {
-        name: 'Strains',
-        text: 'strains_count',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=strains">${obj.strains_count}</a>`;
-        }
+        name: 'Division',
+        text: 'division'
       }, {
-        name: 'Genomes / Segments',
-        text: 'count',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=genomes">${obj.count}</a>`;
-        }
+        name: 'Description',
+        text: 'description'
       }, {
-        name: 'Protein Coding Genes (CDS)',
-        text: 'CDS',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,CDS)">${obj.CDS}</a>`;
-        }
-      }, {
-        name: 'Mature Peptides',
-        text: 'mat_peptide',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=features&filter=eq(feature_type,mat_peptide)">${obj.mat_peptide}</a>`;
-        }
-      }, {
-        name: '3D Protein Structures (PDB)',
-        text: 'PDB',
-        link: function (obj) {
-          return `<a href="/view/Taxonomy/${obj.taxon_id}#view_tab=structures">${obj.PDB}</a>`;
-        }
-      // }, {
-      //   name: 'Other Names',
-      //   text: 'other_names',
-      // }, {
-      //   name: 'Lineage Names',
-      //   text: 'lineage_names',
-      //   link: function (obj) {
-      //     var ids = obj.lineage_ids;
-      //     return obj.lineage_names.map(function (d, idx) {
-      //       return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
-      //     }).join(', ');
-      //   }
-      // }, {
-      //   name: 'Lineage IDs',
-      //   text: 'lineage_ids',
-      // }, {
-      //   name: 'Genetic Code',
-      //   text: 'genetic_code'
-      // }, {
-      //   name: 'Parent ID',
-      //   text: 'parent_id',
-      // }, {
-      //   name: 'Division',
-      //   text: 'division',
-      // }, {
-      //   name: 'Description',
-      //   text: 'description',
-      // }, {
-      //   name: 'Genomes',
-      //   text: 'genomes',
+        name: 'Genomes',
+        text: 'genomes'
       }];
 
       var div = domConstruct.create('div');
