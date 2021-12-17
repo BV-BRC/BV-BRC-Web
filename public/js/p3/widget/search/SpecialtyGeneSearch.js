@@ -74,6 +74,11 @@ define([
         queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
+      const brcIDValue = this.brcIDNode.get('value')
+      if (brcIDValue !== '') {
+        queryArr.push(`eq(patric_id,${TextInputEncoder(brcIDValue)})`)
+      }
+
       const propertyValue = this.propertyNode.get('value')
       if (propertyValue !== '') {
         queryArr.push(`eq(property,"${sanitizeInput(propertyValue)}")`)
