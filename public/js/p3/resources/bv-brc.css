@@ -150,8 +150,13 @@
 }
 
 #bv-brc-home .bv-brc-info .browse {
+  margin-top: 5px;
+}
+
+#bv-brc-home .bv-brc-info .search {
   margin-top: 20px;
 }
+
 
 #bv-brc-home .bv-brc-info .search .global-search {
   margin-left: 16px;
@@ -219,7 +224,7 @@
   background-color: #e3e3e3;
   width: 100%;
   padding: 5px 0px;
-  margin-top: -2px;
+  margin-top: -1px;
 }
 
 #bv-brc-home .mid-content-buttons {
@@ -399,7 +404,6 @@
   display: inline-block;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 400 !important;
-  font-size: 10pt !important;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -408,10 +412,10 @@
       -ms-user-select: none;
           user-select: none;
   border: 1px solid transparent;
-  padding: 0.5rem 2rem;
-  font-size: 1.0rem!important;
+  padding: .5rem .75rem;
+  font-size: 0.9rem!important;
   line-height: 1.5;
-  border-radius: 0.25rem;
+  border-radius: 5rem;
   -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -690,7 +694,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 300px 100px 100px 100px 260px;
+    grid-template-rows: 290px 110px 90px 100px 260px;
     grid-gap: 20px;
   }
   #bv-brc-home .bv-brc-info {
