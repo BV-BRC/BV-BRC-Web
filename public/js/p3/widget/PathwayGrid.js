@@ -32,7 +32,7 @@ define([
 
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
+      patric_id: { label: 'BRC ID', field: 'patric_id', hidden: false },
 
       gene: { label: 'Gene', field: 'gene', hidden: false },
       product: { label: 'Product', field: 'product', hidden: false },

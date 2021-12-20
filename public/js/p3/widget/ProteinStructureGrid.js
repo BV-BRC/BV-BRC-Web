@@ -30,7 +30,7 @@ define([
       taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
 
       genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
+      patric_id: { label: 'BRC ID', field: 'patric_id', hidden: false },
       uniprotkb_accession: { label: 'UniProtKB Accession', field: 'uniprotkb_accession', hidden: false },
       gene: { label: 'Gene', field: 'gene', hidden: false },
       product: { label: 'Product', field: 'product', hidden: false },

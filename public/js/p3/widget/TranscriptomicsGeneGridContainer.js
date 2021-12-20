@@ -103,7 +103,7 @@ define([
 
             var data  = this.grid.store.query('', { sort: this.grid.store.sort });
 
-            var headers = ['Genome', 'PATRIC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Start', 'End', 'Strand', 'Comparisons', 'Up', 'Down'];
+            var headers = ['Genome', 'BRC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Start', 'End', 'Strand', 'Comparisons', 'Up', 'Down'];
             var content = [];
             data.forEach(function (row) {
               content.push([row.genome_name, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, '"' + row.product + '"', row.start, row.end, row.strand, row.sample_size, row.up, row.down].join(DELIMITER));

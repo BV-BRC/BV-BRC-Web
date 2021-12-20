@@ -1206,7 +1206,7 @@ define([
 
           if (containerWidget.containerType == 'genome_data') {
             type = 'genome_group';
-          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
+          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data' || containerWidget.containerType == 'strain_data') {
             type = 'feature_group';
           } else if (containerWidget.containerType == 'transcriptomics_experiment_data') {
             type = 'experiment_group';

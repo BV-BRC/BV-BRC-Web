@@ -224,7 +224,7 @@ define([
             var grid = new Grid({
               columns: {
                 genome_name: 'Genome Name',
-                patric_id: 'PATRIC ID',
+                patric_id: 'BRC ID',
                 refseq_locus_tag: 'Refseq Locus Tag',
                 gene: 'Gene',
                 product: 'Product'

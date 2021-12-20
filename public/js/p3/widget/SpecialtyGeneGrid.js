@@ -25,7 +25,7 @@ define([
       evidence: { label: 'Evidence', field: 'evidence', hidden: false },
       property: { label: 'Property', field: 'property', hidden: false },
       source: { label: 'Source', field: 'source', hidden: false },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
+      patric_id: { label: 'BRC ID', field: 'patric_id', hidden: false },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
       source_id: { label: 'Source ID', field: 'source_id', hidden: false },

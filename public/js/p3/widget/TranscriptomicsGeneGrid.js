@@ -21,7 +21,7 @@ define([
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+      patric_id: { label: 'BRC ID', field: 'patric_id' },
       genome_name: { label: 'Genome', field: 'genome_name', hidden: true },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },

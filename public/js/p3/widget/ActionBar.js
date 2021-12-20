@@ -150,9 +150,9 @@ define([
         // If we have a forbiddenType do not allow downloads.
         var forbiddenTypes = act.options.forbiddenTypes || null;
         if (forbiddenTypes) {
-          if (job_result) {
-            return false;
-          }
+          //if (job_result) {
+          //  return false;
+          //}
           return types.every(function (t) {
             return (!forbiddenTypes.includes(t))
           });

@@ -14,7 +14,7 @@
                   <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
                 </div> -->
             </h3>
-            <p>${applicationDescription} For further explanation, please see the <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service Quick Reference</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
+            <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
     </div>
 
     <div class="formFieldsContainer">
@@ -128,7 +128,7 @@
         <div class="appRow">
           <label class="paramlabel">Select genome</label><br>
           <div style="width:78%;display:inline-block;" data-dojo-type="p3/widget/GenomeNameSelector" name="codon_genome_id" maxHeight="200" required="false" data-dojo-attach-point="codon_genome_id"></div>
-          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddCodonGroupGenome" class="app-btn"><i class="icon-plus"></i> Add</button>
+          <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="codonGroupGenomeButton" data-dojo-attach-event="click:onAddCodonGroupGenome" class="app-btn"><i class="icon-plus"></i> Add</button>
           <br>
           <label class="paramlabel">And/or select genome group</label><br>
           <div style="width:78%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="codon_genomes_genomegroup" required="false" data-dojo-attach-point="codon_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
@@ -146,7 +146,7 @@
           </table>
         </div>
         <!-- Used in the js to get the genome name for a given taxon id -->
-        <div data-dojo-type="p3/widget/GenomeNameSelector" style="display:none" data-dojo-attach-point="scientific_nameWidget"></div>
+        <!-- <div data-dojo-type="p3/widget/GenomeNameSelector" style="display:none" data-dojo-attach-point="scientific_nameWidget"></div> -->
     </div>
 
       <div id="parameterBox" style="width:400px; " class="appBox appShadow">

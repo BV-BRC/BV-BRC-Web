@@ -49,6 +49,11 @@ define([
         queryArr.push(`eq(pdb_id,${sanitizeInput(pdbIDValue)})`)
       }
 
+      const brcIDValue = this.brcIDNode.get('value')
+      if (brcIDValue !== '') {
+        queryArr.push(`eq(patric_id,${TextInputEncoder(brcIDValue)})`)
+      }
+
       const descriptionValue = this.descriptionNode.get('value')
       if (descriptionValue !== '') {
         queryArr.push(`eq(description,${TextInputEncoder(sanitizeInput(descriptionValue))})`)

@@ -177,7 +177,7 @@ define([], function () {
         field: 'sra_accession', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'genbank_accession', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'genbank_accessions', type: 'str', facet: false, facet_hidden: true, search: true
       },
 
       {
@@ -284,13 +284,10 @@ define([], function () {
         field: '----- Host Info -----', type: 'str', facet: false, face_hidden: true, search: true
       },
       {
-        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
-      },
-      {
-        field: 'host_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true
@@ -300,6 +297,15 @@ define([], function () {
       },
       {
         field: 'host_health', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'lab_host', type: 'str', facet: false, facet_hidden: false, search: true
+      },
+      {
+        field: 'passage', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'other_clinical', type: 'str', facet: false, facet_hidden: true, search: true
@@ -343,9 +349,9 @@ define([], function () {
       {
         field: 'patric_id', type: 'str', facet: false, facet_hidden: false, search: true
       },
-      {
-        field: 'brc_id', type: 'str', facet: false, facet_hidden: false, search: true
-      },
+      // {
+      //   field: 'brc_id', type: 'str', facet: false, facet_hidden: false, search: true
+      // },
       {
         field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: false, search: true
       },
