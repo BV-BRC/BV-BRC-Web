@@ -467,9 +467,12 @@ define([
       okButton.on('click', function (evt) {
         if (_self.selection) {
           // if autoSelectCurrent we need to implicitly select current
-          if (_self.autoSelectCurrent) {
-            _self.set('selection', _self.selection);
-          }
+          // ASW: it's not clear this  check actually needs to happen given the value is being set anyway
+          // commenting out to remove "public annotation selection bug"
+          //if (_self.autoSelectCurrent) {
+          //  _self.set('selection', _self.selection);
+          //}
+          _self.set('selection', _self.selection);
 
           _self.set('value', _self.selection.path);
         }
@@ -602,9 +605,11 @@ define([
         }));
     },
     onSearchChange: function (value) {
-      this.set('value', value);
-      this.onChange(value);
-      this.validate(true);
+      if (typeof value !== 'undefined' && value != ''){
+        this.set('value', value);
+        this.onChange(value);
+        this.validate(true);
+      }
     },
 
     onMouseEnter: function (value) {
