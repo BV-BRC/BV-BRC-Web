@@ -28,7 +28,7 @@ define([
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
-    // maxGenomes: 256,
+    maxGenomes: 128,
     validFasta: false,
     textInput: false,
 
@@ -86,6 +86,7 @@ define([
       this.gg_protein.set('disabled', true);
       // Do not require anything
       this.sequence_message.innerHTML = '';
+      this.genomegroup_message.innerHTML = '';
       this.aligner.set('required', false);
       this.user_genomes_featuregroup.set('required', false);
       this.dna.set('required', false);
@@ -144,6 +145,16 @@ define([
     },
 
     validate: function () {
+      this.genomegroup_message.innerHTML = '';
+      this.submitButton.set('disabled', false);
+      if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item) {
+        var item_count = this.select_genomegroup.searchBox.item.autoMeta.item_count;
+        if (item_count > this.maxGenomes) {
+          this.genomegroup_message.innerHTML = 'The genome group has ' + item_count + ' genomes. Only ' + this.maxGenomes + ' are allowed.'
+          this.submitButton.set('disabled', true);
+          return false;
+        }
+      }
       if (this.inherited(arguments)) {
         if (this.input_sequence.get('checked') && (!this.fasta_keyboard_input.get('value') || !this.validFasta)) {
           this.submitButton.set('disabled', true);
@@ -166,6 +177,8 @@ define([
         delete values.user_genomes_featuregroup;
       }
       if (values.select_genomegroup) {
+        console.log(this.select_genomegroup);
+
         values.select_genomegroup = [values.select_genomegroup];
       }
       var fastaFiles = [];
