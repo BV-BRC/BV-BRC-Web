@@ -660,12 +660,6 @@ define([
         job_data.single_end_libs = [];
       }
       return job_data;
-    },
-
-    //For some reason the button that is supposed to trigger onAddSRR is not doing so,
-    //so this function just calls the function the button was supposed to invoke on click
-    callOnAddSRR: function() {
-      AppBase.prototype.onAddSRR.call(this);
     }
   });
 });
