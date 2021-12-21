@@ -135,6 +135,10 @@ define([
             return needle && ((gene.entity_id || '').toLowerCase().indexOf(needle) >= 0
               || (gene.patric_id || '').toLowerCase().indexOf(needle) >= 0
               || (gene.locus_tag || '').toLowerCase().indexOf(needle) >= 0
+              || (gene.gene_id || '').toLowerCase().indexOf(needle) >= 0
+              || (gene.protein_id || '').toLowerCase().indexOf(needle) >= 0
+              || (gene.gene || '').toLowerCase().indexOf(needle) >= 0
+              || (gene.product || '').toLowerCase().indexOf(needle) >= 0
               || (gene.entity_name || '').toLowerCase().indexOf(needle) >= 0);
           });
         }
@@ -345,7 +349,7 @@ define([
         return when(window.App.api.data('biosetResult', [this.tgState, opts]), lang.hitch(this, function (data) {
           this.setData(data);
           this._loaded = true;
-          this._buildGenomeFilter(data);
+          // this._buildGenomeFilter(data);
           Topic.publish(this.topicId, 'hideLoadingMask');
         }));
       }));
@@ -353,29 +357,29 @@ define([
       return this._loadingDeferred;
     },
 
-    _buildGenomeFilter: function (data) {
-      if (data.length == 0) {
-        return;
-      }
+    // _buildGenomeFilter: function (data) {
+    //   if (data.length == 0) {
+    //     return;
+    //   }
 
-      var genomeNameMap = {},
-        genomeCountMap = {};
-      data.forEach(function (d) {
-        if (!Object.prototype.hasOwnProperty.call(genomeCountMap, d.genome_id)) {
-          genomeNameMap[d.genome_id] = d.genome_name;
-          genomeCountMap[d.genome_id] = 1;
-        } else {
-          genomeCountMap[d.genome_id]++;
-        }
-      });
+    //   var genomeNameMap = {},
+    //     genomeCountMap = {};
+    //   data.forEach(function (d) {
+    //     if (!Object.prototype.hasOwnProperty.call(genomeCountMap, d.genome_id)) {
+    //       genomeNameMap[d.genome_id] = d.genome_name;
+    //       genomeCountMap[d.genome_id] = 1;
+    //     } else {
+    //       genomeCountMap[d.genome_id]++;
+    //     }
+    //   });
 
-      var genomes = Object.keys(genomeCountMap).map(function (k) {
-        return { value: k, label: genomeNameMap[k] + ' (' + genomeCountMap[k] + ')' };
-      });
+    //   var genomes = Object.keys(genomeCountMap).map(function (k) {
+    //     return { value: k, label: genomeNameMap[k] + ' (' + genomeCountMap[k] + ')' };
+    //   });
 
-      // console.log(genomes);
-      Topic.publish(this.topicId, 'updateGenomeFilter', genomes);
-    },
+    //   // console.log(genomes);
+    //   Topic.publish(this.topicId, 'updateGenomeFilter', genomes);
+    // },
 
     getHeatmapData: function () {
 

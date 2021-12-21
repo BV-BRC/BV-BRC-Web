@@ -1038,20 +1038,14 @@ define([
           tooltip: 'View Experiment Gene List'
         },
         function (selection) {
-          var experimentIdList = selection.map(function (exp) {
+          const experimentIdSet = new Set(selection.map(function (exp) {
             return exp.exp_id;
+          }))
+
+          Topic.publish('/navigate', {
+            href: '/view/BiosetResult/?in(exp_id,(' + Array.from(experimentIdSet).join(',') + '))',
+            target: 'blank'
           });
-          if (experimentIdList.length == 1) {
-            Topic.publish('/navigate', {
-              href: '/view/BiosetResult/?eq(exp_id,(' + experimentIdList + '))',
-              target: 'blank'
-            });
-          } else {
-            Topic.publish('/navigate', {
-              href: '/view/BiosetResult/?in(exp_id,(' + experimentIdList.join(',') + '))',
-              target: 'blank'
-            });
-          }
         },
         false
       ], [

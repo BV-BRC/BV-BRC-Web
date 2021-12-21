@@ -82,34 +82,34 @@ define([
         },
         true
       ],
-      [
-        'Show Significant',
-        'fa icon-filter fa-2x',
-        { label: 'Show', multiple: false, validTypes: ['*'] },
-        function () {
-          if (this.containerActionBar._actions['Show Significant'].options.tooltipDialog == null) {
-            this.tooltip_show_significant = new TooltipDialog({
-              content: this._buildPanelShowSignificant()
-            });
-            this.containerActionBar._actions['Show Significant'].options.tooltipDialog = this.tooltip_show_significant;
-          }
+      // [
+      //   'Show Significant',
+      //   'fa icon-filter fa-2x',
+      //   { label: 'Show', multiple: false, validTypes: ['*'] },
+      //   function () {
+      //     if (this.containerActionBar._actions['Show Significant'].options.tooltipDialog == null) {
+      //       this.tooltip_show_significant = new TooltipDialog({
+      //         content: this._buildPanelShowSignificant()
+      //       });
+      //       this.containerActionBar._actions['Show Significant'].options.tooltipDialog = this.tooltip_show_significant;
+      //     }
 
-          if (this.isPopupOpen) {
-            this.isPopupOpen = false;
-            popup.close();
-          } else {
+      //     if (this.isPopupOpen) {
+      //       this.isPopupOpen = false;
+      //       popup.close();
+      //     } else {
 
-            popup.open({
-              parent: this,
-              popup: this.containerActionBar._actions['Show Significant'].options.tooltipDialog,
-              around: this.containerActionBar._actions['Show Significant'].button,
-              orient: ['below']
-            });
-            this.isPopupOpen = true;
-          }
-        },
-        true
-      ],
+      //       popup.open({
+      //         parent: this,
+      //         popup: this.containerActionBar._actions['Show Significant'].options.tooltipDialog,
+      //         around: this.containerActionBar._actions['Show Significant'].button,
+      //         orient: ['below']
+      //       });
+      //       this.isPopupOpen = true;
+      //     }
+      //   },
+      //   true
+      // ],
       [
         'SaveSVG',
         'fa icon-download fa-2x',

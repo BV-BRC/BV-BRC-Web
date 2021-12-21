@@ -2468,6 +2468,12 @@ define([
         name: 'Uniprot ID',
         text: 'uniprot_id'
       }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
         name: 'Samples',
         text: 'sample_size'
       }, {

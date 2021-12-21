@@ -24,6 +24,8 @@ define([
       locus_tag: { label: 'Locus Tag', field: 'locus_tag' },
       gene_id: { label: 'Gene ID', field: 'gene_id', hidden: true },
       protein_id: { label: 'Protein ID', field: 'protein_id', hidden: true },
+      gene: { label: 'Gene', field: 'gene', hidden: true },
+      product: { label: 'Product', field: 'product', hidden: true },
       name: { label: 'Name', field: 'entity_name' },
       samples: { label: 'Samples', field: 'sample_size' },
       up_reg: { label: 'Up', field: 'up' },

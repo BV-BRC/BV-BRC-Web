@@ -168,15 +168,15 @@ define([
         region: 'bottom'
       });
 
-      var select_genome_filter = this.filter_genome = new Select({
-        name: 'selectGenomeFilter',
-        options: [{ value: '', label: 'Select a genome to filter' }],
-        style: 'width: 272px; margin: 5px 0'
-      });
-      var label_select_genome_filter = domConstruct.create('label', { innerHTML: 'Filer by Genome: ' });
-      domConstruct.place(label_select_genome_filter, otherFilterPanel.containerNode, 'last');
-      domConstruct.place(select_genome_filter.domNode, otherFilterPanel.containerNode, 'last');
-      domConstruct.place('<br>', otherFilterPanel.containerNode, 'last');
+      // var select_genome_filter = this.filter_genome = new Select({
+      //   name: 'selectGenomeFilter',
+      //   options: [{ value: '', label: 'Select a genome to filter' }],
+      //   style: 'width: 272px; margin: 5px 0'
+      // });
+      // var label_select_genome_filter = domConstruct.create('label', { innerHTML: 'Filer by Genome: ' });
+      // domConstruct.place(label_select_genome_filter, otherFilterPanel.containerNode, 'last');
+      // domConstruct.place(select_genome_filter.domNode, otherFilterPanel.containerNode, 'last');
+      // domConstruct.place('<br>', otherFilterPanel.containerNode, 'last');
 
       var ta_keyword = this.ta_keyword = new TextArea({
         style: 'width:272px; min-height:75px; margin-bottom: 10px'
@@ -243,7 +243,7 @@ define([
         onClick: lang.hitch(this, function () {
 
           var filter = {};
-          filter.filterGenome = select_genome_filter.get('value');
+          // filter.filterGenome = select_genome_filter.get('value');
           filter.keyword = ta_keyword.get('value');
 
           var lr = parseFloat(select_log_ratio.get('value'));
@@ -266,8 +266,8 @@ define([
 
       return filterPanel;
     },
-    updateGenomeFilter: function (data) {
-      this.filter_genome.addOption(data);
-    }
+    // updateGenomeFilter: function (data) {
+    //   this.filter_genome.addOption(data);
+    // }
   });
 });
