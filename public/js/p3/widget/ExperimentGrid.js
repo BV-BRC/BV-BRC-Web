@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './PageGrid', './formatter', '../store/TranscriptomicsComparisonJsonRest', './GridSelector'
+  './PageGrid', './formatter', '../store/ExperimentJsonRest', './GridSelector'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct,
@@ -16,32 +16,36 @@ define([
     apiToken: window.App.authorizationToken,
     apiServer: window.App.dataAPI,
     store: store,
-    dataModel: 'transcriptomics_sample',
-    primaryKey: 'pid',
+    dataModel: 'experiment',
+    primaryKey: 'exp_id',
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      pid: { label: 'Sample ID', field: 'pid', hidden: true },
-      eid: { label: 'Experiment ID', field: 'eid', hidden: true },
-      title: { label: 'Title', field: 'expname', hidden: false },
-      genes: { label: 'Genes', field: 'genes', hidden: false },
-      sigLogRation: { label: 'Significant Genes (Log Ratio)', field: 'sig_log_ratio', hidden: false },
-      sigZScore: { label: 'Significant Genes (Z Score)', field: 'sig_z_score', hidden: false },
-      pubmed: { label: 'PubMed', field: 'pmid', hidden: false },
-      // linkout: {label: "Link Out", field: "", hidden: false},
-      organism: { label: 'Organism', field: 'organism', hidden: false },
-      strain: { label: 'Strain', field: 'strain', hidden: false },
-      geneMod: { label: 'Gene Modification', field: 'mutant', hidden: false },
-      expCond: { label: 'Experimental Condition', field: 'condition', hidden: false },
-      timepoint: { labels: '', field: 'timepoint', hidden: false },
-      releaseDate: { label: 'Release Date', field: 'release_date', hidden: false },
-      platform: { labels: 'Platform', field: 'platform', hidden: true }
+      exp_id: { label: 'Experiment ID', field: 'exp_id', hidden: true },
+      study_name: { label: 'Study Name', field: 'study_name', hidden: true },
+      study_title: { label: 'Study Title', field: 'study_title', hidden: true },
+      exp_name: { label: 'Exp Name', field: 'exp_name', hidden: false },
+      exp_title: { label: 'Exp Title', field: 'exp_title', hidden: false },
+      public_id: { label: 'Public Identifier', field: 'public_identifier', hidden: false },
+      exp_type: { label: 'Exp Type', field: 'exp_type', hidden: false },
+      organism: {
+        label: 'Organism', field: 'organism', hidden: false, sortable: false
+      },
+      strain: {
+        label: 'Strain', field: 'strain', hidden: false, sortable: false
+      },
+      treatment_type: { label: 'Treatment Type', field: 'treatment_type', hidden: false },
+      treatment_name: { label: 'Treatment Name', field: 'treatment_name', hidden: false },
+      treatment_amount: { label: 'Treatment Amount', field: 'treatment_amount', hidden: false },
+      treatment_duration: { label: 'Treatment Duration', field: 'treatment_duration', hidden: false },
+
+      biosets: { label: 'Biosets', field: 'biosets', hidden: false },
     },
     startup: function () {
       var _self = this;
       this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
         var row = _self.row(evt);
-        // console.log("dblclick row:", row);
+        // console.log("dblclick row:", row)
         on.emit(_self.domNode, 'ItemDblClick', {
           item_path: row.data.path,
           item: row.data,

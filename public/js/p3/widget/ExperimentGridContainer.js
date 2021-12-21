@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './TranscriptomicsExperimentGrid', 'dijit/popup',
+  './ExperimentGrid', './AdvancedSearchFields', 'dijit/popup',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct'
 ], function (
   declare, GridContainer,
-  Grid, popup,
+  Grid, AdvancedSearchFields, popup,
   TooltipDialog, FacetFilterPanel,
   lang, on, domConstruct
 ) {
@@ -20,14 +20,15 @@ define([
 
   return declare([GridContainer], {
     gridCtor: Grid,
-    containerType: 'transcriptomics_experiment_data',
+    containerType: 'experiment_data',
     tutorialLink: 'user_guides/organisms_taxon/experiments_comparisons_tables.html',
-    facetFields: ['organism', 'strain', 'mutant', 'condition', 'timeseries'],
+    facetFields: AdvancedSearchFields['experiment'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['experiment'].filter((ff) => ff.search),
     maxGenomeCount: 5000,
-    dataModel: 'transcriptomics_experiment',
+    dataModel: 'experiment',
     getFilterPanel: function (opts) {
     },
-    primaryKey: 'eid',
+    primaryKey: 'exp_id',
     query: '&keyword(*)',
     containerActions: GridContainer.prototype.containerActions.concat([
       [

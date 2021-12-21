@@ -145,7 +145,7 @@ define([
         if (total == 1) {
           return ['/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview'].join('');
         }
-        return ['/view/TranscriptomicsExperimentList/?', this.state.search, '#view_tab=experiments'].join('');
+        return ['/view/ExperimentList/?', this.state.search, '#view_tab=experiments'].join('');
       },
 
       antibiotics: function (docs, total) {
@@ -439,9 +439,9 @@ define([
       // console.log("formattranscriptomics_experiment docs: ", docs);
       var out;
       if (total == 1) {
-        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview', '">Transcriptomics Experiments&nbsp;(', total, ')</div> </a>'];
+        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview', '">Experiments&nbsp;(', total, ')</div> </a>'];
       } else if (total > 1) {
-        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?', this.state.search, '#view_tab=experiments', '">Transcriptomics Experiments&nbsp;(', total, ')</div> </a>'];
+        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentList/?', this.state.search, '#view_tab=experiments', '">Experiments&nbsp;(', total, ')</div> </a>'];
       }
 
       docs.forEach(function (doc) {

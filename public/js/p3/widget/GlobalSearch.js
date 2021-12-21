@@ -129,8 +129,8 @@ define([
           case 'serology':
             Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
             break;
-          case 'transcriptomics_experiments':
-            Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
+          case 'experiments':
+            Topic.publish('/navigate', { href: '/view/ExperimentList/?' + q });
             // clear = true;
             break;
           case 'taxonomy':
@@ -210,8 +210,8 @@ define([
         case 'serology':
           Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
           break;
-        case 'transcriptomics_experiments':
-          Topic.publish('/navigate', { href: '/view/TranscriptomicsExperimentList/?' + q });
+        case 'experiments':
+          Topic.publish('/navigate', { href: '/view/ExperimentList/?' + q });
           break;
         case 'taxonomy':
           Topic.publish('/navigate', { href: '/view/TaxonList/?' + q });

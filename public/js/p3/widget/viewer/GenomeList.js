@@ -4,14 +4,14 @@ define([
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
-  '../PathwayGridContainer', '../TranscriptomicsContainer',  '../SubsystemGridContainer'
+  '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer'
 ], function (
   declare, lang,
   TabViewerBase, QueryToEnglish, DataAPI,
   GenomeListOverview, GenomeGridContainer,
   AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
-  PathwaysContainer, TranscriptomicsContainer, SubSystemsContainer
+  PathwaysContainer, ExperimentsContainer, SubSystemsContainer
 ) {
 
   return declare([TabViewerBase], {
@@ -133,9 +133,9 @@ define([
       //   id: this.viewer.id + '_proteinFamilies',
       //   disabled: false
       // });
-      // this.transcriptomics = new TranscriptomicsContainer({
-      //   title: 'Transcriptomics',
-      //   id: this.viewer.id + '_transcriptomics',
+      // this.experiments = new ExperimentsContainer({
+      //   title: 'Experiments',
+      //   id: this.viewer.id + '_experiments',
       //   disabled: false,
       //   state: this.state
       // })
@@ -149,7 +149,7 @@ define([
       // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      // this.viewer.addChild(this.transcriptomics);
+      // this.viewer.addChild(this.experiments);
     }
   });
 });

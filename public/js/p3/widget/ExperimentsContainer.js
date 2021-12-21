@@ -1,30 +1,30 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   './ActionBar', './FilterContainerActionBar', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
-  'dijit/layout/ContentPane', './TranscriptomicsExperimentGridContainer', 'dojo/topic', 'dojo/_base/lang',
-  './TranscriptomicsComparisonGridContainer', 'dojo/request', '../util/PathJoin'
+  'dijit/layout/ContentPane', './ExperimentGridContainer', 'dojo/topic', 'dojo/_base/lang',
+  './BiosetGridContainer', 'dojo/request', '../util/PathJoin'
 ], function (
   declare, BorderContainer, on,
   ActionBar, FilterContainerActionBar, TabContainer, StackController,
-  ContentPane, TranscriptomicsExperimentGridContainer, Topic, lang,
-  TranscriptomicsComparisonGridContainer, xhr, PathJoin
+  ContentPane, ExperimentGridContainer, Topic, lang,
+  BiosetGridContainer, xhr, PathJoin
 ) {
 
   return declare([BorderContainer], {
     gutters: false,
     query: null,
     maxGenomeCount: 10000,
-    facetFields: TranscriptomicsExperimentGridContainer.prototype.facetFields,
-    containerActions: TranscriptomicsExperimentGridContainer.prototype.containerActions,
+    facetFields: ExperimentGridContainer.prototype.facetFields,
+    containerActions: ExperimentGridContainer.prototype.containerActions,
     apiServer: window.App.dataAPI,
     authorizationToken: window.App.authorizationToken,
-    tooltip: 'The "Transcriptomics" tab contains a list of Transcriptomics Experiment Data for genomes associated with the current view',
+    tooltip: 'The "Experiments" tab contains a list of Experiment Data for genomes associated with the current view',
     eids: null,
 
     onSetQuery: function (attr, oldVal, query) {
-      query += '&select(eid)&limit(25000)';
+      query += '&select(exp_id)&limit(25000)';
       query = (query && (query.charAt(0) == '?')) ? query.substr(1) : query;
-      xhr.post(PathJoin(this.apiServer, 'transcriptomics_experiment/?'), {
+      xhr.post(PathJoin(this.apiServer, 'experiment/?'), {
         headers: {
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
@@ -34,23 +34,19 @@ define([
         data: query,
         handleAs: 'json'
       }).then(lang.hitch(this, function (eids) {
-        // console.log("eids: ", eids);
         eids = eids.map(function (x) {
-          return x.eid;
+          return x.exp_id;
         });
-        // console.log("EIDS: ", eids);
         this.set('eids', eids);
       }));
 
     },
     onSetEIDS: function (attr, oldVal, eids) {
-      // console.log("set eids: ", eids);
-      if (this.comparisonsGrid && eids && eids.length > 0) {
-        this.comparisonsGrid.set('state', lang.mixin({}, this.state, { search: '&in(eid,(' + eids.join(',') + '))' }));
+      if (this.biosetGrid && eids && eids.length > 0) {
+        this.biosetGrid.set('state', lang.mixin({}, this.state, { search: '&in(exp_id,(' + eids.join(',') + '))' }));
       }
     },
     onSetState: function (attr, oldVal, state) {
-      // console.log("TranscriptomicsContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
       var q = [];
 
@@ -88,14 +84,12 @@ define([
       if (this.experimentsGrid) {
         this.experimentsGrid.set('visible', true);
       }
-      if (this.comparisonsGrid) {
-        this.comparisonsGrid.set('visible', true);
+      if (this.biosetGrid) {
+        this.biosetGrid.set('visible', true);
       }
     },
     _setStateAttr: function (val) {
-      // console.log("GenomeContainer onSetStateAttr: ", val);
       this._set('state', val ? lang.mixin({}, val) : val);
-      // console.log("After internal set")
     },
 
     postCreate: function () {
@@ -175,7 +169,7 @@ define([
         state: this.state,
         className: 'BrowserHeader',
         currentContainerWidget: this,
-        dataModel: 'transcriptomics_experiment'
+        dataModel: 'experiment'
       });
 
       var tabController = new StackController({
@@ -183,17 +177,17 @@ define([
         region: 'top',
         'class': 'TextTabButtons'
       });
-      this.experimentsGrid = new TranscriptomicsExperimentGridContainer({
+      this.experimentsGrid = new ExperimentGridContainer({
         enableFilterPanel: false,
         title: 'Experiments',
         state: this.state
       });
-      this.comparisonsGrid = new TranscriptomicsComparisonGridContainer({
+      this.biosetGrid = new BiosetGridContainer({
         enableFilterPanel: false,
-        title: 'Comparisions'
+        title: 'Biosets'
       });
       this.tabContainer.addChild(this.experimentsGrid);
-      this.tabContainer.addChild(this.comparisonsGrid);
+      this.tabContainer.addChild(this.biosetGrid);
 
       this.addChild(tabController);
       this.addChild(this.filterPanel);
