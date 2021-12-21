@@ -16,9 +16,9 @@
               title="click to open the video tutorial"></i></a>
         </div> -->
       </h3>
-      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}"
-        target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}"
-          target="_blank">Tutorial</a>.</p>
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a
+          href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a
+          href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
     </div>
     <div class="formFieldsContainer">
       <!-- <div style="display: none;">
@@ -82,6 +82,31 @@
                 </td>
               </div>
             </tr>
+            <tr>
+              <div class="appRow">
+                <td>
+                  <input type="radio" id="input_genomegroup" value="input_genomegroup"
+                    data-dojo-attach-point="input_genomegroup" data-dojo-type="dijit/form/RadioButton" name="input_type"
+                    data-dojo-attach-event="onChange:onChangeType" />
+                </td>
+                <td>
+                  <label for="input_genomegroup">Select genome group</label><br>
+                  <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="select_genomegroup" required="false" data-dojo-attach-point="select_genomegroup"
+                    data-dojo-attach-event="onChange:validate"
+                    data-dojo-props="type:['genome_group'], disabled:true,multi:false,promptMessage:'Select a genome group from your workspace for alignment.',missingMessage:'Genome group is required.', placeHolder:'Genome group'">
+                  </div>
+                  <div class="appRow">
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton" id="gg_dna"
+                      data-dojo-attach-point="gg_dna" name="gg_alphabet" value="dna" data-dojo-props="disabled: true" />
+                    <label for="gg_dna" style="font-size:8pt">DNA</label>
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton" id="gg_protein"
+                      data-dojo-attach-point="gg_protein" name="gg_alphabet" value="protein"
+                      data-dojo-props="disabled: true" checked />
+                    <label for="gg_protein" style="font-size:8pt">Protein</label>
+                  </div>
+                </td>
+              </div>
             <tr>
               <div class="appRow">
                 <td>
