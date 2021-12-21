@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>All Tools &amp; Services | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                            <div class="tools">
+                                <h1 id="contact-us">All Tools &amp; Services</h1>
+
+                                <div class="tools-flex">
+                                    <div class="tools-flex-left">
+                                        <h3>Assembly</h3>
+                                        <p>
+                                            The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Assembly2">Genome Assembly</a></li>
+                                            <li><a href="/docs/quick_references/services/genome_assembly_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/genome_assembly/assembly.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Annotation</h3>
+                                        <p>
+                                            The Genome Annotation Service provides annotation of genomic featuers using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses. The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Annotation">Genome Annotation</a></li>
+                                            <li><a href="/docs/quick_references/services/genome_annotation_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/genome_annotation/genome_annotation.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Comprehenvsive Genome Analysis</h3>
+                                        <p>
+                                            The Comprehensive Genome Analysis Service provides a streamlined analysis "meta-service" that accepts raw reads and performs a comprehensive analysis including assembly, annotation, identification of nearest neighbors, a basic comparative analysis that includes a subsystem summary, phylogenetic tree, and the features that distinguish the genome from its nearest neighbors.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis</a></li>
+                                            <li><a href="/docs/quick_references/services/comprehensive_genome_analysis_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>BLAST</h3>
+                                        <p>
+                                            The BLAST service integrates the BLAST (Basic Local Aligment Search Tool) algorithms to perform searches against public or private genomes or other reference databases using DNA or protein sequence(s).
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Homology">BLAST</a></li>
+                                            <li><a href="/docs/quick_references/services/blast.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="/docs/">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>SARS-CoV-2 Genome Assembly and Annotation</h3>
+                                        <p>
+                                            The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Assembly and Annotation</a></li>
+                                            <li><a href="/docs/quick_references/services/sars_cov_2_assembly_annotation_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Similar Genome Finder <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Similar Genome Finder Service will find similar public genomes in PATRIC or compute genome distance estimation using <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4915045/">Mash/MinHash</a>. It returns a set of genomes matching the specified similarity criteria.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/GenomeDistance">Similar Genome Finder</a></li>
+                                            <li><a href="/docs/quick_references/services/similar_genome_finder_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/similar_genome_finder/similar_genome_finder.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Meta-CATS</h3>
+                                        <p>
+                                            The meta-CATS tool looks for positions that significantly differ between user-defined groups of sequences. However, biological biases due to covariation, codon biases, and differences in genotype, geography, time of isolation, or others may affect the robustness of the underlying statistical assumptions.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/MetaCATS">Metadata-driven Comparative Analysis Tool (meta-CATS)</a></li>
+                                            <li><a href="/docs/quick_references/services/metacats.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/metacats/metacats.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Phylogenetic Tree <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/PhylogeneticTree">Phylogen Tree Building</a></li>
+                                            <li><a href="/docs/quick_references/services/phylogenetic_tree_building_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/phylogenetic_tree/phylogenetic_tree.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Genome Alignment <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Whole Genome Alignment Service aligns genomes using <a href="">progressiveMauve</a>.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/GenomeAlignment">Genome Alignment (Mauve)</a></li>
+                                            <li><a href="/docs/quick_references/services/genome_alignment_service.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="/docs/">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>Primer Design</h3>
+                                        <p>
+                                            The Primer Design Service utilizes Primer3 to design primers from a given input sequence under a variety of temperature, size, and concentration constraints.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/PrimerDesign">Primer Design</a></li>
+                                            <li><a href="/docs/quick_references/services/primer_design_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/primer_design/primer_design.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Variation Analysis <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Variation Analysis Service can be used to identify and annotate sequence variations.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Variation">Variation Analysis</a></li>
+                                            <li><a href="/docs/quick_references/services/variation_analysis_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/variation_analysis/variation_analysis.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Tn-Seq Analysis <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Tn-Seq Analysis Service facilitates determination of essential and conditionally essential regions in bacterial genomes from data generated from transposon insertion sequencing (Tn-Seq) experiments.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Tnseq">Tn-Seq Analysis</a></li>
+                                            <li><a href="/docs/quick_references/services/tn_seq_analysis_service.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>MSA and SNP Alignment</h3>
+                                        <p>
+                                            The multiple sequence alignment service with variation and SNP analysis can be used with feature groups, fasta files, aligned fasta files, and user input fasta records. If a single alignment file is given, then only the variation analysis is run.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/MSA">Multiple Sequence Alignment and SNP/Variation Analysis</a></li>
+                                            <li><a href="/docs/quick_references/services/msa_snp_variation_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/msa_snp_variation/msa_snp_variation.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Gene Tree</h3>
+                                        <p>
+                                            The Gene Tree Service is being tested.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/GeneTree">Gene Tree</a></li>
+                                            <li><a href="/docs/quick_references/services/genetree.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/genetree/genetree.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Protein Family Sorter <span style="font-style: italic;">(B)</span></h3>
+                                        <p></p>
+                                        <ul>
+                                            <li><a href="/app/ProteinFamily">Protein Family Sorter</a></li>
+                                            <li><a href="/docs/quick_references/services/protein_family_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/protein_family_sorter/protein_family_sorter.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Proteome Comparison <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP. This service allows users to select genomes and compare them to reference genome.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/SeqComparison"></a></li>
+                                            <li><a href="/docs/quick_references/services/proteome_comparison_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/proteome_comparison/proteome_comparison.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Comparative Pathway <span style="font-style: italic;">(B)</span></h3>
+                                        <p>
+                                            The Comparative Pathway Service allows users to identify a set of pathways based on taxonomy, EC number, pathway ID, pathway name and/or specific annotation type.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/ComparativePathway">Comparative Pathway Tool</a></li>
+                                            <li><a href="/docs/quick_references/services/comparative_pathway_service.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>Metagenomic Read Mapping</h3>
+                                        <p>
+                                            The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></li>
+                                            <li><a href="/docs/quick_references/services/metagenomic_read_mapping_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/metagenomic_read_mapping/metagenomic_read_mapping.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Taxonomic Classification</h3>
+                                        <p>
+                                            The Taxonomic Classification Service computes taxonomic classification for read data.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/TaxonomicClassification">Taxonomic Classification</a></li>
+                                            <li><a href="/docs/quick_references/services/taxonomic_classification_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/taxonomic_classification/taxonomic_classification.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Metagenomic Binning</h3>
+                                        <p>
+                                            The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/MetagenomicBinning">Metagenomic Binning</a></li>
+                                            <li><a href="/docs/quick_references/services/metagenomic_binning_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/metagenomic_binning/metagenomic_binning.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Expression Import</h3>
+                                        <p>
+                                            The Differential Expression Import Service facilitates upload of user-provided, pre-processed differential expression datasets generated by microarray, RNA-Seq, or proteomic technologies to the user's private workspace.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Expression">Differential Expression Import</a></li>
+                                            <li><a href="/docs/quick_references/services/expression_data_import_service.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="/docs">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>RNA-Seq Analysis</h3>
+                                        <p>
+                                            The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/Rnaseq">RNA-Seq Analysis</a></li>
+                                            <li><a href="/docs/quick_references/services/rna_seq_analysis_service.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="/docs">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>ID Mapper</h3>
+                                        <p>
+                                            The ID Mapper tool maps PATRIC identifiers to those from other prominent external databases such as GenBank, RefSeq, EMBL, UniProt, KEGG, etc. Alternatively, it can map a list of external database identifiers to the corresponding PATRIC features.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/IDMapper">ID Mapper</a></li>
+                                            <li><a href="/docs/quick_references/services/id_mapper.html">Quick Reference Guide</a></li>
+                                            <!-- <li><a href="/docs">Tutorial</a></li> -->
+                                        </ul>
+                                        <h3>Fastq Utilities</h3>
+                                        <p>
+                                            The Fastq Utilites Service provides capability for aligning, measuring base call quality, and trimmiing fastq read files.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/FastqUtil">Fastq Utilities</a></li>
+                                            <li><a href="/docs/quick_references/services/fastq_utilities_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/fastq_utilities/fastq_utilities.html">Tutorial</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="tools-flex-right"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>
