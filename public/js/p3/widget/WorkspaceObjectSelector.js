@@ -148,7 +148,7 @@ define([
       }
 
       this.cancelRefresh();
-      this.refreshWorkspaceItems();
+      this.refreshWorkspaceItems(val);
 
       // whether or not to allow top level
       var allowedLevel = this.allowUserSpaceSelection ? true : self.path.split('/').length > 2;
@@ -354,7 +354,7 @@ define([
     },
 
     openChooser: function () {
-      this.refreshWorkspaceItems();
+      this.refreshWorkspaceItems(this.path);
       var _self = this;
 
       // if dialog is already built, just show it
@@ -568,7 +568,7 @@ define([
       }
     },
 
-    refreshWorkspaceItems: function () {
+    refreshWorkspaceItems: function (target_path) {
       if (this.disableDropdownSelector || this._refreshing) {
         return;
       }
@@ -581,8 +581,32 @@ define([
         }
         return 0;
       }
+      if (target_path) { 
+      this._refreshing = WorkspaceManager.getObjectsAtPathByType(this.type, target_path)
+        .then(lang.hitch(this, function (items) {
+          delete this._refreshing;
 
-      this._refreshing = WorkspaceManager.getObjectsByType(this.type)
+          // sort by most recent
+          items.sort(function (a, b) {
+            return b.timestamp - a.timestamp;
+          });
+          this.store = new Memory({ data: items, idProperty: 'path' });
+          if (this.isSortAlpha) {
+            // sort alphabetically
+            var dataArr = this.store.data;
+            dataArr.sort(compare);
+
+            this.store.data = dataArr;
+          }
+          //ASW not sure should be doing this when path set. Also be culprit in blanking in the original else block below
+          this.searchBox.set('store', this.store);
+          if (this.value) {
+            this.searchBox.set('value', this.value);
+          }
+        }));
+      }
+      else { 
+      this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
 
@@ -603,13 +627,12 @@ define([
             this.searchBox.set('value', this.value);
           }
         }));
+      }
     },
     onSearchChange: function (value) {
-      if (typeof value !== 'undefined' && value != ''){
         this.set('value', value);
         this.onChange(value);
         this.validate(true);
-      }
     },
 
     onMouseEnter: function (value) {
