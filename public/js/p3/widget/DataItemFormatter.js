@@ -2352,7 +2352,7 @@ define([
       }];
 
       var div = domConstruct.create('div');
-      displayHeader(div, item.study_title, 'fa icon-experiments fa-2x', '/view/TranscriptomicsExperiment/' + item.exp_id, options);
+      displayHeader(div, item.exp_title, 'fa icon-experiments fa-2x', '/view/TranscriptomicsExperiment/' + item.exp_id, options);
       displayDetailBySections(item, sectionList, section, div, options);
 
       return div;
@@ -2441,6 +2441,51 @@ define([
 
       return div;
     },
+
+    bioset_result_data: function (item, options) {
+      options = options || {};
+
+
+      const columns = [{
+        name: 'Entity ID',
+        text: 'entity_id'
+      }, {
+        name: 'Name',
+        text: 'entity_name'
+      }, {
+        name: 'BRC ID',
+        text: 'patric_id'
+      }, {
+        name: 'Locus Tag',
+        text: 'locus_tag'
+      }, {
+        name: 'Gene ID',
+        text: 'gene_id'
+      }, {
+        name: 'protein ID',
+        text: 'protein_id'
+      }, {
+        name: 'Uniprot ID',
+        text: 'uniprot_id'
+      }, {
+        name: 'Samples',
+        text: 'sample_size'
+      }, {
+        name: 'Up',
+        text: 'up'
+      }, {
+        name: 'Down',
+        text: 'down'
+      }
+      ]
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.entity_name || item.entity_id, 'fa icon-experiments fa-2x', '', options);
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
 
     transcriptomics_gene_data: function (item, options) {
       options = options || {};

@@ -22,8 +22,8 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
       exp_id: { label: 'Experiment ID', field: 'exp_id', hidden: true },
-      study_name: { label: 'Study Name', field: 'study_name', hidden: false },
-      study_title: { label: 'Study Title', field: 'study_title', hidden: false },
+      study_name: { label: 'Study Name', field: 'study_name', hidden: true },
+      study_title: { label: 'Study Title', field: 'study_title', hidden: true },
       exp_name: { label: 'Exp Name', field: 'exp_name', hidden: false },
       exp_title: { label: 'Exp Title', field: 'exp_title', hidden: false },
       public_id: { label: 'Public Identifier', field: 'public_identifier', hidden: false },

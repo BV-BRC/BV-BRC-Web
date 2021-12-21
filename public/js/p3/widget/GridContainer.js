@@ -1043,12 +1043,12 @@ define([
           });
           if (experimentIdList.length == 1) {
             Topic.publish('/navigate', {
-              href: '/view/Biosets/?eq(exp_id,(' + experimentIdList + '))',
+              href: '/view/BiosetResult/?eq(exp_id,(' + experimentIdList + '))',
               target: 'blank'
             });
           } else {
             Topic.publish('/navigate', {
-              href: '/view/Biosets/?in(exp_id,(' + experimentIdList.join(',') + '))',
+              href: '/view/BiosetResult/?in(exp_id,(' + experimentIdList.join(',') + '))',
               target: 'blank'
             });
           }
