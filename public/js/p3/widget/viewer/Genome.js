@@ -5,7 +5,7 @@ define([
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
-  '../PathwaysContainer', '../SubSystemsContainer', '../TranscriptomicsContainer', '../InteractionContainer',
+  '../PathwaysContainer', '../SubSystemsContainer', '../ExperimentsContainer', '../InteractionContainer',
   '../../util/PathJoin'
 ], function (
   declare, lang,
@@ -14,7 +14,7 @@ define([
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
-  PathwaysContainer, SubSystemsContainer, TranscriptomicsContainer, InteractionsContainer,
+  PathwaysContainer, SubSystemsContainer, ExperimentsContainer, InteractionsContainer,
   PathJoin
 ) {
   return declare([TabViewerBase], {
@@ -102,12 +102,12 @@ define([
           }
           break;
 
-        case 'transcriptomics':
-          activeTab.set('state', lang.mixin({}, this.state, { search: 'eq(genome_ids,' + this.genome_id + ')' }));
-          break;
-        case 'proteinFamilies':
-          // do not set state, the container is built by setVisible already
-          break;
+        // case 'experiments':
+        //   activeTab.set('state', lang.mixin({}, this.state, { search: 'eq(genome_ids,' + this.genome_id + ')' }));
+        //   break;
+        // case 'proteinFamilies':
+        //   // do not set state, the container is built by setVisible already
+        //   break;
         case 'interactions':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'or(eq(genome_id_a,' + this.genome_id + '),eq(genome_id_b,' + this.genome_id + '))'
@@ -185,7 +185,7 @@ define([
       this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
       this.viewer.removeChild(this.subsystems);
-      // this.viewer.removeChild(this.transcriptomics);
+      // this.viewer.removeChild(this.experiments);
       // this.viewer.removeChild(this.interactions);
     },
 
@@ -356,9 +356,9 @@ define([
         state: this.state
       });
 
-      // this.transcriptomics = new TranscriptomicsContainer({
-      //   title: 'Transcriptomics',
-      //   id: this.viewer.id + '_transcriptomics',
+      // this.experiments = new ExperimentsContainer({
+      //   title: 'Experiments',
+      //   id: this.viewer.id + '_experiments',
       //   state: this.state
       // });
 
@@ -381,7 +381,7 @@ define([
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      // this.viewer.addChild(this.transcriptomics);
+      // this.viewer.addChild(this.experiments);
       // this.viewer.addChild(this.interactions);
     }
   });

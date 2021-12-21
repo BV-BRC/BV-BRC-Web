@@ -18,7 +18,7 @@ define([
     containerActions: ExperimentGridContainer.prototype.containerActions,
     apiServer: window.App.dataAPI,
     authorizationToken: window.App.authorizationToken,
-    tooltip: 'The "Transcriptomics" tab contains a list of Transcriptomics Experiment Data for genomes associated with the current view',
+    tooltip: 'The "Experiments" tab contains a list of Experiment Data for genomes associated with the current view',
     eids: null,
 
     onSetQuery: function (attr, oldVal, query) {
@@ -34,23 +34,19 @@ define([
         data: query,
         handleAs: 'json'
       }).then(lang.hitch(this, function (eids) {
-        // console.log("eids: ", eids);
         eids = eids.map(function (x) {
           return x.exp_id;
         });
-        // console.log("EIDS: ", eids);
         this.set('eids', eids);
       }));
 
     },
     onSetEIDS: function (attr, oldVal, eids) {
-      // console.log("set eids: ", eids);
       if (this.biosetGrid && eids && eids.length > 0) {
         this.biosetGrid.set('state', lang.mixin({}, this.state, { search: '&in(exp_id,(' + eids.join(',') + '))' }));
       }
     },
     onSetState: function (attr, oldVal, state) {
-      // console.log("TranscriptomicsContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
       var q = [];
 
