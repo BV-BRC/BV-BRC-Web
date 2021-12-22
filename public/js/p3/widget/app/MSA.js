@@ -82,8 +82,6 @@ define([
       this.fasta_keyboard_input.set('disabled', true);
       this.user_genomes_alignment.set('disabled', true);
       this.select_genomegroup.set('disabled', true);
-      this.gg_dna.set('disabled', true);
-      this.gg_protein.set('disabled', true);
       // Do not require anything
       this.sequence_message.innerHTML = '';
       this.genomegroup_message.innerHTML = '';
@@ -109,8 +107,6 @@ define([
       } else if (this.input_genomegroup.checked == true) {
         this.select_genomegroup.set('required', true);
         this.select_genomegroup.set('disabled', false);
-        this.gg_dna.set('disabled', false);
-        this.gg_protein.set('disabled', false);
       } else if (this.input_fasta.checked == true) {
         this.user_genomes_fasta.set('required', true);
         this.user_genomes_fasta.set('disabled', false);
@@ -177,8 +173,6 @@ define([
         delete values.user_genomes_featuregroup;
       }
       if (values.select_genomegroup) {
-        console.log(this.select_genomegroup);
-
         values.select_genomegroup = [values.select_genomegroup];
       }
       var fastaFiles = [];
@@ -189,11 +183,6 @@ define([
         my_input_type = 'user_genomes_fasta';
       }
       // Set the alphabet
-      var dna_disabled = this.dna.get('disabled');
-      if (dna_disabled) {
-        values.alphabet = values.gg_alphabet;
-      }
-      delete values.gg_alphabet;
       if (!values.alphabet) {
         values.alphabet = 'dna';
       }
@@ -253,14 +242,10 @@ define([
       if (job_data['alphabet'] == 'dna') {
         this.protein.set('checked', false);
         this.dna.set('checked', true);
-        this.gg_protein.set('checked', false);
-        this.gg_dna.set('checked', true);
       }
       else {
         this.dna.set('checked', false);
         this.protein.set('checked', true);
-        this.gg_dna.set('checked', false);
-        this.gg_protein.set('checked', true);
       }
     },
 
