@@ -104,7 +104,7 @@ define([
         }
         baseUrl = baseUrl + dataType + '/';
         var query = 'in(' + pkField + ',(' + sel.join(',') + '))&sort(+' + pkField + ')&limit(2500000)';
-        console.log('Download Query: ', query);
+        // console.log('Download Query: ', query);
 
         baseUrl = baseUrl + '?&http_download=true&http_accept=' + accept;
 
@@ -280,6 +280,12 @@ define([
         tableData: true,
         otherData: ['dna+fasta', 'protein+fasta']
       },
+      structure_data: {
+        label: 'Protien Structure',
+        dataType: 'protein_structure',
+        pk: 'pdb_id',
+        tableData: true
+      },
       spgene_data: {
         dataType: 'sp_gene',
         pk: 'id',
@@ -295,6 +301,18 @@ define([
         dataType: 'sp_gene_ref',
         pk: 'id',
         label: 'Specialty VF Genes',
+        tableData: true
+      },
+      proteinFeatures_data: {
+        label: 'Domains and Motifs',
+        dataType: 'protein_feature',
+        pk: 'id',
+        tableData: true
+      },
+      epitope_data: {
+        label: 'Epitopes',
+        dataType: 'epitope',
+        pk: 'epitope_id',
         tableData: true
       },
       pathway_data: {
@@ -333,6 +351,18 @@ define([
         dataType: 'transcriptomics_sample',
         pk: 'pid',
         label: 'Comparisons',
+        tableData: true
+      },
+      experiment_data: {
+        dataType: 'experiment',
+        pk: 'exp_id',
+        label: 'Experiments',
+        tableData: true
+      },
+      bioset_data: {
+        dataType: 'bioset',
+        pk: 'bioset_id',
+        label: 'Biosets',
         tableData: true
       },
       interaction_data: {
