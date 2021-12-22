@@ -1,18 +1,18 @@
 define([
-  'dojo/_base/declare', './TabViewerBase', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', '../../util/QueryToEnglish',
-  '../PageGrid', '../formatter', '../TranscriptomicsExperimentGridContainer', '../TranscriptomicsComparisonGridContainer',
+  'dojo/_base/declare', './TabViewerBase',
+  '../../util/QueryToEnglish',
+  '../ExperimentGridContainer', '../BiosetGridContainer',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
 ], function (
-  declare, TabViewerBase, on,
-  domClass, ContentPane, domConstruct, QueryToEnglish,
-  Grid, formatter, TranscriptomicsExperimentGridContainer, TranscriptomicsComparisonGridContainer,
+  declare, TabViewerBase,
+  QueryToEnglish,
+  ExperimentGridContainer, BiosetGridContainer,
   PathJoin, xhr, lang
 ) {
   return declare([TabViewerBase], {
     baseClass: 'ExperimentList',
     disabled: false,
-    containerType: 'transcriptomics_experiment_data',
+    containerType: 'experiment_data',
     query: null,
     defaultTab: 'experiments',
     perspectiveLabel: 'Experiment List View',
@@ -21,21 +21,15 @@ define([
     eids: null,
     warningContent: 'Your query returned too many results for detailed analysis.',
     _setQueryAttr: function (query) {
-      // console.log(this.id, " _setQueryAttr: ", query, this);
-      // if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
-      // console.log("GenomeList SetQuery: ", query, this);
-      // query = query;
       this._set('query', query);
       if (!this._started) {
         return;
       }
 
       var _self = this;
-      // console.log('ExperimentList setQuery - this.query: ', this.query);
 
-      var url = PathJoin(this.apiServiceUrl, 'transcriptomics_experiment', '?' + (this.query) + '&limit(25000)');
+      var url = PathJoin(this.apiServiceUrl, 'experiment', '?' + (this.query) + '&limit(25000)');
 
-      // console.log("url: ", url);
       xhr.get(url, {
         headers: {
           accept: 'application/solr+json',
@@ -44,16 +38,13 @@ define([
         },
         handleAs: 'json'
       }).then(function (res) {
-        // console.log(" URL: ", url);
-        // console.log("Get Experiment List Res: ", res);
         if (res && res.response && res.response.docs) {
           var features = res.response.docs;
           if (features) {
             _self._set('total_experiments', res.response.numFound);
             var eids = features.map(function (x) {
-              return x.eid;
+              return x.exp_id;
             });
-            // console.log("EIDS: ", eids);
             _self._set('eids', eids);
           }
         } else {
@@ -66,10 +57,7 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
-      // console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-
       this.set('query', state.search);
-
       this.inherited(arguments);
     },
 
@@ -81,8 +69,6 @@ define([
     setActivePanelState: function () {
 
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'experiments';
-      // console.log("Active: ", active, "state: ", this.state);
-
       var activeTab = this[active];
 
       if (!activeTab) {
@@ -92,24 +78,16 @@ define([
 
       switch (active) {
         default:
-          // console.log("SET ACTIVE STATE for default experiments tab: ", this.state);
           activeTab.set('state', lang.mixin({}, this.state, { search: this.state.search }));
           break;
       }
-      // console.log("Set Active State COMPLETE");
     },
 
     onSetEIDS: function (attr, oldVal, eids) {
-      // console.log("set eids: ", eids);
-      // console.log("comparisonsGrid: ", this.comparisons);
-      // console.log("experiments: ", this.experiments);
-
-      if (this.comparisons && eids && eids.length > 0) {
-        this.comparisons.set('state', lang.mixin({}, this.state, { search: 'in(eid,(' + eids.join(',') + '))' }));
-        // console.log("onSetEIDS set state: ", this.state);
+      if (this.biosets && eids && eids.length > 0) {
+        this.biosets.set('state', lang.mixin({}, this.state, { search: 'in(exp_id,(' + eids.join(',') + '))' }));
         this.state.search = '';
       }
-      // this.setActivePanelState();
     },
 
     postCreate: function () {
@@ -119,32 +97,28 @@ define([
 
       this.inherited(arguments);
 
-      // this.watch("state", lang.hitch(this, "onSetState"));
       this.watch('eids', lang.hitch(this, 'onSetEIDS'));
-
       this.watch('query', lang.hitch(this, 'onSetQuery'));
       this.watch('total_experiments', lang.hitch(this, 'onSetTotalExperiments'));
 
-      // this.overview = this.createOverviewPanel(this.state);
-      this.experiments = new TranscriptomicsExperimentGridContainer({
+      this.experiments = new ExperimentGridContainer({
         title: 'Experiments',
         id: this.viewer.id + '_experiments',
         disabled: false
       });
 
-      this.comparisons = new TranscriptomicsComparisonGridContainer({
-        title: 'Comparisons',
+      this.biosets = new BiosetGridContainer({
+        title: 'Biosets',
         enableFilterPanel: false,
-        id: this.viewer.id + '_comparisons',
+        id: this.viewer.id + '_biosets',
         disabled: false
       });
 
       this.viewer.addChild(this.experiments);
-      this.viewer.addChild(this.comparisons);
+      this.viewer.addChild(this.biosets);
       this.setActivePanelState();
     },
     onSetTotalExperiments: function (attr, oldVal, newVal) {
-      // console.log("ON SET TOTAL Experiments: ", newVal);
       this.totalCountNode.innerHTML = ' ( ' + newVal + ' Experiments )';
     }
   });

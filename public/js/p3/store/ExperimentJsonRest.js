@@ -6,8 +6,8 @@ define([
   Store
 ) {
   return declare([Store], {
-    dataModel: 'transcriptomics_sample',
-    idProperty: 'pid',
+    dataModel: 'experiment',
+    idProperty: 'exp_id',
     facetFields: []
   });
 });

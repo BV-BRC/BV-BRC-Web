@@ -73,8 +73,8 @@
         <div id="bv-brc-header-container">
             <div class="nav-logo">
                 <a class="nav-logo-link" href="/">
-                    <!-- <img class="bv-brc-logo" src="/patric/images/bv-brc/patric-logo.png" alt="BV-BRC Logo" style="height: 32px;"/> -->
-                    <span>BV-BRC <i style="color: #ffffff; font-size: 12px;"><%- request.applicationOptions.appLabel || " " %></i></span>
+                    <img class="bv-brc-logo" src="/patric/images/bv-brc/bv-brc-header-logo.png" alt="BV-BRC Logo" style="height: 28px;"/>
+                    <!-- <span>BV-BRC <i style="color: #ffffff; font-size: 12px;"><%- request.applicationOptions.appLabel || " " %></i></span> -->
                 </a>
             </div>
 
@@ -214,7 +214,7 @@
                         <div><a class="navigationLink" href="/searches/SubsystemSearch">Subsystems</a></div>
                         <div><a class="navigationLink" href="/searches/SurveillanceSearch">Surveillance</a></div>
                         <div><a class="navigationLink" href="/searches/SerologySearch">Serology</a></div>
-                        <!-- <div><a class="navigationLink" href="/searches/TranscriptomicExperimentSearch">Transcriptomics Experiments</a></div> -->
+                        <div><a class="navigationLink" href="/searches/TranscriptomicExperimentSearch">Transcriptomics Experiments</a></div>
                         <!-- <div><a class="navigationLink" href="/searches/AntibioticSearch">Antibiotics</a></div> -->
                     </div>
                 </div>
@@ -227,11 +227,11 @@
                             <div style="vertical-align: top;width: 180px;margin-right:5px;display:inline-block">
                                 <div class="menuHeader">Genomics</div>
                                 <div class="menuItems">
-                                    <a class="navigationLink" href="/app/Assembly2">Assembly</a>
+                                    <a class="navigationLink" href="/app/Assembly2">Assembly <span style="font-style: italic;">(B)</span></a>
                                     <div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
-                                    <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis</a></div>
+                                    <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/Homology">BLAST</a></div>
-                                    <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Assembly and Annotation</a></div>
+                                    <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Assembly and Annotation <span style="font-style: italic;">(V)</span></a></div>
                                     <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/MetaCATS">Meta-CATS</a></div>
                                     <div><a class="navigationLink" href="/app/PhylogeneticTree">Phylogenetic Tree <span style="font-style: italic;">(B)</span></a></div>
@@ -240,12 +240,12 @@
                                     <div><a class="navigationLink" href="/app/Variation">Variation Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <br>
-                                    <div><a class="navigationLink" href="/view/VariantLineage/#view_tab=overview" style="font-weight: bold;">SARS-CoV-2 Variant Tracker</a></div>
+                                    <div><a class="navigationLink" href="/view/VariantLineage/#view_tab=overview" style="font-weight: bold;">SARS-CoV-2 Variant Tracker <span style="font-style: italic;">(V)</span></a></div>
                                 </div>
                                 <p></p>
                             </div>
 
-                            <div style="vertical-align:top;width:180px;display:inline-block">
+                            <div style="vertical-align:top;width:200px;display:inline-block">
                                 <div class="menuHeader">Protein Tools</div>
                                 <div class="menuItems">
                                     <div><a class="navigationLink" href="/app/MSA">MSA and SNP Analysis</a></div>
@@ -256,7 +256,7 @@
                                 </div>
                                 <div class="menuHeader">Metagenomics</div>
                                 <div class="menuItems">
-                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
+                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/TaxonomicClassification">Taxonomic Classification</a></div>
                                     <div><a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a></div>
                                 </div>
@@ -266,7 +266,7 @@
                                   <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
                               </div>
                               <p></p>
-                              <div class="menuHeader">Utility</div>
+                              <div class="menuHeader">Utilities</div>
                               <div class="menuItems">
                                   <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
                                   <div><a class="navigationLink" href="/app/FastqUtil">Fastq Utilities</a></div>

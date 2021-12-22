@@ -563,7 +563,46 @@ define([
         return workspace;
       }));
     },
+    getObjectsAtPathByType: function (types, specialPath) {
+      types = (types instanceof Array) ? types : [types];
 
+      return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {
+        var _self = this;
+
+        var path = specialPath || current.path;
+        return Deferred.when(this.api('Workspace.ls', [{
+          paths: [path],
+          excludeDirectories: false,
+          excludeObjects: false,
+          query: { type: types },
+          recursive: false
+        }]), function (results) {
+          if (!results[0] || !results[0][path]) {
+            return [];
+          }
+          var res = results[0][path];
+
+          res = res.map(function (r) {
+            return _self.metaListToObj(r);
+          }).filter(function (r) {
+            if (r.type == 'folder') {
+              if (r.path.split('/').some(function (p) {
+                return p.charAt(0) == '.';
+              })) {
+                return false;
+              }
+            }
+            return (types.indexOf(r.type) >= 0);
+          });
+          /* .filter(function(r){
+            if (!showHidden && r.name.charAt(0)=="."){ return false };
+            return true;
+          }) */
+
+          return res;
+        });
+      }));
+    },
     getObjectsByType: function (types, specialPath) {
       types = (types instanceof Array) ? types : [types];
 

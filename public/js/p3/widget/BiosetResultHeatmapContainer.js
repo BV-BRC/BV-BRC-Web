@@ -1,26 +1,30 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request',
+  'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/query', 'dojo/when',
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class', './Confirmation'
-
+  './ContainerActionBar', './HeatmapContainerNew', './SelectionToGroup', 'FileSaver',
+  'heatmap/dist/hotmap', 'dojo/dom-class', './Confirmation'
 ], function (
   declare, lang,
-  on, Topic, domConstruct, dom, Query, when, request,
+  on, Topic, domConstruct, Query, when,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, SelectionToGroup, PathJoin, saveAs,
-  HeatmapContainerNew, Hotmap, domClass, Confirmation
+  ContainerActionBar, HeatmapContainer, SelectionToGroup, saveAs,
+  Hotmap, domClass, Confirmation
 ) {
 
-  return declare([BorderContainer, HeatmapContainerNew], {
+  return declare([BorderContainer, HeatmapContainer], {
     gutters: false,
     state: null,
     visible: false,
-    pfState: null,
+    tgState: null,
+    colors: [
+      0x00FF00, 0x00cc00, 0x009900, 0x006600, 0x003300, 0x000000,
+      0x330000, 0x660000, 0x990000, 0xcc0000, 0xFF0000
+    ],
     containerActions: [
+      /* disable flip axis for now
       [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
@@ -28,6 +32,7 @@ define([
         'flipAxis',
         true
       ],
+      */
       [
         'Cluster',
         'fa icon-cluster fa-2x',
@@ -77,44 +82,42 @@ define([
         },
         true
       ],
-      [
-        'Anchor',
-        'fa icon-random fa-2x',
-        {
-          label: 'Anchor',
-          multiple: false,
-          validType: ['*'],
-          tooltip: 'Anchor by genome'
-        },
-        function () {
-          this.tooltip_anchoring = new TooltipDialog({
-            content: this._buildPanelAnchoring()
-          });
-          this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
+      // [
+      //   'Show Significant',
+      //   'fa icon-filter fa-2x',
+      //   { label: 'Show', multiple: false, validTypes: ['*'] },
+      //   function () {
+      //     if (this.containerActionBar._actions['Show Significant'].options.tooltipDialog == null) {
+      //       this.tooltip_show_significant = new TooltipDialog({
+      //         content: this._buildPanelShowSignificant()
+      //       });
+      //       this.containerActionBar._actions['Show Significant'].options.tooltipDialog = this.tooltip_show_significant;
+      //     }
 
-          if (this.isPopupOpen) {
-            this.isPopupOpen = false;
-            popup.close();
-          } else {
-            popup.open({
-              parent: this,
-              popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
-              around: this.containerActionBar._actions.Anchor.button,
-              orient: ['below']
-            });
-            this.isPopupOpen = true;
-          }
-        },
-        true
-      ],
+      //     if (this.isPopupOpen) {
+      //       this.isPopupOpen = false;
+      //       popup.close();
+      //     } else {
+
+      //       popup.open({
+      //         parent: this,
+      //         popup: this.containerActionBar._actions['Show Significant'].options.tooltipDialog,
+      //         around: this.containerActionBar._actions['Show Significant'].button,
+      //         orient: ['below']
+      //       });
+      //       this.isPopupOpen = true;
+      //     }
+      //   },
+      //   true
+      // ],
       [
         'SaveSVG',
         'fa icon-download fa-2x',
         {
-          label: 'Save',
+          label: 'Save SVG',
           multiple: false,
           validType: ['*'],
-          tooltip: 'Download heat map'
+          tooltip: 'Download SVG snapshot'
         },
         function () {
           this.tooltip_anchoring = new TooltipDialog({
@@ -149,13 +152,13 @@ define([
           value = arguments[1];
 
         switch (key) {
-          case 'updatePfState':
-            this.pfState = value;
+          case 'updateTgState':
+            this.tgState = value;
             this.hmapUpdate();
             break;
           case 'refreshHeatmap':
             this.hmapUpdate();
-            Topic.publish(this.topicId, 'requestHeatmapData', this.pfState);
+            Topic.publish(this.topicId, 'requestHeatmapData', this.tgState);
             break;
           case 'updateHeatmapData':
             this.currentData = value;
@@ -168,12 +171,6 @@ define([
       }));
     },
 
-    update: function () {
-      Topic.publish(this.topicId, 'refreshHeatmap');
-    },
-
-    /* todo(nc): this logic can probably be removed as it's
-      only ever set to true, apparently */
     _setVisibleAttr: function (visible) {
       this.visible = visible;
 
@@ -205,7 +202,7 @@ define([
         return;
       }
 
-      // action buttons container for containerActions
+      // action buttons for heatmap viewer
       this.containerActionBar = new ContainerActionBar({
         baseClass: 'BrowserHeader',
         region: 'top'
@@ -214,123 +211,72 @@ define([
       this.inherited(arguments);
       this._firstView = true;
     },
-
+    flashReady: function () {
+      if (typeof (this.flashDom.refreshData) == 'function') {
+        Topic.publish(this.topicId, 'refreshHeatmap');
+      }
+    },
     hmapCellClicked: function (colID, rowID) {
-      var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
+      var isTransposed = (this.tgState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
-      var familyId = originalAxis.columnIds;
-      var genomeId = originalAxis.rowIds;
+      var geneId = originalAxis.columnIds;
+      var comparisonId = originalAxis.rowIds;
 
-      var query = '?and(eq(' + this.pfState.familyType + '_id,' + familyId + '),eq(genome_id,' + genomeId + '),eq(feature_type,CDS),eq(annotation,PATRIC))&select(feature_id,patric_id,refseq_locus_tag)&limit(250000)';
+      this.dialog.set('content', this._buildPanelCellClicked(isTransposed, geneId, comparisonId));
+      var actionBar = this._buildPanelButtons(colID, rowID, geneId, comparisonId);
+      domConstruct.place(actionBar, this.dialog.containerNode, 'last');
 
-      Topic.publish(this.topicId, 'showLoadingMask');
-      request.get(PathJoin(window.App.dataServiceURL, 'genome_feature', query), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/json',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        }
-      }).then(lang.hitch(this, function (features) {
-        Topic.publish(this.topicId, 'hideLoadingMask');
-
-        this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
-        var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
-        domConstruct.place(actionBar, this.dialog.containerNode, 'last');
-
-        this.dialog.show();
-      }));
+      this.dialog.show();
 
     },
     hmapCellsSelected: function (colIDs, rowIDs) {
       if (rowIDs.length == 0) return;
-      var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
+      var isTransposed = (this.tgState.heatmapAxis === 'Transposed');
       var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
 
-      var familyIds = originalAxis.columnIds;
-      var genomeIds = originalAxis.rowIds;
+      var geneIds = originalAxis.columnIds;
+      var comparisonIds = originalAxis.rowIds;
 
-      var query = 'and(in(' + this.pfState.familyType + '_id,(' + familyIds + ')),in(genome_id,(' + genomeIds + ')),eq(feature_type,CDS),eq(annotation,PATRIC))&select(feature_id,patric_id,refseq_locus)&limit(250000)';
+      this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, geneIds, comparisonIds));
+      var actionBar = this._buildPanelButtons(colIDs, rowIDs, geneIds, comparisonIds);
+      domConstruct.place(actionBar, this.dialog.containerNode, 'last');
 
-      Topic.publish(this.topicId, 'showLoadingMask');
-      request.post(PathJoin(window.App.dataServiceURL, 'genome_feature'), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        data: query
-      }).then(lang.hitch(this, function (features) {
-        Topic.publish(this.topicId, 'hideLoadingMask');
-
-        this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
-        var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
-        domConstruct.place(actionBar, this.dialog.containerNode, 'last');
-
-        this.dialog.show();
-      }));
+      this.dialog.show();
     },
-    _buildPanelCellClicked: function (isTransposed, familyId, genomeId, features) {
+    _buildPanelCellClicked: function (isTransposed, geneId, comparisonId) {
 
-      var gfs = this.pfState.genomeFilterStatus;
+      var gfs = this.tgState.comparisonFilterStatus;
 
-      var genomeName = gfs[genomeId].getLabel();
-      var description = '',
-        memberCount = 0,
-        index = 0;
+      var comparisonName = gfs[comparisonId].getLabel();
+      var description = '';
 
       if (isTransposed) {
-        // rows: families, columns: genomes
-        this.currentData.rows.forEach(function (row, idx) {
-          if (row.rowID === familyId) {
+        // rows: genes, columns: comparisons
+        this.currentData.rows.forEach(function (row) {
+          if (row.rowID === geneId) {
             description = row.rowLabel;
-            index = idx;
-          }
-        });
-        this.currentData.columns.forEach(function (col) {
-          if (col.colID === genomeId) {
-            memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
           }
         });
       } else {
-        index = gfs[genomeId].getIndex();
         this.currentData.columns.forEach(function (col) {
-          if (col.colID === familyId) {
+          if (col.colID === geneId) {
             description = col.colLabel;
-            memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
           }
         });
       }
 
       var text = [];
-      text.push('<b>Genome:</b> ' + genomeName);
+      text.push('<b>Comparison:</b> ' + comparisonName);
       text.push('<b>Product:</b> ' + description);
-      text.push('<b>Family ID:</b> ' + familyId);
-      text.push('<b>Members:</b> ' + memberCount);
-      features.forEach(function (feature) {
-        var featureLink = '<a href="/view/Feature/' + feature.feature_id + '" target="_blank">' + feature.patric_id + '</a>';
-        if (feature.refseq_locus_tag !== undefined) {
-          featureLink += ', ' + feature.refseq_locus_tag;
-        }
-        if (feature.alt_locus_tag !== undefined) {
-          featureLink += ', ' + feature.alt_locus_tag;
-        }
-        text.push(featureLink);
-      });
 
       return text.join('<br>');
     },
-    _buildPanelCellsSelected: function (isTransposed, familyIds, genomeIds, features) {
-
-      // var membersCount = this._countMembers(colIDs, rowIDs);
+    _buildPanelCellsSelected: function (isTransposed, geneIds, comparisonIds) {
 
       var text = [];
-      text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
-      text.push('<b>Family Selected:</b> ' + familyIds.length);
-      text.push('<b>Members:</b> ' + features.length);
+      text.push('<b>Number of comparisons selected:</b> ' + comparisonIds.length);
+      text.push('<b>Number of features selected:</b> ' + geneIds.length);
 
       return text.join('<br>');
     },
@@ -352,17 +298,17 @@ define([
         checked: false,
         value: 2,
         name: 'cluster_by',
-        label: 'Protein Families'
+        label: 'Genes'
       }).placeAt(tp_dim.containerNode);
-      domConstruct.place('<label>Protein Families</label><br/>', tp_dim.containerNode, 'last');
+      domConstruct.place('<label>Genes</label><br/>', tp_dim.containerNode, 'last');
 
       new RadioButton({
         checked: false,
         value: 1,
         name: 'cluster_by',
-        label: 'Genomes'
+        label: 'Comparisons'
       }).placeAt(tp_dim.containerNode);
-      domConstruct.place('<label>Genomes</label><br/>', tp_dim.containerNode, 'last');
+      domConstruct.place('<label>Comparisons</label><br/>', tp_dim.containerNode, 'last');
 
       new RadioButton({
         checked: true,
@@ -422,148 +368,15 @@ define([
 
       return form;
     },
-    _buildPanelAnchoring: function () {
-
-      var self = this;
-      var pfState = self.pfState;
-      var options = [{ value: '', label: 'Select a genome' }];
-      options = options.concat(pfState.genomeIds.map(function (genomeId) {
-        return {
-          value: genomeId,
-          label: pfState.genomeFilterStatus[genomeId].getLabel()
-        };
-      }).sort(function (a, b) {
-        // return a.label - b.label;
-        if (a.label < b.label) {
-          return -1;
-        }
-        else if (a.label > b.label) {
-          return 1;
-        }
-
-        return 0;
-
-      }));
-
-      var anchor = new Select({
-        name: 'anchor',
-        options: options
-      });
-      anchor.on('change', lang.hitch(this, function (genomeId) {
-        if (genomeId !== '') {
-          Topic.publish(this.topicId, 'anchorByGenome', genomeId);
-          popup.close(self.tooltip_anchoring);
-        }
-      }));
-
-      return anchor;
-    },
-    _buildPanelSaveSVG: function () {
-      var self = this;
-
-      var container = domConstruct.create('div');
-
-      domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save snapshot (SVG)',
-        onclick: function () {
-          var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
-          domConstruct.place(status, container, 'last');
-          setTimeout(function () {
-            self.chart.downloadSVG({ fileName: 'heatmap.svg' });
-            domConstruct.destroy(status);
-          }, 1000);
-        }
-      }, container);
-
-      domConstruct.place('<br>', container);
-
-      domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save entire chart (SVG)',
-        onclick: function () {
-          var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
-          domConstruct.place(status, container, 'last');
-          setTimeout(function () {
-            self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
-            domConstruct.destroy(status);
-          }, 1000);
-        }
-      }, container);
-
-      domConstruct.place('<br>', container);
-
-      domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
-        onclick: function () {
-          var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
-          domConstruct.place(status, container, 'last');
-          setTimeout(function () {
-            self.downloadChart();
-            domConstruct.destroy(status);
-          }, 1000);
-        }
-      }, container);
-
-      domConstruct.place('<br>', container);
-
-      domConstruct.create('a', {
-        innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
-        onclick: function () {
-          var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
-          domConstruct.place(status, container, 'last');
-          setTimeout(function () {
-            self.downloadJSON();
-            domConstruct.destroy(status);
-          }, 1000);
-        }
-      }, container);
-
-      return container;
-    },
-
-
-    downloadJSON: function () {
-      var _self = this;
-      var ext = 'json';
-      var rel = 'text/plain';
-      var state = _self.chart.getState();
-      var obj = { 'rows': state.rows, 'cols': state.cols, 'matrix': state.matrix };
-      saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'BVBRC_protein_families_heatmap_all.' + ext);
-    },
-
-    downloadChart: function () {
-      var _self = this;
-      var DELIMITER = '\t';
-      var ext = 'tsv';
-      var rel = 'text/tsv';
-
-      var state = _self.chart.getState();
-      var header = 'Genomes/Protein Families';
-      state.cols.forEach(function (col, idx) {
-        header += DELIMITER + col.name + ' (' + col.id + ')';
-      });
-
-      var data = [];
-      state.rows.forEach(function (row, idx) {
-        var r = [];
-        r.push(row.name + ' (' + row.id + ')');
-        for (var step = 0; step < state.cols.length; step++) {
-          r.push(state.matrix[idx][step]);
-        }
-        data[idx] = r.join(DELIMITER);
-      });
-
-      saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_protein_families_heatmap_all.' + ext);
-    },
-
-    _buildPanelButtons: function (colIDs, rowIDs, familyIds, genomeIds, features) {
+    _buildPanelButtons: function (colIDs, rowIDs, geneIds, comparisonIds) {
       var _self = this;
       var actionBar = domConstruct.create('div', {
         'class': 'dijitDialogPaneActionBar'
       });
 
-      var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">TSV</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
+      var dhc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 
-      var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">TSV</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+      var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
       var downloadHM = new TooltipDialog({
         content: dhc,
         onMouseLeave: function () {
@@ -590,7 +403,7 @@ define([
           ext = 'csv';
         } else {
           DELIMITER = '\t';
-          ext = 'tsv';
+          ext = 'txt';
         }
 
         var colIndexes = [];
@@ -602,23 +415,23 @@ define([
 
         var header = _self.currentData.rowLabel + '/' + _self.currentData.colLabel;
         colIndexes.forEach(function (colIdx) {
-          header += DELIMITER + _self.currentData.columns[colIdx].colLabel + ' (' + _self.currentData.columns[colIdx].colID + ')';
+          header += DELIMITER + _self.currentData.columns[colIdx].colLabel;
         });
 
         var data = [];
         _self.currentData.rows.forEach(function (row, idx) {
           if (rowIDs.indexOf(row.rowID) > -1) {
             var r = [];
-            r.push(row.rowLabel + ' (' + row.rowID + ')');
+            r.push(row.rowLabel);
             colIndexes.forEach(function (colIdx) {
-              var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
+              var val = _self.currentData.columns[colIdx].meta.samples[row.rowID].log_ratio;
               r.push(val);
             });
             data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
           }
         });
 
-        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_protein_families_heatmap.' + ext);
+        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_bioset_heatmap.' + ext);
         popup.close(downloadHM);
       });
       on(btnDownloadHeatmap.domNode, 'click', function () {
@@ -630,15 +443,12 @@ define([
       });
 
       var btnDownloadProteins = new Button({
-        label: 'Download Proteins',
-        disabled: (features.length === 0)
+        label: 'Download Genes'
       });
       on(downloadPT.domNode, 'click', function (e) {
         if (e.target.attributes.rel === undefined) return;
         var rel = e.target.attributes.rel.value;
-        var currentQuery = '?in(feature_id,(' + features.map(function (f) {
-          return f.feature_id;
-        }).join(',') + '))&sort(+feature_id)';
+        var currentQuery = '?in(feature_id,(' + geneIds + '))&sort(+feature_id)';
 
         window.open(window.App.dataServiceURL + '/genome_feature/' + currentQuery + '&http_authorization=' + encodeURIComponent(window.App.authorizationToken) + '&http_accept=' + rel + '&http_download=true');
         popup.close(downloadPT);
@@ -653,47 +463,39 @@ define([
       });
 
       var btnShowDetails = new Button({
-        label: 'Show Proteins',
-        disabled: (features.length === 0)
+        label: 'Show Genes'
       });
       on(btnShowDetails.domNode, 'click', function () {
-
-        var query = '?in(feature_id,(' + features.map(function (d) {
-          return d.feature_id;
-        }) + '))';
-        Topic.publish('/navigate', {
-          href: '/view/FeatureList/' + query + '#view_tab=features',
-          target: 'blank'
-        });
-
+        if (typeof (geneIds) == 'object') {
+          Topic.publish('/navigate', { href: '/view/FeatureList/?in(feature_id,(' + geneIds + '))#view_tab=features', target: 'blank' });
+        } else {
+          Topic.publish('/navigate', { href: '/view/Feature/' + geneIds, target: 'blank' });
+        }
         _self.dialog.hide();
       });
 
       var btnAddToWorkspace = new Button({
         label: 'Add Proteins to Group',
-        disabled: (features.length === 0)
-      });
-      on(btnAddToWorkspace.domNode, 'click', function () {
-        if (!window.App.user || !window.App.user.id) {
-          Topic.publish('/login');
-          return;
-        }
+        onClick: function () {
+          var dlg = new Dialog({ title: 'Add selected items to group' });
 
-        var dlg = new Dialog({ title: 'Add This Feature To Group' });
-        var stg = new SelectionToGroup({
-          selection: features,
-          type: 'feature_group'
-        });
-        on(dlg.domNode, 'dialogAction', function (evt) {
-          dlg.hide();
-          setTimeout(function () {
-            dlg.destroy();
-          }, 2000);
-        });
-        domConstruct.place(stg.domNode, dlg.containerNode, 'first');
-        stg.startup();
-        dlg.startup();
-        dlg.show();
+          var stg = new SelectionToGroup({
+            selection: geneIds.map(function (id) { return { feature_id: id }; }),
+            type: 'feature_group',
+            path: this.get('path')
+          });
+
+          on(dlg.domNode, 'dialogAction', function (evt) {
+            dlg.hide();
+            setTimeout(function () {
+              dlg.destroy();
+            }, 2000);
+          });
+          domConstruct.place(stg.domNode, dlg.containerNode, 'first');
+          stg.startup();
+          dlg.startup();
+          dlg.show();
+        }
       });
 
       var btnCancel = new Button({
@@ -711,6 +513,36 @@ define([
 
       return actionBar;
     },
+    _buildPanelColorTheme: function () {
+      var self = this;
+      var colorSelect = new Select({
+        name: 'colorTheme',
+        options: [{ value: 'rgb', label: '<i class="fa icon-arrow-up"></i> Red-Black-Green <i class="fa icon-arrow-down"></i>' },
+          { value: 'rbw', label: '<i class="fa icon-arrow-up"></i> Red-White-Blue <i class="fa icon-arrow-down"></i>' }]
+      });
+      colorSelect.on('change', lang.hitch(self, function (scheme) {
+        self.currentData.colorStops = self.getColorStops(scheme, self.tgState.maxIntensity);
+        self.flashDom.refreshData();
+        popup.close();
+      }));
+
+      return colorSelect;
+    },
+    _buildPanelShowSignificant: function () {
+
+      var showSelect = new Select({
+        name: 'showSignificant',
+        options: [{ value: 'Y', label: 'Significant Genes' },
+          { value: 'N', label: 'All Genes' }]
+      });
+      showSelect.on('change', lang.hitch(this, function (yesOrNo) {
+        this.tgState.significantGenes = yesOrNo;
+        Topic.publish(this.topicId, 'applyConditionFilter', this.tgState);
+        popup.close();
+      }));
+
+      return showSelect;
+    },
     _getOriginalAxis: function (isTransposed, columnIds, rowIds) {
       var originalAxis = {};
 
@@ -723,25 +555,100 @@ define([
       }
       return originalAxis;
     },
-    flipAxis: function () {
-      // flip internal flag
-      if (this.pfState.heatmapAxis === '') {
-        this.pfState.heatmapAxis = 'Transposed';
+    _buildPanelSaveSVG: function () {
+      var self = this;
+
+      var container = domConstruct.create('div');
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save snapshot',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg' });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save entire chart',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      return container;
+    },
+    // override exportCurrentData in order to cluster on read value instead of heatmap value
+    exportCurrentData: function (isTransposed) {
+      // compose heatmap raw data in tab delimited format
+      // this de-transpose (if it is transposed) so that cluster algorithm can be applied to a specific data type
+
+      var cols,
+        rows,
+        id_field_name,
+        data_field_name,
+        tablePass = [],
+        header = [''],
+        readValues = [];
+
+      if (isTransposed) {
+        cols = this.currentData.rows;
+        rows = this.currentData.columns;
+        id_field_name = 'rowID';
+        data_field_name = 'colID';
       } else {
-        this.pfState.heatmapAxis = '';
+        cols = this.currentData.columns;
+        rows = this.currentData.rows;
+        id_field_name = 'colID';
+        data_field_name = 'rowID';
       }
 
-      Topic.publish(this.topicId, 'refreshHeatmap');
-      this.chart.flipScaling();
-    },
+      cols.forEach(function (col, colIdx) {
+        header.push(col[id_field_name]);
+        readValues[colIdx] = col.meta.labels.split('|');
+      });
 
+      tablePass.push(header.join('\t'));
+
+      for (var i = 0, iLen = rows.length; i < iLen; i++) {
+        var r = [];
+        r.push(rows[i][data_field_name]);
+
+        for (var j = 0, jLen = cols.length; j < jLen; j++) {
+          r.push(readValues[j][i] || 0);
+        }
+
+        tablePass.push(r.join('\t'));
+      }
+
+      return tablePass.join('\n');
+    },
+    flipAxis: function () {
+      // flip internal flag
+      if (this.tgState.heatmapAxis === '') {
+        this.tgState.heatmapAxis = 'Transposed';
+      } else {
+        this.tgState.heatmapAxis = '';
+      }
+
+      this.chart.flipAxis();
+    },
     cluster: function (param) {
       var p = param || { g: 2, e: 2, m: 'a' };
 
-      var isTransposed = this.pfState.heatmapAxis === 'Transposed';
+      var isTransposed = this.tgState.heatmapAxis === 'Transposed';
       var data = this.exportCurrentData(isTransposed);
 
-      console.log('clustering data set size: ', data.length);
       if (data.length > 1500000) {
         new Dialog({
           title: 'Notice',
@@ -755,10 +662,10 @@ define([
 
       return when(window.App.api.data('cluster', [data, p]), lang.hitch(this, function (res) {
         // DO NOT TRANSPOSE. clustering process is based on the corrected axises
-        this.pfState.clusterRowOrder = res.rows;
-        this.pfState.clusterColumnOrder = res.columns;
+        this.tgState.clusterRowOrder = res.rows;
+        this.tgState.clusterColumnOrder = res.columns;
 
-        Topic.publish(this.topicId, 'updatePfState', this.pfState);
+        Topic.publish(this.topicId, 'updateTgState', this.tgState);
         Topic.publish(this.topicId, 'updateFilterGridOrder', res.rows);
         Topic.publish(this.topicId, 'updateMainGridOrder', res.columns);
 
@@ -775,6 +682,10 @@ define([
       });
     },
 
+    update: function () {
+      Topic.publish(this.topicId, 'refreshHeatmap');
+    },
+
     hmapUpdate: function () {
       var self = this;
       if (!this.currentData || !this._firstView) return;
@@ -783,45 +694,39 @@ define([
       if (!data) return;
 
       if (!this.chart) {
-        var legendLabels = ['0', '1', '2', '3+'];
-
         this.chart = new Hotmap({
           ele: this.hmapDom,
           cols: data.cols,
           rows: data.rows,
           matrix: data.matrix,
-          rowsLabel: 'Genomes',
-          colsLabel: 'Protein Families',
-          hideColMeta: true,
+          rowsLabel: 'Bioset',
+          colsLabel: 'Entity',
           hideRowMeta: true,
-          color: {
-            bins: ['=0', '=1', '=2', '>=3'],
-            labels: legendLabels,
-            colors: [0x000000, 16440142, 16167991, 16737843],
-            altColors: [{
-              bins: ['=0', '=1', '=2', '>=3'],
-              labels: legendLabels,
-              colors: [0xffffff, 0xfbe6e2, 0xffadad, 0xff0000]
-            }]
-          },
+          hideColMeta: true,
           options: {
             theme: 'light',
             maxFontSize: 13,
             hideOptions: true,
             useBoundingClient: true,
-            rowLabelEllipsisPos: 1
+            legend: '⬆ red - black - green ⬇'
+          },
+          color: {
+            bins: [
+              '<-4', '<-3', '<-2', '<-1', '<0', '=0',
+              '<=1', '<=2', '<=3', '<=4', '>4'
+            ],
+            colors: this.colors
           },
           onHover: function (info) {
-            var genome = info.yLabel,
-              pgFam = info.xLabel,
-              id = info.colMeta.id,
-              members = info.value;
+            var isTransposed = (self.tgState.heatmapAxis === 'Transposed');
+            var title = isTransposed ? info.xLabel  : info.yLabel,
+              gene = isTransposed ? info.yLabel : info.xLabel,
+              logRatio = info.value;
 
             return '<div>' +
-              '<div><b>Genome: </b> ' + genome + '</div>' +
-              '<div><b>PGFam: </b> ' + pgFam + '</div>' +
-              '<div><b>PGFam ID: </b> ' + id + '</div><br>' +
-              '<div><b>Members: </b>' + members + '</div>' +
+              '<div><b>Bioset: </b> ' + title + '</div>' +
+              '<div><b>Entity: </b> ' + gene + '</div>' +
+              '<div><b>Log2_fc: </b>' + logRatio + '</div>' +
             '</div>';
           },
           onSelection: function (objs, rowIDs, colIDs) {
@@ -833,12 +738,13 @@ define([
           onFullscreenClick: function () {
             // must also hide filter container
             domClass.toggle(Query('.filterPanel')[0], 'dijitHidden');
+            domClass.toggle(Query('.dijitSplitterV')[0], 'dijitHidden');
             Query('.dijitSplitter').forEach(function (el) {
               domClass.toggle(el, 'dijitHidden');
             });
 
             setTimeout(function () {
-              self.chart.resize();
+              self.onResize();
             }, 500);
           }
         });
@@ -853,6 +759,7 @@ define([
         Query('.WSContainerActionBar', header).style('margin-left', 'auto');
         Query('.ActionButtonWrapper', header).style('width', '48px');
 
+
         // hack to remove unused path div (interfering with flexbox)
         Query('.wsBreadCrumbContainer', this.hmapDom)[0].remove();
       } else {
@@ -861,12 +768,48 @@ define([
           cols: data.cols,
           matrix: data.matrix
         });
+
+        self.chart.colorFilter(function (cell) {
+          var rowID = cell.rowID,
+            colID = cell.colID;
+
+          var hex = data.colorHash[rowID][colID];
+          var c = self.colors;
+
+          var color;
+          if (hex == '01') {
+            color = c[4];
+          } else if (hex == '02') {
+            color = c[3];
+          } else if (hex == '03') {
+            color = c[2];
+          } else if (hex == '04') {
+            color = c[1];
+          } else if (hex == '05') {
+            color = c[0];
+          } else if (hex == '06') {
+            color = c[6];
+          } else if (hex == '07') {
+            color = c[7];
+          } else if (hex == '08') {
+            color = c[8];
+          } else if (hex == '09') {
+            color = c[9];
+          } else if (hex == '0A') {
+            color = c[10];
+          } else {
+            color = c[5];
+          }
+
+          return color;
+        });
       }
     },
 
     formatData: function (data) {
       if (!data) return;
 
+      // console.log(data)
       if (data.columns.length == 0)  {
         new Confirmation({
           title: 'No results',
@@ -889,29 +832,43 @@ define([
         return null;
       }
 
+      // get neccessary row data for heatmap
       var rows = data.rows.map(function (r) {
         return {
           name: r.rowLabel,
           id: r.rowID
         };
       });
+
+      // get neccessary column data for heatmap
+      // note: distribution is always in columns, while meta moves between coloums and rows
       var cols = data.columns.map(function (c) {
         return {
           name: c.colLabel,
           id: c.colID,
-          distribution: c.distribution,
-          meta: {
-            id: c.colID
-          }
+          meta: c.meta,
+          distribution: c.distribution
         };
       });
 
-      // get lists of vals for each column
-      var vals = cols.map(function (c) {
-        var hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
-          vals = hexStrs.map(function (hex) { return  parseInt(hex, 16); });
+      // we'll need a hash of colors
+      // this is mostly for state management and dealing with dynamic bins for now.
+      // we'll organize by id so that we can drag/drop cols/rows and re-render colors
+      var colorHash = {};
 
-        delete c.distribution; // we no longer need the distribution
+      // get lists of vals for each column
+      var vals = cols.map(function (c, j) {
+        var vals = c.meta.labels.split('|');
+
+        var hexStrs = c.distribution.match(/.{2}/g);
+        for (var i = 0; i < hexStrs.length; i++) {
+          if (!(rows[i].id in colorHash)) {
+            colorHash[rows[i].id] = {};
+          }
+
+          colorHash[rows[i].id][c.id] = hexStrs[i];
+        }
+
         return vals;
       });
 
@@ -925,7 +882,9 @@ define([
         matrix.push(row);
       }
 
-      return { cols: cols, rows: rows, matrix: matrix };
+      return {
+        cols: cols, rows: rows, matrix: matrix, colorHash: colorHash
+      };
     }
 
   });

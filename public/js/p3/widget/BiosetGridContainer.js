@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './TranscriptomicsComparisonGrid'
+  './BiosetGrid'
 ], function (
   declare, GridContainer,
   Grid
@@ -8,10 +8,10 @@ define([
 
   return declare([GridContainer], {
     gridCtor: Grid,
-    containerType: 'transcriptomics_sample_data',
+    containerType: 'bioset_data',
     facetFields: [],
     maxGenomeCount: 5000,
-    dataModel: 'transcriptomics_sample',
+    dataModel: 'bioset',
     getFilterPanel: function (opts) {
     },
     query: '&keyword(*)',

@@ -862,7 +862,7 @@ define([], function () {
         field: 'species', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'type', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'pathogen_type', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'subtype', type: 'str', facet: false, facet_hidden: true, search: true
@@ -1293,6 +1293,23 @@ define([], function () {
       {
         field: 'comments', type: 'str', facet: false, facet_hidden: true, search: true
       },
+    ],
+    'experiment': [
+      {
+        field: 'exp_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'measurement_technique', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'organism', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'treatment_type', type: 'str', facet: true, facet_hidden: false, search: false
+      },
+      {
+        field: 'treatment_duration', type: 'str', facet: true, facet_hidden: false, search: false
+      }
     ],
   }
 })

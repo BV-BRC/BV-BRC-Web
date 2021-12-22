@@ -73,4 +73,16 @@ router.get('/outreach', function (req, res) {
   res.render('pages/outreach', { title: 'PATRIC', request: req, response: res });
 });
 
+/* GET all searches page. */
+router.get('/searches', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/searches', { title: 'PATRIC', request: req, response: res });
+});
+
+/* GET all tools & services page. */
+router.get('/tools', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/tools', { title: 'PATRIC', request: req, response: res });
+});
+
 module.exports = router;

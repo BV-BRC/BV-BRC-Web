@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
   'dijit/popup', 'dijit/TooltipDialog',
   './ContainerActionBar', 'FileSaver',
-  './TranscriptomicsGeneGrid', './GridContainer'
+  './BiosetResultGrid', './GridContainer'
 ], function (
   declare, lang, on, Topic,
   popup, TooltipDialog,
   ContainerActionBar, saveAs,
-  TranscriptomicsGeneGrid, GridContainer
+  biosetGrid, GridContainer
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
@@ -20,8 +20,8 @@ define([
   });
 
   return declare([GridContainer], {
-    gridCtor: TranscriptomicsGeneGrid,
-    containerType: 'transcriptomics_gene_data',
+    gridCtor: biosetGrid,
+    containerType: 'bioset_result_data',
     facetFields: [],
     constructor: function (options) {
 
@@ -51,12 +51,10 @@ define([
       if (!state) {
         return;
       }
-      // console.log("TranscriptomicsGeneGridContainer _setStateAttr: ", state);
       if (this.grid) {
-        // console.log("   call set state on this.grid: ", this.grid);
         this.grid.set('state', state);
       } else {
-        // console.log("No Grid Yet (TranscriptomicsGeneGridContainer)");
+        // console.log("No Grid Yet (biosetGridContainer)");
       }
 
       this._set('state', state);
@@ -103,13 +101,13 @@ define([
 
             var data  = this.grid.store.query('', { sort: this.grid.store.sort });
 
-            var headers = ['Genome', 'BRC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Start', 'End', 'Strand', 'Comparisons', 'Up', 'Down'];
+            var headers = ['Entity ID', 'BRC ID', 'Locus Tag', 'Protein ID', 'Gene ID', 'Entity Name', 'Comparisons', 'Up', 'Down'];
             var content = [];
             data.forEach(function (row) {
-              content.push([row.genome_name, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, '"' + row.product + '"', row.start, row.end, row.strand, row.sample_size, row.up, row.down].join(DELIMITER));
+              content.push([row.entity_id, row.patric_id, row.locus_tag, row.protein_id, row.gene_id, '"' + row.entity_name + '"', row.sample_size, row.up, row.down].join(DELIMITER));
             });
 
-            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_transcriptomics_genes.' + ext);
+            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'bioset_results.' + ext);
 
             popup.close(downloadTT);
           }));

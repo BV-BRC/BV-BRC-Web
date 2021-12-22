@@ -990,12 +990,12 @@ define([
           label: 'EXPRMNT',
           multiple: false,
           validTypes: ['*'],
-          validContainerTypes: ['transcriptomics_experiment_data'],
+          validContainerTypes: ['experiment_data'],
           tooltip: 'View Experiment'
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
           Topic.publish('/navigate', {
             href: '/view/ExperimentComparison/' + experimentIdList + '#view_tab=overview',
@@ -1004,7 +1004,7 @@ define([
         },
         false
       ], [
-        'TranscriptomicsExperimentList',
+        'ExperimentList',
         'fa icon-selection-ExperimentList fa-2x',
         {
           label: 'EXPRMNTS',
@@ -1012,16 +1012,16 @@ define([
           min: 2,
           max: 5000,
           validTypes: ['*'],
-          validContainerTypes: ['transcriptomics_experiment_data'],
+          validContainerTypes: ['experiment_data'],
           tooltip: 'View Experiment List'
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
 
           Topic.publish('/navigate', {
-            href: '/view/TranscriptomicsExperimentList/?in(eid,(' + experimentIdList.join(',') + '))#view_tab=experiments',
+            href: '/view/ExperimentList/?in(exp_id,(' + experimentIdList.join(',') + '))#view_tab=experiments',
             target: 'blank'
           });
         },
@@ -1030,28 +1030,22 @@ define([
         'ExperimentGeneList',
         'fa icon-list-unordered fa-2x',
         {
-          label: 'GENES',
+          label: 'BIOSETS',
           multiple: true,
           validTypes: ['*'],
           max: 5000,
-          validContainerTypes: ['transcriptomics_experiment_data', 'transcriptomics_sample_data'],
+          validContainerTypes: ['experiment_data', 'bioset_data'],
           tooltip: 'View Experiment Gene List'
         },
         function (selection) {
-          var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+          const experimentIdSet = new Set(selection.map(function (exp) {
+            return exp.exp_id;
+          }))
+
+          Topic.publish('/navigate', {
+            href: '/view/BiosetResult/?in(exp_id,(' + Array.from(experimentIdSet).join(',') + '))',
+            target: 'blank'
           });
-          if (experimentIdList.length == 1) {
-            Topic.publish('/navigate', {
-              href: '/view/TranscriptomicsExperiment/?eq(eid,(' + experimentIdList + '))',
-              target: 'blank'
-            });
-          } else {
-            Topic.publish('/navigate', {
-              href: '/view/TranscriptomicsExperiment/?in(eid,(' + experimentIdList.join(',') + '))',
-              target: 'blank'
-            });
-          }
         },
         false
       ], [

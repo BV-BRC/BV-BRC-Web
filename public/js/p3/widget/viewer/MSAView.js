@@ -500,13 +500,13 @@ define([
         var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
         delete snapMenu.selection;
         if (rel == 'msa-img') {
-          msa.utils.export.saveAsImg(m, 'PATRIC_msa.png');
+          msa.utils.export.saveAsImg(m, 'BVBRC_msa.png');
         }
         else if (rel == 'msa-clustal') {
-          saveAs(new Blob([this.dataStats.clustal]), 'PATRIC_msa_clustal.txt');
+          saveAs(new Blob([this.dataStats.clustal]), 'BVBRC_msa_clustal.txt');
         }
         else if (rel == 'msa-fasta') {
-          saveAs(new Blob([this.dataStats.fasta]), 'PATRIC_msa.fasta');
+          saveAs(new Blob([this.dataStats.fasta]), 'BVBRC_msa.fasta');
         }
         // else if (rel == 'jalview') {
         //   // share via jalview

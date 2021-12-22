@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './GridContainer',
-  './TranscriptomicsExperimentGrid', 'dijit/popup',
+  './ExperimentGrid', './AdvancedSearchFields', 'dijit/popup',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct'
 ], function (
   declare, GridContainer,
-  Grid, popup,
+  Grid, AdvancedSearchFields, popup,
   TooltipDialog, FacetFilterPanel,
   lang, on, domConstruct
 ) {
@@ -20,14 +20,15 @@ define([
 
   return declare([GridContainer], {
     gridCtor: Grid,
-    containerType: 'transcriptomics_experiment_data',
+    containerType: 'experiment_data',
     tutorialLink: 'user_guides/organisms_taxon/experiments_comparisons_tables.html',
-    facetFields: ['organism', 'strain', 'mutant', 'condition', 'timeseries'],
+    facetFields: AdvancedSearchFields['experiment'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['experiment'].filter((ff) => ff.search),
     maxGenomeCount: 5000,
-    dataModel: 'transcriptomics_experiment',
+    dataModel: 'experiment',
     getFilterPanel: function (opts) {
     },
-    primaryKey: 'eid',
+    primaryKey: 'exp_id',
     query: '&keyword(*)',
     containerActions: GridContainer.prototype.containerActions.concat([
       [
@@ -48,12 +49,12 @@ define([
             sort;
           if (_self.tabContainer.selectedChildWidget.title == 'Experiments') {
             grid = _self.experimentsGrid;
-            dataType = 'transcriptomics_experiment';
-            sort = '&sort(+eid)';
+            dataType = 'experiment';
+            sort = '&sort(+exp_id)';
           } else {
-            grid = _self.comparisonsGrid;
-            dataType = 'transcriptomics_sample';
-            sort = '&sort(+pid)';
+            grid = _self.biosetGrid;
+            dataType = 'bioset';
+            sort = '&sort(+bioset_id)';
           }
 
           if (!grid) {
@@ -61,9 +62,7 @@ define([
             return;
           }
 
-          // console.log("_self.grid: ", _self.grid);
           var totalRows = grid.totalRows;
-          // console.log("TOTAL ROWS: ", totalRows);
           if (totalRows > _self.maxDownloadSize) {
             downloadTT.set('content', 'This table exceeds the maximum download size of ' + _self.maxDownloadSize);
           } else {
@@ -71,8 +70,8 @@ define([
 
             on(downloadTT.domNode, 'div:click', function (evt) {
               var rel = evt.target.attributes.rel.value;
-              var currentQuery = 'in(eid,(' + _self.eids.join(',') + '))';
-              var query = currentQuery + sort + '&limit(10000)';
+              var currentQuery = 'in(exp_id,(' + _self.eids.join(',') + '))';
+              var query = currentQuery + sort + '&limit(250000)';
 
               var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : '');
               if (baseUrl.charAt(-1) !== '/') {
