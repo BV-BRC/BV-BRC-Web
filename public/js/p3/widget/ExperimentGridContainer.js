@@ -49,12 +49,12 @@ define([
             sort;
           if (_self.tabContainer.selectedChildWidget.title == 'Experiments') {
             grid = _self.experimentsGrid;
-            dataType = 'transcriptomics_experiment';
-            sort = '&sort(+eid)';
+            dataType = 'experiment';
+            sort = '&sort(+exp_id)';
           } else {
-            grid = _self.comparisonsGrid;
-            dataType = 'transcriptomics_sample';
-            sort = '&sort(+pid)';
+            grid = _self.biosetGrid;
+            dataType = 'bioset';
+            sort = '&sort(+bioset_id)';
           }
 
           if (!grid) {
@@ -62,9 +62,7 @@ define([
             return;
           }
 
-          // console.log("_self.grid: ", _self.grid);
           var totalRows = grid.totalRows;
-          // console.log("TOTAL ROWS: ", totalRows);
           if (totalRows > _self.maxDownloadSize) {
             downloadTT.set('content', 'This table exceeds the maximum download size of ' + _self.maxDownloadSize);
           } else {
@@ -72,8 +70,8 @@ define([
 
             on(downloadTT.domNode, 'div:click', function (evt) {
               var rel = evt.target.attributes.rel.value;
-              var currentQuery = 'in(eid,(' + _self.eids.join(',') + '))';
-              var query = currentQuery + sort + '&limit(10000)';
+              var currentQuery = 'in(exp_id,(' + _self.eids.join(',') + '))';
+              var query = currentQuery + sort + '&limit(250000)';
 
               var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : '');
               if (baseUrl.charAt(-1) !== '/') {

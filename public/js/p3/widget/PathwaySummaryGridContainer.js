@@ -217,7 +217,7 @@ define([
               content.push(['"' + row.pathway_name + '"', row.genes_selected, row.genes_annotated, row.coverage].join(DELIMITER));
             });
 
-            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'PATRIC_pathway_summary.' + ext);
+            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_pathway_summary.' + ext);
 
             popup.close(downloadTT);
           }));

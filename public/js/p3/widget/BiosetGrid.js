@@ -36,7 +36,7 @@ define([
       treatment_name: { label: 'Treatment Name', field: 'treatment_name', hidden: false },
       treatment_amount: { label: 'Treatment Amount', field: 'treatment_amount', hidden: false },
       treatment_duration: { label: 'Treatment Duration', field: 'treatment_duration', hidden: false },
-      result_count: { label: 'Result Count', field: 'result_count', hidden: false },
+      result_count: { label: 'Result Count', field: 'entity_count', hidden: false },
     },
     startup: function () {
       var _self = this;

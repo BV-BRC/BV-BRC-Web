@@ -57,7 +57,7 @@ define([
         // var meta = document.getElementsByTagName("meta[name='Keyword']");
         var meta = domQuery("meta[name='Keywords']")[0];
         if (meta) {
-          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+          meta.content = 'BRC,' + (document.title).replace('::', ',');
         }
         if (window.gtag) {
           // console.log("document title changed to", document.title);
@@ -188,7 +188,7 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = true;
-        newState.pageTitle = 'PATRIC Jobs';
+        newState.pageTitle = 'BRC Jobs';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -227,7 +227,7 @@ define([
         newState.value = PathJoin(_self.dataAPI, 'content', path);
         newState.set = 'href';
         newState.requireAuth = false;
-        newState.pageTitle = 'PATRIC';
+        newState.pageTitle = 'BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -283,7 +283,7 @@ define([
         newState.value = /* _self.dataAPI +*/ '/public/help/' + path;
         newState.set = 'href';
         newState.requireAuth = false;
-        newState.pageTitle = 'PATRIC';
+        newState.pageTitle = 'BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -294,20 +294,20 @@ define([
         var newState = populateState(params);
 
         /* istanbul ignore next */
-        var path = params.params[0] || ('/' + _self.user.id ); //  + "/home/")
+        var path = params.params[0] || ('/' + _self.user.id); //  + "/home/")
         var parts = path.split('/');
         /* istanbul ignore next */
         if (path.replace(/\/+/g, '') === 'public') {
           path = '/public/';
         } else if (parts.length < 3) {
-          path = ('/' + _self.user.id );  // + "/home/"
+          path = ('/' + _self.user.id);  // + "/home/"
         }
 
         newState.widgetClass = 'p3/widget/WorkspaceManager';
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = false;
-        newState.pageTitle = 'PATRIC Workspace';
+        newState.pageTitle = 'BRC Workspace';
         _self.navigate(newState);
       });
 

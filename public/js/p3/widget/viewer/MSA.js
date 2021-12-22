@@ -676,21 +676,19 @@ define([
 
         delete snapMenu.selection;
         if (rel == 'msa') {
-          msa.utils.export.saveAsImg(m, 'PATRIC_msa.png');
+          msa.utils.export.saveAsImg(m, 'BVBRC_msa.png');
         }
         else if (rel == 'msa-txt') {
-          saveAs(new Blob([this.dataStats.clustal_txt]), 'PATRIC_msa.txt');
+          saveAs(new Blob([this.dataStats.clustal_txt]), 'BVBRC_msa.txt');
         }
         else if (rel == 'msa-fasta') {
-          // msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
-          // console.log("this.dataStats.fasta ", this.dataStats.fasta);
-          saveAs(new Blob([this.dataStats.fasta]), 'PATRIC_msa.fasta');
+          saveAs(new Blob([this.dataStats.fasta]), 'BVBRC_msa.fasta');
         }
         else if (rel == 'tree-svg') {
-          saveAs(new Blob([query('svg')[0].outerHTML]), 'PATRIC_msa_tree.svg');
+          saveAs(new Blob([query('svg')[0].outerHTML]), 'BVBRC_msa_tree.svg');
         }
         else if (rel == 'tree-newick') {
-          saveAs(new Blob([this.dataStats.tree_newick]), 'PATRIC_msa_tree.nwk');
+          saveAs(new Blob([this.dataStats.tree_newick]), 'BVBRC_msa_tree.nwk');
         }
         popup.close(snapMenu);
       }));

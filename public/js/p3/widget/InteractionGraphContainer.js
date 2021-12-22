@@ -93,7 +93,7 @@ define([
 
           var png64 = this.cy.png({ full: true, scale: 1.0 }).split(',')[1];
           var binary = fixBinary(atob(png64));
-          saveAs(new Blob([binary], { type: 'image/png' }), 'PATRIC_interaction.png');
+          saveAs(new Blob([binary], { type: 'image/png' }), 'BVBRC_interaction.png');
         },
         true
       ], [

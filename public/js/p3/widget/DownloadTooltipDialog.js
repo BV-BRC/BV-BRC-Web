@@ -66,18 +66,18 @@ define([
         });
       }
 
-      console.log('DOWNLOAD TYPE: ', type);
+      // console.log('DOWNLOAD TYPE: ', type);
       if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this['_to' + type]) {
         var query = 'in(' + pkField + ',(' + sel.join(',') + '))&sort(+' + pkField + ')&limit(2500000)';
         when(this.grid.store.query({}), lang.hitch(this, function (results) {
 
           if (pkField === 'subsystem_id') {
             var data = this['_to' + type.toLowerCase()](selection);
-            saveAs(new Blob([data]), 'PATRIC_' + this.containerType + '.' + type);
+            saveAs(new Blob([data]), 'BVBRC_' + this.containerType + '.' + type);
           } else {
             results = rql.query(query, {}, results);
             var data = this['_to' + type.toLowerCase()](results);
-            saveAs(new Blob([data]), 'PATRIC_' + this.containerType + '.' + type);
+            saveAs(new Blob([data]), 'BVBRC_' + this.containerType + '.' + type);
           }
 
         }));
