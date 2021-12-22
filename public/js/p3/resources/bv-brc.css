@@ -47,6 +47,8 @@
   display: flex;
   /* max-width: 1220px; */
   margin: 0 auto;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .nav-logo-link {
@@ -56,19 +58,25 @@
 .nav-logo-link img {
   align-self: center;
 }
-.nav-logo-link span {
+
+.nav-logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* .nav-logo-link span {
   font-size: 1.85em;
   font-weight: 400;
   padding-left: 10px;
   color: #ffffff;
   align-self: center;
   transition: color .1s;
-}
+} */
 
-.nav-logo-link span:hover,
+/* .nav-logo-link span:hover,
 .nav-logo-link span:focus {
   color: #cbcbcb;
-}
+} */
 
 #bv-brc-header-container .bv-brc-logo {
   margin-right: 0;
