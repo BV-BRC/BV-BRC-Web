@@ -54,15 +54,13 @@
 .nav-logo-link {
   display: flex;
   width: 200px;
-}
-.nav-logo-link img {
-  align-self: center;
+  padding-top: 4px;
 }
 
 .nav-logo {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
 }
 /* .nav-logo-link span {
   font-size: 1.85em;
