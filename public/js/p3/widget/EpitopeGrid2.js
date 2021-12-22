@@ -27,8 +27,6 @@ define([
 
       organism: { label: 'Organism', field: 'organism', hidden: false },
       taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
-      taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
-      taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
 
       protein_name: { label: 'Protein Name', field: 'protein_name', hidden: false },
       protein_id: { label: 'Protein ID', field: 'protein_id', hidden: true },

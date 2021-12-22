@@ -77,6 +77,12 @@ define(['./formatter'], function (formatter) {
       hidden: false
     },
 
+    strain: {
+      label: 'Strain',
+      field: 'strain',
+      hidden: false
+    },
+
     genome_status: {
       label: 'Genome Status',
       field: 'genome_status',
@@ -89,11 +95,7 @@ define(['./formatter'], function (formatter) {
       hidden: false
     },
 
-    strain: {
-      label: 'Strain',
-      field: 'strain',
-      hidden: false
-    },
+
     serovar: {
       label: 'Serovar',
       field: 'serovar',

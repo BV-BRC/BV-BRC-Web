@@ -305,7 +305,7 @@ define([], function () {
         field: 'lab_host', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'passage', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'passage', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'other_clinical', type: 'str', facet: false, facet_hidden: true, search: true
