@@ -103,7 +103,7 @@ define([
       if (this.compare_regions) {
 
         when(this.compare_regions.exportSVG(), function (data) {
-          saveAs(new Blob([data], { type: 'image/svg+xml' }), 'PATRIC_compare_regions.svg');
+          saveAs(new Blob([data], { type: 'image/svg+xml' }), 'BVBRC_compare_regions.svg');
         });
       }
     },

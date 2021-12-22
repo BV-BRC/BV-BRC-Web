@@ -148,7 +148,7 @@ define([
       }
 
       this.cancelRefresh();
-      this.refreshWorkspaceItems();
+      this.refreshWorkspaceItems(val);
 
       // whether or not to allow top level
       var allowedLevel = this.allowUserSpaceSelection ? true : self.path.split('/').length > 2;
@@ -354,7 +354,7 @@ define([
     },
 
     openChooser: function () {
-      this.refreshWorkspaceItems();
+      this.refreshWorkspaceItems(this.path);
       var _self = this;
 
       // if dialog is already built, just show it
@@ -467,9 +467,12 @@ define([
       okButton.on('click', function (evt) {
         if (_self.selection) {
           // if autoSelectCurrent we need to implicitly select current
-          if (_self.autoSelectCurrent) {
-            _self.set('selection', _self.selection);
-          }
+          // ASW: it's not clear this  check actually needs to happen given the value is being set anyway
+          // commenting out to remove "public annotation selection bug"
+          //if (_self.autoSelectCurrent) {
+          //  _self.set('selection', _self.selection);
+          //}
+          _self.set('selection', _self.selection);
 
           _self.set('value', _self.selection.path);
         }
@@ -480,17 +483,17 @@ define([
       domConstr.place(cancelButton.domNode, buttonsPane.containerNode, 'last');
       domConstr.place(okButton.domNode, buttonsPane.containerNode, 'last');
 
+      var grid = this.grid = this.createGrid();
 
       on(selectionPane.domNode, 'i:click', function (evt) {
         var rel = domAttr.get(evt.target, 'rel');
         switch (rel) {
           case 'upload':
             _self.dialog.flip();
+            grid.domNode.style.display = 'none';
             break;
         }
       });
-
-      var grid = this.grid = this.createGrid();
 
       frontBC.addChild(selectionPane);
       frontBC.addChild(grid);
@@ -509,6 +512,7 @@ define([
           switch (rel) {
             case 'flip':
               _self.dialog.flip();
+              grid.domNode.style.display = '';
               break;
           }
         });
@@ -543,6 +547,7 @@ define([
           } else {
             _self.dialog.flip();
           }
+          grid.domNode.style.display = '';
         });
 
         uploader.startup();
@@ -563,7 +568,7 @@ define([
       }
     },
 
-    refreshWorkspaceItems: function () {
+    refreshWorkspaceItems: function (target_path) {
       if (this.disableDropdownSelector || this._refreshing) {
         return;
       }
@@ -576,8 +581,32 @@ define([
         }
         return 0;
       }
+      if (target_path) { 
+      this._refreshing = WorkspaceManager.getObjectsAtPathByType(this.type, target_path)
+        .then(lang.hitch(this, function (items) {
+          delete this._refreshing;
 
-      this._refreshing = WorkspaceManager.getObjectsByType(this.type)
+          // sort by most recent
+          items.sort(function (a, b) {
+            return b.timestamp - a.timestamp;
+          });
+          this.store = new Memory({ data: items, idProperty: 'path' });
+          if (this.isSortAlpha) {
+            // sort alphabetically
+            var dataArr = this.store.data;
+            dataArr.sort(compare);
+
+            this.store.data = dataArr;
+          }
+          //ASW not sure should be doing this when path set. Also be culprit in blanking in the original else block below
+          this.searchBox.set('store', this.store);
+          if (this.value) {
+            this.searchBox.set('value', this.value);
+          }
+        }));
+      }
+      else { 
+      this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
 
@@ -598,11 +627,12 @@ define([
             this.searchBox.set('value', this.value);
           }
         }));
+      }
     },
     onSearchChange: function (value) {
-      this.set('value', value);
-      this.onChange(value);
-      this.validate(true);
+        this.set('value', value);
+        this.onChange(value);
+        this.validate(true);
     },
 
     onMouseEnter: function (value) {

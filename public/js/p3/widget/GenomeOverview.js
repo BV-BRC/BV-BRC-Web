@@ -5,7 +5,7 @@ define([
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
   './ExternalItemFormatter', './AdvancedDownload', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
   './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor',
-  '../DataAPI', './PermissionEditor'
+  '../DataAPI', './PermissionEditor', './ServicesTooltipDialog','dijit/popup'
 ], function (
   declare, lang, on, xhr, Topic,
   domClass, domQuery, domStyle, Template, domConstruct,
@@ -13,7 +13,7 @@ define([
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
   ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
   InputList, TextArea, DateTextBox, MetaEditor,
-  DataAPI, PermissionEditor
+  DataAPI, PermissionEditor, ServicesTooltipDialog,popup
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
@@ -23,10 +23,23 @@ define([
     apiServiceUrl: window.App.dataAPI,
     genome: null,
     state: null,
-    sumWidgets: ['apSummaryWidget', 'gfSummaryWidget', 'pfSummaryWidget', 'spgSummaryWidget'],
+    context: 'bacteria',
+    bacteriSummaryWidgets: ['apSummaryWidget', 'gfSummaryWidget', 'pfSummaryWidget', 'spgSummaryWidget'],
+    virusSummaryWidgets: ['gfSummaryWidget'],
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_genome/overview.html',
 
+    _setContextAttr: function (context) {
+      if (this.context !== context) {
+        if (context === 'virus') {
+          this.changeToVirusContext()
+        } else {
+          this.changeToBacteriaContext()
+        }
+      }
+
+      this.context = context
+    },
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -39,7 +52,14 @@ define([
         domConstruct.place(domConstruct.toDom('Not available'), this.pubmedSummaryNode, 'first');
       }
     },
-
+    changeToVirusContext: function () {
+      domClass.add(this.pfSummaryWidget.domNode.parentNode, 'hidden');
+      domClass.add(this.spgSummaryWidget.domNode.parentNode, 'hidden');
+    },
+    changeToBacteriaContext: function () {
+      domClass.remove(this.pfSummaryWidget.domNode.parentNode, 'hidden');
+      domClass.remove(this.spgSummaryWidget.domNode.parentNode, 'hidden');
+    },
     _setGenomeAttr: function (genome) {
       if (this.genome && (this.genome.genome_id == genome.genome_id)) {
         // console.log("Genome ID Already Set")
@@ -51,7 +71,9 @@ define([
       this.createPubMed(genome);
       this.createExternalLinks(genome);
 
-      this.sumWidgets.forEach(function (w) {
+      // context sensitive widget update
+      const sumWidgets = (this.context === 'bacteria') ? this.bacteriSummaryWidgets : this.virusSummaryWidgets
+      sumWidgets.forEach(function (w) {
         if (this[w]) {
           this[w].set('query', 'eq(genome_id,' + this.genome.genome_id + ')');
         }
@@ -246,6 +268,43 @@ define([
       if (this.genome) {
         this.set('genome', this.genome);
       }
+    }, 
+
+    //TODO: ask about default database type
+    //TODO: ask about services that require reads
+    onGenomeServiceSelection: function() {
+      console.log(this.genome);
+      if (!this.genome.genome_id) {
+        console.log("genome_id not found");
+        return;
+      }
+      if (this.genome.genome_id === "") {
+        console.log("genome_id is empty");
+        return;
+      }
+      var params = {};
+      params["blast"] = {
+        "db_precomputed_database": "selGenome",
+        "db_genome_list": [
+          this.genome.genome_id
+        ],
+        "db_source":"genome_list",
+        "db_type":"fna",
+        "blast_program":"blastn"
+      };
+      params["genome_distance"] = {
+        "genome_id":this.genome.genome_id
+      };
+      var params = 
+      popup.open({
+        popup: new ServicesTooltipDialog({
+          context: "genome",
+          data: params
+        }),
+        parent: this,
+        around: this.genomeServiceSelectionButton,
+        orient: ['below']
+      });
     }
   });
 });

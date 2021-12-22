@@ -334,7 +334,7 @@ define([
           }
         });
 
-        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_pathway_map_heatmap.' + ext);
+        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_pathway_map_heatmap.' + ext);
         popup.close(downloadHM);
       });
       on(btnDownloadHeatmap.domNode, 'click', function () {

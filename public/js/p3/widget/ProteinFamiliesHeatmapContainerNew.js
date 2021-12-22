@@ -527,7 +527,7 @@ define([
       var rel = 'text/plain';
       var state = _self.chart.getState();
       var obj = { 'rows': state.rows, 'cols': state.cols, 'matrix': state.matrix };
-      saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
+      saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'BVBRC_protein_families_heatmap_all.' + ext);
     },
 
     downloadChart: function () {
@@ -552,7 +552,7 @@ define([
         data[idx] = r.join(DELIMITER);
       });
 
-      saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_protein_families_heatmap_all.' + ext);
+      saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_protein_families_heatmap_all.' + ext);
     },
 
     _buildPanelButtons: function (colIDs, rowIDs, familyIds, genomeIds, features) {
@@ -618,7 +618,7 @@ define([
           }
         });
 
-        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_protein_families_heatmap.' + ext);
+        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_protein_families_heatmap.' + ext);
         popup.close(downloadHM);
       });
       on(btnDownloadHeatmap.domNode, 'click', function () {

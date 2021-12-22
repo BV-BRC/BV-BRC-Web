@@ -67,4 +67,22 @@ router.get('/docs/tutorials/sars-cov-2', function (req, res) {
   res.render('docs/tutorials/sars-cov-2', { title: 'PATRIC', request: req, response: res });
 });
 
+/* GET outreach page. */
+router.get('/outreach', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/outreach', { title: 'PATRIC', request: req, response: res });
+});
+
+/* GET all searches page. */
+router.get('/searches', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/searches', { title: 'PATRIC', request: req, response: res });
+});
+
+/* GET all tools & services page. */
+router.get('/tools', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/tools', { title: 'PATRIC', request: req, response: res });
+});
+
 module.exports = router;

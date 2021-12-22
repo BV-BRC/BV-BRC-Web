@@ -1,0 +1,115 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onsubmit:onSubmit">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Advanced Search</span>
+      <h3>${searchAppName}</h3>
+      <!-- tutorial, doc link -->
+      <p>Search for epitopes of interest using generic keywords, pathogen group or taxon name, epitope id, type, sequence, protein accession or product, or assay results.  For further explanation, please see <a href="#">Epitope Search User Guide</a>.</p>
+    </div>
+    <div style="width:550px;margin:auto" class="formFieldsContainer">
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Keyword</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Search term'" data-dojo-attach-point="keywordNode" name="keyword" style="width: 500px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Pathogen Group</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'Influenza A virus'" required="false" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Taxon Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="p3/widget/TaxonNameSelector" required="false" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Epitope ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. 92999'" data-dojo-attach-point="epitopeIDNode" name="epitope_id" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Epitope Type</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Linear Peptide'" data-dojo-attach-point="epitopeTypeNode" name="epitope_type" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Epitope Sequence</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. MVYQTLMLRSRDEPF'" data-dojo-attach-point="epitopeSequenceNode" name="epitope_sequence" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Protein Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Putative binding protein BMEII069'" data-dojo-attach-point="proteinNameNode" name="protein_name" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Protein Accession</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Q8YC41'" data-dojo-attach-point="proteinAccessionNode" name="protein_accession" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Assay Results</label>
+        </div>
+        <div class="appRow">
+          <div>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="assayCheckBox1Node" />
+            <label for="check1" style="font-size:8pt">B Cell - Pos</label>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="assayCheckBox2Node" />
+            <label for="check2" style="font-size:8pt">T Cell - Pos</label>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="assayCheckBox3Node" />
+            <label for="check3" style="font-size:8pt">MHC - Pos</label>
+          </div>
+          <div>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="assayCheckBox4Node" />
+            <label for="check4" style="font-size:8pt">B Cell - Neg</label>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="assayCheckBox5Node" />
+            <label for="check5" style="font-size:8pt">T Cell - Neg</label>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="assayCheckBox6Node" />
+            <label for="check6" style="font-size:8pt">MHC - Neg</label>
+          </div>
+        </div>
+
+
+        <div class="headerrow">
+          <label class="appBoxLabel">Additional</label>
+        </div
+        <div class="appRow">
+          <div dojoAttachPoint="AdvancedSearchPanel"></div>
+        </div>
+      </div>
+    </div>
+    <div class="appSubmissionArea">
+      <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="submitButton"
+          type="submit" data-dojo-type="dijit/form/Button">Search</div>
+      </div>
+    </div>
+  </div>
+</form>

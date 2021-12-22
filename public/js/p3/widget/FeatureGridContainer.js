@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './FeatureGrid', 'dijit/popup', 'dojo/topic',
+  './FeatureGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
   'dijit/TooltipDialog', './FacetFilterPanel',
   'dojo/_base/lang', 'dojo/dom-construct'
 
 ], function (
   declare, GridContainer, on,
-  FeatureGrid, popup, Topic,
+  FeatureGrid, AdvancedSearchFields, popup, Topic,
   TooltipDialog, FacetFilterPanel,
   lang, domConstruct
 ) {
@@ -23,13 +23,13 @@ define([
     gridCtor: FeatureGrid,
     containerType: 'feature_data',
     tutorialLink: 'user_guides/organisms_taxon/features.html',
-    facetFields: ['public', 'annotation', 'feature_type'],
+    facetFields: AdvancedSearchFields['genome_feature'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['genome_feature'].filter((ff) => ff.search),
     filter: '',
     maxGenomeCount: 10000,
     dataModel: 'genome_feature',
     primaryKey: 'feature_id',
-    maxDownloadSize: 25000,
-    defaultFilter: 'and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))',
+    defaultFilter: 'and(eq(feature_type,CDS),eq(annotation,%22PATRIC%22))',
     tooltip: 'The "Features" tab contains a list of Genomic Feature (e.g., CDS, rRNA, tRNA, etc) for genomes associated with the current view',
     getFilterPanel: function (opts) {
 

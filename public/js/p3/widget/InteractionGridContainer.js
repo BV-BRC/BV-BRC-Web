@@ -121,7 +121,7 @@ define([
                 '"' + (row.pmid || []).join(',') + '"', '"' + row.source_db + '"', '"' + (row.source_id || '') + '"', row.score].join(DELIMITER));
             });
 
-            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'PATRIC_interactions.' + ext);
+            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_interactions.' + ext);
 
             popup.close(downloadTT);
           }));

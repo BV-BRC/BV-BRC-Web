@@ -65,7 +65,7 @@ define([
     var rel = evt.target.attributes.rel.value;
     var data = downloadTT.get('data');
     var headers = downloadTT.get('headers');
-    var filename = 'PATRIC_id_mapping';
+    var filename = 'BVBRC_id_mapping';
     // console.log(data, headers);
 
     var DELIMITER,
@@ -87,7 +87,7 @@ define([
     popup.close(downloadTT);
   }));
 
-  var downloadHeaders = ['Source', 'Target', 'UniprotKB ACC', 'PATRIC ID'];
+  var downloadHeaders = ['Source', 'Target', 'UniprotKB ACC', 'BRC ID'];
 
   var downloadFields = ['source', 'target', 'uniprotkb_accession', 'patric_id'];
 

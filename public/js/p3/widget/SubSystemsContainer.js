@@ -24,7 +24,6 @@ define([
       this.topicId = 'SubSystemMap_' + options.id.split('_subsystems')[0];
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("ProteinFamiliesHeatmapContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 
@@ -167,7 +166,7 @@ define([
           role_id: { label: 'Role ID', field: 'role_id', hidden: true },
           role_name: { label: 'Role Name', field: 'role_name' },
           active: { label: 'Variant', field: 'active', hidden: true },
-          patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+          patric_id: { label: 'BRC ID', field: 'patric_id' },
           gene: { label: 'Gene', field: 'gene' },
           refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true },
           alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
