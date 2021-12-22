@@ -1583,7 +1583,8 @@ define([
           text: 'strain'
         }, {
           name: 'Sequence Accession',
-          text: 'sequence_accession'
+          text: 'sequence_accession',
+          link: 'https://www.ncbi.nlm.nih.gov/nuccore/',
         }],
 
         'Host Info': [{
