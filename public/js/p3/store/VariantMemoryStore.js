@@ -22,6 +22,16 @@ define([
     keyword: ''
   };
 
+  function sanitizeInput(input) {
+    if (input === '*') {
+      return input
+    } else if (input.includes(' ')) {
+      return encodeURIComponent(`"${input}"`)
+    } else {
+      return encodeURIComponent(input)
+    }
+  }
+
   return declare([ArrangeableMemoryStore, Stateful], {
     baseQuery: {},
     apiServer: window.App.dataServiceURL,
@@ -127,35 +137,31 @@ define([
       var range = '';
       if (_self.tgState.keyword !== '')
       {
-        range += '&keyword(' + encodeURIComponent(_self.tgState.keyword) + ')';
+        range += `&keyword(${sanitizeInput(_self.tgState.keyword)})`;
       }
       if (_self.tgState.sequence_features !== '') {
-        if (_self.tgState.sequence_features == '*') {
-          range += '&eq(sequence_features,*)';
-        } else {
-          range += '&eq(sequence_features,' + encodeURIComponent('"' + _self.tgState.sequence_features + '"') + ')';
-        }
+        range += `&eq(sequence_features,${sanitizeInput(_self.tgState.sequence_features)})`;
       }
       if (_self.tgState.country !== '') {
-        range += '&eq(country,' + encodeURIComponent(_self.tgState.country) + ')';
+        range += `&eq(country,${sanitizeInput(_self.tgState.country)})`;
       }
       if (_self.tgState.region !== '') {
-        range += '&eq(region,' + encodeURIComponent(_self.tgState.region) + ')';
+        range += `&eq(region,${sanitizeInput(_self.tgState.region)})`;
       }
       if (_self.tgState.month !== '') {
-        range += '&eq(month,' + encodeURIComponent(_self.tgState.month) + ')';
+        range += `&eq(month,${sanitizeInput(_self.tgState.month)})`;
       }
       if (_self.tgState.min_total_isolates > 0) {
-        range += '&gt(total_isolates,' + _self.tgState.min_total_isolates + ')';
+        range += `&gt(total_isolates,${_self.tgState.min_total_isolates})`;
       }
       if (_self.tgState.min_lineage_count > 0) {
-        range += '&gt(lineage_count,' + _self.tgState.min_lineage_count + ')';
+        range += `&gt(lineage_count,${_self.tgState.min_lineage_count})`;
       }
       if (_self.tgState.min_prevalence > 0) {
-        range += '&gt(prevalence,' + _self.tgState.min_prevalence + ')';
+        range += `&gt(prevalence,${_self.tgState.min_prevalence})`;
       }
       if (_self.tgState.min_growth_rate > 0) {
-        range += '&gt(growth_rate,' + _self.tgState.min_growth_rate + ')';
+        range += `&gt(growth_rate,${_self.tgState.min_growth_rate})`;
       }
       var q = this.state.search + range + '&sort(-prevalence)&limit(25000)';
 

@@ -15,7 +15,7 @@ define([
   return declare([AppBase], {
     baseClass: 'App GenomeDistance',
     templateString: Template,
-    applicationHelp: 'user_guides/services/similar_genome_finder_service.html',
+    applicationHelp: 'quick_references/services/similar_genome_finder_service.html',
     tutorialLink: 'tutorial/similar_genome_finder/similar_genome_finder.html',
     loadingMask: null,
     result_store: null,
@@ -71,6 +71,9 @@ define([
             break;
         }
       }));
+      if (window.localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        this.contextFormFill();
+      }
     },
 
     toggleAdvanced: function (flag) {
@@ -218,6 +221,12 @@ define([
         this.fasta.reset();
       }
       this.validate();
+    },
+
+    contextFormFill: function() {
+      var params = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      this.genome_id.set("value",params["genome_id"]);
+      localStorage.removeItem("bvbrc_rerun_job");
     }
   });
 });

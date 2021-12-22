@@ -20,7 +20,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Taxonomic Classification',
     applicationDescription: 'The Taxonomic Classification Service computes taxonomic classification for read data.',
-    applicationHelp: 'user_guides/services/taxonomic_classification_service.html',
+    applicationHelp: 'quick_references/services/taxonomic_classification_service.html',
     tutorialLink: 'tutorial/taxonomic_classification/taxonomic_classification.html',
     libraryData: null,
     defaultPath: '',
@@ -31,7 +31,7 @@ define([
     constructor: function () {
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
-      this.singleToAttachPt = ['single_end_libs'];
+      this.singleToAttachPt = ['single_end_libsWidget'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
     },
 
@@ -62,6 +62,16 @@ define([
         });
       }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+          localStorage.removeItem("bvbrc_rerun_job");
+        }
+      }
     },
 
     getValues: function () {
@@ -73,54 +83,7 @@ define([
           delete values[key];
         }
       });
-      if (this.startWithRead.checked) { // start from read file
-        var pairedList = this.libraryStore.query({ _type: 'paired' });
-        var singleList = this.libraryStore.query({ _type: 'single' });
-        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-        var pairedLibs = [];
-        var singleLibs = [];
-        var srrAccessions = [];
-
-        pairedLibs = pairedList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (pairedLibs.length) {
-          values.paired_end_libs = pairedLibs;
-        }
-
-        singleLibs = singleList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (singleLibs.length) {
-          values.single_end_libs = singleLibs;
-        }
-
-        srrAccessions = srrAccessionList.map(function (lrec) {
-          return lrec._id;
-        });
-        if (srrAccessions.length) {
-          values.srr_ids = srrAccessions;
-        }
-        delete values.contigs;       // contigs file is not needed
-        values.input_type = 'reads'; // set input_type to be 'reads'
-
-      } // startWithRead
-
-      if (this.startWithContigs.checked) {  // starting from contigs
-        values.input_type = 'contigs'; // set input_type to be 'contigs'
-      }
+      values = this.checkBaseParameters(values);
 
       return values;
     },
@@ -138,7 +101,7 @@ define([
         var incomplete = 0;
         var browser_select = 0;
         var alias = attachname;
-        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libs') {
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
           browser_select = 1;
         }
@@ -151,7 +114,7 @@ define([
         }
 
         // Assign cur_value to target
-        if (attachname == 'single_end_libs') {
+        if (attachname == 'single_end_libsWidget') {
           alias = 'read';
         }
         if (typeof (cur_value) === 'string') {
@@ -199,7 +162,7 @@ define([
           return 'P(' + fn + ', ' + fn2 + ')';
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('displayedValue');
+          var fn = this.single_end_libsWidget.searchBox.get('displayedValue');
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -223,7 +186,7 @@ define([
           return fn + fn2;
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('value');
+          var fn = this.single_end_libsWidget.searchBox.get('value');
           return fn;
 
         case 'srr_accession':
@@ -427,6 +390,113 @@ define([
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
       }
+    },
+
+    checkBaseParameters: function(values) {
+      //reads and sra or contigs
+      if (this.startWithRead.checked) { // start from read file
+        var pairedList = this.libraryStore.query({ _type: 'paired' });
+        var singleList = this.libraryStore.query({ _type: 'single' });
+        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+
+        this.paired_end_libs = pairedList.map(function (lrec) {
+          var rrec = {};
+          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+            if (!attr.startsWith('_')) {
+              rrec[attr] = lrec[attr];
+            }
+          }));
+          return rrec;
+        });
+        if (this.paired_end_libs.length) {
+          values.paired_end_libs = this.paired_end_libs;
+        }
+
+        this.single_end_libs = singleList.map(function (lrec) {
+          var rrec = {};
+          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+            if (!attr.startsWith('_')) {
+              rrec[attr] = lrec[attr];
+            }
+          }));
+          return rrec;
+        });
+        if (this.single_end_libs.length) {
+          values.single_end_libs = this.single_end_libs;
+        }
+
+        this.sra_libs = srrAccessionList.map(function (lrec) {
+          return lrec._id;
+        });
+        if (this.sra_libs.length) {
+          values.srr_ids = this.sra_libs;
+        }
+        delete values.contigs;       // contigs file is not needed
+        values.input_type = 'reads'; // set input_type to be 'reads'
+      } // startWithRead
+      if (this.startWithContigs.checked) {  // starting from contigs
+        values.input_type = 'contigs'; // set input_type to be 'contigs'
+        this.contigs = values.contigs;
+      }
+      //strategy (algorithm)
+      this.strategy = values.algorithm;
+      //output folder
+      this.output_folder = values.output_path;
+      //output name
+      this.output_name = values.output_file;
+
+      return values;
+    },
+
+    intakeRerunForm: function() {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+        var param_dict = {"output_folder":"output_path","contigs":"contigs"};
+        var widget_map = {"contigs":"contigsFile"};
+        param_dict["widget_map"] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+        this.selectStartWith(job_data);
+        job_data = this.formatRerunJson(job_data);
+        if (this.startWithRead.checked) {
+          AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+        }
+        //TODO: more specific stuff
+        localStorage.removeItem("bvbrc_rerun_job");
+        this.form_flag = true;
+      }
+    },
+
+    //Selects the start with button: reads or contigs
+    //Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function(job_data) {
+      if (job_data.input_type == "contigs") {
+        this.startWithContigs.set("checked",true);
+      }
+      else {
+        this.startWithRead.set("checked",true);
+      }
+    },
+
+    setSequenceOptions: function(job_data) {
+      if (job_data["save_classified_sequences"]) {
+        this.save_classified_sequences_no.set("value",false);
+        this.save_classified_sequences_yes.set("value",true);
+      }
+      if (job_data["save_unclassified_sequences"]) {
+        this.save_unclassified_sequences_no.set("value",false);
+        this.save_unclassified_sequences_yes.set("value",true);
+      }
+    },
+
+    formatRerunJson: function(job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

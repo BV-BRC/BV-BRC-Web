@@ -19,7 +19,7 @@ define([
       feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
       target: { label: 'Target', field: 'target' },
       uniprotkb_accession: { label: 'UniprotKB Acc', field: 'uniprotkb_accession' },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+      patric_id: { label: 'BRC ID', field: 'patric_id' },
       genome_id: { label: 'Genome ID', field: 'genome_id' },
       genome_name: { label: 'Genome Name', field: 'genome_name' }
     },

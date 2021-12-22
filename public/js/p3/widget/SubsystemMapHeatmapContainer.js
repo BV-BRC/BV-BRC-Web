@@ -338,7 +338,7 @@ define([
       text.push('<b>Genome:</b> ' + genomeName);
       // text.push('<b>Product:</b> ' + description);
       text.push('<b>Role ID:</b> ' + cleanRoleName);
-      text.push('<b>PATRIC IDs:</b> ' + patricIds.join(', '));
+      text.push('<b>BRC IDs:</b> ' + patricIds.join(', '));
       text.push('<b>Members:</b> ' + features.length);
 
       return text.join('<br>');
@@ -361,7 +361,7 @@ define([
 
       text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
       text.push('<b>Roles Selected:</b> ' + roleIds.length);
-      text.push('<b>PATRIC IDs:</b> ' + patricIds.join(', '));
+      text.push('<b>BRC IDs:</b> ' + patricIds.join(', '));
       text.push('<b>Members:</b> ' + features.length);
 
       return text.join('<br>');
@@ -429,7 +429,7 @@ define([
           }
         });
 
-        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'PATRIC_subsystem_map_heatmap.' + ext);
+        saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_subsystem_map_heatmap.' + ext);
         popup.close(downloadHM);
       });
       on(btnDownloadHeatmap.domNode, 'click', function () {

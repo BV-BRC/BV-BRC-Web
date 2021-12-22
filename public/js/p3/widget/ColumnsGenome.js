@@ -1,14 +1,9 @@
 define(['./formatter'], function (formatter) {
 
   return {
-    'public': {
-      label: 'Public',
-      field: 'public',
-      hidden: true
-    },
-    reference_genome: {
-      label: 'Reference',
-      field: 'reference_genome',
+    genome_id: {
+      label: 'Genome ID',
+      field: 'genome_id',
       hidden: true
     },
     genome_name: {
@@ -17,107 +12,90 @@ define(['./formatter'], function (formatter) {
       get: function (item) {
         return item;
       },
-      formatter: formatter.genomeName
-    },
-    genome_id: {
-      label: 'Genome ID',
-      field: 'genome_id'
-    },
-    owner: {
-      label: 'Owner',
-      field: 'owner',
-      formatter: formatter.baseUsername,
+      formatter: formatter.genomeName,
       hidden: true
     },
-    members: {
-      label: 'Members (shared with)',
-      get: function (item) {
-        return item;
-      },
-      formatter: formatter.genomeMembers,
+    other_names: {
+      label: 'Other Names',
+      field: 'other_names',
       hidden: true
     },
+
     taxon_id: {
       label: 'NCBI Taxon ID',
       field: 'taxon_id',
       hidden: true
     },
-    genome_status: {
-      label: 'Genome Status',
-      field: 'genome_status'
-    },
-    genome_length: {
-      label: 'Size',
-      field: 'genome_length',
+    taxon_lineage_ids: {
+      label: 'Taxon Lineage IDs',
+      field: 'taxon_lineage_ids',
       hidden: true
     },
-    chromosomes: {
-      label: 'Chromosome',
-      field: 'chromosomes',
+    taxon_lineage_names: {
+      label: 'Taxon Lineage Names',
+      field: 'taxon_lineage_names',
       hidden: true
     },
-    plasmids: {
-      label: 'Plasmids',
-      field: 'plasmids',
+    superkingdom: {
+      label: 'Superkingdom',
+      field: 'superkingdom',
       hidden: true
     },
-    contigs: {
-      label: 'Contigs',
-      field: 'contigs'
-    },
-    patric_cds: {
-      label: 'PATRIC CDS',
-      field: 'patric_cds'
-    },
-    refseq_cds: {
-      label: 'RefSeq CDS',
-      field: 'refseq_cds',
+    kingdom: {
+      label: 'Kingdom',
+      field: 'kingdom',
       hidden: true
     },
-    isolation_country: {
-      label: 'Isolation Country',
-      field: 'isolation_country'
-    },
-    host_name: {
-      label: 'Host Name',
-      field: 'host_name'
-    },
-    disease: {
-      label: 'Disease',
-      field: 'disease',
-      hidden: true,
-      sortable: false
-    },
-    collection_year: {
-      label: 'Collection Year',
-      field: 'collection_year'
-    },
-    collection_date: {
-      label: 'Collection Date',
-      field: 'collection_date',
+    phylum: {
+      label: 'Phylum',
+      field: 'phylum',
       hidden: true
     },
-    completion_date: {
-      label: 'Completion Date',
-      field: 'completion_date',
-      formatter: formatter.dateOnly
-    },
-    mlst: {
-      label: 'MLST',
-      field: 'mlst',
+    class: {
+      label: 'Class',
+      field: 'class',
       hidden: true
     },
-    other_typing: {
-      label: 'Other Typing',
-      field: 'other_typing',
-      hidden: true,
-      sortable: false
+    order: {
+      label: 'Order',
+      field: 'order',
+      hidden: true
     },
+    family: {
+      label: 'Family',
+      field: 'family',
+      hidden: true
+    },
+    genus: {
+      label: 'Genus',
+      field: 'genus',
+      hidden: true
+    },
+    species: {
+      label: 'Species',
+      field: 'species',
+      hidden: false
+    },
+
     strain: {
       label: 'Strain',
       field: 'strain',
-      hidden: true
+      hidden: false
     },
+
+    genome_status: {
+      label: 'Genome Status',
+      field: 'genome_status',
+      hidden: false
+    },
+
+    genome_quality: {
+      label: 'Genome Quality',
+      field: 'genome_quality',
+      hidden: false
+    },
+
+
     serovar: {
       label: 'Serovar',
       field: 'serovar',
@@ -133,6 +111,51 @@ define(['./formatter'], function (formatter) {
       field: 'pathovar',
       hidden: true
     },
+    mlst: {
+      label: 'MLST',
+      field: 'mlst',
+      hidden: true
+    },
+    segment: {
+      label: 'Segment',
+      field: 'segment',
+      hidden: true
+    },
+    subtype: {
+      label: 'Subtype',
+      field: 'subtype',
+      hidden: true
+    },
+    h_type: {
+      label: 'H_type',
+      field: 'h_type',
+      hidden: true
+    },
+    n_type: {
+      label: 'N_type',
+      field: 'n_type',
+      hidden: true
+    },
+    lineage: {
+      label: 'Lineage',
+      field: 'lineage',
+      hidden: true
+    },
+    clade: {
+      label: 'Clade',
+      field: 'clade',
+      hidden: true
+    },
+    subclade: {
+      label: 'Subclade',
+      field: 'subclade',
+      hidden: true
+    },
+    other_typing: {
+      label: 'Other Typing',
+      field: 'other_typing',
+      hidden: true
+    },
     culture_collection: {
       label: 'Culture Collection',
       field: 'culture_collection',
@@ -143,14 +166,26 @@ define(['./formatter'], function (formatter) {
       field: 'type_strain',
       hidden: true
     },
-    sequencing_centers: {
-      label: 'Sequencing Center',
-      field: 'sequencing_centers',
+    reference_genome: {
+      label: 'Reference',
+      field: 'reference_genome',
+      hidden: true
+    },
+
+    completion_date: {
+      label: 'Completion Date',
+      field: 'completion_date',
+      formatter: formatter.dateOnly,
       hidden: true
     },
     publication: {
       label: 'Publication',
       field: 'publication',
+      hidden: true
+    },
+    authors: {
+      label: 'Authors',
+      field: 'authors',
       hidden: true
     },
     bioproject_accession: {
@@ -168,14 +203,25 @@ define(['./formatter'], function (formatter) {
       field: 'assembly_accession',
       hidden: true
     },
+    sra_accession: {
+      label: 'SRA Accession',
+      name: 'sra_accession',
+      hidden: true
+    },
     genbank_accessions: {
       label: 'GenBank Accessions',
       field: 'genbank_accessions',
+      hidden: false
+    },
+
+    sequencing_centers: {
+      label: 'Sequencing Center',
+      field: 'sequencing_centers',
       hidden: true
     },
-    refseq_accessions: {
-      label: 'RefSeq Accessions',
-      field: 'refseq_accessions',
+    sequencing_status: {
+      label: 'Sequencing Status',
+      name: 'sequencing_status',
       hidden: true
     },
     sequencing_platform: {
@@ -193,180 +239,70 @@ define(['./formatter'], function (formatter) {
       field: 'assembly_method',
       hidden: true
     },
+
+
+    chromosomes: {
+      label: 'Chromosome',
+      field: 'chromosomes',
+      hidden: true
+    },
+    plasmids: {
+      label: 'Plasmids',
+      field: 'plasmids',
+      hidden: true
+    },
+    segments: {
+      label: 'Segments',
+      field: 'Segments',
+      hidden: true
+    },
+    contigs: {
+      label: 'Contigs',
+      field: 'contigs',
+      hidden: true
+    },
+    genome_length: {
+      label: 'Size',
+      field: 'genome_length',
+      hidden: false
+    },
     gc_content: {
       label: 'GC Content',
       field: 'gc_content',
       hidden: true
     },
-    isolation_site: {
-      label: 'Isolation Site',
-      field: 'isolation_site',
+    contig_l50: {
+      label: 'Contig L50',
+      name: 'contig_l50',
       hidden: true
     },
-    isolation_source: {
-      label: 'Isolation Source',
-      field: 'isolation_source',
+    contig_n50: {
+      label: 'Contig N50',
+      name: 'contig_n50',
       hidden: true
     },
-    isolation_comments: {
-      label: 'Isolation Comments',
-      field: 'isolation_comments',
-      hidden: true,
-      sortable: false
-    },
-    geographic_location: {
-      label: 'Geographic Location',
-      field: 'geographic_location',
+
+    trna: {
+      label: 'TRNA',
+      name: 'trna',
       hidden: true
     },
-    latitude: {
-      label: 'Latitude',
-      field: 'latitude',
+    rrna: {
+      label: 'RRNA',
+      name: 'rrna',
       hidden: true
     },
-    longitude: {
-      label: 'Longitude',
-      field: 'longitude',
+    mat_peptide: {
+      label: 'Mat Peptide',
+      field: 'mat_peptide',
       hidden: true
     },
-    altitude: {
-      label: 'Altitude',
-      field: 'altitude',
-      hidden: true
+    cds: {
+      label: 'CDS',
+      name: 'cds',
+      hidden: false
     },
-    depth: {
-      label: 'Depth',
-      field: 'depth',
-      hidden: true
-    },
-    other_environmental: {
-      label: 'Other Environmental',
-      field: 'other_environmental',
-      hidden: true,
-      sortable: false
-    },
-    host_gender: {
-      label: 'Host Gender',
-      field: 'host_gender',
-      hidden: true
-    },
-    host_age: {
-      label: 'Host Age',
-      field: 'host_age',
-      hidden: true
-    },
-    host_health: {
-      label: 'Host Health',
-      field: 'host_health',
-      hidden: true
-    },
-    body_sample_site: {
-      label: 'Body Sample Site',
-      field: 'body_sample_site',
-      hidden: true
-    },
-    body_sample_subsite: {
-      label: 'Body Sample Subsite',
-      field: 'body_sample_subsite',
-      hidden: true
-    },
-    other_clinical: {
-      label: 'Other Clinical',
-      field: 'other_clinical',
-      hidden: true
-    },
-    antimicrobial_resistance: {
-      label: 'Antimicrobial Resistance',
-      field: 'antimicrobial_resistance',
-      hidden: true,
-      sortable: false
-    },
-    antimicrobial_resistance_evidence: {
-      label: 'Antimicrobial Resistance Evidence',
-      field: 'antimicrobial_resistance_evidence',
-      hidden: true,
-      sortable: false
-    },
-    gram_stain: {
-      label: 'Gram Stain',
-      field: 'gram_stain',
-      hidden: true
-    },
-    cell_shape: {
-      label: 'Cell Shape',
-      field: 'cell_shape',
-      hidden: true
-    },
-    motility: {
-      label: 'Motility',
-      field: 'motility',
-      hidden: true
-    },
-    sporulation: {
-      label: 'Sporulation',
-      field: 'sporulation',
-      hidden: true
-    },
-    temperature_range: {
-      label: 'Temperature Range',
-      field: 'temperature_range',
-      hidden: true
-    },
-    optimal_temperature: {
-      label: 'Optimal Temperature',
-      field: 'optimal_temperature',
-      hidden: true
-    },
-    salinity: {
-      label: 'Salinity',
-      field: 'salinity',
-      hidden: true
-    },
-    oxygen_requirement: {
-      label: 'Oxygen Requirement',
-      field: 'oxygen_requirement',
-      hidden: true
-    },
-    habitat: {
-      label: 'Habitat',
-      field: 'habitat',
-      hidden: true
-    },
-    comments: {
-      label: 'Comments',
-      field: 'comments',
-      hidden: true,
-      sortable: false
-    },
-    additional_metadata: {
-      label: 'Additional Metadata',
-      field: 'additional_metadata',
-      hidden: true,
-      sortable: false
-    },
-    date_inserted: {
-      label: 'Date Inserted',
-      field: 'date_inserted',
-      hidden: true,
-      formatter: formatter.dateOnly
-    },
-    date_modified: {
-      label: 'Date Modified',
-      field: 'date_modified',
-      hidden: true,
-      formatter: formatter.dateOnly
-    },
-    genome_quality: {
-      label: 'Genome Quality',
-      field: 'genome_quality',
-      hidden: true
-    },
-    genome_quality_flags: {
-      label: 'Genome Quality Flags',
-      field: 'genome_quality_flags',
-      hidden: true,
-      sortable: false
-    },
+
     coarse_consistency: {
       label: 'Coarse Consistency',
       field: 'coarse_consistency',
@@ -386,6 +322,153 @@ define(['./formatter'], function (formatter) {
       label: 'CheckM Contamination',
       field: 'checkm_contamination',
       hidden: true
-    }
+    },
+    genome_quality_flags: {
+      label: 'Genome Quality Flags',
+      field: 'genome_quality_flags',
+      hidden: true,
+      sortable: false
+    },
+
+    isolation_source: {
+      label: 'Isolation Source',
+      field: 'isolation_source',
+      hidden: true
+    },
+    isolation_comments: {
+      label: 'Isolation Comments',
+      field: 'isolation_comments',
+      hidden: true,
+      sortable: false
+    },
+    collection_date: {
+      label: 'Collection Date',
+      field: 'collection_date',
+      hidden: true
+    },
+    collection_year: {
+      label: 'Collection Year',
+      field: 'collection_year',
+      hidden: false
+    },
+    season: {
+      label: 'Season',
+      field: 'season',
+      hidden: true
+    },
+
+    isolation_country: {
+      label: 'Isolation Country',
+      field: 'isolation_country',
+      hidden: false
+    },
+    geographic_group: {
+      label: 'Geographic Group',
+      field: 'geographic_group',
+      hidden: true
+    },
+    geographic_location: {
+      label: 'Geographic Location',
+      field: 'geographic_location',
+      hidden: true
+    },
+    other_environmental: {
+      label: 'Other Environmental',
+      field: 'other_environmental',
+      hidden: true,
+      sortable: false
+    },
+    host_name: {
+      label: 'Host Name',
+      field: 'host_name',
+      hidden: true
+    },
+    host_common_name: {
+      label: 'Host Common Name',
+      field: 'host_common_name',
+      hidden: false
+    },
+    host_gender: {
+      label: 'Host Gender',
+      field: 'host_gender',
+      hidden: true
+    },
+    host_age: {
+      label: 'Host Age',
+      field: 'host_age',
+      hidden: true
+    },
+    host_health: {
+      label: 'Host Health',
+      field: 'host_health',
+      hidden: true
+    },
+    host_group: {
+      label: 'Host Group',
+      field: 'host_group',
+      hidden: true
+    },
+    lab_host: {
+      label: 'Lab Host',
+      field: 'lab_host',
+      hidden: true
+    },
+    passage: {
+      label: 'Passage',
+      field: 'passage',
+      hidden: true
+    },
+    other_clinical: {
+      label: 'Other Clinical',
+      field: 'other_clinical',
+      hidden: true
+    },
+
+    additional_metadata: {
+      label: 'Additional Metadata',
+      field: 'additional_metadata',
+      hidden: true,
+      sortable: false
+    },
+
+    comments: {
+      label: 'Comments',
+      field: 'comments',
+      hidden: true,
+      sortable: false
+    },
+
+    date_inserted: {
+      label: 'Date Inserted',
+      field: 'date_inserted',
+      hidden: true,
+      formatter: formatter.dateOnly
+    },
+    date_modified: {
+      label: 'Date Modified',
+      field: 'date_modified',
+      hidden: true,
+      formatter: formatter.dateOnly
+    },
+
+    'public': {
+      label: 'Public',
+      field: 'public',
+      hidden: true
+    },
+    owner: {
+      label: 'Owner',
+      field: 'owner',
+      formatter: formatter.baseUsername,
+      hidden: true
+    },
+    members: {
+      label: 'Members (shared with)',
+      get: function (item) {
+        return item;
+      },
+      formatter: formatter.genomeMembers,
+      hidden: true
+    },
   };
 });

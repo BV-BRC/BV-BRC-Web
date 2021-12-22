@@ -15,7 +15,6 @@
     cursor: pointer;
     position: absolute;
     top: 0;
-    width: 0px;
 }
 
 /*  */
@@ -24,11 +23,30 @@
 }
 
 /* feature grid */
+.dgrid-cell.field-genome_id,
+.dgrid-cell.field-taxon_id,
+.dgrid-cell.field-sequence_id,
 .dgrid-cell.field-protein_id,
+.dgrid-cell.field-feature_id,
+.dgrid-cell.field-brc_id,
+.dgrid-cell.field-gene_id,
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
 .dgrid-cell.field-figfam_id {
-    width: 10%;
+    width: 8%;
+}
+
+.dgrid-cell.field-alt_locus_tag,
+.dgrid-cell.field-refseq_locus_tag,
+.dgrid-cell.field-uniprotkb_accession,
+.dgrid-cell.field-pdb_accession {
+    width: 6%;
+}
+
+.dgrid-cell.field-location,
+.dgrid-cell.field-segments,
+.dgrid-cell.field-codon_start {
+    width: 6%;
 }
 
 .dgrid-cell.field-product {
@@ -39,9 +57,28 @@
     width: 8%;
 }
 
+.dgrid-cell.field-sog_id,
+.dgrid-cell.field-og_id,
 .dgrid-cell.field-go {
     width: 8%;
 	text-align: left;
+}
+
+.dgrid-cell.field-na_length,
+.dgrid-cell.field-aa_length {
+    width: 6%;
+}
+
+.dgrid-cell.field-na_sequence_md5,
+.dgrid-cell.field-aa_sequence_md5 {
+    width: 6%;
+}
+
+.dgrid-cell.field-property,
+.dgrid-cell.field-notes,
+.dgrid-cell.field-classifier_score,
+.dgrid-cell.field-classifier_round {
+    width: 8%;
 }
 
 /* protein family grid */
@@ -256,4 +293,20 @@
     border-radius: 5px;
     background: #f5f5f5;
     padding: 15px;
+}
+
+/* Protein Features Grid */
+/* .patric .dgrid-cell.field-product {
+    width: 15%;
+} */
+.patric .dgrid-cell.field-description {
+    width: 20%;
+}
+
+/* Strains */
+.dgrid-column-species {
+    width: 10%;
+}
+.dgrid-column-strain {
+    width: 20%;
 }

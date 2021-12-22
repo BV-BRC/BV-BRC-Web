@@ -23,7 +23,7 @@ define([
         { label: 'Print', multiple: false, validTypes: ['*'] },
         function () {
           var svg = this.chart.getSubsystemPieGraph();
-          saveAs(new Blob([svg], { type: 'image/svg+xml' }), 'PATRIC_subsystem_overview.svg');
+          saveAs(new Blob([svg], { type: 'image/svg+xml' }), 'BVBRC_subsystem_overview.svg');
         },
         true
       ]

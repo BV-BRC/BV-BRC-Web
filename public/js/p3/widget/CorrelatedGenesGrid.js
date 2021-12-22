@@ -24,7 +24,7 @@ define([
       genome_name: { label: 'Genome Name', field: 'genome_name', hidden: true },
       genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
       accession: { label: 'Accession', field: 'accession', hidden: true },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id', hidden: false },
+      patric_id: { label: 'BRC ID', field: 'patric_id', hidden: false },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
       feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },

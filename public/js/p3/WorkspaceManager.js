@@ -15,7 +15,8 @@ define([
     token: '',
     apiUrl: '',
     userId: '',
-    forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result', 'modelfolder'],
+    forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'modelfolder'],
+    //forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
@@ -386,7 +387,7 @@ define([
             Topic.publish('/Notification', {
               message: ids.length + ' Item removed from group ' + groupPath,
               type: 'message',
-              duration: 0
+              duration: 3000
             });
             return r;
           });
@@ -395,7 +396,7 @@ define([
         Topic.publish('/Notification', {
           message: 'Unable to remove items from group.  Invalid group structure',
           type: 'error',
-          duration: 0
+          duration: 3000
         });
         return new Error('Unable to remove from group.  Group structure incomplete');
       });
@@ -562,7 +563,46 @@ define([
         return workspace;
       }));
     },
+    getObjectsAtPathByType: function (types, specialPath) {
+      types = (types instanceof Array) ? types : [types];
 
+      return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {
+        var _self = this;
+
+        var path = specialPath || current.path;
+        return Deferred.when(this.api('Workspace.ls', [{
+          paths: [path],
+          excludeDirectories: false,
+          excludeObjects: false,
+          query: { type: types },
+          recursive: false
+        }]), function (results) {
+          if (!results[0] || !results[0][path]) {
+            return [];
+          }
+          var res = results[0][path];
+
+          res = res.map(function (r) {
+            return _self.metaListToObj(r);
+          }).filter(function (r) {
+            if (r.type == 'folder') {
+              if (r.path.split('/').some(function (p) {
+                return p.charAt(0) == '.';
+              })) {
+                return false;
+              }
+            }
+            return (types.indexOf(r.type) >= 0);
+          });
+          /* .filter(function(r){
+            if (!showHidden && r.name.charAt(0)=="."){ return false };
+            return true;
+          }) */
+
+          return res;
+        });
+      }));
+    },
     getObjectsByType: function (types, specialPath) {
       types = (types instanceof Array) ? types : [types];
 
@@ -615,6 +655,19 @@ define([
         // console.log("download Urls: ", urls);
         // window.open(urls[0]); // window.open can be blocked by pop-up blockers
         window.location.assign(urls[0]);
+      });
+    },
+
+    downloadArchiveFile: function (path_list,archive_name,archive_type,recursive) {
+      var archive_params = [path_list,recursive,archive_name,archive_type];
+      return Deferred.when(this.api('Workspace.get_archive_url',[{
+        objects:path_list,
+        recursive: recursive,
+        archive_name: archive_name,
+        archive_type: archive_type
+      }]),function(url) {
+        console.log(url[0]);
+        window.location.assign(url[0]);
       });
     },
 

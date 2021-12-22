@@ -41,10 +41,10 @@ define([
         this.set('filepath', val);
       } else {
         this.filepath =
-        'path' in val.metadata ?
-          val.metadata.path +
-          ((val.metadata.path.charAt(val.metadata.path.length - 1) == '/') ? '' : '/')
-          + val.metadata.name : '/';
+          'path' in val.metadata ?
+            val.metadata.path +
+            ((val.metadata.path.charAt(val.metadata.path.length - 1) == '/') ? '' : '/')
+            + val.metadata.name : '/';
 
         this.file = val;
         this.refresh();
@@ -369,8 +369,7 @@ define([
         });
       }
 
-      return when(all([!this.featurequery || getFeatureReturned, !this.genequery || getGeneIDReturned]), function (results)
-      {
+      return when(all([!this.featurequery || getFeatureReturned, !this.genequery || getGeneIDReturned]), function (results) {
         // console.log(results);
 
         // move results here.  Also need to take into account that sometimes both responses are not necessary.
@@ -466,7 +465,7 @@ define([
                     Authorization: (window.App.authorizationToken || '')
 
                   }
-                }).then( function (response) {
+                }).then(function (response) {
                   Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id });
                 });
               }
@@ -551,7 +550,7 @@ define([
                 }).then(function (response) {
                   var featureIDs = response.map(function (response) { return response.feature_id; }).join(',');
                   var featureList = '?in(feature_id,(' + featureIDs + '))';
-                  Topic.publish('/navigate', { href: '/view/FeatureList/' +  featureList });
+                  Topic.publish('/navigate', { href: '/view/FeatureList/' + featureList });
                 });
               }
             });
@@ -736,7 +735,7 @@ define([
                 }).then(function (response) {
                   var featureIDs = response.map(function (response) { return response.genome_id; }).join(',');
                   var featureList = '?in(genome_id,(' + featureIDs + '))';
-                  Topic.publish('/navigate', { href: '/view/GenomeList/' +  featureList });
+                  Topic.publish('/navigate', { href: '/view/GenomeList/' + featureList });
                 });
               }
             });
@@ -758,7 +757,7 @@ define([
       if (this.file && fileMeta) {
         var content = '<div><h3 class="section-title-plain close2x pull-left"><b>' + fileMeta.type + ' file</b>: ' + fileMeta.name + '</h3>';
 
-        if (WS.downloadTypes.indexOf(fileMeta.type) >= 0) {
+        if (!WS.forbiddenDownloadTypes.includes(fileMeta.type)) {
           content += '<a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a>';
         }
         content += '</tbody></table></div>';

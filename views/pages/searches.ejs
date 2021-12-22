@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>All Advanced Searches | BV-BRC</title>
+		<% include ../header %>
+	</head>
+	<body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% include ../bv-brc-header %>
+            <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+                <div id="bv-brc-page">
+                    <div id="bv-brc-page-container">
+                        <div class="page-content">
+                          <div class="searches">
+                            <h1 id="all-searches">All Advanced Searches</h1>
+                            <h3>Taxa</h3>
+                            <p>
+                              Search for taxa using taxon id or name and jump to taxon level pages to access relevant data and analysis tools.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/TaxaSearch">Taxa Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Genomes</h3>
+                            <p>
+                              Search for microbial or viral genomes (or genome segments for segmented viruses) of interest using generic keywords, genome id/name, pathogen group, various metadata attributes, or database identifiers.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/GenomeSearch">Genome Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Strains</h3>
+                            <p>
+                              Search for strains of interest for segmented viruses using generic keywords, genome id/name, pathogen group, various metadata attributes, or presence of select segments.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/StrainSearch">Strain Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Proteins</h3>
+                            <p>
+                              Search for proteins of interest (resulting from CDS and mature peptide features) using generic keywords, pathogen group, various genome metadata attributes, protein product, or database identifiers.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/GenomicFeatureSearch">Protein Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Specialty Genes</h3>
+                            <p>
+                              Search for specialty genes annotated in microbial genomes, such as antimicrobial resistance genes, virulence factors, essential genes, drug targets, and human homologs. Search using generic keywords, pathogen group, property, source database, or protein product.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/SpecialtyGeneSearch">Specialty Gene Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Domains and Motifs</h3>
+                            <p>
+                              Search for protein domains and motifs of interest using generic keywords, pathogen group, taxon name, source database, domain id or name.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/ProteinFeatureSearch">Domain and Motif Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Epitopes</h3>
+                            <p>
+                              Search for epitopes of interest using generic keywords, pathogen group or taxon name, epitope id, type, sequence, protein accession or product, or assay results.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/EpitopeSearch">Epitope Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Protein Structures</h3>
+                            <p>
+                              Search for experimentally characterized protein structures of interest using generic keywords, pathogen group or taxon name, PDB id, description, or protein product.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/ProteinStructureSearch">Protein Structure Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Pathways</h3>
+                            <p>
+                              Search for metabolic pathways annotated in microbial genomes using generic keywords, pathogen group or taxon name, pathway id, name, product, or EC number.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/PathwaySearch">Pathway Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Subsystems</h3>
+                            <p>
+                              Search for subsystems annotated in microbial genomes using generic keywords, pathogen group or taxon name, subsystem id, name, or functional role.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/SubsystemSearch">Subsystem Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Surveillance</h3>
+                            <p>
+                              Search for surveillance data for select viral families using generic keywords, pathogen test type, test result, host, country, or collection year.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/SurveillanceSearch">Surveillance Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                            <h3>Serology</h3>
+                            <p>
+                              Search for serology data for select viral families using generic keywords, test type, test result, host, country, or collection year.
+                            </p>
+                            <ul>
+                              <li><a href="/searches/SerologySearch">Serology Search</a></li>
+                              <li><a href="/docs/quick_references/searches_menu.html">Quick Reference Guide</a></li>
+                            </ul>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <% include ../bv-brc-footer %>
+                <style>
+                    body.patric {
+                        min-width: 830px;
+                    }
+                </style>
+            </div>
+        </div>
+
+		<% include ../javascript %>
+	</body>
+</html>

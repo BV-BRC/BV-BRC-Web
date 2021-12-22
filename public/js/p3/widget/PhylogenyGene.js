@@ -123,15 +123,10 @@ define([
         // var sel = snapMenu.selection;
         delete snapMenu.selection;
         if (rel == 'tree-svg') {
-          // console.log("this...",this);
-          // console.log("this.tree.svgContainer[0]...",this.tree.svgContainer[0]);
-          // console.log("this.tree.svgContainer[0][0].outerHTML...",this.tree.svgContainer[0][0].outerHTML);
-          // console.log("[query(svg)[0]...",query("svg")[0]);
-          // saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_phylogeny_tree.svg"); // there are multiple svg images from other tabs that may affect this
-          saveAs(new Blob([this.tree.svgContainer[0][0].outerHTML]), 'PATRIC_phylogeny_tree.svg');
+          saveAs(new Blob([this.tree.svgContainer[0][0].outerHTML]), 'BVBRC_phylogeny_tree.svg');
         }
         else if (rel == 'tree-newick') {
-          saveAs(new Blob([this.newick]), 'PATRIC_phylogeny_tree.nwk');
+          saveAs(new Blob([this.newick]), 'BVBRC_phylogeny_tree.nwk');
         }
         popup.close(snapMenu);
       }));
@@ -236,11 +231,11 @@ define([
       if (this.labels) {
         this.tree.setTree(this.newick, this.labels, 'Feature Names', this.idType);
         idMenuDivs.push('<div class="wsActionTooltip" rel="Feature Names">Feature Names</div>');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">PATRIC ID</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">BRC ID</div>');
       }
       else {
         this.tree.setTree(this.newick, null, null, this.idType);
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">PATRIC ID</div>');
+        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">BRC ID</div>');
       }
       idMenu.set('content', idMenuDivs.join(''));
       this.tree.startup();

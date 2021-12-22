@@ -137,7 +137,7 @@ define([
               content.push([row.family_id, row.feature_count, row.genome_count, '"' + row.description + '"', row.aa_length_min, row.aa_length_max, row.aa_length_mean, row.aa_length_std].join(DELIMITER));
             });
 
-            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'PATRIC_protein_families.' + ext);
+            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_protein_families.' + ext);
 
             popup.close(downloadTT);
           }));

@@ -1,0 +1,192 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>${applicationLabel}
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+              title="click to open tutorial"></i></a>
+        </div>
+        <!-- <div class="infobox iconbox videoButton videoInfo">
+          <a href="${docsServiceURL}${videoLink}" target="_blank"><i class="fa icon-play-circle fa-1x"
+              title="click to open the video tutorial"></i></a>
+        </div> -->
+      </h3>
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}"
+        target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}"
+          target="_blank">Tutorial</a>.</p>
+    </div>
+    <div class="formFieldsContainer">
+      <!-- <div style="display: none;">
+        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes"
+          data-dojo-props="constraints:{min:1,max:256}," />
+      </div> -->
+      <div id="Program_box" style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Start with:</label>
+          <div name="program" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div>
+        </div>
+        <div class="appRow">
+          <table>
+            <tr>
+              <td>
+                <input type="radio" id="unaligned" data-dojo-type="dijit/form/RadioButton"
+                  data-dojo-attach-point="unaligned" name="input_status" value="unaligned"
+                  data-dojo-attach-event="onChange:onChangeStatus" checked />
+                <label for="unaligned">Unaligned sequences</label>
+              </td>
+              <td>
+                <input type="radio" id="aligned" data-dojo-type="dijit/form/RadioButton"
+                  data-dojo-attach-point="aligned" name="input_status" value="aligned"
+                  data-dojo-attach-event="onChange:onChangeStatus" />
+                <label for="aligned">Aligned sequences</label>
+            </tr>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div id="unaligned_box" style="width:97%;" class="appBox appShadow">
+        <div data-dojo-attach-point="unaligned_box" id="unaligned_box" style="width:97%; display: inline-block">
+
+          <table>
+            <tr>
+              <div class="appRow">
+                <td>
+                  <input type="radio" id="input_group" value="input_group" data-dojo-attach-point="input_group"
+                    data-dojo-type="dijit/form/RadioButton" name="input_type"
+                    data-dojo-attach-event="onChange:onChangeType" checked />
+                </td>
+                <td>
+                  <label for="input_group">Select feature group</label><br>
+                  <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="user_genomes_featuregroup" required="true" data-dojo-attach-point="user_genomes_featuregroup"
+                    data-dojo-attach-event="onChange:validate"
+                    data-dojo-props="type:['feature_group'], disabled:false,multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
+                  </div>
+                  <div class="appRow">
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton" id="dna" data-dojo-attach-point="dna"
+                      name="alphabet" value="dna" data-dojo-props="disabled: false" />
+                    <label for="dna" style="font-size:8pt">DNA</label>
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton" id="protein"
+                      data-dojo-attach-point="protein" name="alphabet" value="protein" data-dojo-props="disabled: false"
+                      checked />
+                    <label for="protein" style="font-size:8pt">Protein</label>
+                  </div>
+                </td>
+              </div>
+            </tr>
+            <tr>
+              <div class="appRow">
+                <td>
+                  <input type="radio" id="input_fasta" value="input_fasta" data-dojo-attach-point="input_fasta"
+                    data-dojo-type="dijit/form/RadioButton" name="input_type"
+                    data-dojo-attach-event="onChange:onChangeType" />
+                </td>
+                <td>
+                  <label for="input_fasta">Select DNA or protein fasta file</label><br>
+                  <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="user_genomes_fasta" required="false" data-dojo-attach-point="user_genomes_fasta"
+                    data-dojo-attach-event="onChange:validate"
+                    data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta'], disabled:true,multi:false,promptMessage:'Select or upload fasta file to your workspace for alignment.',missingMessage:'FASTA file is required.', placeHolder:'FASTA file'">
+                  </div>
+                </td>
+              </div>
+            </tr>
+            <tr>
+              <div class="appRow">
+                <td>
+                  <input type="radio" id="input_sequence" value="input_sequence" data-dojo-attach-point="input_sequence"
+                    data-dojo-type="dijit/form/RadioButton" name="input_type"
+                    data-dojo-attach-event="onChange:onChangeType" />
+                </td>
+                <td>
+                  <div class="appRow">
+                    <label for="input_sequence">Input FASTA Sequence</label>
+                    <textarea name="fasta_keyboard_input"
+                      style="width:96%; height:150px; margin-left:5px; font-family: monospace; font-size:12px; max-height:500px"
+                      data-dojo-attach-point="fasta_keyboard_input" data-dojo-type="dijit/form/Textarea"
+                      required="false"
+                      data-dojo-props="rows:10, disabled:true, placeholder:'Enter fasta records of sequences to align.', intermediateChanges:false, trim:true"
+                      data-dojo-attach-event="onBlur:checkFasta"></textarea>
+                    <div class="warning" data-dojo-attach-point="sequence_message"></div>
+                  </div>
+                </td>
+
+              </div>
+            </tr>
+          </table>
+
+          <div class="appRow">
+            <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:96%">
+              <label class="paramlabel">Aligner</label><br>
+              <select data-dojo-type="dijit/form/Select" name="aligner" data-dojo-attach-point="aligner"
+                style="width:100%" required="false" data-dojo-attach-event="onChange:validate"
+                data-dojo-props="intermediateChanges:true,missingMessage:'An aligner must be chosen',trim:true,placeHolder:'MySubFolder'">
+                <option value="Mafft" selected="selected">Mafft</option>
+                <option value="Muscle">Muscle</option>
+                <!-- <option value="progressiveMauve">progressiveMauve</option> -->
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div data-dojo-attach-point="aligned_box" id="aligned_box" style="width:97%; display: none">
+          <div class="appRow">
+            <label>Select an alignment file</label><br>
+            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="user_genomes_alignment" required="false" data-dojo-attach-point="user_genomes_alignment"
+              data-dojo-attach-event="onChange:validate"
+              data-dojo-props="type:['aligned_protein_fasta', 'aligned_dna_fasta'],multi:false,promptMessage:'Select an alignment file from your workspace for analysis.',missingMessage:'Alignment file is required.', placeHolder:'Alignment file'">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="output_box" style="width:97%;" class="appBox appShadow">
+        <div class="appRow">
+          <label class="paramlabel">Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+            data-dojo-attach-point="output_path" required="true"
+            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,placeHolder:'Output Folder'"
+            data-dojo-attach-event="onChange:onOutputPathChange"></div>
+        </div>
+        <div class="appRow">
+          <label class="paramlabel">Output Name</label><span class="charError"
+            style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+            data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file"
+            style="width:85%" required="true"
+            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="appSubmissionArea">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+      style="margin-top:10px; text-align:center;">
+      Aligning sequences
+    </div>
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+      style="margin-top:10px; text-align:center;">
+      Error Submitting Job. Check the input.
+    </div>
+    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+      style="margin-top:10px; text-align:center;">
+      Multiple Sequence Alignment should be finished shortly. Check workspace for results.
+    </div>
+    <div style="margin-top: 10px; text-align:center;">
+      <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+      <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+    </div>
+  </div>
+</form>

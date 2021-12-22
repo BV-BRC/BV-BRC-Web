@@ -153,7 +153,7 @@ define([
           feature_id: { label: 'Feature ID', field: 'feature_id', hidden: true },
           genome_name: { label: 'Genome Name', field: 'genome_name' },
           accession: { label: 'Accession', field: 'accession', hidden: true },
-          patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+          patric_id: { label: 'BRC ID', field: 'patric_id' },
           refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
           alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
           gene: { label: 'Gene', field: 'gene' },

@@ -10,8 +10,8 @@
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
-          target="_blank">${applicationLabel} Service User Guide</a> and
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}"
+        target="_blank">Quick Reference Guide</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
@@ -68,7 +68,7 @@
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
               </div>
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
@@ -138,16 +138,16 @@
         </div>
         <div class="appRow">
           <label class="paramlabel">Save Classified Sequences</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="false" checked />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="false" data-dojo-attach-point="save_classified_sequences_no" checked />
           <label for="radio1">No</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="true" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="true" data-dojo-attach-point="save_classified_sequences_yes"/>
           <label for="radio2">Yes</label>
         </div>
         <div class="appRow">
           <label class="paramlabel">Save Unclassified Sequences</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="false" checked />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="false" data-dojo-attach-point="save_unclassified_sequences_no" checked />
           <label for="radio1">No</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="true" />
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="true" data-dojo-attach-point="save_unclassified_sequences_yes"/>
           <label for="radio2">Yes</label>
         </div>
 

@@ -33,7 +33,7 @@ define([
       gene_count: { label: 'Gene Count', field: 'gene_count' },
       role_count: { label: 'Role Count', field: 'role_count' },
       active: { label: 'Active', field: 'active', hidden: true },
-      patric_id: { label: 'PATRIC ID', field: 'patric_id' },
+      patric_id: { label: 'BRC ID', field: 'patric_id' },
       gene: { label: 'Gene', field: 'gene' },
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true },
       alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },

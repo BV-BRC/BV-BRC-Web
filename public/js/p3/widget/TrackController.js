@@ -67,13 +67,9 @@ define([
     removeIconClass: 'icon-close',
 
     saveSVG: function () {
-      // console.log("saveSVG()");
       if (this.viewer) {
-        // console.log("Call Export SVG");
         var svg = this.viewer.exportSVG();
-        // console.log("SVG BEGIN: ", svg.substr(0, 50));
-        saveAs(new Blob([svg]), 'PATRIC_circular_genome.svg');
-        // domConstruct.place(e,this.exportContainer,"first");
+        saveAs(new Blob([svg]), 'BVBRC_circular_genome.svg');
       }
     },
 

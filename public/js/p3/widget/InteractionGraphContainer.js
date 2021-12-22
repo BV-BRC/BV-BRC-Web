@@ -93,7 +93,7 @@ define([
 
           var png64 = this.cy.png({ full: true, scale: 1.0 }).split(',')[1];
           var binary = fixBinary(atob(png64));
-          saveAs(new Blob([binary], { type: 'image/png' }), 'PATRIC_interaction.png');
+          saveAs(new Blob([binary], { type: 'image/png' }), 'BVBRC_interaction.png');
         },
         true
       ], [
@@ -577,7 +577,7 @@ define([
 
           var content = [];
           if (ele.isNode()) {
-            ele.data('id') ? content.push('PATRIC ID: ' + ele.data('id')) : {};
+            ele.data('id') ? content.push('BRC ID: ' + ele.data('id')) : {};
             ele.data('genome') ? content.push('Genome: ' + ele.data('genome')) : {};
             ele.data('refseq_locus_tag') ? content.push('RefSeq Locus Tag: ' + ele.data('refseq_locus_tag')) : {};
             ele.data('gene') ? content.push('Gene: ' + ele.data('gene')) : {};
