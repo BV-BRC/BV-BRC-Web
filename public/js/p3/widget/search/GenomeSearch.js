@@ -112,7 +112,8 @@ define([
         queryArr = queryArr.concat(advancedQueryArr)
       }
 
-      return queryArr.join('&')
+      // return queryArr.join('&')
+      return `eq(genome_id,*)&genome(${queryArr.join(',')})`
     }
   })
 })
