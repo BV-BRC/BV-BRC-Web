@@ -112,7 +112,7 @@ define([
         { label: 'Print', multiple: false, validTypes: ['*'] },
         function () {
           var svg = this.pNS.export_to_svg();
-          saveAs(new Blob([svg], { type: 'image/svg+xml' }), 'PATRIC_pathway_map.svg');
+          saveAs(new Blob([svg], { type: 'image/svg+xml' }), 'BVBRC_pathway_map.svg');
         },
         true
       ]

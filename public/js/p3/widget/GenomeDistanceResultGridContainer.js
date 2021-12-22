@@ -25,7 +25,7 @@ define([
     var rel = evt.target.attributes.rel.value;
     var data = downloadTT.get('data');
     var headers = downloadTT.get('headers');
-    var filename = 'PATRIC_genome_distance';
+    var filename = 'BVBRC_genome_distance';
     // console.log(data, headers);
 
     var DELIMITER,

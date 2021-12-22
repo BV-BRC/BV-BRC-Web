@@ -264,7 +264,7 @@ define([
                 });
               }
 
-              filename = 'PATRIC_subsystems';
+              filename = 'BVBRC_subsystems';
               break;
 
             case 'genes':
@@ -295,7 +295,7 @@ define([
                   JSON.stringify(row.product)
                 ]);
               });
-              filename = 'PATRIC_subsystems';
+              filename = 'BVBRC_subsystems';
               break;
 
             default:
