@@ -862,7 +862,7 @@ define([], function () {
         field: 'species', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'type', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'pathogen_type', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'subtype', type: 'str', facet: false, facet_hidden: true, search: true
