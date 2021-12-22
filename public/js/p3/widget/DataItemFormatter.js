@@ -1574,7 +1574,7 @@ define([
           text: 'species'
         }, {
           name: 'Type',
-          text: 'type'
+          text: 'pathogen_type'
         }, {
           name: 'Subtype',
           text: 'subtype'
