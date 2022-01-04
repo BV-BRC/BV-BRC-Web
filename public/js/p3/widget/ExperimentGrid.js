@@ -28,6 +28,7 @@ define([
       exp_title: { label: 'Exp Title', field: 'exp_title', hidden: false },
       public_id: { label: 'Public Identifier', field: 'public_identifier', hidden: false },
       exp_type: { label: 'Exp Type', field: 'exp_type', hidden: false },
+      biosets: { label: 'Biosets', field: 'biosets', hidden: false },
       organism: {
         label: 'Organism', field: 'organism', hidden: false, sortable: false
       },
@@ -38,8 +39,6 @@ define([
       treatment_name: { label: 'Treatment Name', field: 'treatment_name', hidden: false },
       treatment_amount: { label: 'Treatment Amount', field: 'treatment_amount', hidden: false },
       treatment_duration: { label: 'Treatment Duration', field: 'treatment_duration', hidden: false },
-
-      biosets: { label: 'Biosets', field: 'biosets', hidden: false },
     },
     startup: function () {
       var _self = this;
