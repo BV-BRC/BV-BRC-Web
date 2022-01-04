@@ -1064,8 +1064,8 @@ define([
     },
 
     checkContrastsFormFill: function (job_data) {
-      var disable = !this.exp_design.checked;
-      var contrastSize = this.contrastStore.data.length;
+      // var disable = !this.exp_design.checked;
+      // var contrastSize = this.contrastStore.data.length;
       var conditions = job_data['experimental_conditions'];
       var offset = 1;
       job_data['contrasts'].forEach(function (contrast) {

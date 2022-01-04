@@ -488,9 +488,9 @@ define([
         this.setInputFormFill(job_data);
         localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
-        const rows = this.grid.store.query(function (object) {
-          return true;
-        });
+        // const rows = this.grid.store.query(function (object) {
+        //   return true;
+        // });
       }
     },
 

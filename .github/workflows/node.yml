@@ -4,7 +4,7 @@ name: Linter
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, develop ]
   pull_request:
     branches: [ develop ]
 
@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 12.x ]
+        node-version: [ 14.x ]
 
     steps:
     - uses: actions/checkout@v2

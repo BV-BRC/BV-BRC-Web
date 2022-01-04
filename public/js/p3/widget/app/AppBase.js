@@ -269,7 +269,7 @@ define([
         values.container_id = window.App.containerBuildID;
       }
       if (this.lookaheadJob) {
-        var jobPath = `${this.output_path.value || ''}/${this.output_file.value || ''}`;
+        // var jobPath = `${this.output_path.value || ''}/${this.output_file.value || ''}`;
         var liveMsg = '<br>Live job!<br>Stick around to see results.';
         if (this.submittedMessage && this.lookaheadGif == null) {
           var gif_container = domConstruct.toDom('<div style="margin: 0 auto;"></div>');
