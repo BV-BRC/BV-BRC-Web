@@ -39,8 +39,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -62,12 +62,12 @@ define([
       exp_values.ustring = JSON.stringify(ustring);
       exp_values.xfile = values.xfile;
       exp_values.mfile = values.mfile;
-      exp_values = this.checkBaseParameters(values,exp_values);
+      exp_values = this.checkBaseParameters(values, exp_values);
 
       return exp_values;
     },
 
-    checkBaseParameters: function(values,exp_values) {
+    checkBaseParameters: function (values, exp_values) {
       exp_values.output_path = values.output_path;
       this.output_folder = values.output_path;
       exp_values.output_file = values.experiment_title;
@@ -75,38 +75,40 @@ define([
       return exp_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path"};
-        var service_specific = {"xfile":"xfile"};
-        param_dict["service_specific"] = service_specific;
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path' };
+        var service_specific = { 'xfile': 'xfile' };
+        param_dict['service_specific'] = service_specific;
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         this.addUstringParametersFormFill(job_data);
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        //console.log(job_data);
-        localStorage.removeItem("bvbrc_rerun_job");
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        // console.log(job_data);
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    addUstringParametersFormFill: function(job_data) {
-      if (job_data.hasOwnProperty("ustring")) {
-        var ustring_data = JSON.parse(job_data["ustring"]);
-        //It did not like adding "organism":"scientific_nameWidget"
-        var widget_map = {"data_type":"data_type","experiment_description":"experiment_description","organism":"scientific_nameWidget","genome_id":"genome_nameWidget","source_id_type":"source_id_type","pmid":"pmid"};
-        Object.keys(ustring_data).forEach(function(field) {
-          if (!widget_map.hasOwnProperty(field)) {return;}
+    addUstringParametersFormFill: function (job_data) {
+      if (job_data.hasOwnProperty('ustring')) {
+        var ustring_data = JSON.parse(job_data['ustring']);
+        // It did not like adding "organism":"scientific_nameWidget"
+        var widget_map = {
+          'data_type': 'data_type', 'experiment_description': 'experiment_description', 'organism': 'scientific_nameWidget', 'genome_id': 'genome_nameWidget', 'source_id_type': 'source_id_type', 'pmid': 'pmid'
+        };
+        Object.keys(ustring_data).forEach(function (field) {
+          if (!widget_map.hasOwnProperty(field)) { return; }
           if (!this[widget_map[field]]) {
-            console.log("attach_point does not exist:",field);
+            console.log('attach_point does not exist:', field);
             return;
           }
-          if (field === "organism") {
-            this[widget_map[field]].set("displayedValue",ustring_data[field]);
+          if (field === 'organism') {
+            this[widget_map[field]].set('displayedValue', ustring_data[field]);
           } else {
-            this[widget_map[field]].set("value",ustring_data[field]);
+            this[widget_map[field]].set('value', ustring_data[field]);
           }
-        },this);
+        }, this);
       }
     }
   });

@@ -548,7 +548,7 @@ define([
           name: 'Taxon ID',
           text: 'taxon_id',
           link: '/view/Taxonomy/'
-        },],
+        }],
 
         'Source': [{
           name: 'Annotation',
@@ -556,7 +556,7 @@ define([
         }, {
           name: 'Feature Type',
           text: 'feature_type',
-        },],
+        }],
 
         'Identifiers': [{
           name: 'Feature ID',
@@ -564,7 +564,7 @@ define([
         }, {
           name: 'BRC ID',
           text: 'patric_id',
-        },],
+        }],
 
         'Database Cross References': [{
           name: 'RefSeq Locus Tag',
@@ -591,7 +591,7 @@ define([
           name: 'PDB Accession',
           text: 'pdb_accession',
           link: 'https://www.rcsb.org/structure/'
-        },],
+        }],
 
         'Location': [{
           name: 'Start',
@@ -632,7 +632,7 @@ define([
           link: function (obj) {
             return '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
           }
-        },],
+        }],
 
         'Annotation': [{
           name: 'Gene',
@@ -640,7 +640,7 @@ define([
         }, {
           name: 'Product',
           text: 'product',
-        },],
+        }],
 
         'Families': [{
           name: 'PATRIC Local Family',
@@ -681,7 +681,7 @@ define([
         }, {
           name: 'GO',
           text: 'go',
-        },],
+        }],
 
         'Misc': [{
           name: 'Property',

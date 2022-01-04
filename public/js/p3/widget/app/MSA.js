@@ -50,8 +50,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -191,67 +191,67 @@ define([
 
     intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = { "output_folder": "output_path", "strategy": "aligner" };
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'aligner' };
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         this.setStatusFormFill(job_data);
         this.setAlphabetFormFill(job_data);
         this.setUnalignedInputFormFill(job_data);
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        //this.addSequenceFilesFormFill(job_data);
-        localStorage.removeItem("bvbrc_rerun_job");
+        // this.addSequenceFilesFormFill(job_data);
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    setStatusFormFill: function(job_data) {
-      var status = job_data["input_status"];
+    setStatusFormFill: function (job_data) {
+      var status = job_data['input_status'];
       console.log(job_data);
-      if (status === "aligned") {
-        this.unaligned.set("checked",false);
-        this.aligned.set("checked",true);
+      if (status === 'aligned') {
+        this.unaligned.set('checked', false);
+        this.aligned.set('checked', true);
         this.onChangeStatus();
-        console.log(job_data["fasta_files"]["file"]);
-        this.user_genomes_alignment.set("value",job_data["fasta_files"][0]["file"]);
+        console.log(job_data['fasta_files']['file']);
+        this.user_genomes_alignment.set('value', job_data['fasta_files'][0]['file']);
       }
     },
 
     setAlphabetFormFill: function (job_data) {
-      if (job_data["alphabet"] == "dna") {
-        this.protein.set("checked", false);
-        this.dna.set("checked", true);
+      if (job_data['alphabet'] == 'dna') {
+        this.protein.set('checked', false);
+        this.dna.set('checked', true);
       }
       else {
-        this.dna.set("checked", false);
-        this.protein.set("checked", true);
+        this.dna.set('checked', false);
+        this.protein.set('checked', true);
       }
     },
 
-    setUnalignedInputFormFill: function(job_data) {
-      if (job_data["input_status"] === "aligned") {
+    setUnalignedInputFormFill: function (job_data) {
+      if (job_data['input_status'] === 'aligned') {
         return;
       }
-      if (job_data["input_type"] === "input_group") {
-        this.input_group.set("checked",true);
-        this.input_fasta.set("checked",false);
-        this.input_sequence.set("checked",false);
-        this.user_genomes_featuregroup.set("value",job_data["feature_groups"][0]);
+      if (job_data['input_type'] === 'input_group') {
+        this.input_group.set('checked', true);
+        this.input_fasta.set('checked', false);
+        this.input_sequence.set('checked', false);
+        this.user_genomes_featuregroup.set('value', job_data['feature_groups'][0]);
       }
-      else if (job_data["input_type"] === "input_fasta") {
-        this.input_group.set("checked",false);
-        this.input_fasta.set("checked",true);
-        this.input_sequence.set("checked",false);
-        this.user_genomes_fasta.set("value",job_data["fasta_files"][0]["file"]);
+      else if (job_data['input_type'] === 'input_fasta') {
+        this.input_group.set('checked', false);
+        this.input_fasta.set('checked', true);
+        this.input_sequence.set('checked', false);
+        this.user_genomes_fasta.set('value', job_data['fasta_files'][0]['file']);
       }
-      else if (job_data["input_type"] === "input_sequence") {
-        this.input_group.set("checked",false);
-        this.input_fasta.set("checked",false);
-        this.input_sequence.set("checked",true);
-        this.fasta_keyboard_input.set("value",job_data["fasta_keyboard_input"]);
+      else if (job_data['input_type'] === 'input_sequence') {
+        this.input_group.set('checked', false);
+        this.input_fasta.set('checked', false);
+        this.input_sequence.set('checked', true);
+        this.fasta_keyboard_input.set('value', job_data['fasta_keyboard_input']);
       }
       else {
-        console.log("Error: invalid unaligned input");
-        return;
+        console.log('Error: invalid unaligned input');
+
       }
     }
   });

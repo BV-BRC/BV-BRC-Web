@@ -8,7 +8,7 @@ define([
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './viewer/JobResult',
 
-  'dojo/NodeList-traverse', './app/Homology','./app/GenomeAlignment','./app/PhylogeneticTree'
+  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -208,85 +208,85 @@ define([
         }
       }, false);
 
-      ///START: ServicesGenomeGroups functionality
+      // /START: ServicesGenomeGroups functionality
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,
-        onMouseLeave: function() {
+        onMouseLeave: function () {
           popup.close(viewGGServices);
         }
-      }); 
-      var table = domConstruct.create('table',{},dstContent);
-      domConstruct.create('tr',{innerHTML: "<p>Services</p>",style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;'},table);
-      var options = ["BLAST","Genome Alignment","Phylogenetic Tree"];
-      options.forEach(function(key) {
-        var curr_tr = domConstruct.create('tr',{},table);
-        var curr_div = domConstruct.create('div',{'class':'wsActionTooltip',innerHTML:key,service:key},curr_tr);
-      },this);
+      });
+      var table = domConstruct.create('table', {}, dstContent);
+      domConstruct.create('tr', { innerHTML: '<p>Services</p>', style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;' }, table);
+      var options = ['BLAST', 'Genome Alignment', 'Phylogenetic Tree'];
+      options.forEach(function (key) {
+        var curr_tr = domConstruct.create('tr', {}, table);
+        var curr_div = domConstruct.create('div', { 'class': 'wsActionTooltip', innerHTML: key, service: key }, curr_tr);
+      }, this);
       this.selected_genome_group = null;
-      on(viewGGServices.domNode, 'click', lang.hitch(this,function(evt) {
-        var service = evt.target.getAttribute("service");
+      on(viewGGServices.domNode, 'click', lang.hitch(this, function (evt) {
+        var service = evt.target.getAttribute('service');
         var serviceContent = null;
         var params = null;
-        if (service === "BLAST") {
+        if (service === 'BLAST') {
           serviceContent = new Homology();
           params = {
-            "blast_program":"blastn",
-            "db_precomputed_database":"selGroup",
-            "db_genome_group": this.selected_genome_group[0].path,
-            "db_source":"genome_list",
-            "db_type":"fna"
-          };
-        } 
-        else if (service === "Genome Alignment") {
-          serviceContent = new GenomeAlignment();
-          params = {
-            "genome_group":this.selected_genome_group[0].path
+            'blast_program': 'blastn',
+            'db_precomputed_database': 'selGroup',
+            'db_genome_group': this.selected_genome_group[0].path,
+            'db_source': 'genome_list',
+            'db_type': 'fna'
           };
         }
-        else if (service === "Phylogenetic Tree") {
+        else if (service === 'Genome Alignment') {
+          serviceContent = new GenomeAlignment();
+          params = {
+            'genome_group': this.selected_genome_group[0].path
+          };
+        }
+        else if (service === 'Phylogenetic Tree') {
           serviceContent = new PhylogeneticTree();
           params = {
-            "genome_group":this.selected_genome_group[0].path
+            'genome_group': this.selected_genome_group[0].path
           };
         } else {
-          console.log("invalid service: ",service);
+          console.log('invalid service: ', service);
           return;
         }
         if (params) {
           var job_params = JSON.stringify(params);
-          if (window.localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-            window.localStorage.removeItem("bvbrc_rerun_job");
+          if (window.localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+            window.localStorage.removeItem('bvbrc_rerun_job');
           }
-          window.localStorage.setItem("bvbrc_rerun_job",job_params);
+          window.localStorage.setItem('bvbrc_rerun_job', job_params);
         }
         var d = new Dialog({
           title: service,
           content: serviceContent,
-          onHide: function() {
+          onHide: function () {
             serviceContent.destroy();
             d.destroy();
           }
         });
         d.show();
-        return;
+
       }))
-      var sgSelf = this; //do not remove, sets the genome group selection below and makes it accessible in on("click")
+      var sgSelf = this; // do not remove, sets the genome group selection below and makes it accessible in on("click")
       this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-cog fa-2x', {
         label: 'SERVICES',
         validTypes: ['genome_group'],
-        multiple: false, //TODO: check and see if you can select two or more at a time
+        multiple: false, // TODO: check and see if you can select two or more at a time
         tooltip: 'Select services using this GenomeGroup',
         tooltipDialog: viewGGServices
-      },function(selection) {
-          sgSelf.selected_genome_group = selection;
-          popup.open({
-            popup: this._actions.ServicesGenomeGroups.options.tooltipDialog,
-            around: this._actions.ServicesGenomeGroups.button,
-            orient: ['below']
-          });
-        }, false);
-      ///END: ServicesGenomeGroups functionality
+      }, function (selection) {
+        sgSelf.selected_genome_group = selection;
+        popup.open({
+          popup: this._actions.ServicesGenomeGroups.options.tooltipDialog,
+          around: this._actions.ServicesGenomeGroups.button,
+          orient: ['below']
+        });
+      }, false);
+      // /END: ServicesGenomeGroups functionality
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',
@@ -367,7 +367,7 @@ define([
         });
       }, false);
 
-      //TODO: why isn't download appearing for job_results
+      // TODO: why isn't download appearing for job_results
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
         multiple: true,
@@ -376,60 +376,60 @@ define([
         forbiddenTypes: WorkspaceManager.forbiddenDownloadTypes,
         tooltip: 'Download'
       }, function (selection) {
-        console.log("selection=",selection);
-        //TODO: job_result folders are downloaded with their '.' prefix, making them initially hidden in the zip file
-          //some users may not like that
-        //criteria for single download: one file and is not a folder and is not a job_result
-        if ((selection.length == 1) & !(selection[0].autoMeta.is_folder) & !(selection[0].type === "job_result")){
-          console.log('download one item:',selection[0].path);
+        console.log('selection=', selection);
+        // TODO: job_result folders are downloaded with their '.' prefix, making them initially hidden in the zip file
+        // some users may not like that
+        // criteria for single download: one file and is not a folder and is not a job_result
+        if ((selection.length == 1) & !(selection[0].autoMeta.is_folder) & !(selection[0].type === 'job_result')) {
+          console.log('download one item:', selection[0].path);
           WorkspaceManager.downloadFile(selection[0].path);
         } else {
           var tmp_archive_name = '';
-          //add different defaults here
+          // add different defaults here
           if (this.currentContainerType === 'job_result') {
             tmp_archive_name = this.currentContainerWidget.data.name;
           }
-          //get_archive_url(get_archive_url_params input) returns (string url, int file_count, int total_size)
+          // get_archive_url(get_archive_url_params input) returns (string url, int file_count, int total_size)
           var path_list = [];
           selection.forEach(function (selected_file) {
-            //if file is a job result, add hidden file to download list
-            if (selected_file.type === "job_result") {
-              var path = selected_file.path.split("/");
+            // if file is a job result, add hidden file to download list
+            if (selected_file.type === 'job_result') {
+              var path = selected_file.path.split('/');
               var base = path.pop();
-              var new_path = path.join("/") + "/." + base;
+              var new_path = path.join('/') + '/.' + base;
               path_list.push(new_path);
             }
             path_list.push(selected_file.path);
-          },this);
-          ///create dialog with name and archive options
-          var dwnldContent = domConstruct.create('div',{});
-          //create table header row
-          var table = domConstruct.create('table',{},dwnldContent);
-          var title_tr = domConstruct.create('tr',{},table);
-          domConstruct.create('td',{innerHTML:'<p>File Name</p>'},title_tr);
-          domConstruct.create('td',{innerHTML:'<p>File Type</p>'},title_tr);
-          //create input row
-          var option_tr = domConstruct.create('tr',{},table);
-          var archive_name_td = domConstruct.create('td',{},option_tr);
-          var archive_name_input = domConstruct.create('input',{type:'text',placeholder:tmp_archive_name,value:tmp_archive_name},archive_name_td);
-          var dropdown_row = domConstruct.create('td',{},option_tr);
-          var dropdown_select = domConstruct.create('select',{},dropdown_row);
-          //Add more archive types as they become available
-          domConstruct.create('option',{value:'zip',innerHTML:'zip'},dropdown_select);
-          //example: domConstruct.create('option',{value:'opt2',innerHTML:'opt2'},dropdown_select);
-          //add submit button:
-          var btn_td = domConstruct.create('td',{},option_tr);
-          var submit_btn = domConstruct.create('button',{type:'button',innerHTML:'Submit',style:'background-color:#09456f;color:#fff'},btn_td);
-          //get input and validate
+          }, this);
+          // /create dialog with name and archive options
+          var dwnldContent = domConstruct.create('div', {});
+          // create table header row
+          var table = domConstruct.create('table', {}, dwnldContent);
+          var title_tr = domConstruct.create('tr', {}, table);
+          domConstruct.create('td', { innerHTML: '<p>File Name</p>' }, title_tr);
+          domConstruct.create('td', { innerHTML: '<p>File Type</p>' }, title_tr);
+          // create input row
+          var option_tr = domConstruct.create('tr', {}, table);
+          var archive_name_td = domConstruct.create('td', {}, option_tr);
+          var archive_name_input = domConstruct.create('input', { type: 'text', placeholder: tmp_archive_name, value: tmp_archive_name }, archive_name_td);
+          var dropdown_row = domConstruct.create('td', {}, option_tr);
+          var dropdown_select = domConstruct.create('select', {}, dropdown_row);
+          // Add more archive types as they become available
+          domConstruct.create('option', { value: 'zip', innerHTML: 'zip' }, dropdown_select);
+          // example: domConstruct.create('option',{value:'opt2',innerHTML:'opt2'},dropdown_select);
+          // add submit button:
+          var btn_td = domConstruct.create('td', {}, option_tr);
+          var submit_btn = domConstruct.create('button', { type: 'button', innerHTML: 'Submit', style: 'background-color:#09456f;color:#fff' }, btn_td);
+          // get input and validate
           var archive_name = '';
           var archive_type = '';
-          on(submit_btn,'click',lang.hitch(this,function(button) {
+          on(submit_btn, 'click', lang.hitch(this, function (button) {
             var valid = true;
             if (!archive_name_input.value) {
               return;
             }
             var invalid_chars = archive_name_input.value.match(/[~`!#$%\^&*+=\\[\]\\';,/{}|\\":<>\?]/g);
-            //returns null if no matches in regular expression
+            // returns null if no matches in regular expression
             if (invalid_chars) {
               if (invalid_chars.length > 0) {
                 valid = false;
@@ -439,10 +439,10 @@ define([
               archive_name = archive_name_input.value;
               archive_type = dropdown_select.value;
               archive_name = archive_name + '.' + archive_type;
-              var recursive = true; 
+              var recursive = true;
               try {
-                var archive_url = WorkspaceManager.downloadArchiveFile(path_list,archive_name,archive_type,recursive);
-                console.log('archive_url = ',archive_url);
+                var archive_url = WorkspaceManager.downloadArchiveFile(path_list, archive_name, archive_type, recursive);
+                console.log('archive_url = ', archive_url);
                 dwnld_dialog.onHide();
               }
               catch (error) {
@@ -454,23 +454,23 @@ define([
               let error_unique = [...new Set(invalid_chars)];
               var error_msg = 'Error in download filename, remove invalid characters: ' + error_unique.join(', ');
               var errorTT = new TooltipDialog({
-                content:domConstruct.create('div',{innerHTML:'<p>'+error_msg+"</p>"}),
+                content: domConstruct.create('div', { innerHTML: '<p>' + error_msg + '</p>' }),
                 onMouseLeave: function () {
                   popup.close(errorTT);
                 }
               });
               popup.open({
-                popup:errorTT,
-                around:archive_name_input,
-                orient:['below']
+                popup: errorTT,
+                around: archive_name_input,
+                orient: ['below']
               });
             }
           }));
-          //show dialog
+          // show dialog
           var dwnld_dialog = new Dialog({
-            title:"Download File Options",
-            content:dwnldContent,
-            onHide: function (){
+            title: 'Download File Options',
+            content: dwnldContent,
+            onHide: function () {
               dwnld_dialog.destroy();
             }
           });
@@ -715,7 +715,7 @@ define([
         tooltip: 'View alignments'
       }, function (selection) {
         // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
-        Topic.publish('/navigate', { href: '/view/Homology' + self.actionPanel.currentContainerWidget.path});
+        Topic.publish('/navigate', { href: '/view/Homology' + self.actionPanel.currentContainerWidget.path });
       }, false);
 
 
@@ -1293,32 +1293,50 @@ define([
         self.showPermDialog(selection);
       }, false);
 
-      //TODO: in order to make this button appear "inside" the job result:
-      //look into validContainerTypes???
-      this.actionPanel.addAction('Rerun','fa icon-rotate-left fa-2x',{
-        label:'RERUN',
+      // TODO: in order to make this button appear "inside" the job result:
+      // look into validContainerTypes???
+      this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
+        label: 'RERUN',
         allowMultiTypes: true,
         multiple: true,
         validTypes: ['job_result'],
         tooltip: 'Reset job form with current parameters'
-      },function (selection) {
+      }, function (selection) {
         var job_params = JSON.stringify(selection[0].autoMeta.parameters);
-        //TODO: make sure service_id variable is present for every service
+        // TODO: make sure service_id variable is present for every service
         var service_id = selection[0].autoMeta.app.id;
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
-        localStorage.setItem("bvbrc_rerun_job",job_params);
-        var service_app_map = {"ComprehensiveGenomeAnalysis":"ComprehensiveGenomeAnalysis","ComprehensiveSARS2Analysis":"ComprehensiveSARS2Analysis","DifferentialExpression":"Expression",
-        "FastqUtils":"FastqUtil","GeneTree":"GeneTree","GenomeAssembly2":"Assembly2", "GenomeAlignment":"GenomeAlignment","GenomeAnnotation":"Annotation","GenomeComparison":"SeqComparison",
-        "Homology":"Homology","MetaCATS":"MetaCATS","MetagenomeBinning":"MetagenomicBinning","MetagenomicReadMapping":"MetagenomicReadMapping","MSA":"MSA",
-        "CodonTree":"PhylogeneticTree","PrimerDesign":"PrimerDesign","RNASeq":"Rnaseq","TaxonomicClassification":"TaxonomicClassification","TnSeq":"Tnseq","Variation":"Variation"};
+        localStorage.setItem('bvbrc_rerun_job', job_params);
+        var service_app_map = {
+          'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+          'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+          'DifferentialExpression': 'Expression',
+          'FastqUtils': 'FastqUtil',
+          'GeneTree': 'GeneTree',
+          'GenomeAssembly2': 'Assembly2',
+          'GenomeAlignment': 'GenomeAlignment',
+          'GenomeAnnotation': 'Annotation',
+          'GenomeComparison': 'SeqComparison',
+          'Homology': 'Homology',
+          'MetaCATS': 'MetaCATS',
+          'MetagenomeBinning': 'MetagenomicBinning',
+          'MetagenomicReadMapping': 'MetagenomicReadMapping',
+          'MSA': 'MSA',
+          'CodonTree': 'PhylogeneticTree',
+          'PrimerDesign': 'PrimerDesign',
+          'RNASeq': 'Rnaseq',
+          'TaxonomicClassification': 'TaxonomicClassification',
+          'TnSeq': 'Tnseq',
+          'Variation': 'Variation'
+        };
         if (service_app_map.hasOwnProperty(service_id)) {
-          Topic.publish('/navigate',{href:'/app/'+service_app_map[service_id]});
+          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
         }
-        else{
-          console.log('Rerun not enabled for: ',service_id);
+        else {
+          console.log('Rerun not enabled for: ', service_id);
         }
       }, false);
 
@@ -1326,8 +1344,8 @@ define([
         label: 'RERUN',
         multiple: false,
         persistent: true,
-        //TODO: list of services that allow "descending" into a job object
-        //TODO: does not last past the 
+        // TODO: list of services that allow "descending" into a job object
+        // TODO: does not last past the
         validTypes: ['RNASeq', 'TnSeq', 'Variation', 'folder'],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
@@ -1673,7 +1691,7 @@ define([
                 case 'ComprehensiveGenomeAnalysis':
                   d = 'p3/widget/viewer/ComprehensiveGenomeAnalysis';
                   break;
-                case "Homology":
+                case 'Homology':
                   d = 'p3/widget/viewer/BlastJobResult';
                   break;
                 default:

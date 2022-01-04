@@ -4,7 +4,7 @@ define([
   'dijit/_WidgetBase', 'dijit/_Templated', 'dijit/Dialog', 'dijit/form/Button',
   '../util/PathJoin', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer',
   './DataItemFormatter', './ExternalItemFormatter', './formatter',
-  './D3SingleGeneViewer', './SelectionToGroup','../DataAPI','./ServicesTooltipDialog','dijit/popup'
+  './D3SingleGeneViewer', './SelectionToGroup', '../DataAPI', './ServicesTooltipDialog', 'dijit/popup'
 
 ], function (
   declare, lang, on, xhr, Topic,
@@ -12,7 +12,7 @@ define([
   WidgetBase, Templated, Dialog, Button,
   PathJoin, Grid, ColumnResizer,
   DataItemFormatter, ExternalItemFormatter, formatter,
-  D3SingleGeneViewer, SelectionToGroup,DataAPI, ServicesTooltipDialog,popup
+  D3SingleGeneViewer, SelectionToGroup, DataAPI, ServicesTooltipDialog, popup
 ) {
 
   var xhrOption = {
@@ -699,23 +699,23 @@ define([
       this.inherited(arguments);
     },
 
-    onFeatureServiceSelection: function() {
+    onFeatureServiceSelection: function () {
       if (!this.feature.na_sequence_md5) {
-        console.log("Cannot find nucleotide md5 hash");
+        console.log('Cannot find nucleotide md5 hash');
         return;
       }
-      if (this.feature.na_sequence_md5 === "") {
-        console.log("nucleotide md5 hash is empty");
+      if (this.feature.na_sequence_md5 === '') {
+        console.log('nucleotide md5 hash is empty');
         return;
       }
       DataAPI.getFeatureSequence(this.feature.na_sequence_md5).then((result) => {
         var params = {
-          "patric_id":this.feature.patric_id,
-          "sequence":result.sequence
+          'patric_id': this.feature.patric_id,
+          'sequence': result.sequence
         };
         popup.open({
           popup: new ServicesTooltipDialog({
-            context: "feature",
+            context: 'feature',
             data: params
           }),
           parent: this,
