@@ -125,9 +125,7 @@ define([
         }
       })) + ')',
 
-      genes: '&select(superclass,class,subclass,subsystem_name,role_id,role_name,active,patric_id,gene,refseq_locus_tag,alt_locus_tag,product,genome_id,genome_name,taxon_id,subsystem_id)&group((field,subsystem_id),(format,simple),(limit,25000),(facet,false))'
-
-
+      genes: '&select(superclass,class,subclass,subsystem_name,role_id,role_name,active,feature_id,patric_id,gene,refseq_locus_tag,alt_locus_tag,product,genome_id,genome_name,taxon_id,subsystem_id)&group((field,subsystem_id),(format,simple),(limit,25000),(facet,false))'
     },
     buildQuery: function () {
       var q = [];
@@ -221,6 +219,7 @@ define([
                 var pv = doc[p];
                 lang.mixin(doc, map[pv] || {});
 
+                doc.id = doc[p]
                 switch (this.type) {
                   case 'subsystems':
                     doc.document_type = 'subsystems_subsystem';
@@ -244,7 +243,6 @@ define([
               this.state.filter = false;
             }
 
-
             _self.setData(docs);
             _self._loaded = true;
             return true;
@@ -260,7 +258,7 @@ define([
           // genes tab
           var ds = response.grouped.subsystem_id.doclist.docs;
           docs = ds.map(function (doc) {
-
+            doc.id = doc.feature_id;
             switch (this.type) {
               case 'subsystems':
                 doc.document_type = 'subsystems_subsystem';

@@ -310,7 +310,7 @@ define([
               domConstruct.place(row, tbody);
             }
           });
-        } else {
+        } else if (item.genome_id !== undefined) {
           var query = 'q=genome_id:(' + item.genome_id + ') AND subsystem_id:("' + item.subsystem_id + '")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000';
 
           when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
