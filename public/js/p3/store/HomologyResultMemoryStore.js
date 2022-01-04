@@ -47,7 +47,7 @@ define([
     },
 
     query: function (query, opts) {
-      ops = opts || {}
+      opts = opts || {}
       query = query || {};
       var _self = this;
       if (!this.dataPath) {
@@ -87,8 +87,8 @@ define([
     },
 
     getBlankMeta: function (id_list) {
-      result = {};
-      blank_record = {
+      var result = {};
+      var blank_record = {
         'function': 'status unknown', 'genome_name': 'genome unknown', 'genome_id': 'genome unknown', 'alt_locus_tag': 'alias unknown'
       };
       id_list.forEach(function (cur_id) {
@@ -98,7 +98,6 @@ define([
     },
 
     loadWorkspaceData: function () {
-      _self = this;
 
       if (this._loadingDeferred) {
         console.log('this._loadingDeferred already exists, load in progress')
@@ -139,7 +138,7 @@ define([
                 obj.data = JSON.parse(obj.data);
               }
             });
-            res = objs[0];
+            var res = objs[0];
 
             if ((res.data).length == 0) {
               this.setData([]);
@@ -156,9 +155,9 @@ define([
             res.lookups.push(this.getBlankMeta(resultIds));
 
             var query = { rows: 25000 };
-            var doQuery = false;
+            // var doQuery = false;
             if (this.type == 'genome_sequence') {
-              doQuery = true;
+              // doQuery = true;
               resultIds = resultIds.map(function (d) {
                 return d.replace('accn|', '');
               }).filter(function (d) {
@@ -167,7 +166,7 @@ define([
               query.q = 'accession:(' + resultIds.join(' OR ') + ')';
               query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type';
             } else if (this.type == 'genome_feature') {
-              doQuery = true;
+              // doQuery = true;
 
               var patric_ids = [];
               var refseq_locus_tags = [];
@@ -184,7 +183,7 @@ define([
               (refseq_locus_tags.length > 0) ? query.q += '(refseq_locus_tag:(' + refseq_locus_tags.join(' OR ') + ') AND annotation:RefSeq)' : {};
               query.fl = 'feature_id,patric_id,genome_id,genome_name,refseq_locus_tag,pgfam_id,plfam_id,figfam_id,gene,product,annotation,feature_type,gene_id,taxon_id,accession,start,end,strand,location,na_length,na_sequence_md5,aa_length,aa_sequence_md5';
             } else if (this.type == 'specialty_genes') {
-              doQuery = true;
+              // doQuery = true;
               var data = this.formatJSONResult(res);
               data = data.map(function (d, idx) {
                 d._id = idx;
@@ -346,10 +345,10 @@ define([
               delete entry.genome_id;
               delete entry.genome_name;
             } else {
-              database = 'custom db';
-              source_id = 'changeme1';
+              var database = 'custom db';
+              var source_id = 'changeme1';
               org = 'unknown';
-              desc = 'changeme2';
+              var desc = 'changeme2';
               if (hit.description[0].title) {
                 var title = hit.description[0].title;
                 var id = title.split(' ')[0];

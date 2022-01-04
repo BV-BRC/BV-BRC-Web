@@ -239,7 +239,7 @@ define([
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/StrainList/?eq(strain," + '"' + doc.strain + '"' + ")'>" + doc.strain + '</a></div>');
+        out.push(`<div class='resultHead'><a class='navigationLink' href='/view/StrainList/?eq(strain,"${doc.strain}")'>${doc.strain}</a></div>`);
         out.push("<div class='resultInfo'>" + doc.species + '</div>');
         out.push('</div>');
       });

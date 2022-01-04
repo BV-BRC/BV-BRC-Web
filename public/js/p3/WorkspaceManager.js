@@ -659,7 +659,7 @@ define([
     },
 
     downloadArchiveFile: function (path_list, archive_name, archive_type, recursive) {
-      var archive_params = [path_list, recursive, archive_name, archive_type];
+      // var archive_params = [path_list, recursive, archive_name, archive_type];
       return Deferred.when(this.api('Workspace.get_archive_url', [{
         objects: path_list,
         recursive: recursive,

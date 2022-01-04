@@ -7,7 +7,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
   var self = this;
   var TIME_OUT = 5000; // in ms
-  var job_callbacks = {}; // key job id to callback function
+  // var job_callbacks = {}; // key job id to callback function
   // state model of filters applied to jobs
   self.filters = {
     app: 'all',
@@ -63,7 +63,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       var inProgress = status['in-progress'] || 0;
       var completed = status.completed || 0;
       var failed = status.failed || 0;
-      _self = this;
+      var _self = this;
 
       // check for any changes in status
       var change = false;
@@ -82,7 +82,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
               var currentJob = self.targetJob;
               self.targetJob = null;
               Topic.publish('/Notification', {
-                message: '<span class="default">' + `Job ${_self.targetJobLabel} failed..</span>`,
+                message: `<span class="default">Job ${_self.targetJobLabel} failed..</span>`,
                 type: 'default',
                 duration: 50000
               });
@@ -92,14 +92,14 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
             }
             else if (status == 'in-progress') {
               Topic.publish('/Notification', {
-                message: '<span class="default">' + `Job ${_self.targetJobLabel} running...</span>`,
+                message: `<span class="default">Job ${_self.targetJobLabel} running...</span>`,
                 type: 'default',
                 duration: 50000
               });
             }
             else if (status == 'queued') {
               Topic.publish('/Notification', {
-                message: '<span class="default">' + `Job ${_self.targetJobLabel} allocating resources...</span>`,
+                message: `<span class="default">Job ${_self.targetJobLabel} allocating resources...</span>`,
                 type: 'default',
                 duration: 50000
               });
@@ -107,7 +107,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
             else {
               self.targetJob = null;
               Topic.publish('/Notification', {
-                message: '<span class="default">' + `Job ${_self.targetJobLabel} finished.</span>`,
+                message: `<span class="default">Job ${_self.targetJobLabel} finished.</span>`,
                 type: 'default',
                 duration: 50000
               });

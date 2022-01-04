@@ -30,7 +30,7 @@ define([
     _setSelectionAttr: function (sel) {
 
       this.selection = sel;
-      var job_result = false;
+      // var job_result = false;
       var valid;
       var selectionTypes = {};
       sel.filter(function (x) {
@@ -42,7 +42,7 @@ define([
           return;
         }
         if (type == 'job_result') {
-          job_result = true;
+          // job_result = true;
           if (s.autoMeta && s.autoMeta.app) {
             if (typeof s.autoMeta.app == 'string') {
               type = s.autoMeta.app;

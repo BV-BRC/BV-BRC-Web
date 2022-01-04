@@ -221,7 +221,7 @@ define([
       var options = ['BLAST', 'Genome Alignment', 'Phylogenetic Tree'];
       options.forEach(function (key) {
         var curr_tr = domConstruct.create('tr', {}, table);
-        var curr_div = domConstruct.create('div', { 'class': 'wsActionTooltip', innerHTML: key, service: key }, curr_tr);
+        domConstruct.create('div', { 'class': 'wsActionTooltip', innerHTML: key, service: key }, curr_tr);
       }, this);
       this.selected_genome_group = null;
       on(viewGGServices.domNode, 'click', lang.hitch(this, function (evt) {
@@ -428,7 +428,7 @@ define([
             if (!archive_name_input.value) {
               return;
             }
-            var invalid_chars = archive_name_input.value.match(/[~`!#$%\^&*+=\\[\]\\';,/{}|\\":<>\?]/g);
+            var invalid_chars = archive_name_input.value.match(/[~`!#$%^&*+=\\[\]\\';,/{}|\\":<>?]/g);
             // returns null if no matches in regular expression
             if (invalid_chars) {
               if (invalid_chars.length > 0) {

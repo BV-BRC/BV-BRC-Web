@@ -616,23 +616,23 @@ define([
       // reference_genome_index is base index 1
       // TODO: make sure that the default for reference_genome_index = 1 is just a default, do not set if others are set
       console.log(job_data);
-      var set_ref = false;
+      // var set_ref = false;
       if (job_data['user_genomes']) {
         if (job_data['user_genomes'].length > 0) {
           this.ref_user_genomes_fasta.set('value', job_data['user_genomes'][0]);
-          set_ref = true;
+          // set_ref = true;
         }
       }
       else if (job_data['user_feature_groups']) {
         if (job_data['user_feature_groups'].length > 0) { // feature group
           this.ref_user_genomes_featuregroup.set('value', job_data['user_feature_groups'][0]);
-          set_ref = true;
+          // set_ref = true;
         }
       }
       else {
         var ref_gid = job_data['genome_ids'][parseInt(job_data['reference_genome_index']) - 1];
         this.ref_genome_id.set('value', ref_gid);
-        set_ref = true;
+        // set_ref = true;
       }
     },
 
