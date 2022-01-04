@@ -367,6 +367,7 @@ define([
     //Message to display when selecting a workspace file
     displayNote: function() {
         this.workspace_input_message.innerHTML = 'Note: only the first fasta record will be used';
+        this.validate();
     },
 
     checkBaseParameters: function(values,json_payload) {
