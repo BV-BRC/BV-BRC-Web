@@ -14,9 +14,9 @@ define([
   return declare([TooltipDialog], {
     selection: null,
     label: '',
-    //selectionList: null,
-    //genome_id: null,
-    //genome_name: null,
+    // selectionList: null,
+    // genome_id: null,
+    // genome_name: null,
     genome_info: null,
 
     /* featureDetailLabels: [
@@ -55,7 +55,7 @@ define([
       on(this.domNode, Mouse.enter, lang.hitch(this, 'onMouseEnter'));
       on(this.domNode, Mouse.leave, lang.hitch(this, 'onMouseLeave'));
       // var _self = this;
-/*       on(this.domNode, '.wsActionTooltip:click', function (evt) {
+      /*       on(this.domNode, '.wsActionTooltip:click', function (evt) {
         // console.log("evt.target: ", evt.target, evt.target.attributes);
         // var rel = evt.target.attributes.rel.value;
 
@@ -87,35 +87,35 @@ define([
       this.set('label', 'Services');
       this.set('selection', this.selection);
 
-      //Check context and list appropriate services
+      // Check context and list appropriate services
       if (!this.context) {
-        console.log("no context");
+        console.log('no context');
       } else {
         switch (this.context) {
-          case "feature":
+          case 'feature':
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'blast', innerHTML: 'Blast' }, tData);
-            domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'msa', innerHTML: 'MSA'}, tData);
+            domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'msa', innerHTML: 'MSA' }, tData);
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'primer_design', innerHTML: 'Primer Design' }, tData);
-            //TODO: Maybe ID Mapper
+            // TODO: Maybe ID Mapper
             return;
-          case "genome":
+          case 'genome':
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'blast', innerHTML: 'Blast' }, tData);
-            domConstruct.create('div',{ 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder'}, tData);
+            domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
             return;
           default:
-            console.log("invalid context: displaying placeholder");
+            console.log('invalid context: displaying placeholder');
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_alignment', innerHTML: 'Genome Alignment' }, tData);
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'phylogentic_tree', innerHTML: 'Phylogenetic Tree' }, tData);
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'comparative_pathway', innerHTML: 'Comparative Pathway' }, tData);
-            return;
+
         }
       }
     },
 
     actOnSelection: function (type) {
-      console.log ("type=",type);
-      console.log ("context=",this.context);
+      console.log('type=', type);
+      console.log('context=', this.context);
       if (type == 'genome_alignment') {
 
         var genomeAlignment = new GenomeAlignment();
@@ -123,96 +123,96 @@ define([
 
 
         // console.log("Selection: ", _self.selection);
-        var d = new Dialog({ 
+        var d = new Dialog({
           title: 'Genome Alignment',
-          content: genomeAlignment ,
-          onHide: function() {
+          content: genomeAlignment,
+          onHide: function () {
             genomeAlignment.destroy();
             d.destroy();
           }
         });
-        //var ad = new AdvancedDownload({ selection: _self.selection, containerType: _self.containerType });
-        
-        //domConstruct.place("junk", d.containerNode);
+        // var ad = new AdvancedDownload({ selection: _self.selection, containerType: _self.containerType });
+
+        // domConstruct.place("junk", d.containerNode);
         d.show();
-        return;
+
       }
       else if (type == 'primer_design') {
-          var params = {
-            "input_type":"sequence_text",
-            "SEQUENCE_ID":this.data.patric_id,
-            "sequence_input":this.data.sequence
-          };
-          this._setJSONStorage(params);
-          var primerDesign = new PrimerDesign();
-          var d = new Dialog({
-            title: "Primer Design",
-            content: primerDesign,
-            onHide: function() {
-              primerDesign.destroy();
-              d.destroy();
-            }
-          });
-          d.show();
-          return;
+        var params = {
+          'input_type': 'sequence_text',
+          'SEQUENCE_ID': this.data.patric_id,
+          'sequence_input': this.data.sequence
+        };
+        this._setJSONStorage(params);
+        var primerDesign = new PrimerDesign();
+        var d = new Dialog({
+          title: 'Primer Design',
+          content: primerDesign,
+          onHide: function () {
+            primerDesign.destroy();
+            d.destroy();
+          }
+        });
+        d.show();
+
       }
       else if (type == 'blast') {
-          //TODO: finish after stuff has been deployed
-          if (this.context === "feature") {
-            var params = {
-              "input_fasta_data": ">" + this.data.patric_id + "\n" + this.data.sequence,
-              "blast_program":"blastn"
-            };
-            this._setJSONStorage(params);
+        // TODO: finish after stuff has been deployed
+        if (this.context === 'feature') {
+          var params = {
+            'input_fasta_data': '>' + this.data.patric_id + '\n' + this.data.sequence,
+            'blast_program': 'blastn'
+          };
+          this._setJSONStorage(params);
+        }
+        // TODO: finish genomeGroup loading and such
+        else if (this.context === 'genome') {
+          var params = this.params.data.blast;
+          // var params["input_fasta_data"] = ">InputSequence\nAACCTTGG";
+          this._setJSONStorage(params);
+        }
+        var blastContent = new Homology();
+        console.log('blastContent=', blastContent);
+        var d = new Dialog({
+          title: 'Blast',
+          content: blastContent,
+          onHide: function () {
+            blastContent.destroy();
+            d.destroy();
           }
-          //TODO: finish genomeGroup loading and such
-          else if (this.context === "genome") {
-            var params = this.params.data.blast;
-            //var params["input_fasta_data"] = ">InputSequence\nAACCTTGG";
-            this._setJSONStorage(params);
-          }
-          var blastContent = new Homology();
-          console.log("blastContent=",blastContent);
-          var d = new Dialog({
-            title: "Blast",
-            content: blastContent,
-            onHide: function() {
-              blastContent.destroy();
-              d.destroy();
-            }
-          });
-          d.show();
-          return;
+        });
+        d.show();
+
       }
       else if (type == 'msa') {
-        if (this.context === "feature") {
+        if (this.context === 'feature') {
           var params = {
-            "fasta_keyboard_input": ">" + this.data.patric_id + "\n" + this.data.sequence,
-            "input_status":"unaligned",
-            "input_type":"input_sequence",
-            "alphabet":"dna"
+            'fasta_keyboard_input': '>' + this.data.patric_id + '\n' + this.data.sequence,
+            'input_status': 'unaligned',
+            'input_type': 'input_sequence',
+            'alphabet': 'dna'
           };
-        } 
-        else{
+        }
+        else {
           params = {};
         }
         this._setJSONStorage(params);
         var msaContent = new MSA();
         var d = new Dialog({
-          title: "MSA",
+          title: 'MSA',
           content: msaContent,
-          onHide: function() {
+          onHide: function () {
             msaContent.destroy();
             d.destroy();
           }
         });
         d.show();
-        return;
+
       }
-      else if (type == "genome_distance") {
-        if (this.context === "genome") {
+      else if (type == 'genome_distance') {
+        if (this.context === 'genome') {
           var params = {
-            "genome_id": this.data.genome_distance.genome_id
+            'genome_id': this.data.genome_distance.genome_id
           };
         }
         else {
@@ -221,26 +221,26 @@ define([
         this._setJSONStorage(params);
         var genomeDistanceContent = new GenomeDistance();
         var d = new Dialog({
-          title: "Similar Genome Finder",
+          title: 'Similar Genome Finder',
           content: genomeDistanceContent,
-          onHide: function() {
+          onHide: function () {
             genomeDistanceContent.destroy();
             d.destroy();
           }
         });
         d.show();
-        return;
+
       }
-      
+
     },
 
-    _setJSONStorage: function(data) {
+    _setJSONStorage: function (data) {
       var job_params = JSON.stringify(data);
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        localStorage.removeItem("bvbrc_rerun_job");
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        localStorage.removeItem('bvbrc_rerun_job');
       }
-      localStorage.setItem("bvbrc_rerun_job",job_params);
+      localStorage.setItem('bvbrc_rerun_job', job_params);
     },
 
     _setLabelAttr: function (val) {

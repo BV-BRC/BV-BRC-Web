@@ -128,7 +128,7 @@ define(
           return;
         }
         var _self = this;
-        
+
         aspect.before(_self, 'renderArray', function (results) {
           Deferred.when(results.total, function (x) {
             _self.set('totalRows', x);

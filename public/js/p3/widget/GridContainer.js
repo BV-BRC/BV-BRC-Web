@@ -117,7 +117,7 @@ define([
     enableAnchorButton: false,
     showAutoFilterMessage: true,
     maxDownloadSize: 2500000,
-    containerType: "",
+    containerType: '',
 
     _setColumnsAttr: function (columns) {
       if (this.grid) {
@@ -133,13 +133,13 @@ define([
       return this.columns || {};
     },
 
-    _setContainerTypeAttr: function(containerType) {
+    _setContainerTypeAttr: function (containerType) {
       this.containerType = containerType;
-      if (this.selectionActionBar){
-        this.selectionActionBar.set("currentContainerWidget", this)
+      if (this.selectionActionBar) {
+        this.selectionActionBar.set('currentContainerWidget', this)
       }
-      if (this.itemDetailPanel){
-        this.itemDetailPanel.set("containerWidget",this)
+      if (this.itemDetailPanel) {
+        this.itemDetailPanel.set('containerWidget', this)
       }
     },
 

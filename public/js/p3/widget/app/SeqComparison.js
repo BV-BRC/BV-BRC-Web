@@ -71,13 +71,13 @@ define([
       }));
       this._started = true;
       this.form_flag = false;
-      try{
+      try {
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
 
@@ -584,12 +584,12 @@ define([
         seqcomp_values.min_ident = values.min_ident / 100;
       }
 
-      seqcomp_values = this.checkBaseParameters(values,seqcomp_values);
+      seqcomp_values = this.checkBaseParameters(values, seqcomp_values);
 
       return seqcomp_values;
     },
 
-    checkBaseParameters: function(values,seqcomp_values) {
+    checkBaseParameters: function (values, seqcomp_values) {
 
       seqcomp_values.output_path = values.output_path;
       seqcomp_values.output_file = values.output_file;
@@ -599,48 +599,48 @@ define([
       return seqcomp_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path"};
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path' };
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         this.setReferenceGenomeFormFill(job_data);
         this.addGenomesFormFill(job_data);
-        localStorage.removeItem("bvbrc_rerun_job");
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = false;
       }
     },
 
-    setReferenceGenomeFormFill: function(job_data) {
-      //reference_genome_index is base index 1
-      //TODO: make sure that the default for reference_genome_index = 1 is just a default, do not set if others are set
+    setReferenceGenomeFormFill: function (job_data) {
+      // reference_genome_index is base index 1
+      // TODO: make sure that the default for reference_genome_index = 1 is just a default, do not set if others are set
       console.log(job_data);
-      var set_ref = false;
-      if (job_data["user_genomes"]) {
-        if (job_data["user_genomes"].length > 0) {
-          this.ref_user_genomes_fasta.set("value",job_data["user_genomes"][0]);
-          set_ref = true;
+      // var set_ref = false;
+      if (job_data['user_genomes']) {
+        if (job_data['user_genomes'].length > 0) {
+          this.ref_user_genomes_fasta.set('value', job_data['user_genomes'][0]);
+          // set_ref = true;
         }
       }
-      else if (job_data["user_feature_groups"]) {
-        if (job_data["user_feature_groups"].length > 0) { //feature group
-          this.ref_user_genomes_featuregroup.set("value",job_data["user_feature_groups"][0]);
-          set_ref = true;
+      else if (job_data['user_feature_groups']) {
+        if (job_data['user_feature_groups'].length > 0) { // feature group
+          this.ref_user_genomes_featuregroup.set('value', job_data['user_feature_groups'][0]);
+          // set_ref = true;
         }
       }
       else {
-        var ref_gid = job_data["genome_ids"][parseInt(job_data["reference_genome_index"]) - 1];
-        this.ref_genome_id.set("value",ref_gid);
-        set_ref = true;
+        var ref_gid = job_data['genome_ids'][parseInt(job_data['reference_genome_index']) - 1];
+        this.ref_genome_id.set('value', ref_gid);
+        // set_ref = true;
       }
     },
 
-    addGenomesFormFill: function(job_data) {
-      var genome_ids = job_data["genome_ids"];
-      genome_ids.forEach(function(gid) {
+    addGenomesFormFill: function (job_data) {
+      var genome_ids = job_data['genome_ids'];
+      genome_ids.forEach(function (gid) {
         var name_promise = this.scientific_nameWidget.store.get(gid);
-        name_promise.then(lang.hitch(this,function (tax_obj) {
+        name_promise.then(lang.hitch(this, function (tax_obj) {
           this.scientific_nameWidget.set('item', tax_obj);
           this.scientific_nameWidget.validate();
           var genome_name = this.scientific_nameWidget.get('displayedValue');
@@ -668,7 +668,7 @@ define([
           }));
           this.increaseGenome('genome', [gid]);
         }));
-      },this);
+      }, this);
     },
 
     genDisplayName: function (name) {

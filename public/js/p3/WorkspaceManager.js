@@ -16,7 +16,7 @@ define([
     apiUrl: '',
     userId: '',
     forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'modelfolder'],
-    //forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
+    // forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
@@ -658,14 +658,14 @@ define([
       });
     },
 
-    downloadArchiveFile: function (path_list,archive_name,archive_type,recursive) {
-      var archive_params = [path_list,recursive,archive_name,archive_type];
-      return Deferred.when(this.api('Workspace.get_archive_url',[{
-        objects:path_list,
+    downloadArchiveFile: function (path_list, archive_name, archive_type, recursive) {
+      // var archive_params = [path_list, recursive, archive_name, archive_type];
+      return Deferred.when(this.api('Workspace.get_archive_url', [{
+        objects: path_list,
         recursive: recursive,
         archive_name: archive_name,
         archive_type: archive_type
-      }]),function(url) {
+      }]), function (url) {
         console.log(url[0]);
         window.location.assign(url[0]);
       });

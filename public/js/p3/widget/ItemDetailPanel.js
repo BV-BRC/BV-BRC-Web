@@ -28,15 +28,15 @@ define([
       // by the watch in startup, but that doesn't seem to work
       // here, I think because the contiainerWidget itself isnt' changing
       // so the watch doesn't get triggered.
-      if (this.containerWidget){
-          if (this.containerWidget.containerType !== val.containerType){
-            domClass.remove(this.domNode, this.containerWidget.containerType);
-          }
-          if (val.containerType){
-            domClass.add(this.domNode, val.containerType);
-          }
-      }else{
-        if (val.containerType){
+      if (this.containerWidget) {
+        if (this.containerWidget.containerType !== val.containerType) {
+          domClass.remove(this.domNode, this.containerWidget.containerType);
+        }
+        if (val.containerType) {
+          domClass.add(this.domNode, val.containerType);
+        }
+      } else {
+        if (val.containerType) {
           domClass.add(this.domNode, val.containerType);
         }
       }
