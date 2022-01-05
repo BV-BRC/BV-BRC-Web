@@ -68,8 +68,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -392,8 +392,8 @@ define([
       }
     },
 
-    checkBaseParameters: function(values) {
-      //reads and sr
+    checkBaseParameters: function (values) {
+      // reads and sr
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var singleList = this.libraryStore.query({ _type: 'single' });
       var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
@@ -430,29 +430,29 @@ define([
       if (this.sra_libs.length) {
         values.srr_ids = this.sra_libs;
       }
-      //output_folder
+      // output_folder
       this.output_folder = values.output_path;
-      //output_name
+      // output_name
       this.output_name = values.output_file;
 
       return values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","strategy":"gene_set_name"};
-        //widget_map
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'gene_set_name' };
+        // widget_map
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         job_data = this.formatRerunJson(job_data);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
-        localStorage.removeItem("bvbrc_rerun_job");
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }

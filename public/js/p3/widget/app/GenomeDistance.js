@@ -71,7 +71,7 @@ define([
             break;
         }
       }));
-      if (window.localStorage.hasOwnProperty("bvbrc_rerun_job")) {
+      if (window.localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.contextFormFill();
       }
     },
@@ -223,10 +223,10 @@ define([
       this.validate();
     },
 
-    contextFormFill: function() {
-      var params = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-      this.genome_id.set("value",params["genome_id"]);
-      localStorage.removeItem("bvbrc_rerun_job");
+    contextFormFill: function () {
+      var params = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+      this.genome_id.set('value', params['genome_id']);
+      localStorage.removeItem('bvbrc_rerun_job');
     }
   });
 });

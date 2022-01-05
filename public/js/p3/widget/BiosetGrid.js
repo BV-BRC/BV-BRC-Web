@@ -1,14 +1,12 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './PageGrid', './formatter', '../store/BiosetJsonRest', './GridSelector'
+  'dojo/_base/declare', 'dojo/on',
+  './PageGrid', '../store/BiosetJsonRest', './GridSelector'
 ], function (
-  declare, BorderContainer, on,
-  domClass, ContentPane, domConstruct,
-  Grid, formatter, Store, selector
+  declare, on,
+  Grid, Store, selector
 ) {
 
-  var store = new Store({});
+  const store = new Store({});
 
   return declare([Grid], {
     region: 'center',
@@ -39,22 +37,10 @@ define([
       result_count: { label: 'Result Count', field: 'entity_count', hidden: false },
     },
     startup: function () {
-      var _self = this;
-      this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
-        var row = _self.row(evt);
-        // console.log("dblclick row:", row);
-        on.emit(_self.domNode, 'ItemDblClick', {
-          item_path: row.data.path,
-          item: row.data,
-          bubbles: true,
-          cancelable: true
-        });
-        // console.log('after emit');
-      });
+      const _self = this;
 
       this.on('dgrid-select', function (evt) {
-        // console.log('dgrid-select: ', evt);
-        var newEvt = {
+        const newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
           grid: _self,
@@ -64,8 +50,7 @@ define([
         on.emit(_self.domNode, 'select', newEvt);
       });
       this.on('dgrid-deselect', function (evt) {
-        // console.log("dgrid-select");
-        var newEvt = {
+        const newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
           grid: _self,

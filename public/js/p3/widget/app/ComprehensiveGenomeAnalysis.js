@@ -73,8 +73,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -88,7 +88,7 @@ define([
           delete values[key];
         }
       });
-      //moved common fields to standard function
+      // moved common fields to standard function
       values = this.checkBaseParameters(values);
 
       return values;
@@ -468,7 +468,7 @@ define([
       }
     },
 
-    checkBaseParameters: function(values) {
+    checkBaseParameters: function (values) {
       if (this.startWithRead.checked) { // start from read file
         var pairedList = this.libraryStore.query({ _type: 'paired' });
         var singleList = this.libraryStore.query({ _type: 'single' });
@@ -528,39 +528,43 @@ define([
       return values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","strategy":"recipe","target_genome_id":"taxonomy_id","contigs":"contigs"};
-        //var widget_map = {"scientific_name":"scientific_nameWidget","tax_id":"tax_idWidget"};
-        var widget_map = {"taxonomy_id":"tax_idWidget","contigs":"contigsFile"};
-        param_dict["widget_map"] = widget_map;
-        var service_spec = {"trim":"trim","min_contig_len":"min_contig_len","racon_iter":"racon_iter","pilon_iter":"pilon_iter","min_contig_cov":"min_contig_cov"}; //job : attach_point
-        param_dict["service_specific"] = service_spec;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = {
+          'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'taxonomy_id', 'contigs': 'contigs'
+        };
+        // var widget_map = {"scientific_name":"scientific_nameWidget","tax_id":"tax_idWidget"};
+        var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
+        param_dict['widget_map'] = widget_map;
+        var service_spec = {
+          'trim': 'trim', 'min_contig_len': 'min_contig_len', 'racon_iter': 'racon_iter', 'pilon_iter': 'pilon_iter', 'min_contig_cov': 'min_contig_cov'
+        }; // job : attach_point
+        param_dict['service_specific'] = service_spec;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         this.selectStartWith(job_data);
         job_data = this.formatRerunJson(job_data);
         if (this.startWithRead.checked) {
-          AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
         }
-        localStorage.removeItem("bvbrc_rerun_job");
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    //Selects the start with button: reads or contigs
-    //Checking it helps the rest of the form filling run smoothly
-    selectStartWith: function(job_data) {
-      if (job_data.input_type == "contigs") {
-        this.startWithContigs.set("checked",true);
+    // Selects the start with button: reads or contigs
+    // Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function (job_data) {
+      if (job_data.input_type == 'contigs') {
+        this.startWithContigs.set('checked', true);
       }
       else {
-        this.startWithRead.set("checked",true);
+        this.startWithRead.set('checked', true);
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }

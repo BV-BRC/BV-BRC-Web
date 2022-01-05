@@ -121,8 +121,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -258,7 +258,7 @@ define([
       var assembly_values = {};
       var values = this.inherited(arguments);
 
-      assembly_values = this.checkBaseParameters(values,assembly_values);
+      assembly_values = this.checkBaseParameters(values, assembly_values);
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
@@ -773,8 +773,8 @@ define([
         if (curRecipe == 'RNA-Rocket') {
           this.recipe.set('value', 'RNA-Rocket');
         }
-        else if (curRecipe == "HTSeq-DESeq") {
-          this.recipe.set('value', "HTSeq-DESeq");
+        else if (curRecipe == 'HTSeq-DESeq') {
+          this.recipe.set('value', 'HTSeq-DESeq');
         }
       }
     },
@@ -833,7 +833,7 @@ define([
       }
     },
 
-    checkBaseParameters: function(values,assembly_values) {
+    checkBaseParameters: function (values, assembly_values) {
 
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
@@ -861,7 +861,7 @@ define([
         });
         assembly_values.contrasts = contrastPairs;
       }
-      //reads or sra TODO bam
+      // reads or sra TODO bam
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
@@ -905,51 +905,51 @@ define([
         assembly_values.srr_libs = this.sra_libs;
       }
 
-      //strategy (recipe)
+      // strategy (recipe)
       assembly_values.recipe = values.recipe;
-      if (values.recipe == "HTSeq-DESeq") {
-        assembly_values.feature_count = "htseq";
-        assembly_values.recipe = "RNA-Rocket";
-      } else if (values.recipe == "RNA-Rocket") {
-        assembly_values.feature_count = "cufflinks";
-      } else { //host
-        assembly_values.feature_count = "htseq";
+      if (values.recipe == 'HTSeq-DESeq') {
+        assembly_values.feature_count = 'htseq';
+        assembly_values.recipe = 'RNA-Rocket';
+      } else if (values.recipe == 'RNA-Rocket') {
+        assembly_values.feature_count = 'cufflinks';
+      } else { // host
+        assembly_values.feature_count = 'htseq';
       }
 
-      //target_genome
+      // target_genome
       assembly_values.reference_genome_id = values.genome_name;
-      //output_folder
+      // output_folder
       assembly_values.output_path = values.output_path;
       this.output_folder = values.output_path;
-      //output_file
+      // output_file
       assembly_values.output_file = values.output_file;
       this.output_name = values.output_file;
 
       return assembly_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","strategy":"recipe","target_genome_id":"reference_genome_id"};
-        var widget_map = {"reference_genome_id":"genome_nameWidget"};
-        param_dict["widget_map"] = widget_map;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
+        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+        param_dict['widget_map'] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         job_data = this.formatRerunJson(job_data);
         this.checkConditionsFormFill(job_data);
         this.checkContrastsFormFill(job_data);
-        //TODO: check conditions/library pairing
+        // TODO: check conditions/library pairing
         job_data = this.addConditionInfoFormFill(job_data);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
         this.form_flag = true;
-        localStorage.removeItem("bvbrc_rerun_job");
+        localStorage.removeItem('bvbrc_rerun_job');
       }
     },
 
-    //Sometimes RNASeq jobs put single ends reads into paired_end_libs
-    //This function puts all reads from paired_end_libs with 1 read into single_end_libs
-    formatRerunJson: function(job_data) {
+    // Sometimes RNASeq jobs put single ends reads into paired_end_libs
+    // This function puts all reads from paired_end_libs with 1 read into single_end_libs
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }
@@ -958,52 +958,52 @@ define([
       }
       for (var x = job_data.paired_end_libs.length - 1; x >= 0; x--) {
         var paired_record = job_data.paired_end_libs[x];
-        if (paired_record.hasOwnProperty("read1") && !paired_record.hasOwnProperty("read2")) {
-          if (!job_data.hasOwnProperty("single_end_libs")) {
+        if (paired_record.hasOwnProperty('read1') && !paired_record.hasOwnProperty('read2')) {
+          if (!job_data.hasOwnProperty('single_end_libs')) {
             job_data.single_end_libs = [];
           }
           var single_record = paired_record;
-          single_record["read"] = paired_record["read1"];
-          delete single_record["read1"];
+          single_record['read'] = paired_record['read1'];
+          delete single_record['read1'];
           job_data.single_end_libs.push(single_record);
-          job_data.paired_end_libs.splice(x,1);
+          job_data.paired_end_libs.splice(x, 1);
         }
       }
-      if (!job_data.hasOwnProperty("srr_libs")) {
+      if (!job_data.hasOwnProperty('srr_libs')) {
         job_data.srr_libs = [];
       }
-      if (!job_data.hasOwnProperty("sra_libs")) {
-        job_data["sra_libs"] = job_data.srr_libs;
+      if (!job_data.hasOwnProperty('sra_libs')) {
+        job_data['sra_libs'] = job_data.srr_libs;
       }
       return job_data;
     },
 
-    ///add icon information
-    addConditionInfoFormFill: function(job_data) {
+    // /add icon information
+    addConditionInfoFormFill: function (job_data) {
       var conditions = job_data.experimental_conditions;
-      //paired libs
-      for (var x =0; x< job_data.paired_end_libs.length; x++) {
+      // paired libs
+      for (var x = 0; x < job_data.paired_end_libs.length; x++) {
         var curr_reads = job_data.paired_end_libs[x];
-        if (curr_reads.hasOwnProperty("condition")) {
-          var curr_cond = conditions[parseInt(curr_reads["condition"]) - 1];
+        if (curr_reads.hasOwnProperty('condition')) {
+          var curr_cond = conditions[parseInt(curr_reads['condition']) - 1];
           job_data.paired_end_libs[x].icon = this.getConditionIcon(curr_cond);
           job_data.paired_end_libs[x].condition = curr_cond;
         }
       }
-      //single libs
+      // single libs
       for (var x = 0; x < job_data.single_end_libs.length; x++) {
         var curr_read = job_data.single_end_libs[x];
-        if (curr_read.hasOwnProperty("condition")) {
-          var curr_cond = conditions[parseInt(curr_read["condition"]) - 1];
+        if (curr_read.hasOwnProperty('condition')) {
+          var curr_cond = conditions[parseInt(curr_read['condition']) - 1];
           job_data.single_end_libs[x].icon = this.getConditionIcon(curr_cond);
           job_data.single_end_libs[x].condition = curr_cond;
         }
       }
-      //sra library
+      // sra library
       for (var x = 0; x < job_data.srr_libs.length; x++) {
         var curr_srr = job_data.srr_libs[x];
-        if (curr_srr.hasOwnProperty("condition")) {
-          var curr_cond = conditions[parseInt(curr_srr["condition"]) - 1];
+        if (curr_srr.hasOwnProperty('condition')) {
+          var curr_cond = conditions[parseInt(curr_srr['condition']) - 1];
           job_data.srr_libs[x].icon = this.getConditionIcon(curr_cond);
           job_data.srr_libs[x].condition = curr_cond;
         }
@@ -1011,15 +1011,15 @@ define([
       return job_data;
     },
 
-    checkConditionsFormFill: function(job_data) {
-      if (job_data["experimental_conditions"].length > 0) {
+    checkConditionsFormFill: function (job_data) {
+      if (job_data['experimental_conditions'].length > 0) {
         this.exp_design.checked = true;
         this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
         this.onDesignToggle();
         var condition_counts = this.getConditionCounts(job_data);
-        //for each
-        job_data["experimental_conditions"].forEach(function(cond) {
-          var lrec = { count: condition_counts[cond], type: 'condition' , condition: cond};
+        // for each
+        job_data['experimental_conditions'].forEach(function (cond) {
+          var lrec = { count: condition_counts[cond], type: 'condition', condition: cond };
           lrec.icon = this.getConditionIcon();
           lrec.id = cond;
           lrec._id = cond;
@@ -1044,7 +1044,7 @@ define([
             console.log('Delete Row');
             domConstruct.destroy(tr);
             this.destroyLib(lrec, lrec.condition, 'condition');
-            this.destroyContrastRow(query_id = lrec["condition"]);
+            this.destroyContrastRow(query_id = lrec['condition']);
             this.updateConditionStore(lrec, true);
             this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
             if (this.addedCond.counter < this.maxConditions) {
@@ -1059,21 +1059,21 @@ define([
             handle.remove();
           }));
           this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
-        },this);
+        }, this);
       }
     },
 
-    checkContrastsFormFill: function(job_data) {
-      var disable = !this.exp_design.checked;
-      var contrastSize = this.contrastStore.data.length;
-      var conditions = job_data["experimental_conditions"];
+    checkContrastsFormFill: function (job_data) {
+      // var disable = !this.exp_design.checked;
+      // var contrastSize = this.contrastStore.data.length;
+      var conditions = job_data['experimental_conditions'];
       var offset = 1;
-      job_data["contrasts"].forEach(function(contrast) {
+      job_data['contrasts'].forEach(function (contrast) {
         var curr_contrast = contrast;
         var condition1 = conditions[parseInt(curr_contrast[0]) - offset];
         var condition2 = conditions[parseInt(curr_contrast[1]) - offset];
-        //var condition1 = ''+curr_contrast[0];
-        //var condition2 = ''+curr_contrast[1];
+        // var condition1 = ''+curr_contrast[0];
+        // var condition2 = ''+curr_contrast[1];
         var lrec = { type: 'contrast' };
         lrec.condition1 = condition1;
         lrec.condition2 = condition2;
@@ -1116,20 +1116,20 @@ define([
           this.destroyContrastRow(lrec.contrast, 'contrast');
         }));
         this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
-      },this);
+      }, this);
     },
 
-    getConditionCounts: function(job_data) {
+    getConditionCounts: function (job_data) {
       var counts = {};
-      var conditions = job_data["experimental_conditions"];
-      conditions.forEach(function(cond) {
+      var conditions = job_data['experimental_conditions'];
+      conditions.forEach(function (cond) {
         counts[cond] = 0;
       });
       var offset = 1;
       var combinedList = job_data.paired_end_libs.concat(job_data.single_end_libs).concat(job_data.sra_libs);
       for (var x = 0; x < combinedList.length; x++) {
         var curr_lib = combinedList[x];
-        counts[conditions[parseInt(curr_lib["condition"]) - offset]]++;
+        counts[conditions[parseInt(curr_lib['condition']) - offset]]++;
       }
       return counts;
     }

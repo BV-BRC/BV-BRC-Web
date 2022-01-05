@@ -120,8 +120,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -233,7 +233,7 @@ define([
       //     assembly_values[k]=values[k];
       //   }
       // }
-      assembly_values = this.checkBaseParameters(values,assembly_values);
+      assembly_values = this.checkBaseParameters(values, assembly_values);
       return assembly_values;
 
     },
@@ -672,8 +672,8 @@ define([
       }
     },
 
-    checkBaseParameters: function(values,assembly_values) {
-      //reads,sra
+    checkBaseParameters: function (values, assembly_values) {
+      // reads,sra
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
@@ -711,38 +711,38 @@ define([
       if (this.sra_libs.length) {
         assembly_values.srr_libs = this.sra_libs;
       }
-      //strategy = pipeline
+      // strategy = pipeline
       this.strategy = assembly_values.recipe;
-      //output_folder
+      // output_folder
       this.output_folder = values.output_path;
       assembly_values.output_path = values.output_path;
-      //output_name
+      // output_name
       this.output_name = values.output_file;
       assembly_values.output_file = values.output_file;
-      //target_genome
+      // target_genome
       assembly_values.reference_genome_id = values.genome_name;
       this.target_genome_id = assembly_values.reference_genome_id;
 
       return assembly_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","target_genome_id":"reference_genome_id"};
-        var widget_map = {"reference_genome_id":"genome_nameWidget"};
-        param_dict["widget_map"] = widget_map;
-        var job_data = this.formatRerunJson(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'target_genome_id': 'reference_genome_id' };
+        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+        param_dict['widget_map'] = widget_map;
+        var job_data = this.formatRerunJson(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
         this.checkConditionsFormFill(job_data);
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
-        //TODO: service specific items
-        localStorage.removeItem("bvbrc_rerun_job");
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        // TODO: service specific items
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }
@@ -752,16 +752,16 @@ define([
       if (!job_data.srr_libs) {
         job_data.srr_libs = [];
       }
-      if (!job_data.hasOwnProperty("sra_libs")) {
+      if (!job_data.hasOwnProperty('sra_libs')) {
         job_data.sra_libs = job_data.srr_libs;
       }
       return job_data;
     },
 
-    checkConditionsFormFill: function(job_data) {
+    checkConditionsFormFill: function (job_data) {
       for (var x = 0; x < job_data.recipe.length; x++) {
         var curr_recipe = job_data.recipe[x];
-        var lrec = { count: 0, type: 'action_select' , condition: curr_recipe}; // initialized to the number of libraries assigned
+        var lrec = { count: 0, type: 'action_select', condition: curr_recipe }; // initialized to the number of libraries assigned
         console.log('Create New Row', domConstruct);
         if (this.addedCond.counter < this.maxConditions) {
           this.updateActiveStore(lrec, false);
@@ -781,7 +781,7 @@ define([
         }, tr);
 
         if (lrec.condition == 'Align') {
-          this.numAlign +=1;
+          this.numAlign += 1;
           this.toggleGenome();
         }
 

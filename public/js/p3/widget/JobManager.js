@@ -182,22 +182,41 @@ define([
         },
         function (selection) {
           var job_params = JSON.stringify(selection[0].parameters);
-          //TODO: make sure service_id variable is present for every service
+          // TODO: make sure service_id variable is present for every service
           var service_id = selection[0].app;
           var localStorage = window.localStorage;
-          if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-            localStorage.removeItem("bvbrc_rerun_job");
+          if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+            localStorage.removeItem('bvbrc_rerun_job');
           }
-          localStorage.setItem("bvbrc_rerun_job",job_params);
-          var service_app_map = {"ComprehensiveGenomeAnalysis":"ComprehensiveGenomeAnalysis","ComprehensiveSARS2Analysis":"ComprehensiveSARS2Analysis","DifferentialExpression":"Expression",
-          "FastqUtils":"FastqUtil","GeneTree":"GeneTree","GenomeAssembly2":"Assembly2","GenomeAssembly":"Assembly2","GenomeAlignment":"GenomeAlignment","GenomeAnnotation":"Annotation","GenomeComparison":"SeqComparison",
-          "Homology":"Homology","MetaCATS":"MetaCATS","MetagenomeBinning":"MetagenomicBinning","MetagenomicReadMapping":"MetagenomicReadMapping","MSA":"MSA",
-          "CodonTree":"PhylogeneticTree","PrimerDesign":"PrimerDesign","RNASeq":"Rnaseq","TaxonomicClassification":"TaxonomicClassification","TnSeq":"Tnseq","Variation":"Variation"};
+          localStorage.setItem('bvbrc_rerun_job', job_params);
+          var service_app_map = {
+            'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+            'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+            'DifferentialExpression': 'Expression',
+            'FastqUtils': 'FastqUtil',
+            'GeneTree': 'GeneTree',
+            'GenomeAssembly2': 'Assembly2',
+            'GenomeAssembly': 'Assembly2',
+            'GenomeAlignment': 'GenomeAlignment',
+            'GenomeAnnotation': 'Annotation',
+            'GenomeComparison': 'SeqComparison',
+            'Homology': 'Homology',
+            'MetaCATS': 'MetaCATS',
+            'MetagenomeBinning': 'MetagenomicBinning',
+            'MetagenomicReadMapping': 'MetagenomicReadMapping',
+            'MSA': 'MSA',
+            'CodonTree': 'PhylogeneticTree',
+            'PrimerDesign': 'PrimerDesign',
+            'RNASeq': 'Rnaseq',
+            'TaxonomicClassification': 'TaxonomicClassification',
+            'TnSeq': 'Tnseq',
+            'Variation': 'Variation'
+          };
           if (service_app_map.hasOwnProperty(service_id)) {
-            Topic.publish('/navigate',{href:'/app/'+service_app_map[service_id]});
+            Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
           }
-          else{
-            console.log('Rerun not enabled for: ',service_id);
+          else {
+            console.log('Rerun not enabled for: ', service_id);
           }
         },
         false
