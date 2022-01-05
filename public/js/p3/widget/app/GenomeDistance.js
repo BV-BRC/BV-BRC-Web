@@ -22,9 +22,6 @@ define([
     result_grid: null,
     defaultPath: '',
 
-    constructor: function () {
-    },
-
     startup: function () {
       if (this._started) { return; }
       this.inherited(arguments);
