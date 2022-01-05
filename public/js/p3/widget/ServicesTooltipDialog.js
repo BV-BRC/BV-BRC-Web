@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dojo/_base/lang', 'dojo/mouse',
   'dijit/popup', 'dijit/TooltipDialog',
-  'dijit/Dialog', '../WorkspaceManager', './app/AppBase', './app/GenomeAlignment', './app/GenomeDistance',
+  'dijit/Dialog', '../WorkspaceManager', './app/AppBase', './app/GenomeAlignment',
   './app/Homology', './app/MSA', './app/PrimerDesign'
 ], function (
   declare, on, domConstruct,
   lang, Mouse,
   popup, TooltipDialog,
-  Dialog, WorkspaceManager, AppBase, GenomeAlignment, GenomeDistance, Homology, MSA, PrimerDesign
+  Dialog, WorkspaceManager, AppBase, GenomeAlignment, Homology, MSA, PrimerDesign
 ) {
 
   return declare([TooltipDialog], {
@@ -100,12 +100,12 @@ define([
             return;
           case 'genome':
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'blast', innerHTML: 'Blast' }, tData);
-            domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
+            //domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
             return;
           default:
             console.log('invalid context: displaying placeholder');
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_alignment', innerHTML: 'Genome Alignment' }, tData);
-            domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
+            //domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'phylogentic_tree', innerHTML: 'Phylogenetic Tree' }, tData);
             domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'comparative_pathway', innerHTML: 'Comparative Pathway' }, tData);
 
@@ -209,6 +209,7 @@ define([
         d.show();
 
       }
+      /*
       else if (type == 'genome_distance') {
         if (this.context === 'genome') {
           var params = {
@@ -229,9 +230,8 @@ define([
           }
         });
         d.show();
-
       }
-
+      */
     },
 
     _setJSONStorage: function (data) {

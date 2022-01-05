@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +13,7 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -411,6 +411,66 @@ define([
             });
           }), 10);
 
+        },
+        false
+      ], [
+        'Services',
+        'fa icon-cog fa-2x',
+        {
+          label: 'SERVICES',
+          multiple: true,
+          max: 100,
+          tooltip: 'Submit selection to a service',
+          //tooltipDialog: ,
+          validTypes: ['*'], //TODO: check this
+          validContainerTypes: ['*'] //TODO: probably have to change this instead
+        },
+        function (selection, container, button) {
+          console.log("selection=",selection);
+          console.log("container=",container);
+          var context = null;
+          var params = {};
+          var multiple = false;
+          if (selection.length > 1) {
+            multiple = true;
+          }
+          //containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?) 
+          //genome_data
+          if (container.containerType === 'feature_data') {
+            //context = 'feature';
+          }
+          else if (container.containerType === 'sequence_data') {
+            //TODO: should sequence_data be genomes? Does not have to represent a genome
+            //Ask about "Sequences" section
+            //context = 'genome';
+          }
+          else if (container.containerType === 'genome_data') {
+            context = 'genome';
+            params['blast'] = {
+              'db_precomputed_database': 'selGenome',
+              'db_genome_list':[],
+              'db_source': 'genome_list',
+              'db_type': 'fna',
+              'blast_program':'blastn'
+            };
+            //params['genome_alignment']
+            selection.forEach(function(obj) {
+              params['blast'].db_genome_list.push(obj.genome_id);
+            }, this);
+          }
+          if (!context) {
+            context = '';
+          }
+          popup.open({
+            popup: new ServicesTooltipDialog({
+              context: context,
+              data: params,
+              multipe: multiple //if multiple values are selected
+            }),
+            parent: this,
+            around: button,
+            orient: ['below']
+          });
         },
         false
       ], [
