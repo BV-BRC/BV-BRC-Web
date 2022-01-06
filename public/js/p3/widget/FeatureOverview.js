@@ -716,7 +716,8 @@ define([
         popup.open({
           popup: new ServicesTooltipDialog({
             context: 'feature',
-            data: params
+            data: params, 
+            multiple: false
           }),
           parent: this,
           around: this.featureServiceSelectionButton,

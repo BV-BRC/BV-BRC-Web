@@ -437,7 +437,20 @@ define([
           //containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?) 
           //genome_data
           if (container.containerType === 'feature_data') {
-            //context = 'feature';
+            context = 'feature';
+            //MSA data
+            params['msa'] = {};
+            params['msa']['seqs'] = [];
+            selection.forEach(function(obj) {
+              var seq = {
+                "nuc_seq":obj.na_sequence_md5,
+                "aa_seq": obj.aa_sequence_md5,
+                "patric_id":obj.patric_id
+              };
+              params['msa']['seqs'].push(seq);
+            }, this);
+            //TODO: BLAST data
+            //TODO: Primer design data 
           }
           else if (container.containerType === 'sequence_data') {
             //TODO: should sequence_data be genomes? Does not have to represent a genome

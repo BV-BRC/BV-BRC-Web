@@ -209,6 +209,7 @@ define([
       }, false);
 
       // /START: ServicesGenomeGroups 
+      // TODO: see if ServicesTooltipDialog works here now
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,

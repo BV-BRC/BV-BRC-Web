@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dojo/_base/lang', 'dojo/mouse',
   'dijit/popup', 'dijit/TooltipDialog',
-  'dijit/Dialog', '../WorkspaceManager', './app/AppBase', './app/GenomeAlignment',
+  'dijit/Dialog', '../WorkspaceManager', '../DataAPI', './app/AppBase', './app/GenomeAlignment',
   './app/Homology', './app/MSA', './app/PrimerDesign'
 ], function (
   declare, on, domConstruct,
   lang, Mouse,
   popup, TooltipDialog,
-  Dialog, WorkspaceManager, AppBase, GenomeAlignment, Homology, MSA, PrimerDesign
+  Dialog, WorkspaceManager, DataAPI, AppBase, GenomeAlignment, Homology, MSA, PrimerDesign
 ) {
 
   return declare([TooltipDialog], {
@@ -186,28 +186,37 @@ define([
       }
       else if (type == 'msa') {
         if (this.context === 'feature') {
-          var params = {
-            'fasta_keyboard_input': '>' + this.data.patric_id + '\n' + this.data.sequence,
-            'input_status': 'unaligned',
-            'input_type': 'input_sequence',
-            'alphabet': 'dna'
-          };
+          //Set function
+          on(this.domNode, '.msaSelectionTooltip:click',lang.hitch(this,function (evt) {
+            // console.log("evt.target: ", evt.target, evt.target.attributes);
+            var rel = evt.target.attributes.rel.value;
+            //_self.actOnSelection(rel);
+            console.log("rel=",rel);
+            this._setupMSA(rel,this.data,this.multiple);
+          }));
+          //Get old content
+          var ss_content = this.get("content");
+          //switch with MSA selection
+          var msa_select = domConstruct.create('div', {});
+          domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;',innerHTML:'SELECT' }, msa_select);
+          var table = domConstruct.create('table', {}, msa_select);
+          var tr = domConstruct.create('tr', {}, table);
+          var td = this.tableCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
+          domConstruct.create('td', { style: 'width:10px;' }, tr);
+          this.otherCopyNode = domConstruct.create('td', { style: 'vertical-align:top;' }, tr);
+
+          tr = domConstruct.create('tr', {}, table);
+          domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
+          domConstruct.create('div', { 'class': 'msaSelectionTooltip', rel: 'dna', innerHTML: 'Nucleotide' }, td);
+          domConstruct.create('div', { 'class': 'msaSelectionTooltip', rel: 'aa', innerHTML: 'Amino Acid' }, td);
+          //TODO: add a 'back' button?
+          //TODO: figure out the highlight on hover issue
+          this.set('content',msa_select);
+          console.log("content=",this.get("content"));
         }
         else {
           params = {};
         }
-        this._setJSONStorage(params);
-        var msaContent = new MSA();
-        var d = new Dialog({
-          title: 'MSA',
-          content: msaContent,
-          onHide: function () {
-            msaContent.destroy();
-            d.destroy();
-          }
-        });
-        d.show();
-
       }
       /*
       else if (type == 'genome_distance') {
@@ -232,6 +241,38 @@ define([
         d.show();
       }
       */
+    },
+
+    _setupMSA: function(seq_type,data,multiple) {
+      //this._setJSONStorage(params);
+      /*
+          var params = {
+            'input_status': 'unaligned',
+            'input_type': 'input_sequence',
+            'alphabet': 'dna'
+          };
+          if (this.multiple) {
+            this.data.
+          } else {
+            params['fasta_keyboard_input'] = '>' + this.data.patric_id + '\n' + this.data.sequence;
+          }*/
+      console.log("seq_type=",seq_type);
+      //TODO: change from onHide, set an 'x' button to destroy
+      DataAPI.getFeatureSequence()
+      var msaContent = new MSA();
+      var d = new Dialog({
+        title: 'MSA',
+        content: msaContent,
+        onHide: function () {
+          msaContent.destroy();
+          d.destroy();
+        }
+      });
+      d.show();
+    },
+
+    _callMSA: function() {
+
     },
 
     _setJSONStorage: function (data) {
