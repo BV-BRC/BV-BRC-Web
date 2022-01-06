@@ -58,6 +58,38 @@ function(declare, has, listen, miscUtil, put, i18n){
 		//		Hash containing checkboxes generated for menu items.
 		_columnHiderCheckboxes: null,
 
+		_groupColumns: function(subRows){
+			var groups = {
+				common: []
+			}
+			var columns=subRows[0]
+			columns.forEach(function(col,cidx){
+				if (col.group){
+					if (!groups[col.group]){
+						groups[col.group]=[]
+					}
+					col._srid=0
+					col._colid=cidx
+					groups[col.group].push(col)
+				}else{
+					col._srid=0
+					col._colid=cidx
+					groups.common.push(col)
+				}
+			})
+
+			Object.keys(groups).forEach(function(gr){
+				groups[gr].sort(function(a,b){
+					var al = a.label || a.field
+					var bl = b.label || b.field
+					if (al<bl){ return -1 }
+					if (al>bl){ return 1 }
+					return 0;
+				})
+			})
+			return groups
+		},
+
 		_renderHiderMenuEntries: function(){
 			// summary:
 			//		Iterates over subRows for the sake of adding items to the
@@ -67,20 +99,41 @@ function(declare, has, listen, miscUtil, put, i18n){
 				first = true,
 				srLength, cLength, sr, c;
 
-			console.log("subRows: ", this.subRows)
-
 			delete this._columnHiderFirstCheckbox;
 
-			for(sr = 0, srLength = subRows.length; sr < srLength; sr++){
-				for(c = 0, cLength = subRows[sr].length; c < cLength; c++){
-					this._renderHiderMenuEntry(subRows[sr][c]);
+			var groups = this._groupColumns(subRows)
+
+			//First show the things in the "common" group
+			//i.e. the default group
+			if (groups.common && groups.common.length>0){
+				groups.common.forEach(function(col){
+					this._renderHiderMenuEntry(col)
 					if(first){
 						first = false;
 						this._columnHiderFirstCheckbox =
-							this._columnHiderCheckboxes[subRows[sr][c].id];
+							this._columnHiderCheckboxes[col.id];
 					}
-				}
+				},this)
 			}
+
+			// Then show other groups in alphabetical order
+			Object.keys(groups).sort().forEach(function(group_label){
+				if (group_label==="common"){
+					return;
+				}
+				var group = groups[group_label]
+				var div = put("div.dgrid-hider-menu-row");
+				put(div, "label.hider-menu-group",group_label);
+				put(this.hiderMenuNode, div);
+				group.forEach(function(col){
+					this._renderHiderMenuEntry(col)
+					if(first){
+						first = false;
+						this._columnHiderFirstCheckbox =
+							this._columnHiderCheckboxes[col.id];
+					}
+				},this)
+			},this)
 		},
 
 		_renderHiderMenuEntry: function(col){
