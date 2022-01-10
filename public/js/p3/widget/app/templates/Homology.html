@@ -31,13 +31,13 @@
                 <table>
                     <tr>
                         <td>
-                            <input type="radio" id="blastn" data-dojo-type="dijit/form/RadioButton"
+                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="blastn" name="program" value="blastn"
                                 data-dojo-attach-event="onChange:onChangeProgram" checked />
                             <label for="blastn">BLASTN (nucleotide > nucleotide database)</label>
                         </td>
                         <td>
-                            <input type="radio" id="blastp" data-dojo-type="dijit/form/RadioButton"
+                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="blastp" name="program" value="blastp"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
                             <label for="blastp">BLASTP (protein > protein database)</label>
@@ -45,13 +45,13 @@
                     </tr>
                     <tr>
                         <td>
-                            <input type="radio" id="blastx" data-dojo-type="dijit/form/RadioButton"
+                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="blastx" name="program" value="blastx"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
                             <label for="blastx">BLASTX (translated nucleotide > protein database)</label>
                         </td>
                         <td>
-                            <input type="radio" id="tblastn" data-dojo-type="dijit/form/RadioButton"
+                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="tblastn" name="program" value="tblastn"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
                             <label for="tblastn">tBLASTn (protein > translated nucleotide database)</label>
@@ -67,15 +67,15 @@
                 </div>
                 <br>
                 <div class="appRow">
-                    <input type="radio" id="input_sequence" data-dojo-type="dijit/form/RadioButton"
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_sequence" name="input" value="input_sequence"
                         data-dojo-attach-event="onChange:onInputChange" checked />
                     <label for="input_sequence">Enter sequence</label>
-                    <input type="radio" id="input_fasta" data-dojo-type="dijit/form/RadioButton"
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
                         data-dojo-attach-event="onChange:onInputChange" />
                     <label for="input_fasta">Select FASTA file</label>
-                    <input type="radio" id="input_group" data-dojo-type="dijit/form/RadioButton"
+                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_group" name="input" value="input_group"
                         data-dojo-attach-event="onChange:onInputChange" />
                     <label for="input_group">Select feature group</label>
@@ -293,7 +293,7 @@
             </div>
             <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit
             </div>
-            <div id="live_job_check123" value=true data-dojo-type="dijit/form/CheckBox" checked
+            <div value=true data-dojo-type="dijit/form/CheckBox" checked
                 data-dojo-attach-point="live_job" data-dojo-attach-event="onChange:setLiveJob"></div>
             <label for="live_job_check123">View results</label>
         </div>

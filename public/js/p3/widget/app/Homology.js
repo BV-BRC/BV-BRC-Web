@@ -161,7 +161,7 @@ define([
         }
       }));
 
-      this._started = true;
+      //this._started = true;
       this.form_flag = false;
       var _self = this;
       try {
