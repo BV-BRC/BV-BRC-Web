@@ -105,9 +105,9 @@ define([
         // case 'experiments':
         //   activeTab.set('state', lang.mixin({}, this.state, { search: 'eq(genome_ids,' + this.genome_id + ')' }));
         //   break;
-        // case 'proteinFamilies':
-        //   // do not set state, the container is built by setVisible already
-        //   break;
+        case 'proteinFamilies':
+          // do not set state, the container is built by setVisible already
+          break;
         case 'interactions':
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'or(eq(genome_id_a,' + this.genome_id + '),eq(genome_id_b,' + this.genome_id + '))'
@@ -249,9 +249,6 @@ define([
           var vt = this[state.hashParams.view_tab];
 
           if (state.hashParams.view_tab === 'proteinFamilies') {
-            // state.hashParams = lang.mixin({}, state.hashParams, {
-            //   params: JSON.stringify({"family_type": "plfam"})
-            // });
 
             this.proteinFamilies.state = lang.mixin({}, state, {
               hashParams: lang.mixin({}, state.hashParams, {
