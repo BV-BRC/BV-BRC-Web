@@ -31,30 +31,30 @@
                 <table>
                     <tr>
                         <td>
-                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                            <input id="${id}_blastn" type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="blastn" name="program" value="blastn"
                                 data-dojo-attach-event="onChange:onChangeProgram" checked />
-                            <label for="blastn">BLASTN (nucleotide > nucleotide database)</label>
+                            <label for="${id}_blastn">BLASTN (nucleotide > nucleotide database)</label>
                         </td>
                         <td>
-                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                            <input id="${id}_blastp" type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="blastp" name="program" value="blastp"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
-                            <label for="blastp">BLASTP (protein > protein database)</label>
+                            <label for="${id}_blastp">BLASTP (protein > protein database)</label>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                            <input id="${id}_blastx" type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="blastx" name="program" value="blastx"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
-                            <label for="blastx">BLASTX (translated nucleotide > protein database)</label>
+                            <label for="${id}_blastx">BLASTX (translated nucleotide > protein database)</label>
                         </td>
                         <td>
-                            <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                            <input id="${id}_tblastn"type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="tblastn" name="program" value="tblastn"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
-                            <label for="tblastn">tBLASTn (protein > translated nucleotide database)</label>
+                            <label for="${id}_tblastn">tBLASTn (protein > translated nucleotide database)</label>
                         </td>
                     </tr>
                 </table>
@@ -67,18 +67,18 @@
                 </div>
                 <br>
                 <div class="appRow">
-                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                    <input id="${id}_input_sequence" type="radio" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_sequence" name="input" value="input_sequence"
                         data-dojo-attach-event="onChange:onInputChange" checked />
-                    <label for="input_sequence">Enter sequence</label>
-                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                    <label for="${id}_input_sequence">Enter sequence</label>
+                    <input id="${id}_input_fasta" type="radio" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
                         data-dojo-attach-event="onChange:onInputChange" />
-                    <label for="input_fasta">Select FASTA file</label>
-                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                    <label for="${id}_input_fasta">Select FASTA file</label>
+                    <input id="${id}_input_group" type="radio" data-dojo-type="dijit/form/RadioButton"
                         data-dojo-attach-point="input_group" name="input" value="input_group"
                         data-dojo-attach-event="onChange:onInputChange" />
-                    <label for="input_group">Select feature group</label>
+                    <label for="${id}_input_group">Select feature group</label>
                 </div>
                 <table data-dojo-attach-point="sequence_table" style="width:100%; display:none">
                     <tr>
