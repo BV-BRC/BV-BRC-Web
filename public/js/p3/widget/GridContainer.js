@@ -1619,7 +1619,9 @@ define([
                 this.grid.selectedData[rownum] = row.data;
               }
               else {
-                this.grid.selectedData = {};
+                if (!this.grid.selectedData) {
+                  this.grid.selectedData = {}
+                }
                 this.grid.selectedData.primaryKey = this.grid.primaryKey;
                 this.grid.selectedData[rownum] = row.data;
               }
