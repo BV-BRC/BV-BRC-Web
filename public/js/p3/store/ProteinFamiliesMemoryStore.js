@@ -39,7 +39,7 @@ define([
         return;
       }
 
-      console.warn('onSetState', state.genome_ids);
+      // console.warn('onSetState', state.genome_ids);
       if (this.is_first_load) {
         this.genome_ids = state.genome_ids; // copy elements
         this.is_first_load = false;
@@ -74,7 +74,7 @@ define([
       }
 
       this.topicId = options.topicId;
-      console.log('pfs store created.', this.topicId);
+      // console.log('pfs store created.', this.topicId);
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         // console.log("received:", arguments);
