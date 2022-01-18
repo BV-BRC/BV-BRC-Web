@@ -1,20 +1,20 @@
 define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-selector/put', 'dojo/i18n!dgrid/extensions/nls/columnHider', 'xstyle/css!dgrid/css/extensions/ColumnHider.css'],
   function (declare, has, listen, miscUtil, put, i18n) {
     /*
- *	Column Hider plugin for dgrid
- *	Originally contributed by TRT 2011-09-28
+ * Column Hider plugin for dgrid
+ * Originally contributed by TRT 2011-09-28
  *
- *	A dGrid plugin that attaches a menu to a dgrid, along with a way of opening it,
- *	that will allow you to show and hide columns.  A few caveats:
+ * A dGrid plugin that attaches a menu to a dgrid, along with a way of opening it,
+ * that will allow you to show and hide columns.  A few caveats:
  *
- *	1. Menu placement is entirely based on CSS definitions.
- *	2. If you want columns initially hidden, you must add "hidden: true" to your
- *		column definition.
- *	3. This implementation does NOT support ColumnSet, and has not been tested
- *		with multi-subrow records.
- *	4. Column show/hide is controlled via straight up HTML checkboxes.  If you
- *		are looking for something more fancy, you'll probably need to use this
- *		definition as a template to write your own plugin.
+ * 1. Menu placement is entirely based on CSS definitions.
+ * 2. If you want columns initially hidden, you must add "hidden: true" to your
+ *    column definition.
+ * 3. This implementation does NOT support ColumnSet, and has not been tested
+ *    with multi-subrow records.
+ * 4. Column show/hide is controlled via straight up HTML checkboxes.  If you
+ *    are looking for something more fancy, you'll probably need to use this
+ *    definition as a template to write your own plugin.
  *
  */
 
@@ -34,28 +34,28 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
     return declare(null, {
       // hiderMenuNode: DOMNode
-      //		The node for the menu to show/hide columns.
+      //    The node for the menu to show/hide columns.
       hiderMenuNode: null,
 
       // hiderToggleNode: DOMNode
-      //		The node for the toggler to open the menu.
+      //    The node for the toggler to open the menu.
       hiderToggleNode: null,
 
       // i18nColumnHider: Object
-      //		This object contains all of the internationalized strings for
-      //		the ColumnHider extension as key/value pairs.
+      //    This object contains all of the internationalized strings for
+      //    the ColumnHider extension as key/value pairs.
       i18nColumnHider: i18n,
 
       // _hiderMenuOpened: Boolean
-      //		Records the current open/closed state of the menu.
+      //    Records the current open/closed state of the menu.
       _hiderMenuOpened: false,
 
       // _columnHiderRules: Object
-      //		Hash containing handles returned from addCssRule.
+      //    Hash containing handles returned from addCssRule.
       _columnHiderRules: null,
 
       // _columnHiderCheckboxes: Object
-      //		Hash containing checkboxes generated for menu items.
+      //    Hash containing checkboxes generated for menu items.
       _columnHiderCheckboxes: null,
 
       _groupColumns: function (subRows) {
@@ -92,12 +92,12 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
       _renderHiderMenuEntries: function () {
         // summary:
-        //		Iterates over subRows for the sake of adding items to the
-        //		column hider menu.
+        //    Iterates over subRows for the sake of adding items to the
+        //    column hider menu.
 
         var subRows = this.subRows,
-          first = true,
-          srLength, cLength, sr, c;
+          first = true;
+          // srLength, cLength, sr, c;
 
         delete this._columnHiderFirstCheckbox;
 
@@ -110,8 +110,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
             this._renderHiderMenuEntry(col)
             if (first) {
               first = false;
-              this._columnHiderFirstCheckbox =
-							this._columnHiderCheckboxes[col.id];
+              this._columnHiderFirstCheckbox = this._columnHiderCheckboxes[col.id];
             }
           }, this)
         }
@@ -129,8 +128,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
             this._renderHiderMenuEntry(col)
             if (first) {
               first = false;
-              this._columnHiderFirstCheckbox =
-							this._columnHiderCheckboxes[col.id];
+              this._columnHiderFirstCheckbox = this._columnHiderCheckboxes[col.id];
             }
           }, this)
         }, this)
@@ -141,8 +139,8 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
           replacedId = miscUtil.escapeCssIdentifier(id, '-'),
           div,
           checkId,
-          checkbox,
-          label;
+          checkbox;
+          // label;
 
         if (col.hidden) {
           // Hide the column (reset first to avoid short-circuiting logic)
@@ -161,11 +159,11 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
         // put-selector can't handle invalid selector characters, and the
         // ID could have some, so add it directly
         checkbox = this._columnHiderCheckboxes[id] =
-				put(div, 'input.dgrid-hider-menu-check.hider-menu-check-' + replacedId + '[type=checkbox]');
+        put(div, 'input.dgrid-hider-menu-check.hider-menu-check-' + replacedId + '[type=checkbox]');
         checkbox.id = checkId;
 
-        label = put(div, 'label.dgrid-hider-menu-label.hider-menu-label-' + replacedId +
-				'[' + forAttr + '=' + checkId + ']',
+        put(div, 'label.dgrid-hider-menu-label.hider-menu-label-' + replacedId +
+        '[' + forAttr + '=' + checkId + ']',
         col.label || col.field || '');
 
         put(this.hiderMenuNode, div);
@@ -192,18 +190,16 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
         if (!hiderMenuNode) { // first run
           // Assume that if this plugin is used, then columns are hidable.
           // Create the toggle node.
-          hiderToggleNode = this.hiderToggleNode =
-					put(this.domNode, 'button.ui-icon.dgrid-hider-toggle[type=button][aria-label=' +
-						this.i18nColumnHider.popupTriggerLabel + ']');
+          hiderToggleNode = this.hiderToggleNode = put(this.domNode, 'button.ui-icon.dgrid-hider-toggle[type=button][aria-label=' +
+            this.i18nColumnHider.popupTriggerLabel + ']');
 
           this._listeners.push(listen(hiderToggleNode, 'click', function (e) {
             grid._toggleColumnHiderMenu(e);
           }));
 
           // Create the column list, with checkboxes.
-          hiderMenuNode = this.hiderMenuNode =
-					put('div.dgrid-hider-menu[role=dialog][aria-label=' +
-						this.i18nColumnHider.popupLabel + ']');
+          hiderMenuNode = this.hiderMenuNode = put('div.dgrid-hider-menu[role=dialog][aria-label=' +
+            this.i18nColumnHider.popupLabel + ']');
           hiderMenuNode.id = this.id + '-hider-menu';
 
           this._listeners.push(listen(hiderMenuNode, 'keyup', function (e) {
@@ -292,7 +288,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
       isColumnHidden: function (id) {
         // summary:
-        //		Convenience method to determine current hidden state of a column
+        //    Convenience method to determine current hidden state of a column
         return !!this._columnHiderRules[id];
       },
 
@@ -335,7 +331,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
       _hideColumn: function (id) {
         // summary:
-        //		Hides the column indicated by the given id.
+        //    Hides the column indicated by the given id.
 
         // Use miscUtil function directly, since we clean these up ourselves anyway
         var grid = this,
@@ -347,8 +343,8 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
         }
 
         this._columnHiderRules[id] =
-				miscUtil.addCssRule(selectorPrefix + miscUtil.escapeCssIdentifier(id, '-'),
-				  'display: none;');
+        miscUtil.addCssRule(selectorPrefix + miscUtil.escapeCssIdentifier(id, '-'),
+          'display: none;');
 
         if ((has('ie') === 8 || has('ie') === 10) && !has('quirks')) {
           tableRule = miscUtil.addCssRule('.dgrid-row-table', 'display: inline-table;');
@@ -362,8 +358,8 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
       _showColumn: function (id) {
         // summary:
-        //		Shows the column indicated by the given id
-        //		(by removing the rule responsible for hiding it).
+        //    Shows the column indicated by the given id
+        //    (by removing the rule responsible for hiding it).
 
         if (this._columnHiderRules[id]) {
           this._columnHiderRules[id].remove();
@@ -373,8 +369,8 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
       _updateColumnHiddenState: function (id, hidden) {
         // summary:
-        //		Performs internal work for toggleColumnHiddenState; see the public
-        //		method for more information.
+        //    Performs internal work for toggleColumnHiddenState; see the public
+        //    method for more information.
 
         this[hidden ? '_hideColumn' : '_showColumn'](id);
 
@@ -396,12 +392,12 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
       toggleColumnHiddenState: function (id, hidden) {
         // summary:
-        //		Shows or hides the column with the given id.
+        //    Shows or hides the column with the given id.
         // id: String
-        //		ID of column to show/hide.
+        //    ID of column to show/hide.
         // hide: Boolean?
-        //		If specified, explicitly sets the hidden state of the specified
-        //		column.  If unspecified, toggles the column from the current state.
+        //    If specified, explicitly sets the hidden state of the specified
+        //    column.  If unspecified, toggles the column from the current state.
 
         if (typeof hidden === 'undefined') { hidden = !this._columnHiderRules[id]; }
         this._updateColumnHiddenState(id, hidden);
