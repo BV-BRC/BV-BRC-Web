@@ -157,12 +157,24 @@ define([
 
       }
       else if (type == 'blast') {
-        // TODO: finish after stuff has been deployed
+        // TODO: Selection for feature group as query or database?
         if (this.context === 'feature') {
           var params = {
-            'input_fasta_data': '>' + this.data.patric_id + '\n' + this.data.sequence,
-            'blast_program': 'blastn'
+            'blast_program': 'blastn',
+            'db_precomputed_database': 'bacteria-archaea',
           };
+          if (this.data.feature_type === 'feature_sequence') {
+            params['input_source'] = 'fasta_data';
+            params['input_fasta_data'] = '>' + this.data.patric_id + '\n' + this.data.sequence;
+          }
+          else if (this.data.feature_type === 'feature_group') {
+            params['input_source'] = 'feature_group';
+            params['input_feature_group'] = this.data.feature_group;
+            //params['input_feature_group'] = '/clark.cucinell@patricbrc.org/home/Feature Groups/test_pao1_featuregroup';
+          }
+          else {
+            console.log('Not a valid BLAST feature type: ',this.data.feature_type);
+          }
           this._setJSONStorage(params);
         }
         // TODO: finish genomeGroup loading and such

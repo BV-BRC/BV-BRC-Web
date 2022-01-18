@@ -444,6 +444,7 @@ define([
                 context = 'feature';
                 console.log('feature_data');
                 params['feature_group'] = group_path;
+                params['feature_type'] = 'feature_group';
                 //TODO: should submission option change depending on if one or more are selected?
                 /*
                 params['msa'] = {};

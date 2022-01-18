@@ -765,12 +765,15 @@ define([
       if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.form_flag = true;
         var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        console.log('job_data=',job_data);
         // job_data['program'] = 'blastp';
         var param_dict = { 'output_folder': 'output_path' };
         var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
         param_dict['service_specific'] = service_specific;
         this.setProgramButton(job_data);
         this.setInputSource(job_data);
+        console.log("query_featuregroup=",this.query_featuregroup.value);
+        console.log("query_featuregroup(value)=",this.query_featuregroup.get('value'));
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
         this.database.set('disabled', false);
         this.search_for.set('disabled', false);
@@ -797,16 +800,17 @@ define([
         this.sequence.set('value', job_data['input_fasta_data']);
       }
       else if (s === 'fasta_file') {
-        this.input_sequence.set('checked', false);
         this.input_fasta.set('checked', true);
+        this.input_sequence.set('checked', false);
         this.input_group.set('checked', false);
         this.query_fasta.set('value', job_data['input_fasta_file']);
       }
       else if (s === 'feature_group') {
+        this.input_group.set('checked', true);
         this.input_sequence.set('checked', false);
         this.input_fasta.set('checked', false);
-        this.input_group.set('checked', true);
         this.query_featuregroup.set('value', job_data['input_feature_group']);
+        
       }
     },
 
