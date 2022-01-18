@@ -138,8 +138,8 @@ define([
         queryArr = queryArr.concat(advancedQueryArr)
       }
 
-      if(queryArr.length === 0) {
-        return`eq(id,*)`
+      if (queryArr.length === 0) {
+        return 'eq(id,*)'
       }
       else {
         return queryArr.join('&')
