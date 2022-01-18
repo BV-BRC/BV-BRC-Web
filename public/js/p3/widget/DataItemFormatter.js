@@ -512,6 +512,51 @@ define([
       return div;
     },
 
+    taxonomy_overview_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+      }, {
+        name: 'Taxon Name',
+        text: 'taxon_name',
+      }, {
+        name: 'Taxon Rank',
+        text: 'taxon_rank'
+      }, {
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Genomes / Segments',
+        text: 'count'
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      }];
+
+      var div = domConstruct.create('div');
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     feature_data: function (item, options) {
       options = options || {};
 
