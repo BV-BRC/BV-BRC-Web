@@ -434,52 +434,194 @@ define([
           if (selection.length > 1) {
             multiple = true;
           }
+          //TODO: define const function to handle ServicesTooltipDialog form
+          var group_path;
+          const callServicesTTD = lang.hitch(this,function() {
+            console.log('group_path=',group_path);
+            if (group_path) {
+              var params = {};
+              if (container.containerType === 'feature_data') {
+                context = 'feature';
+                console.log('feature_data');
+                params['feature_group'] = group_path;
+                //TODO: should submission option change depending on if one or more are selected?
+                /*
+                params['msa'] = {};
+                params['msa']['seqs'] = [];
+                selection.forEach(function(obj) {
+                  var seq = {
+                    "nuc_seq":obj.na_sequence_md5,
+                    "aa_seq": obj.aa_sequence_md5,
+                    "patric_id":obj.patric_id
+                  };
+                  params['msa']['seqs'].push(seq);
+                }, this);
+                */
+                //TODO: BLAST data
+                //TODO: Primer design data 
+              }
+              else if (container.containerType === 'sequence_data') {
+                //TODO: should sequence_data be genomes? Does not have to represent a genome
+                //Ask about "Sequences" section
+                //context = 'genome';
+              }
+              else if (container.containerType === 'genome_data') {
+                context = 'genome';
+                params['blast'] = {
+                  'db_precomputed_database': 'selGenome',
+                  'db_genome_list':[],
+                  'db_source': 'genome_list',
+                  'db_type': 'fna',
+                  'blast_program':'blastn'
+                };
+                //params['genome_alignment']
+                selection.forEach(function(obj) {
+                  params['blast'].db_genome_list.push(obj.genome_id);
+                }, this);
+              }
+              if (!context) {
+                context = '';
+              }
+              popup.open({
+                popup: new ServicesTooltipDialog({
+                  context: context,
+                  data: params,
+                  multipe: multiple //if multiple values are selected
+                }),
+                parent: this,
+                around: button,
+                orient: ['below']
+              });
+            } else{
+              console.log("group_path doesn't exist");
+              return;
+            }
+          });
           //containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?) 
-          //genome_data
-          if (container.containerType === 'feature_data') {
-            context = 'feature';
-            //MSA data
-            params['msa'] = {};
-            params['msa']['seqs'] = [];
-            selection.forEach(function(obj) {
-              var seq = {
-                "nuc_seq":obj.na_sequence_md5,
-                "aa_seq": obj.aa_sequence_md5,
-                "patric_id":obj.patric_id
-              };
-              params['msa']['seqs'].push(seq);
-            }, this);
-            //TODO: BLAST data
-            //TODO: Primer design data 
-          }
-          else if (container.containerType === 'sequence_data') {
-            //TODO: should sequence_data be genomes? Does not have to represent a genome
-            //Ask about "Sequences" section
-            //context = 'genome';
-          }
-          else if (container.containerType === 'genome_data') {
-            context = 'genome';
-            params['blast'] = {
-              'db_precomputed_database': 'selGenome',
-              'db_genome_list':[],
-              'db_source': 'genome_list',
-              'db_type': 'fna',
-              'blast_program':'blastn'
-            };
-            //params['genome_alignment']
-            selection.forEach(function(obj) {
-              params['blast'].db_genome_list.push(obj.genome_id);
-            }, this);
-          }
-          if (!context) {
-            context = '';
-          }
+          //save group selection
+          var saveContent = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Save Selection?</div>'
+          saveContent = saveContent + '<div class="wsActionTooltip" save="true">Yes</div><div class="wsActionTooltip" save="false">No</div>';
+          var saveTT = new TooltipDialog({
+            content: saveContent,
+            onClick: function(evt) {
+              if (!container) {
+                console.log("container is null");
+                return;
+              }
+              if (!evt.target.attributes.class) {return;}
+              if (evt.target.attributes.class.nodeValue === 'wsActionTooltip') {
+                //Add function here??
+                var save_group = (evt.target.attributes.save.nodeValue === 'true');
+                console.log("save_group=",save_group);
+                var type;
+                if (container.containerType == 'genome_data') {
+                  type = 'genome_group';
+                } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
+                  type = 'feature_group';
+                } else if (container.containerType == 'transcriptomics_experiment_data') {
+                  type = 'experiment_group';
+                }
+                if (!type) {
+                  console.error('Missing type for AddGroup');
+                  return;
+                }
+                if (save_group) {
+                  var dlg = new Dialog({ title: 'Add selected items to group' });
+      
+                  var stg = new SelectionToGroup({
+                    selection: selection,
+                    type: type,
+                    inputType: container.containerType,
+                    path: container.get('path')
+                  });
+                  //console.log("stg=",stg);
+                  on(dlg.domNode, 'dialogAction', function (evt) {
+                    dlg.hide();
+                    setTimeout(function () {
+                      dlg.destroy();
+                    }, 2000);
+                    group_path = stg.groupPathSelector.value + '/' + stg.groupNameBox.value;
+                    callServicesTTD();
+                  });
+                  domConstruct.place(stg.domNode, dlg.containerNode, 'first');
+                  stg.startup();
+                  dlg.startup();
+                  dlg.show();
+                }
+                else {
+                  //Make sure TEMP directory has been made
+                  //TEMP check and creation function
+                  //TODO: how do I return false and stop execution if the query doesn't work
+                  //  and return true if it does
+                  //TODO: can I recursivley call the same function (seems like yes)
+                  //TODO: Make subdirectory queries one at a time? 
+                  //  Using the throw error from createFolder as the mechanism for this working
+                  const checkTEMP = async function(tmp_path) { 
+                    WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this,function(tmp_record){
+                      console.log('tmp_record=',tmp_record);
+                      WorkspaceManager.createFolder(tmp_path+'Feature Groups/').then(lang.hitch(this,function(feature_record) {
+                        console.log('feature_record=',feature_record);
+                        WorkspaceManager.createFolder(tmp_path+'Genome Groups/').then(lang.hitch(this,function(genome_record) {
+                          console.log('genome_record=',genome_record);
+                          WorkspaceManager.createFolder(tmp_path+'Experiment Groups/').then(lang.hitch(this,function(experiment_record) {
+                            console.log('experiment_record=',experiment_record);
+                            checkTEMP(tmp_path);
+                          }),
+                          lang.hitch(this,function(experiment_error) {
+                            return false;
+                          }));
+                        }),
+                        lang.hitch(this,function(genome_error) {
+                          return false;
+                        }));
+                      }),
+                      lang.hitch(this,function(feature_error) {
+                        return false;
+                      }));
+                    }),
+                    lang.hitch(this,function(tmp_error) {
+                      console.log("end checkTEMP");
+                      return true;
+                    })).then(lang.hitch(this,function(res) {
+                      console.log("res=",res);
+                      callServicesTTD();
+                    }));
+                  };
+                  var tmp_path = WorkspaceManager.getDefaultFolder() + '/TEMP/';
+                  //TODO: how to just wait a moment to see if TEMP exists
+                  //  And how to wait until TEMP exists before continuing
+                  checkTEMP(tmp_path);
+                  var selection_list = [];
+                  //create group in TEMP space
+                  var group_dir;
+                  if (type === 'feature_group') {
+                    group_dir = tmp_path+'Feature Groups/';
+                    selection.forEach(lang.hitch(this,function(sel){
+                      selection_list.push(sel.patric_id);
+                    }));
+                  } 
+                  else if (type === 'genome_group') {
+                    group_dir = tmp_path+'Genome Groups/'
+                  }
+                  else if (type === 'experiment_group') {
+                    group_dir = tmp_path+'Experiment Groups/'
+                  }
+                  else {
+                    console.log('Type not recognized: not creating temporary group file');
+                    return;
+                  }
+                  var group_name = type+"_"+Date.now();
+                  group_path = group_dir+group_name;
+                  def = WorkspaceManager.createGroup(group_name, type, group_dir, type, selection_list);
+                }
+              }
+            },
+            onMouseLeave: function () {
+              popup.close(saveTT);
+            }
+          });
           popup.open({
-            popup: new ServicesTooltipDialog({
-              context: context,
-              data: params,
-              multipe: multiple //if multiple values are selected
-            }),
+            popup: saveTT,
             parent: this,
             around: button,
             orient: ['below']

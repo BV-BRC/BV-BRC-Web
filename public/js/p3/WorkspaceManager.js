@@ -441,7 +441,8 @@ define([
 
       return Deferred.when(this.api('Workspace.create', [{ objects: objs }]), function (results) {
         var createdPath = results[0][0];
-
+        console.log('paths=',paths);
+        console.log('createFolder results = ',results);
         if (!createdPath) {
           throw new Error('Please try a new name.');
         } else {
