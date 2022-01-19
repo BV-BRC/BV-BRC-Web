@@ -117,7 +117,7 @@ function(declare, has, listen, miscUtil, put, i18n){
 			}
 
 			// Then show other groups in alphabetical order
-			Object.keys(groups).sort().forEach(function(group_label){
+			Object.keys(groups).forEach(function(group_label){
 				if (group_label==="common"){
 					return;
 				}
