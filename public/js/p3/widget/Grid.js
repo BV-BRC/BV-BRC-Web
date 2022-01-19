@@ -2,7 +2,7 @@ define(
   [
     'dojo/_base/declare', 'dgrid/OnDemandGrid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry',
     'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer',
-    'dgrid/extensions/ColumnHider', 'dgrid/extensions/DnD', 'dojo/dnd/Source',
+    './ColumnHider', 'dgrid/extensions/DnD', 'dojo/dnd/Source',
     'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin'
   ],
   function (
