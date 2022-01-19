@@ -82,7 +82,7 @@ define([
 
       const pathwayNameValue = this.pathwayNameNode.get('value')
       if (pathwayNameValue !== '') {
-        queryArr.push(`eq(pathway_name,"${sanitizeInput(pathwayNameValue)}")`)
+        queryArr.push(`eq(pathway_name,"${TextInputEncoder(sanitizeInput(pathwayNameValue))}")`)
       }
 
       const pathwayClassValue = this.pathwayClassNode.get('value')
