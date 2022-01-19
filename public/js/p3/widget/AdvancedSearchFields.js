@@ -39,7 +39,7 @@ define([], function () {
         field: 'description', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'genomes', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'genomes', type: 'numeric', facet: true, facet_hidden: false, search: true
       },
     ],
     'genome': [
