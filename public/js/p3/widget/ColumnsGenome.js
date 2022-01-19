@@ -213,49 +213,49 @@ define(['./formatter'], function (formatter) {
       field: 'completion_date',
       formatter: formatter.dateOnly,
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     publication: {
       label: 'Publication',
       field: 'publication',
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     authors: {
       label: 'Authors',
       field: 'authors',
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     bioproject_accession: {
       label: 'BioProject Accession',
       field: 'bioproject_accession',
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     biosample_accession: {
       label: 'BioSample Accession',
       field: 'biosample_accession',
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     assembly_accession: {
       label: 'Assembly Accession',
       field: 'assembly_accession',
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     sra_accession: {
       label: 'SRA Accession',
       name: 'sra_accession',
       hidden: true,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
     genbank_accessions: {
       label: 'GenBank Accessions',
       field: 'genbank_accessions',
       hidden: false,
-      group: 'Database Cross Reference'
+      group: 'DB Cross Reference'
     },
 
     // Sequence Info
