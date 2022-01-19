@@ -66,6 +66,9 @@ define([
         var rel = evt.target.attributes.rel.value;
         _self.actOnSelection(rel);
       });
+      on(this.domNode, '.serviceActionTooltip:click', function(evt) {
+        console.log('serviceActionTooltip evt = ',evt);
+      });
 
       var dstContent = domConstruct.create('div', {});
       this.labelNode = domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;' }, dstContent);
@@ -158,47 +161,21 @@ define([
       }
       else if (type == 'blast') {
         // TODO: Selection for feature group as query or database?
+        var isDatabase = true;
         if (this.context === 'feature') {
-          var params = {
-            'blast_program': 'blastn',
-            'db_precomputed_database': 'bacteria-archaea',
-          };
-          if (this.data.feature_type === 'feature_sequence') {
-            params['input_source'] = 'fasta_data';
-            params['input_fasta_data'] = '>' + this.data.patric_id + '\n' + this.data.sequence;
-          }
-          else if (this.data.feature_type === 'feature_group') {
-            params['input_source'] = 'feature_group';
-            params['input_feature_group'] = this.data.feature_group;
-            //params['input_feature_group'] = '/clark.cucinell@patricbrc.org/home/Feature Groups/test_pao1_featuregroup';
-          }
-          else {
-            console.log('Not a valid BLAST feature type: ',this.data.feature_type);
-          }
-          this._setJSONStorage(params);
+          //var old_content = this.get('content');
+          var select_content = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Source Type?</div>';
+          select_content = select_content + '<div class="serviceActionTooltip" source="query">Query</div>';
+          select_content = select_content + '<div class="serviceActionTooltip" source="database">Database</div>';
+          this.set('content',select_content);
         }
-        // TODO: finish genomeGroup loading and such
-        else if (this.context === 'genome') {
-          var params = this.params.data.blast;
-          // var params["input_fasta_data"] = ">InputSequence\nAACCTTGG";
-          this._setJSONStorage(params);
-        }
-        var blastContent = new Homology();
-        console.log('blastContent=', blastContent);
-        var d = new Dialog({
-          title: 'Blast',
-          content: blastContent,
-          onHide: function () {
-            blastContent.destroy();
-            d.destroy();
-          }
-        });
-        d.show();
+        //this._setupBlastForm(this.context,this.data,isDatabase);
 
       }
       else if (type == 'msa') {
         if (this.context === 'feature') {
           //Set function
+          /*
           on(this.domNode, '.msaSelectionTooltip:click',lang.hitch(this,function (evt) {
             // console.log("evt.target: ", evt.target, evt.target.attributes);
             var rel = evt.target.attributes.rel.value;
@@ -206,8 +183,9 @@ define([
             console.log("rel=",rel);
             this._setupMSA(rel,this.data,this.multiple);
           }));
+          */
           //Get old content
-          var ss_content = this.get("content");
+          var ss_content = this.get('content');
           //switch with MSA selection
           var msa_select = domConstruct.create('div', {});
           domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;',innerHTML:'SELECT' }, msa_select);
@@ -253,6 +231,45 @@ define([
         d.show();
       }
       */
+    },
+
+    _setupBlastForm: function(context,data,isDatabase) {
+      if (context === 'feature') {
+        var params = {
+          'blast_program': 'blastn',
+          'db_precomputed_database': 'bacteria-archaea',
+        };
+        if (data.feature_type === 'feature_sequence') {
+          params['input_source'] = 'fasta_data';
+          params['input_fasta_data'] = '>' + data.patric_id + '\n' + data.sequence;
+        }
+        else if (data.feature_type === 'feature_group') {
+          params['input_source'] = 'feature_group';
+          params['input_feature_group'] = data.feature_group;
+          //params['input_feature_group'] = '/clark.cucinell@patricbrc.org/home/Feature Groups/test_pao1_featuregroup';
+        }
+        else {
+          console.log('Not a valid BLAST feature type: ', data.feature_type);
+        }
+        this._setJSONStorage(params);
+      }
+      // TODO: finish genomeGroup loading and such
+      else if (this.context === 'genome') {
+        var params = data.blast;
+        // var params["input_fasta_data"] = ">InputSequence\nAACCTTGG";
+        this._setJSONStorage(params);
+      }
+      var blastContent = new Homology();
+      console.log('blastContent=', blastContent);
+      var d = new Dialog({
+        title: 'Blast',
+        content: blastContent,
+        onHide: function () {
+          blastContent.destroy();
+          d.destroy();
+        }
+      });
+      d.show();
     },
 
     _setupMSA: function(seq_type,data,multiple) {

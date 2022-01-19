@@ -445,21 +445,6 @@ define([
                 console.log('feature_data');
                 params['feature_group'] = group_path;
                 params['feature_type'] = 'feature_group';
-                //TODO: should submission option change depending on if one or more are selected?
-                /*
-                params['msa'] = {};
-                params['msa']['seqs'] = [];
-                selection.forEach(function(obj) {
-                  var seq = {
-                    "nuc_seq":obj.na_sequence_md5,
-                    "aa_seq": obj.aa_sequence_md5,
-                    "patric_id":obj.patric_id
-                  };
-                  params['msa']['seqs'].push(seq);
-                }, this);
-                */
-                //TODO: BLAST data
-                //TODO: Primer design data 
               }
               else if (container.containerType === 'sequence_data') {
                 //TODO: should sequence_data be genomes? Does not have to represent a genome
@@ -500,7 +485,7 @@ define([
           });
           //containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?) 
           //save group selection
-          var saveContent = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Save Selection?</div>'
+          var saveContent = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Save Selection?</div>';
           saveContent = saveContent + '<div class="wsActionTooltip" save="true">Yes</div><div class="wsActionTooltip" save="false">No</div>';
           var saveTT = new TooltipDialog({
             content: saveContent,
@@ -541,8 +526,10 @@ define([
                     setTimeout(function () {
                       dlg.destroy();
                     }, 2000);
-                    group_path = stg.groupPathSelector.value + '/' + stg.groupNameBox.value;
-                    callServicesTTD();
+                    if (evt.button === 'add') {
+                      group_path = group_path = stg.groupPathSelector.value + '/' + stg.groupNameBox.value;
+                      callServicesTTD();
+                    }
                   });
                   domConstruct.place(stg.domNode, dlg.containerNode, 'first');
                   stg.startup();
@@ -551,12 +538,11 @@ define([
                 }
                 else {
                   //Make sure TEMP directory has been made
-                  //TEMP check and creation function
                   //TODO: how do I return false and stop execution if the query doesn't work
                   //  and return true if it does
-                  //TODO: can I recursivley call the same function (seems like yes)
                   //TODO: Make subdirectory queries one at a time? 
                   //  Using the throw error from createFolder as the mechanism for this working
+                  //Assumes WorkspaceManager.createFolder throws and error if the folder already exists
                   const checkTEMP = async function(tmp_path) { 
                     WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this,function(tmp_record){
                       console.log('tmp_record=',tmp_record);
@@ -613,7 +599,11 @@ define([
                   }
                   var group_name = type+"_"+Date.now();
                   group_path = group_dir+group_name;
-                  def = WorkspaceManager.createGroup(group_name, type, group_dir, type, selection_list);
+                  //Wait 2 seconds for the checkTEMP function to finish making directories
+                  //TODO: WorkspaceManager.createGroup is throwing some sort of error, not sure if I need to worry about it
+                  setTimeout(lang.hitch(this,function() {
+                    var def = WorkspaceManager.createGroup(group_name, type, group_dir, type, selection_list);
+                  }),2000);
                 }
               }
             },
