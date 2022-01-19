@@ -64,6 +64,11 @@ define([
         queryArr.push(`eq(taxon_lineage_ids,${sanitizeInput(taxonNameValue)})`)
       }
 
+      const genomeIDValue = this.genomeIDNode.get('value')
+      if (genomeIDValue !== '') {
+        queryArr.push(`eq(genome_id,${TextInputEncoder(genomeIDValue)})`)
+      }
+
       const hostGroupValue = this.hostGroupNode.get('value')
       if (hostGroupValue !== '') {
         queryArr.push(`eq(host_group,${sanitizeInput(hostGroupValue)})`)
