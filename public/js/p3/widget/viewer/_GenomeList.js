@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/_base/lang', 'dojo/request',
   'dijit/layout/ContentPane', 'dojo/topic',
   '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
-  '../PathwayGridContainer', '../ProteinFamiliesContainer',
+  '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
   '../SequenceGridContainer', '../StrainGridContainer', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
@@ -10,14 +10,12 @@ define([
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
   FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
-  PathwayGridContainer, ProteinFamiliesContainer,
+  PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
   SequenceGridContainer, StrainGridContainer, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
-    maxGenomesPerList: 10000,
-    maxReferenceGenomes: 500,
     totalGenomes: 0,
     perspectiveLabel: 'Genome List View',
     perspectiveIconClass: 'icon-selection-GenomeList',
@@ -36,8 +34,6 @@ define([
 
       var _self = this;
 
-      var url = PathJoin(this.apiServiceUrl, 'genome', '?' + (this.query) + '&select(genome_id)&limit(' + this.maxGenomesPerList + 1 + ')');
-
       xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
         headers: {
           accept: 'application/solr+json',
@@ -47,20 +43,15 @@ define([
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-        data: (this.query) + '&select(genome_id)&limit(' + this.maxGenomesPerList + 1 + ')'
-
+        data: `${this.query}&select(genome_id)&limit(1)`
       }).then(function (res) {
         if (res && res.response && res.response.docs) {
           var genomes = res.response.docs;
           if (genomes) {
             _self._set('total_genomes', res.response.numFound);
-            var genome_ids = genomes.map(function (o) {
-              return o.genome_id;
-            });
-            _self._set('genome_ids', genome_ids);
           }
         } else {
-          console.warn('Invalid Response for: ', url);
+          console.warn('Invalid Response for: ', _self.query);
         }
       }, function (err) {
         console.error('Error Retreiving Genomes: ', err);
@@ -68,7 +59,7 @@ define([
 
     },
 
-    getReferenceAndRepresentativeGenomes: function () {
+    getReferenceAndRepresentativeGenomes: function (genomeCount) {
       var _self = this;
 
       xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
@@ -79,13 +70,13 @@ define([
           Authorization: (window.App.authorizationToken || '')
         },
         handleAs: 'json',
-        data: (this.query) + '&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(' + this.maxGenomesPerList + ')'
+        data: `${this.query}&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(${genomeCount})`
       }).then(function (res) {
         if (res && res.response && res.response.docs) {
           var genomes = res.response.docs;
           _self._set('referenceGenomes', genomes);
         } else {
-          console.warn('Invalid Response for: ');
+          console.warn(`Invalid Response for: ${_self.query}`);
         }
       }, function (err) {
         console.error('Error Retreiving Reference/Representative Genomes: ', err);
@@ -144,62 +135,6 @@ define([
           break;
         default:
           var activeQueryState;
-          var prop = 'genome_id';
-          if (active == 'transcriptomics') {
-            prop = 'genome_ids';
-          }
-          var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
-
-          var autoFilterMessage;
-          if (this.state && this.state.genome_ids) {
-            if (this.state.genome_ids.length <= activeMax) {
-              activeQueryState = lang.mixin({}, this.state, {
-                search: 'in(' + prop + ',(' + this.state.genome_ids.join(',') + '))',
-                hashParams: lang.mixin({}, this.state.hashParams)
-              });
-            } else if (this.state.referenceGenomes && this.state.referenceGenomes.length <= activeMax) {
-              var ids = this.state.referenceGenomes.map(function (x) {
-                return x.genome_id;
-              });
-              autoFilterMessage = 'This tab has been filtered to view data limited to Reference and Representative Genomes in your view.';
-              activeQueryState = lang.mixin({}, this.state, {
-                genome_ids: ids,
-                autoFilterMessage: autoFilterMessage,
-                search: 'in(' + prop + ',(' + ids.join(',') + '))',
-                hashParams: lang.mixin({}, this.state.hashParams)
-              });
-            } else if (this.state.referenceGenomes) {
-              var referenceOnly = this.state.referenceGenomes.filter(function (x) {
-                return x.reference_genome == 'Reference';
-              }).map(function (x) {
-                return x.genome_id;
-              });
-              if (!referenceOnly || referenceOnly.length < 1 || referenceOnly.length > activeMax) {
-                autoFilterMessage = 'There are too many genomes in your view.  This tab will not show any data';
-                activeQueryState = lang.mixin({}, this.state, {
-                  genome_ids: [],
-                  autoFilterMessage: autoFilterMessage,
-                  search: '',
-                  hashParams: lang.mixin({}, this.state.hashParams)
-                });
-              } else if (referenceOnly.length <= activeMax) {
-                autoFilterMessage = 'This tab has been filtered to view data limited to Reference Genomes in your view.';
-                activeQueryState = lang.mixin({}, this.state, {
-                  genome_ids: referenceOnly,
-                  autoFilterMessage: autoFilterMessage,
-                  search: 'in(' + prop + ',(' + referenceOnly.join(',') + '))',
-                  hashParams: lang.mixin({}, this.state.hashParams)
-                });
-              }
-            }
-          }
-
-          if (activeQueryState && active == 'proteinFamilies') {
-            activeQueryState.search = '';
-            if (activeTab._firstView) {
-              Topic.publish(activeTab.topicId, 'showMainGrid');
-            }
-          }
 
           // special case for host genomes
           if (active == 'features' && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
@@ -323,11 +258,6 @@ define([
         id: this.viewer.id + '_subsystems',
         disabled: false
       });
-      // this.proteinFamilies = new ProteinFamiliesContainer({
-      //   title: 'Protein Families',
-      //   id: this.viewer.id + '_proteinFamilies',
-      //   disabled: false
-      // });
       this.experiments = new ExperimentsContainer({
         title: 'Experiments',
         id: this.viewer.id + '_experiments'
@@ -364,17 +294,17 @@ define([
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);
       this.viewer.addChild(this.epitope);
-      // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.experiments);
       this.viewer.addChild(this.interactions);
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomes ) ';
+      const genomeCount = newVal
+      this.totalCountNode.innerHTML = ` ( ${genomeCount} Genomes ) `;
 
-      if (newVal > 500) {
-        this.getReferenceAndRepresentativeGenomes();
+      if (genomeCount > 500) {
+        this.getReferenceAndRepresentativeGenomes(genomeCount);
       }
     },
     hideWarning: function () {
@@ -385,7 +315,7 @@ define([
 
     showWarning: function (msg) {
       if (!this.warningPanel) {
-        var c = this.warningContent.replace('{{maxGenomesPerList}}', this.maxGenomesPerList);
+        var c = this.warningContent;
         this.warningPanel = new ContentPane({
           style: 'margin:0px; padding: 0px;margin-top: -10px;margin:4px;margin-bottom: 0px;background: #f9ff85;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;',
           content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close' style='color:#333;font-weight:200;'></td></tr></table>",

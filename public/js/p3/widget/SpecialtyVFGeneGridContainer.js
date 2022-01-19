@@ -21,7 +21,6 @@ define([
   return declare([GridContainer], {
     containerType: 'spgene_ref_data',
     facetFields: ['genus', 'species', 'organism', 'classification', 'source'],
-    maxGenomeCount: 10000,
     dataModel: 'sp_gene_ref',
     getFilterPanel: function (opts) {
     },

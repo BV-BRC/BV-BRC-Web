@@ -24,7 +24,6 @@ define([
     tutorialLink: 'user_guides/organisms_taxon/sequences.html',
     facetFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.search),
-    maxGenomeCount: 10000,
     dataModel: 'genome_sequence',
     primaryKey: 'sequence_id',
     tooltip: 'The "Sequences" tab contains a list of genomic sequences (e.g. chromosomes, plasmids, contigs) for genomes associated with the current view',

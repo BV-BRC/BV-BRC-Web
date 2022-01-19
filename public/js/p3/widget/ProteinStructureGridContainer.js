@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['protein_structure'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['protein_structure'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'protein_structure',
     primaryKey: 'pdb_id',
     defaultFilter: '',

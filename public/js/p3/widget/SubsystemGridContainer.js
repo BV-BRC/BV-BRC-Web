@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['subsystem'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['subsystem'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'subsystem',
     primaryKey: 'id',
     defaultFilter: '',

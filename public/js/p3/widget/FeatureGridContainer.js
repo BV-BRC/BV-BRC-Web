@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['genome_feature'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['genome_feature'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'genome_feature',
     primaryKey: 'feature_id',
     defaultFilter: 'and(eq(feature_type,CDS),eq(annotation,%22PATRIC%22))',

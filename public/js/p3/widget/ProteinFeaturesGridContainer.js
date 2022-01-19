@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['protein_feature'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['protein_feature'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'protein_feature',
     primaryKey: 'id',
     defaultFilter: '',

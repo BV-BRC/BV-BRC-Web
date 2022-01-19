@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['pathway'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['pathway'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'pathway',
     primaryKey: 'id',
     defaultFilter: '',
