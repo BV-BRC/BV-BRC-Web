@@ -303,12 +303,12 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       group: 'Genome Statistics'
     },
-    segments: {
-      label: 'Segments',
-      field: 'Segments',
-      hidden: true,
-      group: 'Genome Statistics'
-    },
+    // segments: {
+    //   label: 'Segments',
+    //   field: 'Segments',
+    //   hidden: true,
+    //   group: 'Genome Statistics'
+    // },
     contigs: {
       label: 'Contigs',
       field: 'contigs',
