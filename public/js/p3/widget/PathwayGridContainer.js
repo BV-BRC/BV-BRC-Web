@@ -102,6 +102,32 @@ define([
         true,
         'left'
       ]
-    ])
+    ]),
+    selectionActions: GridContainer.prototype.selectionActions.concat([
+      [
+        'ViewPathwayMap',
+        'fa icon-map-o fa-2x',
+        {
+          label: 'Map',
+          multiple: false,
+          validTypes: ['*'],
+          tooltip: 'View PathwayMap',
+          validContainerTypes: ['pathwayTab_data']
+        },
+        function (selection) {
+          var url = { annotation: 'PATRIC' };
+          url.genome_id = selection[0].genome_id;
+          url.pathway_id = selection[0].pathway_id;
+          url.feature_id = selection[0].feature_id;
+
+          var params = Object.keys(url).map(function (p) {
+            return p + '=' + url[p];
+          }).join('&');
+          // console.log(params);
+          Topic.publish('/navigate', { href: '/view/PathwayMap/?' + params, target: 'blank' });
+        },
+        false
+      ]
+    ]),
   });
 });
