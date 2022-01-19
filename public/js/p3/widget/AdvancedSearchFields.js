@@ -205,9 +205,9 @@ define([], function () {
       {
         field: 'plasmids', type: 'numeric', facet: false, facet_hidden: true, search: true
       },
-      {
-        field: 'segments', type: 'numeric', facet: false, facet_hidden: true, search: true
-      },
+      // {
+      //   field: 'segments', type: 'numeric', facet: false, facet_hidden: true, search: true
+      // },
       {
         field: 'contigs', type: 'numeric', facet: false, facet_hidden: true, search: true
       },
