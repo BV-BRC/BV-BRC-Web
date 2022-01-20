@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['surveillance'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['surveillance'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'surveillance',
     primaryKey: 'id',
     defaultFilter: '',

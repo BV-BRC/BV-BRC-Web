@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['serology'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['serology'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'serology',
     primaryKey: 'id',
     defaultFilter: '',

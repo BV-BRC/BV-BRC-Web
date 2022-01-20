@@ -24,7 +24,6 @@ define([
     containerType: 'taxonomy_data',
     facetFields: [],
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'taxonomy',
     primaryKey: 'taxon_id',
     defaultFilter: '',

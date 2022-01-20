@@ -15,7 +15,6 @@ define([
   return declare([BorderContainer], {
     gutters: false,
     state: null,
-    maxGenomeCount: 500,
     tooltip: 'The "Subsystems" tab contains a list of subsystems for genomes associated with the current view',
     apiServer: window.App.dataServiceURL,
 

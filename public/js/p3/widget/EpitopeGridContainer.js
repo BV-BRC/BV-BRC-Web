@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['epitope'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['epitope'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'epitope',
     primaryKey: 'epitope_id',
     defaultFilter: '',

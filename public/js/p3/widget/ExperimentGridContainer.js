@@ -24,7 +24,6 @@ define([
     tutorialLink: 'user_guides/organisms_taxon/experiments_comparisons_tables.html',
     facetFields: AdvancedSearchFields['experiment'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['experiment'].filter((ff) => ff.search),
-    maxGenomeCount: 5000,
     dataModel: 'experiment',
     getFilterPanel: function (opts) {
     },

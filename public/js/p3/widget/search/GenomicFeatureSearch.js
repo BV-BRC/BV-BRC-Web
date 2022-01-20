@@ -126,6 +126,11 @@ define([
       // }
       queryArr.push('eq(feature_type,CDS)')
 
+      const genomeIDValue = this.genomeIDNode.get('value')
+      if (genomeIDValue !== '') {
+        queryArr.push(`eq(genome_id,${TextInputEncoder(genomeIDValue)})`)
+      }
+
       const brcIDValue = this.brcIDNode.get('value')
       if (brcIDValue !== '') {
         queryArr.push(`eq(patric_id,${TextInputEncoder(brcIDValue)})`)

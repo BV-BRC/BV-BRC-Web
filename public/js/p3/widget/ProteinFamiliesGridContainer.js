@@ -48,7 +48,6 @@ define([
     containerType: 'proteinfamily_data',
     tutorialLink: 'user_guides/organisms_taxon/protein_families.html',
     facetFields: [],
-    maxGenomeCount: 500,
     showAutoFilterMessage: false,
     constructor: function (options) {
 

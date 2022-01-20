@@ -39,7 +39,7 @@ define([], function () {
         field: 'description', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'genomes', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'genomes', type: 'numeric', facet: true, facet_hidden: false, search: true
       },
     ],
     'genome': [
@@ -205,9 +205,9 @@ define([], function () {
       {
         field: 'plasmids', type: 'numeric', facet: false, facet_hidden: true, search: true
       },
-      {
-        field: 'segments', type: 'numeric', facet: false, facet_hidden: true, search: true
-      },
+      // {
+      //   field: 'segments', type: 'numeric', facet: false, facet_hidden: true, search: true
+      // },
       {
         field: 'contigs', type: 'numeric', facet: false, facet_hidden: true, search: true
       },
@@ -395,19 +395,19 @@ define([], function () {
         field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'plfam_id', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'plfam_id', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'pgfam_id', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'pgfam_id', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'sog_id', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'sog_id', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'go', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'go', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'property', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'property', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'notes', type: 'str', facet: false, facet_hidden: false, search: true

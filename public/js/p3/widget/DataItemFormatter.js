@@ -606,10 +606,12 @@ define([
           name: 'Location',
           text: 'location',
           mini: true
-        }, {
-          name: 'Segments',
-          text: 'segments',
-        }, {
+        },
+        // {
+        //   name: 'Segments',
+        //   text: 'segments',
+        // },
+        {
           name: 'Codon Start',
           text: 'codon_start',
         }],

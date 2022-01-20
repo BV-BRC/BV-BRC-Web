@@ -10,7 +10,6 @@ define([
     gridCtor: Grid,
     containerType: 'epitope_assay_data',
     facetFields: [],
-    maxGenomeCount: 5000,
     dataModel: 'epitope_assay',
     getFilterPanel: function (opts) {
     },

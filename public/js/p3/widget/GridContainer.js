@@ -1264,7 +1264,7 @@ define([
           max: 5000,
           validTypes: ['*'],
           tooltip: 'Pathway Summary',
-          validContainerTypes: ['spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data']
+          validContainerTypes: ['spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data', 'pathwayTab_data']
         },
         function (selection, containerWidget) {
 
